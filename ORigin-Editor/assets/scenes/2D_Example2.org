@@ -1,0 +1,64 @@
+Scene: Untitled
+Entities:
+  - Entity: 12837192831273
+    TagComponent:
+      Tag: Main Camera
+    TransformComponent:
+      Translation: [0, 0, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 12837192831273
+    TagComponent:
+      Tag: red
+    TransformComponent:
+      Translation: [2.8633759, 0.90801686, -0.5]
+      Rotation: [0, 0, 0.785398245]
+      Scale: [5.95189953, 0.448830307, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.309803933, 0.309803933, 1]
+      TexturePath: ""
+      TillingFactor: 1
+  - Entity: 12837192831273
+    TagComponent:
+      Tag: white
+    TransformComponent:
+      Translation: [-0.156014264, 0.659668624, 0.0514529496]
+      Rotation: [0, 0, 0]
+      Scale: [0.720000029, 0.720000029, 0.720000029]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: ""
+      TillingFactor: 1
+  - Entity: 12837192831273
+    TagComponent:
+      Tag: orange
+    TransformComponent:
+      Translation: [-4.02030373, -0.0582892448, 0.38120535]
+      Rotation: [0.0539971627, -0.0286166631, -0.235790342]
+      Scale: [7.97564316, 0.407771736, 0.999998987]
+    SpriteRendererComponent:
+      Color: [1, 0.669767439, 0, 1]
+      TexturePath: ""
+      TillingFactor: 1
+  - Entity: 12837192831273
+    TagComponent:
+      Tag: blue
+    TransformComponent:
+      Translation: [0.117141306, -1.98318481, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 0.5, 1]
+    SpriteRendererComponent:
+      Color: [0, 0.595348835, 1, 1]
+      TexturePath: ""
+      TillingFactor: 1
