@@ -4,7 +4,7 @@
 ### 1. Required Visual Studio 2022
 + Install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/)
 + Install Visual Studio 2022 [Project Switcher Extension](https://marketplace.visualstudio.com/items?itemName=vs-publisher-141975.SwitchStartupProjectForVS2022) (C++ project)
-+ Soon we will manage this project with C# BuildTool
++ Soon we will manage this project with C#/dotnet BuildTool
 ### 2. Download the repository
 + Cloning the repository recursively :
 `git clone --recursive https://github.com/kaks-ev/ORigin-Engine.git`.
