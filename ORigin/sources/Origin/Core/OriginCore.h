@@ -18,7 +18,6 @@
 
 // ASSERTION
 #define OGN_CORE_ASSERT(x, ...) { if(!(x)) { OGN_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
-#define OGN_CORE_ASSERT(x) { if(!(x)) { __debugbreak(); } }
 
 #define OGN_ASSERT(x, ...) { if(!(x)) { OGN_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 

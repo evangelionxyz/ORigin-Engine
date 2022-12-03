@@ -4,16 +4,15 @@
 #include "pch.h"
 
 #include "Origin\Scene\SceneCamera.h"
-#include "Origin\Scene\ScriptableEntity.h"
 #include "Origin\Renderer\Texture.h"
+
+#include "Origin\Scene\Component\UUID.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
-
-#include "UUID.h"
 
 namespace Origin
 {

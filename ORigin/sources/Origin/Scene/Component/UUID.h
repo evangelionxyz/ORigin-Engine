@@ -11,9 +11,7 @@ namespace Origin {
 		// UUID id = 0
 		UUID();
 		UUID(uint64_t uuid);
-		UUID(const UUID& uuid);
-
-		~UUID();
+		UUID(const UUID& uuid) = default;
 
 		operator uint64_t() const { return m_UUID; }
 

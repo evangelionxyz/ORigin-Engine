@@ -7,7 +7,6 @@
 #include "Component\Component.h"
 
 #include <fstream>
-
 #include <yaml-cpp/yaml.h>
 
 namespace YAML {
@@ -138,9 +137,9 @@ namespace Origin {
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
-		OGN_CORE_ASSERT(entity.HasComponent<IDComponent>());
+		OGN_CORE_ASSERT(entity.HasComponent<IDComponent>(), "");
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << entity.GetComponent<IDComponent>().ID;
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
 		if (entity.HasComponent<TagComponent>())
 		{

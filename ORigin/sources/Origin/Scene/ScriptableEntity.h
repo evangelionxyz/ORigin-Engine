@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Entity.h"
 #include "Origin\Utils\Time.h"
+#include "Origin\Scene\Entity.h"
 
 namespace Origin
 {
@@ -12,8 +12,7 @@ namespace Origin
 		virtual ~ScriptableEntity() {}
 
 		template<typename T>
-		T& GetComponent()
-		{
+		T& GetComponent() {
 			return m_Entity.GetComponent<T>();
 		}
 
