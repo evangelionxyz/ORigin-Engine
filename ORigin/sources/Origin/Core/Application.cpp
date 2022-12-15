@@ -34,6 +34,8 @@ namespace Origin {
 			auto time = (float)glfwGetTime();
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
+			timestep.SetDeltaTime(m_LastFrame);
+
 			if (!m_Minimized) {
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(timestep);

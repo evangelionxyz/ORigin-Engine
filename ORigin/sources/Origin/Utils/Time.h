@@ -3,7 +3,7 @@
 #pragma once
 #include <chrono>
 
-namespace Origin 
+namespace Origin
 {
 	class Timestep
 	{
@@ -12,12 +12,17 @@ namespace Origin
 			: m_Time(time)
 		{
 		}
+
 		operator float() const { return m_Time; }
-		float GetSeconds() const { return m_Time; }
-		float GetMilliSeconds() const { return m_Time * 1000.0f; }
+		inline float GetSeconds() const { return m_Time; }
+		inline float GetMilliSeconds() const { return m_Time * 1000.0f; }
+		inline float GetDeltaTime() const { return m_DeltaTime; }
+
+		void SetDeltaTime(float time) { m_DeltaTime = time; }
 
 	private:
 		float m_Time;
+		float m_DeltaTime;
 	};
 
 	class Timer

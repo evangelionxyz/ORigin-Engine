@@ -66,6 +66,16 @@ namespace Origin
 		SpriteRendererComponent(float r, float g, float b, float, float a) : Color(r, g, b, a) {}
 	};
 
+	struct CircleRendererComponent
+	{
+		glm::vec4 Color = glm::vec4(1.0f);
+		float Thickness = 1.0f;
+		float Fade = 0.005f;
+
+		CircleRendererComponent() = default;
+		CircleRendererComponent(const CircleRendererComponent&) = default;
+	};
+
 	struct CameraComponent
 	{
 		SceneCamera Camera;

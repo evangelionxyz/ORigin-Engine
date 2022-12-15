@@ -541,7 +541,7 @@ namespace Origin {
 	}
 
 
-  // private 
+  // private
 	// BOOLEAN UNIFORM
   void OpenGLShader::SetUniformBool(const std::string& name, bool boolean) {
     glUniform1i(GetUniformLocation(name), boolean);

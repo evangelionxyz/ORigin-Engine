@@ -37,7 +37,6 @@ namespace Origin {
 	Scene::Scene() {}
 	Scene::~Scene()
 	{
-
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -45,8 +44,9 @@ namespace Origin {
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>();
 		entity.AddComponent<TransformComponent>();
+
 		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
+		tag.Tag = name.empty() ? "Empty" : name;
 		return entity;
 	}
 
@@ -54,6 +54,7 @@ namespace Origin {
 	{
 		Entity entity = { m_Registry.create(), this };
 
+		entity.AddComponent<IDComponent>();
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<SpriteRendererComponent>();
 
@@ -67,6 +68,7 @@ namespace Origin {
 	{
 		Entity entity = { m_Registry.create(), this };
 
+		entity.AddComponent<IDComponent>();
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<CameraComponent>();
 
@@ -75,6 +77,20 @@ namespace Origin {
 
 		auto& translation = entity.GetComponent<TransformComponent>().Translation;
 		translation.z = 8.0f;
+
+		return entity;
+	}
+
+	Entity Scene::CreateCircle(const std::string& name)
+	{
+		Entity entity = { m_Registry.create(), this };
+
+		entity.AddComponent<IDComponent>();
+		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<CircleRendererComponent>();
+
+		auto& tag = entity.AddComponent<TagComponent>();
+		tag.Tag = name.empty() ? "Circle" : name;
 
 		return entity;
 	}
@@ -142,11 +158,24 @@ namespace Origin {
 		{
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-			for (auto entity : group)
+			// Sprites
 			{
-				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+				for (auto entity : group)
+				{
+					auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				}
+			}
+
+			// Circles
+			{
+				auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+				for (auto entity : view)
+				{
+					auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+					Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+				}
 			}
 
 			Renderer2D::EndScene();
@@ -160,12 +189,27 @@ namespace Origin {
 	void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
 	{
 		Renderer2D::BeginScene(camera);
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (auto entity : group)
+
+		// Sprites
 		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+			for (auto entity : group)
+			{
+				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			}
 		}
+
+		// Circles
+		{
+			auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+			for (auto entity : view)
+			{
+				auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+			}
+		}
+
 		Renderer2D::EndScene();
 	}
 
@@ -245,13 +289,8 @@ namespace Origin {
 		static_assert(false);
 	}
 
-	template<> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
-	{
-	}
-
-	template<> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-	{
-	}
+	template<> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
+	template<> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}
 
 	template<> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
@@ -259,23 +298,10 @@ namespace Origin {
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
-	template<> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
-	{
-	}
-
-	template<> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
-	{
-	}
-
-	template<> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-	{
-	}
-
-	template<> void Scene::OnComponentAdded<Rigidbody2DComponent>(Entity entity, Rigidbody2DComponent& component)
-	{
-	}
-
-	template<> void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component)
-	{
-	}
+	template<> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
+	template<> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) {}
+	template<> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) {}
+	template<> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) {}
+	template<> void Scene::OnComponentAdded<Rigidbody2DComponent>(Entity entity, Rigidbody2DComponent& component) {}
+	template<> void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) {}
 }

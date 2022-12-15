@@ -73,8 +73,8 @@ namespace Origin {
 
     // Resize
     if (
-        const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-        m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
+      const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+      m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
       (m_ViewportSize.x != spec.Width || m_ViewportSize.y != spec.Height)
       )
     {
@@ -94,18 +94,18 @@ namespace Origin {
 
     switch (m_SceneState)
     {
-      case SceneState::Play:
-      {
-        m_GizmosType = -1;
-        m_ActiveScene->OnUpdateRuntime(time);
-        break;
-      }
-      case SceneState::Edit:
-      {
-        m_EditorCamera.OnUpdate(time);
-        m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
-        break;
-      }
+    case SceneState::Play:
+    {
+      m_GizmosType = -1;
+      m_ActiveScene->OnUpdateRuntime(time);
+      break;
+    }
+    case SceneState::Edit:
+    {
+      m_EditorCamera.OnUpdate(time);
+      m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
+      break;
+    }
     }
 
     auto [mx, my] = ImGui::GetMousePos();
@@ -150,13 +150,13 @@ namespace Origin {
       | ImGuiWindowFlags_NoCollapse
       | ImGuiWindowFlags_NoCollapse;
 
-    float wndYpos = {(viewportMinRegion.y + viewportOffset.y) + 4.0f };
+    float wndYpos = { (viewportMinRegion.y + viewportOffset.y) + 4.0f };
 
     // Play Button
-    ImGui::SetNextWindowPos( { (viewportMinRegion.x + viewportOffset.x) + wndWidth / 2.0f, wndYpos }, ImGuiCond_Always);
+    ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + wndWidth / 2.0f, wndYpos }, ImGuiCond_Always);
     ImGui::SetNextWindowBgAlpha(0.0f);
 
-    if(ImGui::Begin("##play_button", nullptr, window_flags))
+    if (ImGui::Begin("##play_button", nullptr, window_flags))
     {
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 2.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f, 0.0f));
@@ -167,7 +167,7 @@ namespace Origin {
       ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-      if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
+      if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
       {
         if (m_SceneState == SceneState::Edit)
           OnScenePlay();
@@ -233,7 +233,8 @@ namespace Origin {
     ImGui::Begin("Viewport", nullptr, window_flags);
 
     m_ViewportHovered = ImGui::IsWindowHovered();
-    if(ImGui::IsWindowFocused())
+    m_ViewportFocused = ImGui::IsWindowFocused();
+    if (ImGui::IsWindowFocused())
       m_SceneHierarchy.SetHierarchyMenuActive(false);
     else
       m_SceneHierarchy.SetHierarchyMenuActive(true);
@@ -251,7 +252,7 @@ namespace Origin {
     if (guiOverlay)
     {
       ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration
-//      | ImGuiWindowFlags_NoDocking
+        //      | ImGuiWindowFlags_NoDocking
         | ImGuiWindowFlags_AlwaysAutoResize
         | ImGuiWindowFlags_NoSavedSettings
         | ImGuiWindowFlags_NoFocusOnAppearing
@@ -266,7 +267,7 @@ namespace Origin {
       {
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::Text("Mouse Position (%d, %d)", mouseX, mouseY);
-        ImGui::Text("Camera Movement (%d)", m_EditorCamera.IsActive() );
+        ImGui::Text("Camera Movement (%d)", m_EditorCamera.IsActive());
 
         std::string name = "None";
         if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
@@ -298,8 +299,8 @@ namespace Origin {
               auto& component = entity.GetComponent<SpriteRendererComponent>();
               if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
               {
-               component.Texture = Texture2D::Create(textureFile.string());
-               component.TexturePath = textureFile.string();
+                component.Texture = Texture2D::Create(textureFile.string());
+                component.TexturePath = textureFile.string();
               }
             }
           }
@@ -378,7 +379,7 @@ namespace Origin {
     else
       m_EditorCamera.EnableMovement(true);
 
-    if(!m_ViewportHovered)
+    if (!m_ViewportHovered)
       m_EditorCamera.EnableMovement(false);
     else
       m_EditorCamera.EnableMovement(true);
@@ -433,6 +434,8 @@ namespace Origin {
     m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 
     m_SceneHierarchy.SetContext(m_ActiveScene);
+
+
 
     SceneSerializer serializer(m_ActiveScene);
     serializer.Deserialize(path.string());
@@ -617,13 +620,6 @@ namespace Origin {
   {
     if (e.GetMouseButton() == Mouse::ButtonLeft && m_ViewportHovered)
     {
-      if (!ImGuizmo::IsOver() && m_HoveredEntity) m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-
-      if (!m_HoveredEntity && !ImGuizmo::IsOver()) {
-        m_GizmosType = -1;
-        m_SceneHierarchy.SetSelectedEntity({});
-      }
-
       if (Input::IsKeyPressed(Key::LeftControl)) {
         if (m_HoveredEntity == m_SelectedEntity && !ImGuizmo::IsOver())
         {
@@ -635,16 +631,33 @@ namespace Origin {
     return false;
   }
 
-  void Editor::InputProccedure(float time)
+  void Editor::InputProccedure(Timestep time)
   {
+    if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+    {
+      if (m_ViewportHovered)
+      {
+        if (m_HoveredEntity && !ImGuizmo::IsOver())
+        {
+          m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+        }
+
+        else if (!m_HoveredEntity && !ImGuizmo::IsOver())
+        {
+          m_GizmosType = -1;
+          m_SceneHierarchy.SetSelectedEntity({});
+        }
+      }
+    }
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
     {
       lastMouseX = lastMouseX;
       lastMouseY = lastMouseY;
-      RMHoldTime += 1.2f * time;
+      RMHoldTime += time.GetDeltaTime();
 
-      if (RMHoldTime < 0.5f && lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
-      else VpMenuContextActive = false;
+      // less than 1.5 sec
+      if (RMHoldTime < 1500.0f && lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
+      else if (RMHoldTime > 1500.0f || lastMouseX != mouseX && lastMouseY != mouseY)VpMenuContextActive = false;
     }
     else
     {
@@ -655,11 +668,15 @@ namespace Origin {
 
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
     {
-      if (m_PixelData == -1) m_VpMenuContext = ViewportMenuContext::CreateMenu;
+      if (!m_HoveredEntity)
+        m_VpMenuContext = ViewportMenuContext::CreateMenu;
       else if (m_HoveredEntity)
       {
-        if(lastMouseX == mouseX && lastMouseY == mouseY) m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-        m_VpMenuContext = ViewportMenuContext::EntityProperties;
+        if (lastMouseX == mouseX && lastMouseY == mouseY)
+        {
+          m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+          m_VpMenuContext = ViewportMenuContext::EntityProperties;
+        }
       }
     }
   }
@@ -677,12 +694,13 @@ namespace Origin {
         {
           if (ImGui::BeginMenu("Create"))
           {
-            if (ImGui::MenuItem("Empty")) m_SceneHierarchy.GetContext()->CreateEntity();
+            if (ImGui::MenuItem("Empty")) m_SceneHierarchy.GetContext()->CreateEntity("Empty");
             if (ImGui::MenuItem("Camera")) m_SceneHierarchy.GetContext()->CreateCamera("Camera");
 
             if (ImGui::BeginMenu("2D"))
             {
-              if (ImGui::MenuItem("2D Sprite"))  m_SceneHierarchy.GetContext()->CreateSpriteEntity();
+              if (ImGui::MenuItem("Sprite"))  m_SceneHierarchy.GetContext()->CreateSpriteEntity();
+              if (ImGui::MenuItem("Circle"))  m_SceneHierarchy.GetContext()->CreateCircle("Circle");
               ImGui::EndMenu();
             }
             ImGui::EndMenu();
@@ -695,7 +713,6 @@ namespace Origin {
           // Entity Properties
           std::string name = "None";
           m_SelectedEntity ? name = m_SelectedEntity.GetComponent<TagComponent>().Tag : name;
-          glm::vec4& color = m_SelectedEntity.GetComponent<SpriteRendererComponent>().Color;
           ImGui::Text("%s", name.c_str());
           ImGui::Separator();
 
@@ -732,7 +749,8 @@ namespace Origin {
             {
               auto& component = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
               ImGui::Separator();
-              ImGui::ColorEdit4("Color", glm::value_ptr(color));
+
+              ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
               if (component.Texture)
               {
                 ImGui::Text("Texture");
@@ -743,8 +761,17 @@ namespace Origin {
                   component.Texture = {};
                 }
               }
-              ImGui::EndMenu();
             }
+            if (m_SelectedEntity.HasComponent<CircleRendererComponent>())
+            {
+              auto& component = m_SelectedEntity.GetComponent<CircleRendererComponent>();
+              ImGui::Separator();
+              ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+              ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
+              ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
+            }
+
+            ImGui::EndMenu(); //!Properties
           }
         }
         ImGui::EndPopup();

@@ -49,20 +49,23 @@ namespace Origin {
 
 		if (m_HierarchyMenuActive)
 		{
-			if (ImGui::BeginPopupContextWindow(0, 1, false))
+			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 			{
 				if (ImGui::BeginMenu("Create"))
 				{
 					if (ImGui::MenuItem("Empty"))
-						m_Context->CreateEntity();
+						m_Context->CreateEntity("Empty");
 
 					if (ImGui::MenuItem("Camera"))
 						m_Context->CreateCamera("Camera");
 
 					if (ImGui::BeginMenu("2D"))
 					{
-						if (ImGui::MenuItem("2D Sprite"))
+						if (ImGui::MenuItem("Sprite"))
 							m_Context->CreateSpriteEntity();
+						if (ImGui::MenuItem("Circle"))
+							m_Context->CreateCircle("Circle");
+
 						ImGui::EndMenu();
 					}
 
@@ -144,7 +147,6 @@ namespace Origin {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-
 			if (!entity.HasComponent<Rigidbody2DComponent>())
 			{
 				if (ImGui::MenuItem("Rigidbody 2D"))
@@ -171,10 +173,18 @@ namespace Origin {
 				}
 			}
 
-			if (!entity.HasComponent<CameraComponent>()) {
+			if (!entity.HasComponent<CameraComponent>() && !entity.HasComponent<SpriteRendererComponent>()) {
 				if (ImGui::MenuItem("Camera"))
 				{
 					m_SelectionContext.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!entity.HasComponent<CircleRendererComponent>() && !entity.HasComponent<CameraComponent>()) {
+				if (ImGui::MenuItem("Circle Renderer"))
+				{
+					m_SelectionContext.AddComponent<CircleRendererComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -189,6 +199,9 @@ namespace Origin {
 
 			ImGui::EndPopup();
 		}
+
+		ImGui::Text("UUID ( %d )", entity.GetUUID());
+
 		ImGui::PopStyleVar();
 		ImGui::PopItemWidth();
 
@@ -204,36 +217,44 @@ namespace Origin {
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
-			{
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-		// Texture
-		ImVec2 btSize = ImVec2(80.0f, 30.0f);
-		ImGui::Button("Texture", btSize);
-		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+			// Texture
+			ImVec2 btSize = ImVec2(80.0f, 30.0f);
+			ImGui::Button("Texture", btSize);
+			if (ImGui::BeginDragDropTarget())
 			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				auto texturePath = std::filesystem::path(g_AssetPath) / path;
-				if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
-					component.Texture = Texture2D::Create(texturePath.string());
-					component.TexturePath = texturePath.string();
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					auto texturePath = std::filesystem::path(g_AssetPath) / path;
+					if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+					{
+						component.Texture = Texture2D::Create(texturePath.string());
+						component.TexturePath = texturePath.string();
+					}
 				}
 			}
-		}
-		if (component.Texture)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button("Delete", btSize))
+			if (component.Texture)
 			{
-				component.Texture->Delete();
-				component.Texture = {};
+				ImGui::SameLine();
+				if (ImGui::Button("Delete", btSize))
+				{
+					component.Texture->Delete();
+					component.Texture = {};
+				}
+				ImGui::Text("Path: %s", component.TexturePath.c_str());
+				ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 			}
-			ImGui::Text("Path: %s", component.TexturePath.c_str());
-			ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
-		}
-			});
+		});
+
+		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)
+		{
+			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+			ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
+			ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
+
+		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{

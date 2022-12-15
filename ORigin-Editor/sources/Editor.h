@@ -33,7 +33,7 @@ namespace Origin {
     void OnEvent(Event& e) override;
     bool OnKeyPressed(KeyPressedEvent& e);
     bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-    void InputProccedure(float time);
+    void InputProccedure(Timestep time);
     void OnGuiRender() override;
 
     void OnScenePlay();
@@ -61,7 +61,8 @@ namespace Origin {
     float m_Time = 0.0f;
 
     bool drawLineMode = false;
-    bool m_ViewportHovered = false;
+    bool m_ViewportHovered;
+    bool m_ViewportFocused;
 
     std::shared_ptr<Texture2D> m_PlayButton, m_StopButton;
 
