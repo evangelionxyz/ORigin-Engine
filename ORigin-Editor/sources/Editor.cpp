@@ -55,8 +55,6 @@ namespace Origin {
     }
 
     m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-    m_SceneHierarchy.SetContext(m_ActiveScene);
-    m_EditorScene = Scene::Copy(m_ActiveScene);
   }
 
   void Editor::OnEvent(Event& e)
@@ -125,7 +123,17 @@ namespace Origin {
     m_Framebuffer->Unbind();
   }
 
-  void Editor::OnGuiRender()
+	void Editor::OnDuplicateEntity()
+	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
+		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+    if (selectedEntity)
+			m_EditorScene->DuplicateEntity(selectedEntity);
+	}
+
+	void Editor::OnGuiRender()
   {
     m_Dockspace.Begin();
 
@@ -149,7 +157,6 @@ namespace Origin {
 		}
 		else Renderer2D::BeginScene(m_EditorCamera);
 
-		// Draw selected entity outline 
 		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
     {
 			TransformComponent transform = selectedEntity.GetComponent<TransformComponent>();
@@ -191,12 +198,12 @@ namespace Origin {
       ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-      if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
+      if (ImGui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
       {
-        if (m_SceneState == SceneState::Edit)
-          OnScenePlay();
-        else if (m_SceneState == SceneState::Play)
-          OnSceneStop();
+				if (m_SceneState == SceneState::Edit)
+					OnScenePlay();
+				else if (m_SceneState == SceneState::Play)
+					OnSceneStop();
       }
       ImGui::PopStyleColor(3);
       ImGui::PopStyleVar(2);
@@ -342,9 +349,7 @@ namespace Origin {
             const auto* path = static_cast<const wchar_t*>(payload->Data);
             auto scenePath = std::filesystem::path(g_AssetPath) / path;
             if (scenePath.extension() == ".org" || scenePath.extension() == ".origin")
-            {
               OpenScene(scenePath);
-            }
           }
         }
       }
@@ -445,28 +450,30 @@ namespace Origin {
     m_SceneHierarchy.SetSelectedEntity({});
     m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
-    m_ActiveScene = std::make_shared<Scene>();
-    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-    m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+		m_EditorScene = std::make_shared<Scene>();
+		m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
+		m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 
-    m_SceneHierarchy.SetContext(m_ActiveScene);
-    m_EditorScene = m_ActiveScene;
+		m_SceneHierarchy.SetContext(m_EditorScene);
+    m_ActiveScene = m_EditorScene;
+
+    m_ScenePath = std::filesystem::path();
   }
 
 	void Editor::SaveScene()
 	{
     if (!m_ScenePath.empty())
-      SerializeScene(m_EditorScene, m_ScenePath);
+      SerializeScene(m_ActiveScene, m_ScenePath);
     else SaveSceneAs();
 	}
 
 	void Editor::SaveSceneAs()
   {
-    std::string filepath = FileDialogs::SaveFile("ORigin Scene (*.org,*.origin)\0*.org\0");
+    std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Scene (*.org,*.origin)\0*.org\0");
 
     if (!filepath.empty())
     {
-      SerializeScene(m_EditorScene, m_ScenePath);
+      SerializeScene(m_ActiveScene, m_ScenePath);
       m_ScenePath = filepath;
     }
   }
@@ -499,7 +506,7 @@ namespace Origin {
     if (m_SceneState == SceneState::Play)
       OnSceneStop();
 
-    std::string filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
+    std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
     if (!filepath.empty()) OpenScene(filepath);
   }
 
@@ -523,10 +530,11 @@ namespace Origin {
 
       if (ImGui::BeginMenu("File"))
       {
-        if (ImGui::MenuItem("New", "Ctrl + N")) NewScene();
+        if (ImGui::MenuItem("New", "Ctrl+N")) NewScene();
         if (ImGui::MenuItem("Open", "Ctrl+O"))  OpenScene();
+        if (ImGui::MenuItem("Save", "Ctrl+S"))  SaveScene();
         if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))  SaveSceneAs();
-        if (ImGui::MenuItem("Exit")) window.Close();
+        if (ImGui::MenuItem("Exit", "F4")) window.Close();
         ImGui::EndMenu();
       }
 
@@ -670,6 +678,13 @@ namespace Origin {
         break;
       }
 
+      case Key::D:
+      {
+        if (control)
+          OnDuplicateEntity();
+        break;
+      }
+
       case Key::E:
       {
         if (!ImGuizmo::IsUsing() && !io.WantTextInput)
@@ -696,9 +711,26 @@ namespace Origin {
 
   bool Editor::OnMouseButtonPressed(MouseButtonPressedEvent& e)
   {
-    if (e.GetMouseButton() == Mouse::ButtonLeft && m_ViewportHovered)
+    auto bt = e.GetMouseButton();
+    bool control = Input::IsKeyPressed(Key::LeftControl);
+
+    if (bt == Mouse::ButtonLeft && m_ViewportHovered)
     {
-      if (Input::IsKeyPressed(Key::LeftControl)) {
+			if (m_HoveredEntity && !ImGuizmo::IsOver())
+			{
+				if (m_HoveredEntity != m_SelectedEntity)
+					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+				else if(m_HoveredEntity == m_SelectedEntity && !control)
+					m_SceneHierarchy.SetSelectedEntity({});
+			}
+
+			else if (!m_HoveredEntity && !ImGuizmo::IsOver())
+			{
+				m_GizmosType = -1;
+				m_SceneHierarchy.SetSelectedEntity({});
+			}
+
+      if (control) {
         if (m_HoveredEntity == m_SelectedEntity && !ImGuizmo::IsOver())
         {
           m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
@@ -713,29 +745,13 @@ namespace Origin {
   {
     if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
     {
-      if (m_ViewportHovered)
-      {
-        if (m_HoveredEntity && !ImGuizmo::IsOver())
-        {
-          m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-        }
-
-        else if (!m_HoveredEntity && !ImGuizmo::IsOver())
-        {
-          m_GizmosType = -1;
-          m_SceneHierarchy.SetSelectedEntity({});
-        }
-      }
+      
     }
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
     {
       lastMouseX = lastMouseX;
       lastMouseY = lastMouseY;
       RMHoldTime += time.GetDeltaTime();
-
-      // less than 1.5 sec
-      /*if (RMHoldTime < 1900.0f && lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
-      else if (RMHoldTime >= 1900.0f || lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;*/
 
 			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
 			else if (lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;
@@ -749,17 +765,12 @@ namespace Origin {
 
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
     {
-      if (!m_HoveredEntity)
+      if (lastMouseX == mouseX && lastMouseY == mouseY)
       {
-        m_VpMenuContext = ViewportMenuContext::CreateMenu;
-      }
-      else
-      {
-        if (lastMouseX == mouseX && lastMouseY == mouseY)
-        {
-          m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-          m_VpMenuContext = ViewportMenuContext::EntityProperties;
-        }
+				if (m_SceneHierarchy.GetSelectedEntity())
+					m_VpMenuContext = ViewportMenuContext::EntityProperties;
+        else
+					m_VpMenuContext = ViewportMenuContext::CreateMenu;
       }
     }
   }
@@ -768,7 +779,7 @@ namespace Origin {
   {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
-    if (VpMenuContextActive)
+    if (VpMenuContextActive && m_SceneHierarchy.GetContext())
     {
       if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
       {

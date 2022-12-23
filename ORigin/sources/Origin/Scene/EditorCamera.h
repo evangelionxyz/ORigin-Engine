@@ -22,6 +22,7 @@ namespace Origin {
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
+		
 
 		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
 
@@ -35,9 +36,12 @@ namespace Origin {
 		glm::quat GetOrientation() const;
 
 		float GetPitch() const { return m_Pitch; }
+		inline void SetPitch(float pitch) { m_Pitch = pitch; }
 		float GetYaw() const { return m_Yaw; }
+		inline void SetYaw(float yaw) { m_Yaw = yaw; }
 		void EnableMovement(bool enable) { m_EnableMovement = enable; }
 		bool IsActive() { return m_EnableMovement; }
+		inline void SetFov(float fov) { m_FOV = fov; }
 
 	private:
 		void UpdateProjection();

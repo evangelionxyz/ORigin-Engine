@@ -37,13 +37,14 @@ namespace Origin
 		void OnRuntimeStop();
 
 		void OnViewportResize(uint32_t width, uint32_t height);
+		void DuplicateEntity(Entity entity);
 
 		void DrawGrid(int size = 5, glm::vec4 color = glm::vec4(1.0f));
 		void SetGrid(int size, glm::vec4 color);
 
 	private:
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
-		int m_GridSize = 5.0f;
+		int m_GridSize = 5;
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
 
 	private:
@@ -56,4 +57,7 @@ namespace Origin
 		friend class SceneHierarchyPanel;
 		friend class Editor;
 	};
+
+	
+
 }

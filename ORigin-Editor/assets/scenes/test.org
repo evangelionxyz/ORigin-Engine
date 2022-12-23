@@ -8,6 +8,6 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
-      Color: [0.917948723, 0.677869797, 0, 1]
+      Color: [1, 1, 1, 1]
       TexturePath: ""
       TillingFactor: 1

@@ -35,8 +35,8 @@ namespace Origin {
 		return b2_staticBody;
 	}
 
-	Scene::Scene() {}
-	Scene::~Scene() { }
+	Scene::Scene(){}
+	Scene::~Scene() {}
 
 	template<typename Component>
 	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
@@ -52,6 +52,13 @@ namespace Origin {
 			auto& component = src.get<Component>(e);
 			dst.emplace_or_replace<Component>(dstEntityID, component);
 		}
+	}
+
+	template<typename Component>
+	static void CopyComponentIfExist(Entity dst, Entity src)
+	{
+		if(src.HasComponent<Component>())
+			dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
 	}
 
 	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
@@ -76,7 +83,6 @@ namespace Origin {
 		}
 
 		// Copy components (except IDComponent and TagComponent) into new scene (destination)
-
 		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
@@ -106,8 +112,7 @@ namespace Origin {
 	Entity Scene::CreateSpriteEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
-
-		entity.AddComponent<IDComponent>();
+		entity.AddComponent<IDComponent>(UUID());
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<SpriteRendererComponent>();
 
@@ -323,9 +328,27 @@ namespace Origin {
 		}
 	}
 
+	static uint32_t duplicateEntity = 0;
+	void Scene::DuplicateEntity(Entity entity)
+	{
+		std::string name = entity.GetName();
+		Entity newEntity = CreateEntity(name);
+
+		CopyComponentIfExist<CameraComponent>(newEntity, entity);
+		CopyComponentIfExist<TransformComponent>(newEntity, entity);
+		CopyComponentIfExist<SpriteRendererComponent>(newEntity, entity);
+		CopyComponentIfExist<CircleRendererComponent>(newEntity, entity);
+		CopyComponentIfExist<Rigidbody2DComponent>(newEntity, entity);
+		CopyComponentIfExist<BoxCollider2DComponent>(newEntity, entity);
+		CopyComponentIfExist<NativeScriptComponent>(newEntity, entity);
+
+		newEntity.GetComponent<TransformComponent>().Translation.x += 0.2f;
+		newEntity.GetComponent<TransformComponent>().Translation.y += 0.2f;
+	}
+
 	void Scene::DrawGrid(int size, glm::vec4 color)
 	{
-		// x and z axis
+		// 3D x and z axis
 		Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f), glm::vec3(size, -1.0f, 0.0), glm::vec4(1, 0, 0, 1));
 		Renderer2D::DrawLine(glm::vec3(0.0f, -1.0f, -size), glm::vec3(0.0f, -1.0f, size), glm::vec4(0, 1, 0, 1));
 
