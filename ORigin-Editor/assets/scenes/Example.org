@@ -1,18 +1,18 @@
 Scene: Example.org
 Entities:
-  - Entity: 3354418643701503687
+  - Entity: 11429453951187343875
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, -0.37630713]
-      Scale: [7.36951637, 0.490580291, 2.54999995]
+      Translation: [0, 3.70334911, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.945000052, 0.945000052, 0.945000052]
     SpriteRendererComponent:
-      Color: [1, 0.923076928, 0, 1]
+      Color: [1, 1, 1, 1]
       TexturePath: ""
       TillingFactor: 1
     Rigidbody2DComponent:
-      BodyType: Static
+      BodyType: Dynamic
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
@@ -39,19 +39,19 @@ Entities:
         OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
-  - Entity: 11429453951187343875
+  - Entity: 3354418643701503687
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [0, 3.70334911, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.945000052, 0.945000052, 0.945000052]
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, -0.37630713]
+      Scale: [7.36951637, 0.490580291, 2.54999995]
     SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
+      Color: [1, 0.923076928, 0, 1]
       TexturePath: ""
       TillingFactor: 1
     Rigidbody2DComponent:
-      BodyType: Dynamic
+      BodyType: Static
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]

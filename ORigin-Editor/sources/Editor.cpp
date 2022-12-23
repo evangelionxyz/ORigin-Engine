@@ -11,7 +11,8 @@
 #include <filesystem>
 #include <ImGuizmo.h>
 
-namespace Origin {
+namespace Origin
+{
   extern const std::filesystem::path g_AssetPath;
   static float RMHoldTime = 0.0f;
   static float LMHoldTime = 0.0f;
@@ -88,7 +89,12 @@ namespace Origin {
     m_Framebuffer->Bind();
 
     Renderer2D::ResetStats();
-    RenderCommand::ClearColor(clearColor);
+
+    if(m_SceneHierarchy.GetContext())
+      RenderCommand::ClearColor(clearColor);
+    else
+      RenderCommand::ClearColor(glm::vec4(0.6f));
+
     RenderCommand::Clear();
     m_Framebuffer->ClearAttachment(1, -1);
 
@@ -305,9 +311,13 @@ namespace Origin {
         (viewportMinRegion.y + viewportOffset.y) + 8.0f }, ImGuiCond_Always);
 
       ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
-      if (ImGui::Begin("top left overlay", nullptr, window_flags))
+      if (ImGui::Begin("##top_left_overlay", nullptr, window_flags))
       {
+        if (!m_SceneHierarchy.GetContext())
+          ImGui::Text("Load a Scene or Create New Scene to begin!");
+
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
         ImGui::Text("Mouse Position (%d, %d)", mouseX, mouseY);
         std::string name = "None";
         if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
@@ -534,7 +544,7 @@ namespace Origin {
         if (ImGui::MenuItem("Open", "Ctrl+O"))  OpenScene();
         if (ImGui::MenuItem("Save", "Ctrl+S"))  SaveScene();
         if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))  SaveSceneAs();
-        if (ImGui::MenuItem("Exit", "F4")) window.Close();
+        if (ImGui::MenuItem("Exit", "Alt+F4")) window.Close();
         ImGui::EndMenu();
       }
 
@@ -743,10 +753,6 @@ namespace Origin {
 
   void Editor::InputProccedure(Timestep time)
   {
-    if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
-    {
-      
-    }
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
     {
       lastMouseX = lastMouseX;
@@ -793,8 +799,8 @@ namespace Origin {
           ImGui::Separator();
 
           ImGui::Text("2D"); ImGui::Separator();
-					if (ImGui::MenuItem("Sprite"))  m_SceneHierarchy.GetContext()->CreateSpriteEntity("Sprite");
-					if (ImGui::MenuItem("Circle"))  m_SceneHierarchy.GetContext()->CreateCircle("Circle");
+					if (ImGui::MenuItem("Sprite")) m_SceneHierarchy.GetContext()->CreateSpriteEntity("Sprite");
+					if (ImGui::MenuItem("Circle")) m_SceneHierarchy.GetContext()->CreateCircle("Circle");
         }
 
         // Entity Properties
