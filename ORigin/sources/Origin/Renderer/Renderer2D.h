@@ -6,6 +6,8 @@
 #include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/Component/Component.h"
 
+#include <algorithm>
+
 namespace Origin {
 
 	class Renderer2D
@@ -18,6 +20,8 @@ namespace Origin {
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
 		static void Flush();
+
+		static void ObjectSorting(float objA, float objB);
 
 		// Primitives
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
@@ -33,8 +37,12 @@ namespace Origin {
 		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 
-		static void DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade, int entityID);
-		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID);
+		static void DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
+		static void DrawRect(const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
+
+		static void DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade, int entityID = -1);
+		static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
+		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID = -1);
 
 		// Stats
 		struct Statistics
@@ -42,6 +50,7 @@ namespace Origin {
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
 			uint32_t CircleCount = 0;
+			uint32_t LineCount = 0;
 
 			uint32_t GetTotalVertexCount() const { return QuadCount * 4; }
 			uint32_t GetTotalIndexCount() const { return QuadCount * 6; }

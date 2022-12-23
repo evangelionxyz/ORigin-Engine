@@ -33,49 +33,51 @@ namespace Origin {
 		// Hierarchy
 		ImGui::Begin("Hierarchy");
 
-		if (ImGui::IsWindowFocused())
-			m_HierarchyMenuActive = true;
+		if (ImGui::IsWindowFocused()) m_HierarchyMenuActive = true;
 
-		m_Context->m_Registry.each([&](auto entityID)
+		if (m_Context)
 		{
-			Entity entity{ entityID, m_Context.get() };
-			DrawEntityNode(entity);
-		});
-
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-			m_SelectionContext = {};
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-
-		if (m_HierarchyMenuActive)
-		{
-			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
+			m_Context->m_Registry.each([&](auto entityID)
 			{
-				if (ImGui::BeginMenu("Create"))
+				Entity entity{ entityID, m_Context.get() };
+				DrawEntityNode(entity);
+			});
+
+			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+				m_SelectionContext = {};
+
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+
+			if (m_HierarchyMenuActive)
+			{
+				if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 				{
-					if (ImGui::MenuItem("Empty"))
-						m_Context->CreateEntity("Empty");
-
-					if (ImGui::MenuItem("Camera"))
-						m_Context->CreateCamera("Camera");
-
-					if (ImGui::BeginMenu("2D"))
+					if (ImGui::BeginMenu("Create"))
 					{
-						if (ImGui::MenuItem("Sprite"))
-							m_Context->CreateSpriteEntity();
-						if (ImGui::MenuItem("Circle"))
-							m_Context->CreateCircle("Circle");
+						if (ImGui::MenuItem("Empty"))
+							m_Context->CreateEntity("Empty");
+
+						if (ImGui::MenuItem("Camera"))
+							m_Context->CreateCamera("Camera");
+
+						if (ImGui::BeginMenu("2D"))
+						{
+							if (ImGui::MenuItem("Sprite"))
+								m_Context->CreateSpriteEntity();
+							if (ImGui::MenuItem("Circle"))
+								m_Context->CreateCircle("Circle");
+
+							ImGui::EndMenu();
+						}
 
 						ImGui::EndMenu();
 					}
-
-					ImGui::EndMenu();
+					ImGui::EndPopup();
 				}
-				ImGui::EndPopup();
 			}
-		}
 
-		ImGui::PopStyleVar();
+			ImGui::PopStyleVar();
+		}
 		ImGui::End(); // !Hierarchy
 
 		// Properties
@@ -318,8 +320,7 @@ namespace Origin {
 				camera.SetOrthographicFarClip(orthoFarClip);
 
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
-		}
-			});
+		}});
 
 		DrawComponent<Rigidbody2DComponent>("Rigidbody 2D", entity, [](auto& component)
 			{
@@ -353,7 +354,6 @@ namespace Origin {
 				ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 100.0f);
 				ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f);
 				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
-
 			});
 	}
 }

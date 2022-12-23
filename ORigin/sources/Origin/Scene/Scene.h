@@ -3,6 +3,7 @@
 #pragma once
 #include "Origin\Utils\Time.h"
 #include "EditorCamera.h"
+#include "Origin/Scene/Component/UUID.h"
 
 #include "entt\entt.hpp"
 
@@ -18,7 +19,10 @@ namespace Origin
 		Scene();
 		~Scene();
 
+		static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
+
 		Entity CreateEntity(const std::string& name = std::string());
+		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
 		Entity CreateCamera(const std::string& name = std::string());
 		Entity CreateCircle(const std::string& name = std::string());
 		Entity CreateSpriteEntity(const std::string& name = std::string());
@@ -34,8 +38,13 @@ namespace Origin
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 
+		void DrawGrid(int size = 5, glm::vec4 color = glm::vec4(1.0f));
+		void SetGrid(int size, glm::vec4 color);
+
 	private:
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
+		int m_GridSize = 5.0f;
+		glm::vec4 m_GridColor = glm::vec4(1.0f);
 
 	private:
 		entt::registry m_Registry;

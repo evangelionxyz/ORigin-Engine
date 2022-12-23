@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Scene/SceneSerializer.h"
+
 #include <filesystem>
 #include <ImGuizmo.h>
 
@@ -55,6 +56,7 @@ namespace Origin {
 
     m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
     m_SceneHierarchy.SetContext(m_ActiveScene);
+    m_EditorScene = Scene::Copy(m_ActiveScene);
   }
 
   void Editor::OnEvent(Event& e)
@@ -95,18 +97,17 @@ namespace Origin {
     switch (m_SceneState)
     {
     case SceneState::Play:
-    {
       m_GizmosType = -1;
       m_ActiveScene->OnUpdateRuntime(time);
       break;
-    }
+
     case SceneState::Edit:
-    {
       m_EditorCamera.OnUpdate(time);
       m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
       break;
     }
-    }
+
+    OnOverlayRenderer();
 
     auto [mx, my] = ImGui::GetMousePos();
     mx -= m_ViewportBounds[0].x;
@@ -135,7 +136,30 @@ namespace Origin {
     m_Dockspace.End();
   }
 
-  void Editor::ViewportToolbar()
+	void Editor::OnOverlayRenderer()
+	{
+		if (m_SceneState == SceneState::Play)
+		{
+			Entity camera = m_ActiveScene->GetPrimaryCameraEntity();
+      if (camera)
+      {
+				glm::mat4 transform = camera.GetComponent<TransformComponent>().GetTransform();
+				Renderer2D::BeginScene(camera.GetComponent<CameraComponent>().Camera, transform);
+      }
+		}
+		else Renderer2D::BeginScene(m_EditorCamera);
+
+		// Draw selected entity outline 
+		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+    {
+			TransformComponent transform = selectedEntity.GetComponent<TransformComponent>();
+			Renderer2D::DrawRect(transform.GetTransform(), glm::vec4(1, 0.5, 0, 1));
+		}
+
+    Renderer2D::EndScene();
+	}
+
+	void Editor::ViewportToolbar()
   {
     ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
     ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -218,6 +242,17 @@ namespace Origin {
     }
   }
 
+  const char* Editor::MenuContextToString(const ViewportMenuContext& context)
+  {
+    switch (context)
+    {
+		  case CreateMenu: return "Create Menu"; break;
+		  case EntityProperties: return "Entity Properties"; break;
+    }
+
+    return nullptr;
+  }
+
   void Editor::VpGui()
   {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -263,16 +298,14 @@ namespace Origin {
         (viewportMinRegion.y + viewportOffset.y) + 8.0f }, ImGuiCond_Always);
 
       ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
-      if (ImGui::Begin("top left overlay", NULL, window_flags))
+      if (ImGui::Begin("top left overlay", nullptr, window_flags))
       {
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::Text("Mouse Position (%d, %d)", mouseX, mouseY);
-        ImGui::Text("Camera Movement (%d)", m_EditorCamera.IsActive());
-
         std::string name = "None";
         if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
         ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
-        ImGui::Text("Is ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
+        ImGui::Text("Menu Context : %s", MenuContextToString(m_VpMenuContext));
       }
       ImGui::End();
     }
@@ -368,22 +401,16 @@ namespace Origin {
           tc.Scale = scale;
         }
 
-        if (Input::IsKeyPressed(Key::Escape)) m_GizmosType = -1;
+        if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape)) m_GizmosType = -1;
       }
 
       if (m_SelectedEntity != m_SceneHierarchy.GetSelectedEntity()) m_GizmosType = -1;
     }
 
-    if (ImGuizmo::IsUsing())
+    if (ImGuizmo::IsUsing() || !m_ViewportHovered)
       m_EditorCamera.EnableMovement(false);
     else
       m_EditorCamera.EnableMovement(true);
-
-    if (!m_ViewportHovered)
-      m_EditorCamera.EnableMovement(false);
-    else
-      m_EditorCamera.EnableMovement(true);
-
 
     ImGui::End();
     ImGui::PopStyleVar();
@@ -392,17 +419,28 @@ namespace Origin {
   void Editor::OnScenePlay()
   {
     m_SceneState = SceneState::Play;
+
+    m_ActiveScene = Scene::Copy(m_EditorScene);
     m_ActiveScene->OnRuntimeStart();
+
+    m_SceneHierarchy.SetContext(m_ActiveScene);
   }
 
   void Editor::OnSceneStop()
   {
     m_SceneState = SceneState::Edit;
+
     m_ActiveScene->OnRuntimeStop();
+    m_ActiveScene = m_EditorScene;
+
+    m_SceneHierarchy.SetContext(m_ActiveScene);
   }
 
   void Editor::NewScene()
   {
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
+
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});
     m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
@@ -410,44 +448,68 @@ namespace Origin {
     m_ActiveScene = std::make_shared<Scene>();
     m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
     m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+
     m_SceneHierarchy.SetContext(m_ActiveScene);
+    m_EditorScene = m_ActiveScene;
   }
 
-  void Editor::SaveSceneAs()
+	void Editor::SaveScene()
+	{
+    if (!m_ScenePath.empty())
+      SerializeScene(m_EditorScene, m_ScenePath);
+    else SaveSceneAs();
+	}
+
+	void Editor::SaveSceneAs()
   {
     std::string filepath = FileDialogs::SaveFile("ORigin Scene (*.org,*.origin)\0*.org\0");
+
     if (!filepath.empty())
     {
-      SceneSerializer serializer(m_ActiveScene);
-      serializer.Serialize(filepath);
+      SerializeScene(m_EditorScene, m_ScenePath);
+      m_ScenePath = filepath;
     }
   }
 
   void Editor::OpenScene(const std::filesystem::path& path)
   {
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
+
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});
     m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
-    m_ActiveScene = std::make_shared<Scene>();
-    m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-    m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+    std::shared_ptr<Scene> newScene = std::make_shared<Scene>();
+    SceneSerializer serializer(newScene);
+    if (serializer.Deserialize(path.string()))
+    {
+      m_EditorScene = newScene;
+      m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+      m_SceneHierarchy.SetContext(m_EditorScene);
 
-    m_SceneHierarchy.SetContext(m_ActiveScene);
-
-
-
-    SceneSerializer serializer(m_ActiveScene);
-    serializer.Deserialize(path.string());
+      m_ActiveScene = m_EditorScene;
+      m_ScenePath = path;
+    }
   }
 
   void Editor::OpenScene()
   {
+    if (m_SceneState == SceneState::Play)
+      OnSceneStop();
+
     std::string filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
     if (!filepath.empty()) OpenScene(filepath);
   }
 
-  void Editor::MenuBar()
+	void Editor::SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath)
+	{
+    SceneSerializer serializer(scene);
+    serializer.Serialize(scenePath);
+	}
+
+	void Editor::MenuBar()
   {
     ImGuiStyle& style = ImGui::GetStyle();
     auto& window = Application::Get();
@@ -482,9 +544,7 @@ namespace Origin {
       if (ImGui::BeginMenu("View"))
       {
         if (ImGui::MenuItem("Fullscreen", "F11", &guiMenuFullscreen))
-        {
           window.GetWindow().SetFullscreen(guiMenuFullscreen);
-        }
         ImGui::EndMenu();
       }
       ImGui::EndMenuBar();
@@ -496,14 +556,23 @@ namespace Origin {
     {
       ImGui::Begin("Render Status", &guiRenderStatus);
 
+			ImGui::Text("Grid");
+			ImGui::Text("Size"); ImGui::SameLine(0.0f, 1.5f); ImGui::DragInt("##grid_size", &m_GridSize);
+			ImGui::Text("Color"); ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("##grid_color", glm::value_ptr(m_GridColor));
+			m_ActiveScene->SetGrid(m_GridSize, m_GridColor);
+
+      ImGui::Separator();
+
       const auto stats = Renderer2D::GetStats();
       ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-      ImGui::Text("Quads: %d", stats.QuadCount);
+      ImGui::Text("Quads %d", stats.QuadCount);
+      ImGui::SameLine(); ImGui::Text("Circles %d", stats.CircleCount);
+      ImGui::SameLine(); ImGui::Text("Lines %d", stats.LineCount);
       ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
       ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
       ImGui::Separator();
       if (ImGui::Checkbox("Line Mode", &drawLineMode)) RenderCommand::DrawLineMode(drawLineMode);
-      ImGui::SameLine(); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
+      ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
 
       const char* RTTypeString[] = { "Normal" };
       const char* currentRTTypeString = RTTypeString[m_RenderTarget];
@@ -564,54 +633,63 @@ namespace Origin {
     bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
     bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
+    ImGuiIO& io = ImGui::GetIO();
+
+
     switch (e.GetKeyCode())
     {
       // File Operation
-    case Key::S:
-    {
-      if (control && shift) SaveSceneAs();
-      break;
-    }
+      case Key::S:
+      {
+        if (control)
+        {
+          if (shift)
+            SaveSceneAs();
+          else
+            SaveScene();
+        }
+        break;
+      }
 
-    case Key::O:
-    {
-      if (control) OpenScene();
-      break;
-    }
+      case Key::O:
+      {
+        if (control) OpenScene();
+        break;
+      }
 
-    case Key::N:
-    {
-      if (control) NewScene();
-      break;
-    }
+      case Key::N:
+      {
+        if (control) NewScene();
+        break;
+      }
 
-    case Key::T:
-    {
-      if (!ImGuizmo::IsUsing())
-        m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
-      break;
-    }
+      case Key::T:
+      {
+        if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+          m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
+        break;
+      }
 
-    case Key::E:
-    {
-      if (!ImGuizmo::IsUsing())
-        m_GizmosType = ImGuizmo::OPERATION::SCALE;
-      break;
-    }
+      case Key::E:
+      {
+        if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+          m_GizmosType = ImGuizmo::OPERATION::SCALE;
+        break;
+      }
 
-    case Key::R:
-    {
-      if (!ImGuizmo::IsUsing())
-        m_GizmosType = ImGuizmo::OPERATION::ROTATE;
-      break;
-    }
+      case Key::R:
+      {
+        if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+          m_GizmosType = ImGuizmo::OPERATION::ROTATE;
+        break;
+      }
 
-    case Key::F11:
-    {
-      guiMenuFullscreen == false ? guiMenuFullscreen = true : guiMenuFullscreen = false;
-      app.GetWindow().SetFullscreen(guiMenuFullscreen);
-      break;
-    }
+      case Key::F11:
+      {
+        guiMenuFullscreen == false ? guiMenuFullscreen = true : guiMenuFullscreen = false;
+        app.GetWindow().SetFullscreen(guiMenuFullscreen);
+        break;
+      }
     }
     return true;
   }
@@ -656,11 +734,14 @@ namespace Origin {
       RMHoldTime += time.GetDeltaTime();
 
       // less than 1.5 sec
-      if (RMHoldTime < 1500.0f && lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
-      else if (RMHoldTime > 1500.0f || lastMouseX != mouseX && lastMouseY != mouseY)VpMenuContextActive = false;
+      /*if (RMHoldTime < 1900.0f && lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
+      else if (RMHoldTime >= 1900.0f || lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;*/
+
+			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
+			else if (lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;
     }
-    else
-    {
+		else
+		{
       lastMouseX = mouseX;
       lastMouseY = mouseY;
       RMHoldTime = 0.0f;
@@ -669,8 +750,10 @@ namespace Origin {
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
     {
       if (!m_HoveredEntity)
+      {
         m_VpMenuContext = ViewportMenuContext::CreateMenu;
-      else if (m_HoveredEntity)
+      }
+      else
       {
         if (lastMouseX == mouseX && lastMouseY == mouseY)
         {
@@ -692,19 +775,15 @@ namespace Origin {
         // Create Menu
         if (m_VpMenuContext == ViewportMenuContext::CreateMenu)
         {
-          if (ImGui::BeginMenu("Create"))
-          {
-            if (ImGui::MenuItem("Empty")) m_SceneHierarchy.GetContext()->CreateEntity("Empty");
-            if (ImGui::MenuItem("Camera")) m_SceneHierarchy.GetContext()->CreateCamera("Camera");
+          ImGui::Text("Add"); ImGui::Separator();
 
-            if (ImGui::BeginMenu("2D"))
-            {
-              if (ImGui::MenuItem("Sprite"))  m_SceneHierarchy.GetContext()->CreateSpriteEntity();
-              if (ImGui::MenuItem("Circle"))  m_SceneHierarchy.GetContext()->CreateCircle("Circle");
-              ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-          }
+					if (ImGui::MenuItem("Empty")) m_SceneHierarchy.GetContext()->CreateEntity("Empty");
+					if (ImGui::MenuItem("Camera")) m_SceneHierarchy.GetContext()->CreateCamera("Camera");
+          ImGui::Separator();
+
+          ImGui::Text("2D"); ImGui::Separator();
+					if (ImGui::MenuItem("Sprite"))  m_SceneHierarchy.GetContext()->CreateSpriteEntity("Sprite");
+					if (ImGui::MenuItem("Circle"))  m_SceneHierarchy.GetContext()->CreateCircle("Circle");
         }
 
         // Entity Properties
@@ -762,6 +841,7 @@ namespace Origin {
                 }
               }
             }
+
             if (m_SelectedEntity.HasComponent<CircleRendererComponent>())
             {
               auto& component = m_SelectedEntity.GetComponent<CircleRendererComponent>();
@@ -770,7 +850,6 @@ namespace Origin {
               ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
               ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
             }
-
             ImGui::EndMenu(); //!Properties
           }
         }

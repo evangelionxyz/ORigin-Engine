@@ -21,6 +21,14 @@ namespace Origin
 		//Renderer3D::Init();
 	}
 
+	void Renderer::Shutdown()
+	{
+		OGN_CORE_TRACE("Renderer Shutdown");
+		delete m_SceneData;
+		Renderer2D::Shutdown();
+		//Renderer3D::Shutdown();
+	}
+
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		RenderCommand::SetViewport(0, 0, width, height);
@@ -46,20 +54,11 @@ namespace Origin
 		vertexArray->Bind();
 		vertexArray->GetIndexBuffer()->Bind();
 
-		RenderCommand::DrawTriIndexed(vertexArray);
-	}
-
-	void Renderer::Shutdown()
-	{
-		OGN_CORE_TRACE("Renderer Shutdown");
-		delete m_SceneData;
-		Renderer2D::Shutdown();
-		//Renderer3D::Shutdown();
+		RenderCommand::DrawIndexed(vertexArray);
 	}
 
 	void Renderer::DrawLineMode(bool enable)
 	{
 		RenderCommand::DrawLineMode(enable);
 	}
-
 }

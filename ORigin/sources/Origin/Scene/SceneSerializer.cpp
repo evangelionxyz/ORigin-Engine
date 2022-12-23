@@ -203,6 +203,19 @@ namespace Origin {
 			out << YAML::EndMap; // !SpriteRendererComponent
 		}
 
+		if (entity.HasComponent<CircleRendererComponent>())
+		{
+			out << YAML::Key << "CircleRendererComponent";
+			out << YAML::BeginMap; // CircleRendererComponent
+
+			auto& src = entity.GetComponent<CircleRendererComponent>();
+			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			out << YAML::Key << "Fade" << YAML::Value << src.Fade;
+			out << YAML::Key << "Thickness" << YAML::Value << src.Thickness;
+
+			out << YAML::EndMap; // !CircleRendererComponent
+		}
+
 		if (entity.HasComponent<Rigidbody2DComponent>())
 		{
 			out << YAML::Key << "Rigidbody2DComponent";
@@ -231,7 +244,6 @@ namespace Origin {
 
 			out << YAML::EndMap; // !BoxCollider2DComponent
 		}
-
 		out << YAML::EndMap; // !Entity
 	}
 
@@ -241,14 +253,16 @@ namespace Origin {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		m_Scene->m_Registry.each([&](auto entityID)
-			{
-				Entity entity = { entityID, m_Scene.get() };
-				if (!entity)
-					return;
 
-				SerializeEntity(out, entity);
-			});
+		m_Scene->m_Registry.each([&](auto entityID)
+		{
+			Entity entity = { entityID, m_Scene.get() };
+			if (!entity)
+				return;
+
+			SerializeEntity(out, entity);
+		});
+
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
@@ -256,6 +270,29 @@ namespace Origin {
 		fout << out.c_str();
 
 		OGN_CORE_TRACE("Scene Serialized in {0}", filepath);
+	}
+
+	void SceneSerializer::Serialize(const std::filesystem::path& filepath)
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Scene" << YAML::Value << filepath.filename().string();
+		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+		m_Scene->m_Registry.each([&](auto entityID)
+		{
+			Entity entity = { entityID, m_Scene.get() };
+			if (!entity)
+				return;
+
+			SerializeEntity(out, entity);
+		});
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+
+		std::ofstream fout(filepath.string());
+		fout << out.c_str();
+
+		OGN_CORE_INFO("Scene Serialized in {0}", filepath.string());
 	}
 
 	void SceneSerializer::SerializeRuntime(const std::string& filepath)
@@ -289,12 +326,11 @@ namespace Origin {
 
 				OGN_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
-				Entity deserializedEntity = m_Scene->CreateEntity(name);
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
 
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
 				{
-					// Entities always have transforms
 					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
 					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
@@ -329,6 +365,15 @@ namespace Origin {
 					src.TexturePath = spriteRendererComponent["TexturePath"].as<std::string>();
 					if(!src.TexturePath.empty()) src.Texture = Texture2D::Create(src.TexturePath);
 					src.TillingFactor = spriteRendererComponent["TillingFactor"].as<float>();
+				}
+
+				auto circleRendererComponent = entity["CircleRendererComponent"];
+				if (circleRendererComponent)
+				{
+					auto& src = deserializedEntity.AddComponent<CircleRendererComponent>();
+					src.Color = circleRendererComponent["Color"].as<glm::vec4>();
+					src.Fade = circleRendererComponent["Fade"].as<float>();
+					src.Thickness = circleRendererComponent["Thickness"].as<float>();
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];

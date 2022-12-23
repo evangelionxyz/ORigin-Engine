@@ -18,6 +18,7 @@
 #include "box2d/b2_polygon_shape.h"
 
 #include <glm\glm.hpp>
+#include <unordered_map>
 
 namespace Origin {
 
@@ -35,18 +36,70 @@ namespace Origin {
 	}
 
 	Scene::Scene() {}
-	Scene::~Scene()
+	Scene::~Scene() { }
+
+	template<typename Component>
+	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
+		auto view = src.view<Component>();
+		for (auto e : view)
+		{
+			UUID uuid = src.get<IDComponent>(e).ID;
+			OGN_CORE_ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity UUID Not Found!");
+
+			entt::entity dstEntityID = enttMap.at(uuid);
+
+			auto& component = src.get<Component>(e);
+			dst.emplace_or_replace<Component>(dstEntityID, component);
+		}
+	}
+
+	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
+	{
+		std::shared_ptr<Scene> newScene = std::make_shared<Scene>();
+
+		newScene->m_ViewportWidth = other->m_ViewportWidth;
+		newScene->m_ViewportHeight = other->m_ViewportHeight;
+
+		auto& srcSceneRegistry = other->m_Registry;
+		auto& dstSceneRegistry = newScene->m_Registry;
+		std::unordered_map<UUID, entt::entity> enttMap;
+
+		// create entities in new scene
+		auto& idView = srcSceneRegistry.view<IDComponent>();
+		for (auto e : idView)
+		{
+			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
+			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
+			Entity newEntity = newScene->CreateEntityWithUUID(uuid, name);
+			enttMap[uuid] = (entt::entity)newEntity;
+		}
+
+		// Copy components (except IDComponent and TagComponent) into new scene (destination)
+
+		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<Rigidbody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		return newScene;
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
-		Entity entity = { m_Registry.create(), this };
-		entity.AddComponent<IDComponent>();
-		entity.AddComponent<TransformComponent>();
+		return CreateEntityWithUUID(UUID(), name);
+	}
 
+	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
+	{
+		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(uuid);
+		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Empty" : name;
+		tag.Tag = name.empty() ? "Entity" : name;
 		return entity;
 	}
 
@@ -102,18 +155,18 @@ namespace Origin {
 
 	void Scene::OnUpdateRuntime(Timestep time)
 	{
-		// Update Scripts
+		// Update C++ Native Scripts
 		{
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				if (!nsc.Instance)
 				{
-					if (!nsc.Instance)
-					{
-						nsc.Instance = nsc.InstantiateScript();
-						nsc.Instance->m_Entity = Entity{ entity, this };
-						nsc.Instance->OnCreate();
-					}
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
 					nsc.Instance->OnUpdate(time);
-				});
+			});
 		}
 
 		// Physics
@@ -180,16 +233,12 @@ namespace Origin {
 
 			Renderer2D::EndScene();
 		}
-		else
-		{
-			delete mainCamera;
-		}
 	}
 
 	void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
 	{
 		Renderer2D::BeginScene(camera);
-
+		
 		// Sprites
 		{
 			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
@@ -209,6 +258,8 @@ namespace Origin {
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 			}
 		}
+		
+		DrawGrid(m_GridSize, m_GridColor);
 
 		Renderer2D::EndScene();
 	}
@@ -272,6 +323,27 @@ namespace Origin {
 		}
 	}
 
+	void Scene::DrawGrid(int size, glm::vec4 color)
+	{
+		// x and z axis
+		Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f), glm::vec3(size, -1.0f, 0.0), glm::vec4(1, 0, 0, 1));
+		Renderer2D::DrawLine(glm::vec3(0.0f, -1.0f, -size), glm::vec3(0.0f, -1.0f, size), glm::vec4(0, 1, 0, 1));
+
+		for (int i = 0; i < size; i++)
+		{
+			Renderer2D::DrawLine(glm::vec3(0.0f + i, -1.0f, -size), glm::vec3(0.0f + i, -1.0f, size), color);
+			Renderer2D::DrawLine(glm::vec3(0.0f - i, -1.0f, -size), glm::vec3(0.0f - i, -1.0f, size), color);
+			Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f - i), glm::vec3(size, -1.0f, 0.0f - i), color);
+			Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f + i), glm::vec3(size, -1.0f, 0.0f + i), color);
+		}
+	}
+
+	void Scene::SetGrid(int size, glm::vec4 color)
+	{
+		m_GridSize = size;
+		m_GridColor = color;
+	}
+
 	Entity Scene::GetPrimaryCameraEntity()
 	{
 		auto view = m_Registry.view<CameraComponent>();
@@ -279,25 +351,19 @@ namespace Origin {
 		{
 			const auto& camera = view.get<CameraComponent>(entity);
 			if (camera.Primary)
-				return Entity{entity, this};
+				return Entity{ entity, this };
 		}
 		return {};
 	}
 
-	template<typename T> void Scene::OnComponentAdded(Entity entity, T& component)
-	{
-		static_assert(false);
-	}
 
+	template<typename T> void Scene::OnComponentAdded(Entity entity, T& component) { }
 	template<> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
 	template<> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}
-
-	template<> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
-	{
+	template<> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)	{
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
-
 	template<> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) {}

@@ -21,6 +21,8 @@ namespace Origin
 
 		virtual void DrawLineMode(bool enable = false) override;
 		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t IndexCount = 0) override;
-		virtual void DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t Count = 0) override;
+		virtual void DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount = 0) override;
+		virtual void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount = 0) override;
+		virtual void SetLineWidth(float width) override;
 	};
 }

@@ -163,7 +163,7 @@ namespace Origin
 		/*for (uint32_t i = 0; i < s_3Ddata.TextureSlotIndex; i++)
 			s_3Ddata.TextureSlots[i]->Bind(i);*/
 
-		RenderCommand::DrawTriIndexed(s_3Ddata.cubeVertexArray,s_3Ddata.cubeVertexArray->GetIndexBuffer()->GetCount());
+		RenderCommand::DrawIndexed(s_3Ddata.cubeVertexArray,s_3Ddata.cubeVertexArray->GetIndexBuffer()->GetCount());
 		
 		s_3Ddata.cubeShader->Unbind();
 	}
