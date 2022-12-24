@@ -61,6 +61,8 @@ namespace Origin
     m_EditorCamera.SetPosition(glm::vec3(-11.0f, 5.5f, 12.0f));
     m_EditorCamera.SetYaw(0.7f);
     m_EditorCamera.SetPitch(0.350f);
+
+    
   }
 
   void Editor::OnEvent(Event& e)
@@ -151,22 +153,27 @@ namespace Origin
     MenuBar();
     m_SceneHierarchy.OnImGuiRender();
     m_ContentBrowser.OnImGuiRender();
+
     m_Dockspace.End();
   }
 
-	void Editor::OnOverlayRenderer()
+	void Editor::OverlayBeginScene()
 	{
 		if (m_SceneState == SceneState::Play)
 		{
-			Entity camera = m_ActiveScene->GetPrimaryCameraEntity();
-      if (camera)
-      {
+			Entity& camera = m_ActiveScene->GetPrimaryCameraEntity();
+			if (camera)
+			{
 				glm::mat4 transform = camera.GetComponent<TransformComponent>().GetTransform();
 				Renderer2D::BeginScene(camera.GetComponent<CameraComponent>().Camera, transform);
-      }
+			}
 		}
 		else Renderer2D::BeginScene(m_EditorCamera);
+	}
 
+	void Editor::OnOverlayRenderer()
+	{
+    OverlayBeginScene();
     if (m_VisualizeCollider)
     {
 			// Circle Collider Visualizer
@@ -191,7 +198,7 @@ namespace Origin
 				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
 				for (auto entity : view)
 				{
-					auto [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+					auto& [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
 
 					glm::vec3 translation = tc.Translation + glm::vec3(bc2d.Offset, 0.001f);
 					glm::vec3 scale = tc.Scale * glm::vec3(bc2d.Size * 2.0f, 1.0f);
@@ -204,14 +211,32 @@ namespace Origin
 				}
 			}
     }
+    RenderCommand::SetLineWidth(1.0f);
+    Renderer2D::EndScene();
 
 		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
     {
-			TransformComponent transform = selectedEntity.GetComponent<TransformComponent>();
-			Renderer2D::DrawRect(transform.GetTransform(), glm::vec4(1, 0.5, 0, 1));
+			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
+
+      if (selectedEntity.HasComponent<CircleRendererComponent>())
+      {
+				glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, 0.001f);
+				glm::vec3 scale = tc.Scale * glm::vec3(1.0f);
+
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+					* glm::scale(glm::mat4(1.0f), scale);
+
+				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
+      }
+      else
+				Renderer2D::DrawRect(tc.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 		}
 
+    RenderCommand::SetLineWidth(2.0f);
     Renderer2D::EndScene();
+
+
+    RenderCommand::SetLineWidth(1.0f);
 	}
 
 	void Editor::ViewportToolbar()
@@ -771,8 +796,11 @@ namespace Origin
     {
 			if (!ImGuizmo::IsOver())
 			{
-				if (m_HoveredEntity)
+        if (m_HoveredEntity)
+        {
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+          m_HoveredEntity = m_SelectedEntity;
+        }
 				else if(m_HoveredEntity == m_SelectedEntity && !control)
 					m_SceneHierarchy.SetSelectedEntity({});
 
@@ -919,87 +947,6 @@ namespace Origin
         ImGui::EndPopup();
       }
     }
-
-#if 0
-    if (ImGui::BeginPopupContextWindow(0, 1, false))
-    {
-      if (m_PixelData == -1)
-      {
-        if (ImGui::BeginMenu("Create"))
-        {
-          if (ImGui::MenuItem("Empty")) m_SceneHierarchy.GetContext()->CreateEntity();
-          if (ImGui::MenuItem("Camera")) m_SceneHierarchy.GetContext()->CreateCamera("Camera");
-
-          if (ImGui::BeginMenu("2D"))
-          {
-            if (ImGui::MenuItem("2D Sprite"))  m_SceneHierarchy.GetContext()->CreateSpriteEntity();
-            ImGui::EndMenu();
-          }
-          ImGui::EndMenu(); // ! Create Menu
-        }
-      }
-
-      else if (m_HoveredEntity == m_SelectedEntity)
-      {
-        // Entity Properties
-        std::string name = "None";
-        m_SelectedEntity ? name = m_SelectedEntity.GetComponent<TagComponent>().Tag : name;
-        glm::vec4& color = m_SelectedEntity.GetComponent<SpriteRendererComponent>().Color;
-        ImGui::Text("%s", name.c_str());
-        ImGui::Separator();
-
-        // destroy/remove entity
-        bool entityDeleted = false;
-        if (ImGui::MenuItem("Delete")) entityDeleted = true;
-
-        if (entityDeleted)
-        {
-          Entity entity{ m_SelectedEntity, m_SceneHierarchy.GetContext().get() };
-          m_SceneHierarchy.DestroyEntity(entity);
-
-          m_HoveredEntity = {};
-          m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
-        }
-
-        if (ImGui::BeginMenu("Properties"))
-        {
-          ImGui::Text("Rename");
-          if (m_SelectedEntity.HasComponent<TagComponent>())
-          {
-            auto& tag = m_SelectedEntity.GetComponent<TagComponent>().Tag;
-            char buffer[64];
-            memset(buffer, 0, sizeof(buffer));
-            strcpy_s(buffer, sizeof(buffer), tag.c_str());
-            if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
-            {
-              tag = std::string(buffer);
-              if (tag.empty()) tag = "'No Name'";
-            }
-          }
-
-          if (m_SelectedEntity.HasComponent<SpriteRendererComponent>())
-          {
-            auto& component = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
-            ImGui::Separator();
-            ImGui::ColorEdit4("Color", glm::value_ptr(color));
-            if (component.Texture)
-            {
-              ImGui::Text("Texture");
-              ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 10.0f);
-              if (ImGui::Button("Delete", ImVec2(64.0f, 24.0f)))
-              {
-                component.Texture->Delete();
-                component.Texture = {};
-              }
-            }
-            ImGui::EndMenu();
-          }
-        }
-      }
-      ImGui::EndPopup(); // ! Create Popup
-    }
-#endif
-
     ImGui::PopStyleVar();
   }
 

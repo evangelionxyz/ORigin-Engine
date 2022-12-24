@@ -27,6 +27,8 @@ namespace Origin {
 
     void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
 
+    void OverlayBeginScene();
+
     void VpGui();
     void MenuBar();
 
