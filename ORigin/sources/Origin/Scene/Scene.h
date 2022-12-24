@@ -42,6 +42,12 @@ namespace Origin
 		void DrawGrid(int size = 5, glm::vec4 color = glm::vec4(1.0f));
 		void SetGrid(int size, glm::vec4 color);
 
+		template<typename... Components>
+		auto GetAllEntitiesWith()
+		{
+			return m_Registry.view<Components...>();
+		}
+
 	private:
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
