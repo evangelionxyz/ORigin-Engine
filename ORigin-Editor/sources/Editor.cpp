@@ -56,6 +56,11 @@ namespace Origin
     }
 
     m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+
+    m_EditorCamera.SetDistance(15.0f);
+    m_EditorCamera.SetPosition(glm::vec3(-11.0f, 5.5f, 12.0f));
+    m_EditorCamera.SetYaw(0.7f);
+    m_EditorCamera.SetPitch(0.350f);
   }
 
   void Editor::OnEvent(Event& e)
@@ -73,11 +78,8 @@ namespace Origin
     m_Time += time.GetSeconds();
 
     // Resize
-    if (
-      const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-      m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
-      (m_ViewportSize.x != spec.Width || m_ViewportSize.y != spec.Height)
-      )
+    if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+      m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (m_ViewportSize.x != spec.Width || m_ViewportSize.y != spec.Height))
     {
       m_Framebuffer->Resize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
       m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
@@ -102,6 +104,7 @@ namespace Origin
     {
     case SceneState::Play:
       m_GizmosType = -1;
+      m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
       m_ActiveScene->OnUpdateRuntime(time);
       break;
 
@@ -164,7 +167,7 @@ namespace Origin
 		}
 		else Renderer2D::BeginScene(m_EditorCamera);
 
-    if (m_SceneState == SceneState::Edit)
+    if (m_VisualizeCollider)
     {
 			// Circle Collider Visualizer
 			{
@@ -362,6 +365,7 @@ namespace Origin
         if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
         ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
         ImGui::Text("Menu Context : %s", MenuContextToString(m_VpMenuContext));
+        ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
       }
       ImGui::End();
     }
@@ -614,7 +618,7 @@ namespace Origin
       ImGui::Begin("Render Status", &guiRenderStatus);
 
 			ImGui::Text("Grid");
-			ImGui::Text("Size"); ImGui::SameLine(0.0f, 1.5f); ImGui::DragInt("##grid_size", &m_GridSize);
+			ImGui::Text("Size "); ImGui::SameLine(0.0f, 1.5f); ImGui::DragInt("##grid_size", &m_GridSize);
 			ImGui::Text("Color"); ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("##grid_color", glm::value_ptr(m_GridColor));
 			m_ActiveScene->SetGrid(m_GridSize, m_GridColor);
 
@@ -765,12 +769,15 @@ namespace Origin
 
     if (bt == Mouse::ButtonLeft && m_ViewportHovered)
     {
-			if (m_HoveredEntity && !ImGuizmo::IsOver())
+			if (!ImGuizmo::IsOver())
 			{
-				if (m_HoveredEntity != m_SelectedEntity)
+				if (m_HoveredEntity)
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 				else if(m_HoveredEntity == m_SelectedEntity && !control)
 					m_SceneHierarchy.SetSelectedEntity({});
+
+        if (!m_HoveredEntity)
+          m_GizmosType = -1;
 			}
 
 			else if (!m_HoveredEntity && !ImGuizmo::IsOver())
@@ -812,9 +819,9 @@ namespace Origin
     {
       if (lastMouseX == mouseX && lastMouseY == mouseY)
       {
-				if (m_SceneHierarchy.GetSelectedEntity())
+				if (m_HoveredEntity == m_SelectedEntity)
 					m_VpMenuContext = ViewportMenuContext::EntityProperties;
-        else
+        if(m_HoveredEntity != m_SelectedEntity || !m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::CreateMenu;
       }
     }

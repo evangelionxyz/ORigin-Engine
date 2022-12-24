@@ -27,9 +27,9 @@ namespace Origin {
 
 	void Application::Run()
 	{
-		m_Window->SetVSync(true);
-
 		while (m_Window->Loop()) {
+
+			//m_Window->SetVSync(false);
 
 			auto time = (float)glfwGetTime();
 			Timestep timestep = time - m_LastFrame;

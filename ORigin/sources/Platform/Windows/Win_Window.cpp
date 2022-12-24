@@ -82,13 +82,11 @@ namespace Origin
 	void WinWindow::OnUpdate()
 	{
 		glfwPollEvents();
-
-		auto& app = Application::Get();
-		if (!app.GetMinimized())
-			m_Context->SwapBuffers();
-
+		
 		if (m_Data.Fullscreen)
-			glfwSetWindowMonitor(m_Window, m_Monitor, monitorPos.x, monitorPos.y, monitorSize.x, monitorSize.y, 60);
+		{
+			glfwSetWindowMonitor(m_Window, m_Monitor, monitorPos.x, monitorPos.y, monitorSize.x, monitorSize.y, 0);
+		}
 
 		if (!m_Data.Fullscreen)
 		{
@@ -104,8 +102,12 @@ namespace Origin
 				if ((int)m_Data.yPos == 0)
 					m_Data.yPos = windowPos.y;
 			}
-			glfwSetWindowMonitor(m_Window, nullptr, (int)m_Data.xPos, (int)m_Data.yPos, (int)m_Data.Width, (int)m_Data.Height, 60);
+			glfwSetWindowMonitor(m_Window, nullptr, (int)m_Data.xPos, (int)m_Data.yPos, (int)m_Data.Width, (int)m_Data.Height, 0);
 		}
+
+		auto& app = Application::Get();
+		if (!app.GetMinimized())
+			m_Context->SwapBuffers();
 	}
 
 	// Set Window Callbacks

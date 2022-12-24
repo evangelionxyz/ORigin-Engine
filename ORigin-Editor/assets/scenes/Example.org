@@ -107,8 +107,8 @@ Entities:
       Tag: Sprite
     TransformComponent:
       Translation: [8.09893799, -0.290184021, 0]
-      Rotation: [0, 0, 0]
-      Scale: [17.1274757, 0.573946714, 1]
+      Rotation: [0, 0, 0.134228691]
+      Scale: [17.1274738, 0.573946536, 1]
     SpriteRendererComponent:
       Color: [0.328205109, 0.741617322, 1, 1]
       TexturePath: ""
@@ -127,9 +127,9 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [8.39663315, 0.5, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.560000002, 0.560000002, 0.560000002]
+      Translation: [0.306689024, -0.649788618, 0]
+      Rotation: [0, 0, 0.141822055]
+      Scale: [0.559999764, 0.559999764, 0.560000002]
     SpriteRendererComponent:
       Color: [0.558974385, 0.275187373, 0, 1]
       TexturePath: ""
@@ -148,8 +148,8 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [11.2091103, 0.50298363, 0]
-      Rotation: [0, 0, 0]
+      Translation: [11.1508551, 0.911645234, 0.00168800354]
+      Rotation: [0, 0, 0.135201752]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [0.856410265, 0, 0.843234658, 1]
@@ -169,7 +169,7 @@ Entities:
     TagComponent:
       Tag: Circle
     TransformComponent:
-      Translation: [9.67973709, 4.35061932, 0]
+      Translation: [9.79550552, 4.35061932, 0]
       Rotation: [0, 0, 0]
       Scale: [1.32999992, 1.32999992, 1.32999992]
     CircleRendererComponent:
@@ -182,7 +182,28 @@ Entities:
     CircleCollider2DComponent:
       Offset: [0, 0]
       Radius: 0.5
-      Density: 0.5
+      Density: 1.14999998
+      Friction: 1.45000005
+      Restitution: 0.910000026
+      RestitutionThreshold: 0.5
+  - Entity: 230956069697821733
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [8.22938061, 0.647564292, 0]
+      Rotation: [0, 0, 0.141822055]
+      Scale: [0.559999764, 0.559999764, 0.560000002]
+    SpriteRendererComponent:
+      Color: [0.558974385, 0.275187373, 0, 1]
+      TexturePath: ""
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5

@@ -571,7 +571,7 @@ Entities:
     TagComponent:
       Tag: Circle
     TransformComponent:
-      Translation: [0.0470862389, 0.104337752, 0]
+      Translation: [0.0470862389, 0.104337752, -0.487185717]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CircleRendererComponent:
@@ -618,8 +618,8 @@ Entities:
       Scale: [6.39030361, 0.386259496, 1]
     SpriteRendererComponent:
       Color: [1, 0.646153808, 0, 1]
-      TexturePath: ""
-      TillingFactor: 1
+      TexturePath: assets\textures\checkerboard.jpg
+      TillingFactor: 0.400000006
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
@@ -635,11 +635,11 @@ Entities:
       Tag: Sprite
     TransformComponent:
       Translation: [2.81773496, 0.363999069, 0]
-      Rotation: [0, 0, -2.38157487]
-      Scale: [6.39030218, 0.386259049, 1]
+      Rotation: [0, 0, 0.774160922]
+      Scale: [6.39030313, 0.386259198, 1]
     SpriteRendererComponent:
       Color: [1, 0.676923037, 0, 1]
-      TexturePath: ""
+      TexturePath: assets\textures\click to start b.png
       TillingFactor: 1
     Rigidbody2DComponent:
       BodyType: Static
@@ -655,7 +655,7 @@ Entities:
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Translation: [1.20527923, 1.26396298, 7.87868214]
+      Translation: [1.20527923, 1.35209441, 7.87868214]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:

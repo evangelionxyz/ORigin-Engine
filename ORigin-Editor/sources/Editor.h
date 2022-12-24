@@ -89,6 +89,7 @@ namespace Origin {
     float m_Time = 0.0f;
 
     bool drawLineMode = false;
+    bool m_VisualizeCollider = false;
     bool m_ViewportHovered;
     bool m_ViewportFocused;
   };

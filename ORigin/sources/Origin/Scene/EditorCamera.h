@@ -33,6 +33,7 @@ namespace Origin {
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;
 		const glm::vec3& GetPosition() const { return m_Position; }
+		void SetPosition(glm::vec3 position) { m_Position = position; }
 		glm::quat GetOrientation() const;
 
 		float GetPitch() const { return m_Pitch; }
