@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "Editor.h"
+
 #include "Origin/EntryPoint.h"
 #include "panels/EditorTheme.h"
 #include <glm/glm.hpp>
@@ -10,6 +11,8 @@
 
 #include <filesystem>
 #include <ImGuizmo.h>
+
+#include "Mario.h"
 
 namespace Origin
 {
@@ -45,6 +48,13 @@ namespace Origin
     fbSpec.Height = 720;
     m_Framebuffer = Framebuffer::Create(fbSpec);
 
+		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+
+		m_EditorCamera.SetDistance(15.0f);
+		m_EditorCamera.SetPosition(glm::vec3(-11.0f, 5.5f, 12.0f));
+		m_EditorCamera.SetYaw(0.7f);
+		m_EditorCamera.SetPitch(0.350f);
+
     m_ActiveScene = std::make_shared<Scene>();
 
     const auto commandLineArgs = Application::Get().GetCommandLineArgs();
@@ -55,14 +65,9 @@ namespace Origin
       serializer.Deserialize(sceneFilePath);
     }
 
-    m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+    m_ScriptLibrary.Add<Mario>("Mario");
 
-    m_EditorCamera.SetDistance(15.0f);
-    m_EditorCamera.SetPosition(glm::vec3(-11.0f, 5.5f, 12.0f));
-    m_EditorCamera.SetYaw(0.7f);
-    m_EditorCamera.SetPitch(0.350f);
-
-    
+    m_ActiveScene->scriptLibrary = m_ScriptLibrary;
   }
 
   void Editor::OnEvent(Event& e)
@@ -181,7 +186,7 @@ namespace Origin
 				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
 				for (auto entity : view)
 				{
-					auto [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
+					auto& [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
 
 					glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.001f);
 					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);

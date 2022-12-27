@@ -17,13 +17,13 @@ workspace "ORigin"
 
     startproject "ORigin-Editor"
 
-    mainProjectFiles = "%{wks.location}\\%{prj.name}"
-    mainOutputdir = "%{wks.location}\\bin\\%{cfg.buildcfg}\\%{prj.name}"
-    mainIntOutputdir = "%{wks.location}\\bin-int\\%{cfg.buildcfg}\\%{prj.name}"
+    mainProjectFiles = "%{wks.location}%{prj.name}"
+    mainOutputdir = "%{wks.location}bin\\%{cfg.buildcfg}\\%{prj.name}"
+    mainIntOutputdir = "%{wks.location}bin-int\\%{cfg.buildcfg}\\%{prj.name}"
 
-    vendorProjectFiles = "%{wks.location}\\ORigin\\vendor\\projectFiles"
-    vendorOutputdir = "%{prj.location}\\bin\\%{cfg.buildcfg}\\%{prj.name}"
-    vendorIntOutputdir = "%{prj.location}\\bin-int\\%{cfg.buildcfg}\\%{prj.name}"
+    vendorProjectFiles = "%{wks.location}ORigin\\vendor\\projectFiles"
+    vendorOutputdir = "%{prj.location}bin\\%{cfg.buildcfg}\\%{prj.name}"
+    vendorIntOutputdir = "%{prj.location}bin-int\\%{cfg.buildcfg}\\%{prj.name}"
 
 include "projects/ProjectSwitcher.lua"
 include "projects/ProjectLicenseHeader.lua"

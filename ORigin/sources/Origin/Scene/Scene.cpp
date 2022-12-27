@@ -36,8 +36,12 @@ namespace Origin {
 		return b2_staticBody;
 	}
 
-	Scene::Scene(){}
-	Scene::~Scene() {}
+	Scene::Scene()
+	{
+	}
+	Scene::~Scene()
+	{
+	}
 
 	template<typename Component>
 	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
@@ -72,14 +76,17 @@ namespace Origin {
 		auto& srcSceneRegistry = other->m_Registry;
 		auto& dstSceneRegistry = newScene->m_Registry;
 		std::unordered_map<UUID, entt::entity> enttMap;
+		Entity newEntity = Entity();
 
 		// create entities in new scene
 		auto& idView = srcSceneRegistry.view<IDComponent>();
 		for (auto e : idView)
 		{
 			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
+
 			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			Entity newEntity = newScene->CreateEntityWithUUID(uuid, name);
+			newEntity = newScene->CreateEntityWithUUID(uuid, name);
+
 			enttMap[uuid] = (entt::entity)newEntity;
 		}
 
@@ -87,8 +94,8 @@ namespace Origin {
 		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<Rigidbody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
@@ -162,19 +169,29 @@ namespace Origin {
 
 	void Scene::OnUpdateRuntime(Timestep time)
 	{
-		// Update C++ Native Scripts
+		/*auto& nscView = m_Registry.view<NativeScriptComponent>();
+		for (auto entity : nscView)
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			auto& nsc = nscView.get<NativeScriptComponent>(entity);
+			if (!nsc.Instance)
 			{
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-					nsc.Instance->OnUpdate(time);
-			});
-		}
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity{ entity, this };
+				nsc.Instance->OnCreate();
+			}
+			nsc.Instance->OnUpdate(time);
+		}*/
+
+		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		{
+			if (!nsc.Instance)
+			{
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity{ entity, this };
+				nsc.Instance->OnCreate();
+			}
+			nsc.Instance->OnUpdate(time);
+		});
 
 		// Physics
 		{
@@ -201,10 +218,10 @@ namespace Origin {
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
 
-		auto view = m_Registry.view<CameraComponent, TransformComponent>();
-		for (auto entity : view)
+		auto& view = m_Registry.view<CameraComponent, TransformComponent>();
+		for (auto& entity : view)
 		{
-			auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+			auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
 
 			if (camera.Primary)
 			{
@@ -220,18 +237,18 @@ namespace Origin {
 
 			// Sprites
 			{
-				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-				for (auto entity : group)
+				auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+				for (auto& entity : group)
 				{
-					auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+					auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 				}
 			}
 
 			// Circles
 			{
-				auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-				for (auto entity : view)
+				auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+				for (auto& entity : view)
 				{
 					auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 					Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
@@ -245,7 +262,7 @@ namespace Origin {
 	void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
 	{
 		Renderer2D::BeginScene(camera);
-		
+
 		// Sprites
 		{
 			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
@@ -265,7 +282,6 @@ namespace Origin {
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 			}
 		}
-		
 		DrawGrid(m_GridSize, m_GridColor);
 
 		Renderer2D::EndScene();

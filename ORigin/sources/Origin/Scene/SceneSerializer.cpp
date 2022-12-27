@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "SceneSerializer.h"
+#include "ScriptableEntity.h"
 
 #include "Entity.h"
 #include "Component\Component.h"
@@ -81,6 +82,7 @@ namespace YAML {
 			rhs.w = node[3].as<float>();
 			return true;
 		}
+
 	};
 
 }
@@ -261,6 +263,13 @@ namespace Origin {
 
 			out << YAML::EndMap; // !CircleCollider2DComponent
 		}
+
+		if (entity.HasComponent<NativeScriptComponent>())
+		{
+			out << YAML::Key << "NativeScriptComponent";
+			auto& nsc = entity.GetComponent<NativeScriptComponent>();
+		}
+
 		out << YAML::EndMap; // !Entity
 	}
 
@@ -423,6 +432,11 @@ namespace Origin {
 					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
 					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
+				}
+
+				auto nativeScriptComponent = entity["NativeScriptComponent"];
+				if (nativeScriptComponent)
+				{
 				}
 			}
 		}

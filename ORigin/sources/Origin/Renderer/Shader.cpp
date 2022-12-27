@@ -52,11 +52,10 @@ namespace Origin
 		Add(name, shader);
 	}
 
-	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& filepath) 
+	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& filepath)
 	{
 		auto shader = Shader::Create(filepath);
 		Add(shader);
-		
 		return shader;
 	}
 	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)

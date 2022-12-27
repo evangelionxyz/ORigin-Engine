@@ -208,6 +208,16 @@ namespace Origin {
 				}
 			}
 
+			if (!entity.HasComponent<NativeScriptComponent>())
+			{
+				if (ImGui::MenuItem("Native Script"))
+				{
+					auto component = m_SelectionContext.AddComponent<NativeScriptComponent>();
+
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
 			ImGui::EndPopup();
 		}
 
@@ -374,6 +384,11 @@ namespace Origin {
 				ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 100.0f);
 				ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f);
 				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
+			});
+
+		DrawComponent<NativeScriptComponent>("C++ Native Script", entity, [](auto& component)
+			{
+
 			});
 	}
 }

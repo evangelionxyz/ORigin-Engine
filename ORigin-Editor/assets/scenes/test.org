@@ -1,8 +1,29 @@
 Scene: test.org
 Entities:
-  - Entity: 1451293142991016484
+  - Entity: 16382933319751634711
     TagComponent:
       Tag: Sprite
+    TransformComponent:
+      Translation: [0, -1.39343023, 0]
+      Rotation: [0, 0, 0]
+      Scale: [8.28408813, 0.350050181, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: ""
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 1451293142991016484
+    TagComponent:
+      Tag: Mario
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -11,3 +32,13 @@ Entities:
       Color: [1, 1, 1, 1]
       TexturePath: ""
       TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5

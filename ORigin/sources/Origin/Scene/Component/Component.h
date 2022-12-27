@@ -13,6 +13,8 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
+#include <unordered_map>
+#include <vector>
 
 namespace Origin
 {
@@ -89,7 +91,7 @@ namespace Origin
 	class ScriptableEntity;
 	struct NativeScriptComponent
 	{
-		ScriptableEntity* Instance = nullptr;
+		ScriptableEntity* Instance;
 
 		ScriptableEntity* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
@@ -99,6 +101,14 @@ namespace Origin
 		{
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+		}
+
+		NativeScriptComponent() = default;
+
+		template<typename T>
+		NativeScriptComponent()
+		{
+			Bind<T>();
 		}
 	};
 

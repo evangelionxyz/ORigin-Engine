@@ -31,6 +31,7 @@ namespace Origin {
 	public:
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
+		Entity(entt::entity handle);
 		Entity(const Entity& other) = default;
 
 		template<typename T, typename... Args>

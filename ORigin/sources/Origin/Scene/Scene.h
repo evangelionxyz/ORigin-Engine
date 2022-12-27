@@ -1,9 +1,10 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Utils\Time.h"
 #include "EditorCamera.h"
-#include "Origin/Scene/Component/UUID.h"
+#include "ScriptLibrary.h"
+#include "Origin\Utils\Time.h"
+#include "Origin\Scene\Component\UUID.h"
 
 #include "entt\entt.hpp"
 
@@ -48,6 +49,8 @@ namespace Origin
 			return m_Registry.view<Components...>();
 		}
 
+		ScriptLibrary scriptLibrary;
+
 	private:
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
@@ -64,6 +67,6 @@ namespace Origin
 		friend class Editor;
 	};
 
-	
+
 
 }

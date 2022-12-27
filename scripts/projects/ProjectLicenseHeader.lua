@@ -3,7 +3,7 @@
 os.chdir("../../")
 defaultArgument =
 [[extensions: designer.cs generated.cs
-extensions: .cs .cpp .h
+extensions: .cs .cpp .h .glsl .hlsl
 // Copyright (c) %CurrentYear% Evangelion Manuhutu | ORigin Engine
 
 extensions: .aspx .ascx
