@@ -44,13 +44,14 @@ namespace Origin {
     void OnGuiRender() override;
 
     void OnScenePlay();
+    void OnSceneSimulate();
     void OnSceneStop();
 
     Entity m_HoveredEntity = {};
     Entity m_SelectedEntity = {};
 
 		// Scene
-		enum class SceneState { Edit = 0, Play = 1 };
+		enum class SceneState { Edit = 0, Play = 1, Simulate = 2};
 		SceneState m_SceneState = SceneState::Edit;
 		std::filesystem::path m_ScenePath;
 		std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
@@ -62,7 +63,7 @@ namespace Origin {
 		ContentBrowserPanel m_ContentBrowser;
 		SceneHierarchyPanel m_SceneHierarchy;
 
-		std::shared_ptr<Texture2D> m_PlayButton, m_StopButton;
+		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton;
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;
 		std::shared_ptr<Framebuffer> m_Framebuffer;

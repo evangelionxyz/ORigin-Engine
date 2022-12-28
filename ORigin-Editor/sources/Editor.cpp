@@ -33,8 +33,9 @@ namespace Origin
   {
     EditorTheme::ApplyRayTek();
 
-    m_PlayButton = Texture2D::Create("assets/textures/playbutton.png");
-    m_StopButton = Texture2D::Create("assets/textures/stopbutton.png");
+    m_PlayButton = Texture2D::Create("assets/resources/playbutton.png");
+    m_SimulateButton = Texture2D::Create("assets/resources/simulatebutton.png");
+    m_StopButton = Texture2D::Create("assets/resources/stopbutton.png");
 
     FramebufferSpecification fbSpec;
     fbSpec.Attachments =
@@ -116,6 +117,12 @@ namespace Origin
       m_EditorCamera.OnUpdate(time);
       m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
       break;
+
+    case SceneState::Simulate:
+      m_GizmosType = -1;
+			m_EditorCamera.OnUpdate(time);
+			m_ActiveScene->OnUpdateSimulation(time, m_EditorCamera);
+      break;
     }
 
     auto [mx, my] = ImGui::GetMousePos();
@@ -191,7 +198,7 @@ namespace Origin
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
 						* glm::scale(glm::mat4(1.0f), scale);
 
-					Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f);
+					Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.01f);
 				}
 			}
 
@@ -267,23 +274,45 @@ namespace Origin
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 2.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f, 0.0f));
 
-      std::shared_ptr<Texture2D> icon = m_SceneState == SceneState::Edit ? m_PlayButton : m_StopButton;
-
-      ImGui::SameLine(viewportMinRegion.x * 0.5f);
-      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
-      ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-      if (ImGui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
       {
-        if (m_SceneHierarchy.GetContext())
+        std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_PlayButton : m_StopButton;
+        ImGui::SameLine(viewportMinRegion.x * 0.5f);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+        if (ImGui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
         {
-					if (m_SceneState == SceneState::Edit)
-						OnScenePlay();
-					else if (m_SceneState == SceneState::Play)
-						OnSceneStop();
+          if (m_SceneHierarchy.GetContext())
+          {
+            if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+              OnScenePlay();
+            else if (m_SceneState == SceneState::Play)
+              OnSceneStop();
+          }
         }
+				ImGui::PopStyleColor(3);
+
       }
-      ImGui::PopStyleColor(3);
+
+			{
+				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_SimulateButton : m_StopButton;
+				ImGui::SameLine(viewportMinRegion.x * 0.5f);
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+				if (ImGui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
+				{
+					if (m_SceneHierarchy.GetContext())
+					{
+						if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+							OnSceneSimulate();
+						else if (m_SceneState == SceneState::Simulate)
+							OnSceneStop();
+					}
+				}
+				ImGui::PopStyleColor(3);
+			}
+
       ImGui::PopStyleVar(2);
 
       ImGui::End(); // !viewport_toolbar
@@ -506,6 +535,9 @@ namespace Origin
 
   void Editor::OnScenePlay()
   {
+    if (m_SceneState == SceneState::Simulate)
+      OnSceneStop();
+
     m_SceneState = SceneState::Play;
 
     m_ActiveScene = Scene::Copy(m_EditorScene);
@@ -514,17 +546,35 @@ namespace Origin
     m_SceneHierarchy.SetContext(m_ActiveScene);
   }
 
-  void Editor::OnSceneStop()
-  {
-    m_SceneState = SceneState::Edit;
+	void Editor::OnSceneSimulate()
+	{
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
 
-    m_ActiveScene->OnRuntimeStop();
+		m_SceneState = SceneState::Simulate;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnSimulationStart();
+
+		m_SceneHierarchy.SetContext(m_ActiveScene);
+	}
+
+	void Editor::OnSceneStop()
+  {
+    OGN_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "");
+
+    if (m_SceneState == SceneState::Play)
+      m_ActiveScene->OnRuntimeStop();
+    else if(m_SceneState == SceneState::Simulate)
+      m_ActiveScene->OnSimulationStop();
+
+    m_SceneState = SceneState::Edit;
     m_ActiveScene = m_EditorScene;
 
     m_SceneHierarchy.SetContext(m_ActiveScene);
   }
 
-  void Editor::NewScene()
+	void Editor::NewScene()
   {
 		if (m_SceneState == SceneState::Play)
 			OnSceneStop();

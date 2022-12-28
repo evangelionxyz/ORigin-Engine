@@ -30,11 +30,15 @@ namespace Origin
 
 		void DestroyEntity(Entity entity);
 
-		void OnUpdateRuntime(Timestep time);
-		void OnUpdateEditor(Timestep time, EditorCamera& camera);
-
 		void OnRuntimeStart();
 		void OnRuntimeStop();
+		void OnUpdateRuntime(Timestep time);
+
+		void OnSimulationStart();
+		void OnSimulationStop();
+		void OnUpdateSimulation(Timestep time, EditorCamera& camera);
+
+		void OnUpdateEditor(Timestep time, EditorCamera& camera);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 		void DuplicateEntity(Entity entity);
@@ -49,6 +53,10 @@ namespace Origin
 		}
 
 	private:
+		void OnPhysics2DStart();
+		void OnPhysics2DStop();
+		void Render2DScene(EditorCamera& camera);
+
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
