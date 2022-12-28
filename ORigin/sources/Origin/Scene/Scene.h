@@ -2,7 +2,6 @@
 
 #pragma once
 #include "EditorCamera.h"
-#include "ScriptLibrary.h"
 #include "Origin\Utils\Time.h"
 #include "Origin\Scene\Component\UUID.h"
 
@@ -49,8 +48,6 @@ namespace Origin
 			return m_Registry.view<Components...>();
 		}
 
-		ScriptLibrary scriptLibrary;
-
 	private:
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
@@ -62,9 +59,9 @@ namespace Origin
 		b2World* m_Box2DWorld;
 
 		friend class Entity;
+		friend class Editor;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
-		friend class Editor;
 	};
 
 

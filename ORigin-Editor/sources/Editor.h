@@ -11,6 +11,7 @@ namespace Origin {
   class Editor : public Layer
   {
   public:
+
     Editor();
     void OnAttach() override;
     void OnUpdate(Timestep ts) override;
@@ -60,7 +61,6 @@ namespace Origin {
 		Dockspace m_Dockspace;
 		ContentBrowserPanel m_ContentBrowser;
 		SceneHierarchyPanel m_SceneHierarchy;
-    ScriptLibrary m_ScriptLibrary;
 
 		std::shared_ptr<Texture2D> m_PlayButton, m_StopButton;
 		EditorCamera m_EditorCamera;

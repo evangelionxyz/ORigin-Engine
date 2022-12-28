@@ -64,10 +64,6 @@ namespace Origin
       SceneSerializer serializer(m_ActiveScene);
       serializer.Deserialize(sceneFilePath);
     }
-
-    m_ScriptLibrary.Add<Mario>("Mario");
-
-    m_ActiveScene->scriptLibrary = m_ScriptLibrary;
   }
 
   void Editor::OnEvent(Event& e)
@@ -83,6 +79,7 @@ namespace Origin
   void Editor::OnUpdate(Timestep time)
   {
     m_Time += time.GetSeconds();
+
 
     // Resize
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
@@ -278,10 +275,13 @@ namespace Origin
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
       if (ImGui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
       {
-				if (m_SceneState == SceneState::Edit)
-					OnScenePlay();
-				else if (m_SceneState == SceneState::Play)
-					OnSceneStop();
+        if (m_SceneHierarchy.GetContext())
+        {
+					if (m_SceneState == SceneState::Edit)
+						OnScenePlay();
+					else if (m_SceneState == SceneState::Play)
+						OnSceneStop();
+        }
       }
       ImGui::PopStyleColor(3);
       ImGui::PopStyleVar(2);

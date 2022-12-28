@@ -92,23 +92,15 @@ namespace Origin
 	struct NativeScriptComponent
 	{
 		ScriptableEntity* Instance;
-
 		ScriptableEntity* (*InstantiateScript)();
-		void (*DestroyScript)(NativeScriptComponent*);
+
+		void (*DestroyScript)(NativeScriptComponent* nsc);
 
 		template<typename T>
 		void Bind()
 		{
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
-		}
-
-		NativeScriptComponent() = default;
-
-		template<typename T>
-		NativeScriptComponent()
-		{
-			Bind<T>();
 		}
 	};
 

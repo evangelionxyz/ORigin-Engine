@@ -1,44 +1,20 @@
 Scene: test.org
 Entities:
-  - Entity: 16382933319751634711
+  - Entity: 6146076048283816676
     TagComponent:
-      Tag: Sprite
+      Tag: Camera
     TransformComponent:
-      Translation: [0, -1.39343023, 0]
-      Rotation: [0, 0, 0]
-      Scale: [8.28408813, 0.350050181, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: ""
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 1451293142991016484
-    TagComponent:
-      Tag: Mario
-    TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, 0, 8]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: ""
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false

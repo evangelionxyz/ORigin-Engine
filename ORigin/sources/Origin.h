@@ -26,7 +26,6 @@
 
 #include "Origin\Scene\Entity.h"
 #include "Origin\Scene\ScriptableEntity.h"
-#include "Origin\Scene\ScriptLibrary.h"
 #include "Origin\Scene\Scene.h"
 #include "Origin\Scene\EditorCamera.h"
 #include "Origin\Scene\Component\Component.h"

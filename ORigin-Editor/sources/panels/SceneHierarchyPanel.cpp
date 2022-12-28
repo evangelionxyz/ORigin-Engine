@@ -7,6 +7,8 @@
 #include "Origin\Scene\Component\Component.h"
 #include "Origin\Renderer\Texture.h"
 
+#include "../Mario.h"
+
 namespace Origin {
 
 	extern const std::filesystem::path g_AssetPath;
@@ -208,20 +210,17 @@ namespace Origin {
 				}
 			}
 
-			if (!entity.HasComponent<NativeScriptComponent>())
+			/*if (!entity.HasComponent<NativeScriptComponent>())
 			{
 				if (ImGui::MenuItem("Native Script"))
 				{
-					auto component = m_SelectionContext.AddComponent<NativeScriptComponent>();
-
+					m_SelectionContext.AddComponent<NativeScriptComponent>();
 					ImGui::CloseCurrentPopup();
 				}
-			}
+			}*/
 
 			ImGui::EndPopup();
 		}
-
-		ImGui::Text("UUID ( %d )", entity.GetUUID());
 
 		ImGui::PopStyleVar();
 		ImGui::PopItemWidth();
@@ -238,44 +237,44 @@ namespace Origin {
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+			{
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+		// Texture
+		ImVec2 btSize = ImVec2(80.0f, 30.0f);
+		ImGui::Button("Texture", btSize);
+		if (ImGui::BeginDragDropTarget())
 		{
-			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-			// Texture
-			ImVec2 btSize = ImVec2(80.0f, 30.0f);
-			ImGui::Button("Texture", btSize);
-			if (ImGui::BeginDragDropTarget())
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				auto texturePath = std::filesystem::path(g_AssetPath) / path;
+				if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					auto texturePath = std::filesystem::path(g_AssetPath) / path;
-					if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-					{
-						component.Texture = Texture2D::Create(texturePath.string());
-						component.TexturePath = texturePath.string();
-					}
+					component.Texture = Texture2D::Create(texturePath.string());
+					component.TexturePath = texturePath.string();
 				}
 			}
-			if (component.Texture)
+		}
+		if (component.Texture)
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("Delete", btSize))
 			{
-				ImGui::SameLine();
-				if (ImGui::Button("Delete", btSize))
-				{
-					component.Texture->Delete();
-					component.Texture = {};
-				}
-				ImGui::Text("Path: %s", component.TexturePath.c_str());
-				ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
+				component.Texture->Delete();
+				component.Texture = {};
 			}
-		});
+			ImGui::Text("Path: %s", component.TexturePath.c_str());
+			ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
+		}
+			});
 
 		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)
-		{
-			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-			ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
-			ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
+			{
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+		ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
+		ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
 
-		});
+			});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
@@ -342,37 +341,37 @@ namespace Origin {
 		}});
 
 		DrawComponent<Rigidbody2DComponent>("Rigidbody 2D", entity, [](auto& component)
-			{
-				const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic"};
-				const char* currentBodyTypeString = bodyTypeString[(int)component.Type];
+		{
+			const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic" };
+			const char* currentBodyTypeString = bodyTypeString[(int)component.Type];
 
-				if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+			if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+			{
+				for (int i = 0; i < 3; i++)
 				{
-					for (int i = 0; i < 3; i++)
+					bool isSelected = currentBodyTypeString == bodyTypeString[i];
+					if (ImGui::Selectable(bodyTypeString[i], isSelected))
 					{
-						bool isSelected = currentBodyTypeString == bodyTypeString[i];
-						if (ImGui::Selectable(bodyTypeString[i], isSelected))
-						{
-							currentBodyTypeString = bodyTypeString[i];
-							component.Type = (Rigidbody2DComponent::BodyType)i;
-						}
-						if (isSelected) ImGui::SetItemDefaultFocus();
+						currentBodyTypeString = bodyTypeString[i];
+						component.Type = (Rigidbody2DComponent::BodyType)i;
 					}
-					ImGui::EndCombo();
+					if (isSelected) ImGui::SetItemDefaultFocus();
 				}
-				ImGui::Checkbox("Fixed Rotation", &component.FixedRotation);
+				ImGui::EndCombo();
+			}
+			ImGui::Checkbox("Fixed Rotation", &component.FixedRotation);
 
 			});
 
 		DrawComponent<BoxCollider2DComponent>("Box 2D Collider", entity, [](auto& component)
 			{
 				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
-				ImGui::DragFloat2("Size", glm::value_ptr(component.Size), 0.01f);
+		ImGui::DragFloat2("Size", glm::value_ptr(component.Size), 0.01f);
 
-				ImGui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
+		ImGui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 100.0f);
+		ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 100.0f);
+		ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f);
+		ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
 			});
 
 		DrawComponent<CircleCollider2DComponent>("Circle 2D Collider", entity, [](auto& component)
@@ -386,9 +385,9 @@ namespace Origin {
 				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
 			});
 
-		DrawComponent<NativeScriptComponent>("C++ Native Script", entity, [](auto& component)
+		DrawComponent<NativeScriptComponent>("Native Script", entity, [=](auto& component)
 			{
-
+				component.Bind<Mario>();
 			});
 	}
 }

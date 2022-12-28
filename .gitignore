@@ -9,7 +9,12 @@
 *.idea
 *.sln
 *.cdr
+
+# Visual Studio extension resources
 ORigin.sln.startup.json
 ORigin.sln.licenseheader
+
+# folder
 bin/
 bin-int/
+scripts/__pycache__

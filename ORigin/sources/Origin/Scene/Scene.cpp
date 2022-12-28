@@ -169,19 +169,6 @@ namespace Origin {
 
 	void Scene::OnUpdateRuntime(Timestep time)
 	{
-		/*auto& nscView = m_Registry.view<NativeScriptComponent>();
-		for (auto entity : nscView)
-		{
-			auto& nsc = nscView.get<NativeScriptComponent>(entity);
-			if (!nsc.Instance)
-			{
-				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
-			}
-			nsc.Instance->OnUpdate(time);
-		}*/
-
 		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
 			if (!nsc.Instance)
@@ -208,7 +195,9 @@ namespace Origin {
 				auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 
 				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+
 				const auto& position = body->GetPosition();
+
 				transform.Translation.x = position.x;
 				transform.Translation.y = position.y;
 				transform.Rotation.z = body->GetAngle();
@@ -261,6 +250,17 @@ namespace Origin {
 
 	void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
 	{
+		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		{
+			if (!nsc.Instance)
+			{
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity{ entity, this };
+				nsc.Instance->OnCreate();
+			}
+			nsc.Instance->OnUpdate(time);
+		});
+
 		Renderer2D::BeginScene(camera);
 
 		// Sprites

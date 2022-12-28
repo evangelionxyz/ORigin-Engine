@@ -266,7 +266,6 @@ namespace Origin {
 
 		if (entity.HasComponent<NativeScriptComponent>())
 		{
-			out << YAML::Key << "NativeScriptComponent";
 			auto& nsc = entity.GetComponent<NativeScriptComponent>();
 		}
 

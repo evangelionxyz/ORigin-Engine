@@ -6,20 +6,23 @@
 
 namespace Origin
 {
+	struct Vector3
+	{
+		float x, y, z;
+	};
+
 	class ScriptableEntity
 	{
 	public:
 		ScriptableEntity() = default;
-
 		virtual ~ScriptableEntity() {}
 
 		template<typename T>
 		T& GetComponent() {
-			return m_Entity.GetComponent<T>();
-		}
 
-		template<typename T>
-		T& AddComponent() {
+			if(m_Entity.HasComponent<T>())
+				return m_Entity.GetComponent<T>();
+
 			return m_Entity.AddComponent<T>();
 		}
 
@@ -27,6 +30,7 @@ namespace Origin
 		virtual void OnCreate() {}
 		virtual void OnUpdate(Timestep time) {}
 		virtual void OnDestroy() {}
+
 
 	private:
 		Entity m_Entity;
