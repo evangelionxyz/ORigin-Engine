@@ -249,10 +249,7 @@ namespace Origin {
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				auto texturePath = std::filesystem::path(g_AssetPath) / path;
 				if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-				{
 					component.Texture = Texture2D::Create(texturePath.string());
-					component.TexturePath = texturePath.string();
-				}
 			}
 		}
 		if (component.Texture)
@@ -263,7 +260,7 @@ namespace Origin {
 				component.Texture->Delete();
 				component.Texture = {};
 			}
-			ImGui::Text("Path: %s", component.TexturePath.c_str());
+			ImGui::Text("Path: %s", component.Texture->GetFilepath());
 			ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 		}
 			});

@@ -20,19 +20,19 @@ namespace Origin {
     OpenGLTexture3D(const std::string& path);
 		~OpenGLTexture3D();
 
-		virtual void SetData(void* data, uint32_t size) override;
-    virtual std::string GetFilepath() override { return m_FilePath; }
-		virtual void Bind(uint32_t slot = 0) override;
-    virtual void Delete() override;
+		void SetData(void* data, uint32_t size) override;
+		std::string GetFilepath() override { return m_FilePath; }
+		void Bind(uint32_t slot = 0) override;
+		void Delete() override;
 
-		virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		uint32_t GetRendererID() const override { return m_RendererID; }
 
-		virtual uint32_t GetIndex() const override { return m_Index; }
+		uint32_t GetIndex() const override { return m_Index; }
 
-		virtual uint32_t GetWidth() const override { return m_Width; }
-		virtual uint32_t GetHeight() const override { return m_Height; }
+		uint32_t GetWidth() const override { return m_Width; }
+		uint32_t GetHeight() const override { return m_Height; }
 
-		virtual bool operator== (const Texture& other) const override
+		bool operator== (const Texture& other) const override
 		{
 			return m_RendererID == ((OpenGLTexture3D&)other).m_RendererID;
 		}
@@ -53,17 +53,17 @@ namespace Origin {
     OpenGLTexture2D(const std::string& path);
     ~OpenGLTexture2D();
 
-    virtual void SetData(void* data, uint32_t size) override;
-    virtual std::string GetFilepath() override { return m_FilePath; }
-    virtual void Bind(uint32_t slot = 0) override;
-    virtual void Delete() override;
+		void SetData(void* data, uint32_t size) override;
+		std::string GetFilepath() override { return m_FilePath; }
+		void Bind(uint32_t slot = 0) override;
+		void Delete() override;
 
-    virtual uint32_t GetRendererID() const override { return m_RendererID; }
-    virtual uint32_t GetIndex() const override { return m_Index; }
-    virtual uint32_t GetWidth() const override { return m_Width; }
-    virtual uint32_t GetHeight() const override{ return m_Height; }
+		uint32_t GetRendererID() const override { return m_RendererID; }
+		uint32_t GetIndex() const override { return m_Index; }
+		uint32_t GetWidth() const override { return m_Width; }
+		uint32_t GetHeight() const override { return m_Height; }
 
-    virtual bool operator== (const Texture& other) const override
+    bool operator== (const Texture& other) const override
     {
       return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
     }

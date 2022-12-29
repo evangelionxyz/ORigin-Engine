@@ -453,10 +453,7 @@ namespace Origin
               std::filesystem::path textureFile = std::filesystem::path(g_AssetPath) / path;
               auto& component = entity.GetComponent<SpriteRendererComponent>();
               if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
-              {
                 component.Texture = Texture2D::Create(textureFile.string());
-                component.TexturePath = textureFile.string();
-              }
             }
           }
           else

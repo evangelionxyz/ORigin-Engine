@@ -58,8 +58,6 @@ namespace Origin
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
 		std::shared_ptr<Texture2D> Texture;
-		std::string TexturePath;
-
 		float TillingFactor = 1.0f;
 
 		SpriteRendererComponent() = default;
