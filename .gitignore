@@ -1,5 +1,6 @@
 *.ipch
 *.vcxproj
+*.csproj
 *.filters
 *.user
 *.vcxproj.filters
@@ -14,9 +15,10 @@
 ORigin.sln.startup.json
 ORigin.sln.licenseheader
 
-# folder
-ORigin-Editor/resources/scripts/
-ORigin-Editor/resources/intermediates/
+# folders
 bin/
 bin-int/
 scripts/__pycache__
+ORigin/vendor/projectFiles
+ORigin-Editor/resources/scripts/
+ORigin-Editor/resources/intermediates/
