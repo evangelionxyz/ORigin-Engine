@@ -185,6 +185,10 @@ namespace Origin
     OverlayBeginScene();
     if (m_VisualizeCollider)
     {
+			float zIndex = 0.001f;
+			glm::vec3 ccFWDir = m_EditorCamera.GetForwardDirection();
+			glm::vec3 projectionCollider = ccFWDir * glm::vec3(zIndex);
+
 			// Circle Collider Visualizer
 			{
 				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
@@ -192,7 +196,7 @@ namespace Origin
 				{
 					auto& [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
 
-					glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.001f);
+					glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, -projectionCollider.z);
 					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
 
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
@@ -209,18 +213,18 @@ namespace Origin
 				{
 					auto& [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
 
-					glm::vec3 translation = tc.Translation + glm::vec3(bc2d.Offset, 0.001f);
 					glm::vec3 scale = tc.Scale * glm::vec3(bc2d.Size * 2.0f, 1.0f);
 
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
 						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+						* glm::translate(glm::mat4(1.0f), glm::vec3(bc2d.Offset, projectionCollider.z))
 						* glm::scale(glm::mat4(1.0f), scale);
 
 					Renderer2D::DrawRect(transform, glm::vec4(0, 1, 0, 1));
 				}
 			}
     }
-    RenderCommand::SetLineWidth(1.0f);
+    RenderCommand::SetLineWidth(2.3f);
     Renderer2D::EndScene();
 
 		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
@@ -291,7 +295,6 @@ namespace Origin
           }
         }
 				ImGui::PopStyleColor(3);
-
       }
 
 			{
