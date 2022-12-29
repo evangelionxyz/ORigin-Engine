@@ -28,7 +28,7 @@ namespace Origin
 		ShutdownMono();
 
 		delete s_Data;
-		OGN_CORE_TRACE("SCRIPT ENGINE SHUTDOWN");
+		OGN_CORE_TRACE("Script Engine Shutdow");
 	}
 
 	char* ReadBytes(const std::string& filepath, uint32_t* outSize)

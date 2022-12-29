@@ -861,18 +861,19 @@ namespace Origin
 			if (!ImGuizmo::IsOver())
 			{
         if (m_HoveredEntity)
-        {
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-          m_HoveredEntity = m_SelectedEntity;
-        }
-				else if(m_HoveredEntity == m_SelectedEntity && !control)
+
+				if(m_HoveredEntity == m_SelectedEntity && !control)
 					m_SceneHierarchy.SetSelectedEntity({});
 
         if (!m_HoveredEntity)
+        {
           m_GizmosType = -1;
+          m_SceneHierarchy.SetSelectedEntity({});
+        }
 			}
 
-			else if (!m_HoveredEntity && !ImGuizmo::IsOver())
+			else if (!m_HoveredEntity)
 			{
 				m_GizmosType = -1;
 				m_SceneHierarchy.SetSelectedEntity({});
@@ -911,7 +912,7 @@ namespace Origin
     {
       if (lastMouseX == mouseX && lastMouseY == mouseY)
       {
-				if (m_HoveredEntity == m_SelectedEntity)
+				if (m_HoveredEntity == m_SelectedEntity && m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::EntityProperties;
         if(m_HoveredEntity != m_SelectedEntity || !m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::CreateMenu;

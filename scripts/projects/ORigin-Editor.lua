@@ -53,7 +53,10 @@ project "ORigin-Editor"
         systemversion "latest"
         postbuildcommands {
             "{COPY} %{prj.location}/imgui.ini %{mainOutputdir}",
+            
             "{COPYDIR} %{prj.location}/assets %{mainOutputdir}/assets",
+            "{COPYDIR} %{prj.location}/mono %{mainOutputdir}/mono",
+            "{COPYDIR} %{prj.location}/resources %{mainOutputdir}/resources",
         }
 
     filter "configurations:Debug"
