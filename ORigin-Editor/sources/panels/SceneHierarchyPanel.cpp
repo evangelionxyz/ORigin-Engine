@@ -260,7 +260,7 @@ namespace Origin {
 				component.Texture->Delete();
 				component.Texture = {};
 			}
-			ImGui::Text("Path: %s", component.Texture->GetFilepath());
+			ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
 			ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 		}
 			});

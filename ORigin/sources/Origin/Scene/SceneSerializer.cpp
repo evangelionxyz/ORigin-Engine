@@ -199,7 +199,8 @@ namespace Origin {
 
 			auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
-			out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
+			if(src.Texture)
+				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
 			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
 
 			out << YAML::EndMap; // !SpriteRendererComponent
@@ -387,9 +388,8 @@ namespace Origin {
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
-					std::string texturePath = spriteRendererComponent["TexturePath"].as<std::string>();
-					if(!texturePath.empty())
-						src.Texture = Texture2D::Create(texturePath);
+					if(spriteRendererComponent["TexturePath"])
+						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
 
 					src.TillingFactor = spriteRendererComponent["TillingFactor"].as<float>();
 				}

@@ -36,6 +36,7 @@ project "ORigin"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.ENTT}",
+        "%{IncludeDir.MONO}",
         "%{IncludeDir.YAML_CPP}",
         "%{IncludeDir.VulkanSDK}",
     }
@@ -54,6 +55,9 @@ project "ORigin"
         "opengl32.lib",
         "%{Library.Vulkan}",
         "%{Library.VulkanUtils}",
+
+        "%{Library.MONO}"
+        
     }
 
     filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
@@ -62,6 +66,14 @@ project "ORigin"
     filter "system:windows"
         systemversion "latest"
         defines "OGN_WINDOWS_PLATFORM"
+        links
+        {
+            "%{Library.WinSock}",
+            "%{Library.WinMM}",
+            "%{Library.WinVersion}",
+            "%{Library.BCrypt}"
+        }
+
 
     filter "configurations:Debug"
 		defines "OGN_DEBUG"

@@ -3,6 +3,8 @@
 #include "pch.h"
 #include "Application.h"
 
+#include "Origin\Scripting\ScriptEngine.h"
+
 namespace Origin {
 
 	Application* Application::s_Instance = nullptr;
@@ -15,6 +17,7 @@ namespace Origin {
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();
+		ScriptEngine::Init();
 
 		m_GuiLayer = new GuiLayer();
 		PushOverlay(m_GuiLayer);
@@ -23,13 +26,15 @@ namespace Origin {
 	Application::~Application()
 	{
 		Renderer::Shutdown();
+		ScriptEngine::Shutdown();
 	}
 
 	void Application::Run()
 	{
+		m_Window->SetVSync(false);
+
 		while (m_Window->Loop()) {
 
-			//m_Window->SetVSync(false);
 
 			auto time = (float)glfwGetTime();
 			Timestep timestep = time - m_LastFrame;
