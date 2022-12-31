@@ -8,6 +8,7 @@ project "ORigin-Editor"
     cppdialect "C++17"
     staticruntime "off"
     links "ORigin"
+        
 
     targetdir (mainOutputdir)
     objdir (mainIntOutputdir)

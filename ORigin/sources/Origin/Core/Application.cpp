@@ -25,8 +25,8 @@ namespace Origin {
 
 	Application::~Application()
 	{
-		Renderer::Shutdown();
 		ScriptEngine::Shutdown();
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()

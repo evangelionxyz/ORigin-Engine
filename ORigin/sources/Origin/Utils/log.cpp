@@ -13,7 +13,7 @@ namespace Origin
 	{
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 		// Origin
-		s_CoreLogger = spdlog::stdout_color_mt("Origin");
+		s_CoreLogger = spdlog::stdout_color_mt("ORigin");
 		s_CoreLogger->set_level(spdlog::level::trace);
 
 		// Sandbox

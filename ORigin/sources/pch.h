@@ -18,6 +18,7 @@
 #include <filesystem>
 
 #include "Origin/Core/OriginCore.h"
+#include "glm/glm.hpp"
 
 #ifdef OGN_WINDOWS_PLATFORM
 	#include <Windows.h>
