@@ -157,6 +157,8 @@ namespace Origin
 	void ScriptEngine::OnRuntimeStop()
 	{
 		s_Data->SceneContext = nullptr;
+
+		s_Data->EntityInstances.clear();
 	}
 
 	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)

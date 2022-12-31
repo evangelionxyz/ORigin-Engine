@@ -530,7 +530,7 @@ namespace Origin
         if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape)) m_GizmosType = -1;
       }
 
-      if (m_SelectedEntity != m_SceneHierarchy.GetSelectedEntity()) m_GizmosType = -1;
+      if (!m_SceneHierarchy.GetSelectedEntity()) m_GizmosType = -1;
     }
 
     if (ImGuizmo::IsUsing() || !m_ViewportHovered)
@@ -755,6 +755,7 @@ namespace Origin
       if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
       ImGui::Text("OpenGL Version : (%s)", glGetString(GL_VERSION));
       ImGui::Text("ImGui version : (%s)", IMGUI_VERSION);
+      ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
       ImGui::Text("Viewport Hovered (%d)", m_ViewportHovered);
       ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
 
@@ -858,26 +859,14 @@ namespace Origin
 
     if (bt == Mouse::ButtonLeft && m_ViewportHovered)
     {
-			if (!ImGuizmo::IsOver())
-			{
+      if (!ImGuizmo::IsOver())
+      {
         if (m_HoveredEntity)
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 
-				if(m_HoveredEntity == m_SelectedEntity && !control)
+				else if (m_HoveredEntity == m_SceneHierarchy.GetSelectedEntity() && !control || !m_HoveredEntity)
 					m_SceneHierarchy.SetSelectedEntity({});
-
-        if (!m_HoveredEntity)
-        {
-          m_GizmosType = -1;
-          m_SceneHierarchy.SetSelectedEntity({});
-        }
-			}
-
-			else if (!m_HoveredEntity)
-			{
-				m_GizmosType = -1;
-				m_SceneHierarchy.SetSelectedEntity({});
-			}
+      }
 
       if (control) {
         if (m_HoveredEntity == m_SelectedEntity && !ImGuizmo::IsOver())
@@ -900,23 +889,20 @@ namespace Origin
 
 			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
 			else if (lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;
+
+			if (lastMouseX == mouseX && lastMouseY == mouseY)
+			{
+				if (m_HoveredEntity == m_SelectedEntity && m_HoveredEntity)
+					m_VpMenuContext = ViewportMenuContext::EntityProperties;
+				if (m_HoveredEntity != m_SelectedEntity || !m_HoveredEntity)
+					m_VpMenuContext = ViewportMenuContext::CreateMenu;
+			}
     }
 		else
 		{
       lastMouseX = mouseX;
       lastMouseY = mouseY;
       RMHoldTime = 0.0f;
-    }
-
-    if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
-    {
-      if (lastMouseX == mouseX && lastMouseY == mouseY)
-      {
-				if (m_HoveredEntity == m_SelectedEntity && m_HoveredEntity)
-					m_VpMenuContext = ViewportMenuContext::EntityProperties;
-        if(m_HoveredEntity != m_SelectedEntity || !m_HoveredEntity)
-					m_VpMenuContext = ViewportMenuContext::CreateMenu;
-      }
     }
   }
 
