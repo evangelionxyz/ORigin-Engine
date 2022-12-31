@@ -18,3 +18,15 @@ Entities:
         OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
+  - Entity: 14069366075196350708
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+    ScriptComponent:
+      ClassName: Game.Player

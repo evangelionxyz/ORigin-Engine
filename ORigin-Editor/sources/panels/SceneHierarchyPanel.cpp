@@ -7,6 +7,8 @@
 #include "Origin\Scene\Component\Component.h"
 #include "Origin\Renderer\Texture.h"
 
+#include "Origin\Scripting\ScriptEngine.h"
+
 #include "../Mario.h"
 
 namespace Origin {
@@ -133,7 +135,6 @@ namespace Origin {
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
 
 			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), tag.c_str());
 			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 			{
@@ -151,73 +152,14 @@ namespace Origin {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			if (!entity.HasComponent<TransformComponent>()) {
-				if (ImGui::MenuItem("Transform"))
-				{
-					m_SelectionContext.AddComponent<TransformComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<CameraComponent>() && !entity.HasComponent<SpriteRendererComponent>()) {
-				if (ImGui::MenuItem("Camera"))
-				{
-					m_SelectionContext.AddComponent<CameraComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<CircleRendererComponent>() && !entity.HasComponent<CameraComponent>()) {
-				if (ImGui::MenuItem("Circle Renderer"))
-				{
-					m_SelectionContext.AddComponent<CircleRendererComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<SpriteRendererComponent>() && !entity.HasComponent<CameraComponent>()) {
-				if (ImGui::MenuItem("Sprite Renderer"))
-				{
-					m_SelectionContext.AddComponent<SpriteRendererComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<Rigidbody2DComponent>())
-			{
-				if (ImGui::MenuItem("Rigidbody 2D"))
-				{
-					m_SelectionContext.AddComponent<Rigidbody2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<BoxCollider2DComponent>())
-			{
-				if (ImGui::MenuItem("Box Collider 2D"))
-				{
-					m_SelectionContext.AddComponent<BoxCollider2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!entity.HasComponent<CircleCollider2DComponent>())
-			{
-				if (ImGui::MenuItem("Circle Collider 2D"))
-				{
-					m_SelectionContext.AddComponent<CircleCollider2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			/*if (!entity.HasComponent<NativeScriptComponent>())
-			{
-				if (ImGui::MenuItem("Native Script"))
-				{
-					m_SelectionContext.AddComponent<NativeScriptComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}*/
+			DisplayAddComponentEntry<ScriptComponent>("Script");
+			DisplayAddComponentEntry<CameraComponent>("Camera");
+			DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
+			DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
+			DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
+			DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody 2d");
+			DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
 
 			ImGui::EndPopup();
 		}
@@ -236,33 +178,50 @@ namespace Origin {
 		DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 			});
 
+		DrawComponent<ScriptComponent>("Script", entity, [](auto& component)
+			{
+				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
+
+				if (!scriptClassExist)
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+
+				static char buffer[64];
+				strcpy(buffer, component.ClassName.c_str());
+				if (ImGui::InputText("Script Class", buffer, sizeof(buffer)))
+					component.ClassName = std::string(buffer);
+
+				if (!scriptClassExist)
+					ImGui::PopStyleColor();
+
+			});
+
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-		// Texture
-		ImVec2 btSize = ImVec2(80.0f, 30.0f);
-		ImGui::Button("Texture", btSize);
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				auto texturePath = std::filesystem::path(g_AssetPath) / path;
-				if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-					component.Texture = Texture2D::Create(texturePath.string());
-			}
-		}
-		if (component.Texture)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button("Delete", btSize))
-			{
-				component.Texture->Delete();
-				component.Texture = {};
-			}
-			ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
-			ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
-		}
+				// Texture
+				ImVec2 btSize = ImVec2(80.0f, 30.0f);
+				ImGui::Button("Texture", btSize);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						auto texturePath = std::filesystem::path(g_AssetPath) / path;
+						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+							component.Texture = Texture2D::Create(texturePath.string());
+					}
+				}
+				if (component.Texture)
+				{
+					ImGui::SameLine();
+					if (ImGui::Button("Delete", btSize))
+					{
+						component.Texture->Delete();
+						component.Texture = {};
+					}
+					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
+					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
+				}
 			});
 
 		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)
@@ -387,4 +346,17 @@ namespace Origin {
 				component.Bind<Mario>();
 			});
 	}
+
+	template<typename T>
+	void SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName) {
+		if (!m_SelectionContext.HasComponent<T>())
+		{
+			if (ImGui::MenuItem(entryName.c_str()))
+			{
+				m_SelectionContext.AddComponent<T>();
+				ImGui::CloseCurrentPopup();
+			}
+		}
+	}
+
 }

@@ -5,6 +5,8 @@
 
 #include "ScriptGlue.h"
 
+#include "Origin\Scene\Component\Component.h"
+
 #include "mono/jit/jit.h"
 #include "mono/metadata/assembly.h"
 #include "mono/metadata/object.h"
@@ -85,8 +87,13 @@ namespace Origin
 
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
-
 		ScriptClass EntityClass;
+
+		std::unordered_map<std::string, std::shared_ptr<ScriptClass>> EntityClasses;
+		std::unordered_map<UUID, std::shared_ptr<ScriptInstance>> EntityInstances;
+
+		// Runtime
+		Scene* SceneContext = nullptr;
 	};
 
 	ScriptEngineData* s_Data = nullptr;
@@ -105,6 +112,7 @@ namespace Origin
 	void ScriptEngine::ShutdownMono()
 	{
 		// cleanup
+		mono_assembly_close(s_Data->CoreAssembly);
 		s_Data->AppDomain = nullptr;
 		s_Data->RootDomain = nullptr;
 	}
@@ -115,43 +123,17 @@ namespace Origin
 
 		InitMono();
 		LoadAssembly("resources/scripts/ORigin-ScriptCore.dll");
+		LoadAssemblyClasses(s_Data->CoreAssembly);
+
 		ScriptGlue::RegisterFunctions();
-
-		s_Data->EntityClass = ScriptClass("ORigin", "Entity");
-		MonoObject* instance = s_Data->EntityClass.Instantiate();
-
-		MonoMethod* printMessageFunc = s_Data->EntityClass.GetMethod("PrintMessage", 0);
-		s_Data->EntityClass.InvokeMethod(instance, printMessageFunc, nullptr);
-
-		MonoMethod* printIntFunc = s_Data->EntityClass.GetMethod("PrintInt", 1);
-		int value = 12;
-		void* param = &value;
-
-		s_Data->EntityClass.InvokeMethod(instance, printIntFunc, &param);
-
-		MonoMethod* printIntsFunc = s_Data->EntityClass.GetMethod("PrintInts", 2);
-
-		int value1 = 3;
-		int value2 = 5;
-
-		void* params[2] =
-		{
-			&value1,
-			&value2
-		};
-
-		s_Data->EntityClass.InvokeMethod(instance, printIntsFunc, params);
-
-		MonoString* monoString = mono_string_new(s_Data->AppDomain, "Hello World From C++");
-		MonoMethod* printCustomMessageFunc = s_Data->EntityClass.GetMethod("PrintCustomMessage", 1);
-
-		void* stringParam = monoString;
-		s_Data->EntityClass.InvokeMethod(instance, printCustomMessageFunc, &stringParam);
 	}
 
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
+
+		s_Data->EntityClasses.clear();
+		s_Data->EntityInstances.clear();
 
 		delete s_Data;
 		OGN_CORE_TRACE("Script Engine Shutdown");
@@ -164,8 +146,50 @@ namespace Origin
 
 		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
-
 		// Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
+	}
+
+	void ScriptEngine::OnRuntimeStart(Scene* scene)
+	{
+		s_Data->SceneContext = scene;
+	}
+
+	void ScriptEngine::OnRuntimeStop()
+	{
+		s_Data->SceneContext = nullptr;
+	}
+
+	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
+	{
+		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
+	}
+
+	void ScriptEngine::OnCreateEntity(Entity entity)
+	{
+		const auto& sc = entity.GetComponent<ScriptComponent>();
+		if (EntityClassExists(sc.ClassName))
+		{
+			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_Data->EntityClasses[sc.ClassName]);
+			s_Data->EntityInstances[entity.GetUUID()] = instance;
+
+			instance->InvokeOnCreate();
+		}
+	}
+
+	void ScriptEngine::OnUpdateEntity(Entity entity, float time)
+	{
+		UUID& entityID = entity.GetUUID();
+
+		OGN_CORE_ASSERT(s_Data->EntityInstances.find(entityID) != s_Data->EntityInstances.end(),
+			"Entity Script Instance not found!");
+
+		std::shared_ptr<ScriptInstance> instance = s_Data->EntityInstances.at(entityID);
+		instance->InvokeOnUpdate(time);
+	}
+
+	std::unordered_map<std::string, std::shared_ptr<ScriptClass>> ScriptEngine::GetEntityClasses()
+	{
+		return s_Data->EntityClasses;
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
@@ -173,6 +197,43 @@ namespace Origin
 		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
 		mono_runtime_object_init(instance);
 		return instance;
+	}
+
+	void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly)
+	{
+		s_Data->EntityClasses.clear();
+
+		MonoImage* image = mono_assembly_get_image(assembly);
+		const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+		int32_t numTypes = mono_table_info_get_rows(typeDefinitionTable);
+
+		MonoClass* entityClass = mono_class_from_name(image, "ORigin", "Entity");
+
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionTable, i, cols, MONO_TYPEDEF_SIZE);
+
+			const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+
+			std::string fullName;
+			if (strlen(nameSpace) != 0)
+				fullName = fmt::format("{}.{}", nameSpace, name);
+			else
+				fullName = name;
+
+			MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
+
+			if(monoClass == entityClass)
+				continue;
+
+			bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
+			if (isEntity)
+				s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, name);
+
+			OGN_CORE_INFO("{}.{}", nameSpace, name);
+		}
 	}
 
 	// Script Class
@@ -196,4 +257,27 @@ namespace Origin
 	{
 		return mono_runtime_invoke(method, m_MonoClass, params, nullptr);
 	}
+
+	ScriptInstance::ScriptInstance(std::shared_ptr<ScriptClass> scriptClass)
+		: m_ScriptClass(scriptClass)
+	{
+		m_Instance = scriptClass->Instantiate();
+		m_OnCreateMethod = scriptClass->GetMethod("OnCreate");
+		m_OnUpdateMethod = scriptClass->GetMethod("OnUpdate", 1);
+	}
+
+	void ScriptInstance::InvokeOnCreate()
+	{
+		if(m_OnCreateMethod)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateMethod);
+	}
+
+	void ScriptInstance::InvokeOnUpdate(float time)
+	{
+
+		void* param = &time;
+		if (m_OnUpdateMethod)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, &param);
+	}
+
 }

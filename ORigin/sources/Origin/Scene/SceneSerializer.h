@@ -18,7 +18,6 @@ namespace Origin
 		bool Deserialize(const std::string& filepath);
 		bool DeserializeRuntime(const std::string& filepath);
 
-
 	private:
 		std::shared_ptr<Scene> m_Scene;
 	};

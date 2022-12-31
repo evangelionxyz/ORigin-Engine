@@ -270,6 +270,17 @@ namespace Origin {
 			auto& nsc = entity.GetComponent<NativeScriptComponent>();
 		}
 
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap; // ScriptComponent;
+
+			auto& sc = entity.GetComponent<ScriptComponent>();
+			out << YAML::Key << "ClassName" << YAML::Value << sc.ClassName;
+
+			out << YAML::EndMap; // !ScriptComponent;
+		}
+
 		out << YAML::EndMap; // !Entity
 	}
 
@@ -433,6 +444,13 @@ namespace Origin {
 					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
 					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
+				}
+
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent)
+				{
+					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 				}
 
 				auto nativeScriptComponent = entity["NativeScriptComponent"];

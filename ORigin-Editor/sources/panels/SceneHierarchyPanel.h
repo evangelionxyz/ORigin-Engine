@@ -28,6 +28,9 @@ namespace Origin
 
 		void OnImGuiRender();
 	private:
+		template<typename T>
+		void DisplayAddComponentEntry(const std::string& entryName);
+
 		bool m_HierarchyMenuActive = false;
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
@@ -36,6 +39,8 @@ namespace Origin
 		Entity m_SelectionContext;
 	};
 
+
+	// static function
 	static void DrawVec3Control(const std::string& label, glm::vec3& values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
 		ImGuiIO& io = ImGui::GetIO();

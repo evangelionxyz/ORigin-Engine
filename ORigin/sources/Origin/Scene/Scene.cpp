@@ -5,6 +5,8 @@
 #include "ScriptableEntity.h"
 #include "Component\Component.h"
 
+#include "Origin\Scripting\ScriptEngine.h"
+
 #include "Origin\Renderer\Renderer2D.h"
 #include "Origin\Scene\Skybox.h"
 
@@ -43,27 +45,42 @@ namespace Origin {
 	{
 	}
 
-	template<typename Component>
+	template<typename... Component>
 	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
-		auto view = src.view<Component>();
-		for (auto e : view)
+		([&]()
+			{
+				auto view = src.view<Component>();
+		for (auto srcEntity : view)
 		{
-			UUID uuid = src.get<IDComponent>(e).ID;
-			OGN_CORE_ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity UUID Not Found!");
+			entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
 
-			entt::entity dstEntityID = enttMap.at(uuid);
-
-			auto& component = src.get<Component>(e);
-			dst.emplace_or_replace<Component>(dstEntityID, component);
+			auto& srcComponent = src.get<Component>(srcEntity);
+			dst.emplace_or_replace<Component>(dstEntity, srcComponent);
 		}
+			}(), ...);
 	}
 
-	template<typename Component>
-	static void CopyComponentIfExist(Entity dst, Entity src)
+	template<typename... Component>
+	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
-		if(src.HasComponent<Component>())
-			dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+		CopyComponent<Component...>(dst, src, enttMap);
+	}
+
+	template<typename... Component>
+	static void CopyComponentIfExists(Entity dst, Entity src)
+	{
+		([&]()
+			{
+				if (src.HasComponent<Component>())
+				dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+			}(), ...);
+	}
+
+	template<typename... Component>
+	static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
+	{
+		CopyComponentIfExists<Component...>(dst, src);
 	}
 
 	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
@@ -91,14 +108,7 @@ namespace Origin {
 		}
 
 		// Copy components (except IDComponent and TagComponent) into new scene (destination)
-		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CircleRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<Rigidbody2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<BoxCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CircleCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newScene;
 	}
@@ -169,16 +179,26 @@ namespace Origin {
 
 	void Scene::OnUpdateRuntime(Timestep time)
 	{
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		// Update Scripts
 		{
-			if (!nsc.Instance)
+			auto& view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
 			{
-				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
+				Entity entity = { e, this };
+				ScriptEngine::OnUpdateEntity(entity, time);
 			}
-			nsc.Instance->OnUpdate(time);
-		});
+
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
+				nsc.Instance->OnUpdate(time);
+			});
+		}
 
 		// Physics
 		{
@@ -243,8 +263,6 @@ namespace Origin {
 					Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 				}
 			}
-
-
 			Renderer2D::EndScene();
 		}
 	}
@@ -269,6 +287,27 @@ namespace Origin {
 
 	void Scene::OnUpdateSimulation(Timestep time, EditorCamera& camera)
 	{
+		// Update Scripts
+		{
+			auto& view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				ScriptEngine::OnUpdateEntity(entity, time);
+			}
+
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
+				nsc.Instance->OnUpdate(time);
+			});
+		}
+
 		// Physics
 		{
 			const int32_t velocityIterations = 6;
@@ -300,11 +339,25 @@ namespace Origin {
 	void Scene::OnSimulationStart()
 	{
 		OnPhysics2DStart();
+
+		// Scripting
+		ScriptEngine::OnRuntimeStart(this);
+
+		// instantiate all script entities
+		auto view = m_Registry.view<ScriptComponent>();
+		for (auto e : view)
+		{
+			Entity entity = { e, this };
+			ScriptEngine::OnCreateEntity(entity);
+		}
 	}
 
 	void Scene::OnSimulationStop()
 	{
 		OnPhysics2DStop();
+
+		// Scripting
+		ScriptEngine::OnRuntimeStop();
 	}
 
 	void Scene::Render2DScene(EditorCamera& camera)
@@ -337,11 +390,25 @@ namespace Origin {
 	void Scene::OnRuntimeStart()
 	{
 		OnPhysics2DStart();
+
+		// Scripting
+		ScriptEngine::OnRuntimeStart(this);
+
+		// instantiate all script entities
+		auto view = m_Registry.view<ScriptComponent>();
+		for (auto e : view)
+		{
+			Entity entity = { e, this };
+			ScriptEngine::OnCreateEntity(entity);
+		}
 	}
 
 	void Scene::OnRuntimeStop()
 	{
 		OnPhysics2DStop();
+
+		// Scripting
+		ScriptEngine::OnRuntimeStop();
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -364,14 +431,7 @@ namespace Origin {
 		std::string name = entity.GetName();
 		Entity newEntity = CreateEntity(name);
 
-		CopyComponentIfExist<CameraComponent>(newEntity, entity);
-		CopyComponentIfExist<TransformComponent>(newEntity, entity);
-		CopyComponentIfExist<SpriteRendererComponent>(newEntity, entity);
-		CopyComponentIfExist<CircleRendererComponent>(newEntity, entity);
-		CopyComponentIfExist<NativeScriptComponent>(newEntity, entity);
-		CopyComponentIfExist<Rigidbody2DComponent>(newEntity, entity);
-		CopyComponentIfExist<BoxCollider2DComponent>(newEntity, entity);
-		CopyComponentIfExist<CircleCollider2DComponent>(newEntity, entity);
+		CopyComponentIfExists(AllComponents{}, newEntity, entity);
 
 		newEntity.GetComponent<TransformComponent>().Translation.x += 0.2f;
 		newEntity.GetComponent<TransformComponent>().Translation.y += 0.2f;
@@ -482,6 +542,7 @@ namespace Origin {
 	template<> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) {}
+	template<> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) {}
 	template<> void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) {}
 	template<> void Scene::OnComponentAdded<Rigidbody2DComponent>(Entity entity, Rigidbody2DComponent& component) {}
 	template<> void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component) {}

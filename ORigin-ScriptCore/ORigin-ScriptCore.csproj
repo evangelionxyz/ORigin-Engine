@@ -21,7 +21,8 @@
     <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -33,7 +34,8 @@
     <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -45,7 +47,8 @@
     <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -57,8 +60,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="sources\Main.cs" />
+    <Compile Include="sources\Player.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="sources\Origin\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

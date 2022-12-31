@@ -1,6 +1,9 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+#include "Origin\Scene\Scene.h"
+#include "Origin\Scene\Entity.h"
+
 #include <filesystem>
 #include <string>
 
@@ -8,27 +11,12 @@ extern "C" {
 	typedef struct _MonoClass MonoClass;
 	typedef struct _MonoMethod MonoMethod;
 	typedef struct _MonoObject MonoObject;
+	typedef struct _MonoAssembly MonoAssembly;
+	typedef struct _MonoImage MonoImage;
 }
 
 namespace Origin
 {
-	class ScriptClass;
-	class ScriptEngine
-	{
-	public:
-		static void Init();
-		static void Shutdown();
-
-		static void LoadAssembly(const std::filesystem::path& filepath);
-
-	private:
-		static void InitMono();
-		static void ShutdownMono();
-
-		static MonoObject* InstantiateClass(MonoClass* monoClass);
-
-		friend ScriptClass;
-	};
 
 	class ScriptClass
 	{
@@ -41,9 +29,54 @@ namespace Origin
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
 
 	private:
-		std::string m_ClassNamespace;
-		std::string m_ClassName;
-
 		MonoClass* m_MonoClass = nullptr;
+
+		std::string m_ClassName;
+		std::string m_ClassNamespace;
+	};
+
+	class ScriptInstance
+	{
+	public:
+		ScriptInstance(std::shared_ptr<ScriptClass> scriptClass);
+
+		void InvokeOnCreate();
+		void InvokeOnUpdate(float time);
+
+	private:
+		std::shared_ptr<ScriptClass> m_ScriptClass;
+
+		MonoObject* m_Instance = nullptr;
+		MonoMethod* m_OnCreateMethod = nullptr;
+		MonoMethod* m_OnUpdateMethod = nullptr;
+	};
+
+	class ScriptEngine
+	{
+	public:
+		static void Init();
+		static void Shutdown();
+
+		static void LoadAssembly(const std::filesystem::path& filepath);
+
+		static void OnRuntimeStart(Scene* scene);
+		static void OnRuntimeStop();
+
+		static bool EntityClassExists(const std::string& fullClassName);
+
+		static void OnCreateEntity(Entity entity);
+		static void OnUpdateEntity(Entity entity, float time);
+
+		static std::unordered_map<std::string, std::shared_ptr<ScriptClass>> GetEntityClasses();
+
+	private:
+
+		static void InitMono();
+		static void ShutdownMono();
+
+		static MonoObject* InstantiateClass(MonoClass* monoClass);
+		static void LoadAssemblyClasses(MonoAssembly* assembly);
+
+		friend class ScriptClass;
 	};
 }
