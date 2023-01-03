@@ -3,8 +3,8 @@
 #pragma once
 #include <xhash>
 
-namespace Origin {
-
+namespace Origin
+{
 	class UUID
 	{
 	public:
@@ -20,8 +20,8 @@ namespace Origin {
 	};
 }
 
-namespace std {
-
+namespace std
+{
 	template<>
 	struct hash<Origin::UUID>
 	{

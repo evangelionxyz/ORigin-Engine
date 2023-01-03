@@ -31,7 +31,7 @@ namespace Origin
 
   void Editor::OnAttach()
   {
-    EditorTheme::ApplyRayTek();
+    //EditorTheme::ApplyRayTek();
 
     m_PlayButton = Texture2D::Create("assets/resources/playbutton.png");
     m_SimulateButton = Texture2D::Create("assets/resources/simulatebutton.png");
@@ -131,7 +131,7 @@ namespace Origin
     const glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
     my = viewportSize.y - my;
     mouseX = static_cast<int>(mx);
-    mouseY = static_cast<int>(my);
+    mouseY = static_cast<int>(my) - 1;
 
     if (mouseX >= 0 && mouseY >= 0 && mouseX < static_cast<int>(viewportSize.x) && mouseY < static_cast<int>(viewportSize.y))
     {
@@ -387,10 +387,10 @@ namespace Origin
       | ImGuiWindowFlags_NoScrollWithMouse
       | ImGuiWindowFlags_NoCollapse;
 
-    ImGuiWindowClass window_class;
-    window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_AutoHideTabBar;
+    //ImGuiWindowClass window_class;
+    //window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_AutoHideTabBar;
+    //ImGui::SetNextWindowClass(&window_class);
 
-    ImGui::SetNextWindowClass(&window_class);
     ImGui::Begin("Viewport", nullptr, window_flags);
 
     m_ViewportHovered = ImGui::IsWindowHovered();
@@ -436,7 +436,7 @@ namespace Origin
         if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
         ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
         ImGui::Text("Menu Context : %s", MenuContextToString(m_VpMenuContext));
-        ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
+        ImGui::Checkbox("Visualize 2D Colliders", &m_VisualizeCollider);
       }
       ImGui::End();
     }
@@ -943,11 +943,9 @@ namespace Origin
 
           if (entityDeleted)
           {
-            Entity entity{ m_SelectedEntity, m_SceneHierarchy.GetContext().get() };
+            Entity entity{ m_SelectedEntity, m_ActiveScene.get() };
             m_SceneHierarchy.DestroyEntity(entity);
-
             m_HoveredEntity = {};
-            m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
           }
 
           if (ImGui::BeginMenu("Properties"))
@@ -957,7 +955,6 @@ namespace Origin
             {
               auto& tag = m_SelectedEntity.GetComponent<TagComponent>().Tag;
               char buffer[64];
-              memset(buffer, 0, sizeof(buffer));
               strcpy_s(buffer, sizeof(buffer), tag.c_str());
               if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
               {

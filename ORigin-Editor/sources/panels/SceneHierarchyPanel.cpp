@@ -199,6 +199,8 @@ namespace Origin {
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 				// Texture
+				std::string texPath = std::string();
+
 				ImVec2 btSize = ImVec2(80.0f, 30.0f);
 				ImGui::Button("Texture", btSize);
 				if (ImGui::BeginDragDropTarget())
@@ -206,20 +208,25 @@ namespace Origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
-						auto texturePath = std::filesystem::path(g_AssetPath) / path;
+						std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
 				}
+
 				if (component.Texture)
 				{
+					texPath = component.Texture->GetFilepath();
+
 					ImGui::SameLine();
 					if (ImGui::Button("Delete", btSize))
 					{
 						component.Texture->Delete();
+						texPath = std::string();
 						component.Texture = {};
 					}
-					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
+
+					ImGui::Text("Path: %s", texPath.c_str());
 					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 				}
 			});

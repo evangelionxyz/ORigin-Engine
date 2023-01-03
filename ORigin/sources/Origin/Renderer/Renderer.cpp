@@ -23,7 +23,7 @@ namespace Origin
 
 	void Renderer::Shutdown()
 	{
-		OGN_CORE_TRACE("Renderer Shutdown");
+		OGN_CORE_WARN("Renderer Shutdown");
 		delete m_SceneData;
 		Renderer2D::Shutdown();
 		//Renderer3D::Shutdown();

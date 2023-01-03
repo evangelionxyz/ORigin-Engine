@@ -152,6 +152,7 @@ namespace Origin
 
     glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 		stbi_image_free(data);
+		OGN_CORE_WARN("Texture \"{}\" bound", m_FilePath);
   }
 
 	OpenGLTexture2D::~OpenGLTexture2D()
@@ -175,6 +176,6 @@ namespace Origin
 	void OpenGLTexture2D::Delete()
 	{
 		glBindTextureUnit(m_Index, 0); // bind texture index to nothing (0)
-		OGN_CORE_TRACE("Deleting Texture Index : {0}", m_Index);
+		OGN_CORE_WARN("Texture \"{}\" at index {} has been deleted", m_FilePath, m_Index);
 	}
 }

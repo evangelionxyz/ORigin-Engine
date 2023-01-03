@@ -4,7 +4,6 @@
 #include "ScriptEngine.h"
 
 #include "ScriptGlue.h"
-
 #include "Origin\Scene\Component\Component.h"
 
 #include "mono/jit/jit.h"
@@ -31,7 +30,7 @@ namespace Origin
 			if (size == 0)
 				return nullptr;
 
-			char* buffer = new char[size];
+			auto* buffer = new char[size];
 			stream.read((char*)buffer, size);
 
 			*outSize = size;
@@ -89,11 +88,10 @@ namespace Origin
 		MonoImage* CoreAssemblyImage = nullptr;
 		ScriptClass EntityClass;
 
-		std::unordered_map<std::string, std::shared_ptr<ScriptClass>> EntityClasses;
-		std::unordered_map<UUID, std::shared_ptr<ScriptInstance>> EntityInstances;
-
 		// Runtime
 		Scene* SceneContext = nullptr;
+		std::unordered_map<std::string, std::shared_ptr<ScriptClass>> EntityClasses;
+		std::unordered_map<UUID, std::shared_ptr<ScriptInstance>> EntityInstances;
 	};
 
 	ScriptEngineData* s_Data = nullptr;
@@ -125,18 +123,19 @@ namespace Origin
 		LoadAssembly("resources/scripts/ORigin-ScriptCore.dll");
 		LoadAssemblyClasses(s_Data->CoreAssembly);
 
+		// Internal Calls
 		ScriptGlue::RegisterFunctions();
 	}
 
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
-
 		s_Data->EntityClasses.clear();
 		s_Data->EntityInstances.clear();
 
+		// Cleanup memory before shutdown
 		delete s_Data;
-		OGN_CORE_TRACE("Script Engine Shutdown");
+		OGN_CORE_WARN("Script Engine Shutdown");
 	}
 
 	void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
@@ -157,7 +156,6 @@ namespace Origin
 	void ScriptEngine::OnRuntimeStop()
 	{
 		s_Data->SceneContext = nullptr;
-
 		s_Data->EntityInstances.clear();
 	}
 
@@ -168,12 +166,11 @@ namespace Origin
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
-		const auto& sc = entity.GetComponent<ScriptComponent>();
+		auto& sc = entity.GetComponent<ScriptComponent>();
 		if (EntityClassExists(sc.ClassName))
 		{
 			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_Data->EntityClasses[sc.ClassName]);
 			s_Data->EntityInstances[entity.GetUUID()] = instance;
-
 			instance->InvokeOnCreate();
 		}
 	}
@@ -209,7 +206,7 @@ namespace Origin
 		const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionTable);
 
-		MonoClass* entityClass = mono_class_from_name(image, "ORigin", "Entity");
+		MonoClass* entityClass = mono_class_from_name(image, "ORiginEngine", "Entity");
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
@@ -276,10 +273,8 @@ namespace Origin
 
 	void ScriptInstance::InvokeOnUpdate(float time)
 	{
-
 		void* param = &time;
 		if (m_OnUpdateMethod)
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, &param);
 	}
-
 }

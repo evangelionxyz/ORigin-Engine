@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-using ORigin;
+using ORiginEngine;
 
 namespace Game
 {

@@ -344,7 +344,7 @@ namespace Origin {
 		ScriptEngine::OnRuntimeStart(this);
 
 		// instantiate all script entities
-		auto view = m_Registry.view<ScriptComponent>();
+		auto& view = m_Registry.view<ScriptComponent>();
 		for (auto e : view)
 		{
 			Entity entity = { e, this };
@@ -416,7 +416,7 @@ namespace Origin {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
-		auto view = m_Registry.view<CameraComponent>();
+		auto& view = m_Registry.view<CameraComponent>();
 		for (auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
@@ -439,11 +439,12 @@ namespace Origin {
 
 	void Scene::DrawGrid(int size, glm::vec4 color)
 	{
-		// 3D x and z axis
+		// 3D XZ axis
 		Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f), glm::vec3(size, -1.0f, 0.0), glm::vec4(1, 0, 0, 1));
-		Renderer2D::DrawLine(glm::vec3(0.0f, -1.0f, -size), glm::vec3(0.0f, -1.0f, size), glm::vec4(0, 1, 0, 1));
+		Renderer2D::DrawLine(glm::vec3(0.0f, -1.0f, -size), glm::vec3(0.0f, -1.0f, size), glm::vec4(0, 0, 1, 1));
 
-		for (int i = 1; i < size; i++)
+		// TODO: XY axis
+		for (int i = 1; i <= size; i++)
 		{
 			Renderer2D::DrawLine(glm::vec3(0.0f + i, -1.0f, -size), glm::vec3(0.0f + i, -1.0f, size), color);
 			Renderer2D::DrawLine(glm::vec3(0.0f - i, -1.0f, -size), glm::vec3(0.0f - i, -1.0f, size), color);
@@ -460,7 +461,7 @@ namespace Origin {
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{
-		auto view = m_Registry.view<CameraComponent>();
+		auto& view = m_Registry.view<CameraComponent>();
 		for (auto entity : view)
 		{
 			const auto& camera = view.get<CameraComponent>(entity);
