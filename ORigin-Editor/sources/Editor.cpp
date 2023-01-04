@@ -31,8 +31,6 @@ namespace Origin
 
   void Editor::OnAttach()
   {
-    //EditorTheme::ApplyRayTek();
-
     m_PlayButton = Texture2D::Create("assets/resources/playbutton.png");
     m_SimulateButton = Texture2D::Create("assets/resources/simulatebutton.png");
     m_StopButton = Texture2D::Create("assets/resources/stopbutton.png");
