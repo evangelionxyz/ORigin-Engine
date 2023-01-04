@@ -99,16 +99,16 @@ namespace Origin {
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tagComponent.c_str());
 
-		if (ImGui::IsItemClicked())
-			m_SelectionContext = entity;
+		if (ImGui::IsItemClicked()) m_SelectionContext = entity;
 
-		// destroy/remove entity
-		bool entityDeleted = false;
+		// destroy entity
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Delete Entity"))
-				entityDeleted = true;
-
+			{
+				m_Context->DestroyEntity(entity);
+				m_SelectionContext = {};
+			}
 			ImGui::EndPopup();
 		}
 
@@ -119,12 +119,6 @@ namespace Origin {
 			if(opened)
 				ImGui::TreePop();
 			ImGui::TreePop();
-		}
-
-		if (entityDeleted)
-		{
-			m_Context->DestroyEntity(entity);
-				m_SelectionContext = {};
 		}
 	}
 

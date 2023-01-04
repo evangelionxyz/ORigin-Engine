@@ -40,6 +40,7 @@ namespace Origin {
 
 	Scene::Scene()
 	{
+		m_CameraIcon = Texture2D::Create("assets/resources/camera.png");
 	}
 	Scene::~Scene()
 	{
@@ -363,7 +364,6 @@ namespace Origin {
 	void Scene::Render2DScene(EditorCamera& camera)
 	{
 		Renderer2D::BeginScene(camera);
-
 		// Sprites
 		{
 			auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
@@ -381,6 +381,22 @@ namespace Origin {
 			{
 				auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+			}
+		}
+
+		// Camera
+		{
+			auto& view = m_Registry.view<TransformComponent, CameraComponent>();
+			for (auto& entity : view)
+			{
+				auto& tc = view.get<TransformComponent>(entity);
+
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
+					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
+					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
+					* glm::scale(glm::mat4(1.0f), tc.Scale);
+
+				Renderer2D::DrawQuad(transform, m_CameraIcon, 1.0f, glm::vec4(1.0f), (int)entity);
 			}
 		}
 		DrawGrid(m_GridSize, m_GridColor);

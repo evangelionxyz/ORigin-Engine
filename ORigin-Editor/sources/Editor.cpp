@@ -182,12 +182,12 @@ namespace Origin
 
 	void Editor::OnOverlayRenderer()
 	{
-
 		float zIndex = 0.001f;
 		glm::vec3 ccFWDir = m_EditorCamera.GetForwardDirection();
 		glm::vec3 projectionRender = ccFWDir * glm::vec3(zIndex);
 
     OverlayBeginScene();
+
     if (m_VisualizeCollider)
     {
 			// Circle Collider Visualizer
@@ -937,15 +937,12 @@ namespace Origin
           ImGui::Text("%s", name.c_str());
           ImGui::Separator();
 
-          // destroy/remove entity
-          bool entityDeleted = false;
-          if (ImGui::MenuItem("Delete")) entityDeleted = true;
-
-          if (entityDeleted)
+          // destroy entity
+          if (ImGui::MenuItem("Delete"))
           {
-            Entity entity{ m_SelectedEntity, m_ActiveScene.get() };
-            m_SceneHierarchy.DestroyEntity(entity);
-            m_HoveredEntity = {};
+						m_SceneHierarchy.DestroyEntity(m_SelectedEntity);
+            m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
+						m_HoveredEntity = {};
           }
 
           if (ImGui::BeginMenu("Properties"))

@@ -369,9 +369,7 @@ namespace Origin {
 			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
-
 		s_Data.QuadIndexCount += 6;
-
 		s_Data.Stats.QuadCount++;
 	}
 
@@ -409,7 +407,7 @@ namespace Origin {
 		glm::vec3 p1 = glm::vec3(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
 		glm::vec3 p2 = glm::vec3(position.x + size.x * 0.5f, position.y + size.y * 0.5f, position.z);
 		glm::vec3 p3 = glm::vec3(position.x - size.x * 0.5f, position.y + size.y * 0.5f, position.z);
-		
+
 		DrawLine(p0, p1, color);
 		DrawLine(p1, p2, color);
 		DrawLine(p2, p3, color);

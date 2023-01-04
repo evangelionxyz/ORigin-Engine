@@ -64,6 +64,7 @@ namespace Origin {
 		SceneHierarchyPanel m_SceneHierarchy;
 
 		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton;
+    
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;
 		std::shared_ptr<Framebuffer> m_Framebuffer;

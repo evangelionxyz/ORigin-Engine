@@ -5,6 +5,8 @@
 #include "Origin\Utils\Time.h"
 #include "Origin\Scene\Component\UUID.h"
 
+#include "Origin\Renderer\Texture.h"
+
 #include "entt\entt.hpp"
 
 class b2World;
@@ -62,6 +64,8 @@ namespace Origin
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
 
 	private:
+		std::shared_ptr<Texture2D> m_CameraIcon;
+
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth, m_ViewportHeight = 0;
 		b2World* m_Box2DWorld;
