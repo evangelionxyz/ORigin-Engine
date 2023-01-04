@@ -298,9 +298,15 @@ namespace Origin
           if (m_SceneHierarchy.GetContext())
           {
             if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+            {
+              m_HoveredEntity = {};
               OnScenePlay();
+            }
             else if (m_SceneState == SceneState::Play)
+            {
+              m_HoveredEntity = {};
               OnSceneStop();
+            }
           }
         }
 				ImGui::PopStyleColor(3);
@@ -316,10 +322,16 @@ namespace Origin
 				{
 					if (m_SceneHierarchy.GetContext())
 					{
-						if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+            if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+            {
+              m_HoveredEntity = {};
 							OnSceneSimulate();
-						else if (m_SceneState == SceneState::Simulate)
+            }
+            else if (m_SceneState == SceneState::Simulate)
+            {
+              m_HoveredEntity = {};
 							OnSceneStop();
+            }
 					}
 				}
 				ImGui::PopStyleColor(3);

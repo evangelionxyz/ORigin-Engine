@@ -389,14 +389,16 @@ namespace Origin {
 			auto& view = m_Registry.view<TransformComponent, CameraComponent>();
 			for (auto& entity : view)
 			{
-				auto& tc = view.get<TransformComponent>(entity);
+				auto& [tc, cam] = view.get<TransformComponent, CameraComponent>(entity);
 
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
 					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
 					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-					* glm::scale(glm::mat4(1.0f), tc.Scale);
+					* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
 
-				Renderer2D::DrawQuad(transform, m_CameraIcon, 1.0f, glm::vec4(1.0f), (int)entity);
+				Renderer2D::DrawQuad(transform, m_CameraIcon, 1.0f,
+					cam.Primary == true ? glm::vec4(1.0f) : glm::vec4(1.0f, 0.8f, 0.8f, 1.0f),
+					(int)entity);
 			}
 		}
 		DrawGrid(m_GridSize, m_GridColor);
