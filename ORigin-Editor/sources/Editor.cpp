@@ -219,7 +219,7 @@ namespace Origin
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
 						* glm::scale(glm::mat4(1.0f), scale);
 
-					Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.01f);
+					Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f);
 				}
 			}
 
