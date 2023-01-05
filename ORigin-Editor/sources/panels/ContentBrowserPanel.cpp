@@ -10,9 +10,9 @@ namespace Origin
 
 	ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory(g_AssetPath)
 	{
-		m_DirectoryIcon = Texture2D::Create("assets/resources/directory_icon.png");
-		m_FileIcon = Texture2D::Create("assets/resources/file_icon.png");
-		m_BackButtonIcon = Texture2D::Create("assets/resources/leftarrow_icon.png");
+		m_DirectoryIcon = Texture2D::Create("resources/textures/directory_icon.png");
+		m_FileIcon = Texture2D::Create("resources/textures/file_icon.png");
+		m_BackButtonIcon = Texture2D::Create("resources/textures/leftarrow_icon.png");
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()

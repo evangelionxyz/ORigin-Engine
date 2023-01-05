@@ -40,7 +40,7 @@ namespace Origin {
 
 	Scene::Scene()
 	{
-		m_CameraIcon = Texture2D::Create("assets/resources/camera.png");
+		m_CameraIcon = Texture2D::Create("resources/textures/camera.png");
 	}
 	Scene::~Scene()
 	{
@@ -178,6 +178,72 @@ namespace Origin {
 		m_Registry.destroy(entity);
 	}
 
+	void Scene::OnUpdateGame(Timestep time)
+	{
+		// Update Scripts
+		{
+			auto& view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				ScriptEngine::OnUpdateEntity(entity, time);
+			}
+
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			{
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
+				nsc.Instance->OnUpdate(time);
+			});
+		}
+
+		Camera* mainCamera = nullptr;
+		glm::mat4 cameraTransform = glm::mat4(1.0f);
+
+		auto& view = m_Registry.view<CameraComponent, TransformComponent>();
+		for (auto entity : view)
+		{
+			auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+
+			if (camera.Primary)
+			{
+				mainCamera = &camera.Camera;
+				cameraTransform = transform.GetTransform();
+				break;
+			}
+		}
+
+		if (mainCamera)
+		{
+			Renderer2D::BeginScene(*mainCamera, cameraTransform);
+
+			// Sprites
+			{
+				auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+				for (auto entity : group)
+				{
+					auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				}
+			}
+
+			// Circles
+			{
+				auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+				for (auto& entity : view)
+				{
+					auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+					Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+				}
+			}
+			Renderer2D::EndScene();
+		}
+	}
+
 	void Scene::OnUpdateRuntime(Timestep time)
 	{
 		// Update Scripts
@@ -229,7 +295,7 @@ namespace Origin {
 		glm::mat4 cameraTransform;
 
 		auto& view = m_Registry.view<CameraComponent, TransformComponent>();
-		for (auto& entity : view)
+		for (auto entity : view)
 		{
 			auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
 
@@ -248,7 +314,7 @@ namespace Origin {
 			// Sprites
 			{
 				auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-				for (auto& entity : group)
+				for (auto entity : group)
 				{
 					auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
@@ -367,7 +433,7 @@ namespace Origin {
 		// Sprites
 		{
 			auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-			for (auto& entity : group)
+			for (auto entity : group)
 			{
 				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
@@ -387,9 +453,9 @@ namespace Origin {
 		// Camera
 		{
 			auto& view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto& entity : view)
+			for (auto entity : view)
 			{
-				auto& [tc, cam] = view.get<TransformComponent, CameraComponent>(entity);
+				auto& [tc, cc] = view.get<TransformComponent, CameraComponent>(entity);
 
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
 					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
@@ -397,7 +463,7 @@ namespace Origin {
 					* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
 
 				Renderer2D::DrawQuad(transform, m_CameraIcon, 1.0f,
-					cam.Primary == true ? glm::vec4(1.0f) : glm::vec4(1.0f, 0.8f, 0.8f, 1.0f),
+					cc.Primary == true ? glm::vec4(1.0f) : glm::vec4(1.0f, 0.8f, 0.8f, 1.0f),
 					(int)entity);
 			}
 		}

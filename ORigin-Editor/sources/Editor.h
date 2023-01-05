@@ -6,7 +6,19 @@
 #include "panels\SceneHierarchyPanel.h"
 #include "panels\ContentBrowserPanel.h"
 
+#include <ImGuizmo.h>
+
 namespace Origin {
+
+	static float RMHoldTime = 0.0f;
+	static float LMHoldTime = 0.0f;
+	static bool guiDockingSpaceOpen = true;
+	static bool guiMenuFullscreen = false;
+	static bool guiMenuStyle = true;
+	static bool guiRenderStatus = true;
+	static bool guiDebugInfo = true;
+	static bool guiImGuiDemoWindow = true;
+	static bool guiOverlay = true;
 
   class Editor : public Layer
   {
@@ -18,8 +30,19 @@ namespace Origin {
 
     void OnDuplicateEntity();
     void OnOverlayRenderer();
-    void ViewportToolbar();
-    void ViewportMenu();
+
+    // Game Viewport
+		void GameViewport();
+		void GameViewportToolbar();
+		void GameViewportMenu();
+
+    // Scene Viewport
+		void SceneViewport();
+    void SceneViewportToolbar();
+    void SceneViewportMenu();
+
+		void MenuBar();
+
     void NewScene();
     void SaveScene();
     void SaveSceneAs();
@@ -29,9 +52,6 @@ namespace Origin {
     void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
 
     void OverlayBeginScene();
-
-    void VpGui();
-    void MenuBar();
 
     static bool OnWindowResize(WindowResizeEvent& e);
     static bool OnMouseMovedEvent(MouseMovedEvent& e);
@@ -64,10 +84,10 @@ namespace Origin {
 		SceneHierarchyPanel m_SceneHierarchy;
 
 		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton;
-    
+
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;
-		std::shared_ptr<Framebuffer> m_Framebuffer;
+		std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
 
 		enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
 		ViewportMenuContext m_VpMenuContext = ViewportMenuContext::CreateMenu;
@@ -79,8 +99,12 @@ namespace Origin {
     glm::vec2 position = glm::vec2(0);
     glm::vec2 scale = glm::vec2(1);
 
-    glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-    glm::vec2 m_ViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
+    glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
+    glm::vec2 m_GameViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
+
+    // Scene Viewport
+    glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
+    glm::vec2 m_SceneViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
     glm::vec3 cameraPosition = {};
 
   	int lastMouseX = 0, mouseX = 0;

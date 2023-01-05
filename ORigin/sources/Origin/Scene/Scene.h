@@ -32,6 +32,8 @@ namespace Origin
 
 		void DestroyEntity(Entity entity);
 
+		void OnUpdateGame(Timestep time);
+
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 		void OnUpdateRuntime(Timestep time);
@@ -75,7 +77,4 @@ namespace Origin
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 	};
-
-
-
 }

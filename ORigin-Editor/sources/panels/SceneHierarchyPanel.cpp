@@ -9,7 +9,6 @@
 
 #include "Origin\Scripting\ScriptEngine.h"
 
-#include "../Mario.h"
 
 namespace Origin {
 
@@ -340,11 +339,6 @@ namespace Origin {
 				ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 100.0f);
 				ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f);
 				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
-			});
-
-		DrawComponent<NativeScriptComponent>("Native Script", entity, [=](auto& component)
-			{
-				component.Bind<Mario>();
 			});
 	}
 
