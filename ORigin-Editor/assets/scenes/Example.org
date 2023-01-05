@@ -122,8 +122,6 @@ Entities:
       Friction: 0.74000001
       Restitution: 0.319999993
       RestitutionThreshold: 0.560000002
-    ScriptComponent:
-      ClassName: Game.Player
   - Entity: 3354418643701503687
     TagComponent:
       Tag: Sprite

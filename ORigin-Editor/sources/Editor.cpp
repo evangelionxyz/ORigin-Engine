@@ -136,18 +136,14 @@ namespace Origin
     }
 
     OnOverlayRenderer();
-
     m_Framebuffer->Unbind();
 
-    {// Game Framebuffer
-
-			 // Resize
+    {
+      // Game Framebuffer
+			// Resize
       const FramebufferSpecification gameSpec = m_GameFramebuffer->GetSpecification();
 			if (m_GameViewportSize.x > 0.0f && m_GameViewportSize.y > 0.0f && (m_GameViewportSize.x != gameSpec.Width || m_GameViewportSize.y != gameSpec.Height))
-			{
         m_GameFramebuffer->Resize(static_cast<uint32_t>(m_GameViewportSize.x), static_cast<uint32_t>(m_GameViewportSize.y));
-        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_GameViewportSize.x), static_cast<uint32_t>(m_GameViewportSize.y));
-			}
 
 			m_GameFramebuffer->Bind();
 			RenderCommand::ClearColor(clearColor);
@@ -155,6 +151,7 @@ namespace Origin
 			RenderCommand::Clear();
 			m_GameFramebuffer->ClearAttachment(0, -1);
 
+      m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_GameViewportSize.x), static_cast<uint32_t>(m_GameViewportSize.y));
       m_ActiveScene->OnUpdateGame(time);
 
 			m_GameFramebuffer->Unbind();

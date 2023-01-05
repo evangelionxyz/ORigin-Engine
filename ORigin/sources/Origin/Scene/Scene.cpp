@@ -180,26 +180,8 @@ namespace Origin {
 
 	void Scene::OnUpdateGame(Timestep time)
 	{
-		// Update Scripts
-		{
-			auto& view = m_Registry.view<ScriptComponent>();
-			for (auto e : view)
-			{
-				Entity entity = { e, this };
-				ScriptEngine::OnUpdateEntity(entity, time);
-			}
-
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-				nsc.Instance->OnUpdate(time);
-			});
-		}
+		// OnUpdateGame Only Needed Rendering
+		// Exclude Scripting
 
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform = glm::mat4(1.0f);
@@ -336,7 +318,6 @@ namespace Origin {
 
 	void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
 	{
-
 		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
 				if (!nsc.Instance)
