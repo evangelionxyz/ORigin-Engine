@@ -31,7 +31,6 @@ namespace Origin
 				ImGui::MenuItem("Style Editor", nullptr, &guiMenuStyle);
 				ImGui::MenuItem("Render Status", nullptr, &guiRenderStatus);
 				ImGui::MenuItem("Debug Info", nullptr, &guiDebugInfo);
-				ImGui::MenuItem("Debug Overlay", nullptr, &guiOverlay);
 				ImGui::MenuItem("Demo Window", nullptr, &guiImGuiDemoWindow);
 
 				ImGui::EndMenu();

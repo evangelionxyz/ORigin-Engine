@@ -28,5 +28,3 @@ Entities:
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TillingFactor: 1
-    ScriptComponent:
-      ClassName: Game.Player

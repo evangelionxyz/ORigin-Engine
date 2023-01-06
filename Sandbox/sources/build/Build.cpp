@@ -2,24 +2,28 @@
 #include <Origin.h>
 #include "..\Sandbox.h"
 
-namespace Origin {
+namespace Origin
+{
+	class SandboxBuild : public Application
+	{
+	public:
+		SandboxBuild(const ApplicationSpecification spec)
+			: Application(spec)
+		{
+			Application::Get().GetWindow().SetIcon("assets/textures/icon_origin.png");
+			PushLayer(new Sandbox());
+		}
+		~SandboxBuild() { }
+	};
 
-  class EditorBuild
-    : public Application
-  {
-  public:
-    EditorBuild(ApplicationCommandLineArgs args)
-      : Application("ORigin-Editor", args)
-    {
-      Application::Get().GetWindow().SetIcon("assets/textures/icon_origin.png");
-      PushLayer(new Editor());
-    }
-    ~EditorBuild() { }
-  };
+	Application* CreateApplication(ApplicationCommandLineArgs args)
+	{
+		ApplicationSpecification spec;
+		spec.Name = "Sandbox";
+		spec.WorkingDirectory = "../ORigin-Editor";
+		spec.CommandLineArgs = args;
 
-  Application* CreateApplication(ApplicationCommandLineArgs args)
-  {
-    OGN_CORE_INFO("ORigin-Editor");
-    return new EditorBuild(args);
-  };
+		OGN_CORE_INFO(spec.Name);
+		return new SandboxBuild(spec);
+	};
 }

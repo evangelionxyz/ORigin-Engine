@@ -17,11 +17,11 @@ project "ORigin-ScriptCore"
     filter "configurations:Debug"
         optimize "On"
         symbols "Default"
-        
+
     filter "configurations:Release"
         optimize "On"
         symbols "Default"
-        
+
     filter "configurations:Dist"
 		optimize "Full"
         symbols "Off"

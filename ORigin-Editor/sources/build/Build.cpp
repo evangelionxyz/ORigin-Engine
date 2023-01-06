@@ -3,14 +3,13 @@
 #include <Origin.h>
 #include "..\Editor.h"
 
-namespace Origin {
-
-  class EditorBuild
-    : public Application
+namespace Origin
+{
+  class EditorBuild : public Application
   {
   public:
-    EditorBuild(ApplicationCommandLineArgs args)
-      : Application("ORigin-Editor", args)
+    EditorBuild(const ApplicationSpecification& spec)
+      : Application(spec)
     {
       Application::Get().GetWindow().SetIcon("assets/textures/icon_origin.png");
 	    PushLayer(new Editor());
@@ -20,7 +19,11 @@ namespace Origin {
 
   Application* CreateApplication(ApplicationCommandLineArgs args)
   {
-    OGN_CORE_INFO("ORigin-Editor");
-    return new EditorBuild(args);
+    ApplicationSpecification spec;
+    spec.Name = "ORigin-Editor";
+    spec.CommandLineArgs = args;
+
+    OGN_CORE_INFO(spec.Name);
+    return new EditorBuild(spec);
   };
 }

@@ -23,15 +23,21 @@ namespace Origin {
 
 		const char* operator[](int index) const {
 			if (index > Count) __debugbreak();
-
 			return Args[index];
 		}
+	};
+
+	struct ApplicationSpecification
+	{
+		std::string Name = "ORigin Application";
+		std::string WorkingDirectory;
+		ApplicationCommandLineArgs CommandLineArgs;
 	};
 
 	class Application
 	{
 	public:
-		Application(const std::string title, ApplicationCommandLineArgs args = ApplicationCommandLineArgs());
+		Application(const ApplicationSpecification& spec);
 
 		virtual ~Application();
 
@@ -47,10 +53,10 @@ namespace Origin {
 		inline static Application& Get() { return *s_Instance; }
 		inline bool GetMinimized() { return m_Minimized; }
 		inline Window& GetWindow() { return *m_Window; }
-		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
+		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 
 	private:
-		ApplicationCommandLineArgs m_CommandLineArgs;
+		ApplicationSpecification m_Specification;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);

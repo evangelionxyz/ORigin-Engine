@@ -55,10 +55,10 @@ namespace Origin
 
     m_ActiveScene = std::make_shared<Scene>();
 
-    const auto commandLineArgs = Application::Get().GetCommandLineArgs();
-    if (commandLineArgs.Count > 1)
+    const auto AppSpec = Application::Get().GetSpecification();
+    if (AppSpec.CommandLineArgs.Count > 1)
     {
-      const auto sceneFilePath = commandLineArgs[1];
+      const auto sceneFilePath = AppSpec.CommandLineArgs[1];
       SceneSerializer serializer(m_ActiveScene);
       serializer.Deserialize(sceneFilePath);
     }

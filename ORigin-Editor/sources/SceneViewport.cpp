@@ -42,7 +42,7 @@ namespace Origin
 		m_SceneViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 		// Debug Info Overlay
-		if (guiOverlay)
+		/*if (guiOverlay)
 		{
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration
 				| ImGuiWindowFlags_AlwaysAutoResize
@@ -70,7 +70,7 @@ namespace Origin
 				ImGui::Checkbox("Visualize 2D Colliders", &m_VisualizeCollider);
 			}
 			ImGui::End();
-		}
+		}*/
 
 		ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };

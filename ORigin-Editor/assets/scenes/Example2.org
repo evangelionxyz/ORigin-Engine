@@ -1,5 +1,23 @@
 Scene: Example2.org
 Entities:
+  - Entity: 5356250521223444918
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [8.08070183, 3.46999836, 8.34248161]
+      Rotation: [-0.16022101, 0.714369416, 1.47925547e-07]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: false
+      FixedAspectRatio: false
   - Entity: 5027775578239630526
     TagComponent:
       Tag: Sprite
@@ -628,12 +646,12 @@ Entities:
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Translation: [1.47116911, 2.28824544, 4.92358971]
+      Translation: [1.30943143, 2.18933845, 11.9722862]
       Rotation: [0, 0, 0.40775761]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
-        ProjectionType: 1
+        ProjectionType: 0
         PerspectiveFOV: 0.785398185
         PerspectiveNear: 0.00999999978
         PerspectiveFar: 100
