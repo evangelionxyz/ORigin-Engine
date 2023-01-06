@@ -51,6 +51,8 @@ namespace Origin
 		{
 			ImGui::Begin("Render Status", &guiRenderStatus);
 
+			ImGui::Checkbox("Visualize 2D Colliders", &m_VisualizeCollider);
+
 			ImGui::Text("Grid");
 			ImGui::Text("Size "); ImGui::SameLine(0.0f, 1.5f); ImGui::DragInt("##grid_size", &m_GridSize);
 			ImGui::Text("Color"); ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("##grid_color", glm::value_ptr(m_GridColor));
