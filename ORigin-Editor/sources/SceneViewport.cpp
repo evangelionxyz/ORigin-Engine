@@ -42,7 +42,7 @@ namespace Origin
 		m_SceneViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 		// Debug Info Overlay
-		/*if (guiOverlay)
+		if (guiOverlay)
 		{
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration
 				| ImGuiWindowFlags_AlwaysAutoResize
@@ -59,18 +59,13 @@ namespace Origin
 			{
 				if (!m_SceneHierarchy.GetContext())
 					ImGui::Text("Load a Scene or Create New Scene to begin!");
-
 				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-				ImGui::Text("Mouse Position (%d, %d)", mouseX, mouseY);
 				std::string name = "None";
 				if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 				ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
-				ImGui::Text("Menu Context : %s", MenuContextToString(m_VpMenuContext));
-				ImGui::Checkbox("Visualize 2D Colliders", &m_VisualizeCollider);
 			}
 			ImGui::End();
-		}*/
+		}
 
 		ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
