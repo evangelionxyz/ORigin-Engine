@@ -1,10 +1,42 @@
 Scene: test2.org
 Entities:
+  - Entity: 16442604716909018330
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-0.0314229876, 0.5, -0.354540408]
+      Rotation: [-1.57079411, -0.785396576, 0.00872664433]
+      Scale: [0.999999464, 0.999857664, 0.999774992]
+    SpriteRendererComponent:
+      Color: [1, 0.421940923, 0.831704378, 1]
+      TillingFactor: 1
+  - Entity: 14211076391460261219
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.320083112, 0, -7.4505806e-09]
+      Rotation: [-3.14159226, -0.785398245, -3.14159226]
+      Scale: [0.999968946, 1, 0.999968946]
+    SpriteRendererComponent:
+      Color: [0.5527426, 0, 0.419804603, 1]
+      TillingFactor: 1
+  - Entity: 16249785380929472433
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-0.382654428, 0, 0]
+      Rotation: [0, -0.785398245, 0]
+      Scale: [0.999999881, 1, 0.999999881]
+    SpriteRendererComponent:
+      Color: [1, 0.147679329, 0.838167131, 1]
+      TillingFactor: 1
+    ScriptComponent:
+      ClassName: Game.Player
   - Entity: 14681253807645120406
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Translation: [0.0559866056, 1.38473821, 2.93731022]
+      Translation: [0.0559866056, 1.38473821, 4.2259531]
       Rotation: [-0.33830151, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -18,35 +50,3 @@ Entities:
         OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
-  - Entity: 16249785380929472433
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [-0.382654428, 0, 0]
-      Rotation: [0, -0.785398245, 0]
-      Scale: [0.999999881, 1, 0.999999881]
-    SpriteRendererComponent:
-      Color: [1, 0.147679329, 0.838167131, 1]
-      TillingFactor: 1
-    ScriptComponent:
-      ClassName: Game.Player
-  - Entity: 14211076391460261219
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [0.320083112, 0, -7.4505806e-09]
-      Rotation: [-3.14159226, -0.785398245, -3.14159226]
-      Scale: [0.999968946, 1, 0.999968946]
-    SpriteRendererComponent:
-      Color: [0.5527426, 0, 0.419804603, 1]
-      TillingFactor: 1
-  - Entity: 16442604716909018330
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [-0.0314229876, 0.5, -0.354540408]
-      Rotation: [-1.57079411, -0.785396576, 0.00872664433]
-      Scale: [0.999999464, 0.999857664, 0.999774992]
-    SpriteRendererComponent:
-      Color: [1, 0.421940923, 0.831704378, 1]
-      TillingFactor: 1

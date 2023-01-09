@@ -31,7 +31,7 @@ namespace Origin
 		}
 
 		static float padding = 10.0f;
-		static float thumbnailSize = 70.0f;
+		static float thumbnailSize = 64.0f;
 		float cellSize = thumbnailSize + padding;
 
 		float panelWidth = ImGui::GetContentRegionAvail().x;

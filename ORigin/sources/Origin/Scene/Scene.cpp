@@ -510,9 +510,6 @@ namespace Origin {
 		Entity newEntity = CreateEntity(name);
 
 		CopyComponentIfExists(AllComponents{}, newEntity, entity);
-
-		newEntity.GetComponent<TransformComponent>().Translation.x += 0.2f;
-		newEntity.GetComponent<TransformComponent>().Translation.y += 0.2f;
 	}
 
 	void Scene::DrawGrid(int size, glm::vec4 color)

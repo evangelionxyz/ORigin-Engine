@@ -16,7 +16,7 @@ namespace Game
 
         void OnUpdate(float time)
         {
-            float speed = 3.0f;
+            float speed = 2.0f;
             Vector3 velocity = Vector3.Zero();
 
             if (Input.IsKeyPressed(KeyCode.W))

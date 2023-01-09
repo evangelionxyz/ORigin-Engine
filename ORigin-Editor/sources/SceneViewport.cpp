@@ -60,6 +60,7 @@ namespace Origin
 				if (!m_SceneHierarchy.GetContext())
 					ImGui::Text("Load a Scene or Create New Scene to begin!");
 				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+				ImGui::Text("Gizmo Type : %i", m_GizmosType);
 				std::string name = "None";
 				if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 				ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
@@ -103,6 +104,10 @@ namespace Origin
 			ImGui::EndDragDropTarget();
 		}
 
+		// Editor Camera
+		const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+		glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
 		{ // Gizmos
 			m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 			ImGuizmo::SetOrthographic(false); // by default is false
@@ -115,10 +120,6 @@ namespace Origin
 					m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x,
 					m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
 				);
-
-				// Editor Camera
-				const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-				glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 				auto& tc = m_SelectedEntity.GetComponent<TransformComponent>();
 				glm::mat4 transform = tc.GetTransform();
@@ -156,20 +157,17 @@ namespace Origin
 				if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape)) m_GizmosType = -1;
 			}
 
-			if (!m_SceneHierarchy.GetSelectedEntity()) m_GizmosType = -1;
+			m_EditorCamera.EnableMovement(m_ViewportHovered && !ImGuizmo::IsUsing());
+
+			// View Manipulate
+			//const float& wndWidth = ImGui::GetWindowWidth();
+			//const float& camDistance = m_EditorCamera.GetDistance();
+			//ImGuizmo::ViewManipulate(
+			//	glm::value_ptr(cameraView),
+			//	camDistance, ImVec2((viewportMinRegion.x + viewportOffset.x) + wndWidth - 120.0f, 92.0f),
+			//	ImVec2(128, 128), 0
+			//);
 		}
-
-		m_EditorCamera.EnableMovement(m_ViewportHovered && !ImGuizmo::IsUsing());
-
-		// View Manipulate
-		const float& wndWidth = ImGui::GetWindowWidth();
-		glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
-		const float& camDistance = m_EditorCamera.GetDistance();
-		ImGuizmo::ViewManipulate(
-			glm::value_ptr(cameraView),
-			camDistance, ImVec2((viewportMinRegion.x + viewportOffset.x) + wndWidth - 120.0f, 92.0f),
-			ImVec2(128, 128), 0
-		);
 
 		ImGui::End();
 		ImGui::PopStyleVar();
