@@ -10,7 +10,6 @@ namespace Origin
 	void OpenGLRendererAPI::Init()
 	{
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_DEPTH_FUNC);
 		glEnable(GL_BLEND);
 		glEnable(GL_LINE_SMOOTH);
 

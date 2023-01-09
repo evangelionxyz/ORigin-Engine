@@ -125,6 +125,7 @@ namespace Origin
 
 		// Internal Calls
 		ScriptGlue::RegisterFunctions();
+		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity");
 	}
 
 	void ScriptEngine::Shutdown()
@@ -169,7 +170,7 @@ namespace Origin
 		auto& sc = entity.GetComponent<ScriptComponent>();
 		if (EntityClassExists(sc.ClassName))
 		{
-			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_Data->EntityClasses[sc.ClassName]);
+			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_Data->EntityClasses[sc.ClassName], entity);
 			s_Data->EntityInstances[entity.GetUUID()] = instance;
 			instance->InvokeOnCreate();
 		}
@@ -179,8 +180,11 @@ namespace Origin
 	{
 		UUID& entityID = entity.GetUUID();
 
-		OGN_CORE_ASSERT(s_Data->EntityInstances.find(entityID) != s_Data->EntityInstances.end(),
-			"Entity Script Instance not found!");
+		if (s_Data->EntityInstances.find(entityID) == s_Data->EntityInstances.end())
+		{
+			OGN_CORE_WARN("Entity Script Instance not found!");
+			return;
+		}
 
 		std::shared_ptr<ScriptInstance> instance = s_Data->EntityInstances.at(entityID);
 		instance->InvokeOnUpdate(time);
@@ -189,6 +193,11 @@ namespace Origin
 	std::unordered_map<std::string, std::shared_ptr<ScriptClass>> ScriptEngine::GetEntityClasses()
 	{
 		return s_Data->EntityClasses;
+	}
+
+	Origin::Scene* ScriptEngine::GetSceneContext()
+	{
+		return s_Data->SceneContext;
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
@@ -257,12 +266,21 @@ namespace Origin
 		return mono_runtime_invoke(method, m_MonoClass, params, nullptr);
 	}
 
-	ScriptInstance::ScriptInstance(std::shared_ptr<ScriptClass> scriptClass)
+	ScriptInstance::ScriptInstance(std::shared_ptr<ScriptClass> scriptClass, Entity entity)
 		: m_ScriptClass(scriptClass)
 	{
 		m_Instance = scriptClass->Instantiate();
+
+		m_OnConstructor = s_Data->EntityClass.GetMethod(".ctor", 1);
 		m_OnCreateMethod = scriptClass->GetMethod("OnCreate");
 		m_OnUpdateMethod = scriptClass->GetMethod("OnUpdate", 1);
+
+		// Entity Constructor
+		{
+			UUID entityID = entity.GetUUID();
+			void* param = &entityID;
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnConstructor, &param);
+		}
 	}
 
 	void ScriptInstance::InvokeOnCreate()

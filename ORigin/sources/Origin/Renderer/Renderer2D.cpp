@@ -91,11 +91,10 @@ namespace Origin {
 		LineVertex* LineVertexBufferBase = nullptr;
 		LineVertex* LineVertexBufferPtr = nullptr;
 
-
-
 		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
 		Renderer2D::Statistics Stats;
+		glm::vec3 CameraPosition;
 
 		struct CameraData
 		{
@@ -209,6 +208,7 @@ namespace Origin {
 	void Renderer2D::BeginScene(const EditorCamera& camera)
 	{
 		s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
+		s_Data.CameraPosition = camera.GetPosition();
 		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 		StartBatch();
@@ -268,10 +268,6 @@ namespace Origin {
 			RenderCommand::DrawIndexed(s_Data.CircleVertexArray, s_Data.CircleIndexCount);
 			s_Data.Stats.DrawCalls++;
 		}
-	}
-
-	void Renderer2D::ObjectSorting(float a, float b)
-	{
 	}
 
 	void Renderer2D::NextBatch()

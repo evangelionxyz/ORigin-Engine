@@ -1,0 +1,44 @@
+Scene: transparent test.org
+Entities:
+  - Entity: 16478165416609406649
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, 1.24325156]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 0.592156887]
+      TillingFactor: 1
+    ScriptComponent:
+      ClassName: ""
+  - Entity: 7479235239649712644
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.510367692, 0, 0.68181324]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.403921574, 1, 0, 0.529411793]
+      TillingFactor: 1
+    ScriptComponent:
+      ClassName: Game.Player
+  - Entity: 1201247297741433026
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false

@@ -38,7 +38,7 @@ namespace Origin
 	class ScriptInstance
 	{
 	public:
-		ScriptInstance(std::shared_ptr<ScriptClass> scriptClass);
+		ScriptInstance(std::shared_ptr<ScriptClass> scriptClass, Entity entity);
 
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float time);
@@ -47,6 +47,7 @@ namespace Origin
 		std::shared_ptr<ScriptClass> m_ScriptClass;
 
 		MonoObject* m_Instance = nullptr;
+		MonoMethod* m_OnConstructor = nullptr;
 		MonoMethod* m_OnCreateMethod = nullptr;
 		MonoMethod* m_OnUpdateMethod = nullptr;
 	};
@@ -68,6 +69,8 @@ namespace Origin
 		static void OnUpdateEntity(Entity entity, float time);
 
 		static std::unordered_map<std::string, std::shared_ptr<ScriptClass>> GetEntityClasses();
+
+		static Scene* GetSceneContext();
 
 	private:
 

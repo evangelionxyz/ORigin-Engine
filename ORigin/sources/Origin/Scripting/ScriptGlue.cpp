@@ -2,6 +2,13 @@
 
 #include "pch.h"
 #include "ScriptGlue.h"
+#include "Origin\Scene\Component\UUID.h"
+#include "Origin\Scene\Scene.h"
+#include "Origin\Scene\Entity.h"
+#include "Origin\IO\KeyCodes.h"
+#include "Origin\IO\Input.h"
+
+#include "ScriptEngine.h"
 
 #include "mono/metadata/object.h"
 
@@ -29,11 +36,32 @@ namespace Origin
 		return glm::dot(*parameter, *parameter);
 	}
 
+	static void Entity_GetTranslation(UUID entityID, glm::vec3* outTranslation)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		*outTranslation = entity.GetComponent<TransformComponent>().Translation;
+	}
+
+	static void Entity_SetTranslation(UUID entityID, glm::vec3* translation)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		entity.GetComponent<TransformComponent>().Translation = *translation;
+	}
+	static bool Input_IsKeyPressed(KeyCode keycode)
+	{
+		return Input::IsKeyPressed(keycode);
+	}
+
 	void ScriptGlue::RegisterFunctions()
 	{
 		OGN_ADD_INTERNAL_CALLS(NativeLog);
 		OGN_ADD_INTERNAL_CALLS(NativeLog_Vector);
 		OGN_ADD_INTERNAL_CALLS(NativeLog_VectorDot);
+		OGN_ADD_INTERNAL_CALLS(Entity_GetTranslation);
+		OGN_ADD_INTERNAL_CALLS(Entity_SetTranslation);
+		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
 	}
 
 }

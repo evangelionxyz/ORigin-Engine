@@ -115,7 +115,6 @@ namespace Origin
       break;
 
     case SceneState::Simulate:
-      m_GizmosType = -1;
 			m_EditorCamera.OnUpdate(time);
 			m_ActiveScene->OnUpdateSimulation(time, m_EditorCamera);
       break;

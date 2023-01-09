@@ -50,6 +50,8 @@ namespace Origin
 		void DrawGrid(int size = 5, glm::vec4 color = glm::vec4(1.0f));
 		void SetGrid(int size, glm::vec4 color);
 
+		Entity GetEntityWithUUID(UUID uuid);
+
 		template<typename... Components>
 		auto GetAllEntitiesWith()
 		{
@@ -66,6 +68,7 @@ namespace Origin
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
 
 	private:
+		std::unordered_map<UUID, entt::entity> m_EntityMap;
 		std::shared_ptr<Texture2D> m_CameraIcon;
 
 		entt::registry m_Registry;

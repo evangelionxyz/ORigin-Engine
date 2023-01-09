@@ -21,7 +21,6 @@
 #include "box2d/b2_circle_shape.h"
 
 #include <glm\glm.hpp>
-#include <unordered_map>
 
 namespace Origin {
 
@@ -126,6 +125,9 @@ namespace Origin {
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
+
+		m_EntityMap[uuid] = entity;
+
 		return entity;
 	}
 
@@ -138,6 +140,9 @@ namespace Origin {
 
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
+
+		UUID& uuid = entity.GetComponent<IDComponent>().ID;
+		m_EntityMap[uuid] = entity;
 
 		return entity;
 	}
@@ -156,6 +161,9 @@ namespace Origin {
 		auto& translation = entity.GetComponent<TransformComponent>().Translation;
 		translation.z = 8.0f;
 
+		UUID& uuid = entity.GetComponent<IDComponent>().ID;
+		m_EntityMap[uuid] = entity;
+
 		return entity;
 	}
 
@@ -170,12 +178,16 @@ namespace Origin {
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Circle" : name;
 
+		UUID& uuid = entity.GetComponent<IDComponent>().ID;
+		m_EntityMap[uuid] = entity;
+
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+		m_EntityMap.erase(entity.GetUUID());
 	}
 
 	void Scene::OnUpdateGame(Timestep time)
@@ -417,6 +429,7 @@ namespace Origin {
 			for (auto entity : group)
 			{
 				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+				float calcDistance = glm::length(camera.GetPosition() - transform.Translation);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
 		}
@@ -424,9 +437,9 @@ namespace Origin {
 		// Circles
 		{
 			auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			for (auto& entity : view)
+			for (auto entity : view)
 			{
-				auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+				auto& [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
 			}
 		}
@@ -522,6 +535,14 @@ namespace Origin {
 	{
 		m_GridSize = size;
 		m_GridColor = color;
+	}
+
+	Entity Scene::GetEntityWithUUID(UUID uuid)
+	{
+		if (m_EntityMap.find(uuid) != m_EntityMap.end())
+			return { m_EntityMap.at(uuid), this };
+
+		return {};
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()

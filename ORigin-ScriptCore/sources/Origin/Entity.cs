@@ -6,45 +6,25 @@ namespace ORiginEngine
 {
     public class Entity
     {
-        public Entity()
+        protected Entity() { ID = 0; }
+        internal Entity(ulong id)
         {
-            Console.WriteLine("Hello World From C# on Main Constructor");
-
-            Vector3 pos = new Vector3(1.3f, 2.32f, 3.4f);
-            Vector3 result = Log(pos);
-            Console.WriteLine($"C# Says: {result.X}, {result.Y}, {result.Z}");
-            Console.WriteLine($"C# Says: {InternalCalls.NativeLog_VectorDot(ref pos)}");
+            ID = id;
         }
 
-        public void PrintMessage()
-        {
-            Console.WriteLine("Hello World From C# on Method");
-        }
+        public readonly ulong ID;
 
-        public void PrintCustomMessage(string message)
+        public Vector3 Translation
         {
-            Console.WriteLine(message);
-        }
-
-        public void PrintInt(int number)
-        {
-            Console.WriteLine($"From C# {number}");
-        }
-
-        public void PrintInts(int number0, int number1)
-        {
-            Console.WriteLine($"From C# {number0},{number1}");
-        }
-
-        private void Log(string text, int parameter)
-        {
-            InternalCalls.NativeLog(text, parameter);
-        }
-
-        private Vector3 Log(Vector3 parameter)
-        {
-            InternalCalls.NativeLog_Vector(ref parameter, out Vector3 result);
-            return result;
+            get
+            {
+                InternalCalls.Entity_GetTranslation(ID, out Vector3 translation);
+                return translation;
+            }
+            set
+            {
+                InternalCalls.Entity_SetTranslation(ID, ref value);
+            }
         }
     }
 }

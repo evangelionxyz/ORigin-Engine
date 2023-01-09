@@ -14,5 +14,15 @@ namespace ORiginEngine
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float NativeLog_VectorDot(ref Vector3 parameter);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float Entity_GetTranslation(ulong uuid, out Vector3 translation);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float Entity_SetTranslation(ulong uuid, ref Vector3 translation);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Input_IsKeyPressed(KeyCode keycode);
+
     }
 }
