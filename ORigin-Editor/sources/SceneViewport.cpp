@@ -159,7 +159,7 @@ namespace Origin
 			if (!m_SceneHierarchy.GetSelectedEntity()) m_GizmosType = -1;
 		}
 
-		m_EditorCamera.EnableMovement(m_ViewportHovered && !ImGuizmo::IsOver());
+		m_EditorCamera.EnableMovement(m_ViewportHovered && !ImGuizmo::IsUsing());
 
 		// View Manipulate
 		const float& wndWidth = ImGui::GetWindowWidth();

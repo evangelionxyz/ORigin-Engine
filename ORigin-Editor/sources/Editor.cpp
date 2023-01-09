@@ -246,6 +246,7 @@ namespace Origin
 		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
     {
 			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
+      glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
 
       if (selectedEntity.HasComponent<CircleRendererComponent>())
       {
@@ -253,17 +254,15 @@ namespace Origin
 				glm::vec3 scale = tc.Scale * glm::vec3(1.0f);
 
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-					* glm::scale(glm::mat4(1.0f), scale);
+					* rotation * glm::scale(glm::mat4(1.0f), scale);
 
 				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
       }
       else
       {
         glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, -projectionRender.z);
-
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-					* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
-					* glm::scale(glm::mat4(1.0f), tc.Scale);
+          * rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
 
 				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
       }

@@ -17,14 +17,23 @@ namespace Origin
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 
 				else if (m_HoveredEntity == m_SceneHierarchy.GetSelectedEntity() && !control || !m_HoveredEntity)
+				{
 					m_SceneHierarchy.SetSelectedEntity({});
+					m_GizmosType = -1;
+				}
 			}
 
 			if (control) {
 				if (m_HoveredEntity == m_SelectedEntity && !ImGuizmo::IsOver())
 				{
+					if(m_GizmosMode == ImGuizmo::MODE::LOCAL)
 					m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
 						m_GizmosType = ImGuizmo::OPERATION::ROTATE : m_GizmosType == ImGuizmo::OPERATION::ROTATE ? m_GizmosType = ImGuizmo::OPERATION::SCALE : m_GizmosType = -1;
+					else if(m_GizmosMode == ImGuizmo::MODE::WORLD)
+					{
+						m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
+							m_GizmosType = ImGuizmo::OPERATION::ROTATE : m_GizmosType == ImGuizmo::OPERATION::ROTATE ? m_GizmosType = -1 : m_GizmosType = -1;
+					}
 				}
 			}
 		}
