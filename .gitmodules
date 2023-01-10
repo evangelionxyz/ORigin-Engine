@@ -16,9 +16,9 @@
 [submodule "Origin/vendor/stbi"]
 	path = Origin/vendor/stbi
 	url = https://github.com/kaks-ev/stb_image.git
-[submodule "Origin/vendor/ImGuizmo"]
-	path = Origin/vendor/ImGuizmo
-	url = https://github.com/kaks-ev/ImGuizmo.git
 [submodule "ORigin/vendor/Box2D"]
 	path = ORigin/vendor/Box2D
 	url = https://github.com/erincatto/box2d.git
+[submodule "ORigin/vendor/ImGuizmo"]
+	path = ORigin/vendor/ImGuizmo
+	url = https://github.com/kaks-ev/ImGuizmo.git
