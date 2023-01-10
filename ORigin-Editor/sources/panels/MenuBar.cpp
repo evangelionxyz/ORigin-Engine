@@ -103,7 +103,7 @@ namespace Origin
 			ImGui::Text("OpenGL Version : (%s)", glGetString(GL_VERSION));
 			ImGui::Text("ImGui version : (%s)", IMGUI_VERSION);
 			ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
-			ImGui::Text("Viewport Hovered (%d)", m_ViewportHovered);
+			ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
 			ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
 
 			ImGui::Separator();

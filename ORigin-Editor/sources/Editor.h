@@ -23,35 +23,36 @@ namespace Origin {
   class Editor : public Layer
   {
   public:
-
     Editor();
+    ~Editor()
+    {
+    }
+
     void OnAttach() override;
     void OnUpdate(Timestep ts) override;
 
+  private:
     void OnDuplicateEntity();
     void OnOverlayRenderer();
-
-    // Game Viewport
-		void GameViewport();
-		void GameViewportToolbar();
-		void GameViewportMenu();
 
     // Scene Viewport
 		void SceneViewport();
     void SceneViewportToolbar();
     void SceneViewportMenu();
 
-		void MenuBar();
+		// Game Viewport
+		void GameViewport();
+		void GameViewportToolbar();
+		void GameViewportMenu();
+    void OverlayBeginScene();
 
+		void MenuBar();
     void NewScene();
     void SaveScene();
     void SaveSceneAs();
     void OpenScene();
     void OpenScene(const std::filesystem::path& path);
-
     void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
-
-    void OverlayBeginScene();
 
     static bool OnWindowResize(WindowResizeEvent& e);
     static bool OnMouseMovedEvent(MouseMovedEvent& e);
@@ -68,7 +69,6 @@ namespace Origin {
     void OnSceneStop();
 
     Entity m_HoveredEntity = {};
-    Entity m_SelectedEntity = {};
 
 		// Scene
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2};
@@ -119,7 +119,7 @@ namespace Origin {
 
     bool drawLineMode = false;
     bool m_VisualizeCollider = false;
-    bool m_ViewportHovered;
-    bool m_ViewportFocused;
+    bool m_SceneViewportHovered;
+    bool m_SceneViewportFocused;
   };
 }

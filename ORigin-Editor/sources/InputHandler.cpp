@@ -7,17 +7,30 @@ namespace Origin
 	bool Editor::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
 		bool control = Input::IsKeyPressed(Key::LeftControl);
+		auto& selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
-		if (e.GetMouseButton() == Mouse::ButtonLeft && m_ViewportHovered)
+		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
 		{
-			if (!ImGuizmo::IsOver() && m_HoveredEntity != m_SelectedEntity && !control)
-				m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+			if (!ImGuizmo::IsOver((ImGuizmo::OPERATION)m_GizmosType) && !ImGuizmo::IsUsing() && !control)
+			{
+				if (m_HoveredEntity != selectedEntity)
+				{
+					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+				}
+				else if (m_HoveredEntity == selectedEntity && !ImGuizmo::IsUsing())
+				{
+					m_GizmosType = -1;
+					m_SceneHierarchy.SetSelectedEntity({});
+				}
+			}
 
-			if (!ImGuizmo::IsOver() && m_HoveredEntity == m_SelectedEntity && control)
+			if (!ImGuizmo::IsOver((ImGuizmo::OPERATION)m_GizmosType) && m_HoveredEntity == selectedEntity && control)
 			{
 				if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
+				{
 					m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
 					m_GizmosType = ImGuizmo::OPERATION::ROTATE : m_GizmosType == ImGuizmo::OPERATION::ROTATE ? m_GizmosType = ImGuizmo::OPERATION::SCALE : m_GizmosType = -1;
+				}
 				else if (m_GizmosMode == ImGuizmo::MODE::WORLD)
 				{
 					m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
@@ -30,6 +43,8 @@ namespace Origin
 
 	void Editor::InputProccedure(Timestep time)
 	{
+		auto& selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
 			lastMouseX = lastMouseX;
@@ -41,9 +56,9 @@ namespace Origin
 
 			if (lastMouseX == mouseX && lastMouseY == mouseY)
 			{
-				if (m_HoveredEntity == m_SelectedEntity && m_HoveredEntity)
+				if (m_HoveredEntity == selectedEntity && m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::EntityProperties;
-				if (m_HoveredEntity != m_SelectedEntity || !m_HoveredEntity)
+				if (m_HoveredEntity != selectedEntity || !m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::CreateMenu;
 			}
 		}
@@ -66,12 +81,6 @@ namespace Origin
 		switch (e.GetKeyCode())
 		{
 			// File Operation
-		case Key::B:
-		{
-			if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-				m_GizmosType = ImGuizmo::OPERATION::ROTATE_SCREEN;
-			break;
-		}
 			case Key::S:
 			{
 				if (control)

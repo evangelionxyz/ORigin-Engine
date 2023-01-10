@@ -207,7 +207,7 @@ namespace Origin
     {
 			// Circle Collider Visualizer
 			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+				auto& view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
 				for (auto entity : view)
 				{
 					auto& [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
@@ -322,7 +322,6 @@ namespace Origin
 
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});
-    m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
 		m_EditorScene = std::make_shared<Scene>();
 		m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
@@ -359,7 +358,6 @@ namespace Origin
 
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});
-    m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
     std::shared_ptr<Scene> newScene = std::make_shared<Scene>();
     SceneSerializer serializer(newScene);
