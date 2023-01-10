@@ -69,6 +69,7 @@ namespace Origin {
     void OnSceneStop();
 
     Entity m_HoveredEntity = {};
+    Entity m_SelectedEntity = {};
 
 		// Scene
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2};
@@ -89,10 +90,11 @@ namespace Origin {
 		ShaderLibrary m_ShaderLibrary;
 		std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
 
-		enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
+    enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
 		ViewportMenuContext m_VpMenuContext = ViewportMenuContext::CreateMenu;
 		static const char* MenuContextToString(const ViewportMenuContext& context);
 		bool VpMenuContextActive;
+    bool m_GizmosActive = false;
 
     glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
     glm::vec4 color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);

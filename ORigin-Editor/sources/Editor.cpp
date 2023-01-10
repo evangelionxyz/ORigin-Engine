@@ -77,6 +77,7 @@ namespace Origin
   void Editor::OnUpdate(Timestep time)
   {
     m_Time += time.GetSeconds();
+    m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
     // Resize
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
@@ -320,6 +321,9 @@ namespace Origin
 		if (m_SceneState == SceneState::Play)
 			OnSceneStop();
 
+		m_GizmosType = -1;
+		m_GizmosActive = false;
+
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});
 
@@ -355,6 +359,9 @@ namespace Origin
   {
 		if (m_SceneState == SceneState::Play)
 			OnSceneStop();
+
+    m_GizmosType = -1;
+    m_GizmosActive = false;
 
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});

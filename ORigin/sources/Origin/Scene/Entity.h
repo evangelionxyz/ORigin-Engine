@@ -33,8 +33,6 @@ namespace Origin {
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
 
-		~Entity();
-
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
@@ -78,7 +76,6 @@ namespace Origin {
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 		std::string& GetName() { return GetComponent<TagComponent>().Tag; }
-		int GetCount() { return Count; }
 
 		bool operator==(const Entity& other) const
 		{
@@ -93,6 +90,5 @@ namespace Origin {
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;
-		int Count = 0;
 	};
 }

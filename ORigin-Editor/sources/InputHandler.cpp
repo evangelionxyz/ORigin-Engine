@@ -7,24 +7,50 @@ namespace Origin
 	bool Editor::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
 		bool control = Input::IsKeyPressed(Key::LeftControl);
-		auto& selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
 		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
 		{
-			if (!ImGuizmo::IsOver((ImGuizmo::OPERATION)m_GizmosType) && !ImGuizmo::IsUsing() && !control)
+			// Selecting Entity
+			if (!m_GizmosActive)
 			{
-				if (m_HoveredEntity != selectedEntity)
+				if (m_HoveredEntity != m_SceneHierarchy.GetSelectedEntity())
 				{
+					m_GizmosActive = true;
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 				}
-				else if (m_HoveredEntity == selectedEntity && !ImGuizmo::IsUsing())
+			}
+			else if (m_GizmosActive)
+			{
+				if (!ImGuizmo::IsOver())
 				{
-					m_GizmosType = -1;
-					m_SceneHierarchy.SetSelectedEntity({});
+					if (m_HoveredEntity != m_SelectedEntity)
+					{
+						m_GizmosActive = true;
+						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+					}
+					else if(m_HoveredEntity == m_SelectedEntity)
+					{
+						m_HoveredEntity = {};
+						m_SceneHierarchy.SetSelectedEntity({});
+						m_GizmosActive = false;
+						m_GizmosType = -1;
+					}
 				}
 			}
 
-			if (!ImGuizmo::IsOver((ImGuizmo::OPERATION)m_GizmosType) && m_HoveredEntity == selectedEntity && control)
+			if (!m_HoveredEntity)
+			{
+				if (!ImGuizmo::IsOver())
+				{
+					m_HoveredEntity = {};
+					m_SceneHierarchy.SetSelectedEntity({});
+					m_GizmosActive = false;
+					m_GizmosType = -1;
+				}
+			}
+
+			// Changing Gizmo Type
+			if (!ImGuizmo::IsOver(static_cast<ImGuizmo::OPERATION>(m_GizmosType)) && m_HoveredEntity == m_SelectedEntity && control)
 			{
 				if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
 				{
@@ -43,8 +69,6 @@ namespace Origin
 
 	void Editor::InputProccedure(Timestep time)
 	{
-		auto& selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
 			lastMouseX = lastMouseX;
@@ -56,9 +80,9 @@ namespace Origin
 
 			if (lastMouseX == mouseX && lastMouseY == mouseY)
 			{
-				if (m_HoveredEntity == selectedEntity && m_HoveredEntity)
+				if (m_HoveredEntity == m_SelectedEntity && m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::EntityProperties;
-				if (m_HoveredEntity != selectedEntity || !m_HoveredEntity)
+				if (m_HoveredEntity != m_SelectedEntity || !m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::CreateMenu;
 			}
 		}

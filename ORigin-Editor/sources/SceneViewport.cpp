@@ -10,8 +10,8 @@ namespace Origin
 	{
 		switch (context)
 		{
-		case CreateMenu: return "Create Menu"; break;
-		case EntityProperties: return "Entity Properties"; break;
+			case CreateMenu: return "Create Menu"; break;
+			case EntityProperties: return "Entity Properties"; break;
 		}
 
 		return nullptr;
@@ -72,7 +72,7 @@ namespace Origin
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 		uint64_t viewportID = m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget);
-		ImGui::Image(reinterpret_cast<void*>(viewportID), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image(reinterpret_cast<ImTextureID*>(viewportID), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -104,72 +104,58 @@ namespace Origin
 			ImGui::EndDragDropTarget();
 		}
 
-		// Editor Camera
-		const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-		glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
-
-		{ // Gizmos
-			auto& selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+		if (m_SelectedEntity && m_GizmosType != -1 && m_GizmosActive)
+		{
+			// Gizmos
 			ImGuizmo::SetOrthographic(false); // by default is false
 			ImGuizmo::SetDrawlist();
 
-			if (selectedEntity && m_GizmosType != -1)
+			ImGuizmo::SetRect(
+				m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y,
+				m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x,
+				m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
+			);
+
+			// Editor Camera
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+			auto& tc = m_SelectedEntity.GetComponent<TransformComponent>();
+			glm::mat4 transform = tc.GetTransform();
+			glm::vec3 originalRotation = tc.Rotation;
+
+			bool snap = Input::IsKeyPressed(Key::LeftShift);
+			float snapValue = 0.5f;
+
+			if (snap && m_GizmosType == ImGuizmo::OPERATION::ROTATE)
+				snapValue = 45.0f;
+
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			ImGuizmo::Manipulate(
+				glm::value_ptr(cameraView),
+				glm::value_ptr(cameraProjection),
+				static_cast<ImGuizmo::OPERATION>(m_GizmosType),
+				static_cast<ImGuizmo::MODE>(m_GizmosMode),
+				glm::value_ptr(transform),
+				nullptr,
+				snap ? snapValues : nullptr
+			);
+
+			if (ImGuizmo::IsUsing())
 			{
-				ImGuizmo::SetRect(
-					m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y,
-					m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x,
-					m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
-				);
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
 
-				auto& tc = selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4 transform = tc.GetTransform();
-				glm::vec3 originalRotation = tc.Rotation;
-
-				bool snap = Input::IsKeyPressed(Key::LeftShift);
-				float snapValue = 0.5f;
-
-				if (snap && m_GizmosType == ImGuizmo::OPERATION::ROTATE)
-					snapValue = 45.0f;
-
-				float snapValues[3] = { snapValue, snapValue, snapValue };
-
-				ImGuizmo::Manipulate(
-					glm::value_ptr(cameraView),
-					glm::value_ptr(cameraProjection),
-					static_cast<ImGuizmo::OPERATION>(m_GizmosType),
-					static_cast<ImGuizmo::MODE>(m_GizmosMode),
-					glm::value_ptr(transform),
-					nullptr,
-					snap ? snapValues : nullptr
-				);
-
-				if (ImGuizmo::IsUsing())
-				{
-					glm::vec3 translation, rotation, scale;
-					Math::DecomposeTransform(transform, translation, rotation, scale);
-
-					tc.Translation = translation;
-					glm::vec3 deltaRotation = rotation - tc.Rotation;
-					tc.Rotation += deltaRotation;
-					tc.Scale = scale;
-				}
-
+				tc.Translation = translation;
+				glm::vec3 deltaRotation = rotation - tc.Rotation;
+				tc.Rotation += deltaRotation;
+				tc.Scale = scale;
 			}
-
-			if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape)) m_GizmosType = -1;
-			if (!ImGuizmo::IsOver() && Input::IsMouseButtonPressed(Mouse::ButtonLeft) && !m_HoveredEntity) m_GizmosType = -1;
-
-			m_EditorCamera.EnableMovement(m_SceneViewportHovered && !ImGuizmo::IsUsing());
-
-			// View Manipulate
-			//const float& wndWidth = ImGui::GetWindowWidth();
-			//const float& camDistance = m_EditorCamera.GetDistance();
-			//ImGuizmo::ViewManipulate(
-			//	glm::value_ptr(cameraView),
-			//	camDistance, ImVec2((viewportMinRegion.x + viewportOffset.x) + wndWidth - 120.0f, 92.0f),
-			//	ImVec2(128, 128), 0
-			//);
 		}
+
+		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape)) m_GizmosType = -1;
+		m_EditorCamera.EnableMovement(m_SceneViewportHovered && !ImGuizmo::IsUsing());
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -207,7 +193,7 @@ namespace Origin
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-				if (ImGui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
+				if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
 				{
 					if (m_SceneHierarchy.GetContext())
 					{
@@ -232,7 +218,7 @@ namespace Origin
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-				if (ImGui::ImageButton(reinterpret_cast<void*>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
+				if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
 				{
 					if (m_SceneHierarchy.GetContext())
 					{
@@ -252,7 +238,6 @@ namespace Origin
 			}
 
 			ImGui::PopStyleVar(2);
-
 			ImGui::End(); // !viewport_toolbar
 		}
 
@@ -300,7 +285,6 @@ namespace Origin
 
 		if (VpMenuContextActive && m_SceneHierarchy.GetContext())
 		{
-			auto& selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 			{
 				// Create Menu
@@ -322,24 +306,18 @@ namespace Origin
 				{
 					// Entity Properties
 					std::string name = "None";
-					selectedEntity ? name = selectedEntity.GetComponent<TagComponent>().Tag : name;
+					m_SelectedEntity == m_SceneHierarchy.GetSelectedEntity() ?
+						name = m_SelectedEntity.GetComponent<TagComponent>().Tag : name;
+
 					ImGui::Text("%s", name.c_str());
 					ImGui::Separator();
-
-					// destroy entity
-					if (ImGui::MenuItem("Delete"))
-					{
-						m_SceneHierarchy.DestroyEntity(selectedEntity);
-						selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-						m_HoveredEntity = {};
-					}
 
 					if (ImGui::BeginMenu("Properties"))
 					{
 						ImGui::Text("Rename");
-						if (selectedEntity.HasComponent<TagComponent>())
+						if (m_SelectedEntity.HasComponent<TagComponent>())
 						{
-							auto& tag = selectedEntity.GetComponent<TagComponent>().Tag;
+							auto& tag = m_SelectedEntity.GetComponent<TagComponent>().Tag;
 							char buffer[64];
 							strcpy_s(buffer, sizeof(buffer), tag.c_str());
 							if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
@@ -349,9 +327,9 @@ namespace Origin
 							}
 						}
 
-						if (selectedEntity.HasComponent<SpriteRendererComponent>())
+						if (m_SelectedEntity.HasComponent<SpriteRendererComponent>())
 						{
-							auto& component = selectedEntity.GetComponent<SpriteRendererComponent>();
+							auto& component = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
 							ImGui::Separator();
 
 							ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
@@ -367,9 +345,9 @@ namespace Origin
 							}
 						}
 
-						if (selectedEntity.HasComponent<CircleRendererComponent>())
+						if (m_SelectedEntity.HasComponent<CircleRendererComponent>())
 						{
-							auto& component = selectedEntity.GetComponent<CircleRendererComponent>();
+							auto& component = m_SelectedEntity.GetComponent<CircleRendererComponent>();
 							ImGui::Separator();
 							ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 							ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);

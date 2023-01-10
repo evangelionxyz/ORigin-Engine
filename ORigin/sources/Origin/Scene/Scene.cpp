@@ -126,7 +126,7 @@ namespace Origin {
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 
-		m_EntityMap[uuid] = entity;
+		m_EntityMap.insert(std::make_pair(uuid, entity));
 
 		return entity;
 	}
@@ -142,7 +142,7 @@ namespace Origin {
 		tag.Tag = name.empty() ? "Entity" : name;
 
 		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap[uuid] = entity;
+		m_EntityMap.insert(std::make_pair(uuid, entity));
 
 		return entity;
 	}
@@ -162,7 +162,7 @@ namespace Origin {
 		translation.z = 8.0f;
 
 		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap[uuid] = entity;
+		m_EntityMap.insert(std::make_pair(uuid, entity));
 
 		return entity;
 	}
@@ -179,15 +179,15 @@ namespace Origin {
 		tag.Tag = name.empty() ? "Circle" : name;
 
 		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap[uuid] = entity;
+		m_EntityMap.insert(std::make_pair(uuid, entity));
 
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		m_Registry.destroy(entity);
 		m_EntityMap.erase(entity.GetUUID());
+		m_Registry.destroy(entity);
 	}
 
 	void Scene::OnUpdateGame(Timestep time)
