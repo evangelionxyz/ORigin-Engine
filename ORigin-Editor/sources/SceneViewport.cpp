@@ -104,18 +104,15 @@ namespace Origin
 			ImGui::EndDragDropTarget();
 		}
 
-		if (m_SelectedEntity && m_GizmosType != -1 && m_GizmosActive)
-		{
-			// Gizmos
-			ImGuizmo::SetOrthographic(false); // by default is false
-			ImGuizmo::SetDrawlist();
+		// Gizmos
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(
+			m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y,
+			m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x,
+			m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
+		);
 
-			ImGuizmo::SetRect(
-				m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y,
-				m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x,
-				m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
-			);
-
+		if (m_SelectedEntity && m_GizmosType != -1) {
 			// Editor Camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
@@ -154,7 +151,9 @@ namespace Origin
 			}
 		}
 
-		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape)) m_GizmosType = -1;
+		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
+			m_GizmosType = -1;
+
 		m_EditorCamera.EnableMovement(m_SceneViewportHovered && !ImGuizmo::IsUsing());
 
 		ImGui::End();

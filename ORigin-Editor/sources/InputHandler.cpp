@@ -10,45 +10,37 @@ namespace Origin
 
 		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
 		{
-			// Selecting Entity
-			if (!m_GizmosActive)
+			if (!ImGuizmo::IsOver())
 			{
-				if (m_HoveredEntity != m_SceneHierarchy.GetSelectedEntity())
-				{
-					m_GizmosActive = true;
+				if (m_HoveredEntity != m_SelectedEntity)
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-				}
-			}
-			else if (m_GizmosActive)
-			{
-				if (!ImGuizmo::IsOver())
+				else if(m_HoveredEntity == m_SelectedEntity)
 				{
-					if (m_HoveredEntity != m_SelectedEntity)
-					{
-						m_GizmosActive = true;
-						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-					}
-					else if(m_HoveredEntity == m_SelectedEntity)
-					{
-						m_HoveredEntity = {};
-						m_SceneHierarchy.SetSelectedEntity({});
-						m_GizmosActive = false;
-						m_GizmosType = -1;
-					}
-				}
-			}
-
-			if (!m_HoveredEntity)
-			{
-				if (!ImGuizmo::IsOver())
-				{
-					m_HoveredEntity = {};
 					m_SceneHierarchy.SetSelectedEntity({});
-					m_GizmosActive = false;
+					m_GizmosType = -1;
+				}
+				else
+				{
+					m_SceneHierarchy.SetSelectedEntity({});
 					m_GizmosType = -1;
 				}
 			}
 
+			if(ImGuizmo::IsOver() && m_GizmosType == -1)
+			{
+				if (m_HoveredEntity != m_SelectedEntity)
+					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+				else if(m_HoveredEntity == m_SelectedEntity)
+				{
+					m_SceneHierarchy.SetSelectedEntity({});
+					m_GizmosType = -1;
+				}
+				else
+				{
+					m_SceneHierarchy.SetSelectedEntity({});
+					m_GizmosType = -1;
+				}
+			}
 			// Changing Gizmo Type
 			if (!ImGuizmo::IsOver(static_cast<ImGuizmo::OPERATION>(m_GizmosType)) && m_HoveredEntity == m_SelectedEntity && control)
 			{

@@ -322,7 +322,6 @@ namespace Origin
 			OnSceneStop();
 
 		m_GizmosType = -1;
-		m_GizmosActive = false;
 
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});
@@ -361,7 +360,6 @@ namespace Origin
 			OnSceneStop();
 
     m_GizmosType = -1;
-    m_GizmosActive = false;
 
     m_HoveredEntity = {};
     m_SceneHierarchy.SetSelectedEntity({});

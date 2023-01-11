@@ -28,6 +28,7 @@ workspace "ORigin"
 
 include "projects/ProjectSwitcher.lua"
 include "projects/ProjectLicenseHeader.lua"
+include "projects/VSCodeTasks.lua"
 include "dependencies/Dependencies.lua"
 
 group "Engine"
