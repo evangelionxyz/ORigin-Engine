@@ -17,7 +17,7 @@ namespace Origin
 					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 				}
 
-				if (!m_HoveredEntity)
+				if (!m_HoveredEntity || m_HoveredEntity == m_SelectedEntity)
 				{
 					m_GizmosType = -1;
 					m_SceneHierarchy.SetSelectedEntity({});

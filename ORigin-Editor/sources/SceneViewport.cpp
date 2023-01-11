@@ -60,7 +60,6 @@ namespace Origin
 				if (!m_SceneHierarchy.GetContext())
 					ImGui::Text("Load a Scene or Create New Scene to begin!");
 				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-				ImGui::Text("Gizmo Type : %i", m_GizmosType);
 				std::string name = "None";
 				if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 				ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
