@@ -10,7 +10,7 @@ namespace Origin
 
 		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
 		{
-			if (!ImGuizmo::IsOver() || ImGuizmo::IsOver() && m_GizmosType == -1)
+			if (!ImGuizmo::IsOver() && !control || ImGuizmo::IsOver() && m_GizmosType == -1 && !control)
 			{
 				if (m_HoveredEntity != m_SelectedEntity)
 				{
@@ -25,7 +25,7 @@ namespace Origin
 			}
 
 			// Changing Gizmo Type
-			if (!ImGuizmo::IsOver(static_cast<ImGuizmo::OPERATION>(m_GizmosType)) && m_HoveredEntity == m_SelectedEntity && control)
+			if (!ImGuizmo::IsOver() && m_HoveredEntity == m_SelectedEntity && control)
 			{
 				if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
 				{
