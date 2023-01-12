@@ -121,7 +121,8 @@ namespace Origin
     stbi_uc* data = nullptr;
     data = stbi_load(path.c_str(),  &width, &height, &bpp, 0);
 
-    OGN_CORE_ASSERT(data, "Failed to load texture!");
+		OGN_CORE_WARN("Texture2D: {0}", path);
+    OGN_CORE_ASSERT(data, "Texture2D: Failed to load texture!");
     m_Width = width;
     m_Height = height;
     m_BPP = bpp;
@@ -152,7 +153,6 @@ namespace Origin
 
     glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 		stbi_image_free(data);
-		OGN_CORE_WARN("Texture \"{}\" bound", m_FilePath);
   }
 
 	OpenGLTexture2D::~OpenGLTexture2D()

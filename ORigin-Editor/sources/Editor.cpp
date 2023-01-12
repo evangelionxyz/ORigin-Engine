@@ -55,7 +55,7 @@ namespace Origin
 
     m_ActiveScene = std::make_shared<Scene>();
 
-    const auto AppSpec = Application::Get().GetSpecification();
+    const auto& AppSpec = Application::Get().GetSpecification();
     if (AppSpec.CommandLineArgs.Count > 1)
     {
       const auto sceneFilePath = AppSpec.CommandLineArgs[1];
@@ -304,6 +304,8 @@ namespace Origin
 	void Editor::OnSceneStop()
   {
     OGN_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "");
+
+    m_GizmosType = -1;
 
     if (m_SceneState == SceneState::Play)
       m_ActiveScene->OnRuntimeStop();

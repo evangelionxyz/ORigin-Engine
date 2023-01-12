@@ -1,0 +1,43 @@
+Scene: another new scene.org
+Entities:
+  - Entity: 15473941649221985875
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 6161299942500313766
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 0, 0, 1]
+      TillingFactor: 1
+    ScriptComponent:
+      ClassName: Game.Player
+  - Entity: 6909029213309295588
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, -5.65025616]
+      Rotation: [0, 0, 0]
+      Scale: [13.9464579, 13.9464579, 13.9464579]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\checkerboard.png
+      TillingFactor: 5.0999999
