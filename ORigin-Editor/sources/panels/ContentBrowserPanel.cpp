@@ -23,7 +23,8 @@ namespace Origin
 
 	ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory(g_AssetPath)
 	{
-		m_BackButtonIcon = Texture2D::Create("resources/textures/leftarrow_icon.png");
+		m_NavigationIconMap["backward_button"] = Texture2D::Create("resources/textures/backward_icon.png");
+		m_NavigationIconMap["forward_button"] = Texture2D::Create("resources/textures/forward_icon.png");
 
 		m_DirectoryIconMap["directory"] = Texture2D::Create("resources/textures/directory_icon.png");
 		m_DirectoryIconMap[".unkownfile"] = Texture2D::Create("resources/textures/file_icon.png");
@@ -42,21 +43,42 @@ namespace Origin
 
 		auto windowSize = ImGui::GetWindowSize();
 
-		if (m_CurrentDirectory != std::filesystem::path(g_AssetPath))
-		{
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::ImageButton((ImTextureID)m_BackButtonIcon->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 });
-			ImGui::PopStyleColor();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-				m_CurrentDirectory = m_CurrentDirectory.parent_path();
-		}
+		// Navigation Button
+		bool rootDirectory = m_CurrentDirectory == std::filesystem::path(g_AssetPath);
+		ImVec4 navBtColor;
 
+		if (rootDirectory) navBtColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+		else navBtColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
+
+		ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("backward_button")->GetRendererID(), {24, 24}, {0, 1}, {1, 0});
+
+		ImGui::PopStyleColor(3);
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !rootDirectory)
+			m_CurrentDirectory = m_CurrentDirectory.parent_path();
+
+		ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
+
+		ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("forward_button")->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 });
+
+		ImGui::PopStyleColor(3);
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !rootDirectory)
+			m_CurrentDirectory = m_CurrentDirectory.parent_path();
+
+
+		// Directory Button
 		static float padding = 10.0f;
 		static float thumbnailSize = 72.0f;
 		float cellSize = thumbnailSize + padding;
 
 		float panelWidth = ImGui::GetContentRegionAvail().x;
-		int columnCount = (int)(panelWidth / cellSize);
+		auto columnCount = (int)(panelWidth / cellSize);
 		if (columnCount < 1)
 			columnCount = 1;
 

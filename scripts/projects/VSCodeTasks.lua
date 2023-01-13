@@ -8,21 +8,32 @@ argument =
    "tasks":[
     {
         // Build Solution
-        "label": "Build_Solution",
+        "label": "Build Solution",
         "type": "shell",
         "command": "MSBuild ORigin.sln",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
     },
     {
         // Build Script-Core
-        "label": "Build_ScriptCore",
+        "label": "Build Script Core",
         "type": "shell",
         "command": "MSBuild ORigin-ScriptCore\\ORigin-ScriptCore.csproj",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
     },
     {
         // Build And Run Editor (default)
-        "label": "Build_Run_Editor",
+        "label": "Build & Run Editor",
         "type": "shell",
-        "command": "scripts\\vscode_editor_runner.bat",
+        "command": "vscode_runner.bat",
+        "options": {
+            "cwd": "ORigin-Editor",
+        },
         "dependsOn": "Build_Solution",
         "group": {
             "kind": "build",
@@ -31,25 +42,44 @@ argument =
     },
     {
         // Run Editor
-        "label": "Run_Editor",
+        "label": "Run Editor",
         "type": "shell",
-        "command": "scripts\\vscode_editor_runner.bat",
-    },
-    {
-        // Build And Run Sandbox
-        "label": "Build_Run_Sandbox",
-        "type": "shell",
-        "command": "scripts\\vscode_sandbox_runner.bat",
-        "dependsOn": "Build_Solution",
+        "command": "vscode_runner.bat",
+        "options": {
+            "cwd": "ORigin-Editor",
+        },
         "group": {
             "kind": "build",
+            "isDefault": true
         }
     },
     {
-        // Run Sandbox
-        "label": "Run_Sandbox",
+        // Build And Run Sandbox
+        "label": "Build & Run Sandbox",
         "type": "shell",
-        "command": "scripts\\vscode_sandbox_runner.bat",
+        "command": "vscode_runner.bat",
+        "options": {
+            "cwd": "Sandbox",
+        },
+        "dependsOn": "Build_Solution",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        },
+        
+    },
+    {
+        // Run Sandbox
+        "label": "Run Sandbox",
+        "type": "shell",
+        "command": "vscode_runner.bat",
+        "options": {
+            "cwd": "Sandbox",
+        },
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
     },
 ]
 }]]

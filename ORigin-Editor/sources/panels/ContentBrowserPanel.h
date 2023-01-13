@@ -14,11 +14,9 @@ namespace Origin
 		void OnImGuiRender();
 
 	private:
-
-		std::shared_ptr<Texture2D> m_DirectoryIcon;
-		std::shared_ptr<Texture2D> m_BackButtonIcon;
-
 		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_DirectoryIconMap;
+		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_NavigationIconMap;
+
 		std::shared_ptr<Texture2D> DirectoryIcon(std::filesystem::directory_entry dirEntry);
 
 		std::filesystem::path m_CurrentDirectory;

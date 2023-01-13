@@ -1,0 +1,1 @@
+call ..\bin\Debug\ORigin-Editor\ORigin-Editor.exe
