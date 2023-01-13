@@ -16,8 +16,7 @@ ORigin.sln.startup.json
 ORigin.sln.licenseheader
 
 # folders
-bin/
-bin-int/
+Binaries/
 scripts/__pycache__
 ORigin/vendor/projectFiles
 ORigin-Editor/resources/scripts/

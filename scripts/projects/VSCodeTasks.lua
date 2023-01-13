@@ -17,6 +17,26 @@ argument =
         }
     },
     {
+        // Rebuild Solution
+        "label": "Rebuild Solution",
+        "type": "shell",
+        "command": "MSBuild ORigin.sln /t:Rebuild",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    },
+    {
+        // Clean Solution
+        "label": "Clean Solution",
+        "type": "shell",
+        "command": "MSBuild ORigin.sln /t:Clean",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    },
+    {
         // Build Script-Core
         "label": "Build Script Core",
         "type": "shell",

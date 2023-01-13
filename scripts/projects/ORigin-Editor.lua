@@ -52,11 +52,11 @@ project "ORigin-Editor"
     filter "system:windows"
         systemversion "latest"
         postbuildcommands {
-            "{COPY} %{prj.location}/imgui.ini ../bin/%{cfg.buildcfg}/%{prj.name}",
+            "{COPY} %{prj.location}imgui.ini ../Binaries/%{cfg.buildcfg}/ORigin",
 
-            "{COPYDIR} %{prj.location}/assets ../bin/%{cfg.buildcfg}/%{prj.name}/assets",
-            "{COPYDIR} %{prj.location}/mono ../bin/%{cfg.buildcfg}/%{prj.name}/mono",
-            "{COPYDIR} %{prj.location}/resources ../bin/%{cfg.buildcfg}/%{prj.name}/resources",
+            "{COPYDIR} %{prj.location}assets ../Binaries/%{cfg.buildcfg}/ORigin/assets",
+            "{COPYDIR} %{prj.location}mono ../Binaries/%{cfg.buildcfg}/ORigin/mono",
+            "{COPYDIR} %{prj.location}resources ../Binaries/%{cfg.buildcfg}/ORigin/resources",
         }
 
     filter "configurations:Debug"
