@@ -8,9 +8,9 @@ argument =
    "tasks":[
     {
         // Build Solution
-        "label": "Build Solution",
+        "label": "Solution Build - Release",
         "type": "shell",
-        "command": "MSBuild ORigin.sln",
+        "command": "MSBuild ORigin.sln /p:Configuration=Release",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -18,9 +18,29 @@ argument =
     },
     {
         // Rebuild Solution
-        "label": "Rebuild Solution",
+        "label": "Solution Rebuild - Release",
         "type": "shell",
-        "command": "MSBuild ORigin.sln /t:Rebuild",
+        "command": "MSBuild ORigin.sln /t:Rebuild /p:Configuration=Release",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    },
+    {
+        // Build Solution
+        "label": "Solution Build - Debug",
+        "type": "shell",
+        "command": "MSBuild ORigin.sln /p:Configuration=Debug",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    },
+    {
+        // Rebuild Solution
+        "label": "Solution Rebuild - Debug",
+        "type": "shell",
+        "command": "MSBuild ORigin.sln /t:Rebuild /p:Configuration=Debug",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -28,7 +48,7 @@ argument =
     },
     {
         // Clean Solution
-        "label": "Clean Solution",
+        "label": "Solution Clean",
         "type": "shell",
         "command": "MSBuild ORigin.sln /t:Clean",
         "group": {
@@ -38,7 +58,7 @@ argument =
     },
     {
         // Build Script-Core
-        "label": "Build Script Core",
+        "label": "Script-Core Build",
         "type": "shell",
         "command": "MSBuild ORigin-ScriptCore\\ORigin-ScriptCore.csproj",
         "group": {
@@ -48,13 +68,23 @@ argument =
     },
     {
         // Build And Run Editor (default)
-        "label": "Build & Run Editor",
+        "label": "Editor Build & Run",
         "type": "shell",
         "command": "vscode_runner.bat",
         "options": {
             "cwd": "ORigin-Editor",
         },
-        "dependsOn": "Build_Solution",
+        "dependsOn": "Solution Build - Debug",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    },
+    {
+        // Build Editor
+        "label": "Editor Build",
+        "type": "shell",
+        "command": "MSBuild ORigin-Editor\\ORigin-Editor.vcxproj",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -62,7 +92,7 @@ argument =
     },
     {
         // Run Editor
-        "label": "Run Editor",
+        "label": "Editor Run",
         "type": "shell",
         "command": "vscode_runner.bat",
         "options": {
@@ -75,13 +105,13 @@ argument =
     },
     {
         // Build And Run Sandbox
-        "label": "Build & Run Sandbox",
+        "label": "Sandbox Build & Run",
         "type": "shell",
         "command": "vscode_runner.bat",
         "options": {
             "cwd": "Sandbox",
         },
-        "dependsOn": "Build_Solution",
+        "dependsOn": "Solution Build - Debug",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -90,7 +120,7 @@ argument =
     },
     {
         // Run Sandbox
-        "label": "Run Sandbox",
+        "label": "Sandbox Run",
         "type": "shell",
         "command": "vscode_runner.bat",
         "options": {

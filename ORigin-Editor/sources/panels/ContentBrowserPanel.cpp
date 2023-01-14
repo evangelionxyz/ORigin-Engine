@@ -1,8 +1,6 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "ContentBrowserPanel.h"
-#include <string>
-#include <imgui.h>
 
 namespace Origin
 {
@@ -37,40 +35,22 @@ namespace Origin
 		m_DirectoryIconMap[".cs"] = Texture2D::Create("resources/textures/script_file_icon.png");
 	}
 
+	ContentBrowserPanel::~ContentBrowserPanel()
+	{
+		m_SubDirectoryMap.clear();
+	}
+
 	void ContentBrowserPanel::OnImGuiRender()
 	{
+		FileButton();
+	}
+
+	void ContentBrowserPanel::FileButton()
+	{
 		ImGui::Begin("Content Browser");
+		NavigationButton();
 
 		auto windowSize = ImGui::GetWindowSize();
-
-		// Navigation Button
-		bool rootDirectory = m_CurrentDirectory == std::filesystem::path(g_AssetPath);
-		ImVec4 navBtColor;
-
-		if (rootDirectory) navBtColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-		else navBtColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
-
-		ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("backward_button")->GetRendererID(), {24, 24}, {0, 1}, {1, 0});
-
-		ImGui::PopStyleColor(3);
-		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !rootDirectory)
-			m_CurrentDirectory = m_CurrentDirectory.parent_path();
-
-		ImGui::SameLine();
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
-
-		ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("forward_button")->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 });
-
-		ImGui::PopStyleColor(3);
-		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !rootDirectory)
-			m_CurrentDirectory = m_CurrentDirectory.parent_path();
-
 
 		// Directory Button
 		static float padding = 10.0f;
@@ -82,19 +62,24 @@ namespace Origin
 		if (columnCount < 1)
 			columnCount = 1;
 
-		ImGui::Columns(columnCount, 0, false);
+		ImGui::Columns(columnCount, nullptr, false);
 
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
-			const auto& path = directoryEntry.path();
-			auto relativePath = std::filesystem::relative(path, g_AssetPath);
+			m_DirectoryEntry = directoryEntry;
+			bool rootDirectory = m_CurrentDirectory == std::filesystem::path(g_AssetPath);
+
+			auto relativePath = std::filesystem::relative(m_DirectoryEntry.path(), g_AssetPath);
+			m_IsDirectory = m_DirectoryEntry.is_directory();
+
 			std::string filenameString = relativePath.filename().string();
 
 			ImGui::PushID(filenameString.c_str());
 
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::ImageButton((ImTextureID)DirectoryIcon(directoryEntry)->GetRendererID(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
-			ImGui::PopStyleColor();
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+			ImGui::ImageButton((ImTextureID)DirectoryIcon(m_DirectoryEntry)->GetRendererID(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+			ImGui::PopStyleColor(2);
 
 			if (ImGui::BeginDragDropSource())
 			{
@@ -105,9 +90,22 @@ namespace Origin
 
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
-				if (directoryEntry.is_directory())
-					m_CurrentDirectory /= path.filename();
+				if (m_IsDirectory)
+				{
+					m_SubDirectoryCount++;
+					m_CurrentDirectory /= m_DirectoryEntry.path().filename();
+
+					if (rootDirectory)
+					{
+						m_SubDirectoryMap.clear();
+						m_SubDirectoryMap[m_SubDirectoryCount] = m_DirectoryEntry.path();
+					}
+
+					else m_SubDirectoryMap[m_SubDirectoryCount] = m_DirectoryEntry.path();
+
+				}
 			}
+
 			ImGui::TextWrapped(filenameString.c_str());
 			ImGui::NextColumn();
 
@@ -117,6 +115,71 @@ namespace Origin
 		ImGui::End();
 	}
 
+	void ContentBrowserPanel::NavigationButton()
+	{
+		// Navigation Button
+		bool rootDirectory = m_CurrentDirectory == std::filesystem::path(g_AssetPath);
 
+		ImVec4 navBtColor;
+		uint8_t subDirNumber = m_SubDirectoryCount + 1;
 
+		if (rootDirectory) navBtColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+		else navBtColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
+		if (ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("backward_button")->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 }))
+		{
+			if (!rootDirectory)
+			{
+				m_CurrentDirectory = m_CurrentDirectory.parent_path();
+				m_SubDirectoryCount--;
+			}
+		}
+
+		ImGui::PopStyleColor(3);
+
+		// Forward button
+		ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
+		ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("forward_button")->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 });
+
+		if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			if (m_SubDirectoryMap.find(subDirNumber) != m_SubDirectoryMap.end())
+			{
+				m_SubDirectoryCount++;
+				m_CurrentDirectory /= m_SubDirectoryMap.at(subDirNumber).filename();
+			}
+		}
+
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine(); ImGui::Text("Forward Count : %i", m_SubDirectoryCount);
+
+		std::string nextDirName = "None";
+		if (m_SubDirectoryMap.find(subDirNumber) != m_SubDirectoryMap.end())
+			nextDirName = m_SubDirectoryMap.at(subDirNumber).filename().string();
+
+		std::string prevDirName = "None";
+		if (m_SubDirectoryMap.find(m_SubDirectoryCount) != m_SubDirectoryMap.end())
+			prevDirName = m_SubDirectoryMap.at(m_SubDirectoryCount).filename().string();
+
+		ImGui::SameLine(); ImGui::Text("| Prev \"%s\" | Next \"%s\"", prevDirName.c_str(), nextDirName.c_str());
+		ImGui::SameLine(); ImGui::Text("| Sub Dir Size %i", m_SubDirectoryMap.size());
+
+		ImGui::Begin("Sub Directory List");
+		ImGui::Text("Sub Directory");
+
+		for (auto& it : m_SubDirectoryMap)
+		{
+			auto& subdirName = it.second.filename().string();
+			ImGui::Text("%i. \"%s\"", it.first, subdirName.c_str());
+		}
+
+		ImGui::End();
+
+	}
 }

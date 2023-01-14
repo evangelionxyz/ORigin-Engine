@@ -2,8 +2,13 @@
 
 #pragma once
 #include "Origin\Renderer\Texture.h"
+
+#include <string>
+#include <imgui.h>
+
 #include <filesystem>
 #include <unordered_map>
+#include <map>
 
 namespace Origin
 {
@@ -11,14 +16,25 @@ namespace Origin
 	{
 	public:
 		ContentBrowserPanel();
+		~ContentBrowserPanel();
 		void OnImGuiRender();
 
 	private:
-		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_DirectoryIconMap;
-		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_NavigationIconMap;
+		void FileButton();
+		void NavigationButton();
 
 		std::shared_ptr<Texture2D> DirectoryIcon(std::filesystem::directory_entry dirEntry);
 
+		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_DirectoryIconMap;
+		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_NavigationIconMap;
+
+		std::filesystem::directory_entry m_DirectoryEntry;
 		std::filesystem::path m_CurrentDirectory;
+
+		std::unordered_map<uint8_t, std::filesystem::path> m_SubDirectoryMap;
+
+		uint8_t m_SubDirectoryCount = 0;
+
+		bool m_IsDirectory;
 	};
 }
