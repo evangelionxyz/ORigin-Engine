@@ -6,6 +6,37 @@ namespace Origin
 {
 	extern const std::filesystem::path g_AssetPath = "assets";
 
+	namespace Utils
+	{
+		static void CenteredText(std::string text)
+		{
+			auto windowWidth = ImGui::GetWindowSize().x;
+			auto textWidth = ImGui::CalcTextSize(text.c_str()).x;
+			ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+			ImGui::Text(text.c_str());
+		}
+
+		static std::string CapitalizeText(std::string text)
+		{
+			for (int i = 0; i < text.length(); i++)
+			{
+				if (i == 0) text[i] = std::toupper(text[i]);
+				else if (text[i - 1] == ' ')
+					text[i] = toupper(text[i]);
+			}
+
+			return text;
+		}
+
+		static std::string CapitalizeWholeText(std::string text)
+		{
+			for (int i = 0; i < text.length(); i++)
+				text[i] = std::toupper(text[i]);
+
+			return text;
+		}
+	}
+
 	std::shared_ptr<Origin::Texture2D> ContentBrowserPanel::DirectoryIcon(std::filesystem::directory_entry dirEntry)
 	{
 		auto& fileExtension = dirEntry.path().extension().string();
@@ -43,6 +74,7 @@ namespace Origin
 	void ContentBrowserPanel::OnImGuiRender()
 	{
 		FileButton();
+		FileArgument();
 	}
 
 	void ContentBrowserPanel::FileButton()
@@ -76,6 +108,7 @@ namespace Origin
 
 			ImGui::PushID(filenameString.c_str());
 
+			// Folder Icon
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
 			ImGui::ImageButton((ImTextureID)DirectoryIcon(m_DirectoryEntry)->GetRendererID(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
@@ -96,14 +129,23 @@ namespace Origin
 					m_CurrentDirectory /= m_DirectoryEntry.path().filename();
 
 					if (rootDirectory)
-					{
 						m_SubDirectoryMap.clear();
-						m_SubDirectoryMap[m_SubDirectoryCount] = m_DirectoryEntry.path();
-					}
-
-					else m_SubDirectoryMap[m_SubDirectoryCount] = m_DirectoryEntry.path();
-
+					m_SubDirectoryMap[m_SubDirectoryCount] = m_DirectoryEntry.path();
 				}
+			}
+
+			if (ImGui::BeginPopupContextItem())
+			{
+				Utils::CenteredText(Utils::CapitalizeWholeText(filenameString));
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Delete"))
+				{
+					m_DeleteArgument = true;
+					m_DeletePathTarget = m_DirectoryEntry.path();
+				}
+
+				ImGui::EndPopup();
 			}
 
 			ImGui::TextWrapped(filenameString.c_str());
@@ -129,7 +171,11 @@ namespace Origin
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
-		if (ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("backward_button")->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 }))
+
+		// Backward Button
+		if (ImGui::ImageButton(
+			(ImTextureID)m_NavigationIconMap.at("backward_button")->GetRendererID(),
+			{ 24, 24 }, { 0, 1 }, { 1, 0 }))
 		{
 			if (!rootDirectory)
 			{
@@ -140,14 +186,15 @@ namespace Origin
 
 		ImGui::PopStyleColor(3);
 
-		// Forward button
 		ImGui::SameLine();
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
 		ImGui::ImageButton((ImTextureID)m_NavigationIconMap.at("forward_button")->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 });
+		ImGui::PopStyleColor(3);
 
-		if(ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		// Forward button
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
 			if (m_SubDirectoryMap.find(subDirNumber) != m_SubDirectoryMap.end())
 			{
@@ -155,31 +202,46 @@ namespace Origin
 				m_CurrentDirectory /= m_SubDirectoryMap.at(subDirNumber).filename();
 			}
 		}
+		ImGui::Separator();
+	}
 
-		ImGui::PopStyleColor(3);
-		ImGui::SameLine(); ImGui::Text("Forward Count : %i", m_SubDirectoryCount);
+	void ContentBrowserPanel::FileArgument()
+	{
+		if (m_DeleteArgument) DeleteFileArgument();
+	}
 
-		std::string nextDirName = "None";
-		if (m_SubDirectoryMap.find(subDirNumber) != m_SubDirectoryMap.end())
-			nextDirName = m_SubDirectoryMap.at(subDirNumber).filename().string();
+	void ContentBrowserPanel::DeleteFileArgument()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8.0f, 7.0f });
 
-		std::string prevDirName = "None";
-		if (m_SubDirectoryMap.find(m_SubDirectoryCount) != m_SubDirectoryMap.end())
-			prevDirName = m_SubDirectoryMap.at(m_SubDirectoryCount).filename().string();
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration
+			| ImGuiWindowFlags_AlwaysAutoResize
+			| ImGuiWindowFlags_NoSavedSettings
+			| ImGuiWindowFlags_NoFocusOnAppearing
+			| ImGuiWindowFlags_NoDocking
+			| ImGuiWindowFlags_NoNav;
 
-		ImGui::SameLine(); ImGui::Text("| Prev \"%s\" | Next \"%s\"", prevDirName.c_str(), nextDirName.c_str());
-		ImGui::SameLine(); ImGui::Text("| Sub Dir Size %i", m_SubDirectoryMap.size());
+		ImGui::SetNextWindowPos( { ImGui::GetWindowWidth() / 2.0f, ImGui::GetWindowHeight() / 2.0f }, ImGuiCond_Always);
+		ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
 
-		ImGui::Begin("Sub Directory List");
-		ImGui::Text("Sub Directory");
-
-		for (auto& it : m_SubDirectoryMap)
+		if (ImGui::Begin("##delete_argument", nullptr, window_flags))
 		{
-			auto& subdirName = it.second.filename().string();
-			ImGui::Text("%i. \"%s\"", it.first, subdirName.c_str());
+			Utils::CenteredText(std::string("Delete \"" + m_DeletePathTarget.filename().string() + "\""));
+			ImGui::Separator();
+
+			Utils::CenteredText("Are you sure ?");
+
+			if (ImGui::Button("Yes", {46.0f, 24.0f}))
+			{
+				std::filesystem::remove_all(m_DeletePathTarget);
+				m_DeleteArgument = false;
+			}
+			ImGui::SameLine();
+
+			if (ImGui::Button("No", { 46.0f, 24.0f })) m_DeleteArgument = false;
 		}
 
 		ImGui::End();
-
+		ImGui::PopStyleVar();
 	}
 }
