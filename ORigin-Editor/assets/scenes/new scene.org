@@ -1,55 +1,46 @@
 Scene: new scene.org
 Entities:
-  - Entity: 18323448003247944697
+  - Entity: 18093367299250644368
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, -3.14159274, 0]
-      Scale: [1, 1, 1]
+      Translation: [0, 2.26124597, -6.30290318]
+      Rotation: [0, 0, 0]
+      Scale: [16.9703999, 13.8963556, 1.96800005]
     SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\mario\pack.png
-      TillingFactor: 1
+      Color: [1, 1, 1, 0.13333334]
+      TexturePath: assets\textures\checkerboard.jpg
+      TillingFactor: 10
+  - Entity: 18069704574002627943
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Translation: [-3.28556943, 0.398339331, 6.10351562e-05]
+      Rotation: [0, 0, 0]
+      Scale: [1.83116972, 1.83116972, 1.83116972]
+    CircleRendererComponent:
+      Color: [0, 1, 0.101265669, 1]
+      Fade: 0.300000012
+      Thickness: 0.349999994
     Rigidbody2DComponent:
-      BodyType: Dynamic
+      BodyType: Static
       FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0.0900000036]
-      Size: [0.5, 0.5]
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.400000006
       Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Game.Player
-  - Entity: 5591203796459228288
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [0, 0, 8]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-      FixedAspectRatio: false
-  - Entity: 14838257616831213775
+  - Entity: 13405023634406324961
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [0, -1.11530614, 0]
+      Translation: [1.19648933, -0.021597296, 0]
       Rotation: [0, 0, 0]
-      Scale: [3.08369732, 0.391638637, 1]
+      Scale: [0.529300034, 0.529300034, 0.529300034]
     SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
+      Color: [0, 0.481012583, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
       BodyType: Static
@@ -61,3 +52,63 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - Entity: 12925410848175917739
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, -1.22665381, 0]
+      Rotation: [0, 0, 0]
+      Scale: [33.9032822, 0.566815913, 1]
+    SpriteRendererComponent:
+      Color: [1, 0, 0.759494305, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 16059447809785495680
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-0.856400549, 0.536085367, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1.06251347, 1.0296154, 1]
+    SpriteRendererComponent:
+      Color: [1, 0, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1.10000002
+      Friction: 0.5
+      Restitution: 0.430000007
+      RestitutionThreshold: 0.930000007
+    ScriptComponent:
+      ClassName: Game.Player
+  - Entity: 11939441883803479275
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [-0.77191937, 1.56797457, 7.97121143]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false

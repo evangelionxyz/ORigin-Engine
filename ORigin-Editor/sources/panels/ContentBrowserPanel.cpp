@@ -226,7 +226,7 @@ namespace Origin
 
 		if (ImGui::Begin("##delete_argument", nullptr, window_flags))
 		{
-			Utils::CenteredText(std::string("Delete \"" + m_DeletePathTarget.filename().string() + "\""));
+			Utils::CenteredText("Delete \"" + m_DeletePathTarget.filename().string() + "\"");
 			ImGui::Separator();
 
 			Utils::CenteredText("Are you sure ?");

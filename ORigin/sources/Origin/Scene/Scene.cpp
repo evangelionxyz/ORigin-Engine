@@ -401,14 +401,14 @@ namespace Origin {
 		OnPhysics2DStart();
 
 		// Scripting
-		ScriptEngine::OnRuntimeStart(this);
-
-		// instantiate all script entities
-		auto& view = m_Registry.view<ScriptComponent>();
-		for (auto e : view)
 		{
-			Entity entity = { e, this };
-			ScriptEngine::OnCreateEntity(entity);
+			ScriptEngine::OnRuntimeStart(this);
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				ScriptEngine::OnCreateEntity(entity);
+			}
 		}
 	}
 
@@ -470,14 +470,14 @@ namespace Origin {
 		OnPhysics2DStart();
 
 		// Scripting
-		ScriptEngine::OnRuntimeStart(this);
-
-		// instantiate all script entities
-		auto view = m_Registry.view<ScriptComponent>();
-		for (auto e : view)
 		{
-			Entity entity = { e, this };
-			ScriptEngine::OnCreateEntity(entity);
+			ScriptEngine::OnRuntimeStart(this);
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto e : view)
+			{
+				Entity entity = { e, this };
+				ScriptEngine::OnCreateEntity(entity);
+			}
 		}
 	}
 

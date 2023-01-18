@@ -1,7 +1,5 @@
 ﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
-using static System.Runtime.CompilerServices.RuntimeHelpers;
-
 namespace ORiginEngine
 {
     public enum KeyCode

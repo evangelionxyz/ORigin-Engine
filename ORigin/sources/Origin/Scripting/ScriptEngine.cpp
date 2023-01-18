@@ -6,9 +6,9 @@
 #include "ScriptGlue.h"
 #include "Origin\Scene\Component\Component.h"
 
-#include "mono/jit/jit.h"
-#include "mono/metadata/assembly.h"
-#include "mono/metadata/object.h"
+#include "mono\jit/jit.h"
+#include "mono\metadata\assembly.h"
+#include "mono\metadata\object.h"
 
 namespace Origin
 {
@@ -120,11 +120,18 @@ namespace Origin
 		s_Data = new ScriptEngineData();
 
 		InitMono();
-		LoadAssembly("resources/scripts/ORigin-ScriptCore.dll");
+		ScriptGlue::RegisterFunctions();
+
+		bool status = LoadAssembly("resources/scripts/ORigin-ScriptCore.dll");
+		if (!status)
+		{
+			OGN_CORE_ERROR("[ScriptEngine] Could not load ORigin-ScriptCore assembly.");
+			return;
+		}
+
 		LoadAssemblyClasses(s_Data->CoreAssembly);
 
-		// Internal Calls
-		ScriptGlue::RegisterFunctions();
+		ScriptGlue::RegisterComponents();
 		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity");
 	}
 
@@ -139,14 +146,17 @@ namespace Origin
 		OGN_CORE_WARN("Script Engine Shutdown");
 	}
 
-	void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
+	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
 		s_Data->AppDomain = mono_domain_create_appdomain("ORiginScriptRuntime", nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
 
 		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
+		if (s_Data->CoreAssembly == nullptr)
+			return false;
+
 		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
-		// Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
+		return true;
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* scene)
@@ -195,9 +205,14 @@ namespace Origin
 		return s_Data->EntityClasses;
 	}
 
-	Origin::Scene* ScriptEngine::GetSceneContext()
+	Scene* ScriptEngine::GetSceneContext()
 	{
 		return s_Data->SceneContext;
+	}
+
+	MonoImage* ScriptEngine::GetCoreAssemblyImage()
+	{
+		return s_Data->CoreAssemblyImage;
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
@@ -263,7 +278,8 @@ namespace Origin
 
 	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
-		return mono_runtime_invoke(method, m_MonoClass, params, nullptr);
+		MonoObject* exception = nullptr;
+		return mono_runtime_invoke(method, instance, params, &exception);
 	}
 
 	ScriptInstance::ScriptInstance(std::shared_ptr<ScriptClass> scriptClass, Entity entity)
@@ -291,8 +307,10 @@ namespace Origin
 
 	void ScriptInstance::InvokeOnUpdate(float time)
 	{
-		void* param = &time;
 		if (m_OnUpdateMethod)
+		{
+			void* param = &time;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, &param);
+		}
 	}
 }

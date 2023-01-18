@@ -12,6 +12,7 @@ namespace ORiginEngine
             Y = scalar;
             Z = scalar;
         }
+
         public Vector3(float x, float y, float z)
         {
             X = x;
@@ -19,7 +20,17 @@ namespace ORiginEngine
             Z = z;
         }
 
-        public static Vector3 Zero() => new Vector3(0.0f);
+        public Vector2 XY
+        {
+            get => new Vector2(X, Y);
+            set
+            {
+                X = value.X;
+                Y = value.Y;
+            }
+        }
+
+        public static Vector3 Zero => new Vector3(0.0f);
 
         public static Vector3 operator* (Vector3 vector, float scalar)
         {

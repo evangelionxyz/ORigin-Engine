@@ -58,7 +58,7 @@ namespace Origin
 		static void Init();
 		static void Shutdown();
 
-		static void LoadAssembly(const std::filesystem::path& filepath);
+		static bool LoadAssembly(const std::filesystem::path& filepath);
 
 		static void OnRuntimeStart(Scene* scene);
 		static void OnRuntimeStop();
@@ -71,6 +71,7 @@ namespace Origin
 		static std::unordered_map<std::string, std::shared_ptr<ScriptClass>> GetEntityClasses();
 
 		static Scene* GetSceneContext();
+		static MonoImage* GetCoreAssemblyImage();
 
 	private:
 

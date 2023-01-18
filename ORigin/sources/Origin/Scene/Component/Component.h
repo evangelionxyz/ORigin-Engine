@@ -155,13 +155,11 @@ namespace Origin
 	};
 
 	template<typename... Component>
-	struct ComponentGroup
-	{
-	};
+	struct ComponentGroup { };
 
 	using AllComponents =
 		ComponentGroup<TransformComponent, SpriteRendererComponent,
-		CircleRendererComponent, CameraComponent, NativeScriptComponent,
-		ScriptComponent, Rigidbody2DComponent, BoxCollider2DComponent,
-		CircleCollider2DComponent>;
+		CircleRendererComponent, CameraComponent,
+		ScriptComponent, NativeScriptComponent,
+		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
 }
