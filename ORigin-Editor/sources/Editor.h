@@ -24,27 +24,24 @@ namespace Origin {
   {
   public:
     Editor();
-    ~Editor()
-    {
-    }
+    ~Editor(){}
 
     void OnAttach() override;
     void OnUpdate(Timestep ts) override;
 
   private:
-    void OnDuplicateEntity();
-    void OnOverlayRenderer();
-
     // Scene Viewport
+    void SceneRender(float time);
 		void SceneViewport();
     void SceneViewportToolbar();
     void SceneViewportMenu();
+    void OverlayBeginScene();
 
 		// Game Viewport
+    void GameRender(float time);
 		void GameViewport();
 		void GameViewportToolbar();
 		void GameViewportMenu();
-    void OverlayBeginScene();
 
 		void MenuBar();
     void NewScene();
@@ -53,6 +50,8 @@ namespace Origin {
     void OpenScene();
     void OpenScene(const std::filesystem::path& path);
     void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
+		void OnDuplicateEntity();
+		void OnOverlayRenderer();
 
     static bool OnWindowResize(WindowResizeEvent& e);
     static bool OnMouseMovedEvent(MouseMovedEvent& e);
@@ -96,10 +95,6 @@ namespace Origin {
 		bool VpMenuContextActive;
 
     glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
-    glm::vec4 color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
-    glm::vec2 position = glm::vec2(0);
-    glm::vec2 scale = glm::vec2(1);
-
     glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
     glm::vec2 m_GameViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
 

@@ -119,7 +119,7 @@ namespace Origin
 		s_3Ddata.cubeVertexPosition[22] = glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f);
 		s_3Ddata.cubeVertexPosition[23] = glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f);
 
-		
+
 	}
 
 	void Renderer3D::BeginScene(const Camera& camera, glm::mat4& transform)
@@ -164,7 +164,6 @@ namespace Origin
 			s_3Ddata.TextureSlots[i]->Bind(i);*/
 
 		RenderCommand::DrawIndexed(s_3Ddata.cubeVertexArray,s_3Ddata.cubeVertexArray->GetIndexBuffer()->GetCount());
-		
 		s_3Ddata.cubeShader->Unbind();
 	}
 

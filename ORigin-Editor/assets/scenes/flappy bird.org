@@ -1,0 +1,64 @@
+Scene: flappy bird.org
+Entities:
+  - Entity: 7443113801071450929
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-0.0824311376, 0.27280122, -0.593429089]
+      Rotation: [0, 0, 0]
+      Scale: [8.34083271, 12.4479179, 2.3099997]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\flappybird\bg.jpg
+      TillingFactor: 1
+  - Entity: 13444975426111872671
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-8.38769817, 0.27280122, -0.593429208]
+      Rotation: [0, 0, 0]
+      Scale: [8.34083271, 12.4479179, 2.3099997]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\flappybird\bg.jpg
+      TillingFactor: 1
+  - Entity: 1120226804109583033
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [8.1698494, 0.27280122, -0.593429208]
+      Rotation: [0, 0, 0]
+      Scale: [8.34083271, 12.4479179, 2.3099997]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\flappybird\bg.jpg
+      TillingFactor: 1
+  - Entity: 6704075497794458332
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-7.06970835, 0, 1.09322345]
+      Rotation: [0, 0, 0]
+      Scale: [1.12501538, 1, 0.999999881]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\flappybird\bird.png
+      TillingFactor: 1
+  - Entity: 15222360570060685789
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [-6.78259468, 0, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false

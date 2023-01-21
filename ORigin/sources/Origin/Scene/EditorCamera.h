@@ -43,6 +43,8 @@ namespace Origin {
 		bool IsActive() { return m_EnableMovement; }
 		inline void SetFov(float fov) { m_FOV = fov; }
 
+		float GetZoomSpeed() { return ZoomSpeed(); }
+
 	private:
 		void UpdateProjection();
 		void UpdateView();
@@ -68,8 +70,9 @@ namespace Origin {
 
 		glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
 
-		float m_Distance = 8.0f;
+		float m_Distance = 0.0f;
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
+		//float m_SpeedByDistance;
 
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 	};

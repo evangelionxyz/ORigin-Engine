@@ -48,8 +48,8 @@ namespace Origin
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
-		m_EditorCamera.SetDistance(15.0f);
-		m_EditorCamera.SetPosition(glm::vec3(-11.0f, 5.5f, 12.0f));
+		m_EditorCamera.SetPosition(glm::vec3(-20.0f, 10.0f, 50.0f));
+    m_EditorCamera.SetDistance(10.0f);
 		m_EditorCamera.SetYaw(0.7f);
 		m_EditorCamera.SetPitch(0.350f);
 
@@ -82,9 +82,9 @@ namespace Origin
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
       m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
     {
-      m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+      m_Framebuffer->Resize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
       m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-      m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+      m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
     }
 
     Renderer2D::ResetStats();
@@ -92,10 +92,8 @@ namespace Origin
 
     m_Framebuffer->Bind();
 
-    if(m_SceneHierarchy.GetContext())
-      RenderCommand::ClearColor(clearColor);
-    else
-      RenderCommand::ClearColor(glm::vec4(0.6f));
+    if(m_SceneHierarchy.GetContext())  RenderCommand::ClearColor(clearColor);
+    else RenderCommand::ClearColor(glm::vec4(0.6f));
 
     RenderCommand::Clear();
     m_Framebuffer->ClearAttachment(1, -1);
@@ -105,7 +103,7 @@ namespace Origin
     {
     case SceneState::Play:
       m_GizmosType = -1;
-      m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+      m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
       m_ActiveScene->OnUpdateRuntime(time);
       break;
 
@@ -125,10 +123,10 @@ namespace Origin
     my -= m_SceneViewportBounds[0].y;
     const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
     my = viewportSize.y - my;
-    mouseX = static_cast<int>(mx);
-    mouseY = static_cast<int>(my) - 1;
+    mouseX = (int)mx;
+    mouseY = (int)my - 1;
 
-    if (mouseX >= 0 && mouseY >= 0 && mouseX < static_cast<int>(viewportSize.x) && mouseY < static_cast<int>(viewportSize.y))
+    if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
     {
       m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
       m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
@@ -137,24 +135,30 @@ namespace Origin
     OnOverlayRenderer();
     m_Framebuffer->Unbind();
 
-    {
-      // Game Framebuffer
-			// Resize
-      const FramebufferSpecification gameSpec = m_GameFramebuffer->GetSpecification();
-			if (m_GameViewportSize.x > 0.0f && m_GameViewportSize.y > 0.0f && (m_GameViewportSize.x != gameSpec.Width || m_GameViewportSize.y != gameSpec.Height))
-        m_GameFramebuffer->Resize(static_cast<uint32_t>(m_GameViewportSize.x), static_cast<uint32_t>(m_GameViewportSize.y));
+    GameRender(time);
+  }
 
-			m_GameFramebuffer->Bind();
-			RenderCommand::ClearColor(clearColor);
+	void Editor::SceneRender(float time)
+	{
 
-			RenderCommand::Clear();
-			m_GameFramebuffer->ClearAttachment(0, -1);
+	}
 
-      m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_GameViewportSize.x), static_cast<uint32_t>(m_GameViewportSize.y));
-      m_ActiveScene->OnUpdateGame(time);
+  void Editor::GameRender(float time)
+  {
+		const FramebufferSpecification gameSpec = m_GameFramebuffer->GetSpecification();
+		if (m_GameViewportSize.x > 0.0f && m_GameViewportSize.y > 0.0f && (m_GameViewportSize.x != gameSpec.Width || m_GameViewportSize.y != gameSpec.Height))
+			m_GameFramebuffer->Resize((uint32_t)m_GameViewportSize.x, (uint32_t)m_GameViewportSize.y);
 
-			m_GameFramebuffer->Unbind();
-    }
+		m_GameFramebuffer->Bind();
+		RenderCommand::ClearColor(clearColor);
+		RenderCommand::Clear();
+
+		m_GameFramebuffer->ClearAttachment(0, -1);
+		m_ActiveScene->OnViewportResize((uint32_t)m_GameViewportSize.x, (uint32_t)m_GameViewportSize.y);
+
+		m_ActiveScene->OnUpdateGame(time);
+
+		m_GameFramebuffer->Unbind();
   }
 
 	void Editor::OnDuplicateEntity()
@@ -172,8 +176,8 @@ namespace Origin
     m_Dockspace.Begin();
     MenuBar();
 
-    GameViewport();
     SceneViewport();
+    GameViewport();
 
     m_SceneHierarchy.OnImGuiRender();
     m_ContentBrowser.OnImGuiRender();

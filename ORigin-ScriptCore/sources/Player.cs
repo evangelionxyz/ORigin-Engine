@@ -1,14 +1,19 @@
 ﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 using ORiginEngine;
-
+using System;
 
 namespace Game
 {
+    public static class GlobalVariable
+    {
+        public static Vector3 translation = new Vector3();
+    }
+
     public class Player : Entity
     {
-        private TransformComponent Transform;
-        private Rigidbody2DComponent Rigidbody2D;
+        public TransformComponent Transform;
+        public Rigidbody2DComponent Rigidbody2D;
 
         void OnCreate()
         {
@@ -32,6 +37,27 @@ namespace Game
 
             velocity *= speed * deltaTime;
             Rigidbody2D.ApplyLinearImpulse(velocity.XY, true);
+
+            GlobalVariable.translation = Transform.Translation;
+        }
+    }
+
+    public class Camera : Entity
+    {
+        private TransformComponent Transform;
+        private Vector3 playerTranslation = new Vector3();
+        void OnCreate()
+        {
+            Transform = GetComponent<TransformComponent>();
+        }
+
+        void OnUpdate(float deltaTime)
+        {
+            playerTranslation.X = GlobalVariable.translation.X;
+            playerTranslation.Y = GlobalVariable.translation.Y;
+            playerTranslation.Z = Transform.Translation.Z;
+
+            Transform.Translation = playerTranslation;
         }
     }
 }

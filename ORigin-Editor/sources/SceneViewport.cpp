@@ -63,6 +63,7 @@ namespace Origin
 				std::string name = "None";
 				if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 				ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
+				ImGui::Text("Zoom Speed: (%f)", m_EditorCamera.GetZoomSpeed());
 			}
 			ImGui::End();
 		}
@@ -309,6 +310,14 @@ namespace Origin
 
 					ImGui::Text("%s", name.c_str());
 					ImGui::Separator();
+
+					if (ImGui::MenuItem("Delete"))
+					{
+						m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
+						m_SceneHierarchy.DestroyEntity(m_SelectedEntity);
+
+						m_HoveredEntity = {};
+					}
 
 					if (ImGui::BeginMenu("Properties"))
 					{

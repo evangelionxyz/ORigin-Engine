@@ -16,6 +16,7 @@ namespace Origin {
 		SceneCamera();
 		virtual ~SceneCamera() = default;
 		void SetViewportSize(uint32_t width, uint32_t height);
+		const glm::vec2& GetViewportSize() { return m_ViewportSize; }
 
 		// Perspective
 		void SetPerspective(float verticalFov, float nearClip, float farClip);
@@ -50,6 +51,8 @@ namespace Origin {
 	private:
 		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 		float m_AspectRatio;
+
+		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 
 		// Persepective
 		float m_PerspectiveFOV = glm::radians(45.0f);

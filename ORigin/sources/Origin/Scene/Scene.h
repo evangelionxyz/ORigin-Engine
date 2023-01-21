@@ -28,6 +28,7 @@ namespace Origin
 		Entity CreateCamera(const std::string& name = std::string());
 		Entity CreateCircle(const std::string& name = std::string());
 		Entity CreateSpriteEntity(const std::string& name = std::string());
+
 		Entity GetPrimaryCameraEntity();
 
 		void DestroyEntity(Entity entity);

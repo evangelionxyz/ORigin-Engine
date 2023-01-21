@@ -33,6 +33,9 @@ namespace Origin
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		m_ViewportSize.x = (float)width;
+		m_ViewportSize.y = (float)height;
+
 		m_AspectRatio = (float)width / (float)height;
 		RecalculateProjection();
 	}
