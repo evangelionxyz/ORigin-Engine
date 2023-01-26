@@ -18,6 +18,9 @@ ORigin.sln.licenseheader
 # folders
 Binaries/
 scripts/__pycache__
+
 ORigin/vendor/projectFiles
+
+ORigin-Editor/assets/cache/
 ORigin-Editor/resources/scripts/
 ORigin-Editor/resources/intermediates/
