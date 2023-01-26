@@ -7,10 +7,11 @@
 
 #include "Origin\Scripting\ScriptEngine.h"
 
+#include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\Renderer2D.h"
+#include "Origin\Renderer\Renderer3D.h"
 #include "Origin\Scene\Skybox.h"
 
-#include "Origin\Renderer\Renderer.h"
 #include "Entity.h"
 
 // Box2D
@@ -136,6 +137,22 @@ namespace Origin {
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(UUID());
 		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<SpriteRenderer2DComponent>();
+
+		auto& tag = entity.AddComponent<TagComponent>();
+		tag.Tag = name.empty() ? "Entity" : name;
+
+		UUID& uuid = entity.GetComponent<IDComponent>().ID;
+		m_EntityMap.insert(std::make_pair(uuid, entity));
+
+		return entity;
+	}
+
+	Entity Scene::CreateCube(const std::string& name)
+	{
+		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(UUID());
+		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<SpriteRendererComponent>();
 
 		auto& tag = entity.AddComponent<TagComponent>();
@@ -217,10 +234,10 @@ namespace Origin {
 
 			// Sprites
 			{
-				auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+				auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRenderer2DComponent>);
 				for (auto entity : group)
 				{
-					auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+					auto& [transform, sprite] = group.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 				}
 			}
@@ -307,10 +324,10 @@ namespace Origin {
 
 			// Sprites
 			{
-				auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+				auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRenderer2DComponent>);
 				for (auto entity : group)
 				{
-					auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+					auto& [transform, sprite] = group.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 				}
 			}
@@ -343,6 +360,7 @@ namespace Origin {
 
 		//Render
 		Render2DScene(camera);
+		Render3DScene(camera);
 	}
 
 	void Scene::OnUpdateSimulation(Timestep time, EditorCamera& camera)
@@ -394,6 +412,7 @@ namespace Origin {
 
 		// Render
 		Render2DScene(camera);
+		Render3DScene(camera);
 	}
 
 	void Scene::OnSimulationStart()
@@ -425,10 +444,10 @@ namespace Origin {
 		Renderer2D::BeginScene(camera);
 		// Sprites
 		{
-			auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+			auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRenderer2DComponent>);
 			for (auto entity : group)
 			{
-				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+				auto& [transform, sprite] = group.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 				float calcDistance = glm::length(camera.GetPosition() - transform.Translation);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
@@ -461,8 +480,23 @@ namespace Origin {
 					(int)entity);
 			}
 		}
+
 		DrawGrid(m_GridSize, m_GridColor);
 		Renderer2D::EndScene();
+	}
+
+	void Scene::Render3DScene(EditorCamera& camera)
+	{
+		Renderer3D::BeginScene(camera);
+
+		auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+		for (auto entity : view)
+		{
+			auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+			Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)entity);
+		}
+
+		Renderer3D::EndScene();
 	}
 
 	void Scene::OnRuntimeStart()
@@ -624,6 +658,7 @@ namespace Origin {
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 	template<> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
+	template<> void Scene::OnComponentAdded<SpriteRenderer2DComponent>(Entity entity, SpriteRenderer2DComponent& component) {}
 	template<> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) {}
 	template<> void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component) {}

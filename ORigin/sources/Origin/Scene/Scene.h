@@ -23,12 +23,17 @@ namespace Origin
 
 		static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
 
+		// 2D Entity
 		Entity CreateEntity(const std::string& name = std::string());
-		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
 		Entity CreateCamera(const std::string& name = std::string());
 		Entity CreateCircle(const std::string& name = std::string());
 		Entity CreateSpriteEntity(const std::string& name = std::string());
 
+		// 3D Entity
+		Entity CreateCube(const std::string& name = std::string());
+
+		// Global Entity
+		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
 		Entity GetPrimaryCameraEntity();
 
 		void DestroyEntity(Entity entity);
@@ -60,9 +65,14 @@ namespace Origin
 		}
 
 	private:
+
+		// 2D Scene
 		void OnPhysics2DStart();
 		void OnPhysics2DStop();
 		void Render2DScene(EditorCamera& camera);
+
+		// 3D Scene
+		void Render3DScene(EditorCamera& camera);
 
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;

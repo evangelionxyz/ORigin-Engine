@@ -7,7 +7,7 @@ Entities:
       Translation: [-3.94715309, 3.99213767, -0.522869885]
       Rotation: [0, 0, 0]
       Scale: [1.01638293, 1.01638293, 1.01638293]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 0.58227843, 0, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -27,7 +27,7 @@ Entities:
       Translation: [-7.8036027, 4.22010565, 0]
       Rotation: [0, 0, -0.53611213]
       Scale: [0.552588999, 0.552588999, 0.552589238]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0.481012702, 1, 0, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -47,7 +47,7 @@ Entities:
       Translation: [-17.0355549, 2.26124597, -6.30290318]
       Rotation: [0, 0, 0]
       Scale: [16.9703999, 13.8963556, 1.96800005]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0.372549057, 1, 0.436088324, 0.65882355]
       TexturePath: assets\textures\checkerboard.jpg
       TillingFactor: 10
@@ -58,7 +58,7 @@ Entities:
       Translation: [-12.205781, 0.127084181, -0.0125732459]
       Rotation: [0, 0, 0]
       Scale: [1.4495939, 1.4495939, 1.4495939]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0.962025166, 0, 1, 1]
       TexturePath: assets\textures\death a.png
       TillingFactor: 1
@@ -79,7 +79,7 @@ Entities:
       Translation: [8.58017731, -1.72347319, -0.00494395196]
       Rotation: [0, 0, 2.06684327]
       Scale: [0.414790094, 4.68355083, 0.952740014]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 0.886075974, 0, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -99,7 +99,7 @@ Entities:
       Translation: [0, 5.77334595, 0]
       Rotation: [0, 0, 0]
       Scale: [44.1365204, 0.566815913, 1]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 0.97647059]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -119,7 +119,7 @@ Entities:
       Translation: [-14.9094934, 2.11765337, 0]
       Rotation: [0, 0, 0]
       Scale: [1.06251347, 1.0296154, 1]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -161,7 +161,7 @@ Entities:
       Translation: [-4.26692963, -7.98880768, 0]
       Rotation: [0, 0, 0]
       Scale: [12.3991575, 0.566815913, 1]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0, 0.658227921, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -181,7 +181,7 @@ Entities:
       Translation: [-1.0845592, -5.74250603, -0.00494395196]
       Rotation: [0, 0, 0]
       Scale: [1.36077535, 3.88967538, 0.952740014]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\triangle a.png
       TillingFactor: 1
@@ -202,7 +202,7 @@ Entities:
       Translation: [-1.19701219, 0.197392955, -0.00494395196]
       Rotation: [0, 0, -1.86063612]
       Scale: [0.414789736, 10.0898018, 0.952740014]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 0.987341762, 0, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -222,7 +222,7 @@ Entities:
       Translation: [-10.6702366, -2, 0]
       Rotation: [0, 0, 0]
       Scale: [21.0697727, 0.566815913, 1]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 0, 0.759494305, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -242,7 +242,7 @@ Entities:
       Translation: [-4.90080786, 0.262550354, -0.00494395196]
       Rotation: [0, 0, 0]
       Scale: [0.69670248, 3.72696686, 0.952740014]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0.481012821, 0, 1, 1]
       TexturePath: assets\textures\checkerboard.jpg
       TillingFactor: 1
@@ -263,7 +263,7 @@ Entities:
       Translation: [-9.37426186, 2.53927588, 0]
       Rotation: [0.160328388, -0.108372815, -0.697345912]
       Scale: [0.499872833, 0.440445215, 0.990000069]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0, 0.177215338, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -283,7 +283,7 @@ Entities:
       Translation: [-0.0351948142, 2.26124597, -6.30290318]
       Rotation: [0, 0, 0]
       Scale: [16.9703999, 13.8963556, 1.96800005]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 0.992156863, 0.372549027, 0.65882355]
       TexturePath: assets\textures\checkerboard.jpg
       TillingFactor: 10
@@ -294,7 +294,7 @@ Entities:
       Translation: [-10.2152472, 3.04752111, 0]
       Rotation: [0, 0, -0.692849874]
       Scale: [0.552589238, 1.54632723, 0.552589238]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 0.810126543, 0, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -314,7 +314,7 @@ Entities:
       Translation: [5.24571705, 1.00782716, -0.00494395243]
       Rotation: [0, 0, -1.2682333]
       Scale: [4.45132208, 0.500711799, 0.952739894]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 0, 0, 1]
       TexturePath: assets\textures\death b.png
       TillingFactor: 1
@@ -335,7 +335,7 @@ Entities:
       Translation: [-20.1339169, 1.65407634, -0.00494395196]
       Rotation: [0, 0, 0]
       Scale: [0.69670248, 9.18749905, 0.952740014]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -355,7 +355,7 @@ Entities:
       Translation: [18.6810894, 0.754824162, -0.00494395196]
       Rotation: [0, 0, 0]
       Scale: [0.69670248, 8.59278679, 0.952740014]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0, 1, 0.379746675, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
@@ -375,7 +375,7 @@ Entities:
       Translation: [8.86105728, -4.49846315, 0]
       Rotation: [0, 0, 0]
       Scale: [21.0697727, 0.566815913, 1]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0, 0.658227921, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:

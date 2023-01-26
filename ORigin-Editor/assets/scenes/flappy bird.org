@@ -7,7 +7,7 @@ Entities:
       Translation: [-0.0824311376, 0.27280122, -0.593429089]
       Rotation: [0, 0, 0]
       Scale: [8.34083271, 12.4479179, 2.3099997]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\flappybird\bg.jpg
       TillingFactor: 1
@@ -18,7 +18,7 @@ Entities:
       Translation: [-8.38769817, 0.27280122, -0.593429208]
       Rotation: [0, 0, 0]
       Scale: [8.34083271, 12.4479179, 2.3099997]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\flappybird\bg.jpg
       TillingFactor: 1
@@ -29,7 +29,7 @@ Entities:
       Translation: [8.1698494, 0.27280122, -0.593429208]
       Rotation: [0, 0, 0]
       Scale: [8.34083271, 12.4479179, 2.3099997]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\flappybird\bg.jpg
       TillingFactor: 1
@@ -40,7 +40,7 @@ Entities:
       Translation: [-7.06970835, 0, 1.09322345]
       Rotation: [0, 0, 0]
       Scale: [1.12501538, 1, 0.999999881]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\flappybird\bird.png
       TillingFactor: 1

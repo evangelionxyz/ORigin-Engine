@@ -13,6 +13,7 @@ namespace Origin {
 		std::string m_FilePath;
 		uint32_t m_Width, m_Height, m_BPP;
 		uint32_t m_Index;
+		uint32_t m_LoadCount = 0;
 		GLenum m_InternalFormat, m_DataFormat;
 
 	public:
@@ -26,12 +27,10 @@ namespace Origin {
 		void Delete() override;
 
 		uint32_t GetRendererID() const override { return m_RendererID; }
-
 		uint32_t GetIndex() const override { return m_Index; }
-
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
-
+		bool IsLoaded() const override { return false; }
 		bool operator== (const Texture& other) const override
 		{
 			return m_RendererID == ((OpenGLTexture3D&)other).m_RendererID;
@@ -47,6 +46,7 @@ namespace Origin {
     uint32_t m_Width, m_Height, m_BPP;
     uint32_t m_Index;
     GLenum m_InternalFormat, m_DataFormat;
+		bool m_IsLoaded = false;
 
   public:
     OpenGLTexture2D(uint32_t width, uint32_t height);
@@ -57,12 +57,11 @@ namespace Origin {
 		std::string GetFilepath() override { return m_FilePath; }
 		void Bind(uint32_t slot = 0) override;
 		void Delete() override;
-
 		uint32_t GetRendererID() const override { return m_RendererID; }
 		uint32_t GetIndex() const override { return m_Index; }
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
-
+		bool IsLoaded() const override { return m_IsLoaded; }
     bool operator== (const Texture& other) const override
     {
       return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;

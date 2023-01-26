@@ -23,6 +23,9 @@ namespace Origin
     m_SimulateButton = Texture2D::Create("resources/textures/simulatebutton.png");
     m_StopButton = Texture2D::Create("resources/textures/stopbutton.png");
 
+    // ==============================
+    // Main Framebuffer Specification
+    // ==============================
     FramebufferSpecification mainFramebufferSpec;
     mainFramebufferSpec.Attachments =
     {
@@ -35,6 +38,9 @@ namespace Origin
     mainFramebufferSpec.Height = 720;
     m_Framebuffer = Framebuffer::Create(mainFramebufferSpec);
 
+		// ==============================
+		// Game Framebuffer Specification
+		// ==============================
 		FramebufferSpecification gameFramebufferSpec;
     gameFramebufferSpec.Attachments =
     {
@@ -54,7 +60,6 @@ namespace Origin
 		m_EditorCamera.SetPitch(0.350f);
 
     m_ActiveScene = std::make_shared<Scene>();
-
     auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
     if (commandLineArgs.Count > 1)
     {
@@ -78,6 +83,9 @@ namespace Origin
     m_Time += time.GetSeconds();
     m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
+		Renderer2D::ResetStats();
+		InputProccedure(time);
+
     // Resize
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
       m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
@@ -87,9 +95,6 @@ namespace Origin
       m_ActiveScene->OnViewportResize((uint32_t)m_SceneViewportSize.x, (uint32_t)m_SceneViewportSize.y);
     }
 
-    Renderer2D::ResetStats();
-    InputProccedure(time);
-
     m_Framebuffer->Bind();
 
     if(m_SceneHierarchy.GetContext())  RenderCommand::ClearColor(clearColor);
@@ -97,7 +102,6 @@ namespace Origin
 
     RenderCommand::Clear();
     m_Framebuffer->ClearAttachment(1, -1);
-
 
     switch (m_SceneState)
     {
@@ -118,7 +122,7 @@ namespace Origin
       break;
     }
 
-    auto [mx, my] = ImGui::GetMousePos();
+    auto& [mx, my] = ImGui::GetMousePos();
     mx -= m_SceneViewportBounds[0].x;
     my -= m_SceneViewportBounds[0].y;
     const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
@@ -129,7 +133,7 @@ namespace Origin
     if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
     {
       m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-      m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+      m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, m_ActiveScene.get());
     }
 
     OnOverlayRenderer();
@@ -262,7 +266,8 @@ namespace Origin
 
 				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
       }
-      else
+
+      if(selectedEntity.HasComponent<SpriteRenderer2DComponent>())
       {
         glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, -projectionRender.z);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
@@ -270,6 +275,15 @@ namespace Origin
 
 				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
       }
+
+			if (selectedEntity.HasComponent<SpriteRendererComponent>())
+			{
+				glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, -projectionRender.z);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+					* rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
+
+				Renderer3D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+			}
 		}
 
     RenderCommand::SetLineWidth(2.0f);

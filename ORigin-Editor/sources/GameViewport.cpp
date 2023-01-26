@@ -14,9 +14,8 @@ namespace Origin
 
 		ImGui::Begin("Game", nullptr, window_flags);
 
-		auto viewportHovered = ImGui::IsWindowHovered();
-		auto viewportFocused = ImGui::IsWindowFocused();
-
+		const auto& viewportHovered = ImGui::IsWindowHovered();
+		const auto& viewportFocused = ImGui::IsWindowFocused();
 
 		ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();

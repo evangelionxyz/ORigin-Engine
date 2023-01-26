@@ -19,6 +19,7 @@ namespace Origin
 		virtual std::string GetFilepath() = 0;
 		virtual void Bind(uint32_t slot = 0) = 0;
 		virtual void Delete() = 0;
+		virtual bool IsLoaded() const = 0;
 		virtual bool operator==(const Texture& other) const = 0;
 	};
 

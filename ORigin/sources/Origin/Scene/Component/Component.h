@@ -57,13 +57,23 @@ namespace Origin
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
-		std::shared_ptr<Texture2D> Texture;
-		float TillingFactor = 1.0f;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color) : Color(color) {}
 		SpriteRendererComponent(float r, float g, float b, float, float a) : Color(r, g, b, a) {}
+	};
+
+	struct SpriteRenderer2DComponent
+	{
+		glm::vec4 Color = glm::vec4(1.0f);
+		std::shared_ptr<Texture2D> Texture;
+		float TillingFactor = 1.0f;
+
+		SpriteRenderer2DComponent() = default;
+		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&) = default;
+		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&, glm::vec4 color) : Color(color) {}
+		SpriteRenderer2DComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
 	};
 
 	struct CircleRendererComponent
@@ -158,7 +168,8 @@ namespace Origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, SpriteRendererComponent,
+		ComponentGroup<TransformComponent,
+		SpriteRendererComponent, SpriteRenderer2DComponent,
 		CircleRendererComponent, CameraComponent,
 		ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;

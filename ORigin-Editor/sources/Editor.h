@@ -53,9 +53,9 @@ namespace Origin {
 		void OnDuplicateEntity();
 		void OnOverlayRenderer();
 
-    static bool OnWindowResize(WindowResizeEvent& e);
-    static bool OnMouseMovedEvent(MouseMovedEvent& e);
-    static bool OnMouseButtonEvent(MouseButtonEvent& e);
+    bool OnWindowResize(WindowResizeEvent& e);
+    bool OnMouseMovedEvent(MouseMovedEvent& e);
+    bool OnMouseButtonEvent(MouseButtonEvent& e);
 
     void OnEvent(Event& e) override;
     bool OnKeyPressed(KeyPressedEvent& e);

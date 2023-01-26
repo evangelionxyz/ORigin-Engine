@@ -1,11 +1,12 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
+#include "SceneHierarchyPanel.h"
+
 #include "Origin\Utils\log.h"
 #include "Origin\IO\Input.h"
 #include "Origin\IO\KeyCodes.h"
-#include "SceneHierarchyPanel.h"
-#include "Origin\Scene\Component\Component.h"
 #include "Origin\Renderer\Texture.h"
+#include "Origin\Scene\Component\Component.h"
 
 #include "Origin\Scripting\ScriptEngine.h"
 
@@ -148,6 +149,7 @@ namespace Origin {
 			DisplayAddComponentEntry<ScriptComponent>("Script");
 			DisplayAddComponentEntry<CameraComponent>("Camera");
 			DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
+			DisplayAddComponentEntry<SpriteRenderer2DComponent>("Sprite Renderer 2D");
 			DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
 			DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody 2D");
@@ -191,11 +193,16 @@ namespace Origin {
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-				// Texture
-				std::string texPath = std::string();
+			});
 
-				ImVec2 btSize = ImVec2(80.0f, 30.0f);
-				ImGui::Button("Texture", btSize);
+		DrawComponent<SpriteRenderer2DComponent>("Sprite Renderer 2D", entity, [](auto& component)
+			{
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+				if (!component.Texture)
+					ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
+				else ImGui::ImageButton((ImTextureID)component.Texture->GetRendererID(), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -209,17 +216,15 @@ namespace Origin {
 
 				if (component.Texture)
 				{
-					texPath = component.Texture->GetFilepath();
-
 					ImGui::SameLine();
-					if (ImGui::Button("Delete", btSize))
+					if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
 					{
 						component.Texture->Delete();
-						texPath = std::string();
 						component.Texture = {};
+						return;
 					}
 
-					ImGui::Text("Path: %s", texPath.c_str());
+					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
 					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 				}
 			});
@@ -321,24 +326,26 @@ namespace Origin {
 
 		DrawComponent<BoxCollider2DComponent>("Box 2D Collider", entity, [](auto& component)
 			{
-				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
-		ImGui::DragFloat2("Size", glm::value_ptr(component.Size), 0.01f);
+				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
+				DrawVec2Control("Size", component.Size, 0.01f, 0.0f);
 
-		ImGui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 100.0f);
-		ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 100.0f);
-		ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f);
-		ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
+				float width = 118.0f;
+				DrawVecControl("Density", &component.Density, 0.01f, 1.0f, width);
+				DrawVecControl("Friction", &component.Friction, 0.01f, 0.5f, width);
+				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, width);
+				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 0.01f, 1.0f, width);
 			});
 
 		DrawComponent<CircleCollider2DComponent>("Circle 2D Collider", entity, [](auto& component)
 			{
-				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
-				ImGui::DragFloat("Radius", &component.Radius, 0.01f);
+				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
+				DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
 
-				ImGui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f);
+				float width = 118.0f;
+				DrawVecControl("Density", &component.Density, 0.01f, 0.5f, width);
+				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, width);
+				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, width);
+				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 0.5f, width);
 			});
 	}
 

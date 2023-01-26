@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
+#include "Origin\Renderer\Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 
 #include "Origin/Renderer/VertexArray.h"
@@ -147,12 +148,12 @@ namespace Origin {
 		s_Data.CircleVertexArray = VertexArray::Create();
 		s_Data.CircleVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(CircleVertex));
 		s_Data.CircleVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_WorldPosition"  },
-			{ ShaderDataType::Float3, "a_LocalPosition"  },
-			{ ShaderDataType::Float4, "a_Color"					 },
-			{ ShaderDataType::Float,  "a_Thickness"			 },
-			{ ShaderDataType::Float,  "a_Fade"					 },
-			{ ShaderDataType::Int,    "a_EntityID"			 }
+			{ ShaderDataType::Float3, "a_WorldPosition" },
+			{ ShaderDataType::Float3, "a_LocalPosition" },
+			{ ShaderDataType::Float4, "a_Color"					},
+			{ ShaderDataType::Float,  "a_Thickness"			},
+			{ ShaderDataType::Float,  "a_Fade"					},
+			{ ShaderDataType::Int,    "a_EntityID"			}
 			});
 		s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
 		s_Data.CircleVertexArray->SetIndexBuffer(quadIB);
@@ -162,9 +163,9 @@ namespace Origin {
 		s_Data.LineVertexArray = VertexArray::Create();
 		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(LineVertex));
 		s_Data.LineVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position"  },
-			{ ShaderDataType::Float4, "a_Color"					 },
-			{ ShaderDataType::Int,    "a_EntityID"			 }
+			{ ShaderDataType::Float3, "a_Position"},
+			{ ShaderDataType::Float4, "a_Color"		},
+			{ ShaderDataType::Int,    "a_EntityID"}
 			});
 		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
 		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVertices];
@@ -200,6 +201,7 @@ namespace Origin {
 	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
 		s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		s_Data.CameraPosition = camera.GetPosition();
 		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 		StartBatch();
@@ -459,7 +461,7 @@ namespace Origin {
 		s_Data.Stats.LineCount++;
 	}
 
-	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
+	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID)
 	{
 		if (src.Texture)
 			DrawQuad(transform, src.Texture, src.TillingFactor, src.Color, entityID);

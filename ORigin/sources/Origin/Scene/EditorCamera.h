@@ -31,7 +31,6 @@ namespace Origin {
 		glm::vec3 GetUpDirection() const;
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;
-		const glm::vec3& GetPosition() const { return m_Position; }
 		void SetPosition(glm::vec3 position) { m_Position = position; }
 		glm::quat GetOrientation() const;
 
@@ -65,15 +64,12 @@ namespace Origin {
 		bool m_EnableMovement;
 
 		glm::mat4 m_ViewMatrix;
-		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 m_FocalPoint = { 0.0f, 0.0f, 0.0f };
 
 		glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
 
 		float m_Distance = 0.0f;
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
-		//float m_SpeedByDistance;
-
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 	};
 

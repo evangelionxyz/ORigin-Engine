@@ -83,11 +83,11 @@ namespace Origin
 					{
 						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 						auto entity = m_SceneHierarchy.GetSelectedEntity();
-						if (entity.HasComponent<SpriteRendererComponent>())
+						if (entity.HasComponent<SpriteRenderer2DComponent>())
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
 							std::filesystem::path textureFile = std::filesystem::path(g_AssetPath) / path;
-							auto& component = entity.GetComponent<SpriteRendererComponent>();
+							auto& component = entity.GetComponent<SpriteRenderer2DComponent>();
 							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
 								component.Texture = Texture2D::Create(textureFile.string());
 						}
@@ -298,6 +298,10 @@ namespace Origin
 					ImGui::Text("2D"); ImGui::Separator();
 					if (ImGui::MenuItem("Sprite")) m_SceneHierarchy.GetContext()->CreateSpriteEntity("Sprite");
 					if (ImGui::MenuItem("Circle")) m_SceneHierarchy.GetContext()->CreateCircle("Circle");
+					ImGui::Separator();
+
+					ImGui::Text("3D"); ImGui::Separator();
+					if (ImGui::MenuItem("Cube")) m_SceneHierarchy.GetContext()->CreateCube("Cube");
 				}
 
 				// Entity Properties
@@ -334,9 +338,9 @@ namespace Origin
 							}
 						}
 
-						if (m_SelectedEntity.HasComponent<SpriteRendererComponent>())
+						if (m_SelectedEntity.HasComponent<SpriteRenderer2DComponent>())
 						{
-							auto& component = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
+							auto& component = m_SelectedEntity.GetComponent<SpriteRenderer2DComponent>();
 							ImGui::Separator();
 
 							ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));

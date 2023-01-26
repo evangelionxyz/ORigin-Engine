@@ -7,7 +7,7 @@ Entities:
       Translation: [0, 0, 1.24325156]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [1, 1, 1, 0.592156887]
       TillingFactor: 1
     ScriptComponent:
@@ -19,7 +19,7 @@ Entities:
       Translation: [0.510367692, 0, 0.68181324]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteRendererComponent:
+    SpriteRenderer2DComponent:
       Color: [0.403921574, 1, 0, 0.529411793]
       TillingFactor: 1
     ScriptComponent:

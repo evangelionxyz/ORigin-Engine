@@ -40,7 +40,7 @@ namespace Origin {
 
 		static void DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade = 0.0f, int entityID = -1);
 		static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
-		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID = -1);
+		static void DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID = -1);
 
 		// Stats
 		struct Statistics

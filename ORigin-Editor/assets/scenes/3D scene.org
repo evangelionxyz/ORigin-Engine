@@ -1,0 +1,11 @@
+Scene: 3D scene.org
+Entities:
+  - Entity: 6342123156720200015
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [0, -1.0203011, 0]
+      Rotation: [0, 0, 0]
+      Scale: [7.47146845, 0.309522837, 7.81605053]
+    SpriteRendererComponent:
+      Color: [0.890295386, 1, 0.998611331, 1]

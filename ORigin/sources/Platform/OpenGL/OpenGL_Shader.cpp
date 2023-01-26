@@ -283,8 +283,8 @@ namespace Origin {
         shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
         if (module.GetCompilationStatus() != shaderc_compilation_status_success)
         {
-          OGN_CORE_ERROR(module.GetErrorMessage());
-          OGN_CORE_ASSERT(false, "")
+          auto& message = module.GetErrorMessage();
+          OGN_CORE_ASSERT(false, message);
         }
 
         shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
