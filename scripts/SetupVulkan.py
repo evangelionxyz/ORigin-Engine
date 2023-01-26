@@ -10,7 +10,7 @@ from urllib.request import urlopen
 
 class VulkanConfiguration:
     requiredVulkanVersion = "1.3"
-    installVulkanVersion = "1.3.224.1"
+    installVulkanVersion = "1.3.236.0"
     vulkanDirectory = "./ORigin/vendor/VulkanSDK"
 
     @classmethod
@@ -53,6 +53,7 @@ class VulkanConfiguration:
         vulkanInstallURL = f"https://sdk.lunarg.com/sdk/download/{cls.installVulkanVersion}/windows/VulkanSDK-{cls.installVulkanVersion}-Installer.exe"
         vulkanPath = f"{cls.vulkanDirectory}/VulkanSDK-{cls.installVulkanVersion}-Installer.exe"
         print("Downloading {0:s} to {1:s}".format(vulkanInstallURL, vulkanPath))
+        print("Please Wait...")
         Utils.DownloadFile(vulkanInstallURL, vulkanPath)
         print("Running Vulkan SDK installer...")
         os.startfile(os.path.abspath(vulkanPath))
