@@ -16,3 +16,6 @@
 [submodule "ORigin/vendor/glad"]
 	path = ORigin/vendor/glad
 	url = https://github.com/kaks-ev/glad.git
+[submodule "ORigin/vendor/glm"]
+	path = ORigin/vendor/glm
+	url = https://github.com/kaks-ev/glm.git
