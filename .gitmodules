@@ -22,3 +22,6 @@
 [submodule "ORigin/vendor/spdlog"]
 	path = ORigin/vendor/spdlog
 	url = https://github.com/kaks-ev/spdlog.git
+[submodule "ORigin/vendor/ImGuizmo"]
+	path = ORigin/vendor/ImGuizmo
+	url = https://github.com/kaks-ev/ImGuizmo.git
