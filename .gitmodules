@@ -7,3 +7,6 @@
 [submodule "ORigin/vendor/glfw"]
 	path = ORigin/vendor/glfw
 	url = https://github.com/kaks-ev/glfw.git
+[submodule "ORigin/vendor/entt"]
+	path = ORigin/vendor/entt
+	url = https://github.com/kaks-ev/entt.git
