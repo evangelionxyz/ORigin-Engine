@@ -4,3 +4,6 @@
 [submodule "ORigin/vendor/yaml-cpp"]
 	path = ORigin/vendor/yaml-cpp
 	url = https://github.com/kaks-ev/yaml-cpp.git
+[submodule "ORigin/vendor/glfw"]
+	path = ORigin/vendor/glfw
+	url = https://github.com/kaks-ev/glfw.git
