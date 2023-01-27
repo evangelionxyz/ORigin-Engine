@@ -10,3 +10,6 @@
 [submodule "ORigin/vendor/entt"]
 	path = ORigin/vendor/entt
 	url = https://github.com/kaks-ev/entt.git
+[submodule "ORigin/vendor/ImGui"]
+	path = ORigin/vendor/ImGui
+	url = https://github.com/kaks-ev/imgui.git
