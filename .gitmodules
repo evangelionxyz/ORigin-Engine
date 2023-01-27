@@ -13,3 +13,6 @@
 [submodule "ORigin/vendor/ImGui"]
 	path = ORigin/vendor/ImGui
 	url = https://github.com/kaks-ev/imgui.git
+[submodule "ORigin/vendor/glad"]
+	path = ORigin/vendor/glad
+	url = https://github.com/kaks-ev/glad.git
