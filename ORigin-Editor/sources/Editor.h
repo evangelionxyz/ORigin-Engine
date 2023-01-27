@@ -31,7 +31,6 @@ namespace Origin {
 
   private:
     // Scene Viewport
-    void SceneRender(float time);
 		void SceneViewport();
     void SceneViewportToolbar();
     void SceneViewportMenu();
@@ -40,8 +39,6 @@ namespace Origin {
 		// Game Viewport
     void GameRender(float time);
 		void GameViewport();
-		void GameViewportToolbar();
-		void GameViewportMenu();
 
 		void MenuBar();
     void NewScene();

@@ -6,17 +6,6 @@ namespace Origin
 {
 	extern const std::filesystem::path g_AssetPath;
 
-	const char* Editor::MenuContextToString(const ViewportMenuContext& context)
-	{
-		switch (context)
-		{
-			case CreateMenu: return "Create Menu"; break;
-			case EntityProperties: return "Entity Properties"; break;
-		}
-
-		return nullptr;
-	}
-
 	void Editor::SceneViewport()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -71,8 +60,8 @@ namespace Origin
 		ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-		uint64_t viewportID = m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget);
-		ImGui::Image(reinterpret_cast<ImTextureID*>(viewportID), ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
+		auto viewportID = (ImTextureID)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget);
+		ImGui::Image(viewportID, ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -192,7 +181,7 @@ namespace Origin
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-				if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
+				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
 				{
 					if (m_SceneHierarchy.GetContext())
 					{
@@ -217,7 +206,7 @@ namespace Origin
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-				if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f)))
+				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
 				{
 					if (m_SceneHierarchy.GetContext())
 					{
@@ -337,6 +326,13 @@ namespace Origin
 								if (tag.empty()) tag = "'No Name'";
 							}
 						}
+
+						if (m_SelectedEntity.HasComponent<SpriteRendererComponent>())
+						{
+							auto& component = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
+							ImGui::Separator();
+							ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				}
 
 						if (m_SelectedEntity.HasComponent<SpriteRenderer2DComponent>())
 						{

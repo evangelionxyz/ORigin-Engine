@@ -29,9 +29,9 @@ namespace Origin {
 	{
 		switch (type)
 		{
-			case Origin::Rigidbody2DComponent::BodyType::Static: return b2BodyType::b2_staticBody;
-			case Origin::Rigidbody2DComponent::BodyType::Dynamic: return b2BodyType::b2_dynamicBody;
-			case Origin::Rigidbody2DComponent::BodyType::Kinematic: return b2BodyType::b2_kinematicBody;
+		case Origin::Rigidbody2DComponent::BodyType::Static: return b2BodyType::b2_staticBody;
+		case Origin::Rigidbody2DComponent::BodyType::Dynamic: return b2BodyType::b2_dynamicBody;
+		case Origin::Rigidbody2DComponent::BodyType::Kinematic: return b2BodyType::b2_kinematicBody;
 		}
 
 		OGN_ASSERT(false, "Unkown Body Type");
@@ -230,6 +230,7 @@ namespace Origin {
 
 		if (mainCamera)
 		{
+			// Render 3D Scene
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
 			// Sprites
@@ -252,6 +253,18 @@ namespace Origin {
 				}
 			}
 			Renderer2D::EndScene();
+
+			// Render 3D Scene
+			Renderer3D::BeginScene(*mainCamera, cameraTransform);
+
+			auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			for (auto entity : view)
+			{
+				auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+				Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)entity);
+			}
+
+			Renderer3D::EndScene();
 		}
 	}
 
@@ -267,15 +280,15 @@ namespace Origin {
 			}
 
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				if (!nsc.Instance)
 				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-				nsc.Instance->OnUpdate(time);
-			});
+					if (!nsc.Instance)
+					{
+						nsc.Instance = nsc.InstantiateScript();
+						nsc.Instance->m_Entity = Entity{ entity, this };
+						nsc.Instance->OnCreate();
+					}
+			nsc.Instance->OnUpdate(time);
+				});
 		}
 
 		// Physics
@@ -355,7 +368,7 @@ namespace Origin {
 					nsc.Instance->m_Entity = Entity{ entity, this };
 					nsc.Instance->OnCreate();
 				}
-				nsc.Instance->OnUpdate(time);
+		nsc.Instance->OnUpdate(time);
 			});
 
 		//Render
@@ -375,15 +388,15 @@ namespace Origin {
 			}
 
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				if (!nsc.Instance)
 				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-				nsc.Instance->OnUpdate(time);
-			});
+					if (!nsc.Instance)
+					{
+						nsc.Instance = nsc.InstantiateScript();
+						nsc.Instance->m_Entity = Entity{ entity, this };
+						nsc.Instance->OnCreate();
+					}
+			nsc.Instance->OnUpdate(time);
+				});
 		}
 
 		// Physics
@@ -653,7 +666,7 @@ namespace Origin {
 	template<typename T> void Scene::OnComponentAdded(Entity entity, T& component) { }
 	template<> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
 	template<> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}
-	template<> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)	{
+	template<> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component) {
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}

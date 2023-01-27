@@ -125,7 +125,7 @@ namespace Origin
     auto& [mx, my] = ImGui::GetMousePos();
     mx -= m_SceneViewportBounds[0].x;
     my -= m_SceneViewportBounds[0].y;
-    const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+    const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
     my = viewportSize.y - my;
     mouseX = (int)mx;
     mouseY = (int)my - 1;
@@ -141,11 +141,6 @@ namespace Origin
 
     GameRender(time);
   }
-
-	void Editor::SceneRender(float time)
-	{
-
-	}
 
   void Editor::GameRender(float time)
   {
