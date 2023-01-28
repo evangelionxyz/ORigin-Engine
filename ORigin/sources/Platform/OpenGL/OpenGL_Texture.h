@@ -23,6 +23,9 @@ namespace Origin {
 
 		void SetData(void* data, uint32_t size) override;
 		std::string GetFilepath() override { return m_FilePath; }
+
+		void LoadFaces(std::string& filepath, Faces faces);
+
 		void Bind(uint32_t slot = 0) override;
 		void Delete() override;
 

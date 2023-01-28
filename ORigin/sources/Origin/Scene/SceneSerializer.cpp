@@ -199,6 +199,8 @@ namespace Origin {
 
 			auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			if (src.Texture)
+				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
 
 			out << YAML::EndMap; // !SpriteRendererComponent
 		}
@@ -421,6 +423,8 @@ namespace Origin {
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+					if (spriteRendererComponent["TexturePath"])
+						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
 				}
 
 				auto spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"];

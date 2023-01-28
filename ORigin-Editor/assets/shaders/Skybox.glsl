@@ -27,7 +27,7 @@ void main()
 in vec3 v_TexCoords;
 out vec4 color;
 
-uniform samplerCube skybox;
+layout(std140, binding = 1) uniform samplerCube skybox;
 
 void main()
 {

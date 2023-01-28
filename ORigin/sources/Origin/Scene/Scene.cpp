@@ -438,8 +438,6 @@ namespace Origin {
 			{
 				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
 
-				s_RendererData.g_Ubo.LightColor = lc.Color;
-				s_RendererData.g_Ubo.LightPosition = tc.Translation;
 			}
 		}
 
@@ -481,18 +479,10 @@ namespace Origin {
 		// Camera
 		{
 			auto& view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto entity : view)
+			for (auto& entity : view)
 			{
 				auto& [tc, cc] = view.get<TransformComponent, CameraComponent>(entity);
-
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
-					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-
-				Renderer2D::DrawQuad(transform, m_CameraIcon, 1.0f,
-					cc.Primary == true ? glm::vec4(1.0f) : glm::vec4(1.0f, 0.8f, 0.8f, 1.0f),
-					(int)entity);
+				DrawIcon(camera, (int)entity, m_CameraIcon, tc, true);
 			}
 		}
 
@@ -501,19 +491,12 @@ namespace Origin {
 		{
 			// Lighting
 			auto& view = m_Registry.view<TransformComponent, LightingComponent>();
-			for (auto entity : view)
+			for (auto& entity : view)
 			{
 				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
-
 				s_RendererData.g_Ubo.LightColor = lc.Color;
-				s_RendererData.g_Ubo.LightPosition = tc.Translation;
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
-					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-
-				Renderer2D::DrawQuad(transform, m_LightingIcon, 1.0f, glm::vec4(1.0f), (int)entity);
+				DrawIcon(camera, (int)entity, m_LightingIcon, tc, true);
 			}
 		}
 
@@ -680,6 +663,17 @@ namespace Origin {
 	}
 
 	template<typename T> void Scene::OnComponentAdded(Entity entity, T& component) { }
+
+	void Scene::DrawIcon(EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture, TransformComponent& tc, bool rotate)
+	{
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
+			* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
+			* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+
+		Renderer2D::DrawQuad(transform, texture, 1.0f, glm::vec4(1.0f), (int)entity);
+	}
+
 	template<> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
 	template<> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}
 	template<> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component) {

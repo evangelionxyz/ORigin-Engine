@@ -194,6 +194,34 @@ namespace Origin {
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+				if (!component.Texture)
+					ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
+				else ImGui::ImageButton((ImTextureID)component.Texture->GetRendererID(), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+							component.Texture = Texture2D::Create(texturePath.string());
+					}
+				}
+
+				if (component.Texture)
+				{
+					ImGui::SameLine();
+					if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
+					{
+						component.Texture->Delete();
+						component.Texture = {};
+						return;
+					}
+
+					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
+				}
 			});
 
 		DrawComponent<SpriteRenderer2DComponent>("Sprite Renderer 2D", entity, [](auto& component)
@@ -231,7 +259,10 @@ namespace Origin {
 			});
 		DrawComponent<LightingComponent>("Lighting", entity, [](auto& component)
 			{
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				ImGui::ColorPicker4("Color", glm::value_ptr(component.Color),
+				ImGuiColorEditFlags_DisplayRGB
+				| ImGuiColorEditFlags_InputHSV
+				);
 			});
 
 		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)

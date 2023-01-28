@@ -14,8 +14,8 @@ namespace Origin
 		struct GlobalUBO
 		{
 			glm::mat4 ViewProjection;
-			glm::vec3 LightPosition;
-			glm::vec4 LightColor;
+			glm::vec3 LightPosition = glm::vec4(0.0f);
+			glm::vec4 LightColor = glm::vec4(1.0f);
 		};
 
 		GlobalUBO g_Ubo;

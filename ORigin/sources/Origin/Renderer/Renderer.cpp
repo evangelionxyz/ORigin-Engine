@@ -35,7 +35,6 @@ namespace Origin
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
 		s_RendererData.g_Ubo.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		
 
 		Renderer2D::BeginScene(camera, transform);
 		Renderer3D::BeginScene(camera, transform);
@@ -51,7 +50,8 @@ namespace Origin
 
 	void Renderer::EndScene()
 	{
-		s_RendererData.GlobalUniformBuffer->SetData(&s_RendererData.g_Ubo, sizeof(RendererData::GlobalUBO));
+		s_RendererData.GlobalUniformBuffer->SetData(&s_RendererData, sizeof(RendererData::GlobalUBO), 0);
+
 		Renderer2D::EndScene();
 		Renderer3D::EndScene();
 	}

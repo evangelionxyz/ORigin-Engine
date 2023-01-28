@@ -48,9 +48,10 @@ namespace Origin
 			{
 				if (!m_SceneHierarchy.GetContext())
 					ImGui::Text("Load a Scene or Create New Scene to begin!");
+
 				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-				ImGui::Text("Zoom Speed: (%f)", m_EditorCamera.GetZoomSpeed());
 			}
+
 			ImGui::End();
 		}
 
@@ -74,6 +75,15 @@ namespace Origin
 							const wchar_t* path = (const wchar_t*)payload->Data;
 							std::filesystem::path textureFile = std::filesystem::path(g_AssetPath) / path;
 							auto& component = entity.GetComponent<SpriteRenderer2DComponent>();
+							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
+								component.Texture = Texture2D::Create(textureFile.string());
+						}
+
+						if (entity.HasComponent<SpriteRendererComponent>())
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path textureFile = std::filesystem::path(g_AssetPath) / path;
+							auto& component = entity.GetComponent<SpriteRendererComponent>();
 							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
 								component.Texture = Texture2D::Create(textureFile.string());
 						}

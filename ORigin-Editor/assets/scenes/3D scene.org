@@ -1,24 +1,6 @@
 Scene: 3D scene.org
 Entities:
-  - Entity: 17254893519727156113
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [-5.96046448e-08, -1.0203011, 4]
-      Rotation: [0, 0, 0]
-      Scale: [2.68972874, 0.433111846, 2.8137784]
-    SpriteRendererComponent:
-      Color: [1, 0.951663673, 0.236286938, 1]
-  - Entity: 14259458903133901796
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [5.96046448e-08, -1.0203011, -4]
-      Rotation: [0, 0, 0]
-      Scale: [2.68972874, 0.433111846, 2.8137784]
-    SpriteRendererComponent:
-      Color: [0.870106339, 1, 0.459915638, 1]
-  - Entity: 11072514353513140735
+  - Entity: 15490797462950054383
     TagComponent:
       Tag: Plane
     TransformComponent:
@@ -27,6 +9,81 @@ Entities:
       Scale: [2.68972874, 0.433111846, 2.8137784]
     SpriteRendererComponent:
       Color: [0.890295386, 1, 0.998611331, 1]
+      TexturePath: assets\textures\checkerboard.jpg
+  - Entity: 17616217527494144724
+    TagComponent:
+      Tag: Lighting
+    TransformComponent:
+      Translation: [4.03135586, 1.51653457, -0.341003358]
+      Rotation: [0, 0, 0]
+      Scale: [0.360000014, 0.360000014, 0.360000014]
+    LightingComponent:
+      Color: [1, 1, 1, 1]
+  - Entity: 6342123156720200015
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [-3.5, -1.0203011, 4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0.487635553, 0.236286938, 1, 1]
+      TexturePath: assets\textures\click to start a.png
+  - Entity: 13840368392643897471
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [0, -0.782097816, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0, 0.886075974, 1, 0.670588255]
+  - Entity: 3174796662648506235
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [-3.5, -1.0203011, 0]
+      Rotation: [-0.000488873455, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.81377435]
+    SpriteRendererComponent:
+      Color: [0.438818574, 1, 0.992896378, 1]
+  - Entity: 13874321349687484374
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [-3.5, -1.0203011, -4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [1, 0.443037987, 0.443037987, 1]
+      TexturePath: assets\textures\checkerboard.png
+  - Entity: 940221296357533283
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [4, -1.0203011, -4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0, 0.632911444, 1, 1]
+  - Entity: 5204420961010400528
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [4, -1.0203011, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0.156919301, 1, 0.135021091, 1]
+  - Entity: 10643288761575972911
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [4, -1.0203011, 4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [1, 0.405063272, 0.962345839, 1]
   - Entity: 3977119631523381849
     TagComponent:
       Tag: Camera
@@ -45,75 +102,23 @@ Entities:
         OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
-  - Entity: 10643288761575972911
+  - Entity: 14259458903133901796
     TagComponent:
       Tag: Plane
     TransformComponent:
-      Translation: [4, -1.0203011, 4]
+      Translation: [5.96046448e-08, -1.0203011, -4]
       Rotation: [0, 0, 0]
       Scale: [2.68972874, 0.433111846, 2.8137784]
     SpriteRendererComponent:
-      Color: [1, 0.405063272, 0.962345839, 1]
-  - Entity: 5204420961010400528
+      Color: [0.870106339, 1, 0.459915638, 1]
+      TexturePath: assets\textures\death c.png
+  - Entity: 17254893519727156113
     TagComponent:
       Tag: Plane
     TransformComponent:
-      Translation: [4, -1.0203011, 0]
+      Translation: [-5.96046448e-08, -1.0203011, 4]
       Rotation: [0, 0, 0]
       Scale: [2.68972874, 0.433111846, 2.8137784]
     SpriteRendererComponent:
-      Color: [0.156919301, 1, 0.135021091, 1]
-  - Entity: 940221296357533283
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [4, -1.0203011, -4]
-      Rotation: [0, 0, 0]
-      Scale: [2.68972874, 0.433111846, 2.8137784]
-    SpriteRendererComponent:
-      Color: [0, 0.632911444, 1, 1]
-  - Entity: 13874321349687484374
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [-3.5, -1.0203011, -4]
-      Rotation: [0, 0, 0]
-      Scale: [2.68972874, 0.433111846, 2.8137784]
-    SpriteRendererComponent:
-      Color: [1, 0.443037987, 0.443037987, 1]
-  - Entity: 3174796662648506235
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [-3.5, -1.0203011, 0]
-      Rotation: [-0.000488873455, 0, 0]
-      Scale: [2.68972874, 0.433111846, 2.81377435]
-    SpriteRendererComponent:
-      Color: [0.438818574, 1, 0.992896378, 1]
-  - Entity: 13840368392643897471
-    TagComponent:
-      Tag: Cube
-    TransformComponent:
-      Translation: [0, -0.782097816, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [1, 0.101960786, 0, 0.670588255]
-  - Entity: 6342123156720200015
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [-3.5, -1.0203011, 4]
-      Rotation: [0, 0, 0]
-      Scale: [2.68972874, 0.433111846, 2.8137784]
-    SpriteRendererComponent:
-      Color: [0.487635553, 0.236286938, 1, 1]
-  - Entity: 17616217527494144724
-    TagComponent:
-      Tag: Lighting
-    TransformComponent:
-      Translation: [5.90979481, 0.891848922, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.360000014, 0.360000014, 0.360000014]
-    LightingComponent:
-      Color: [1, 1, 1, 1]
+      Color: [1, 0.951663673, 0.236286938, 1]
+      TexturePath: assets\textures\click to start a.png

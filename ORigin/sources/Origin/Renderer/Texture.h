@@ -9,6 +9,8 @@ namespace Origin
 	class Texture
 	{
 	public:
+		
+
 		virtual ~Texture() = default;
 		virtual void SetData(void* data, uint32_t size) = 0;
 
@@ -26,6 +28,15 @@ namespace Origin
 	class Texture3D : public Texture
 	{
 	public:
+		enum Faces
+		{
+			RIGHT = 0, LEFT,
+			TOP, BOTTOM,
+			BACK, FRONT
+		};
+
+		void LoadFaces(std::string& filepath, Faces faces);
+
 		static std::shared_ptr<Texture3D> Create(uint32_t width, uint32_t height);
 		static std::shared_ptr<Texture3D> Create(const std::string& filepath);
 	};

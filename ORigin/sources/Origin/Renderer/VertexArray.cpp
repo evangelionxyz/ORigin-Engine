@@ -19,8 +19,4 @@ namespace Origin
 		OGN_CORE_ASSERT(false, "Unkonwn VertexArray API");
 		return nullptr;
 	}
-
-
-
-
 }

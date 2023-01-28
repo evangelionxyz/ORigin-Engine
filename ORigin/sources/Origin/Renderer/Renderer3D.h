@@ -31,6 +31,7 @@ namespace Origin
 		static void EndScene();
 		static void Flush();
 
+		static void DrawCube(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec4& tintColor, int entityID = -1);
 		static void DrawCube(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
 		static void DrawCube(const glm::mat4& transform, SpriteRendererComponent& sprite, int entityID = -1);
 
@@ -46,15 +47,17 @@ namespace Origin
 	{
 		glm::vec3 Position;
 		glm::vec4 Color;
+		glm::vec2 TexCoord;
+		float TexIndex;
 
 		int EntityID;
 	};
 
 	struct Renderer3DData
 	{
-		const uint32_t MaxTriangles = 1000;
-		uint32_t MaxVertices = 4 * MaxTriangles;
-		uint32_t MaxIndices = 6 * MaxTriangles;
+		static const uint32_t MaxTriangles = 1000;
+		static const uint32_t MaxVertices = 4 * MaxTriangles;
+		static const uint32_t MaxIndices = 6 * MaxTriangles;
 		static const uint32_t MaxTextureSlots = 32;
 
 		// Cube Data
@@ -67,8 +70,8 @@ namespace Origin
 		CubeVertex* CubeVertexBufferPtr = nullptr;
 		glm::vec4 CubeVertexPosition[24];
 
-		std::shared_ptr<Texture3D> WhiteTexture;
-		std::array<std::shared_ptr<Texture3D>, MaxTextureSlots> TextureSlots;
+		std::shared_ptr<Texture2D> WhiteTexture;
+		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1;
 	};
 
