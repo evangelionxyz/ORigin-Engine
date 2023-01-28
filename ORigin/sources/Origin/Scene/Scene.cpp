@@ -230,7 +230,7 @@ namespace Origin {
 
 		if (mainCamera)
 		{
-			// Render 3D Scene
+			// Render 2D Scene
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
 			// Sprites
@@ -355,6 +355,18 @@ namespace Origin {
 				}
 			}
 			Renderer2D::EndScene();
+
+			// Render 3D Scene
+			Renderer3D::BeginScene(*mainCamera, cameraTransform);
+
+			auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			for (auto entity : view)
+			{
+				auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
+				Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)entity);
+			}
+
+			Renderer3D::EndScene();
 		}
 	}
 

@@ -4,8 +4,107 @@ Entities:
     TagComponent:
       Tag: Plane
     TransformComponent:
+      Translation: [-3.5, -1.0203011, 4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0.487635553, 0.236286938, 1, 1]
+  - Entity: 13840368392643897471
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [0, -0.782097816, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 0.101960786, 0, 0.670588255]
+  - Entity: 3174796662648506235
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [-3.5, -1.0203011, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0.438818574, 1, 0.992896378, 1]
+  - Entity: 13874321349687484374
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [-3.5, -1.0203011, -4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [1, 0.443037987, 0.443037987, 1]
+  - Entity: 940221296357533283
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [4, -1.0203011, -4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0, 0.632911444, 1, 1]
+  - Entity: 5204420961010400528
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [4, -1.0203011, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0.156919301, 1, 0.135021091, 1]
+  - Entity: 10643288761575972911
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [4, -1.0203011, 4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [1, 0.405063272, 0.962345839, 1]
+  - Entity: 3977119631523381849
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 2.03020215, 12.2566118]
+      Rotation: [-0.205578163, -4.47033131e-08, 1.43051068e-06]
+      Scale: [0.999994636, 0.999997914, 0.999998569]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 11072514353513140735
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
       Translation: [0, -1.0203011, 0]
       Rotation: [0, 0, 0]
-      Scale: [7.47146845, 0.309522837, 7.81605053]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
     SpriteRendererComponent:
       Color: [0.890295386, 1, 0.998611331, 1]
+  - Entity: 16295312190935175958
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [-5.96046448e-08, -1.0203011, 4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [1, 0.951663673, 0.236286938, 1]
+  - Entity: 14259458903133901796
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [5.96046448e-08, -1.0203011, -4]
+      Rotation: [0, 0, 0]
+      Scale: [2.68972874, 0.433111846, 2.8137784]
+    SpriteRendererComponent:
+      Color: [0.870106339, 1, 0.459915638, 1]
