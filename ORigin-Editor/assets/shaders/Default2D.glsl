@@ -9,10 +9,12 @@ layout(location = 3) in float a_TexIndex;
 layout(location = 4) in float a_TilingFactor;
 layout(location = 5) in int a_EntityID;
 
-layout(std140, binding = 0) uniform Camera
+layout(std140, binding = 0) uniform GlobalUBO
 {
 	mat4 ViewProjection;
-} CameraBuffer;
+	vec3 LightPosition;
+	vec4 LightColor;
+};
 
 struct VertexOutput
 {
@@ -33,7 +35,7 @@ void main()
 	Output.TilingFactor = a_TilingFactor;
 	v_EntityID = a_EntityID;
 
-	gl_Position = CameraBuffer.ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = ViewProjection * vec4(a_Position, 1.0);
 }
 
 // type fragment

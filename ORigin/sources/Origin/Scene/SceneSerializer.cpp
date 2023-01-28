@@ -217,6 +217,17 @@ namespace Origin {
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
 		}
 
+		if (entity.HasComponent<LightingComponent>())
+		{
+			out << YAML::Key << "LightingComponent";
+			out << YAML::BeginMap; // LightingComponent
+
+			auto& lc = entity.GetComponent<LightingComponent>();
+			out << YAML::Key << "Color" << YAML::Value << lc.Color;
+
+			out << YAML::EndMap; // !LightingComponent
+		}
+
 		if (entity.HasComponent<CircleRendererComponent>())
 		{
 			out << YAML::Key << "CircleRendererComponent";
@@ -421,6 +432,13 @@ namespace Origin {
 						src.Texture = Texture2D::Create(spriteRenderer2DComponent["TexturePath"].as<std::string>());
 
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<float>();
+				}
+
+				auto lightingComponent = entity["LightingComponent"];
+				if (lightingComponent)
+				{
+					auto& lc = deserializedEntity.AddComponent<LightingComponent>();
+					lc.Color = lightingComponent["Color"].as<glm::vec4>();
 				}
 
 				auto circleRendererComponent = entity["CircleRendererComponent"];

@@ -34,6 +34,7 @@ namespace Origin
 
 		// Global Entity
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
+		Entity CreateLighting(const std::string& name = std::string());
 		Entity GetPrimaryCameraEntity();
 
 		void DestroyEntity(Entity entity);
@@ -69,10 +70,9 @@ namespace Origin
 		// 2D Scene
 		void OnPhysics2DStart();
 		void OnPhysics2DStop();
-		void Render2DScene(EditorCamera& camera);
 
-		// 3D Scene
-		void Render3DScene(EditorCamera& camera);
+		void RenderScene(EditorCamera& camera);
+		void RenderScene(Camera* camera, glm::mat4& transform);
 
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
@@ -80,7 +80,7 @@ namespace Origin
 
 	private:
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
-		std::shared_ptr<Texture2D> m_CameraIcon;
+		std::shared_ptr<Texture2D> m_CameraIcon, m_LightingIcon;
 
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth, m_ViewportHeight = 0;

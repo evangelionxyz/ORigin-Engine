@@ -49,9 +49,6 @@ namespace Origin
 				if (!m_SceneHierarchy.GetContext())
 					ImGui::Text("Load a Scene or Create New Scene to begin!");
 				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-				std::string name = "None";
-				if (m_HoveredEntity) name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
-				ImGui::Text("Hovered Entity: (%s) (%d)", name.c_str(), m_PixelData);
 				ImGui::Text("Zoom Speed: (%f)", m_EditorCamera.GetZoomSpeed());
 			}
 			ImGui::End();
@@ -291,6 +288,7 @@ namespace Origin
 
 					ImGui::Text("3D"); ImGui::Separator();
 					if (ImGui::MenuItem("Cube")) m_SceneHierarchy.GetContext()->CreateCube("Cube");
+					if (ImGui::MenuItem("Light")) m_SceneHierarchy.GetContext()->CreateLighting("Lighting");
 				}
 
 				// Entity Properties

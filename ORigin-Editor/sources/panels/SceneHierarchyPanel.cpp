@@ -150,6 +150,7 @@ namespace Origin {
 			DisplayAddComponentEntry<CameraComponent>("Camera");
 			DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("Sprite Renderer 2D");
+			DisplayAddComponentEntry<LightingComponent>("Lighting");
 			DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
 			DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody 2D");
@@ -227,6 +228,10 @@ namespace Origin {
 					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
 					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 				}
+			});
+		DrawComponent<LightingComponent>("Lighting", entity, [](auto& component)
+			{
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 			});
 
 		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)

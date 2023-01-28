@@ -1,16 +1,18 @@
 // type vertex
 #version 450 core
-layout(location = 0) in vec3 a_WorldPosition;
-layout(location = 1) in vec3 a_LocalPosition;
-layout(location = 2) in vec4 a_Color;
-layout(location = 3) in float a_Thickness;
-layout(location = 4) in float a_Fade;
-layout(location = 5) in int a_EntityID;
+layout (location = 0) in vec3 a_WorldPosition;
+layout (location = 1) in vec3 a_LocalPosition;
+layout (location = 2) in vec4 a_Color;
+layout (location = 3) in float a_Thickness;
+layout (location = 4) in float a_Fade;
+layout (location = 5) in int a_EntityID;
 
-layout(std140, binding = 0) uniform Camera
+layout(std140, binding = 0) uniform GlobalUBO
 {
 	mat4 ViewProjection;
-} CameraBuffer;
+	vec3 LightPosition;
+	vec4 LightColor;
+};
 
 struct VertexOutput
 {
@@ -31,7 +33,7 @@ void main()
 	Output.Fade = a_Fade;
 	v_EntityID = a_EntityID;
 
-	gl_Position = CameraBuffer.ViewProjection * vec4(a_WorldPosition, 1.0);
+	gl_Position = ViewProjection * vec4(a_WorldPosition, 1.0);
 }
 
 // type fragment

@@ -6,10 +6,16 @@
 #include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/Component/Component.h"
 
-#include <algorithm>
+#include "Origin/Renderer/VertexArray.h"
+#include "Origin/Renderer/Shader.h"
+#include "Origin/Renderer/UniformBuffer.h"
+#include "Origin/Renderer/RenderCommand.h"
 
-namespace Origin {
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+namespace Origin
+{
 	class Renderer2D
 	{
 	public:
@@ -60,5 +66,90 @@ namespace Origin {
 		static void StartBatch();
 		static void NextBatch();
 	};
+
+	struct QuadVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;
+		float TexIndex;
+		float TilingFactor;
+
+		// Editor only
+		int EntityID;
+	};
+
+	struct CircleVertex
+	{
+		glm::vec3 WorldPosition;
+		glm::vec3 LocalPosition;
+		glm::vec4 Color;
+		float Thickness;
+		float Fade;
+
+		// Editor only
+		int EntityID;
+	};
+
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+
+		// Editor only
+		int EntityID;
+	};
+
+	struct Renderer2DData
+	{
+		static const uint32_t MaxQuads = 20000;
+		static const uint32_t MaxVertices = MaxQuads * 4;
+		static const uint32_t MaxIndices = MaxQuads * 6;
+		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
+		std::shared_ptr<Texture2D> WhiteTexture;
+
+		// =============================================
+		// =================== Quads ===================
+		// =============================================
+		std::shared_ptr<VertexArray> QuadVertexArray;
+		std::shared_ptr<VertexBuffer> QuadVertexBuffer;
+		std::shared_ptr<Shader> QuadShader;
+
+		uint32_t QuadIndexCount = 0;
+		QuadVertex* QuadVertexBufferBase = nullptr;
+		QuadVertex* QuadVertexBufferPtr = nullptr;
+		glm::vec4 QuadVertexPositions[4];
+
+		// =============================================
+		// =================== Circles ===================
+		// =============================================
+		std::shared_ptr<VertexArray> CircleVertexArray;
+		std::shared_ptr<VertexBuffer> CircleVertexBuffer;
+		std::shared_ptr<Shader> CircleShader;
+
+		uint32_t CircleIndexCount = 0;
+		CircleVertex* CircleVertexBufferBase = nullptr;
+		CircleVertex* CircleVertexBufferPtr = nullptr;
+
+		// =============================================
+		// =================== Lines ===================
+		// =============================================
+		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLineVertices = MaxLines * 2;
+
+		std::shared_ptr<VertexArray> LineVertexArray;
+		std::shared_ptr<VertexBuffer> LineVertexBuffer;
+		std::shared_ptr<Shader> LineShader;
+
+		uint32_t LineVertexCount = 0;
+		LineVertex* LineVertexBufferBase = nullptr;
+		LineVertex* LineVertexBufferPtr = nullptr;
+
+		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
+		uint32_t TextureSlotIndex = 1; // 0 = white texture
+		Renderer2D::Statistics Stats;
+	};
+
+	static Renderer2DData s_2Ddata;
 
 }

@@ -76,6 +76,16 @@ namespace Origin
 		SpriteRenderer2DComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
 	};
 
+	struct LightingComponent
+	{
+		glm::vec4 Color = glm::vec4(1.0f);
+
+		LightingComponent() = default;
+		LightingComponent(const LightingComponent&) = default;
+		LightingComponent(const LightingComponent&, glm::vec4 color) : Color(color) {}
+		LightingComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
+	};
+
 	struct CircleRendererComponent
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
@@ -168,7 +178,7 @@ namespace Origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent,
+		ComponentGroup<TransformComponent, LightingComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent,
 		CircleRendererComponent, CameraComponent,
 		ScriptComponent, NativeScriptComponent,

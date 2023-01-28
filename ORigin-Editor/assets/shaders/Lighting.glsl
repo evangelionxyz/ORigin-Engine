@@ -1,3 +1,0 @@
-// type vertex
-
-// type fragment

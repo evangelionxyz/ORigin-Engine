@@ -5,66 +5,23 @@
 #include "Origin/Renderer/Renderer3D.h"
 #include "Origin\Renderer\Renderer2D.h"
 
-#include "Origin/Renderer/VertexArray.h"
-#include "Origin/Renderer/Shader.h"
-#include "Origin/Renderer/RenderCommand.h"
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 namespace Origin
 {
-	struct CubeVertex
-	{
-		glm::vec3 Position;
-		glm::vec3 Normal;
-		glm::vec4 Color;
-
-		int EntityID;
-	};
-
-	struct Renderer3DData
-	{
-		const uint32_t MaxTriangles = 1000;
-		uint32_t MaxVertices = 4 * MaxTriangles;
-		uint32_t MaxIndices = 6 * MaxTriangles;
-		static const uint32_t MaxTextureSlots = 32;
-
-		// Cube Data
-		std::shared_ptr<Shader> CubeShader;
-		std::shared_ptr<VertexArray> CubeVertexArray;
-		std::shared_ptr<VertexBuffer> CubeVertexBuffer;
-
-		std::shared_ptr<Texture3D> WhiteTexture;
-		std::array<std::shared_ptr<Texture3D>, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex = 1;
-
-		uint32_t CubeIndexCount = 0;
-		CubeVertex* CubeVertexBufferBase = nullptr;
-		CubeVertex* CubeVertexBufferPtr = nullptr;
-		glm::vec4 CubeVertexPosition[24];
-	};
-
-	static Renderer3DData s_3Ddata;
-
 	void Renderer3D::Init()
 	{
+		//  ======== Cube ========
 		s_3Ddata.CubeVertexArray = VertexArray::Create();
 		s_3Ddata.CubeVertexBuffer = VertexBuffer::Create(s_3Ddata.MaxVertices * sizeof(CubeVertex));
-
-		BufferLayout layout = {
+		s_3Ddata.CubeVertexBuffer->SetLayout({
 			{ShaderDataType::Float3,	"a_Pos"			},
-			{ShaderDataType::Float3,	"a_Normal"			},
 			{ShaderDataType::Float4,	"a_Color"		},
 			{ShaderDataType::Int,			"a_EntityID"},
-		};
+		});
 		
-		s_3Ddata.CubeVertexBuffer->SetLayout(layout);
 		s_3Ddata.CubeVertexArray->AddVertexBuffer(s_3Ddata.CubeVertexBuffer);
-
 		s_3Ddata.CubeVertexBufferBase = new CubeVertex[s_3Ddata.MaxVertices];
 
-		uint32_t* CubeIndices = new uint32_t[s_3Ddata.MaxIndices];
+		auto CubeIndices = new uint32_t[s_3Ddata.MaxIndices];
 		uint32_t Offset = 0;
 		for (uint32_t i = 0; i < s_3Ddata.MaxIndices; i += 6)
 		{
@@ -75,13 +32,13 @@ namespace Origin
 			CubeIndices[i + 3] = Offset + 2;
 			CubeIndices[i + 4] = Offset + 3;
 			CubeIndices[i + 5] = Offset + 0;
-
 			Offset += 4;
 		}
 
-		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(CubeIndices, s_3Ddata.MaxIndices);
-		s_3Ddata.CubeVertexArray->SetIndexBuffer(indexBuffer);
+		std::shared_ptr<IndexBuffer> CubeIndexBuffer = IndexBuffer::Create(CubeIndices, s_3Ddata.MaxIndices);
+		s_3Ddata.CubeVertexArray->SetIndexBuffer(CubeIndexBuffer);
 		delete[] CubeIndices;
+
 
 		s_3Ddata.WhiteTexture = Texture3D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
@@ -158,7 +115,7 @@ namespace Origin
 		s_3Ddata.CubeIndexCount += 36;
 	}
 
-	void Renderer3D::DrawCube(const glm::mat4& transform, SpriteRendererComponent& sprite, int entityID /*= -1*/)
+	void Renderer3D::DrawCube(const glm::mat4& transform, SpriteRendererComponent& sprite, int entityID)
 	{
 		for (auto& i : s_3Ddata.CubeVertexPosition)
 		{
@@ -170,7 +127,7 @@ namespace Origin
 		s_3Ddata.CubeIndexCount += 36;
 	}
 
-	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color, int entityID /*= -1*/)
+	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color, int entityID)
 	{
 		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
 		glm::vec3 p1 = glm::vec3(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -229,6 +186,7 @@ namespace Origin
 	{
 		s_3Ddata.CubeIndexCount = 0;
 		s_3Ddata.CubeVertexBufferPtr = s_3Ddata.CubeVertexBufferBase;
+
 		s_3Ddata.TextureSlotIndex = 1;
 	}
 
