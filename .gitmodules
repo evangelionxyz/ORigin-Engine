@@ -1,9 +1,6 @@
 [submodule "ORigin/vendor/stb_image"]
 	path = ORigin/vendor/stb_image
 	url = https://github.com/kaks-ev/stb_image.git
-[submodule "ORigin/vendor/yaml-cpp"]
-	path = ORigin/vendor/yaml-cpp
-	url = https://github.com/kaks-ev/yaml-cpp.git
 [submodule "ORigin/vendor/glfw"]
 	path = ORigin/vendor/glfw
 	url = https://github.com/kaks-ev/glfw.git
@@ -22,3 +19,6 @@
 [submodule "ORigin/vendor/Box2D"]
 	path = ORigin/vendor/Box2D
 	url = https://github.com/erincatto/box2d.git
+[submodule "ORigin/vendor/yaml-cpp"]
+	path = ORigin/vendor/yaml-cpp
+	url = https://github.com/kaks-ev/yaml-cpp.git
