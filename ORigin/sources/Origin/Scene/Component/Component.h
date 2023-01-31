@@ -79,7 +79,9 @@ namespace Origin
 
 	struct LightingComponent
 	{
-		glm::vec4 Color = glm::vec4(1.0f);
+		glm::vec3 Position;
+		glm::vec4 Color;
+		float Intensity = 0.5f;
 
 		LightingComponent() = default;
 		LightingComponent(const LightingComponent&) = default;

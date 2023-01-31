@@ -3,11 +3,9 @@
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aTexCoords;
 
-layout(std140, binding = 0) uniform GlobalUBO
+layout (std140, binding = 0) uniform Camera
 {
 	mat4 ViewProjection;
-	vec3 LightPosition;
-	vec4 LightColor;
 };
 
 out vec3 vPos;

@@ -437,7 +437,6 @@ namespace Origin {
 			for (auto entity : view)
 			{
 				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
-
 			}
 		}
 
@@ -494,7 +493,15 @@ namespace Origin {
 			for (auto& entity : view)
 			{
 				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
-				s_RendererData.g_Ubo.LightColor = lc.Color;
+				s_RendererData.LightingBufferData.Position = lc.Position;
+				s_RendererData.LightingBufferData.Color = lc.Color;
+				s_RendererData.LightingBufferData.Intensity = lc.Intensity;
+
+				Renderer3D::DrawLight(tc.GetTransform(), lc.Color, lc.Intensity, (int)entity);
+				std::cout << s_RendererData.LightingBufferData.Color.r << " ";
+				std::cout << s_RendererData.LightingBufferData.Color.g << " ";
+				std::cout << s_RendererData.LightingBufferData.Color.g << " ";
+				std::cout << std::endl;
 
 				DrawIcon(camera, (int)entity, m_LightingIcon, tc, true);
 			}

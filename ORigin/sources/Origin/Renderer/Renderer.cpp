@@ -22,7 +22,8 @@ namespace Origin
 		Renderer2D::Init();
 		Renderer3D::Init();
 
-		s_RendererData.GlobalUniformBuffer = UniformBuffer::Create(sizeof(RendererData::GlobalUBO), 0);
+		s_RendererData.CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
+		s_RendererData.LightingUniformBuffer = UniformBuffer::Create(sizeof(RendererData::LightingData), 1);
 	}
 
 	void Renderer::Shutdown()
@@ -34,7 +35,12 @@ namespace Origin
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
-		s_RendererData.g_Ubo.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		s_RendererData.CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData.ViewProjection, sizeof(RendererData::CameraData), 0);
+
+		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Position, sizeof(RendererData::LightingData), 0);
+		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Color, sizeof(RendererData::LightingData), sizeof(glm::vec4));
+		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Intensity, sizeof(RendererData::LightingData), sizeof(float));
 
 		Renderer2D::BeginScene(camera, transform);
 		Renderer3D::BeginScene(camera, transform);
@@ -42,7 +48,12 @@ namespace Origin
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
-		s_RendererData.g_Ubo.ViewProjection = camera.GetViewProjection();
+		s_RendererData.CameraBufferData.ViewProjection = camera.GetViewProjection();
+		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData.ViewProjection, sizeof(RendererData::CameraData), 0);
+		
+		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Position, sizeof(RendererData::LightingData), 0);
+		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Color, sizeof(RendererData::LightingData), sizeof(glm::vec4));
+		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Intensity, sizeof(RendererData::LightingData), sizeof(float));
 
 		Renderer2D::BeginScene(camera);
 		Renderer3D::BeginScene(camera);
@@ -50,8 +61,6 @@ namespace Origin
 
 	void Renderer::EndScene()
 	{
-		s_RendererData.GlobalUniformBuffer->SetData(&s_RendererData, sizeof(RendererData::GlobalUBO), 0);
-
 		Renderer2D::EndScene();
 		Renderer3D::EndScene();
 	}

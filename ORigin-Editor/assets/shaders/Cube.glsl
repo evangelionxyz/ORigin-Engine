@@ -8,11 +8,16 @@ layout(location = 2) in vec2 a_TexCoord;
 layout(location = 3) in float a_TexIndex;
 layout(location = 4) in int a_EntityID;
 
-layout(std140, binding = 0) uniform GlobalUBO
+layout (std140, binding = 0) uniform Camera
 {
 	mat4 ViewProjection;
-	vec3 LightPosition;
-	vec4 LightColor;
+};
+
+layout (std140, binding = 0) uniform Light
+{
+	vec3 lightPosition;
+	vec4 lightColor;
+	float lightIntensity;
 };
 
 struct Vertex
@@ -40,12 +45,18 @@ void main()
 layout(location = 0) out vec4 color;
 layout(location = 1) out int entColor;
 
-layout(std140, binding = 0) uniform GlobalUBO
+layout(binding = 0) uniform Camera
 {
 	mat4 ViewProjection;
-	vec3 LightPosition;
-	vec4 LightColor;
 };
+
+layout (std140, binding = 1) uniform Light
+{
+	vec3 lightPosition;
+	vec4 lightColor;
+	float lightIntensity;
+};
+
 
 struct Vertex
 {

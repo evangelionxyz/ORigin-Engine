@@ -41,7 +41,23 @@ namespace Origin
 		s_3Ddata.CubeVertexArray->SetIndexBuffer(CubeIndexBuffer);
 		delete[] CubeIndices;
 
+		// Lighting Setup
+		s_3Ddata.LightingVertexArray = VertexArray::Create();
+		s_3Ddata.LightingVertexBuffer = VertexBuffer::Create(s_3Ddata.MaxVertices * sizeof(LightingVertex));
+		s_3Ddata.LightingVertexBuffer->SetLayout({
+			{ShaderDataType::Float3,	"a_Position"	},
+			{ShaderDataType::Float4,	"a_Color"			},
+			{ShaderDataType::Float,		"a_Intensity"	},
+			{ShaderDataType::Int,			"a_EntityID"	},
+		});
 
+		s_3Ddata.LightingVertexArray->AddVertexBuffer(s_3Ddata.LightingVertexBuffer);
+		s_3Ddata.LightingVertexBufferBase = new LightingVertex[s_3Ddata.MaxVertices];
+
+		s_3Ddata.LightingVertexArray->SetIndexBuffer(CubeIndexBuffer);
+
+
+		// Data Settings
 		s_3Ddata.WhiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		s_3Ddata.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
@@ -89,6 +105,7 @@ namespace Origin
 		s_3Ddata.CubeVertexPosition[23] = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
 
 		s_3Ddata.CubeShader = Shader::Create("assets/shaders/Cube.glsl");
+		s_3Ddata.LightingShader = Shader::Create("assets/shaders/Lighting.glsl");
 	}
 
 	void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform)
@@ -105,6 +122,9 @@ namespace Origin
 	{
 		s_3Ddata.CubeIndexCount = 0;
 		s_3Ddata.CubeVertexBufferPtr = s_3Ddata.CubeVertexBufferBase;
+
+		s_3Ddata.LightingIndexCount = 0;
+		s_3Ddata.LightingVertexBufferPtr = s_3Ddata.LightingVertexBufferBase;
 
 		s_3Ddata.TextureSlotIndex = 1;
 	}
@@ -126,6 +146,15 @@ namespace Origin
 
 			s_3Ddata.CubeShader->Bind();
 			RenderCommand::DrawIndexed(s_3Ddata.CubeVertexArray, s_3Ddata.CubeIndexCount);
+		}
+
+		if (s_3Ddata.LightingIndexCount)
+		{
+			uint32_t dataSize = (uint8_t*)s_3Ddata.LightingVertexBufferPtr - (uint8_t*)s_3Ddata.LightingVertexBufferBase;
+			s_3Ddata.LightingVertexBuffer->SetData(s_3Ddata.LightingVertexBufferBase, dataSize);
+
+			s_3Ddata.LightingShader->Bind();
+			RenderCommand::DrawIndexed(s_3Ddata.LightingVertexArray, s_3Ddata.LightingIndexCount);
 		}
 	}
 
@@ -232,6 +261,22 @@ namespace Origin
 		s_3Ddata.CubeIndexCount += 36;
 	}
 
+	void Renderer3D::DrawLight(const glm::mat4& transform, glm::vec4 color, float intensity, int entityID)
+	{
+		if (s_3Ddata.LightingIndexCount >= Renderer3DData::MaxIndices)
+			NextBatch();
+
+		for (auto& i : s_3Ddata.CubeVertexPosition)
+		{
+			s_3Ddata.LightingVertexBufferPtr->Position = transform * i;
+			s_3Ddata.LightingVertexBufferPtr->Color = color;
+			s_3Ddata.LightingVertexBufferPtr->Intensity = intensity;
+			s_3Ddata.LightingVertexBufferPtr->EntityID = entityID;
+			s_3Ddata.LightingVertexBufferPtr++;
+		}
+		s_3Ddata.LightingIndexCount += 36;
+	}
+
 	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color, int entityID)
 	{
 		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -285,6 +330,7 @@ namespace Origin
 	void Renderer3D::Shutdown()
 	{
 		delete s_3Ddata.CubeVertexBufferBase;
+		delete s_3Ddata.LightingVertexBufferBase;
 	}
 
 	void Renderer3D::NextBatch()

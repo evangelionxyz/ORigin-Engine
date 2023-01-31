@@ -7,11 +7,9 @@ layout (location = 3) in float a_Thickness;
 layout (location = 4) in float a_Fade;
 layout (location = 5) in int a_EntityID;
 
-layout(std140, binding = 0) uniform GlobalUBO
+layout (std140, binding = 0) uniform Camera
 {
 	mat4 ViewProjection;
-	vec3 LightPosition;
-	vec4 LightColor;
 };
 
 struct VertexOutput

@@ -259,10 +259,9 @@ namespace Origin {
 			});
 		DrawComponent<LightingComponent>("Lighting", entity, [](auto& component)
 			{
-				ImGui::ColorPicker4("Color", glm::value_ptr(component.Color),
-				ImGuiColorEditFlags_DisplayRGB
-				| ImGuiColorEditFlags_InputHSV
-				);
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				DrawVecControl("Intensity", &component.Intensity, 0.01f, 1.0f);
+				DrawVec3Control("Position", component.Position, 0.01f, 1.0f);
 			});
 
 		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)

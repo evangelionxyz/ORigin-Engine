@@ -17,11 +17,17 @@ namespace Origin {
 
   namespace Utils
   {
-    static GLenum ShaderTypeFromString(const std::string& type)
+    static GLenum ShaderTypeFromString(const std::string& type, const std::string& filepath = std::string())
     {
       if (type == "vertex") return GL_VERTEX_SHADER;
       if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
-      OGN_CORE_ASSERT(false, "Unkown Shader Type!");
+
+      if (!filepath.empty())
+        OGN_CORE_ERROR("Unkown Shader Type!: {}", filepath);
+      else
+        OGN_CORE_ERROR("Unkown Shader Type!");
+
+      OGN_CORE_ASSERT(false, "");
       return 0;
     }
 
@@ -238,12 +244,12 @@ namespace Origin {
 			OGN_CORE_ASSERT(eol != std::string::npos, "Syntax error")
 			size_t begin = pos + typeTokenLength + 1;
 			std::string type = source.substr(begin, eol - begin);
-			OGN_CORE_ASSERT(Utils::ShaderTypeFromString(type), "Invalid shader type specified")
+			OGN_CORE_ASSERT(Utils::ShaderTypeFromString(type, m_Filepath), "Invalid shader type specified")
 
       size_t nextLinePos = source.find_first_of("\r\n", eol);
       OGN_CORE_ASSERT(nextLinePos != std::string::npos, "Syntax Error")
       pos = source.find(typeToken, nextLinePos);
-      shaderSources[Utils::ShaderTypeFromString(type)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+      shaderSources[Utils::ShaderTypeFromString(type, m_Filepath)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
     }
     return shaderSources;
   }

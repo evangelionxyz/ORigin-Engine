@@ -35,12 +35,23 @@ namespace Origin
 		static void DrawCube(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
 		static void DrawCube(const glm::mat4& transform, SpriteRendererComponent& sprite, int entityID = -1);
 
+		static void DrawLight(const glm::mat4& transform, glm::vec4 color, float intensity, int entityID = -1);
+
 		static void DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
 		static void DrawRect(const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
 
 	private:
 		static void StartBatch();
 		static void NextBatch();
+	};
+
+	struct LightingVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		float Intensity;
+
+		int EntityID;
 	};
 
 	struct CubeVertex
@@ -70,6 +81,17 @@ namespace Origin
 		CubeVertex* CubeVertexBufferPtr = nullptr;
 		glm::vec4 CubeVertexPosition[24];
 
+		// Lighting Data
+		std::shared_ptr<Shader> LightingShader;
+		std::shared_ptr<VertexArray> LightingVertexArray;
+		std::shared_ptr<VertexBuffer> LightingVertexBuffer;
+
+		uint32_t LightingIndexCount = 0;
+		LightingVertex* LightingVertexBufferBase = nullptr;
+		LightingVertex* LightingVertexBufferPtr = nullptr;
+
+
+		// Data
 		std::shared_ptr<Texture2D> WhiteTexture;
 		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1;

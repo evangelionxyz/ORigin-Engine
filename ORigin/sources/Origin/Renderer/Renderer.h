@@ -11,15 +11,21 @@ namespace Origin
 {
 	struct RendererData
 	{
-		struct GlobalUBO
+		struct CameraData
 		{
 			glm::mat4 ViewProjection;
-			glm::vec3 LightPosition = glm::vec4(0.0f);
-			glm::vec4 LightColor = glm::vec4(1.0f);
 		};
+		CameraData CameraBufferData;
+		std::shared_ptr<UniformBuffer> CameraUniformBuffer;
 
-		GlobalUBO g_Ubo;
-		std::shared_ptr<UniformBuffer> GlobalUniformBuffer;
+		struct LightingData
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+			float Intensity;
+		};
+		LightingData LightingBufferData;
+		std::shared_ptr<UniformBuffer> LightingUniformBuffer;
 	};
 
 	static RendererData s_RendererData;
