@@ -220,8 +220,12 @@ namespace Origin {
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		OGN_CORE_TRACE("entity vector {} destroyed!", (int)((entt::entity)entity));
+
 		m_EntityMap.erase(entity.GetUUID());
+
 		m_Registry.destroy(entity);
+
 	}
 
 	void Scene::OnUpdateGame(Timestep time)
@@ -326,7 +330,7 @@ namespace Origin {
 					nsc.Instance->m_Entity = Entity{ entity, this };
 					nsc.Instance->OnCreate();
 				}
-		nsc.Instance->OnUpdate(time);
+				nsc.Instance->OnUpdate(time);
 			});
 
 		//Render
@@ -381,6 +385,7 @@ namespace Origin {
 		}
 
 		// Render
+		SortEntities(camera);
 		RenderScene(camera);
 	}
 
@@ -413,8 +418,8 @@ namespace Origin {
 		Renderer::BeginScene(*camera, transform);
 		// Sprites
 		{
-			auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRenderer2DComponent>);
-			for (auto entity : group)
+			auto& group = m_Registry.group<IDComponent, TransformComponent>(entt::get<SpriteRenderer2DComponent>);
+			for (auto& entity : group)
 			{
 				auto& [transform, sprite] = group.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
@@ -454,21 +459,33 @@ namespace Origin {
 	void Scene::RenderScene(EditorCamera& camera)
 	{
 		Renderer::BeginScene(camera);
+
 		// Sprites
 		{
-			auto& group = m_Registry.group<TransformComponent>(entt::get<SpriteRenderer2DComponent>);
-			for (auto entity : group)
+			auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
+			std::vector<entt::entity> spriteEntities(view.begin(), view.end());
+
+			std::sort(spriteEntities.begin(), spriteEntities.end(),
+				[=](const entt::entity& a, const entt::entity& b) {
+					const auto& transparentA = m_Registry.get<TransformComponent>(a);
+					const auto& transparentB = m_Registry.get<TransformComponent>(b);
+					return transparentA.Depth > transparentB.Depth;
+				});
+
+			for (const entt::entity& entity : spriteEntities)
 			{
-				auto& [transform, sprite] = group.get<TransformComponent, SpriteRenderer2DComponent>(entity);
-				float calcDistance = glm::length(camera.GetPosition() - transform.Translation);
+				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
+
+				transform.Depth = glm::length(camera.GetPosition() - transform.Translation);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
+
 		}
 
 		// Circles
 		{
 			auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			for (auto entity : view)
+			for (auto& entity : view)
 			{
 				auto& [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
@@ -485,7 +502,6 @@ namespace Origin {
 			}
 		}
 
-		DrawGrid(m_GridSize, m_GridColor);
 
 		{
 			// Lighting
@@ -493,29 +509,36 @@ namespace Origin {
 			for (auto& entity : view)
 			{
 				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
-				s_RendererData.LightingBufferData.Position = lc.Position;
-				s_RendererData.LightingBufferData.Color = lc.Color;
-				s_RendererData.LightingBufferData.Intensity = lc.Intensity;
-
-				Renderer3D::DrawLight(tc.GetTransform(), lc.Color, lc.Intensity, (int)entity);
-				std::cout << s_RendererData.LightingBufferData.Color.r << " ";
-				std::cout << s_RendererData.LightingBufferData.Color.g << " ";
-				std::cout << s_RendererData.LightingBufferData.Color.g << " ";
-				std::cout << std::endl;
-
 				DrawIcon(camera, (int)entity, m_LightingIcon, tc, true);
 			}
 		}
 
 		// 3D Scene
-		auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-		for (auto entity : view)
 		{
-			auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)entity);
-		}
+			auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			std::vector<entt::entity> cubeEntities(view.begin(), view.end());
+			std::sort(cubeEntities.begin(), cubeEntities.end(),
+				[=](const entt::entity& a, const entt::entity& b) {
+					const auto& transparentA = m_Registry.get<TransformComponent>(a);
+					const auto& transparentB = m_Registry.get<TransformComponent>(b);
+					return transparentA.Depth > transparentB.Depth;
+				});
 
+			for (const entt::entity cube : cubeEntities)
+			{
+				auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(cube);
+				transform.Depth = glm::length(camera.GetPosition() - transform.Translation);
+				Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)cube);
+			}
+		}
+		
+
+		DrawGrid(m_GridSize, m_GridColor);
 		Renderer::EndScene();
+	}
+
+	void Scene::SortEntities(EditorCamera& camera)
+	{
 	}
 
 	void Scene::OnRuntimeStart()
@@ -669,8 +692,6 @@ namespace Origin {
 		m_Box2DWorld = nullptr;
 	}
 
-	template<typename T> void Scene::OnComponentAdded(Entity entity, T& component) { }
-
 	void Scene::DrawIcon(EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture, TransformComponent& tc, bool rotate)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
@@ -681,6 +702,7 @@ namespace Origin {
 		Renderer2D::DrawQuad(transform, texture, 1.0f, glm::vec4(1.0f), (int)entity);
 	}
 
+	template<typename T> void Scene::OnComponentAdded(Entity entity, T& component) { }
 	template<> void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) { }
 	template<> void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}
 	template<> void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component) {

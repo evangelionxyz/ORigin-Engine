@@ -4,7 +4,6 @@
 #include "EditorCamera.h"
 #include "Origin\Utils\Time.h"
 #include "Origin\Scene\Component\UUID.h"
-
 #include "Origin\Scene\Component\Component.h"
 
 #include "Origin\Renderer\Texture.h"
@@ -76,10 +75,11 @@ namespace Origin
 		void RenderScene(EditorCamera& camera);
 		void RenderScene(Camera* camera, glm::mat4& transform);
 
+		void SortEntities(EditorCamera& camera);
+
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
-
 		void DrawIcon(EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture, TransformComponent& tc, bool rotate = true);
 
 	private:
