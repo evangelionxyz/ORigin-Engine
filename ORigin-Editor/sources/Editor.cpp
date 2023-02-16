@@ -84,6 +84,7 @@ namespace Origin
     m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
 		Renderer2D::ResetStats();
+		Renderer3D::ResetStats();
 		InputProccedure(time);
 
     // Resize

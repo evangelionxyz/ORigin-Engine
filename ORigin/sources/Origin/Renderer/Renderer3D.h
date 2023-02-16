@@ -34,11 +34,25 @@ namespace Origin
 		static void DrawCube(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec4& tintColor, int entityID = -1);
 		static void DrawCube(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
 		static void DrawCube(const glm::mat4& transform, SpriteRendererComponent& sprite, int entityID = -1);
+		static void DrawCube(const glm::vec3& position, glm::vec3& rotation, glm::vec3& size, SpriteRendererComponent& sprite, int entityID = -1);
 
 		static void DrawLight(const glm::mat4& transform, glm::vec4 color, float intensity, int entityID = -1);
 
 		static void DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
 		static void DrawRect(const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
+
+		// Stats
+		struct Statistics
+		{
+			uint32_t DrawCalls = 0;
+			uint32_t CubeCount = 0;
+
+			uint32_t GetTotalVertexCount() const { return CubeCount * 24; }
+			uint32_t GetTotalIndexCount() const { return CubeCount * 36; }
+		};
+
+		static void ResetStats();
+		static Statistics GetStats();
 
 	private:
 		static void StartBatch();
@@ -66,9 +80,9 @@ namespace Origin
 
 	struct Renderer3DData
 	{
-		static const uint32_t MaxTriangles = 1000;
-		static const uint32_t MaxVertices = 4 * MaxTriangles;
-		static const uint32_t MaxIndices = 6 * MaxTriangles;
+		static const uint32_t MaxTriangles = 2000;
+		static const uint32_t MaxVertices = 24 * MaxTriangles;
+		static const uint32_t MaxIndices = 36 * MaxTriangles;
 		static const uint32_t MaxTextureSlots = 32;
 
 		// Cube Data
@@ -95,6 +109,8 @@ namespace Origin
 		std::shared_ptr<Texture2D> WhiteTexture;
 		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1;
+
+		Renderer3D::Statistics Stats;
 	};
 
 	static Renderer3DData s_3Ddata;

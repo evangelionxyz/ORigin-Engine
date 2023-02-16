@@ -60,14 +60,24 @@ namespace Origin
 
 			ImGui::Separator();
 
-			const auto stats = Renderer2D::GetStats();
-			ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-			ImGui::Text("Quads %d", stats.QuadCount);
-			ImGui::SameLine(); ImGui::Text("Circles %d", stats.CircleCount);
-			ImGui::SameLine(); ImGui::Text("Lines %d", stats.LineCount);
-			ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
-			ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
+			const auto Stats2D = Renderer2D::GetStats();
+			ImGui::Text("2D Stats");
+			ImGui::Text("Draw Calls: %d", Stats2D.DrawCalls);
+			ImGui::Text("Quads %d", Stats2D.QuadCount);
+			ImGui::SameLine(); ImGui::Text("Circles %d", Stats2D.CircleCount);
+			ImGui::SameLine(); ImGui::Text("Lines %d", Stats2D.LineCount);
+			ImGui::Text("Vertices: %d", Stats2D.GetTotalVertexCount());
+			ImGui::Text("Indices: %d", Stats2D.GetTotalIndexCount());
 			ImGui::Separator();
+
+			const auto Stats3D = Renderer3D::GetStats();
+			ImGui::Text("3D Stats");
+			ImGui::Text("Draw Calls: %d", Stats3D.DrawCalls);
+			ImGui::Text("Cube %d", Stats3D.CubeCount);
+			ImGui::Text("Vertices: %d", Stats3D.GetTotalVertexCount());
+			ImGui::Text("Indices: %d", Stats3D.GetTotalIndexCount());
+			ImGui::Separator();
+
 			if (ImGui::Checkbox("Line Mode", &drawLineMode)) RenderCommand::DrawLineMode(drawLineMode);
 			ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
 

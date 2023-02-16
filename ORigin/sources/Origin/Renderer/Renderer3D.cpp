@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "Origin\Renderer\Renderer.h"
-#include "Origin/Renderer/Renderer3D.h"
+#include "Origin\Renderer\Renderer3D.h"
 #include "Origin\Renderer\Renderer2D.h"
 
 namespace Origin
@@ -55,7 +55,6 @@ namespace Origin
 		s_3Ddata.LightingVertexBufferBase = new LightingVertex[s_3Ddata.MaxVertices];
 
 		s_3Ddata.LightingVertexArray->SetIndexBuffer(CubeIndexBuffer);
-
 
 		// Data Settings
 		s_3Ddata.WhiteTexture = Texture2D::Create(1, 1);
@@ -146,6 +145,7 @@ namespace Origin
 
 			s_3Ddata.CubeShader->Bind();
 			RenderCommand::DrawIndexed(s_3Ddata.CubeVertexArray, s_3Ddata.CubeIndexCount);
+			s_3Ddata.Stats.DrawCalls++;
 		}
 
 		if (s_3Ddata.LightingIndexCount)
@@ -155,6 +155,7 @@ namespace Origin
 
 			s_3Ddata.LightingShader->Bind();
 			RenderCommand::DrawIndexed(s_3Ddata.LightingVertexArray, s_3Ddata.LightingIndexCount);
+			s_3Ddata.Stats.DrawCalls++;
 		}
 	}
 
@@ -166,16 +167,29 @@ namespace Origin
 			DrawCube(transform, sprite.Color, entityID);
 	}
 
+	void Renderer3D::DrawCube(const glm::vec3& position, glm::vec3& rotation, glm::vec3& size, SpriteRendererComponent& sprite, int entityID)
+	{
+		glm::mat4 Rotation = glm::toMat4(glm::quat(rotation));
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* Rotation
+			* glm::scale(glm::mat4(1.0f), size);
+
+		if (sprite.Texture)
+			DrawCube(transform, sprite.Texture, sprite.Color, entityID);
+		else
+			DrawCube(transform, sprite.Color, entityID);
+	}
+
 	void Renderer3D::DrawCube(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
+		if (s_3Ddata.CubeIndexCount >= Renderer3DData::MaxIndices)
+			NextBatch();
+
 		constexpr uint8_t verticesSize = 24;
 		const float textureIndex = 0.0f; // White Texture
 		const float tilingFactor = 1.0f;
 		glm::vec2 textureCoords = glm::vec2(0.0f);
-
-
-		if (s_2Ddata.QuadIndexCount >= Renderer2DData::MaxIndices)
-			NextBatch();
 
 		for (size_t i = 0; i < verticesSize; i++)
 		{
@@ -187,13 +201,18 @@ namespace Origin
 			s_3Ddata.CubeVertexBufferPtr++;
 		}
 		s_3Ddata.CubeIndexCount += 36;
+		s_3Ddata.Stats.CubeCount++;
 	}
 
 	void Renderer3D::DrawCube(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec4& tintColor, int entityID)
 	{
+		if (s_3Ddata.CubeIndexCount >= Renderer3DData::MaxIndices)
+			NextBatch();
+
 		const uint8_t verticesSize = 24;
 
-		constexpr glm::vec2 textureCoords[] = {
+		constexpr glm::vec2 textureCoords[] =
+		{
 			{ 0.0f, 0.0f },
 			{ 1.0f, 0.0f },
 			{ 1.0f, 1.0f },
@@ -225,10 +244,6 @@ namespace Origin
 			{ 0.0f, 0.0f },
 		};
 
-
-		if (s_3Ddata.CubeIndexCount >= Renderer3DData::MaxIndices)
-			NextBatch();
-
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_3Ddata.TextureSlotIndex; i++)
 		{
@@ -259,6 +274,7 @@ namespace Origin
 			s_3Ddata.CubeVertexBufferPtr++;
 		}
 		s_3Ddata.CubeIndexCount += 36;
+		s_3Ddata.Stats.CubeCount++;
 	}
 
 	void Renderer3D::DrawLight(const glm::mat4& transform, glm::vec4 color, float intensity, int entityID)
@@ -325,6 +341,16 @@ namespace Origin
 		Renderer2D::DrawLine(lineVertices[21], lineVertices[22], color);
 		Renderer2D::DrawLine(lineVertices[22], lineVertices[23], color);
 		Renderer2D::DrawLine(lineVertices[23], lineVertices[20], color);
+	}
+
+	void Renderer3D::ResetStats()
+	{
+		memset(&s_3Ddata.Stats, 0, sizeof(Renderer3D::Statistics));
+	}
+
+	Renderer3D::Statistics Renderer3D::GetStats()
+	{
+		return s_3Ddata.Stats;
 	}
 
 	void Renderer3D::Shutdown()

@@ -10,7 +10,6 @@
 
 #include "Origin\Scripting\ScriptEngine.h"
 
-
 namespace Origin {
 
 	extern const std::filesystem::path g_AssetPath;
@@ -148,6 +147,7 @@ namespace Origin {
 		{
 			DisplayAddComponentEntry<ScriptComponent>("Script");
 			DisplayAddComponentEntry<CameraComponent>("Camera");
+			DisplayAddComponentEntry<TerrainGeneratorComponent>("Terrain Generator");
 			DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("Sprite Renderer 2D");
 			DisplayAddComponentEntry<LightingComponent>("Lighting");
@@ -170,10 +170,7 @@ namespace Origin {
 				glm::vec3 rotation = glm::degrees(component.Rotation);
 				DrawVec3Control("Rotation", rotation, 1.0f);
 				component.Rotation = glm::radians(rotation);
-
 				DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
-
-				DrawVecControl("Depth", &component.Depth);
 			});
 
 		DrawComponent<ScriptComponent>("Script", entity, [](auto& component)
@@ -190,7 +187,12 @@ namespace Origin {
 
 				if (!scriptClassExist)
 					ImGui::PopStyleColor();
+			});
 
+		DrawComponent<TerrainGeneratorComponent>("Terrain Generator", entity, [](auto& component)
+			{
+				DrawVec3Control("Size", component.Size, 1.0f);
+				ImGui::DragInt("Random Y", &component.RandomY);
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
@@ -252,6 +254,7 @@ namespace Origin {
 					{
 						component.Texture->Delete();
 						component.Texture = {};
+
 						return;
 					}
 
@@ -267,21 +270,19 @@ namespace Origin {
 			});
 
 		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)
-			{
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+	{
+		ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 		ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
 		ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
 
-			});
+	});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
-			{
-				auto& camera = component.Camera;
-
-		const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-		const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
-
-		ImGui::Checkbox("Primary", &component.Primary);
+		{
+			auto& camera = component.Camera;
+			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
+			const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
+			ImGui::Checkbox("Primary", &component.Primary);
 
 		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
 		{
@@ -397,5 +398,4 @@ namespace Origin {
 			}
 		}
 	}
-
 }

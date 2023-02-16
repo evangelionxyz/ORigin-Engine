@@ -55,10 +55,20 @@ namespace Origin
 		}
 	};
 
+	struct TerrainGeneratorComponent
+	{
+		glm::vec3 Size = glm::vec3(1.0f);
+		int RandomY = 0;
+		
+		TerrainGeneratorComponent() = default;
+		TerrainGeneratorComponent(const TerrainGeneratorComponent&) = default;
+	};
+
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
 		std::shared_ptr<Texture2D> Texture;
+		bool Terrain = false;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -182,7 +192,7 @@ namespace Origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, LightingComponent,
+		ComponentGroup<TransformComponent, LightingComponent, TerrainGeneratorComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent,
 		CircleRendererComponent, CameraComponent,
 		ScriptComponent, NativeScriptComponent,

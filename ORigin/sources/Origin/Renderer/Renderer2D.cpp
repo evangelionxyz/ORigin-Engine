@@ -361,7 +361,7 @@ namespace Origin
 
 	void Renderer2D::ResetStats()
 	{
-		memset(&s_2Ddata.Stats, 0, sizeof(Statistics));
+		memset(&s_2Ddata.Stats, 0, sizeof(Renderer2D::Statistics));
 	}
 
 	Renderer2D::Statistics Renderer2D::GetStats()

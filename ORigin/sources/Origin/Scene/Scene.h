@@ -75,8 +75,6 @@ namespace Origin
 		void RenderScene(EditorCamera& camera);
 		void RenderScene(Camera* camera, glm::mat4& transform);
 
-		void SortEntities(EditorCamera& camera);
-
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
 		glm::vec4 m_GridColor = glm::vec4(1.0f);

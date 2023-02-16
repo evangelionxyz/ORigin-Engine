@@ -167,6 +167,18 @@ namespace Origin {
 			out << YAML::EndMap; // !TransformComponent
 		}
 
+		if (entity.HasComponent<TerrainGeneratorComponent>())
+		{
+			out << YAML::Key << "TerrainGeneratorComponent";
+			out << YAML::BeginMap; // TerrainGeneratorComponent
+
+			auto& terr = entity.GetComponent<TerrainGeneratorComponent>();
+			out << YAML::Key << "Size" << YAML::Value << terr.Size;
+			out << YAML::Key << "RandomY" << YAML::Value << terr.RandomY;
+
+			out << YAML::EndMap; // !TerrainGeneratorComponent
+		}
+
 		if (entity.HasComponent<CameraComponent>())
 		{
 			out << YAML::Key << "CameraComponent";
@@ -396,6 +408,14 @@ namespace Origin {
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
 					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
+				}
+
+				auto terrainGeneratorComponent = entity["TerrainGeneratorComponent"];
+				if (terrainGeneratorComponent)
+				{
+					auto& terr = deserializedEntity.AddComponent<TerrainGeneratorComponent>();
+					terr.Size = terrainGeneratorComponent["Size"].as<glm::vec3>();
+					terr.RandomY = terrainGeneratorComponent["RandomY"].as<int>();
 				}
 
 				auto cameraComponent = entity["CameraComponent"];

@@ -220,12 +220,8 @@ namespace Origin {
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		OGN_CORE_TRACE("entity vector {} destroyed!", (int)((entt::entity)entity));
-
 		m_EntityMap.erase(entity.GetUUID());
-
 		m_Registry.destroy(entity);
-
 	}
 
 	void Scene::OnUpdateGame(Timestep time)
@@ -385,7 +381,6 @@ namespace Origin {
 		}
 
 		// Render
-		SortEntities(camera);
 		RenderScene(camera);
 	}
 
@@ -418,10 +413,21 @@ namespace Origin {
 		Renderer::BeginScene(*camera, transform);
 		// Sprites
 		{
-			auto& group = m_Registry.group<IDComponent, TransformComponent>(entt::get<SpriteRenderer2DComponent>);
-			for (auto& entity : group)
+			auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
+			std::vector<entt::entity> spriteEntities(view.begin(), view.end());
+
+			std::sort(spriteEntities.begin(), spriteEntities.end(),
+				[=](const entt::entity& a, const entt::entity& b) {
+					const auto& transparentA = m_Registry.get<TransformComponent>(a);
+					const auto& transparentB = m_Registry.get<TransformComponent>(b);
+					return transparentA.Depth > transparentB.Depth;
+				});
+
+			for (const entt::entity& entity : spriteEntities)
 			{
-				auto& [transform, sprite] = group.get<TransformComponent, SpriteRenderer2DComponent>(entity);
+				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
+
+				transform.Depth = glm::length(camera->GetPosition() - transform.Translation);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
 		}
@@ -451,6 +457,24 @@ namespace Origin {
 		{
 			auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 			Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)entity);
+		}
+
+		{
+			// 
+			auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>();
+			for (auto& entity : view)
+			{
+				auto& [transform, sprite, terrain] = view.get<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>(entity);
+				sprite.Terrain = true;
+				for (float x = -terrain.Size.x; x <= terrain.Size.x; x++)
+					for (float z = -terrain.Size.z; z <= terrain.Size.z; z++)
+					{
+						Renderer3D::DrawCube(glm::vec3(transform.Translation.x + x, transform.Translation.y, transform.Translation.z + z), 
+							transform.Rotation, transform.Scale, sprite, (int)entity);
+					}
+
+				sprite.Terrain = false;
+			}
 		}
 		
 		Renderer::EndScene();
@@ -527,18 +551,31 @@ namespace Origin {
 			for (const entt::entity cube : cubeEntities)
 			{
 				auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(cube);
+				if (sprite.Terrain == true)
+					break;
+
 				transform.Depth = glm::length(camera.GetPosition() - transform.Translation);
-				Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)cube);
+					Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)cube);
 			}
 		}
-		
+
+		{
+			// 
+			auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>();
+			for (auto& entity : view)
+			{
+				auto& [transform, sprite, terrain] = view.get<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>(entity);
+				sprite.Terrain = true;
+				for (float x = -terrain.Size.x; x <= terrain.Size.x; x++)
+					for (float z = -terrain.Size.z; z <= terrain.Size.z; z++)
+					Renderer3D::DrawCube(glm::vec3(transform.Translation.x + x, transform.Translation.y, transform.Translation.z + z), transform.Rotation, transform.Scale, sprite, (int)entity);
+
+				sprite.Terrain = false;
+			}
+		}
 
 		DrawGrid(m_GridSize, m_GridColor);
 		Renderer::EndScene();
-	}
-
-	void Scene::SortEntities(EditorCamera& camera)
-	{
 	}
 
 	void Scene::OnRuntimeStart()
@@ -711,6 +748,7 @@ namespace Origin {
 	}
 	template<> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<LightingComponent>(Entity entity, LightingComponent& component) {}
+	template<> void Scene::OnComponentAdded<TerrainGeneratorComponent>(Entity entity, TerrainGeneratorComponent& component) {}
 	template<> void Scene::OnComponentAdded<SpriteRenderer2DComponent>(Entity entity, SpriteRenderer2DComponent& component) {}
 	template<> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component) {}
