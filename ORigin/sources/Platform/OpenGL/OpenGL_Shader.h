@@ -22,7 +22,7 @@ namespace Origin
   class OpenGLShader : public Shader
   {
   public:
-    OpenGLShader(const std::string& filepath);
+    OpenGLShader(const std::string& filepath, bool recompileSpirv = false);
     OpenGLShader(const std::string& name, const std::string& filepath);
     OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 
@@ -94,6 +94,7 @@ namespace Origin
   private:
     std::string m_Filepath;
     GLuint m_RendererID;
+    bool m_RecompileSPIRV;
     std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
     std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
     std::unordered_map<GLenum, std::string> m_OpenGLSourceCode;

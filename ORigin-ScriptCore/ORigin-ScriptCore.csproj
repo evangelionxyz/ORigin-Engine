@@ -21,8 +21,7 @@
     <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -34,8 +33,7 @@
     <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -47,8 +45,7 @@
     <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -59,12 +56,12 @@
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="sources\ORigin\Vector2.cs" />
-    <Compile Include="sources\ORigin\Scene\Components.cs" />
-    <Compile Include="sources\ORigin\Scene\Entity.cs" />
     <Compile Include="sources\ORigin\Input.cs" />
     <Compile Include="sources\ORigin\InternalCalls.cs" />
     <Compile Include="sources\ORigin\KeyCodes.cs" />
+    <Compile Include="sources\ORigin\Scene\Components.cs" />
+    <Compile Include="sources\ORigin\Scene\Entity.cs" />
+    <Compile Include="sources\ORigin\Vector2.cs" />
     <Compile Include="sources\ORigin\Vector3.cs" />
     <Compile Include="sources\Player.cs" />
   </ItemGroup>

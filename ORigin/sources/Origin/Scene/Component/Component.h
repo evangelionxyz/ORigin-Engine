@@ -122,7 +122,7 @@ namespace Origin
 
 	struct ScriptComponent
 	{
-		std::string ClassName;
+		std::string ClassName = "None";
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;

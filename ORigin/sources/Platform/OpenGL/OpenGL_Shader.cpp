@@ -15,8 +15,7 @@
 
 namespace Origin {
 
-  namespace Utils
-  {
+  namespace Utils{
     static GLenum ShaderTypeFromString(const std::string& type, const std::string& filepath = std::string())
     {
       if (type == "vertex") return GL_VERTEX_SHADER;
@@ -111,33 +110,32 @@ namespace Origin {
     }
   }
 
-  OpenGLShader::OpenGLShader(const std::string& filepath)
-    : m_Filepath(filepath), m_RendererID(0)
+  OpenGLShader::OpenGLShader(const std::string& filepath, bool recompileSpirv)
+    : m_Filepath(filepath), m_RendererID(0), m_RecompileSPIRV(recompileSpirv)
   {
 #if 0
-    m_ShaderSource = ParseShader(filepath);
-    m_RendererID = createShader(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
+		m_ShaderSource = ParseShader(filepath);
+		m_RendererID = createShader(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
 #endif
+		Utils::CreateCachedDirectoryIfNeeded();
 
-    Utils::CreateCachedDirectoryIfNeeded();
+		std::string source = ReadFile(filepath);
+		auto shaderSources = PreProcess(source);
 
-    std::string source = ReadFile(filepath);
-    auto shaderSources = PreProcess(source);
+		{
+			Timer timer;
+			CompileOrGetVulkanBinaries(shaderSources);
+			CompileOrGetOpenGLBinaries();
+			CreateProgram();
+			OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
+		}
 
-    {
-      Timer timer;
-      CompileOrGetVulkanBinaries(shaderSources);
-      CompileOrGetOpenGLBinaries();
-      CreateProgram();
-      OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
-    }
-
-    // extract shader file to string name
-    auto lastSlash = filepath.find_last_of("/\\");
-    lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-    auto lastDot = filepath.rfind(".");
-    auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-    m_Name = filepath.substr(lastSlash, count);
+		// extract shader file to string name
+		auto lastSlash = filepath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = filepath.rfind(".");
+		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+		m_Name = filepath.substr(lastSlash, count);
   }
 
   OpenGLShader::OpenGLShader(const std::string& name, const std::string& filepath)
@@ -221,12 +219,9 @@ namespace Origin {
         in.seekg(0, std::ios::beg);
         in.read(&result[0], size);
       }
-      else
-        OGN_CORE_ERROR("Could not read from file '{0}'", filepath);
+      else OGN_CORE_ERROR("Could not read from file '{0}'", filepath);
     }
-    else
-      OGN_CORE_ERROR("Could not open file");
-
+    else OGN_CORE_ERROR("Could not open file");
     return result;
   }
 
@@ -326,7 +321,7 @@ namespace Origin {
       std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(stage));
 
       std::ifstream infile(cachedPath, std::ios::in | std::ios::binary);
-      if (infile.is_open())
+      if (infile.is_open() && !m_RecompileSPIRV)
       {
         OGN_CORE_WARN("Get OpenGL {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
         infile.seekg(0, std::ios::end);

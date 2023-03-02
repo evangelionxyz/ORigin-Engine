@@ -140,7 +140,7 @@ namespace Origin
     OnOverlayRenderer();
     m_Framebuffer->Unbind();
 
-    GameRender(time);
+    //GameRender(time);
   }
 
   void Editor::GameRender(float time)
@@ -177,7 +177,7 @@ namespace Origin
     MenuBar();
 
     SceneViewport();
-    GameViewport();
+    //GameViewport();
 
     m_SceneHierarchy.OnImGuiRender();
     m_ContentBrowser.OnImGuiRender();
@@ -282,7 +282,7 @@ namespace Origin
 			}
 		}
 
-    RenderCommand::SetLineWidth(2.0f);
+    RenderCommand::SetLineWidth(3.0f);
     Renderer2D::EndScene();
 
     RenderCommand::SetLineWidth(1.0f);

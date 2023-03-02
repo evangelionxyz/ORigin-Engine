@@ -39,6 +39,7 @@ project "ORigin"
         "%{IncludeDir.MONO}",
         "%{IncludeDir.YAML_CPP}",
         "%{IncludeDir.VulkanSDK}",
+        "%{IncludeDir.ASSIMP}",
     }
 
     defines {

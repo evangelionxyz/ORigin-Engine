@@ -173,20 +173,102 @@ namespace Origin {
 				DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 			});
 
+		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+			{
+				auto& camera = component.Camera;
+		const char* projectionTypeString[] = { "Perspective", "Orthographic" };
+		const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
+		ImGui::Checkbox("Primary", &component.Primary);
+
+		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				bool isSelected = currentProjectionTypeString == projectionTypeString[i];
+				if (ImGui::Selectable(projectionTypeString[i], isSelected))
+				{
+					currentProjectionTypeString = projectionTypeString[i];
+					component.Camera.SetProjectionType((SceneCamera::ProjectionType)i);
+				}
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		if (component.Camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+		{
+			float perspectiveFov = glm::degrees(camera.GetPerspectiveFov());
+			camera.SetPerspectiveFov(glm::radians(perspectiveFov));
+
+			if (ImGui::DragFloat("FOV", &perspectiveFov, 0.1f, 0.01f, 10000.0f))
+				camera.SetPerspectiveFov(glm::radians(perspectiveFov));
+
+			float perspectiveNearClip = camera.GetPerspectiveNearClip();
+			if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f))
+				camera.SetPerspectiveNearClip(perspectiveNearClip);
+
+			float perspectiveFarClip = camera.GetPerspectiveFarClip();
+			if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f))
+				camera.SetPerspectiveFarClip(perspectiveFarClip);
+		}
+
+		if (component.Camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+		{
+			float orthoSize = camera.GetOrthographicSize();
+			camera.SetOrthographicSize(orthoSize);
+
+			if (ImGui::DragFloat("Ortho Size", &orthoSize, 0.1f, 1.0f, 100.0f))
+				camera.SetOrthographicSize(orthoSize);
+
+			float orthoNearClip = camera.GetOrthographicNearClip();
+			if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
+				camera.SetOrthographicNearClip(orthoNearClip);
+
+			float orthoFarClip = camera.GetOrthographicFarClip();
+			if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
+				camera.SetOrthographicFarClip(orthoFarClip);
+
+			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+		}});
+
 		DrawComponent<ScriptComponent>("Script", entity, [](auto& component)
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 
-				if (!scriptClassExist)
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+				if (!scriptClassExist) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+				auto& entityClasses = ScriptEngine::GetEntityClasses();
+				static std::string currentScriptClasses = component.ClassName;
+				if (scriptClassExist)
+					currentScriptClasses = component.ClassName;
+				else
+					currentScriptClasses = "NONE";
 
-				static char buffer[64];
-				strcpy(buffer, component.ClassName.c_str());
-				if (ImGui::InputText("Script Class", buffer, sizeof(buffer)))
-					component.ClassName = std::string(buffer);
+				std::vector<std::string> scriptClassesNameStorage;
 
-				if (!scriptClassExist)
-					ImGui::PopStyleColor();
+				for (auto it : entityClasses)
+					scriptClassesNameStorage.emplace_back(it.first);
+
+				if (ImGui::BeginCombo("Script Class", currentScriptClasses.c_str()))
+				{
+					bool isSelected = false;
+					for (int i = 0; i < scriptClassesNameStorage.size(); i++)
+					{
+						isSelected = currentScriptClasses == scriptClassesNameStorage[i];
+						if (ImGui::Selectable(scriptClassesNameStorage[i].c_str(), isSelected))
+						{
+							currentScriptClasses = scriptClassesNameStorage[i];
+							component.ClassName = scriptClassesNameStorage[i];
+						}
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+				if (!scriptClassExist) ImGui::PopStyleColor();
+
+				ImGui::Text("Script Storage Size: %d", scriptClassesNameStorage.size());
 			});
 
 		DrawComponent<TerrainGeneratorComponent>("Terrain Generator", entity, [](auto& component)
@@ -276,68 +358,6 @@ namespace Origin {
 		ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
 
 	});
-
-		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
-		{
-			auto& camera = component.Camera;
-			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-			const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
-			ImGui::Checkbox("Primary", &component.Primary);
-
-		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
-		{
-
-			for (int i = 0; i < 2; i++)
-			{
-				bool isSelected = currentProjectionTypeString == projectionTypeString[i];
-				if (ImGui::Selectable(projectionTypeString[i], isSelected))
-				{
-					currentProjectionTypeString = projectionTypeString[i];
-					component.Camera.SetProjectionType((SceneCamera::ProjectionType)i);
-				}
-
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
-			}
-
-			ImGui::EndCombo();
-		}
-
-		if (component.Camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
-		{
-			float perspectiveFov = glm::degrees(camera.GetPerspectiveFov());
-			camera.SetPerspectiveFov(glm::radians(perspectiveFov));
-
-			if (ImGui::DragFloat("FOV", &perspectiveFov, 0.1f, 0.01f, 10000.0f))
-				camera.SetPerspectiveFov(glm::radians(perspectiveFov));
-
-			float perspectiveNearClip = camera.GetPerspectiveNearClip();
-			if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f))
-				camera.SetPerspectiveNearClip(perspectiveNearClip);
-
-			float perspectiveFarClip = camera.GetPerspectiveFarClip();
-			if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f))
-				camera.SetPerspectiveFarClip(perspectiveFarClip);
-		}
-
-		if (component.Camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
-		{
-			float orthoSize = camera.GetOrthographicSize();
-			camera.SetOrthographicSize(orthoSize);
-
-			if (ImGui::DragFloat("Ortho Size", &orthoSize, 0.1f, 1.0f, 100.0f))
-				camera.SetOrthographicSize(orthoSize);
-
-			float orthoNearClip = camera.GetOrthographicNearClip();
-			if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
-				camera.SetOrthographicNearClip(orthoNearClip);
-
-			float orthoFarClip = camera.GetOrthographicFarClip();
-			if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
-				camera.SetOrthographicFarClip(orthoFarClip);
-
-			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
-		}});
 
 		DrawComponent<Rigidbody2DComponent>("Rigidbody 2D", entity, [](auto& component)
 		{

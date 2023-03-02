@@ -430,6 +430,8 @@ namespace Origin {
 				transform.Depth = glm::length(camera->GetPosition() - transform.Translation);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
+
+			Renderer::EndScene();
 		}
 
 		// Circles
@@ -503,7 +505,7 @@ namespace Origin {
 				transform.Depth = glm::length(camera.GetPosition() - transform.Translation);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
-
+			Renderer::EndScene();
 		}
 
 		// Circles
@@ -538,40 +540,36 @@ namespace Origin {
 		}
 
 		// 3D Scene
+		// Cube
+		auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+		std::vector<entt::entity> cubeEntities(cubeView.begin(), cubeView.end());
+		std::sort(cubeEntities.begin(), cubeEntities.end(),
+			[=](const entt::entity& a, const entt::entity& b) {
+				const auto& transparentA = m_Registry.get<TransformComponent>(a);
+				const auto& transparentB = m_Registry.get<TransformComponent>(b);
+				return transparentA.Depth > transparentB.Depth;
+			});
+
+		for (const entt::entity cube : cubeEntities)
 		{
-			auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			std::vector<entt::entity> cubeEntities(view.begin(), view.end());
-			std::sort(cubeEntities.begin(), cubeEntities.end(),
-				[=](const entt::entity& a, const entt::entity& b) {
-					const auto& transparentA = m_Registry.get<TransformComponent>(a);
-					const auto& transparentB = m_Registry.get<TransformComponent>(b);
-					return transparentA.Depth > transparentB.Depth;
-				});
+			auto& [transform, sprite] = cubeView.get<TransformComponent, SpriteRendererComponent>(cube);
+			if (sprite.Terrain == true)
+				break;
 
-			for (const entt::entity cube : cubeEntities)
-			{
-				auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(cube);
-				if (sprite.Terrain == true)
-					break;
-
-				transform.Depth = glm::length(camera.GetPosition() - transform.Translation);
-					Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)cube);
-			}
+			transform.Depth = glm::length(camera.GetPosition() - transform.Translation);
+				Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)cube);
 		}
-
+		// terrain
+		auto& terrainView = m_Registry.view<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>();
+		for (auto& entity : terrainView)
 		{
-			// 
-			auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>();
-			for (auto& entity : view)
-			{
-				auto& [transform, sprite, terrain] = view.get<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>(entity);
-				sprite.Terrain = true;
-				for (float x = -terrain.Size.x; x <= terrain.Size.x; x++)
-					for (float z = -terrain.Size.z; z <= terrain.Size.z; z++)
-					Renderer3D::DrawCube(glm::vec3(transform.Translation.x + x, transform.Translation.y, transform.Translation.z + z), transform.Rotation, transform.Scale, sprite, (int)entity);
+			auto& [transform, sprite, terrain] = terrainView.get<TransformComponent, SpriteRendererComponent, TerrainGeneratorComponent>(entity);
+			sprite.Terrain = true;
+			for (float x = -terrain.Size.x; x <= terrain.Size.x; x++)
+				for (float z = -terrain.Size.z; z <= terrain.Size.z; z++)
+				Renderer3D::DrawCube(glm::vec3(transform.Translation.x + x, transform.Translation.y, transform.Translation.z + z), transform.Rotation, transform.Scale, sprite, (int)entity);
 
-				sprite.Terrain = false;
-			}
+			sprite.Terrain = false;
 		}
 
 		DrawGrid(m_GridSize, m_GridColor);

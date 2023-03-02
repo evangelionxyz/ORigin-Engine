@@ -42,6 +42,7 @@ project "ORigin-Editor"
         "%{IncludeDir.IMGUIZMO}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.YAML_CPP}",
+        "%{IncludeDir.ASSIMP}",
     }
 
     defines {
