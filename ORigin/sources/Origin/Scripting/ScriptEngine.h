@@ -22,7 +22,7 @@ namespace Origin
 	{
 	public:
 		ScriptClass() = default;
-		ScriptClass(const std::string& classNamespace, const std::string& className);
+		ScriptClass(const std::string& classNamespace, const std::string& className, bool core = false);
 
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount = 0);
@@ -59,6 +59,7 @@ namespace Origin
 		static void Shutdown();
 
 		static bool LoadAssembly(const std::filesystem::path& filepath);
+		static bool LoadAppAssembly(const std::filesystem::path& filepath);
 
 		static void OnRuntimeStart(Scene* scene);
 		static void OnRuntimeStop();
@@ -79,7 +80,7 @@ namespace Origin
 		static void ShutdownMono();
 
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
-		static void LoadAssemblyClasses(MonoAssembly* assembly);
+		static void LoadAssemblyClasses();
 
 		friend class ScriptClass;
 	};

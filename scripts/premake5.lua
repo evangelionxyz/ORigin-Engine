@@ -2,29 +2,24 @@
 
 -- Solution's Settings
 workspace "ORigin"
-    kind "SharedLib"
-    location "../"
-    architecture "x64"
+location "../"
+architecture "x64"
 
-    configurations {
-        "Debug",
-        "Release",
-        "Dist"
-    }
+configurations{
+    "Debug",
+    "Release",
+    "Dist"
+}
 
-    flags {
-		"MultiProcessorCompile"
-	}
+flags{
+    "MultiProcessorCompile"
+}
 
-    startproject "ORigin-Editor"
+startproject "ORigin-Editor"
 
-    mainProjectFiles = "%{wks.location}%{prj.name}"
-    mainOutputdir = "%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin"
-    mainIntOutputdir = "%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin"
-
-    vendorProjectFiles = "%{wks.location}/ORigin/vendor/projectFiles"
-    vendorOutputdir = "%{prj.location}/Binaries/%{cfg.buildcfg}/%{prj.name}"
-    vendorIntOutputdir = "%{prj.location}/Binaries/Intermediates/%{cfg.buildcfg}/%{prj.name}"
+vendorProjectFiles = "%{wks.location}/ORigin/vendor/projectFiles"
+vendorOutputdir = "%{prj.location}/Binaries/%{cfg.buildcfg}/%{prj.name}"
+vendorIntOutputdir = "%{prj.location}/Binaries/Intermediates/%{cfg.buildcfg}/%{prj.name}"
 
 include "projects/ProjectSwitcher.lua"
 include "projects/ProjectLicenseHeader.lua"

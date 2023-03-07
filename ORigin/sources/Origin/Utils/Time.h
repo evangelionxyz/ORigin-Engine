@@ -28,8 +28,7 @@ namespace Origin
 	class Timer
 	{
 	public:
-		Timer()
-		{
+		Timer() {
 			Reset();
 		}
 

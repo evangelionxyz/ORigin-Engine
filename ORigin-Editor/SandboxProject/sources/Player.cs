@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-using ORiginEngine;
 using System;
+using ORiginEngine;
 
 namespace Game
 {
@@ -26,7 +26,7 @@ namespace Game
             float speed = 10.0f;
             Vector3 velocity = Vector3.Zero;
 
-            if(Translation.Y < 5.0f)
+            if (Translation.Y < 5.0f)
                 if (Input.IsKeyPressed(KeyCode.Space))
                     velocity.Y = 3.0f;
 
