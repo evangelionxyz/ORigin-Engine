@@ -147,7 +147,6 @@ namespace Origin {
 		{
 			DisplayAddComponentEntry<ScriptComponent>("Script");
 			DisplayAddComponentEntry<CameraComponent>("Camera");
-			DisplayAddComponentEntry<TerrainGeneratorComponent>("Terrain Generator");
 			DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("Sprite Renderer 2D");
 			DisplayAddComponentEntry<LightingComponent>("Lighting");
@@ -264,12 +263,6 @@ namespace Origin {
 
 				if (ImGui::Button("Detach", ImVec2(80, 25)))
 					component.ClassName = "Detached";
-			});
-
-		DrawComponent<TerrainGeneratorComponent>("Terrain Generator", entity, [](auto& component)
-			{
-				DrawVec3Control("Size", component.Size, 1.0f);
-				ImGui::DragInt("Random Y", &component.RandomY);
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)

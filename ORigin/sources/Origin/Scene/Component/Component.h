@@ -39,7 +39,6 @@ namespace Origin
 		glm::vec3 Translation = glm::vec3(0.0f);
 		glm::vec3 Rotation = glm::vec3(0.0f);
 		glm::vec3 Scale = glm::vec3(1.0f);
-		float Depth = 0.0f;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
@@ -53,15 +52,6 @@ namespace Origin
 			return glm::translate(glm::mat4(1.0f), Translation)
 				* rotation * glm::scale(glm::mat4(1.0f), Scale);
 		}
-	};
-
-	struct TerrainGeneratorComponent
-	{
-		glm::vec3 Size = glm::vec3(1.0f);
-		int RandomY = 0;
-		
-		TerrainGeneratorComponent() = default;
-		TerrainGeneratorComponent(const TerrainGeneratorComponent&) = default;
 	};
 
 	struct SpriteRendererComponent
@@ -192,7 +182,7 @@ namespace Origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, LightingComponent, TerrainGeneratorComponent,
+		ComponentGroup<TransformComponent, LightingComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent,
 		CircleRendererComponent, CameraComponent,
 		ScriptComponent, NativeScriptComponent,

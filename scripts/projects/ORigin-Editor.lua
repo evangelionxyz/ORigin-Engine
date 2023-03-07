@@ -59,6 +59,7 @@ filter "system:windows"
         "{COPYDIR} %{prj.location}assets ../Binaries/%{cfg.buildcfg}/ORigin/assets",
         "{COPYDIR} %{prj.location}mono ../Binaries/%{cfg.buildcfg}/ORigin/mono",
         "{COPYDIR} %{prj.location}resources ../Binaries/%{cfg.buildcfg}/ORigin/resources",
+        "{COPYDIR} %{prj.location}SandboxProject/Binaries ../Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Binaries",
     }
 
 filter "configurations:Debug"

@@ -20,6 +20,7 @@ Binaries/
 scripts/__pycache__
 
 ORigin/vendor/projectFiles
+ORigin/vendor/VulkanSDK
 
 ORigin-Editor/assets/cache/
 ORigin-Editor/resources/scripts/

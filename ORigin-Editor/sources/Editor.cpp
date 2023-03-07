@@ -56,8 +56,6 @@ namespace Origin
 
 		m_EditorCamera.SetPosition(glm::vec3(-20.0f, 10.0f, 50.0f));
     m_EditorCamera.SetDistance(10.0f);
-		m_EditorCamera.SetYaw(0.7f);
-		m_EditorCamera.SetPitch(0.350f);
 
     m_ActiveScene = std::make_shared<Scene>();
     auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -361,7 +359,7 @@ namespace Origin
 
     if (!filepath.empty())
     {
-      SerializeScene(m_ActiveScene, m_ScenePath);
+      SerializeScene(m_ActiveScene, filepath);
       m_ScenePath = filepath;
     }
   }
