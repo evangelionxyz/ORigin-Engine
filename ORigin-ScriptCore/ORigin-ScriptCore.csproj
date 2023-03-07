@@ -63,7 +63,6 @@
     <Compile Include="sources\ORigin\Scene\Entity.cs" />
     <Compile Include="sources\ORigin\Vector2.cs" />
     <Compile Include="sources\ORigin\Vector3.cs" />
-    <Compile Include="sources\Player.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

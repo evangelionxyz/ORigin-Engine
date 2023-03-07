@@ -239,21 +239,16 @@ namespace Origin {
 
 				if (!scriptClassExist) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
 				auto& entityClasses = ScriptEngine::GetEntityClasses();
-				static std::string currentScriptClasses = component.ClassName;
-				if (scriptClassExist)
-					currentScriptClasses = component.ClassName;
-				else
-					currentScriptClasses = "NONE";
+				std::string currentScriptClasses = component.ClassName;
 
 				std::vector<std::string> scriptClassesNameStorage;
-
-				for (auto it : entityClasses)
+				for (auto& it : entityClasses)
 					scriptClassesNameStorage.emplace_back(it.first);
 
 				if (ImGui::BeginCombo("Script Class", currentScriptClasses.c_str()))
 				{
 					bool isSelected = false;
-					for (int i = 0; i < scriptClassesNameStorage.size(); i++)
+					for (int i = 0; i < entityClasses.size(); i++)
 					{
 						isSelected = currentScriptClasses == scriptClassesNameStorage[i];
 						if (ImGui::Selectable(scriptClassesNameStorage[i].c_str(), isSelected))
@@ -261,14 +256,14 @@ namespace Origin {
 							currentScriptClasses = scriptClassesNameStorage[i];
 							component.ClassName = scriptClassesNameStorage[i];
 						}
-						if (isSelected)
-							ImGui::SetItemDefaultFocus();
+						if (isSelected) ImGui::SetItemDefaultFocus();
 					}
 					ImGui::EndCombo();
 				}
 				if (!scriptClassExist) ImGui::PopStyleColor();
 
-				ImGui::Text("Script Storage Size: %d", scriptClassesNameStorage.size());
+				if (ImGui::Button("Detach", ImVec2(80, 25)))
+					component.ClassName = "Detached";
 			});
 
 		DrawComponent<TerrainGeneratorComponent>("Terrain Generator", entity, [](auto& component)
@@ -305,7 +300,6 @@ namespace Origin {
 						component.Texture = {};
 						return;
 					}
-
 					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
 				}
 			});

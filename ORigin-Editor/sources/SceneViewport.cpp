@@ -108,6 +108,7 @@ namespace Origin
 			m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
 		);
 
+		m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 		if (m_SelectedEntity && m_GizmosType != -1) {
 			// Editor Camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();

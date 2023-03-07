@@ -81,7 +81,6 @@ namespace Origin
   void Editor::OnUpdate(Timestep time)
   {
     m_Time += time.GetSeconds();
-    m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
 		Renderer2D::ResetStats();
 		Renderer3D::ResetStats();
@@ -97,9 +96,7 @@ namespace Origin
     }
 
     m_Framebuffer->Bind();
-
-    if(m_SceneHierarchy.GetContext())  RenderCommand::ClearColor(clearColor);
-    else RenderCommand::ClearColor(glm::vec4(0.6f));
+    RenderCommand::ClearColor(clearColor);
 
     RenderCommand::Clear();
     m_Framebuffer->ClearAttachment(1, -1);
@@ -129,7 +126,7 @@ namespace Origin
     const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
     my = viewportSize.y - my;
     mouseX = (int)mx;
-    mouseY = (int)my - 1;
+    mouseY = (int)my;
 
     if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
     {
