@@ -15,6 +15,9 @@ namespace Game
         public TransformComponent Transform;
         public Rigidbody2DComponent Rigidbody2D;
 
+        public float Speed;
+        public Vector3 Vector;
+
         void OnCreate()
         {
             Transform = GetComponent<TransformComponent>();
@@ -23,7 +26,7 @@ namespace Game
 
         void OnUpdate(float deltaTime)
         {
-            float speed = 10.0f;
+            float speed = 5.0f;
             Vector3 velocity = Vector3.Zero;
 
             if (Translation.Y < 5.0f)

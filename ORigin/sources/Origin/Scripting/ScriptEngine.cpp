@@ -6,9 +6,10 @@
 #include "ScriptGlue.h"
 #include "Origin\Scene\Component\Component.h"
 
-#include "mono\jit/jit.h"
+#include "mono\jit\jit.h"
 #include "mono\metadata\assembly.h"
 #include "mono\metadata\object.h"
+#include "mono\metadata\tabledefs.h"
 
 namespace Origin
 {
@@ -262,24 +263,39 @@ namespace Origin
 			mono_metadata_decode_row(typeDefinitionTable, i, cols, MONO_TYPEDEF_SIZE);
 
 			const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
-			const char* name = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
+			const char* className = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
 
 			std::string fullName;
 			if (strlen(nameSpace) != 0)
-				fullName = fmt::format("{}.{}", nameSpace, name);
+				fullName = fmt::format("{}.{}", nameSpace, className);
 			else
-				fullName = name;
+				fullName = className;
 
-			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, name);
+			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
 
 			if(monoClass == entityClass)
 				continue;
 
 			bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
-			if (isEntity)
-				s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, name);
+			if (!isEntity)
+				continue;
 
-			OGN_CORE_INFO("{}.{}", nameSpace, name);
+			s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, className);
+
+			int fieldCount = mono_class_num_fields(monoClass);
+
+			OGN_CORE_WARN("{} has {} fields: ", className, fieldCount);
+			void* iterator = nullptr;
+			while (MonoClassField* field = mono_class_get_fields(monoClass, &iterator))
+			{
+				const char* fieldName = mono_field_get_name(field);
+				uint32_t flags = mono_field_get_flags(field);
+				if (flags & FIELD_ATTRIBUTE_PUBLIC)
+				{
+					MonoType* type = mono_field_get_type(field);
+					OGN_CORE_WARN("{} {} is public", mono_type_get_name(type), fieldName);
+				}
+			}
 		}
 	}
 
