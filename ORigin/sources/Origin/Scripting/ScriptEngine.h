@@ -13,10 +13,28 @@ extern "C" {
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoAssembly MonoAssembly;
 	typedef struct _MonoImage MonoImage;
+	typedef struct _MonoClassField MonoClassField;
 }
 
-namespace Origin
-{
+namespace Origin {
+
+	enum class ScriptFieldType
+	{
+		None = 0,
+		Float, Double,
+		Bool, Char, Byte, Short, Int, Long,
+		UByte, UShort, UInt, ULong,
+		Vector2, Vector3, Vector4,
+		Entity
+	};
+
+	struct ScriptField
+	{
+		ScriptFieldType Type;
+		std::string Name;
+
+		MonoClassField* ClassField;
+	};
 
 	class ScriptClass
 	{
@@ -28,11 +46,15 @@ namespace Origin
 		MonoMethod* GetMethod(const std::string& name, int parameterCount = 0);
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
 
+		std::unordered_map<std::string, ScriptField> GetFields() { return m_Fields; }
+
 	private:
 		MonoClass* m_MonoClass = nullptr;
-
 		std::string m_ClassName;
 		std::string m_ClassNamespace;
+		std::unordered_map<std::string, ScriptField> m_Fields;
+
+		friend class ScriptEngine;
 	};
 
 	class ScriptInstance
@@ -43,6 +65,28 @@ namespace Origin
 		void InvokeOnCreate();
 		void InvokeOnUpdate(float time);
 
+		std::shared_ptr<ScriptClass> GetScriptClass() { return m_ScriptClass; }
+
+		template<typename T>
+		T GetFieldValue(const std::string& name)
+		{
+			bool success = GetFieldValueInternal(name, s_FieldValueBuffer);
+			if (!success)
+				return T();
+
+			return *(T*)s_FieldValueBuffer;
+		}
+
+		template<typename T>
+		void SetFieldValue(const std::string& name, const T& value)
+		{
+			SetFieldValueInternal(name, &value);
+		}
+
+	private:
+		bool GetFieldValueInternal(const std::string& name, void* buffer);
+		bool SetFieldValueInternal(const std::string& name, const void* value);
+
 	private:
 		std::shared_ptr<ScriptClass> m_ScriptClass;
 
@@ -50,6 +94,8 @@ namespace Origin
 		MonoMethod* m_OnConstructor = nullptr;
 		MonoMethod* m_OnCreateMethod = nullptr;
 		MonoMethod* m_OnUpdateMethod = nullptr;
+
+		inline static char s_FieldValueBuffer[8];
 	};
 
 	class ScriptEngine
@@ -70,12 +116,13 @@ namespace Origin
 		static void OnUpdateEntity(Entity entity, float time);
 
 		static std::unordered_map<std::string, std::shared_ptr<ScriptClass>> GetEntityClasses();
+		static std::vector<std::string> GetScriptClassStorage();
+		static std::shared_ptr<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 
 		static Scene* GetSceneContext();
 		static MonoImage* GetCoreAssemblyImage();
 
 	private:
-
 		static void InitMono();
 		static void ShutdownMono();
 

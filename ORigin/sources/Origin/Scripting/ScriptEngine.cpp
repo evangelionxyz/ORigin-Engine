@@ -13,6 +13,30 @@
 
 namespace Origin
 {
+	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
+	{
+		{"System.Boolean", ScriptFieldType::Bool},
+		{"System.Single", ScriptFieldType::Float},
+
+		{"System.Char", ScriptFieldType::Char},
+		{"System.Byte", ScriptFieldType::Byte},
+		{"System.Double", ScriptFieldType::Double},
+
+		{"System.Int16", ScriptFieldType::Short},
+		{"System.Int32", ScriptFieldType::Int},
+		{"System.Int64", ScriptFieldType::Long},
+
+		{"System.UInt16", ScriptFieldType::UShort},
+		{"System.UInt32", ScriptFieldType::UInt},
+		{"System.UInt64", ScriptFieldType::ULong},
+		{"System.UInt", ScriptFieldType::UByte},
+
+		{"ORiginEngine.Vector2", ScriptFieldType::Vector2},
+		{"ORiginEngine.Vector3", ScriptFieldType::Vector3},
+		{"ORiginEngine.Vector4", ScriptFieldType::Vector4},
+		{"ORiginEngine.Entity", ScriptFieldType::Entity},
+	};
+
 	namespace Utils
 	{
 		static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* outSize)
@@ -78,6 +102,47 @@ namespace Origin
 				OGN_CORE_INFO("{}.{}", nameSpace, name);
 			}
 		}
+
+		ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
+		{
+			std::string typeName = mono_type_get_name(monoType);
+
+			auto it = s_ScriptFieldTypeMap.find(typeName);
+			if (it == s_ScriptFieldTypeMap.end())
+			{
+				OGN_CORE_ERROR("Unkown Field Type : {}", typeName);
+				return ScriptFieldType::None;
+			}
+
+			return it->second;
+		}
+
+		const char* ScriptFieldTypeToString(ScriptFieldType type)
+		{
+			switch (type)
+			{
+				case Origin::ScriptFieldType::None: return "None";
+				case Origin::ScriptFieldType::Float: return "Float";
+				case Origin::ScriptFieldType::Double: return "Double";
+				case Origin::ScriptFieldType::Bool: return "Boolean";
+				case Origin::ScriptFieldType::Char: return "Char";
+				case Origin::ScriptFieldType::Byte: return "Byte";
+				case Origin::ScriptFieldType::Short: return "Short";
+				case Origin::ScriptFieldType::Int: return "Int";
+				case Origin::ScriptFieldType::Long: return "Long";
+				case Origin::ScriptFieldType::UByte: return "UByte";
+				case Origin::ScriptFieldType::UShort: return "UShort";
+				case Origin::ScriptFieldType::UInt: return "UInt";
+				case Origin::ScriptFieldType::ULong: return "ULong";
+				case Origin::ScriptFieldType::Vector2: return "Vector2";
+				case Origin::ScriptFieldType::Vector3: return "Vector3";
+				case Origin::ScriptFieldType::Vector4: return "Vector4";
+				case Origin::ScriptFieldType::Entity: return "Entity";
+			}
+
+			OGN_CORE_ERROR("ScriptEngine::ScriptFieldTypeToString: Unkown Field Type");
+			return "<Invalid>";
+		}
 	}
 
 	struct ScriptEngineData
@@ -92,6 +157,8 @@ namespace Origin
 		MonoImage* AppAssemblyImage = nullptr;
 
 		ScriptClass EntityClass;
+
+		std::vector<std::string> EntityScriptStorage;
 
 		// Runtime
 		Scene* SceneContext = nullptr;
@@ -147,6 +214,10 @@ namespace Origin
 
 		LoadAssemblyClasses();
 
+		// storing classes name into storage
+		for (auto it : s_Data->EntityClasses)
+			s_Data->EntityScriptStorage.emplace_back(it.first);
+
 		ScriptGlue::RegisterComponents();
 		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 	}
@@ -182,6 +253,8 @@ namespace Origin
 			return false;
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
+		
+
 		return true;
 	}
 
@@ -216,7 +289,8 @@ namespace Origin
 	{
 		UUID& entityID = entity.GetUUID();
 
-		if (s_Data->EntityInstances.find(entityID) == s_Data->EntityInstances.end())
+		auto& it = s_Data->EntityInstances.find(entityID);
+		if (it == s_Data->EntityInstances.end())
 		{
 			OGN_CORE_WARN("Entity Script Instance not found!");
 			return;
@@ -229,6 +303,23 @@ namespace Origin
 	std::unordered_map<std::string, std::shared_ptr<ScriptClass>> ScriptEngine::GetEntityClasses()
 	{
 		return s_Data->EntityClasses;
+	}
+
+	std::vector<std::string> ScriptEngine::GetScriptClassStorage()
+	{
+		return s_Data->EntityScriptStorage;
+	}
+
+	std::shared_ptr<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
+	{
+		auto& it = s_Data->EntityInstances.find(uuid);
+		if (it == s_Data->EntityInstances.end())
+		{
+			OGN_CORE_ERROR("Script Instnce: Failed to find {} ", uuid);
+			return nullptr;
+		}
+
+		return it->second;
 	}
 
 	Scene* ScriptEngine::GetSceneContext()
@@ -280,7 +371,9 @@ namespace Origin
 			if (!isEntity)
 				continue;
 
-			s_Data->EntityClasses[fullName] = std::make_shared<ScriptClass>(nameSpace, className);
+			std::shared_ptr<ScriptClass> scriptClass = std::make_shared<ScriptClass>(nameSpace, className);
+
+			s_Data->EntityClasses[fullName] = scriptClass;
 
 			int fieldCount = mono_class_num_fields(monoClass);
 
@@ -293,10 +386,15 @@ namespace Origin
 				if (flags & FIELD_ATTRIBUTE_PUBLIC)
 				{
 					MonoType* type = mono_field_get_type(field);
-					OGN_CORE_WARN("{} {} is public", mono_type_get_name(type), fieldName);
+					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+					OGN_CORE_WARN("{} ({}) is public", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+
+					scriptClass->m_Fields[fieldName] = {fieldType, fieldName, field};
 				}
 			}
 		}
+
+		auto& entityClasses = s_Data->EntityClasses;
 	}
 
 	// Script Class
@@ -352,5 +450,31 @@ namespace Origin
 			void* param = &time;
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, &param);
 		}
+	}
+
+	bool ScriptInstance::GetFieldValueInternal(const std::string& name, void* buffer)
+	{
+		const auto& fields = m_ScriptClass->GetFields();
+		auto it = fields.find(name);
+		if (it == fields.end())
+			return false;
+
+		const ScriptField& field = it->second;
+		mono_field_get_value(m_Instance, field.ClassField, buffer);
+
+		return true;
+	}
+
+	bool ScriptInstance::SetFieldValueInternal(const std::string& name, const void* value)
+	{
+		const auto& fields = m_ScriptClass->GetFields();
+		auto it = fields.find(name);
+		if (it == fields.end())
+			return false;
+
+		const ScriptField& field = it->second;
+		mono_field_set_value(m_Instance, field.ClassField, (void*)value);
+
+		return true;
 	}
 }

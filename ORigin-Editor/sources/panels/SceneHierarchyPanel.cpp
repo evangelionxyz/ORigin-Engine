@@ -232,28 +232,24 @@ namespace Origin {
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
-		DrawComponent<ScriptComponent>("Script", entity, [](auto& component)
+		DrawComponent<ScriptComponent>("Script", entity, [entity](auto& component) mutable
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 
 				if (!scriptClassExist) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
-				auto& entityClasses = ScriptEngine::GetEntityClasses();
+				auto scriptStorage = ScriptEngine::GetScriptClassStorage();
 				std::string currentScriptClasses = component.ClassName;
-
-				std::vector<std::string> scriptClassesNameStorage;
-				for (auto& it : entityClasses)
-					scriptClassesNameStorage.emplace_back(it.first);
 
 				if (ImGui::BeginCombo("Script Class", currentScriptClasses.c_str()))
 				{
 					bool isSelected = false;
-					for (int i = 0; i < entityClasses.size(); i++)
+					for (int i = 0; i < scriptStorage.size(); i++)
 					{
-						isSelected = currentScriptClasses == scriptClassesNameStorage[i];
-						if (ImGui::Selectable(scriptClassesNameStorage[i].c_str(), isSelected))
+						isSelected = currentScriptClasses == scriptStorage[i];
+						if (ImGui::Selectable(scriptStorage[i].c_str(), isSelected))
 						{
-							currentScriptClasses = scriptClassesNameStorage[i];
-							component.ClassName = scriptClassesNameStorage[i];
+							currentScriptClasses = scriptStorage[i];
+							component.ClassName = scriptStorage[i];
 						}
 						if (isSelected) ImGui::SetItemDefaultFocus();
 					}
@@ -261,8 +257,25 @@ namespace Origin {
 				}
 				if (!scriptClassExist) ImGui::PopStyleColor();
 
-				if (ImGui::Button("Detach", ImVec2(80, 25)))
-					component.ClassName = "Detached";
+				if (ImGui::Button("Detach", ImVec2(80, 25))) component.ClassName = "Detached";
+
+				// fields
+				auto scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+				if (scriptInstance)
+				{
+					const auto& fields = scriptInstance->GetScriptClass()->GetFields();
+					for (const auto& [name, field] : fields)
+					{
+						if (field.Type == ScriptFieldType::Float)
+						{
+							float data = scriptInstance->GetFieldValue<float>(name);
+							if (ImGui::DragFloat(name.c_str(), &data, 1.0f))
+							{
+								scriptInstance->SetFieldValue(name, data);
+							}
+						}
+					}
+				}
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)

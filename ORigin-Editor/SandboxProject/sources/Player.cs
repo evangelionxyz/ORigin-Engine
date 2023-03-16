@@ -12,24 +12,28 @@ namespace Game
 
     public class Player : Entity
     {
-        public TransformComponent Transform;
-        public Rigidbody2DComponent Rigidbody2D;
+        private TransformComponent Transform;
+        private Rigidbody2DComponent Rigidbody2D;
 
         public float Speed;
         public Vector3 Vector;
+        public float time;
 
         void OnCreate()
         {
             Transform = GetComponent<TransformComponent>();
             Rigidbody2D = GetComponent<Rigidbody2DComponent>();
+            
+            Speed = 2.0f;
+            time = 0.0f;
         }
 
         void OnUpdate(float deltaTime)
         {
-            float speed = 5.0f;
+            time += deltaTime;
             Vector3 velocity = Vector3.Zero;
 
-            if (Translation.Y < 5.0f)
+            if (Translation.Y < 3.0f)
                 if (Input.IsKeyPressed(KeyCode.Space))
                     velocity.Y = 3.0f;
 
@@ -38,7 +42,7 @@ namespace Game
             else if (Input.IsKeyPressed(KeyCode.D))
                 velocity.X = 1.0f;
 
-            velocity *= speed * deltaTime;
+            velocity *= Speed * deltaTime;
             Rigidbody2D.ApplyLinearImpulse(velocity.XY, true);
 
             GlobalVariable.translation = Transform.Translation;

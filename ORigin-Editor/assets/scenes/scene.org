@@ -1,85 +1,5 @@
 Scene: scene.org
 Entities:
-  - Entity: 2093774505848521231
-    TagComponent:
-      Tag: Player
-    TransformComponent:
-      Translation: [-1.44447958, 0.627255678, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.533070743, 0.533070743, 0.533070743]
-    SpriteRenderer2DComponent:
-      Color: [0.481012642, 0.481012642, 0.481012642, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1.10000002
-      Friction: 0.449999988
-      Restitution: 0.449999988
-      RestitutionThreshold: 0.899999976
-    ScriptComponent:
-      ClassName: Game.Player
-  - Entity: 10163039406884030298
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [0, 0, 3.58169627]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 1
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 5
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-      FixedAspectRatio: false
-  - Entity: 16570915821059051854
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [0.256818593, 0.626265585, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.527999997, 0.527999997, 0.527999997]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 9978194220308888093
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [-2.23521233, -0.0884000957, 0]
-      Rotation: [0, 0, -0.422484279]
-      Scale: [6.50687551, 0.374252975, 0.999999881]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
   - Entity: 3832955182581467926
     TagComponent:
       Tag: Sprite
@@ -100,3 +20,83 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - Entity: 9978194220308888093
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-2.29026628, -0.509146214, 0]
+      Rotation: [0, 0, -0.270641178]
+      Scale: [6.50687504, 0.374252647, 0.999999881]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.58227843, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 16570915821059051854
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.256818593, 0.626265585, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.527999997, 0.527999997, 0.527999997]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 10163039406884030298
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 3.58169627]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 5
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 2093774505848521231
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-1.44447958, 0.627255678, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.266535372, 0.266535372, 0.266535372]
+    SpriteRenderer2DComponent:
+      Color: [0.481012642, 0.481012642, 0.481012642, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Game.Player
