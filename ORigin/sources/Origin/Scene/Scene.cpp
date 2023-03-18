@@ -629,6 +629,7 @@ namespace Origin {
 
 	void Scene::OnPhysics2DStart()
 	{
+		m_Running = true;
 		m_Box2DWorld = new b2World({ 0.0f, -9.8f });
 
 		auto view = m_Registry.view<Rigidbody2DComponent>();
@@ -685,6 +686,7 @@ namespace Origin {
 
 	void Scene::OnPhysics2DStop()
 	{
+		m_Running = false;
 		delete m_Box2DWorld;
 		m_Box2DWorld = nullptr;
 	}

@@ -34,7 +34,7 @@ namespace Origin
 		{"ORiginEngine.Vector2", ScriptFieldType::Vector2},
 		{"ORiginEngine.Vector3", ScriptFieldType::Vector3},
 		{"ORiginEngine.Vector4", ScriptFieldType::Vector4},
-		{"ORiginEngine.Entity", ScriptFieldType::Entity},
+		{"ORiginEngine.Entity",	ScriptFieldType::Entity},
 	};
 
 	namespace Utils
@@ -121,23 +121,23 @@ namespace Origin
 		{
 			switch (type)
 			{
-				case Origin::ScriptFieldType::None: return "None";
-				case Origin::ScriptFieldType::Float: return "Float";
-				case Origin::ScriptFieldType::Double: return "Double";
-				case Origin::ScriptFieldType::Bool: return "Boolean";
-				case Origin::ScriptFieldType::Char: return "Char";
-				case Origin::ScriptFieldType::Byte: return "Byte";
-				case Origin::ScriptFieldType::Short: return "Short";
-				case Origin::ScriptFieldType::Int: return "Int";
-				case Origin::ScriptFieldType::Long: return "Long";
-				case Origin::ScriptFieldType::UByte: return "UByte";
-				case Origin::ScriptFieldType::UShort: return "UShort";
-				case Origin::ScriptFieldType::UInt: return "UInt";
-				case Origin::ScriptFieldType::ULong: return "ULong";
+				case Origin::ScriptFieldType::None:		 return "None";
+				case Origin::ScriptFieldType::Float:	 return "Float";
+				case Origin::ScriptFieldType::Double:  return "Double";
+				case Origin::ScriptFieldType::Bool:		 return "Boolean";
+				case Origin::ScriptFieldType::Char:		 return "Char";
+				case Origin::ScriptFieldType::Byte:		 return "Byte";
+				case Origin::ScriptFieldType::Short:	 return "Short";
+				case Origin::ScriptFieldType::Int:		 return "Int";
+				case Origin::ScriptFieldType::Long:		 return "Long";
+				case Origin::ScriptFieldType::UByte:	 return "UByte";
+				case Origin::ScriptFieldType::UShort:  return "UShort";
+				case Origin::ScriptFieldType::UInt:		 return "UInt";
+				case Origin::ScriptFieldType::ULong:	 return "ULong";
 				case Origin::ScriptFieldType::Vector2: return "Vector2";
 				case Origin::ScriptFieldType::Vector3: return "Vector3";
 				case Origin::ScriptFieldType::Vector4: return "Vector4";
-				case Origin::ScriptFieldType::Entity: return "Entity";
+				case Origin::ScriptFieldType::Entity:	 return "Entity";
 			}
 
 			OGN_CORE_ERROR("ScriptEngine::ScriptFieldTypeToString: Unkown Field Type");
@@ -164,6 +164,8 @@ namespace Origin
 		Scene* SceneContext = nullptr;
 		std::unordered_map<std::string, std::shared_ptr<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, std::shared_ptr<ScriptInstance>> EntityInstances;
+
+		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 	};
 
 	ScriptEngineData* s_Data = nullptr;
@@ -279,8 +281,20 @@ namespace Origin
 		auto& sc = entity.GetComponent<ScriptComponent>();
 		if (EntityClassExists(sc.ClassName))
 		{
+			UUID entityID = entity.GetUUID();
+
 			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_Data->EntityClasses[sc.ClassName], entity);
-			s_Data->EntityInstances[entity.GetUUID()] = instance;
+			s_Data->EntityInstances[entityID] = instance;
+
+			// Copy Fields Value from Editor to Runtime
+			if (s_Data->EntityScriptFields.find(entityID) != s_Data->EntityScriptFields.end())
+			{
+				const ScriptFieldMap& fieldMap = s_Data->EntityScriptFields.at(entityID);
+				for (const auto& [name, fieldInstance] : fieldMap)
+					instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
+			}
+
+			// C# On Create Function
 			instance->InvokeOnCreate();
 		}
 	}
@@ -300,9 +314,25 @@ namespace Origin
 		instance->InvokeOnUpdate(time);
 	}
 
+	std::shared_ptr<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
+	{
+		if (s_Data->EntityClasses.find(name) == s_Data->EntityClasses.end())
+			return nullptr;
+
+		return s_Data->EntityClasses.at(name);
+	}
+
 	std::unordered_map<std::string, std::shared_ptr<ScriptClass>> ScriptEngine::GetEntityClasses()
 	{
 		return s_Data->EntityClasses;
+	}
+
+	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	{
+		OGN_CORE_ASSERT(entity, "ScriptEngine::GetScriptFieldMap: Failed to get entity");
+
+		UUID entityID = entity.GetUUID();
+		return s_Data->EntityScriptFields[entityID];
 	}
 
 	std::vector<std::string> ScriptEngine::GetScriptClassStorage()

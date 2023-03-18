@@ -1,54 +1,14 @@
 Scene: scene.org
 Entities:
-  - Entity: 3832955182581467926
+  - Entity: 2093774505848521231
     TagComponent:
-      Tag: Sprite
+      Tag: Player
     TransformComponent:
-      Translation: [1.60921645, 0.403684467, 0]
-      Rotation: [0, 0, -2.35696244]
-      Scale: [6.507164, 0.374252319, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 9978194220308888093
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [-2.29026628, -0.509146214, 0]
-      Rotation: [0, 0, -0.270641178]
-      Scale: [6.50687504, 0.374252647, 0.999999881]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 16570915821059051854
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [0.256818593, 0.626265585, 0]
+      Translation: [-1.44447958, 0.627255678, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.527999997, 0.527999997, 0.527999997]
+      Scale: [1, 1, 1]
     SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
+      Color: [0.481012642, 0.481012642, 0.481012642, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
       BodyType: Dynamic
@@ -56,10 +16,12 @@ Entities:
     BoxCollider2DComponent:
       Offset: [0, 0]
       Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
+      Density: 1.40999997
+      Friction: 1.07000005
+      Restitution: 0.720000029
+      RestitutionThreshold: 1.40999997
+    ScriptComponent:
+      ClassName: Game.Player
   - Entity: 10163039406884030298
     TagComponent:
       Tag: Camera
@@ -78,15 +40,55 @@ Entities:
         OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
-  - Entity: 2093774505848521231
+  - Entity: 9978194220308888093
     TagComponent:
-      Tag: Player
+      Tag: Sprite
     TransformComponent:
-      Translation: [-1.44447958, 0.627255678, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.266535372, 0.266535372, 0.266535372]
+      Translation: [-2.96906471, -1.18794656, 0]
+      Rotation: [0, 0, -0.270641565]
+      Scale: [17.8516178, 0.625600874, 1.67159986]
     SpriteRenderer2DComponent:
-      Color: [0.481012642, 0.481012642, 0.481012642, 1]
+      Color: [1, 0.58227843, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3832955182581467926
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [4.4375248, 0.177419901, 0]
+      Rotation: [0, 0, -2.35696268]
+      Scale: [12.4034567, 0.512725651, 1.37]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.58227843, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 13687578473926614854
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.256818593, 0.626265585, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
       BodyType: Dynamic
@@ -98,5 +100,3 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Game.Player

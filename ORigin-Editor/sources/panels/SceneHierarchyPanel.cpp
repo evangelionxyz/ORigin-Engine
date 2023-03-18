@@ -232,14 +232,17 @@ namespace Origin {
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
-		DrawComponent<ScriptComponent>("Script", entity, [entity](auto& component) mutable
+		DrawComponent<ScriptComponent>("Script", entity, [entity, scene = m_Context](auto& component) mutable
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 
-				if (!scriptClassExist) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+				if (!scriptClassExist)
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+
 				auto scriptStorage = ScriptEngine::GetScriptClassStorage();
 				std::string currentScriptClasses = component.ClassName;
 
+				// drop-down
 				if (ImGui::BeginCombo("Script Class", currentScriptClasses.c_str()))
 				{
 					bool isSelected = false;
@@ -255,27 +258,73 @@ namespace Origin {
 					}
 					ImGui::EndCombo();
 				}
-				if (!scriptClassExist) ImGui::PopStyleColor();
 
 				if (ImGui::Button("Detach", ImVec2(80, 25))) component.ClassName = "Detached";
 
 				// fields
-				auto scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-				if (scriptInstance)
+				bool isRunning = scene->isRunning();
+				if (isRunning)
 				{
-					const auto& fields = scriptInstance->GetScriptClass()->GetFields();
-					for (const auto& [name, field] : fields)
+					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+					if (scriptInstance)
 					{
-						if (field.Type == ScriptFieldType::Float)
+						auto& fields = scriptInstance->GetScriptClass()->GetFields();
+
+						for (const auto& [name, field] : fields)
 						{
-							float data = scriptInstance->GetFieldValue<float>(name);
-							if (ImGui::DragFloat(name.c_str(), &data, 1.0f))
+							if (field.Type == ScriptFieldType::Float)
 							{
-								scriptInstance->SetFieldValue(name, data);
+								float data = scriptInstance->GetFieldValue<float>(name);
+								if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
+								{
+									scriptInstance->SetFieldValue<float>(name, data);
+								}
+							}
+						}
+					}
+				} // !IsRunning
+				else
+				{
+					if (scriptClassExist)
+					{
+						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+						const auto& fields = entityClass->GetFields();
+						auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+
+						for (const auto& [name, field] : fields)
+						{
+							if (entityFields.find(name) != entityFields.end())
+							{
+								ScriptFieldInstance& scriptField = entityFields.at(name);
+
+								if (field.Type == ScriptFieldType::Float)
+								{
+									float data = scriptField.GetValue<float>();
+									if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
+									{
+										scriptField.SetValue<float>(data);
+									}
+								}
+							}
+							else
+							{
+								if (field.Type == ScriptFieldType::Float)
+								{
+									float data = 0.0f;
+									if (ImGui::DragFloat(name.c_str(), &data))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<float>(data);
+									}
+								}
 							}
 						}
 					}
 				}
+
+				if (!scriptClassExist) 
+					ImGui::PopStyleColor();
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)

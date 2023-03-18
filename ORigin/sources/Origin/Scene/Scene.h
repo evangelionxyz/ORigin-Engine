@@ -80,6 +80,8 @@ namespace Origin
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
 		void DrawIcon(EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture, TransformComponent& tc, bool rotate = true);
 
+		bool isRunning() const { return m_Running; }
+
 	private:
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
 		std::shared_ptr<Texture2D> m_CameraIcon, m_LightingIcon;
@@ -87,6 +89,7 @@ namespace Origin
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth, m_ViewportHeight = 0;
 		b2World* m_Box2DWorld;
+		bool m_Running = false;
 
 		friend class Entity;
 		friend class Editor;

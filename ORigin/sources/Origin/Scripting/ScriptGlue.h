@@ -9,6 +9,5 @@ namespace Origin
 	public:
 		static void RegisterComponents();
 		static void RegisterFunctions();
-
 	};
 }
