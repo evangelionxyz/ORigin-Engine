@@ -114,7 +114,6 @@ namespace Origin
 	{
 		std::string ClassName = "None";
 
-		// fields storage
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;

@@ -54,6 +54,7 @@ namespace Origin {
 		inline bool GetMinimized() { return m_Minimized; }
 		inline Window& GetWindow() { return *m_Window; }
 		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
+		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
 	private:
 		ApplicationSpecification m_Specification;

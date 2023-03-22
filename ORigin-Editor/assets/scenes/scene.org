@@ -22,6 +22,10 @@ Entities:
       RestitutionThreshold: 1.40999997
     ScriptComponent:
       ClassName: Game.Player
+      StoredFields:
+        - Name: Speed
+          Type: Float
+          Data: 15
   - Entity: 10163039406884030298
     TagComponent:
       Tag: Camera

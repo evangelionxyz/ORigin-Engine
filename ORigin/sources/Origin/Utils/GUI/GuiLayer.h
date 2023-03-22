@@ -17,14 +17,17 @@ namespace Origin {
 		GuiLayer() : Layer("Gui Layer") {}
 		~GuiLayer();
 
-		virtual void OnUpdate(Timestep ts) override;
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+		void OnUpdate(Timestep ts) override;
+		void OnAttach() override;
+		void OnDetach() override;
+		void OnEvent(Event& e) override;
+		void BlockEvents(bool block) { m_BlockEvents = block; }
 
 		void Begin();
 		void End();
 
 	private:
+		bool m_BlockEvents = false;
 		float m_Time = 0.0f;
 	};
 

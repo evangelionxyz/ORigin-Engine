@@ -19,6 +19,8 @@ namespace Origin
 		m_SceneViewportHovered = ImGui::IsWindowHovered();
 		m_SceneViewportFocused = ImGui::IsWindowFocused();
 
+		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered);
+
 		m_SceneHierarchy.SetHierarchyMenuActive(!ImGui::IsWindowFocused());
 
 		SceneViewportMenu();
@@ -151,7 +153,8 @@ namespace Origin
 		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
 			m_GizmosType = -1;
 
-		m_EditorCamera.EnableMovement(m_SceneViewportHovered && !ImGuizmo::IsUsing());
+		// TODO: Fixing Scene Viewport Events To Camera
+		m_EditorCamera.EnableMovement(!ImGuizmo::IsUsing());
 
 		ImGui::End();
 		ImGui::PopStyleVar();

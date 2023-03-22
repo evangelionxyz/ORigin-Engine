@@ -109,4 +109,14 @@ namespace Origin {
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
+
+	void GuiLayer::OnEvent(Event& e)
+	{
+		if(m_BlockEvents)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
+			e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+		}
+	}
 }

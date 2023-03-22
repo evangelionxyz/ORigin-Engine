@@ -116,33 +116,6 @@ namespace Origin
 
 			return it->second;
 		}
-
-		const char* ScriptFieldTypeToString(ScriptFieldType type)
-		{
-			switch (type)
-			{
-				case Origin::ScriptFieldType::None:		 return "None";
-				case Origin::ScriptFieldType::Float:	 return "Float";
-				case Origin::ScriptFieldType::Double:  return "Double";
-				case Origin::ScriptFieldType::Bool:		 return "Boolean";
-				case Origin::ScriptFieldType::Char:		 return "Char";
-				case Origin::ScriptFieldType::Byte:		 return "Byte";
-				case Origin::ScriptFieldType::Short:	 return "Short";
-				case Origin::ScriptFieldType::Int:		 return "Int";
-				case Origin::ScriptFieldType::Long:		 return "Long";
-				case Origin::ScriptFieldType::UByte:	 return "UByte";
-				case Origin::ScriptFieldType::UShort:  return "UShort";
-				case Origin::ScriptFieldType::UInt:		 return "UInt";
-				case Origin::ScriptFieldType::ULong:	 return "ULong";
-				case Origin::ScriptFieldType::Vector2: return "Vector2";
-				case Origin::ScriptFieldType::Vector3: return "Vector3";
-				case Origin::ScriptFieldType::Vector4: return "Vector4";
-				case Origin::ScriptFieldType::Entity:	 return "Entity";
-			}
-
-			OGN_CORE_ERROR("ScriptEngine::ScriptFieldTypeToString: Unkown Field Type");
-			return "<Invalid>";
-		}
 	}
 
 	struct ScriptEngineData
