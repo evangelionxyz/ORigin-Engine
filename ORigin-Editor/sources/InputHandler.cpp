@@ -42,7 +42,7 @@ namespace Origin
 		return false;
 	}
 
-	void Editor::InputProccedure(Timestep time)
+	void Editor::InputProcedure(Timestep time)
 	{
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{

@@ -82,7 +82,7 @@ namespace Origin
 
 		Renderer2D::ResetStats();
 		Renderer3D::ResetStats();
-		InputProccedure(time);
+		InputProcedure(time);
 
     // Resize
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
@@ -242,6 +242,7 @@ namespace Origin
     RenderCommand::SetLineWidth(2.3f);
     Renderer2D::EndScene();
 
+    // Visualizing Selecting Entity
 		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
     {
 			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -311,19 +312,15 @@ namespace Origin
 
 	void Editor::OnSceneStop()
   {
-    OGN_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate, "");
-
-    m_GizmosType = -1;
-
     if (m_SceneState == SceneState::Play)
       m_ActiveScene->OnRuntimeStop();
     else if(m_SceneState == SceneState::Simulate)
       m_ActiveScene->OnSimulationStop();
 
-    m_SceneState = SceneState::Edit;
+    m_SceneHierarchy.SetContext(m_EditorScene);
     m_ActiveScene = m_EditorScene;
 
-    m_SceneHierarchy.SetContext(m_ActiveScene);
+    m_SceneState = SceneState::Edit;
   }
 
 	void Editor::NewScene()
@@ -334,8 +331,6 @@ namespace Origin
 		m_GizmosType = -1;
 
     m_HoveredEntity = {};
-    m_SceneHierarchy.SetSelectedEntity({});
-
 		m_EditorScene = std::make_shared<Scene>();
 		m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
 		m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
@@ -350,7 +345,8 @@ namespace Origin
 	{
     if (!m_ScenePath.empty())
       SerializeScene(m_ActiveScene, m_ScenePath);
-    else SaveSceneAs();
+    else
+      SaveSceneAs();
 	}
 
 	void Editor::SaveSceneAs()
@@ -370,9 +366,7 @@ namespace Origin
 			OnSceneStop();
 
     m_GizmosType = -1;
-
     m_HoveredEntity = {};
-    m_SceneHierarchy.SetSelectedEntity({});
 
     std::shared_ptr<Scene> newScene = std::make_shared<Scene>();
     SceneSerializer serializer(newScene);
@@ -381,6 +375,8 @@ namespace Origin
       m_EditorScene = newScene;
       m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
 			m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+
+      m_SceneHierarchy.SetSelectedEntity({});
       m_SceneHierarchy.SetContext(m_EditorScene);
 
       m_ActiveScene = m_EditorScene;

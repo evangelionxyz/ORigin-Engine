@@ -19,16 +19,31 @@ namespace Origin {
 		SetContext(context);
 	}
 
+	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
+	{
+		return m_SelectedEntity = entity;
+	}
+
 	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context)
 	{
+		// set new scene
 		m_Context = context;
-		m_SelectionContext = {};
+
+		// Recieve selected entity from new scene
+		if (!m_SelectedEntity)
+			return;
+
+		auto entityID = m_SelectedEntity.GetUUID();
+		auto newEntity = m_Context->GetEntityWithUUID(entityID);
+
+		if (entityID == newEntity.GetUUID())
+			m_SelectedEntity = newEntity;
 	}
 
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
 		m_Context->DestroyEntity(entity);
-		m_SelectionContext = {};
+		m_SelectedEntity = {};
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -47,7 +62,7 @@ namespace Origin {
 			});
 
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-				m_SelectionContext = {};
+				m_SelectedEntity = {};
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
@@ -85,8 +100,8 @@ namespace Origin {
 
 		// Properties
 		ImGui::Begin("Properties");
-		if (m_SelectionContext)
-			DrawComponents(m_SelectionContext);
+		if (m_SelectedEntity)
+			DrawComponents(m_SelectedEntity);
 		ImGui::End(); // !Properties
 	}
 
@@ -94,11 +109,11 @@ namespace Origin {
 	{
 		auto& tagComponent = entity.GetComponent<TagComponent>().Tag;
 
-		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tagComponent.c_str());
 
-		if (ImGui::IsItemClicked()) m_SelectionContext = entity;
+		if (ImGui::IsItemClicked()) m_SelectedEntity = entity;
 
 		// destroy entity
 		if (ImGui::BeginPopupContextItem())
@@ -106,7 +121,7 @@ namespace Origin {
 			if (ImGui::MenuItem("Delete Entity"))
 			{
 				m_Context->DestroyEntity(entity);
-				m_SelectionContext = {};
+				m_SelectedEntity = {};
 			}
 			ImGui::EndPopup();
 		}
@@ -163,14 +178,14 @@ namespace Origin {
 		ImGui::PopItemWidth();
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
-			{
-				DrawVec3Control("Translation", component.Translation);
+		{
+			DrawVec3Control("Translation", component.Translation);
 
-				glm::vec3 rotation = glm::degrees(component.Rotation);
-				DrawVec3Control("Rotation", rotation, 1.0f);
-				component.Rotation = glm::radians(rotation);
-				DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
-			});
+			glm::vec3 rotation = glm::degrees(component.Rotation);
+			DrawVec3Control("Rotation", rotation, 1.0f);
+			component.Rotation = glm::radians(rotation);
+			DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
+		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
@@ -323,7 +338,7 @@ namespace Origin {
 					}
 				}
 
-				if (!scriptClassExist) 
+				if (!scriptClassExist)
 					ImGui::PopStyleColor();
 			});
 
@@ -458,11 +473,11 @@ namespace Origin {
 
 	template<typename T>
 	void SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName) {
-		if (!m_SelectionContext.HasComponent<T>())
+		if (!m_SelectedEntity.HasComponent<T>())
 		{
 			if (ImGui::MenuItem(entryName.c_str()))
 			{
-				m_SelectionContext.AddComponent<T>();
+				m_SelectedEntity.AddComponent<T>();
 				ImGui::CloseCurrentPopup();
 			}
 		}

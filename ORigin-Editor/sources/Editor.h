@@ -57,7 +57,7 @@ namespace Origin {
     void OnEvent(Event& e) override;
     bool OnKeyPressed(KeyPressedEvent& e);
     bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-    void InputProccedure(Timestep time);
+    void InputProcedure(Timestep time);
     void OnGuiRender() override;
 
     void OnScenePlay();
@@ -88,7 +88,6 @@ namespace Origin {
 
     enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
 		ViewportMenuContext m_VpMenuContext = ViewportMenuContext::CreateMenu;
-		static const char* MenuContextToString(const ViewportMenuContext& context);
 		bool VpMenuContextActive;
 
     glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);

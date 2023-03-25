@@ -12,7 +12,6 @@
 
 #include <ImGuizmo.h>
 
-
 namespace Origin {
 
 	void GuiLayer::OnAttach()
@@ -21,34 +20,10 @@ namespace Origin {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGuiStyle& style = ImGui::GetStyle();
-
-		//ImGui::StyleColorsLight();
-		//ImGui::StyleColorsClassic();
 		ImGui::StyleColorsDark();
 
 		float fontSize = 16.0f;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/segoeui.ttf", fontSize);
-
-		/*{
-			style.FrameRounding = 3.0f;
-			style.ChildRounding = 3.0f;
-			style.GrabRounding = 3.0f;
-			style.PopupRounding = 3.0f;
-			style.ScrollbarRounding = 3.0f;
-			style.TabRounding = 3.0f;
-			style.WindowRounding = 3.0f;
-
-			style.ItemSpacing = ImVec2(4.0f, 3.0f);
-			style.WindowBorderSize = 0.0f;
-			style.ChildBorderSize = 0.0f;
-			style.PopupBorderSize = 1.0f;
-			style.FrameBorderSize = 0.0f;
-
-			style.CellPadding = ImVec2(0.0f, 0.0f);
-			style.FramePadding = ImVec2(1.0f, 1.0f);
-			style.WindowPadding = ImVec2(1.0f, 2.0f);
-			style.ItemInnerSpacing = ImVec2(2.0f, 2.0f);
-		}*/
 
 		style.ScrollbarSize = 10.0f;
 		style.GrabMinSize = 12.0f;

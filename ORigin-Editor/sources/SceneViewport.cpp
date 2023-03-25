@@ -163,7 +163,6 @@ namespace Origin
 	void Editor::SceneViewportToolbar()
 	{
 		ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		ImVec2& viewportOffset = ImGui::GetWindowPos();
 
 		const float& wndWidth = ImGui::GetWindowWidth();
@@ -198,12 +197,10 @@ namespace Origin
 					{
 						if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
 						{
-							m_HoveredEntity = {};
 							OnScenePlay();
 						}
 						else if (m_SceneState == SceneState::Play)
 						{
-							m_HoveredEntity = {};
 							OnSceneStop();
 						}
 					}
@@ -223,12 +220,10 @@ namespace Origin
 					{
 						if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
 						{
-							m_HoveredEntity = {};
 							OnSceneSimulate();
 						}
 						else if (m_SceneState == SceneState::Simulate)
 						{
-							m_HoveredEntity = {};
 							OnSceneStop();
 						}
 					}
