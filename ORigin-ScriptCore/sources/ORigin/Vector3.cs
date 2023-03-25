@@ -32,22 +32,22 @@ namespace ORiginEngine
 
         public static Vector3 Zero => new Vector3(0.0f);
 
-        public static Vector3 operator* (Vector3 vector, float scalar)
+        public static Vector3 operator *(Vector3 vector, float scalar)
         {
             return new Vector3(vector.X * scalar, vector.Y * scalar, vector.Z * scalar);
         }
 
-        public static Vector3 operator/ (Vector3 vector, float scalar)
+        public static Vector3 operator /(Vector3 vector, float scalar)
         {
             return new Vector3(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
         }
 
-        public static Vector3 operator+ (Vector3 vectorA, Vector3 vectorB)
+        public static Vector3 operator +(Vector3 vectorA, Vector3 vectorB)
         {
             return new Vector3(vectorA.X + vectorB.X, vectorA.Y + vectorB.Y, vectorA.Z + vectorB.Z);
         }
 
-        public static Vector3 operator- (Vector3 vectorA, Vector3 vectorB)
+        public static Vector3 operator -(Vector3 vectorA, Vector3 vectorB)
         {
             return new Vector3(vectorA.X - vectorB.X, vectorA.Y - vectorB.Y, vectorA.Z - vectorB.Z);
         }

@@ -18,8 +18,9 @@ namespace Origin
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const std::shared_ptr<Scene>& context);
 
-		Entity SetSelectedEntity(Entity entity) { return m_SelectionContext = entity; }
-		Entity GetSelectedEntity() const { return m_SelectionContext; }
+		Entity SetSelectedEntity(Entity entity);
+
+		Entity GetSelectedEntity() const { return m_SelectedEntity; }
 		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
 		bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
 		void SetContext(const std::shared_ptr<Scene>& context);
@@ -36,7 +37,7 @@ namespace Origin
 		void DrawComponents(Entity entity);
 	private:
 		std::shared_ptr<Scene> m_Context;
-		Entity m_SelectionContext;
+		Entity m_SelectedEntity;
 
 		std::shared_ptr<Texture2D> m_NoTextureButton;
 	};

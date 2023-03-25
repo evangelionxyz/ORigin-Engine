@@ -20,22 +20,22 @@ namespace ORiginEngine
 
         public static Vector2 Zero => new Vector2(0.0f);
 
-        public static Vector2 operator* (Vector2 vector, float scalar)
+        public static Vector2 operator *(Vector2 vector, float scalar)
         {
             return new Vector2(vector.X * scalar, vector.Y * scalar);
         }
 
-        public static Vector2 operator/ (Vector2 vector, float scalar)
+        public static Vector2 operator /(Vector2 vector, float scalar)
         {
             return new Vector2(vector.X / scalar, vector.Y / scalar);
         }
 
-        public static Vector2 operator+ (Vector2 vectorA, Vector2 vectorB)
+        public static Vector2 operator +(Vector2 vectorA, Vector2 vectorB)
         {
             return new Vector2(vectorA.X + vectorB.X, vectorA.Y + vectorB.Y);
         }
 
-        public static Vector2 operator- (Vector2 vectorA, Vector2 vectorB)
+        public static Vector2 operator -(Vector2 vectorA, Vector2 vectorB)
         {
             return new Vector2(vectorA.X - vectorB.X, vectorA.Y - vectorB.Y);
         }

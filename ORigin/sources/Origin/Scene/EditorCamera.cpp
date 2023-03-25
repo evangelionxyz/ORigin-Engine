@@ -54,8 +54,8 @@ namespace Origin {
 	{
 		float speed = (m_Distance * m_Distance) * 0.2f;
 
-		speed = std::max(speed, 3.0f); // min speed = 2
-		speed = std::min(speed, 100.0f); // max speed = 100
+		speed = std::max(speed, 3.0f);
+		speed = std::min(speed, 100.0f);
 
 		return speed;
 	}
@@ -79,6 +79,7 @@ namespace Origin {
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MousePan(delta);
 		}
+		
 		UpdateView();
 	}
 

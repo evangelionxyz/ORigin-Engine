@@ -48,6 +48,7 @@ namespace Origin {
 		void UpdateProjection();
 		void UpdateView();
 
+		// Event
 		bool OnMouseScroll(MouseScrolledEvent& e);
 
 		void MousePan(const glm::vec2& delta);
@@ -72,5 +73,4 @@ namespace Origin {
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 	};
-
 }
