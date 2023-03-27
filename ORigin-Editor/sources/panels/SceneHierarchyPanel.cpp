@@ -24,12 +24,18 @@ namespace Origin {
 		return m_SelectedEntity = entity;
 	}
 
-	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context)
+	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context, bool reset)
 	{
+		// reset scene
+		if (reset)
+		{
+			m_SelectedEntity = {};
+		}
+
 		// set new scene
 		m_Context = context;
 
-		// Recieve selected entity from new scene
+		// recieve selected entity from new scene
 		if (!m_SelectedEntity)
 			return;
 

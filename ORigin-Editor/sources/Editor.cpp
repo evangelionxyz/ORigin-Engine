@@ -342,17 +342,10 @@ namespace Origin
 		if (m_SceneState == SceneState::Play)
 			OnSceneStop();
 
-		m_GizmosType = -1;
-
-    m_HoveredEntity = {};
 		m_EditorScene = std::make_shared<Scene>();
-		m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
-      static_cast<uint32_t>(m_SceneViewportSize.y));
-		m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-
 		m_SceneHierarchy.SetContext(m_EditorScene);
-    m_ActiveScene = m_EditorScene;
 
+    m_ActiveScene = m_EditorScene;
     m_ScenePath = std::filesystem::path();
   }
 
@@ -380,20 +373,12 @@ namespace Origin
 		if (m_SceneState == SceneState::Play)
 			OnSceneStop();
 
-    m_GizmosType = -1;
-    m_HoveredEntity = {};
-
     std::shared_ptr<Scene> newScene = std::make_shared<Scene>();
     SceneSerializer serializer(newScene);
     if (serializer.Deserialize(path.string()))
     {
       m_EditorScene = newScene;
-      m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
-        static_cast<uint32_t>(m_SceneViewportSize.y));
-			m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-
-      m_SceneHierarchy.SetSelectedEntity({});
-      m_SceneHierarchy.SetContext(m_EditorScene);
+      m_SceneHierarchy.SetContext(m_EditorScene, true);
 
       m_ActiveScene = m_EditorScene;
       m_ScenePath = path;
