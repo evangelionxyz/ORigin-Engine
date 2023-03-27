@@ -1,61 +1,59 @@
 Scene: scene.org
 Entities:
-  - Entity: 2093774505848521231
+  - Entity: 2435099613109741254
     TagComponent:
-      Tag: Player
+      Tag: Circle
     TransformComponent:
-      Translation: [-1.44447958, 0.627255678, 0]
+      Translation: [1.25035703, -1.34468102, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.481012642, 0.481012642, 0.481012642, 1]
-      TillingFactor: 1
+      Scale: [3.6145997, 3.6145997, 3.6145997]
+    CircleRendererComponent:
+      Color: [1, 1, 1, 1]
+      Fade: 0
+      Thickness: 0.174999997
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 13938741839783394602
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Translation: [5.55466843, 4.25771332, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1.15667188, 1.15667188, 1.15667188]
+    CircleRendererComponent:
+      Color: [1, 0, 0, 1]
+      Fade: 0
+      Thickness: 0.174999997
     Rigidbody2DComponent:
       BodyType: Dynamic
       FixedRotation: false
-    BoxCollider2DComponent:
+    CircleCollider2DComponent:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1.40999997
-      Friction: 1.07000005
-      Restitution: 0.720000029
-      RestitutionThreshold: 1.40999997
-    ScriptComponent:
-      ClassName: Game.Player
-      StoredFields:
-        - Name: Speed
-          Type: Float
-          Data: 15
-  - Entity: 10163039406884030298
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [0, 0, 3.58169627]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 1
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 5
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-      FixedAspectRatio: false
-  - Entity: 9978194220308888093
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 13687578473926614854
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [-2.96906471, -1.18794656, 0]
-      Rotation: [0, 0, -0.270641565]
-      Scale: [17.8516178, 0.625600874, 1.67159986]
+      Translation: [0.256818593, 0.626265585, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
     SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
+      Color: [1, 1, 1, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
-      BodyType: Static
+      BodyType: Dynamic
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
@@ -84,18 +82,18 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 13687578473926614854
+  - Entity: 9978194220308888093
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [0.256818593, 0.626265585, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [-2.96906471, -1.18794656, 0]
+      Rotation: [0, 0, -0.270641565]
+      Scale: [17.8516178, 0.625600874, 1.67159986]
     SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
+      Color: [1, 0.58227843, 0, 1]
       TillingFactor: 1
     Rigidbody2DComponent:
-      BodyType: Dynamic
+      BodyType: Static
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
@@ -104,3 +102,49 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - Entity: 10163039406884030298
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 3.58169627]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 5
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Game.Camera
+      StoredFields:
+        []
+  - Entity: 2093774505848521231
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-1.44447958, 0.627255678, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.481012642, 0.481012642, 0.481012642, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 0.800000012
+      Friction: 0.5
+      Restitution: 1
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Game.Player
+      StoredFields:
+        []

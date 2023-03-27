@@ -63,7 +63,10 @@ filter "system:windows"
     }
 
 filter "configurations:Debug"
-    defines "OGN_DEBUG"
+    defines {
+        "OGN_DEBUG",
+        "_DEBUG"
+    }
     runtime "Debug"
     symbols "On"
     links

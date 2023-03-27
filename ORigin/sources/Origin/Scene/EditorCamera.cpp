@@ -26,6 +26,13 @@ namespace Origin {
 		m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
 	}
 
+	void EditorCamera::SetViewportSize(float width, float height)
+	{
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+		UpdateProjection();
+	}
+
 	void EditorCamera::UpdateView()
 	{
 		m_Position = CalculatePosition();
@@ -79,7 +86,6 @@ namespace Origin {
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MousePan(delta);
 		}
-		
 		UpdateView();
 	}
 
@@ -146,5 +152,4 @@ namespace Origin {
 	{
 		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
 	}
-
 }

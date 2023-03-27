@@ -46,7 +46,7 @@ namespace Origin
 		{
 			memset(m_Buffer, 0, sizeof(m_Buffer));
 		}
-		
+
 		template<typename T>
 		T GetValue()
 		{
@@ -100,6 +100,7 @@ namespace Origin
 		void InvokeOnUpdate(float time);
 
 		std::shared_ptr<ScriptClass> GetScriptClass() { return m_ScriptClass; }
+		MonoObject* GetMonoObject() { return m_Instance; }
 
 		template<typename T>
 		T GetFieldValue(const std::string& name)
@@ -163,6 +164,8 @@ namespace Origin
 		static Scene* GetSceneContext();
 		static MonoImage* GetCoreAssemblyImage();
 
+		static MonoObject* GetManagedInstance(UUID uuid);
+
 	private:
 		static void InitMono();
 		static void ShutdownMono();
@@ -221,6 +224,7 @@ namespace Origin
 			if (type == "Vec3")		return ScriptFieldType::Vector3;
 			if (type == "Vec4")		return ScriptFieldType::Vector4;
 			if (type == "Entity")	return ScriptFieldType::Entity;
+
 			return ScriptFieldType::None;
 		}
 	}

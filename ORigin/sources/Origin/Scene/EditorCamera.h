@@ -20,27 +20,25 @@ namespace Origin {
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& e);
 
-		inline float GetDistance() const { return m_Distance; }
+		void SetPosition(glm::vec3 position) { m_Position = position; }
+		void SetViewportSize(float width, float height);
 		inline void SetDistance(float distance) { m_Distance = distance; }
-
-		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
+		inline void SetPitch(float pitch) { m_Pitch = pitch; }
+		inline void SetYaw(float yaw) { m_Yaw = yaw; }
+		inline void SetFov(float fov) { m_FOV = fov; }
 
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		glm::mat4 GetViewProjection() const { return m_Projection * m_ViewMatrix; }
-
+		inline float GetDistance() const { return m_Distance; }
 		glm::vec3 GetUpDirection() const;
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;
-		void SetPosition(glm::vec3 position) { m_Position = position; }
 		glm::quat GetOrientation() const;
 
 		float GetPitch() const { return m_Pitch; }
-		inline void SetPitch(float pitch) { m_Pitch = pitch; }
 		float GetYaw() const { return m_Yaw; }
-		inline void SetYaw(float yaw) { m_Yaw = yaw; }
 		void EnableMovement(bool enable) { m_EnableMovement = enable; }
 		bool IsActive() { return m_EnableMovement; }
-		inline void SetFov(float fov) { m_FOV = fov; }
 
 		float GetZoomSpeed() { return ZoomSpeed(); }
 
@@ -56,11 +54,10 @@ namespace Origin {
 		void MouseZoom(float delta);
 
 		glm::vec3 CalculatePosition() const;
-
 		std::pair<float, float> PanSpeed() const;
 		float RotationSpeed() const;
 		float ZoomSpeed() const;
-	private:
+
 		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 		bool m_EnableMovement;
 

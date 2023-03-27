@@ -58,7 +58,6 @@ links {
     "%{Library.VulkanUtils}",
 
     "%{Library.MONO}"
-    
 }
 
 filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
@@ -75,37 +74,43 @@ links
     "%{Library.BCrypt}"
 }
 
-
 filter "configurations:Debug"
-defines "OGN_DEBUG"
-runtime "Debug"
-symbols "On"
-links
-{
-    "%{Library.ShaderC_Debug}",
-    "%{Library.SPIRV_Cross_Debug}",
-    "%{Library.SPIRV_Cross_GLSL_Debug}",
-    "%{Library.SPIRV_Tools_Debug}",
-}
+    defines {
+        "OGN_DEBUG",
+        "_DEBUG"
+    }
+    runtime "Debug"
+    symbols "On"
+    links
+    {
+        "%{Library.ShaderC_Debug}",
+        "%{Library.SPIRV_Cross_Debug}",
+        "%{Library.SPIRV_Cross_GLSL_Debug}",
+        "%{Library.SPIRV_Tools_Debug}",
+    }
 
 filter "configurations:Release"
-defines "OGN_RELEASE"
-runtime "Release"
-optimize "On"
-links
-{
-    "%{Library.ShaderC_Release}",
-    "%{Library.SPIRV_Cross_Release}",
-    "%{Library.SPIRV_Cross_GLSL_Release}",
-}
+    defines {
+        "OGN_RELEASE"
+    }
+    runtime "Release"
+    optimize "On"
+    links
+    {
+        "%{Library.ShaderC_Release}",
+        "%{Library.SPIRV_Cross_Release}",
+        "%{Library.SPIRV_Cross_GLSL_Release}",
+    }
 
 filter "configurations:Dist"
-defines "OGN_DIST"
-runtime "Release"
-optimize "On"
-links
-{
-    "%{Library.ShaderC_Release}",
-    "%{Library.SPIRV_Cross_Release}",
-    "%{Library.SPIRV_Cross_GLSL_Release}",
-}
+    defines  {
+        "OGN_DIST"
+    }
+    runtime "Release"
+    optimize "On"
+    links
+    {
+        "%{Library.ShaderC_Release}",
+        "%{Library.SPIRV_Cross_Release}",
+        "%{Library.SPIRV_Cross_GLSL_Release}",
+    }

@@ -4,11 +4,11 @@
 
 #include "Origin/EntryPoint.h"
 #include "panels/EditorTheme.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Scene/SceneSerializer.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <filesystem>
 
 namespace Origin
@@ -118,6 +118,7 @@ namespace Origin
       break;
     }
 
+#if 0
     auto& [mx, my] = ImGui::GetMousePos();
     mx -= m_SceneViewportBounds[0].x;
     my -= m_SceneViewportBounds[0].y;
@@ -131,6 +132,19 @@ namespace Origin
       m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
       m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, m_ActiveScene.get());
     }
+#endif
+
+    auto& [mx, my] = ImGui::GetMousePos();
+    glm::vec2 mousePos = { mx, my };
+    mousePos -= m_SceneViewportBounds[0];
+    const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+    mousePos.y = viewportSize.y - mousePos.y;
+    mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
+    mouseX = static_cast<int>(mousePos.x);
+    mouseY = static_cast<int>(mousePos.y);
+
+    m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+    m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
 
     OnOverlayRenderer();
     m_Framebuffer->Unbind();
@@ -332,7 +346,8 @@ namespace Origin
 
     m_HoveredEntity = {};
 		m_EditorScene = std::make_shared<Scene>();
-		m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+		m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
+      static_cast<uint32_t>(m_SceneViewportSize.y));
 		m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
 
 		m_SceneHierarchy.SetContext(m_EditorScene);
@@ -373,7 +388,8 @@ namespace Origin
     if (serializer.Deserialize(path.string()))
     {
       m_EditorScene = newScene;
-      m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+      m_EditorScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
+        static_cast<uint32_t>(m_SceneViewportSize.y));
 			m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
 
       m_SceneHierarchy.SetSelectedEntity({});

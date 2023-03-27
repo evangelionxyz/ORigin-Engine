@@ -1,26 +1,23 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-using System;
 using ORiginEngine;
 
 namespace Game
 {
     public class Camera : Entity
     {
-        private TransformComponent Transform;
-        private Vector3 playerTranslation = new Vector3();
+        private Entity player;
+        public float distance = 5.0f;
+
         void OnCreate()
         {
-            Transform = GetComponent<TransformComponent>();
+            player = FindEntityByName("Player");
         }
 
         void OnUpdate(float deltaTime)
         {
-            playerTranslation.X = GlobalVariable.translation.X;
-            playerTranslation.Y = GlobalVariable.translation.Y;
-            playerTranslation.Z = Transform.Translation.Z;
-
-            Transform.Translation = playerTranslation;
+            if(player != null)
+                Translation = new Vector3(player.Translation.XY, distance);
         }
     }
 }

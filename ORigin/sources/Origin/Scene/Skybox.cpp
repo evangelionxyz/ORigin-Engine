@@ -25,12 +25,12 @@ namespace Origin
 
 		float vertices[] = {
 
-			 1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f, // 0 [RIGHT] top left	
+			 1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f, // 0 [RIGHT] top left
 			 1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  1.0f, // 1 [RIGHT] top right
 			 1.0f, -1.0f, -1.0f,  1.0f, -1.0f,  1.0f, // 2 [RIGHT] bottom right
 			 1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f, // 3 [RIGHT] bottom left
 
-			-1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f, // 4 [LEFT] top left	
+			-1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f, // 4 [LEFT] top left
 			-1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f, // 5 [LEFT] top right
 			-1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f, // 6 [LEFT] bottom right
 			-1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, // 7 [LEFT] bottom left
@@ -119,7 +119,7 @@ namespace Origin
 			case 3:
 				internalFormat = GL_RGB8;
 				dataFormat = GL_RGB;
-				
+
 				break;
 
 			case 4:
@@ -128,7 +128,7 @@ namespace Origin
 				break;
 			}
 
-			if (data) 
+			if (data)
 			{
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
 				stbi_image_free(data);

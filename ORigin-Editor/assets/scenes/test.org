@@ -22,7 +22,7 @@ Entities:
       RestitutionThreshold: 0.5
   - Entity: 9709789437813907230
     TagComponent:
-      Tag: Sprite
+      Tag: Player
     TransformComponent:
       Translation: [0, 1.02288973, 0]
       Rotation: [0, 0, 0]
@@ -43,6 +43,26 @@ Entities:
     ScriptComponent:
       ClassName: Game.Player
       StoredFields:
-        - Name: Speed
-          Type: Float
-          Data: 15
+        []
+  - Entity: 597658526811535591
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Game.Camera
+      StoredFields:
+        []

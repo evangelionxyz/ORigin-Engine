@@ -25,6 +25,38 @@ namespace Origin
 
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 
+	// Entity
+	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "");
+		return s_EntityHasComponentFuncs.at(managedType)(entity);
+	}
+
+	static uint64_t Entity_FindEntityByName(MonoString* name)
+	{
+		char* nameCStr = mono_string_to_utf8(name);
+
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+
+		Entity entity = scene->FindEntityByName(nameCStr);
+		mono_free(nameCStr);
+
+		if (!entity)
+		{
+			OGN_CORE_WARN("Invalid Entity");
+			return 0;
+		}
+
+		return entity.GetUUID();
+	}
+
+	// Logging
 	static void NativeLog(MonoString* string, int parameter)
 	{
 		char* cStr = mono_string_to_utf8(string);
@@ -43,19 +75,16 @@ namespace Origin
 		return glm::dot(*parameter, *parameter);
 	}
 
-	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType)
+	// Component
+	static MonoObject* GetScriptInstance(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		Entity entity = scene->GetEntityWithUUID(entityID);
-
-		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "");
-		return s_EntityHasComponentFuncs.at(managedType)(entity);
+		return ScriptEngine::GetManagedInstance(entityID);
 	}
 
 	static void TransformComponent_GetTranslation(UUID entityID, glm::vec3* outTranslation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outTranslation = entity.GetComponent<TransformComponent>().Translation;
@@ -64,6 +93,7 @@ namespace Origin
 	static void TransformComponent_SetTranslation(UUID entityID, glm::vec3* translation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<TransformComponent>().Translation = *translation;
@@ -72,6 +102,7 @@ namespace Origin
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* point, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
@@ -82,6 +113,7 @@ namespace Origin
 	static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(UUID entityID, glm::vec2* impulse, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
@@ -130,17 +162,22 @@ namespace Origin
 
 	void ScriptGlue::RegisterFunctions()
 	{
+		// Entity
+		OGN_ADD_INTERNAL_CALLS(Entity_FindEntityByName);
+		OGN_ADD_INTERNAL_CALLS(Entity_HasComponent);
+
+		// Logging
 		OGN_ADD_INTERNAL_CALLS(NativeLog);
 		OGN_ADD_INTERNAL_CALLS(NativeLog_Vector);
 		OGN_ADD_INTERNAL_CALLS(NativeLog_VectorDot);
-
-		OGN_ADD_INTERNAL_CALLS(Entity_HasComponent);
 
 		// Components
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetTranslation);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
+
+		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
 	}

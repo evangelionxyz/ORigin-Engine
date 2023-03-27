@@ -59,6 +59,7 @@ namespace Origin
 		void SetGrid(int size, glm::vec4 color);
 
 		Entity GetEntityWithUUID(UUID uuid);
+		Entity FindEntityByName(std::string_view name);
 
 		template<typename... Components>
 		auto GetAllEntitiesWith()

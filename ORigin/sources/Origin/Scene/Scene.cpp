@@ -458,7 +458,7 @@ namespace Origin {
 			auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(entity);
 			Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)entity);
 		}
-		
+
 		Renderer::EndScene();
 	}
 
@@ -564,6 +564,9 @@ namespace Origin {
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
+		if (m_ViewportHeight == height && m_ViewportWidth == width)
+			return;
+
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
@@ -611,6 +614,19 @@ namespace Origin {
 	{
 		if (m_EntityMap.find(uuid) != m_EntityMap.end())
 			return { m_EntityMap.at(uuid), this };
+
+		return {};
+	}
+
+	Entity Scene::FindEntityByName(std::string_view name)
+	{
+		auto view = m_Registry.view<TagComponent>();
+		for (auto entity : view)
+		{
+			const TagComponent& tc = view.get<TagComponent>(entity);
+			if (tc.Tag == name)
+				return Entity{ entity, this };
+		}
 
 		return {};
 	}

@@ -50,16 +50,19 @@ filter "system:windows"
 systemversion "latest"
 
 filter "configurations:Debug"
-defines "OGN_DEBUG"
-runtime "Debug"
-symbols "On"
+    defines {
+            "OGN_DEBUG",
+            "_DEBUG"
+        }
+    runtime "Debug"
+    symbols "On"
 
 filter "configurations:Release"
-defines "OGN_RELEASE"
-runtime "Release"
-optimize "On"
+    defines "OGN_RELEASE"
+    runtime "Release"
+    optimize "On"
 
 filter "configurations:Dist"
-defines "OGN_DIST"
-runtime "Release"
-optimize "On"
+    defines "OGN_DIST"
+    runtime "Release"
+    optimize "On"

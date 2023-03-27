@@ -5,11 +5,6 @@ using ORiginEngine;
 
 namespace Game
 {
-    public static class GlobalVariable
-    {
-        public static Vector3 translation = new Vector3();
-    }
-
     public class Player : Entity
     {
         private TransformComponent Transform;
@@ -44,10 +39,18 @@ namespace Game
             else if (Input.IsKeyPressed(KeyCode.D))
                 velocity.X = 1.0f;
 
+            Entity cameraEntity = FindEntityByName("Camera");
+            if(cameraEntity != null)
+            {
+                Camera camera = cameraEntity.As<Camera>();
+                if (Input.IsKeyPressed(KeyCode.Q))
+                    camera.distance -= 2.0f * speed * deltaTime;
+                else if (Input.IsKeyPressed(KeyCode.E))
+                    camera.distance += 2.0f * speed * deltaTime;
+            }
+
             velocity *= speed * deltaTime;
             Rigidbody2D.ApplyLinearImpulse(velocity.XY, true);
-
-            GlobalVariable.translation = Transform.Translation;
         }
     }
 }

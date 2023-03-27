@@ -228,7 +228,7 @@ namespace Origin
 			return false;
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
-		
+
 
 		return true;
 	}
@@ -333,6 +333,14 @@ namespace Origin
 	MonoImage* ScriptEngine::GetCoreAssemblyImage()
 	{
 		return s_Data->CoreAssemblyImage;
+	}
+
+	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
+	{
+		OGN_CORE_ASSERT(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end(),
+			"Invalid Script Instance");
+
+		return s_Data->EntityInstances.at(uuid)->GetMonoObject();
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
