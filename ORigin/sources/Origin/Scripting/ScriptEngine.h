@@ -16,8 +16,7 @@ extern "C" {
 	typedef struct _MonoClassField MonoClassField;
 }
 
-namespace Origin
-{
+namespace Origin {
 
 	enum class ScriptFieldType
 	{
@@ -50,19 +49,19 @@ namespace Origin
 		template<typename T>
 		T GetValue()
 		{
-			static_assert(sizeof(T) <= 64, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 			return *(T*)m_Buffer;
 		}
 
 		template<typename T>
 		void SetValue(T value)
 		{
-			static_assert(sizeof(T) <= 64, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 			memcpy(m_Buffer, &value, sizeof(T));
 		}
 
 	private:
-		char m_Buffer[64];
+		char m_Buffer[16];
 
 		friend class ScriptEngine;
 		friend class ScriptInstance;
@@ -105,7 +104,7 @@ namespace Origin
 		template<typename T>
 		T GetFieldValue(const std::string& name)
 		{
-			static_assert(sizeof(T) <= 8, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 
 			bool success = GetFieldValueInternal(name, s_FieldValueBuffer);
 			if (!success)
@@ -117,7 +116,7 @@ namespace Origin
 		template<typename T>
 		void SetFieldValue(const std::string& name, const T& value)
 		{
-			static_assert(sizeof(T) <= 64, "Type too large!");
+			static_assert(sizeof(T) <= 16, "Type too large!");
 			SetFieldValueInternal(name, &value);
 		}
 
@@ -133,7 +132,7 @@ namespace Origin
 		MonoMethod* m_OnCreateMethod = nullptr;
 		MonoMethod* m_OnUpdateMethod = nullptr;
 
-		inline static char s_FieldValueBuffer[64];
+		inline static char s_FieldValueBuffer[16];
 		friend class ScriptEngine;
 	};
 
@@ -145,6 +144,8 @@ namespace Origin
 
 		static bool LoadAssembly(const std::filesystem::path& filepath);
 		static bool LoadAppAssembly(const std::filesystem::path& filepath);
+
+		static void ReloadAssembly();
 
 		static void OnRuntimeStart(Scene* scene);
 		static void OnRuntimeStop();
@@ -165,6 +166,7 @@ namespace Origin
 		static MonoImage* GetCoreAssemblyImage();
 
 		static MonoObject* GetManagedInstance(UUID uuid);
+
 
 	private:
 		static void InitMono();

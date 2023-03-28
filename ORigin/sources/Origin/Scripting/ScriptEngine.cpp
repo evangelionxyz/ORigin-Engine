@@ -2,14 +2,17 @@
 
 #include "pch.h"
 #include "ScriptEngine.h"
-
 #include "ScriptGlue.h"
 #include "Origin\Scene\Component\Component.h"
+
+#include "Origin\Core\Application.h"
 
 #include "mono\jit\jit.h"
 #include "mono\metadata\assembly.h"
 #include "mono\metadata\object.h"
 #include "mono\metadata\tabledefs.h"
+
+#include <FileWatch.hpp>
 
 namespace Origin
 {
@@ -130,8 +133,13 @@ namespace Origin
 		MonoImage* AppAssemblyImage = nullptr;
 
 		ScriptClass EntityClass;
-
 		std::vector<std::string> EntityScriptStorage;
+
+		std::filesystem::path CoreAssemblyFilepath;
+		std::filesystem::path AppAssemblyFilepath;
+
+		std::unique_ptr<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
+		bool AssemblyReloadingPending = false;
 
 		// Runtime
 		Scene* SceneContext = nullptr;
@@ -139,6 +147,7 @@ namespace Origin
 		std::unordered_map<UUID, std::shared_ptr<ScriptInstance>> EntityInstances;
 
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
+
 	};
 
 	ScriptEngineData* s_Data = nullptr;
@@ -157,35 +166,25 @@ namespace Origin
 	void ScriptEngine::ShutdownMono()
 	{
 		// cleanup
-		mono_assembly_close(s_Data->CoreAssembly);
+		mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_Data->AppDomain);
 		s_Data->AppDomain = nullptr;
+		s_Data->CoreAssembly = nullptr;
+
+		mono_jit_cleanup(s_Data->RootDomain);
 		s_Data->RootDomain = nullptr;
 	}
 
 	void ScriptEngine::Init()
 	{
-		// ========================
-		// Initializing Script Engine
-		// ========================
-
 		s_Data = new ScriptEngineData();
 
 		InitMono();
 		ScriptGlue::RegisterFunctions();
 
-		bool status = LoadAssembly("resources/scripts/ORigin-ScriptCore.dll");
-		if (!status)
-		{
-			OGN_CORE_ERROR("[ScriptEngine] Could not load ORigin-ScriptCore assembly.");
-			return;
-		}
-
-		status = LoadAppAssembly("SandboxProject/Binaries/Sandbox.dll");
-		if (!status)
-		{
-			OGN_CORE_ERROR("[ScriptEngine] Could not load Sandbox assembly.");
-			return;
-		}
+		LoadAssembly("resources/scripts/ORigin-ScriptCore.dll");
+		LoadAppAssembly("SandboxProject/Binaries/Sandbox.dll");
 
 		LoadAssemblyClasses();
 
@@ -193,8 +192,8 @@ namespace Origin
 		for (auto it : s_Data->EntityClasses)
 			s_Data->EntityScriptStorage.emplace_back(it.first);
 
-		ScriptGlue::RegisterComponents();
 		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
+		ScriptGlue::RegisterComponents();
 	}
 
 	void ScriptEngine::Shutdown()
@@ -213,6 +212,8 @@ namespace Origin
 		s_Data->AppDomain = mono_domain_create_appdomain("ORiginScriptRuntime", nullptr);
 		mono_domain_set(s_Data->AppDomain, true);
 
+		s_Data->CoreAssemblyFilepath = filepath;
+
 		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
 		if (s_Data->CoreAssembly == nullptr)
 			return false;
@@ -221,16 +222,57 @@ namespace Origin
 		return true;
 	}
 
+	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event change_type)
+	{
+		if (!s_Data->AssemblyReloadingPending && change_type == filewatch::Event::modified)
+		{
+			s_Data->AssemblyReloadingPending = true;
+
+			Application::Get().SubmitToMainThread([]()
+			{
+				s_Data->AppAssemblyFilewatcher.reset();
+				ScriptEngine::ReloadAssembly();
+			});
+		}
+	}
+
 	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
+		s_Data->AppAssemblyFilepath = filepath;
+
 		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		if (s_Data->AppAssembly == nullptr)
 			return false;
 
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
+		s_Data->AppAssemblyFilewatcher = std::make_unique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
+		s_Data->AssemblyReloadingPending = false;
 
+		//s_Data->AssemblyReloading = false;
 
 		return true;
+	}
+
+	void ScriptEngine::ReloadAssembly()
+	{
+		mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_Data->AppDomain);
+
+		LoadAssembly(s_Data->CoreAssemblyFilepath);
+		LoadAppAssembly(s_Data->AppAssemblyFilepath);
+
+		LoadAssemblyClasses();
+
+		// storing classes name into storage
+		s_Data->EntityScriptStorage.clear();
+
+		for (auto it : s_Data->EntityClasses)
+			s_Data->EntityScriptStorage.emplace_back(it.first);
+
+		// retrieve entity class
+		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
+		ScriptGlue::RegisterComponents();
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* scene)
@@ -388,7 +430,7 @@ namespace Origin
 
 			int fieldCount = mono_class_num_fields(monoClass);
 
-			OGN_CORE_WARN("{} has {} fields: ", className, fieldCount);
+			//OGN_CORE_WARN("{} has {} fields: ", className, fieldCount);
 			void* iterator = nullptr;
 			while (MonoClassField* field = mono_class_get_fields(monoClass, &iterator))
 			{
@@ -398,7 +440,7 @@ namespace Origin
 				{
 					MonoType* type = mono_field_get_type(field);
 					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
-					OGN_CORE_WARN("{} ({}) is public", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+					//OGN_CORE_WARN("{} ({}) is public", fieldName, Utils::ScriptFieldTypeToString(fieldType));
 
 					scriptClass->m_Fields[fieldName] = {fieldType, fieldName, field};
 				}

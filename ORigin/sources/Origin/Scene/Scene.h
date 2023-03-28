@@ -15,7 +15,6 @@ class b2World;
 namespace Origin
 {
 	class Entity;
-
 	class Scene
 	{
 	public:
@@ -81,7 +80,11 @@ namespace Origin
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
 		void DrawIcon(EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture, TransformComponent& tc, bool rotate = true);
 
-		bool isRunning() const { return m_Running; }
+		bool IsRunning() const { return m_Running; }
+		bool IsPaused() const { return m_Paused; }
+
+		void SetPaused(bool paused) { m_Paused = paused; }
+		void Step(int frames);
 
 	private:
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
@@ -90,7 +93,10 @@ namespace Origin
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth, m_ViewportHeight = 0;
 		b2World* m_Box2DWorld;
+
 		bool m_Running = false;
+		bool m_Paused = false;
+		int m_StempFrames = 0;
 
 		friend class Entity;
 		friend class Editor;

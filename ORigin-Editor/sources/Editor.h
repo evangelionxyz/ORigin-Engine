@@ -30,6 +30,7 @@ namespace Origin {
     void OnUpdate(Timestep ts) override;
 
   private:
+
     // Scene Viewport
 		void SceneViewport();
     void SceneViewportToolbar();
@@ -61,6 +62,7 @@ namespace Origin {
     void OnGuiRender() override;
 
     void OnScenePlay();
+    void OnScenePause();
     void OnSceneSimulate();
     void OnSceneStop();
 
@@ -68,7 +70,13 @@ namespace Origin {
     Entity m_SelectedEntity = {};
 
 		// Scene
-		enum class SceneState { Edit = 0, Play = 1, Simulate = 2};
+		enum class SceneState
+    {
+      Edit = 0,
+      Play = 1,
+      Simulate = 2
+    };
+
 		SceneState m_SceneState = SceneState::Edit;
 		std::filesystem::path m_ScenePath;
 		std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
@@ -80,7 +88,7 @@ namespace Origin {
 		ContentBrowserPanel m_ContentBrowser;
 		SceneHierarchyPanel m_SceneHierarchy;
 
-		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton;
+		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton, m_PauseButton, m_SteppingButton;
 
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;

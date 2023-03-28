@@ -2,13 +2,14 @@
 
 #include "Editor.h"
 
-#include "Origin/EntryPoint.h"
-#include "panels/EditorTheme.h"
-#include "Origin/Utils/PlatformUtils.h"
-#include "Origin/Scene/SceneSerializer.h"
+#include "Origin\EntryPoint.h"
+#include "panels\EditorTheme.h"
+#include "Origin\Utils\PlatformUtils.h"
+#include "Origin\Scene\SceneSerializer.h"
+#include "Origin\Scripting\ScriptEngine.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm\glm.hpp>
+#include <glm\gtc\type_ptr.hpp>
 #include <filesystem>
 
 namespace Origin
@@ -22,6 +23,8 @@ namespace Origin
     m_PlayButton = Texture2D::Create("resources/textures/playbutton.png");
     m_SimulateButton = Texture2D::Create("resources/textures/simulatebutton.png");
     m_StopButton = Texture2D::Create("resources/textures/stopbutton.png");
+    m_PauseButton = Texture2D::Create("resources/textures/pausebutton.png");
+    m_SteppingButton = Texture2D::Create("resources/textures/steppingframebutton.png");
 
     // ==============================
     // Main Framebuffer Specification
@@ -309,6 +312,14 @@ namespace Origin
     m_ActiveScene->OnRuntimeStart();
 
     m_SceneHierarchy.SetContext(m_ActiveScene);
+  }
+
+  void Editor::OnScenePause()
+  {
+    if (m_SceneState == SceneState::Edit)
+      return;
+
+    m_ActiveScene->SetPaused(true);
   }
 
 	void Editor::OnSceneSimulate()

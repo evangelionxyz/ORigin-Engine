@@ -37,6 +37,7 @@ includedirs {
     "%{IncludeDir.GLM}",
     "%{IncludeDir.ENTT}",
     "%{IncludeDir.MONO}",
+    "%{IncludeDir.FILEWATCHER}",
     "%{IncludeDir.YAML_CPP}",
     "%{IncludeDir.VulkanSDK}",
     "%{IncludeDir.ASSIMP}",

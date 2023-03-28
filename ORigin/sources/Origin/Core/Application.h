@@ -56,17 +56,24 @@ namespace Origin {
 		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
+		void SubmitToMainThread(const std::function<void()>& function);
+
 	private:
 		ApplicationSpecification m_Specification;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 
+		void ExecuteMainThreadQueue();
+
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		float m_LastFrame = 0.0f;
+
+		std::vector<std::function<void()>> m_MainThreadQueue;
+		std::mutex m_MainThreadMutex;
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args);

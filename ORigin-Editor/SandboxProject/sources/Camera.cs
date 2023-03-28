@@ -7,7 +7,8 @@ namespace Game
     public class Camera : Entity
     {
         private Entity player;
-        public float distance = 5.0f;
+        public float distance = 8.0f;
+        private float increment = 1.0f;
 
         void OnCreate()
         {
@@ -18,6 +19,13 @@ namespace Game
         {
             if(player != null)
                 Translation = new Vector3(player.Translation.XY, distance);
+
+            if (distance > 25.0f)
+                increment = -1.0f;
+            else if (distance < 8.0f)
+                increment = 1.0f;
+
+            distance += increment * 10.0f * deltaTime;
         }
     }
 }

@@ -16,6 +16,7 @@ IncludeDir["SPDLOG"] = "%{wks.location}/ORigin/vendor/spdlog/include"
 IncludeDir["GLM"] = "%{wks.location}/ORigin/vendor/glm"
 IncludeDir["ENTT"] = "%{wks.location}/ORigin/vendor/entt/"
 IncludeDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/include"
+IncludeDir["FILEWATCHER"] = "%{wks.location}/ORigin/vendor/Filewatcher/include"
 IncludeDir["YAML_CPP"] = "%{wks.location}/ORigin/vendor/yaml-cpp/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 

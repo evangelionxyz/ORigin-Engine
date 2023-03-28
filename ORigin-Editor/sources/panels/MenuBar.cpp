@@ -1,6 +1,7 @@
 // Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #include "..\Editor.h"
+#include "Origin\Scripting\ScriptEngine.h"
 
 namespace Origin
 {
@@ -23,6 +24,18 @@ namespace Origin
 				if (ImGui::MenuItem("Save", "Ctrl+S"))  SaveScene();
 				if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))  SaveSceneAs();
 				if (ImGui::MenuItem("Exit", "Alt+F4")) window.Close();
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Script"))
+			{
+				if (ImGui::MenuItem("Reload"))
+				{
+					if(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+						OnSceneStop();
+
+					ScriptEngine::ReloadAssembly();
+				}
 				ImGui::EndMenu();
 			}
 

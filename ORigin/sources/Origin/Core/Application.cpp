@@ -42,11 +42,12 @@ namespace Origin {
 
 		while (m_Window->Loop()) {
 
-
 			auto time = (float)glfwGetTime();
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
 			timestep.SetDeltaTime(m_LastFrame);
+
+			ExecuteMainThreadQueue();
 
 			if (!m_Minimized) {
 				for (Layer* layer : m_LayerStack)
@@ -87,6 +88,13 @@ namespace Origin {
 		}
 	}
 
+	void Application::SubmitToMainThread(const std::function<void()>& function)
+	{
+		std::scoped_lock<std::mutex> lock(m_MainThreadMutex);
+
+		m_MainThreadQueue.emplace_back(function);
+	}
+
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		if(m_Window->Loop())
@@ -106,5 +114,13 @@ namespace Origin {
 		Renderer::OnWindowResize(e.getWidth(), e.getHeight());
 
 		return false;
+	}
+
+	void Application::ExecuteMainThreadQueue()
+	{
+		for (auto& func : m_MainThreadQueue)
+			func();
+
+		m_MainThreadQueue.clear();
 	}
 }

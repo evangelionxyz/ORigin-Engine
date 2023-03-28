@@ -165,7 +165,7 @@ namespace Origin
 		ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2& viewportOffset = ImGui::GetWindowPos();
 
-		const float& wndWidth = ImGui::GetWindowWidth();
+		const float wndWidth = ImGui::GetWindowWidth();
 
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar
 			| ImGuiWindowFlags_NoScrollWithMouse
@@ -177,7 +177,7 @@ namespace Origin
 		float wndYpos = { (viewportMinRegion.y + viewportOffset.y) + 4.0f };
 
 		// Play Button
-		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + wndWidth / 2.0f, wndYpos }, ImGuiCond_Always);
+		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + wndWidth / 2.5f, wndYpos }, ImGuiCond_Always);
 		ImGui::SetNextWindowBgAlpha(0.0f);
 
 		if (ImGui::Begin("##play_button", nullptr, window_flags))
@@ -187,7 +187,7 @@ namespace Origin
 
 			{
 				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_PlayButton : m_StopButton;
-				ImGui::SameLine(viewportMinRegion.x * 0.5f);
+				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
@@ -208,9 +208,10 @@ namespace Origin
 				ImGui::PopStyleColor(3);
 			}
 
+			// Simulate Button
 			{
 				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_SimulateButton : m_StopButton;
-				ImGui::SameLine(viewportMinRegion.x * 0.5f);
+				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
@@ -229,6 +230,40 @@ namespace Origin
 					}
 				}
 				ImGui::PopStyleColor(3);
+			}
+
+			// Pause Button
+			if(m_SceneState != SceneState::Edit)
+			{
+				bool isPaused = m_ActiveScene->IsPaused();
+				std::shared_ptr<Texture2D> icon = m_PauseButton;
+				ImGui::SameLine();
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
+				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
+				{
+					m_ActiveScene->SetPaused(!isPaused);
+				}
+
+				ImGui::PopStyleColor(3);
+
+				if (isPaused)
+				{
+					std::shared_ptr<Texture2D> icon = m_SteppingButton;
+					ImGui::SameLine();
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
+					if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
+					{
+						m_ActiveScene->Step(12);
+					}
+
+					ImGui::PopStyleColor(3);
+				}
 			}
 
 			ImGui::PopStyleVar(2);

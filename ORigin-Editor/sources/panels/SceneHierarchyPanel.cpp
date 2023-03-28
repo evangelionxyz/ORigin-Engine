@@ -283,7 +283,7 @@ namespace Origin {
 				if (ImGui::Button("Detach", ImVec2(80, 25))) component.ClassName = "Detached";
 
 				// fields
-				bool isRunning = scene->isRunning();
+				bool isRunning = scene->IsRunning();
 				if (isRunning)
 				{
 					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
