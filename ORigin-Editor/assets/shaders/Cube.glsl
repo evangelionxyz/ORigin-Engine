@@ -36,16 +36,9 @@ void main()
 }
 
 // type fragment
-#version 450 core
+#version 450 
 layout(location = 0) out vec4 color;
 layout(location = 1) out int entColor;
-
-layout (std140, binding = 1) uniform Light
-{
-	vec3 lightPosition;
-	vec4 lightColor;
-	float ambient;
-};
 
 struct Vertex
 {
@@ -54,16 +47,15 @@ struct Vertex
 	vec2 TexCoord;
 };
 
-layout (location = 0) in Vertex In;
-layout (location = 3) in flat float v_TexIndex;
-layout (location = 4) in flat int v_EntityID;
+layout(location = 0) in Vertex In;
+layout(location = 3) in flat float v_TexIndex;
+layout(location = 4) in flat int v_EntityID;
 
-layout (binding = 0) uniform sampler2D u_Textures[32];
+layout(binding = 0) uniform sampler2D u_Textures[32];
 
 void main()
 {
 	vec4 texColor = In.Color;
-
 	switch(int(v_TexIndex))
 	{
 		case  0: texColor *= texture(u_Textures[ 0], In.TexCoord); break;
@@ -98,7 +90,7 @@ void main()
 		case 29: texColor *= texture(u_Textures[29], In.TexCoord); break;
 		case 30: texColor *= texture(u_Textures[30], In.TexCoord); break;
 		case 31: texColor *= texture(u_Textures[31], In.TexCoord); break;
-	}
+	};
 
 	color = texColor;
 	entColor = v_EntityID;

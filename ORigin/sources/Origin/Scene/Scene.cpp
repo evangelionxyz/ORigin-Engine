@@ -535,12 +535,6 @@ namespace Origin {
 			for (auto& entity : view)
 			{
 				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
-				s_RendererData.LightingBufferData.Position = tc.Translation;
-				s_RendererData.LightingBufferData.Color = lc.Color;
-				s_RendererData.LightingBufferData.Ambient = lc.Ambient;
-
-				//s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData, sizeof(RendererData::LightingData));
-
 				DrawIcon(camera, (int)entity, m_LightingIcon, tc, true);
 			}
 		}

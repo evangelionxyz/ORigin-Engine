@@ -96,12 +96,7 @@ namespace Origin
 		delete[] s_2Ddata.QuadVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
-	{
-		StartBatch();
-	}
-
-	void Renderer2D::BeginScene(const EditorCamera& camera)
+	void Renderer2D::BeginScene()
 	{
 		StartBatch();
 	}

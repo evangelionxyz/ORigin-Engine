@@ -1,68 +1,12 @@
 Scene: test.org
 Entities:
-  - Entity: 17605916073141015470
+  - Entity: 13974524227984649688
     TagComponent:
-      Tag: Sprite
+      Tag: Cube
     TransformComponent:
-      Translation: [0, -1.28562164, 0]
-      Rotation: [0, 0, 0]
-      Scale: [14.1558657, 0.500129461, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 9709789437813907230
-    TagComponent:
-      Tag: Player
-    TransformComponent:
-      Translation: [0, 1.02288973, 0]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 0, 1, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Game.Player
-      StoredFields:
-        []
-  - Entity: 597658526811535591
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [0, 0, 8]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-      FixedAspectRatio: false
-    ScriptComponent:
-      ClassName: Game.Camera
-      StoredFields:
-        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\block.png

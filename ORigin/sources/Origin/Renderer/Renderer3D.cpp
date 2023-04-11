@@ -5,9 +5,10 @@
 #include "Origin\Renderer\Renderer3D.h"
 #include "Origin\Renderer\Renderer2D.h"
 
+#include "Origin\Renderer\UniformBuffer.h"
+
 namespace Origin
 {
-
 	struct CubeVertex
 	{
 		glm::vec3 Position;
@@ -125,20 +126,10 @@ namespace Origin
 		s_3Ddata.CubeVertexPosition[22] = glm::vec4( 0.5f, -0.5f, -0.5f, 1.0f);
 		s_3Ddata.CubeVertexPosition[23] = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
 
-		// =================================================
-		// ==================== NORMALS ====================
-		// =================================================
-		
-
 		s_3Ddata.CubeShader = Shader::Create("assets/shaders/Cube.glsl", true, true);
 	}
 
-	void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform)
-	{
-		StartBatch();
-	}
-
-	void Renderer3D::BeginScene(const EditorCamera& camera)
+	void Renderer3D::BeginScene()
 	{
 		StartBatch();
 	}
@@ -208,7 +199,6 @@ namespace Origin
 		{
 			s_3Ddata.CubeVertexBufferPtr->Position = transform * s_3Ddata.CubeVertexPosition[i];
 			s_3Ddata.CubeVertexBufferPtr->Color = color;
-			//s_3Ddata.CubeVertexBufferPtr->Normal = glm::vec3(1.0f);
 			s_3Ddata.CubeVertexBufferPtr->TexCoord = textureCoords;
 			s_3Ddata.CubeVertexBufferPtr->TexIndex = textureIndex;
 			s_3Ddata.CubeVertexBufferPtr->EntityID = entityID;
@@ -258,38 +248,6 @@ namespace Origin
 			{ 0.0f, 0.0f },
 		};
 
-		constexpr glm::vec3 normals[] = {
-			{-1.0f, -1.0f, 1.0f},
-			{ 1.0f, -1.0f, 1.0f},
-			{ 1.0f,  1.0f, 1.0f},
-			{-1.0f,  1.0f, 1.0f},
-
-			{-1.0f, -1.0f, -1.0f},
-			{ 1.0f, -1.0f, -1.0f},
-			{ 1.0f,  1.0f, -1.0f},
-			{-1.0f,  1.0f, -1.0f},
-
-			{-1.0f, -1.0f, -1.0f},
-			{-1.0f, -1.0f, 1.0f},
-			{-1.0f,  1.0f, 1.0f},
-			{-1.0f,  1.0f, -1.0f},
-
-			{ 1.0f, -1.0f, 1.0f},
-			{ 1.0f, -1.0f, -1.0f},
-			{ 1.0f,  1.0f, -1.0f},
-			{ 1.0f,  1.0f, 1.0f},
-
-			{-1.0f, 1.0f, 1.0f},
-			{ 1.0f, 1.0f, 1.0f},
-			{ 1.0f, 1.0f, -1.0f},
-			{-1.0f, 1.0f, -1.0f},
-
-			{-1.0f, -1.0f, 1.0f},
-			{ 1.0f, -1.0f, 1.0f},
-			{ 1.0f, -1.0f, -1.0f},
-			{-1.0f, -1.0f, -1.0f}
-		};
-
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_3Ddata.TextureSlotIndex; i++)
 		{
@@ -314,7 +272,6 @@ namespace Origin
 		{
 			s_3Ddata.CubeVertexBufferPtr->Position = transform * s_3Ddata.CubeVertexPosition[i];
 			s_3Ddata.CubeVertexBufferPtr->Color = tintColor;
-			//s_3Ddata.CubeVertexBufferPtr->Normal = normals[i];
 			s_3Ddata.CubeVertexBufferPtr->TexCoord = textureCoords[i];
 			s_3Ddata.CubeVertexBufferPtr->TexIndex = textureIndex;
 			s_3Ddata.CubeVertexBufferPtr->EntityID = entityID;

@@ -19,17 +19,6 @@ namespace Origin
 
 		CameraData CameraBufferData;
 		std::shared_ptr<UniformBuffer> CameraUniformBuffer;
-
-		
-		struct LightingData
-		{
-			glm::vec3 Position;
-			glm::vec4 Color;
-			float Ambient;
-		};
-
-		LightingData LightingBufferData;
-		std::shared_ptr<UniformBuffer> LightingUniformBuffer;
 	};
 
 	static RendererData s_RendererData;

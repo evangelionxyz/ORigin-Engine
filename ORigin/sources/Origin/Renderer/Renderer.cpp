@@ -24,7 +24,6 @@ namespace Origin
 		Renderer3D::Init();
 
 		s_RendererData.CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
-		s_RendererData.LightingUniformBuffer = UniformBuffer::Create(sizeof(RendererData::LightingData), 1);
 	}
 
 	void Renderer::Shutdown()
@@ -37,20 +36,24 @@ namespace Origin
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
 		// Camera
+		s_RendererData.CameraUniformBuffer->Bind();
 		s_RendererData.CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
 		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(RendererData::CameraData));
+		s_RendererData.CameraUniformBuffer->Unbind();
 
-		Renderer2D::BeginScene(camera, transform);
-		Renderer3D::BeginScene(camera, transform);
+		Renderer2D::BeginScene();
+		Renderer3D::BeginScene();
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
+		s_RendererData.CameraUniformBuffer->Bind();
 		s_RendererData.CameraBufferData.ViewProjection = camera.GetViewProjection();
 		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(RendererData::CameraData), 0);
+		s_RendererData.CameraUniformBuffer->Unbind();
 
-		Renderer2D::BeginScene(camera);
-		Renderer3D::BeginScene(camera);
+		Renderer2D::BeginScene();
+		Renderer3D::BeginScene();
 	}
 
 	void Renderer::EndScene()

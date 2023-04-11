@@ -205,10 +205,10 @@ namespace Origin
 			if (camera)
 			{
 				glm::mat4 transform = camera.GetComponent<TransformComponent>().GetTransform();
-				Renderer2D::BeginScene(camera.GetComponent<CameraComponent>().Camera, transform);
+				Renderer::BeginScene(camera.GetComponent<CameraComponent>().Camera, transform);
 			}
 		}
-		else Renderer2D::BeginScene(m_EditorCamera);
+		else Renderer::BeginScene(m_EditorCamera);
 	}
 
 	void Editor::OnOverlayRenderer()
