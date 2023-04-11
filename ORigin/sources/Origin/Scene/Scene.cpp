@@ -502,27 +502,6 @@ namespace Origin {
 			}
 		}
 
-		// Camera
-		{
-			auto& view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto& entity : view)
-			{
-				auto& [tc, cc] = view.get<TransformComponent, CameraComponent>(entity);
-				DrawIcon(camera, (int)entity, m_CameraIcon, tc, true);
-			}
-		}
-
-
-		{
-			// Lighting
-			auto& view = m_Registry.view<TransformComponent, LightingComponent>();
-			for (auto& entity : view)
-			{
-				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
-				DrawIcon(camera, (int)entity, m_LightingIcon, tc, true);
-			}
-		}
-
 		// 3D Scene
 		// Cube
 		auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
@@ -538,6 +517,32 @@ namespace Origin {
 		{
 			auto& [transform, sprite] = cubeView.get<TransformComponent, SpriteRendererComponent>(cube);
 			Renderer3D::DrawCube(transform.GetTransform(), sprite, (int)cube);
+		}
+
+		// Camera
+		{
+			auto& view = m_Registry.view<TransformComponent, CameraComponent>();
+			for (auto& entity : view)
+			{
+				auto& [tc, cc] = view.get<TransformComponent, CameraComponent>(entity);
+				DrawIcon(camera, (int)entity, m_CameraIcon, tc, true);
+			}
+		}
+
+		{
+			// Lighting
+			auto& view = m_Registry.view<TransformComponent, LightingComponent>();
+			for (auto& entity : view)
+			{
+				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
+				s_RendererData.LightingBufferData.Position = tc.Translation;
+				s_RendererData.LightingBufferData.Color = lc.Color;
+				s_RendererData.LightingBufferData.Ambient = lc.Ambient;
+
+				//s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData, sizeof(RendererData::LightingData));
+
+				DrawIcon(camera, (int)entity, m_LightingIcon, tc, true);
+			}
 		}
 
 		//DrawGrid(m_GridSize, m_GridColor);

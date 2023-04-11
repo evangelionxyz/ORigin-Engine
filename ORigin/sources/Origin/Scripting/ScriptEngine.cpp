@@ -11,6 +11,7 @@
 #include "mono\metadata\assembly.h"
 #include "mono\metadata\object.h"
 #include "mono\metadata\tabledefs.h"
+#include "mono\metadata\mono-debug.h"
 
 #include <FileWatch.hpp>
 
@@ -141,13 +142,11 @@ namespace Origin
 		std::unique_ptr<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher;
 		bool AssemblyReloadingPending = false;
 
-		// Runtime
 		Scene* SceneContext = nullptr;
 		std::unordered_map<std::string, std::shared_ptr<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, std::shared_ptr<ScriptInstance>> EntityInstances;
 
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
-
 	};
 
 	ScriptEngineData* s_Data = nullptr;
@@ -247,8 +246,6 @@ namespace Origin
 		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
 		s_Data->AppAssemblyFilewatcher = std::make_unique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
 		s_Data->AssemblyReloadingPending = false;
-
-		//s_Data->AssemblyReloading = false;
 
 		return true;
 	}

@@ -2,6 +2,7 @@
 
 #pragma once
 #include "Origin\Core\Application.h"
+#include "Origin\Core\Log.h"
 
 #if OGN_RELEASE
 	#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")

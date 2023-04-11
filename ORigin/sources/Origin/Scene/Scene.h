@@ -23,18 +23,15 @@ namespace Origin
 
 		static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
 
-		// 2D Entity
 		Entity CreateEntity(const std::string& name = std::string());
-		Entity CreateCamera(const std::string& name = std::string());
 		Entity CreateCircle(const std::string& name = std::string());
 		Entity CreateSpriteEntity(const std::string& name = std::string());
 
-		// 3D Entity
 		Entity CreateCube(const std::string& name = std::string());
-
-		// Global Entity
-		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
+		Entity CreateCamera(const std::string& name = std::string());
 		Entity CreateLighting(const std::string& name = std::string());
+
+		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
 		Entity GetPrimaryCameraEntity();
 
 		void DestroyEntity(Entity entity);

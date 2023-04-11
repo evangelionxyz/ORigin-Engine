@@ -1,16 +1,14 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Core\OriginCore.h"
 #include "Origin\Utils\Layer.h"
 
-#include "Origin/IO/Events/AppEvent.h"
-#include "Origin/IO/Events/KeyEvent.h"
-#include "Origin/IO/Events/MouseEvent.h"
+#include "Origin\IO\Events\AppEvent.h"
+#include "Origin\IO\Events\KeyEvent.h"
+#include "Origin\IO\Events\MouseEvent.h"
 
-
-namespace Origin {
-	
+namespace Origin
+{
 	class GuiLayer : public Layer
 	{
 	public:

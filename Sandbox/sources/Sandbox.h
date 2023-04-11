@@ -1,23 +1,37 @@
 #pragma once
 #include <Origin.h>
+#include "Draw.h"
 
-namespace Origin {
+#include <glm\glm.hpp>
 
-  class Sandbox : public Layer
-  {
-  public:
-    Sandbox();
-    ~Sandbox();
+#include "FPSCamera.h"
 
-    void OnAttach() override;
-    void OnUpdate(Timestep ts) override;
-    void OnEvent(Event& event) override;
+using namespace Origin;
 
-    void OnGuiRender() override;
+class Sandbox : public Layer
+{
+public:
+  Sandbox();
+  ~Sandbox();
 
-    bool OnWindowResize(WindowResizeEvent& e);
+  void OnUpdate(Timestep ts) override;
+  void OnEvent(Event& event) override;
 
-    EditorCamera camera;
-  };
+  void OnGuiRender() override;
+  bool OnWindowResize(WindowResizeEvent& e);
 
-}
+  FPSCamera camera;
+
+  std::shared_ptr<Texture2D> cubeTexture;
+  glm::vec3 cubePosition = glm::vec3(0.0f, -1.0f, 0.0f);
+  glm::vec3 cubeSize = glm::vec3(2.0f, 0.0f, 2.0f);
+  glm::vec4 cubeColor = glm::vec4(1.0f);
+
+	glm::vec3 lightPosition = glm::vec3(0.0f, 2.0f, 0.0f);
+  glm::vec3 lightSize = glm::vec3(0.5f);
+	glm::vec4 lightColor = glm::vec4(1.0f);
+  float Ambient = 0.8f;
+
+private:
+  Draw draw;
+};

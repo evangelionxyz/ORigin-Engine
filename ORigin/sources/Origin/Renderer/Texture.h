@@ -1,15 +1,15 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+
+#include <string>
 #include <memory>
-#include "Origin\Core\OriginCore.h"
 
 namespace Origin
 {
 	class Texture
 	{
 	public:
-		
 
 		virtual ~Texture() = default;
 		virtual void SetData(void* data, uint32_t size) = 0;

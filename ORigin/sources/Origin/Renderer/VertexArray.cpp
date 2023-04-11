@@ -5,8 +5,6 @@
 #include "Origin\Renderer\Renderer.h"
 #include "Platform\OpenGL\OpenGL_VertexArray.h"
 
-#include "Origin\Core\OriginCore.h"
-
 namespace Origin
 {
 	std::shared_ptr<VertexArray> VertexArray::Create()

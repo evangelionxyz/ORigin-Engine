@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "OpenGL_Shader.h"
-#include "Origin/Utils/log.h"
 #include "Origin/Utils/Time.h"
 
 #include <glad/glad.h>
@@ -110,39 +109,44 @@ namespace Origin {
     }
   }
 
-  OpenGLShader::OpenGLShader(const std::string& filepath, bool recompileSpirv)
-    : m_Filepath(filepath), m_RendererID(0), m_RecompileSPIRV(recompileSpirv)
+  OpenGLShader::OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv)
+    : m_Filepath(filepath), m_RendererID(0), m_EnableSpirv(enableSpirv), m_RecompileSPIRV(recompileSpirv)
   {
-#if 0
-		m_ShaderSource = ParseShader(filepath);
-		m_RendererID = createShader(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
-#endif
-		Utils::CreateCachedDirectoryIfNeeded();
+    OGN_CORE_TRACE("Trying to load Shader : {}", m_Filepath);
 
-		std::string source = ReadFile(filepath);
-		auto shaderSources = PreProcess(source);
+    if (enableSpirv)
+    {
+      Utils::CreateCachedDirectoryIfNeeded();
 
-		{
-			Timer timer;
-			CompileOrGetVulkanBinaries(shaderSources);
-			CompileOrGetOpenGLBinaries();
-			CreateProgram();
-			OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
-		}
+      std::string source = ReadFile(filepath);
+      auto shaderSources = PreProcess(source);
+      {
+        Timer timer;
+        CompileOrGetVulkanBinaries(shaderSources);
+        CompileOrGetOpenGLBinaries();
+        CreateSpirvProgram();
+        OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
+      }
+    }
+    else
+    {
+      m_ShaderSource = ParseShader(filepath);
+      m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
+    }
 
-		// extract shader file to string name
-		auto lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = filepath.rfind(".");
-		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-		m_Name = filepath.substr(lastSlash, count);
+    // extract shader file to string name
+    size_t lastSlash = filepath.find_last_of("/\\");
+    lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+    auto lastDot = filepath.rfind(".");
+    auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+    m_Name = filepath.substr(lastSlash, count);
   }
 
   OpenGLShader::OpenGLShader(const std::string& name, const std::string& filepath)
     : m_Name(name), m_Filepath(filepath), m_RendererID(0)
   {
     m_ShaderSource = ParseShader(filepath);
-    m_RendererID = createShader(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
+    m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
   }
 
   OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
@@ -154,7 +158,7 @@ namespace Origin {
 
     CompileOrGetVulkanBinaries(sources);
     CompileOrGetOpenGLBinaries();
-    CreateProgram();
+    CreateSpirvProgram();
   }
 
   OpenGLShader::~OpenGLShader()
@@ -162,7 +166,7 @@ namespace Origin {
     glDeleteProgram(m_RendererID);
   }
 
-  void OpenGLShader::CreateProgram()
+  void OpenGLShader::CreateSpirvProgram()
   {
     GLuint program = glCreateProgram();
 
@@ -364,7 +368,7 @@ namespace Origin {
     spirv_cross::Compiler compiler(shaderData);
     spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
-    OGN_CORE_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_Filepath);
+    OGN_CORE_TRACE("OpenGLShader::Reflect - {0}", Utils::GLShaderStageToString(stage));
     OGN_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
     OGN_CORE_TRACE("    {0} resources", resources.sampled_images.size());
 
@@ -385,17 +389,17 @@ namespace Origin {
     }
   }
 
-  ShaderProgramSources OpenGLShader::ParseShader(const std::string& filePath)
+  ShaderProgramSources OpenGLShader::ParseShader(const std::string& filepath)
   {
-    std::ifstream stream(filePath);
+    std::ifstream stream(filepath);
 
     std::string line;
     std::stringstream ss[2];
     ShaderType type = ShaderType::NONE;
 
-    while (getline(stream, line)) {
-
-      if(  line.find("//type ") != std::string::npos
+    while (getline(stream, line))
+    {
+      if (line.find("//type ") != std::string::npos
         || line.find("// type ") != std::string::npos
         || line.find("#type ") != std::string::npos
         || line.find("# type ") != std::string::npos)
@@ -415,50 +419,65 @@ namespace Origin {
           Utils::ShaderDataTypeToString(type);
         }
       }
-      else ss[(int)type] << line << "\n";
+      else
+      {
+        ss[(int)type] << line << "\n";
+      }
     }
+
     return { ss[0].str(), ss[1].str() };
   }
 
-  unsigned int OpenGLShader::CompileShader(unsigned int type, const std::string& source)
+  GLuint OpenGLShader::CompileShader(GLuint type, const std::string& source)
   {
-    unsigned int id = glCreateShader(type);
+    GLuint shaderID = glCreateShader(type);
     const char* src = source.c_str();
-    glShaderSource(id, 1, &src, nullptr);
-    glCompileShader(id);
+    glShaderSource(shaderID, 1, &src, nullptr);
+    glCompileShader(shaderID);
 
     int success;
     char infoLog[512];
-    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-    if (!success) {
-      glGetShaderInfoLog(id, 512, NULL, infoLog);
-      OGN_CORE_WARN("Failed to Compile \"{0}\" Shader Location: {1}", type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT", m_Filepath);
+    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+      glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
+      OGN_CORE_WARN("Failed to Compile \"{0}\" Shader Location: {1}",
+        type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT", m_Filepath);
 
-      glDeleteShader(id);
+      glDeleteShader(shaderID);
+
       return 0;
     }
-    return id;
+
+    OGN_CORE_TRACE("{} {} Succesfully Compiled", m_Name,
+      type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT");
+    return shaderID;
   }
 
-  unsigned int OpenGLShader::createShader(const std::string& vertexShader, std::string& fragmentShader)
+  GLuint OpenGLShader::CreateProgram(const std::string& vertexShader, std::string& fragmentShader)
   {
-    unsigned int program = glCreateProgram();
-    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    // Create Program
+    GLuint shaderProgram = glCreateProgram();
+    GLuint vShader = CompileShader(GL_VERTEX_SHADER, vertexShader);
+    GLuint fShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
+    // Attach and Link Shader->Program
+    glAttachShader(shaderProgram, vShader);
+    glAttachShader(shaderProgram, fShader);
+    glLinkProgram(shaderProgram);
 
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    glValidateProgram(shaderProgram);
 
-    return program;
+    glDeleteShader(vShader);
+    glDeleteShader(fShader);
+
+    return shaderProgram;
   }
 
   void OpenGLShader::Bind() const
   {
+    OGN_CORE_ASSERT(m_RendererID, "Shader is Invalid");
+
     glUseProgram(m_RendererID);
   }
   void OpenGLShader::Unbind() const

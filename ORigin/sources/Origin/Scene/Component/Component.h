@@ -7,6 +7,7 @@
 #include "Origin\Renderer\Texture.h"
 
 #include "Origin\Scene\Component\UUID.h"
+#include "Origin\Scene\Component\Lighting.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -80,9 +81,9 @@ namespace Origin
 
 	struct LightingComponent
 	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-		float Intensity = 0.5f;
+		glm::vec4 Color = glm::vec4(1.0f);
+		float Ambient = 0.8f;
+		LightingType type = LightingType::Direct;
 
 		LightingComponent() = default;
 		LightingComponent(const LightingComponent&) = default;

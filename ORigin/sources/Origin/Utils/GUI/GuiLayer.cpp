@@ -3,7 +3,6 @@
 #include "pch.h"
 
 #include "GuiLayer.h"
-#include "Origin\Core\OriginCore.h"
 #include "Origin\Core\Application.h"
 
 #include <imgui.h>

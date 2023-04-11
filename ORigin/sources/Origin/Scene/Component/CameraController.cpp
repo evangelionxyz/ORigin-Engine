@@ -7,12 +7,12 @@
 #include "Origin\IO\KeyCodes.h"
 #include "Origin\IO\MouseCodes.h"
 
-#include "Origin\Core\OriginCore.h"
+#include <algorithm>
 
 namespace Origin
 {
 	OrthoCameraController::OrthoCameraController(float aspectRatio, bool rotate)
-		: m_AspectRatio(aspectRatio), m_Camera(-m_AspectRatio * m_ZoomLevel, 
+		: m_AspectRatio(aspectRatio), m_Camera(-m_AspectRatio * m_ZoomLevel,
 			m_AspectRatio * m_ZoomLevel, -m_ZoomLevel , m_ZoomLevel), m_IsRotate(rotate)
 	{
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
@@ -107,7 +107,7 @@ namespace Origin
 
 	bool OrthoCameraController::OnWindowResized(WindowResizeEvent& e)
 	{
-		OnResize((float)e.getWidth(), (float)e.getHeight());
+		OnResize((float)e.GetWidth(), (float)e.GetHeight());
 		return false;
 	}
 }

@@ -1,7 +1,6 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "OriginCore.h"
 #include "Window.h"
 
 #include "Origin\IO\Input.h"
@@ -13,6 +12,7 @@
 #include "Origin\Utils\GUI\GuiLayer.h"
 
 #include "Origin\Renderer\Renderer.h"
+#include <mutex>
 
 namespace Origin {
 

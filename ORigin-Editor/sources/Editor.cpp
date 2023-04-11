@@ -354,7 +354,7 @@ namespace Origin
 			OnSceneStop();
 
 		m_EditorScene = std::make_shared<Scene>();
-		m_SceneHierarchy.SetContext(m_EditorScene);
+		m_SceneHierarchy.SetContext(m_EditorScene, true);
 
     m_ActiveScene = m_EditorScene;
     m_ScenePath = std::filesystem::path();

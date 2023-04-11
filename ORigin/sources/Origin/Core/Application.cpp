@@ -105,13 +105,13 @@ namespace Origin {
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
-		if (e.getWidth() == 0 || e.getHeight() == 0)
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_Minimized = true;
 			return true;
 		}
 		m_Minimized = false;
-		Renderer::OnWindowResize(e.getWidth(), e.getHeight());
+		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

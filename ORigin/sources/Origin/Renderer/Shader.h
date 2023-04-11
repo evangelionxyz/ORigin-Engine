@@ -31,11 +31,11 @@ namespace Origin
     virtual void SetVector(const std::string& name, const glm::vec2& vector2) = 0;
     virtual void SetVector(const std::string& name, const glm::vec3& vector3) = 0;
     virtual void SetVector(const std::string& name, const glm::vec4& vector4) = 0;
-    virtual void SetMatrix(const std::string& name, const glm::mat3& vector3) = 0;
-    virtual void SetMatrix(const std::string& name, const glm::mat4& vector4) = 0;
+    virtual void SetMatrix(const std::string& name, const glm::mat3& matrix3) = 0;
+    virtual void SetMatrix(const std::string& name, const glm::mat4& matrix4) = 0;
 
 
-    static std::shared_ptr<Shader> Create(const std::string& filepath, bool recompileSpirv = false);
+    static std::shared_ptr<Shader> Create(const std::string& filepath, bool enableSpirv = false, bool recompileSpirv = false);
     static std::shared_ptr<Shader> Create(const std::string& name, const std::string& filepath);
     static std::shared_ptr<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 	};

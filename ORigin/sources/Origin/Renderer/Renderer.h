@@ -2,10 +2,11 @@
 
 #pragma once
 #include "RenderCommand.h"
-
-#include "Origin\Scene\Component/Camera.h"
-#include "Origin\Scene\EditorCamera.h"
 #include "Origin\Renderer\UniformBuffer.h"
+
+#include "Origin\Scene\EditorCamera.h"
+#include "Origin\Scene\Component\Camera.h"
+
 
 namespace Origin
 {
@@ -15,15 +16,18 @@ namespace Origin
 		{
 			glm::mat4 ViewProjection;
 		};
+
 		CameraData CameraBufferData;
 		std::shared_ptr<UniformBuffer> CameraUniformBuffer;
 
+		
 		struct LightingData
 		{
 			glm::vec3 Position;
 			glm::vec4 Color;
-			float Intensity;
+			float Ambient;
 		};
+
 		LightingData LightingBufferData;
 		std::shared_ptr<UniformBuffer> LightingUniformBuffer;
 	};

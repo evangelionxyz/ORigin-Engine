@@ -2,7 +2,6 @@
 
 #pragma once
 #include "pch.h"
-#include "Origin\Core\OriginCore.h"
 #include "Origin\IO\Events\Event.h"
 
 #include "Time.h"

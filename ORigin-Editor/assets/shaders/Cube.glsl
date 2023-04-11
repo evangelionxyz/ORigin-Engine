@@ -4,7 +4,7 @@
 #version 450 core
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec4 a_Color;
-layout(location = 2) in vec2 a_TexCoord;lay
+layout(location = 2) in vec2 a_TexCoord;
 layout(location = 3) in float a_TexIndex;
 layout(location = 4) in int a_EntityID;
 
@@ -13,27 +13,22 @@ layout (std140, binding = 0) uniform Camera
 	mat4 ViewProjection;
 };
 
-layout (std140, binding = 0) uniform Light
-{
-	vec3 lightPosition;
-	vec4 lightColor;
-	float lightIntensity;
-};
-
 struct Vertex
 {
+	vec3 Position;
 	vec4 Color;
 	vec2 TexCoord;
 };
 
-layout (location = 0) out Vertex Output;
-layout (location = 2) out flat float v_TexIndex;
-layout (location = 3) out flat int v_EntityID;
+layout (location = 0) out Vertex Out;
+layout (location = 3) out flat float v_TexIndex;
+layout (location = 4) out flat int v_EntityID;
 
 void main()
 {
-	Output.Color = a_Color;
-	Output.TexCoord = a_TexCoord;
+	Out.Position = a_Position;
+	Out.Color = a_Color;
+	Out.TexCoord = a_TexCoord;
 	v_TexIndex = a_TexIndex;
 	v_EntityID = a_EntityID;
 
@@ -41,72 +36,68 @@ void main()
 }
 
 // type fragment
-#version 450 
+#version 450 core
 layout(location = 0) out vec4 color;
 layout(location = 1) out int entColor;
-
-layout(binding = 0) uniform Camera
-{
-	mat4 ViewProjection;
-};
 
 layout (std140, binding = 1) uniform Light
 {
 	vec3 lightPosition;
 	vec4 lightColor;
-	float lightIntensity;
+	float ambient;
 };
-
 
 struct Vertex
 {
+	vec3 Position;
 	vec4 Color;
 	vec2 TexCoord;
 };
 
-layout (location = 0) in Vertex Input;
-layout (location = 2) in flat float v_TexIndex;
-layout (location = 3) in flat int v_EntityID;
+layout (location = 0) in Vertex In;
+layout (location = 3) in flat float v_TexIndex;
+layout (location = 4) in flat int v_EntityID;
 
 layout (binding = 0) uniform sampler2D u_Textures[32];
 
 void main()
 {
-	vec4 texColor = Input.Color;
+	vec4 texColor = In.Color;
+
 	switch(int(v_TexIndex))
 	{
-		case  0: texColor *= texture(u_Textures[ 0], Input.TexCoord); break;
-		case  1: texColor *= texture(u_Textures[ 1], Input.TexCoord); break;
-		case  2: texColor *= texture(u_Textures[ 2], Input.TexCoord); break;
-		case  3: texColor *= texture(u_Textures[ 3], Input.TexCoord); break;
-		case  4: texColor *= texture(u_Textures[ 4], Input.TexCoord); break;
-		case  5: texColor *= texture(u_Textures[ 5], Input.TexCoord); break;
-		case  6: texColor *= texture(u_Textures[ 6], Input.TexCoord); break;
-		case  7: texColor *= texture(u_Textures[ 7], Input.TexCoord); break;
-		case  8: texColor *= texture(u_Textures[ 8], Input.TexCoord); break;
-		case  9: texColor *= texture(u_Textures[ 9], Input.TexCoord); break;
-		case 10: texColor *= texture(u_Textures[10], Input.TexCoord); break;
-		case 11: texColor *= texture(u_Textures[11], Input.TexCoord); break;
-		case 12: texColor *= texture(u_Textures[12], Input.TexCoord); break;
-		case 13: texColor *= texture(u_Textures[13], Input.TexCoord); break;
-		case 14: texColor *= texture(u_Textures[14], Input.TexCoord); break;
-		case 15: texColor *= texture(u_Textures[15], Input.TexCoord); break;
-		case 16: texColor *= texture(u_Textures[16], Input.TexCoord); break;
-		case 17: texColor *= texture(u_Textures[17], Input.TexCoord); break;
-		case 18: texColor *= texture(u_Textures[18], Input.TexCoord); break;
-		case 19: texColor *= texture(u_Textures[19], Input.TexCoord); break;
-		case 20: texColor *= texture(u_Textures[20], Input.TexCoord); break;
-		case 21: texColor *= texture(u_Textures[21], Input.TexCoord); break;
-		case 22: texColor *= texture(u_Textures[22], Input.TexCoord); break;
-		case 23: texColor *= texture(u_Textures[23], Input.TexCoord); break;
-		case 24: texColor *= texture(u_Textures[24], Input.TexCoord); break;
-		case 25: texColor *= texture(u_Textures[25], Input.TexCoord); break;
-		case 26: texColor *= texture(u_Textures[26], Input.TexCoord); break;
-		case 27: texColor *= texture(u_Textures[27], Input.TexCoord); break;
-		case 28: texColor *= texture(u_Textures[28], Input.TexCoord); break;
-		case 29: texColor *= texture(u_Textures[29], Input.TexCoord); break;
-		case 30: texColor *= texture(u_Textures[30], Input.TexCoord); break;
-		case 31: texColor *= texture(u_Textures[31], Input.TexCoord); break;
+		case  0: texColor *= texture(u_Textures[ 0], In.TexCoord); break;
+		case  1: texColor *= texture(u_Textures[ 1], In.TexCoord); break;
+		case  2: texColor *= texture(u_Textures[ 2], In.TexCoord); break;
+		case  3: texColor *= texture(u_Textures[ 3], In.TexCoord); break;
+		case  4: texColor *= texture(u_Textures[ 4], In.TexCoord); break;
+		case  5: texColor *= texture(u_Textures[ 5], In.TexCoord); break;
+		case  6: texColor *= texture(u_Textures[ 6], In.TexCoord); break;
+		case  7: texColor *= texture(u_Textures[ 7], In.TexCoord); break;
+		case  8: texColor *= texture(u_Textures[ 8], In.TexCoord); break;
+		case  9: texColor *= texture(u_Textures[ 9], In.TexCoord); break;
+		case 10: texColor *= texture(u_Textures[10], In.TexCoord); break;
+		case 11: texColor *= texture(u_Textures[11], In.TexCoord); break;
+		case 12: texColor *= texture(u_Textures[12], In.TexCoord); break;
+		case 13: texColor *= texture(u_Textures[13], In.TexCoord); break;
+		case 14: texColor *= texture(u_Textures[14], In.TexCoord); break;
+		case 15: texColor *= texture(u_Textures[15], In.TexCoord); break;
+		case 16: texColor *= texture(u_Textures[16], In.TexCoord); break;
+		case 17: texColor *= texture(u_Textures[17], In.TexCoord); break;
+		case 18: texColor *= texture(u_Textures[18], In.TexCoord); break;
+		case 19: texColor *= texture(u_Textures[19], In.TexCoord); break;
+		case 20: texColor *= texture(u_Textures[20], In.TexCoord); break;
+		case 21: texColor *= texture(u_Textures[21], In.TexCoord); break;
+		case 22: texColor *= texture(u_Textures[22], In.TexCoord); break;
+		case 23: texColor *= texture(u_Textures[23], In.TexCoord); break;
+		case 24: texColor *= texture(u_Textures[24], In.TexCoord); break;
+		case 25: texColor *= texture(u_Textures[25], In.TexCoord); break;
+		case 26: texColor *= texture(u_Textures[26], In.TexCoord); break;
+		case 27: texColor *= texture(u_Textures[27], In.TexCoord); break;
+		case 28: texColor *= texture(u_Textures[28], In.TexCoord); break;
+		case 29: texColor *= texture(u_Textures[29], In.TexCoord); break;
+		case 30: texColor *= texture(u_Textures[30], In.TexCoord); break;
+		case 31: texColor *= texture(u_Textures[31], In.TexCoord); break;
 	}
 
 	color = texColor;

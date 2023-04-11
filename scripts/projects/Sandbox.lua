@@ -9,8 +9,8 @@ cppdialect "C++17"
 staticruntime "off"
 links "ORigin"
 
-targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
-objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
+targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/Sandbox")
+objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/Sandbox")
 
 files {
     -- source file

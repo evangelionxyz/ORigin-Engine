@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "OpenGL_VertexArray.h"
-#include "Origin\Core\OriginCore.h"
 
 namespace Origin
 {

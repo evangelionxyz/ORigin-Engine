@@ -5,10 +5,9 @@
 
 namespace Origin
 {
-
 	enum class ShaderDataType
 	{
-		None = 0, 
+		None = 0,
 		Int, Int2, Int3, Int4,
 		Float, Float2, Float3, Float4,
 		Mat2, Mat3, Mat4,
@@ -49,7 +48,7 @@ namespace Origin
 		bool Normalized = false;
 
 		BufferElement()
-			: Type(ShaderDataType::None), Size(0), Offset(0), Normalized(false) 
+			: Type(ShaderDataType::None), Size(0), Offset(0), Normalized(false)
 		{
 		}
 
@@ -71,7 +70,7 @@ namespace Origin
 				case ShaderDataType::Float2:	return 2;
 				case ShaderDataType::Float3:	return 3;
 				case ShaderDataType::Float4:	return 4;
-				
+
 				case ShaderDataType::Mat3:		return 3 * 3;
 				case ShaderDataType::Mat4:		return 4 * 4;
 
@@ -89,7 +88,7 @@ namespace Origin
 	public:
 		BufferLayout() {}
 
-		BufferLayout(std::initializer_list<BufferElement> elements) 
+		BufferLayout(std::initializer_list<BufferElement> elements)
 			: m_Elements(elements)
 		{
 			CalculateOffsetAndStride();

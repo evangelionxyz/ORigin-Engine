@@ -7,10 +7,11 @@
 
 #include "Origin\Renderer\Renderer2D.h"
 #include "Origin\Renderer\Renderer3D.h"
-#include "Platform\OpenGL\OpenGL_Shader.h"
 
 #include "Origin\Scene\Skybox.h"
+#include "Origin\Scene\Component\Lighting.h"
 
+#include "Platform\OpenGL\OpenGL_Shader.h"
 #include <glm\gtc\matrix_transform.hpp>
 
 namespace Origin
@@ -35,12 +36,9 @@ namespace Origin
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
+		// Camera
 		s_RendererData.CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData.ViewProjection, sizeof(RendererData::CameraData), 0);
-
-		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Position, sizeof(RendererData::LightingData), 0);
-		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Color, sizeof(RendererData::LightingData), sizeof(glm::vec4));
-		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Intensity, sizeof(RendererData::LightingData), sizeof(float));
+		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(RendererData::CameraData));
 
 		Renderer2D::BeginScene(camera, transform);
 		Renderer3D::BeginScene(camera, transform);
@@ -49,11 +47,7 @@ namespace Origin
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
 		s_RendererData.CameraBufferData.ViewProjection = camera.GetViewProjection();
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData.ViewProjection, sizeof(RendererData::CameraData), 0);
-		
-		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Position, sizeof(RendererData::LightingData), 0);
-		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Color, sizeof(RendererData::LightingData), sizeof(glm::vec4));
-		s_RendererData.LightingUniformBuffer->SetData(&s_RendererData.LightingBufferData.Intensity, sizeof(RendererData::LightingData), sizeof(float));
+		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(RendererData::CameraData), 0);
 
 		Renderer2D::BeginScene(camera);
 		Renderer3D::BeginScene(camera);

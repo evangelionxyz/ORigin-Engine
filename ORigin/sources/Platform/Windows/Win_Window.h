@@ -2,13 +2,12 @@
 
 #pragma once
 #include "Origin\Core\Window.h"
-#include "Origin\Core\OriginCore.h"
 #include "Origin\IO\Events\Event.h"
 #include "Origin\Renderer\GraphicsContext.h"
 
 #include <string>
 
-namespace Origin 
+namespace Origin
 {
 	template<typename T>
 	struct WndVec2 { T x; T y; };

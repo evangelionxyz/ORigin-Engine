@@ -3,7 +3,6 @@
 #include "pch.h"
 #include "stb_image.h"
 #include "OpenGL_Texture.h"
-#include "Origin\Core\OriginCore.h"
 
 namespace Origin
 {

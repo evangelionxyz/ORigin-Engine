@@ -22,7 +22,7 @@ namespace Origin
   class OpenGLShader : public Shader
   {
   public:
-    OpenGLShader(const std::string& filepath, bool recompileSpirv = false);
+    OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv = false);
     OpenGLShader(const std::string& name, const std::string& filepath);
     OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 
@@ -94,7 +94,9 @@ namespace Origin
   private:
     std::string m_Filepath;
     GLuint m_RendererID;
+    bool m_EnableSpirv;
     bool m_RecompileSPIRV;
+
     std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
     std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
     std::unordered_map<GLenum, std::string> m_OpenGLSourceCode;
@@ -108,11 +110,11 @@ namespace Origin
     void CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
     void CompileOrGetOpenGLBinaries();
     void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
-    void CreateProgram();
+    void CreateSpirvProgram();
 
     ShaderProgramSources ParseShader(const std::string& filePath);
-    unsigned int CompileShader(unsigned int type, const std::string& source);
-    unsigned int createShader(const std::string& vertexShader, std::string& fragmentShader);
+    GLuint CompileShader(GLuint type, const std::string& source);
+    GLuint CreateProgram(const std::string& vertexShader, std::string& fragmentShader);
     int GetUniformLocation(const std::string& name);
   };
 }

@@ -7,6 +7,43 @@
 
 namespace Origin
 {
+
+	struct CubeVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;
+		float TexIndex;
+
+		int EntityID;
+	};
+
+	struct Renderer3DData
+	{
+		static const uint32_t MaxTriangles = 2000;
+		static const uint32_t MaxVertices = 24 * MaxTriangles;
+		static const uint32_t MaxIndices = 36 * MaxTriangles;
+		static const uint32_t MaxTextureSlots = 32;
+
+		// Cube Data
+		std::shared_ptr<Shader> CubeShader;
+		std::shared_ptr<VertexArray> CubeVertexArray;
+		std::shared_ptr<VertexBuffer> CubeVertexBuffer;
+
+		uint32_t CubeIndexCount = 0;
+		CubeVertex* CubeVertexBufferBase = nullptr;
+		CubeVertex* CubeVertexBufferPtr = nullptr;
+		glm::vec4 CubeVertexPosition[24];
+
+		std::shared_ptr<Texture2D> WhiteTexture;
+		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> TextureSlots;
+		uint32_t TextureSlotIndex = 1;
+
+		Renderer3D::Statistics Stats;
+	};
+
+	static Renderer3DData s_3Ddata;
+
 	void Renderer3D::Init()
 	{
 		//  ======== Cube ========
@@ -40,21 +77,6 @@ namespace Origin
 		std::shared_ptr<IndexBuffer> CubeIndexBuffer = IndexBuffer::Create(CubeIndices, s_3Ddata.MaxIndices);
 		s_3Ddata.CubeVertexArray->SetIndexBuffer(CubeIndexBuffer);
 		delete[] CubeIndices;
-
-		// Lighting Setup
-		s_3Ddata.LightingVertexArray = VertexArray::Create();
-		s_3Ddata.LightingVertexBuffer = VertexBuffer::Create(s_3Ddata.MaxVertices * sizeof(LightingVertex));
-		s_3Ddata.LightingVertexBuffer->SetLayout({
-			{ShaderDataType::Float3,	"a_Position"	},
-			{ShaderDataType::Float4,	"a_Color"			},
-			{ShaderDataType::Float,		"a_Intensity"	},
-			{ShaderDataType::Int,			"a_EntityID"	},
-		});
-
-		s_3Ddata.LightingVertexArray->AddVertexBuffer(s_3Ddata.LightingVertexBuffer);
-		s_3Ddata.LightingVertexBufferBase = new LightingVertex[s_3Ddata.MaxVertices];
-
-		s_3Ddata.LightingVertexArray->SetIndexBuffer(CubeIndexBuffer);
 
 		// Data Settings
 		s_3Ddata.WhiteTexture = Texture2D::Create(1, 1);
@@ -103,8 +125,12 @@ namespace Origin
 		s_3Ddata.CubeVertexPosition[22] = glm::vec4( 0.5f, -0.5f, -0.5f, 1.0f);
 		s_3Ddata.CubeVertexPosition[23] = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
 
-		s_3Ddata.CubeShader = Shader::Create("assets/shaders/Cube.glsl");
-		s_3Ddata.LightingShader = Shader::Create("assets/shaders/Lighting.glsl");
+		// =================================================
+		// ==================== NORMALS ====================
+		// =================================================
+		
+
+		s_3Ddata.CubeShader = Shader::Create("assets/shaders/Cube.glsl", true, true);
 	}
 
 	void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform)
@@ -121,9 +147,6 @@ namespace Origin
 	{
 		s_3Ddata.CubeIndexCount = 0;
 		s_3Ddata.CubeVertexBufferPtr = s_3Ddata.CubeVertexBufferBase;
-
-		s_3Ddata.LightingIndexCount = 0;
-		s_3Ddata.LightingVertexBufferPtr = s_3Ddata.LightingVertexBufferBase;
 
 		s_3Ddata.TextureSlotIndex = 1;
 	}
@@ -145,16 +168,6 @@ namespace Origin
 
 			s_3Ddata.CubeShader->Bind();
 			RenderCommand::DrawIndexed(s_3Ddata.CubeVertexArray, s_3Ddata.CubeIndexCount);
-			s_3Ddata.Stats.DrawCalls++;
-		}
-
-		if (s_3Ddata.LightingIndexCount)
-		{
-			uint32_t dataSize = (uint8_t*)s_3Ddata.LightingVertexBufferPtr - (uint8_t*)s_3Ddata.LightingVertexBufferBase;
-			s_3Ddata.LightingVertexBuffer->SetData(s_3Ddata.LightingVertexBufferBase, dataSize);
-
-			s_3Ddata.LightingShader->Bind();
-			RenderCommand::DrawIndexed(s_3Ddata.LightingVertexArray, s_3Ddata.LightingIndexCount);
 			s_3Ddata.Stats.DrawCalls++;
 		}
 	}
@@ -195,6 +208,7 @@ namespace Origin
 		{
 			s_3Ddata.CubeVertexBufferPtr->Position = transform * s_3Ddata.CubeVertexPosition[i];
 			s_3Ddata.CubeVertexBufferPtr->Color = color;
+			//s_3Ddata.CubeVertexBufferPtr->Normal = glm::vec3(1.0f);
 			s_3Ddata.CubeVertexBufferPtr->TexCoord = textureCoords;
 			s_3Ddata.CubeVertexBufferPtr->TexIndex = textureIndex;
 			s_3Ddata.CubeVertexBufferPtr->EntityID = entityID;
@@ -244,6 +258,38 @@ namespace Origin
 			{ 0.0f, 0.0f },
 		};
 
+		constexpr glm::vec3 normals[] = {
+			{-1.0f, -1.0f, 1.0f},
+			{ 1.0f, -1.0f, 1.0f},
+			{ 1.0f,  1.0f, 1.0f},
+			{-1.0f,  1.0f, 1.0f},
+
+			{-1.0f, -1.0f, -1.0f},
+			{ 1.0f, -1.0f, -1.0f},
+			{ 1.0f,  1.0f, -1.0f},
+			{-1.0f,  1.0f, -1.0f},
+
+			{-1.0f, -1.0f, -1.0f},
+			{-1.0f, -1.0f, 1.0f},
+			{-1.0f,  1.0f, 1.0f},
+			{-1.0f,  1.0f, -1.0f},
+
+			{ 1.0f, -1.0f, 1.0f},
+			{ 1.0f, -1.0f, -1.0f},
+			{ 1.0f,  1.0f, -1.0f},
+			{ 1.0f,  1.0f, 1.0f},
+
+			{-1.0f, 1.0f, 1.0f},
+			{ 1.0f, 1.0f, 1.0f},
+			{ 1.0f, 1.0f, -1.0f},
+			{-1.0f, 1.0f, -1.0f},
+
+			{-1.0f, -1.0f, 1.0f},
+			{ 1.0f, -1.0f, 1.0f},
+			{ 1.0f, -1.0f, -1.0f},
+			{-1.0f, -1.0f, -1.0f}
+		};
+
 		float textureIndex = 0.0f;
 		for (uint32_t i = 1; i < s_3Ddata.TextureSlotIndex; i++)
 		{
@@ -268,6 +314,7 @@ namespace Origin
 		{
 			s_3Ddata.CubeVertexBufferPtr->Position = transform * s_3Ddata.CubeVertexPosition[i];
 			s_3Ddata.CubeVertexBufferPtr->Color = tintColor;
+			//s_3Ddata.CubeVertexBufferPtr->Normal = normals[i];
 			s_3Ddata.CubeVertexBufferPtr->TexCoord = textureCoords[i];
 			s_3Ddata.CubeVertexBufferPtr->TexIndex = textureIndex;
 			s_3Ddata.CubeVertexBufferPtr->EntityID = entityID;
@@ -275,22 +322,6 @@ namespace Origin
 		}
 		s_3Ddata.CubeIndexCount += 36;
 		s_3Ddata.Stats.CubeCount++;
-	}
-
-	void Renderer3D::DrawLight(const glm::mat4& transform, glm::vec4 color, float intensity, int entityID)
-	{
-		if (s_3Ddata.LightingIndexCount >= Renderer3DData::MaxIndices)
-			NextBatch();
-
-		for (auto& i : s_3Ddata.CubeVertexPosition)
-		{
-			s_3Ddata.LightingVertexBufferPtr->Position = transform * i;
-			s_3Ddata.LightingVertexBufferPtr->Color = color;
-			s_3Ddata.LightingVertexBufferPtr->Intensity = intensity;
-			s_3Ddata.LightingVertexBufferPtr->EntityID = entityID;
-			s_3Ddata.LightingVertexBufferPtr++;
-		}
-		s_3Ddata.LightingIndexCount += 36;
 	}
 
 	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color, int entityID)
@@ -356,7 +387,6 @@ namespace Origin
 	void Renderer3D::Shutdown()
 	{
 		delete s_3Ddata.CubeVertexBufferBase;
-		delete s_3Ddata.LightingVertexBufferBase;
 	}
 
 	void Renderer3D::NextBatch()

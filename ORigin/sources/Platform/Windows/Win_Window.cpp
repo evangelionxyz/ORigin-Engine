@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "Win_Window.h"
-#include "Origin\Utils\log.h"
 #include "origin\Renderer\Icon.h"
 
 #include "Origin\IO\KeyCodes.h"
@@ -30,7 +29,9 @@ namespace Origin
 	void WinWindow::Init()
 	{
 		if (!glfwInit())
-			OGN_CORE_ASSERT(false, "ERROR :FAILED TO INITIALIZE GLFW");
+		{
+			OGN_CORE_ASSERT(false);
+		}
 
 		m_Monitor = glfwGetPrimaryMonitor();
 		glfwGetMonitorWorkarea(m_Monitor, &monitorPos.x, &monitorPos.y, &monitorSize.x, &monitorSize.y);

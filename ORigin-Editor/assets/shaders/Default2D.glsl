@@ -50,6 +50,7 @@ struct VertexOutput
 	float TilingFactor;
 };
 
+
 layout (location = 0) in VertexOutput Input;
 layout (location = 3) in flat float v_TexIndex;
 layout (location = 4) in flat int v_EntityID;

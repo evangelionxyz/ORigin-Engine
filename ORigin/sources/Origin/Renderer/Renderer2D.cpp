@@ -82,14 +82,13 @@ namespace Origin
 		s_2Ddata.TextureSlots[0] = s_2Ddata.WhiteTexture;
 
 		s_2Ddata.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		s_2Ddata.QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-		s_2Ddata.QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+		s_2Ddata.QuadVertexPositions[1] = {	 0.5f, -0.5f, 0.0f, 1.0f };
+		s_2Ddata.QuadVertexPositions[2] = {	 0.5f,  0.5f, 0.0f, 1.0f };
 		s_2Ddata.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		s_2Ddata.QuadShader = Shader::Create("assets/shaders/Default2D.glsl");
-
-		s_2Ddata.CircleShader = Shader::Create("assets/shaders/Circle2D.glsl");
-		s_2Ddata.LineShader = Shader::Create("assets/shaders/Line2D.glsl");
+		s_2Ddata.QuadShader = Shader::Create("assets/shaders/Default2D.glsl", true);
+		s_2Ddata.CircleShader = Shader::Create("assets/shaders/Circle2D.glsl", true);
+		s_2Ddata.LineShader = Shader::Create("assets/shaders/Line2D.glsl", true);
 	}
 
 	void Renderer2D::Shutdown()

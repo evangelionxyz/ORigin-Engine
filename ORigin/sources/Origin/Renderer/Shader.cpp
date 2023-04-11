@@ -7,12 +7,12 @@
 
 namespace Origin
 {
-	std::shared_ptr<Shader> Shader::Create(const std::string& filepath, bool recompileSpirv)
+	std::shared_ptr<Shader> Shader::Create(const std::string& filepath, bool enableSpirv, bool recompileSpirv)
 	{
 		switch (Renderer::GetAPI())
 		{
 				case RendererAPI::API::None:			return nullptr;
-				case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLShader>(filepath, recompileSpirv);
+				case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLShader>(filepath, enableSpirv, recompileSpirv);
 		}
 		OGN_CORE_ASSERT(false, "Unkown RendererAPI");
 		return nullptr;
