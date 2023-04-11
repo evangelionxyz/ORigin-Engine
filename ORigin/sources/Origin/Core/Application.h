@@ -1,7 +1,6 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "OriginCore.h"
 #include "Window.h"
 
 #include "Origin\IO\Input.h"
@@ -13,6 +12,7 @@
 #include "Origin\Utils\GUI\GuiLayer.h"
 
 #include "Origin\Renderer\Renderer.h"
+#include <mutex>
 
 namespace Origin {
 
@@ -23,15 +23,21 @@ namespace Origin {
 
 		const char* operator[](int index) const {
 			if (index > Count) __debugbreak();
-
 			return Args[index];
 		}
+	};
+
+	struct ApplicationSpecification
+	{
+		std::string Name = "ORigin Application";
+		std::string WorkingDirectory;
+		ApplicationCommandLineArgs CommandLineArgs;
 	};
 
 	class Application
 	{
 	public:
-		Application(const std::string title, ApplicationCommandLineArgs args = ApplicationCommandLineArgs());
+		Application(const ApplicationSpecification& spec);
 
 		virtual ~Application();
 
@@ -47,19 +53,27 @@ namespace Origin {
 		inline static Application& Get() { return *s_Instance; }
 		inline bool GetMinimized() { return m_Minimized; }
 		inline Window& GetWindow() { return *m_Window; }
-		ApplicationCommandLineArgs GetCommandLineArgs() const { return m_CommandLineArgs; }
+		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
+		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
+
+		void SubmitToMainThread(const std::function<void()>& function);
 
 	private:
-		ApplicationCommandLineArgs m_CommandLineArgs;
+		ApplicationSpecification m_Specification;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
+
+		void ExecuteMainThreadQueue();
 
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer;
 		float m_LastFrame = 0.0f;
+
+		std::vector<std::function<void()>> m_MainThreadQueue;
+		std::mutex m_MainThreadMutex;
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args);

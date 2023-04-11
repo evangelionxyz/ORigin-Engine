@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "Win_Window.h"
-#include "Origin\Utils\log.h"
 #include "origin\Renderer\Icon.h"
 
 #include "Origin\IO\KeyCodes.h"
@@ -27,28 +26,12 @@ namespace Origin
 		glfwDestroyWindow(m_Window);
 	}
 
-	void WinWindow::SetVSync(bool enable)
-	{
-		if (enable)
-			glfwSwapInterval(1);
-		else
-			glfwSwapInterval(0);
-
-		m_Data.VSync = enable;
-	}
-
-	void WinWindow::SetClose(bool close)
-	{
-		if (close)
-			m_Data.Close = 1;
-		else
-			m_Data.Close = 0;
-	}
-
 	void WinWindow::Init()
 	{
 		if (!glfwInit())
-			OGN_CORE_ASSERT(false, "ERROR :FAILED TO INITIALIZE GLFW");
+		{
+			OGN_CORE_ASSERT(false);
+		}
 
 		m_Monitor = glfwGetPrimaryMonitor();
 		glfwGetMonitorWorkarea(m_Monitor, &monitorPos.x, &monitorPos.y, &monitorSize.x, &monitorSize.y);
@@ -82,7 +65,6 @@ namespace Origin
 	void WinWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		
 		if (m_Data.Fullscreen)
 		{
 			glfwSetWindowMonitor(m_Window, m_Monitor, monitorPos.x, monitorPos.y, monitorSize.x, monitorSize.y, 0);
@@ -108,6 +90,24 @@ namespace Origin
 		auto& app = Application::Get();
 		if (!app.GetMinimized())
 			m_Context->SwapBuffers();
+	}
+
+	void WinWindow::SetVSync(bool enable)
+	{
+		if (enable)
+			glfwSwapInterval(1);
+		else
+			glfwSwapInterval(0);
+
+		m_Data.VSync = enable;
+	}
+
+	void WinWindow::SetClose(bool close)
+	{
+		if (close)
+			m_Data.Close = 1;
+		else
+			m_Data.Close = 0;
 	}
 
 	// Set Window Callbacks

@@ -1,69 +1,102 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+
 #include "Origin\EntryPoint.h"
 #include "Sandbox.h"
+#include "Draw.h"
 
+#include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
-namespace Origin {
+#include <imgui.h>
 
-  void Sandbox::OnAttach()
-  {
-    m_Texture = Texture2D::Create("assets/textures/checkerboard.jpg");
-    m_Sprites = Texture2D::Create("assets/textures/Spritesheet.png");
-    m_Logo = Texture2D::Create("assets/textures/icon_editor.png");
+using namespace Origin;
 
-    m_StairsTexture = SubTexture2D::CreateFromCoords(m_Sprites, glm::vec2(7.0f, 6.0f), glm::vec2(128, 128));
-    m_BarrelTexture = SubTexture2D::CreateFromCoords(m_Sprites, glm::vec2(8.0f, 2.0f), glm::vec2(128, 128));
-    m_TreeTexture = SubTexture2D::CreateFromCoords(m_Sprites, glm::vec2(2.0f, 1.0f), glm::vec2(128, 128), glm::vec2(1, 2));
-  }
+Sandbox::Sandbox()
+	: Layer("Sandbox")
+{
+	cubeTexture = Texture2D::Create("assets/textures/block.png");
 
-  void Sandbox::OnUpdate(Timestep ts)
-  {
-     RenderCommand::ClearColor(color);
-     RenderCommand::Clear();
-
-     m_CameraController.OnUpdate(ts);
-     Renderer2D::ResetStats();
-
-    {
-      Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-      Renderer2D::DrawQuad(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.5f), glm::vec4(1.0f, 0.2f, 0.3f, 1.0f));
-      Renderer2D::DrawQuad(glm::vec3(0.0f, 0.0f, -0.1f), glm::vec2(20.0f), m_Texture, 8.0f);
-
-      Renderer2D::DrawRotatedQuad(glm::vec3(2.0f, -1.0f, 0.0f), rotation * 2, glm::vec2(0.2f, 0.4f), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-      Renderer2D::DrawRotatedQuad(glm::vec3(-0.5f, 0.0f, 0.1f), -rotation, glm::vec2(1.0f, 0.2f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-      Renderer2D::DrawRotatedQuad(glm::vec3(1.0f, 0.0f, 0.0f), rotation, glm::vec2(1.0f), m_Texture, 5.0f);
-
-      rotation += incremental * ts;
-
-      for (float y = -5.0f; y < 5.0f; y += 0.5f)
-      {
-        for (float x = -5.0f; x < 5.0f; x += 0.5f)
-        {
-          glm::vec4 color = glm::vec4((x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.8f);
-          Renderer2D::DrawQuad(glm::vec3(x, y, 0.0f), glm::vec2(0.45f), color);
-        }
-      }
-      Renderer2D::EndScene();
-    }
-
-    {
-      Renderer2D::BeginScene(m_CameraController.GetCamera());
-      Renderer2D::DrawQuad(glm::vec3(-3.0f, -2.0f, 0.2f), glm::vec2(1.0f), m_StairsTexture);
-      Renderer2D::DrawQuad(glm::vec3(-2.0f, -2.0f, 0.2f), glm::vec2(1.0f), m_BarrelTexture);
-      Renderer2D::DrawQuad(glm::vec3(-1.0f, -2.0f, 0.2f), glm::vec2(1.0f, 2.0f), m_TreeTexture);
-      Renderer2D::EndScene();
-    }
-  }
-
-  void Sandbox::OnEvent(Event& e)
-  {
-    m_CameraController.OnEvent(e);
-
-    if (Input::IsKeyPressed(OGN_KEY_ESCAPE))
-      Application::Get().Close();
-  }
-
+	draw.Init();
+	camera = FPSCamera(45.0f, 16.0f / 9.0f);
 }
 
+Sandbox::~Sandbox()
+{
+}
+
+void Sandbox::OnUpdate(Timestep ts)
+{
+	glEnable(GL_DEPTH_TEST);
+	RenderCommand::Clear();
+	camera.OnUpdate(ts);
+
+
+	// Cube
+	draw.GetShader("cube")->Bind();
+
+	draw.GetShader("cube")->SetMatrix("uViewProjection", camera.GetViewProjection());
+
+	cubeTexture->Bind(0);
+	draw.GetShader("cube")->SetInt("uTexure", cubeTexture->GetIndex());
+
+	draw.GetShader("cube")->SetVector("uPos", cubePosition);
+	draw.GetShader("cube")->SetVector("uSize", cubeSize);
+	draw.GetShader("cube")->SetVector("uLightPos", lightPosition);
+	draw.GetShader("cube")->SetVector("uLightColor", lightColor);
+	draw.GetShader("cube")->SetFloat("uLightAmbient", Ambient);
+
+	draw.GetShader("cube")->SetVector("uCameraPosition", camera.GetPosition());
+	draw.RenderCube();
+	draw.GetShader("cube")->Unbind();
+
+
+	// Lighting
+	draw.GetShader("light")->Bind();
+	draw.GetShader("light")->SetMatrix("uViewProjection", camera.GetViewProjection());
+	draw.GetShader("light")->SetVector("uPos", lightPosition);
+	draw.GetShader("light")->SetVector("uSize", lightSize);
+	draw.GetShader("light")->SetVector("uLightColor", lightColor);
+	draw.RenderLight();
+	draw.GetShader("light")->Unbind();
+}
+
+void Sandbox::OnEvent(Event& e)
+{
+	EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<WindowResizeEvent>(OGN_BIND_EVENT_FN(Sandbox::OnWindowResize));
+
+	camera.OnEvent(e);
+}
+
+bool Sandbox::OnWindowResize(WindowResizeEvent& e)
+{
+	camera.OnWindowResize(e.GetWidth(), e.GetHeight());
+	return false;
+}
+
+void Sandbox::OnGuiRender()
+{
+	ImGui::Begin("Window");
+	ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::End();
+
+	ImGui::Begin("Control");
+	ImGui::PushID("cube");
+	ImGui::Text("Cube");
+	ImGui::DragFloat3("Position", glm::value_ptr(cubePosition), 0.25);
+	ImGui::DragFloat3("Size", glm::value_ptr(cubeSize), 0.25);
+	ImGui::ColorEdit4("Color", glm::value_ptr(cubeColor));
+	ImGui::Separator();
+	ImGui::PopID();
+
+	ImGui::PushID("light");
+	ImGui::Text("Light");
+	ImGui::DragFloat3("Position", glm::value_ptr(lightPosition), 0.25);
+	ImGui::DragFloat3("Size", glm::value_ptr(lightSize), 0.25);
+	ImGui::ColorEdit4("Color", glm::value_ptr(lightColor));
+	ImGui::DragFloat("Ambient",&Ambient, 0.01f);
+	ImGui::Separator();
+	ImGui::PopID();
+
+	ImGui::End();
+}

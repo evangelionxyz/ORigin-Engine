@@ -17,7 +17,10 @@
 #include <chrono>
 #include <filesystem>
 
-#include "Origin/Core/OriginCore.h"
+#include "Origin\Core\Base.h"
+#include "Origin\Core\Assert.h"
+
+#include <glm\glm.hpp>
 
 #ifdef OGN_WINDOWS_PLATFORM
 	#include <Windows.h>

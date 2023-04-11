@@ -9,10 +9,10 @@ layout(location = 3) in float a_TexIndex;
 layout(location = 4) in float a_TilingFactor;
 layout(location = 5) in int a_EntityID;
 
-layout(std140, binding = 0) uniform Camera
+layout (std140, binding = 0) uniform Camera
 {
 	mat4 ViewProjection;
-} CameraBuffer;
+};
 
 struct VertexOutput
 {
@@ -33,11 +33,13 @@ void main()
 	Output.TilingFactor = a_TilingFactor;
 	v_EntityID = a_EntityID;
 
-	gl_Position = CameraBuffer.ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = ViewProjection * vec4(a_Position, 1.0);
 }
 
 // type fragment
+
 #version 450 core
+
 layout(location = 0) out vec4 color;
 layout(location = 1) out int entColor;
 
@@ -47,6 +49,7 @@ struct VertexOutput
 	vec2 TexCoord;
 	float TilingFactor;
 };
+
 
 layout (location = 0) in VertexOutput Input;
 layout (location = 3) in flat float v_TexIndex;

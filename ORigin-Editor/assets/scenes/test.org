@@ -1,20 +1,12 @@
 Scene: test.org
 Entities:
-  - Entity: 6146076048283816676
+  - Entity: 13974524227984649688
     TagComponent:
-      Tag: Camera
+      Tag: Cube
     TransformComponent:
-      Translation: [0, 0, 8]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-      FixedAspectRatio: false
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets\textures\block.png

@@ -12,6 +12,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include <algorithm>
+
 namespace Origin {
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
@@ -26,11 +28,16 @@ namespace Origin {
 		m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
 	}
 
+	void EditorCamera::SetViewportSize(float width, float height)
+	{
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+		UpdateProjection();
+	}
+
 	void EditorCamera::UpdateView()
 	{
-		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 		m_Position = CalculatePosition();
-
 		glm::quat orientation = GetOrientation();
 		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
 		m_ViewMatrix = glm::inverse(m_ViewMatrix);
@@ -39,10 +46,10 @@ namespace Origin {
 	std::pair<float, float> EditorCamera::PanSpeed() const
 	{
 		float x = std::min(m_ViewportWidth / 1000.0f, 2.4f); // max = 2.4f
-		float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
+		float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.5f;
 
 		float y = std::min(m_ViewportHeight / 1000.0f, 2.4f); // max = 2.4f
-		float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
+		float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.5f;
 
 		return { xFactor, yFactor };
 	}
@@ -54,10 +61,11 @@ namespace Origin {
 
 	float EditorCamera::ZoomSpeed() const
 	{
-		float distance = m_Distance * 0.2f;
-		distance = std::max(distance, 0.0f);
-		float speed = distance * distance;
-		speed = std::min(speed, 100.0f); // max speed = 100
+		float speed = (m_Distance * m_Distance) * 0.2f;
+
+		speed = std::max(speed, 3.0f);
+		speed = std::min(speed, 100.0f);
+
 		return speed;
 	}
 
@@ -117,11 +125,9 @@ namespace Origin {
 	void EditorCamera::MouseZoom(float delta)
 	{
 		m_Distance -= delta * ZoomSpeed();
-		if (m_Distance < 1.0f)
-		{
-			m_FocalPoint += GetForwardDirection();
-			m_Distance = 1.0f;
-		}
+
+		m_Distance = std::max(m_Distance, 3.0f);
+		m_FocalPoint += delta * GetForwardDirection();
 	}
 
 	glm::vec3 EditorCamera::GetUpDirection() const
@@ -148,5 +154,4 @@ namespace Origin {
 	{
 		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
 	}
-
 }

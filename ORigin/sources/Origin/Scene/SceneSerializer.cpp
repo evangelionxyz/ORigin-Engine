@@ -1,16 +1,35 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
+
 #include "SceneSerializer.h"
-#include "ScriptableEntity.h"
+#include "Origin\Scripting\ScriptEngine.h"
 
 #include "Entity.h"
+#include "Component\UUID.h"
 #include "Component\Component.h"
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
-namespace YAML {
+namespace YAML
+{
+	template<>
+	struct convert<Origin::UUID>
+	{
+		static Node encode(const Origin::UUID uuid)
+		{
+			Node node;
+			node.push_back((uint64_t)uuid);
+			return node;
+		}
+
+		static bool decode(const Node& node, Origin::UUID uuid)
+		{
+			uuid = node.as<uint64_t>();
+			return true;
+		}
+	};
 
 	template<>
 	struct convert<glm::vec2>
@@ -88,6 +107,21 @@ namespace YAML {
 }
 namespace Origin {
 
+#define WRITE_FIELD_TYPE(FieldType, Type)\
+				case ScriptFieldType::FieldType:\
+				{\
+					out << scriptField.GetValue<Type>();\
+					break;\
+				}
+
+#define	READ_FIELD_TYPE(FieldType, Type)\
+				case ScriptFieldType::FieldType:\
+				{\
+					Type data = scriptField["Data"].as<Type>();\
+					fieldInstance.SetValue(data); \
+					break;\
+				}
+
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
 	{
 		out << YAML::Flow;
@@ -148,7 +182,7 @@ namespace Origin {
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap; // TagComponent
 
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			const auto& tag = entity.GetComponent<TagComponent>().Tag;
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 
 			out << YAML::EndMap; // TagComponent
@@ -159,7 +193,7 @@ namespace Origin {
 			out << YAML::Key << "TransformComponent";
 			out << YAML::BeginMap; // TransformComponent
 
-			auto& tc = entity.GetComponent<TransformComponent>();
+			const auto& tc = entity.GetComponent<TransformComponent>();
 			out << YAML::Key << "Translation" << YAML::Value << tc.Translation;
 			out << YAML::Key << "Rotation" << YAML::Value << tc.Rotation;
 			out << YAML::Key << "Scale" << YAML::Value << tc.Scale;
@@ -172,8 +206,8 @@ namespace Origin {
 			out << YAML::Key << "CameraComponent";
 			out << YAML::BeginMap; // CameraComponent
 
-			auto& cameraComponent = entity.GetComponent<CameraComponent>();
-			auto& camera = cameraComponent.Camera;
+			const auto& cameraComponent = entity.GetComponent<CameraComponent>();
+			const auto& camera = cameraComponent.Camera;
 
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap; // Camera
@@ -197,12 +231,37 @@ namespace Origin {
 			out << YAML::Key << "SpriteRendererComponent";
 			out << YAML::BeginMap; // SpriteRendererComponent
 
-			auto& src = entity.GetComponent<SpriteRendererComponent>();
+			const auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
-			out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
-			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
+			if (src.Texture)
+				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
 
 			out << YAML::EndMap; // !SpriteRendererComponent
+		}
+
+		if (entity.HasComponent<SpriteRenderer2DComponent>())
+		{
+			out << YAML::Key << "SpriteRenderer2DComponent";
+			out << YAML::BeginMap; // SpriteRenderer2DComponent
+
+			const auto& src = entity.GetComponent<SpriteRenderer2DComponent>();
+			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			if(src.Texture)
+				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
+			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
+
+			out << YAML::EndMap; // !SpriteRenderer2DComponent
+		}
+
+		if (entity.HasComponent<LightingComponent>())
+		{
+			out << YAML::Key << "LightingComponent";
+			out << YAML::BeginMap; // LightingComponent
+
+			const auto& lc = entity.GetComponent<LightingComponent>();
+			out << YAML::Key << "Color" << YAML::Value << lc.Color;
+
+			out << YAML::EndMap; // !LightingComponent
 		}
 
 		if (entity.HasComponent<CircleRendererComponent>())
@@ -210,7 +269,7 @@ namespace Origin {
 			out << YAML::Key << "CircleRendererComponent";
 			out << YAML::BeginMap; // CircleRendererComponent
 
-			auto& src = entity.GetComponent<CircleRendererComponent>();
+			const auto& src = entity.GetComponent<CircleRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			out << YAML::Key << "Fade" << YAML::Value << src.Fade;
 			out << YAML::Key << "Thickness" << YAML::Value << src.Thickness;
@@ -223,7 +282,7 @@ namespace Origin {
 			out << YAML::Key << "Rigidbody2DComponent";
 			out << YAML::BeginMap; // Rigidbody2DComponent
 
-			auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+			const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << RigidBody2DBodyTypeToString(rb2d.Type);
 			out << YAML::Key << "FixedRotation" << YAML::Value << rb2d.FixedRotation;
 
@@ -235,7 +294,7 @@ namespace Origin {
 			out << YAML::Key << "BoxCollider2DComponent";
 			out << YAML::BeginMap; // BoxCollider2DComponent;
 
-			auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+			const auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << bc2d.Offset;
 			out << YAML::Key << "Size" << YAML::Value << bc2d.Size;
 
@@ -252,7 +311,7 @@ namespace Origin {
 			out << YAML::Key << "CircleCollider2DComponent";
 			out << YAML::BeginMap; // CircleCollider2DComponent;
 
-			auto& bc2d = entity.GetComponent<CircleCollider2DComponent>();
+			const auto& bc2d = entity.GetComponent<CircleCollider2DComponent>();
 			out << YAML::Key << "Offset" << YAML::Value << bc2d.Offset;
 			out << YAML::Key << "Radius" << YAML::Value << bc2d.Radius;
 
@@ -269,6 +328,63 @@ namespace Origin {
 			auto& nsc = entity.GetComponent<NativeScriptComponent>();
 		}
 
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap; // ScriptComponent;
+
+			auto& sc = entity.GetComponent<ScriptComponent>();
+			out << YAML::Key << "ClassName" << YAML::Value << sc.ClassName;
+
+			// Fields
+			const std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
+			const auto& fields = entityClass->GetFields();
+
+			if (!fields.empty())
+			{
+				out << YAML::Key << "StoredFields" << YAML::Value;
+				auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+
+				out << YAML::BeginSeq;
+				for (const auto& [name, field] : fields)
+				{
+					if (entityFields.find(name) == entityFields.end())
+						continue;
+
+					out << YAML::BeginMap; // Fields
+					out << YAML::Key << "Name" << YAML::Value << name;
+					out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
+					out << YAML::Key << "Data" << YAML::Value;
+
+					ScriptFieldInstance& scriptField = entityFields.at(name);
+					switch (field.Type)
+					{
+						WRITE_FIELD_TYPE(Float,		float);
+						WRITE_FIELD_TYPE(Double,	double);
+						WRITE_FIELD_TYPE(Bool,		bool);
+						WRITE_FIELD_TYPE(Char,		char);
+						WRITE_FIELD_TYPE(Byte,		int8_t);
+						WRITE_FIELD_TYPE(Short,		int16_t);
+						WRITE_FIELD_TYPE(Int,			int32_t);
+						WRITE_FIELD_TYPE(Long,		int64_t);
+						WRITE_FIELD_TYPE(UByte,		uint8_t);
+						WRITE_FIELD_TYPE(UShort,	uint16_t);
+						WRITE_FIELD_TYPE(UInt,		uint32_t);
+						WRITE_FIELD_TYPE(ULong,		uint64_t);
+						WRITE_FIELD_TYPE(Vector2, glm::vec2);
+						WRITE_FIELD_TYPE(Vector3, glm::vec3);
+						WRITE_FIELD_TYPE(Vector4, glm::vec4);
+						WRITE_FIELD_TYPE(Entity,	UUID);
+					}
+
+					out << YAML::EndMap; // !Fields
+				}
+				out << YAML::EndSeq;
+			}
+
+			out << YAML::EndMap; // !ScriptComponent;
+		}
+
 		out << YAML::EndMap; // !Entity
 	}
 
@@ -281,7 +397,7 @@ namespace Origin {
 
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene.get() };
+			const Entity entity = { entityID, m_Scene.get() };
 			if (!entity)
 				return;
 
@@ -337,24 +453,19 @@ namespace Origin {
 		std::string sceneName = data["Scene"].as<std::string>();
 		OGN_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
-		auto entities = data["Entities"];
-		if (entities)
+		if (auto entities = data["Entities"])
 		{
 			for (auto entity : entities)
 			{
-				uint64_t uuid = entity["Entity"].as<uint64_t>();
+				auto uuid = entity["Entity"].as<uint64_t>();
 
 				std::string name;
-				auto tagComponent = entity["TagComponent"];
-				if (tagComponent)
+				if (auto tagComponent = entity["TagComponent"])
 					name = tagComponent["Tag"].as<std::string>();
-
-				OGN_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
 
-				auto transformComponent = entity["TransformComponent"];
-				if (transformComponent)
+				if (auto transformComponent = entity["TransformComponent"])
 				{
 					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
@@ -362,8 +473,7 @@ namespace Origin {
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
 				}
 
-				auto cameraComponent = entity["CameraComponent"];
-				if (cameraComponent)
+				if (auto cameraComponent = entity["CameraComponent"])
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
@@ -382,20 +492,31 @@ namespace Origin {
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}
 
-				auto spriteRendererComponent = entity["SpriteRendererComponent"];
-				if (spriteRendererComponent)
+				if (auto spriteRendererComponent = entity["SpriteRendererComponent"])
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
-					std::string texturePath = spriteRendererComponent["TexturePath"].as<std::string>();
-					if(!texturePath.empty())
-						src.Texture = Texture2D::Create(texturePath);
-
-					src.TillingFactor = spriteRendererComponent["TillingFactor"].as<float>();
+					if (spriteRendererComponent["TexturePath"])
+						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
 				}
 
-				auto circleRendererComponent = entity["CircleRendererComponent"];
-				if (circleRendererComponent)
+				if (auto spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])
+				{
+					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
+					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
+					if(spriteRenderer2DComponent["TexturePath"])
+						src.Texture = Texture2D::Create(spriteRenderer2DComponent["TexturePath"].as<std::string>());
+
+					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<float>();
+				}
+
+				if (auto lightingComponent = entity["LightingComponent"])
+				{
+					auto& lc = deserializedEntity.AddComponent<LightingComponent>();
+					lc.Color = lightingComponent["Color"].as<glm::vec4>();
+				}
+
+				if (auto circleRendererComponent = entity["CircleRendererComponent"])
 				{
 					auto& src = deserializedEntity.AddComponent<CircleRendererComponent>();
 					src.Color = circleRendererComponent["Color"].as<glm::vec4>();
@@ -403,16 +524,14 @@ namespace Origin {
 					src.Thickness = circleRendererComponent["Thickness"].as<float>();
 				}
 
-				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];
-				if (rigidbody2DComponent)
+				if (auto rigidbody2DComponent = entity["Rigidbody2DComponent"])
 				{
 					auto& rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
 					rb2d.Type = RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
 				}
 
-				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
-				if (boxCollider2DComponent)
+				if (auto boxCollider2DComponent = entity["BoxCollider2DComponent"])
 				{
 					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
 					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
@@ -423,8 +542,7 @@ namespace Origin {
 					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
-				auto circleCollider2DComponent = entity["CircleCollider2DComponent"];
-				if (circleCollider2DComponent)
+				if (auto circleCollider2DComponent = entity["CircleCollider2DComponent"])
 				{
 					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
 					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
@@ -435,8 +553,59 @@ namespace Origin {
 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
-				auto nativeScriptComponent = entity["NativeScriptComponent"];
-				if (nativeScriptComponent)
+				if (auto scriptComponent = entity["ScriptComponent"])
+				{
+					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
+
+					if(auto scriptFields = scriptComponent["ScriptFields"])
+					{
+						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
+						OGN_CORE_ASSERT(deserializedEntity, "Entity is invalid");
+
+						const auto& fields = entityClass->GetFields();
+						auto& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
+
+						for(auto scriptField : scriptFields)
+						{
+							auto name = scriptField["Name"].as<std::string>();
+							auto typeString = scriptField["Type"].as<std::string>();
+							ScriptFieldType type = Utils::ScriptFieldTypeFromString(typeString);
+
+							ScriptFieldInstance& fieldInstance = entityFields[name];
+
+							// for Log in editor
+							OGN_CORE_ASSERT(fields.find(name) != fields.end(), "Script Fields Not Found");
+							if (fields.find(name) == fields.end())
+								continue;
+
+							fieldInstance.Field = fields.at(name);
+
+							switch(type)
+							{
+								READ_FIELD_TYPE(Float, float);
+								READ_FIELD_TYPE(Double, double);
+								READ_FIELD_TYPE(Bool, bool);
+								READ_FIELD_TYPE(Char, char);
+								READ_FIELD_TYPE(Byte, int8_t);
+								READ_FIELD_TYPE(Short, int16_t);
+								READ_FIELD_TYPE(Int, int32_t);
+								READ_FIELD_TYPE(Long, int64_t);
+								READ_FIELD_TYPE(UByte, uint8_t);
+								READ_FIELD_TYPE(UShort, uint16_t);
+								READ_FIELD_TYPE(UInt, uint32_t);
+								READ_FIELD_TYPE(ULong, uint64_t);
+								READ_FIELD_TYPE(Vector2, glm::vec2);
+								READ_FIELD_TYPE(Vector3, glm::vec3);
+								READ_FIELD_TYPE(Vector4, glm::vec4);
+								READ_FIELD_TYPE(Entity, UUID);
+							}
+						}
+
+					}
+				}
+
+				if (auto nativeScriptComponent = entity["NativeScriptComponent"])
 				{
 				}
 			}

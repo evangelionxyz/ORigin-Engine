@@ -3,17 +3,20 @@
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aTexCoords;
 
+layout (std140, binding = 0) uniform Camera
+{
+	mat4 ViewProjection;
+};
+
 out vec3 vPos;
 out vec3 v_TexCoords;
 float size = 1000.0f;
-
-uniform mat4 u_ViewProjection;
 
 void main()
 {
 	v_TexCoords = aTexCoords;
 
-	vec4 Position = u_ViewProjection * vec4(aPos * size, 1.0f);
+	vec4 Position = ViewProjection * vec4(aPos * size, 1.0f);
 	gl_Position = Position.xyww;
 }
 
@@ -22,7 +25,7 @@ void main()
 in vec3 v_TexCoords;
 out vec4 color;
 
-uniform samplerCube skybox;
+layout(std140, binding = 1) uniform samplerCube skybox;
 
 void main()
 {

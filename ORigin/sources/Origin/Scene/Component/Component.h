@@ -7,6 +7,7 @@
 #include "Origin\Renderer\Texture.h"
 
 #include "Origin\Scene\Component\UUID.h"
+#include "Origin\Scene\Component\Lighting.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -58,12 +59,36 @@ namespace Origin
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
 		std::shared_ptr<Texture2D> Texture;
-		float TillingFactor = 1.0f;
+		bool Terrain = false;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color) : Color(color) {}
 		SpriteRendererComponent(float r, float g, float b, float, float a) : Color(r, g, b, a) {}
+	};
+
+	struct SpriteRenderer2DComponent
+	{
+		glm::vec4 Color = glm::vec4(1.0f);
+		std::shared_ptr<Texture2D> Texture;
+		float TillingFactor = 1.0f;
+
+		SpriteRenderer2DComponent() = default;
+		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&) = default;
+		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&, glm::vec4 color) : Color(color) {}
+		SpriteRenderer2DComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
+	};
+
+	struct LightingComponent
+	{
+		glm::vec4 Color = glm::vec4(1.0f);
+		float Ambient = 0.8f;
+		LightingType type = LightingType::Direct;
+
+		LightingComponent() = default;
+		LightingComponent(const LightingComponent&) = default;
+		LightingComponent(const LightingComponent&, glm::vec4 color) : Color(color) {}
+		LightingComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
 	};
 
 	struct CircleRendererComponent
@@ -84,6 +109,15 @@ namespace Origin
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
+	};
+
+	struct ScriptComponent
+	{
+		std::string ClassName = "None";
+
+
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
 	};
 
 	class ScriptableEntity;
@@ -145,4 +179,14 @@ namespace Origin
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
+
+	template<typename... Component>
+	struct ComponentGroup { };
+
+	using AllComponents =
+		ComponentGroup<TransformComponent, LightingComponent,
+		SpriteRendererComponent, SpriteRenderer2DComponent,
+		CircleRendererComponent, CameraComponent,
+		ScriptComponent, NativeScriptComponent,
+		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
 }

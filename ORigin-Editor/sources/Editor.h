@@ -6,44 +6,63 @@
 #include "panels\SceneHierarchyPanel.h"
 #include "panels\ContentBrowserPanel.h"
 
+#include <ImGuizmo.h>
+
 namespace Origin {
+
+	static float RMHoldTime = 0.0f;
+	static float LMHoldTime = 0.0f;
+	static bool guiDockingSpaceOpen = true;
+	static bool guiMenuFullscreen = false;
+	static bool guiMenuStyle = true;
+	static bool guiRenderStatus = true;
+	static bool guiDebugInfo = true;
+	static bool guiImGuiDemoWindow = true;
+	static bool guiOverlay = true;
 
   class Editor : public Layer
   {
   public:
-
     Editor();
+    ~Editor(){}
+
     void OnAttach() override;
     void OnUpdate(Timestep ts) override;
 
-    void OnDuplicateEntity();
-    void OnOverlayRenderer();
-    void ViewportToolbar();
-    void ViewportMenu();
+  private:
+
+    // Scene Viewport
+		void SceneViewport();
+    void SceneViewportToolbar();
+    void SceneViewportMenu();
+    void OverlayBeginScene();
+
+		// Game Viewport
+    void GameRender(float time);
+		void GameViewport();
+
+		void MenuBar();
     void NewScene();
     void SaveScene();
     void SaveSceneAs();
     void OpenScene();
     void OpenScene(const std::filesystem::path& path);
-
     void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
+		void OnDuplicateEntity();
+		void OnOverlayRenderer();
 
-    void OverlayBeginScene();
-
-    void VpGui();
-    void MenuBar();
-
-    static bool OnWindowResize(WindowResizeEvent& e);
-    static bool OnMouseMovedEvent(MouseMovedEvent& e);
-    static bool OnMouseButtonEvent(MouseButtonEvent& e);
+    bool OnWindowResize(WindowResizeEvent& e);
+    bool OnMouseMovedEvent(MouseMovedEvent& e);
+    bool OnMouseButtonEvent(MouseButtonEvent& e);
 
     void OnEvent(Event& e) override;
     bool OnKeyPressed(KeyPressedEvent& e);
     bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-    void InputProccedure(Timestep time);
+    void InputProcedure(Timestep time);
     void OnGuiRender() override;
 
     void OnScenePlay();
+    void OnScenePause();
     void OnSceneSimulate();
     void OnSceneStop();
 
@@ -51,35 +70,41 @@ namespace Origin {
     Entity m_SelectedEntity = {};
 
 		// Scene
-		enum class SceneState { Edit = 0, Play = 1, Simulate = 2};
+		enum class SceneState
+    {
+      Edit = 0,
+      Play = 1,
+      Simulate = 2
+    };
+
 		SceneState m_SceneState = SceneState::Edit;
 		std::filesystem::path m_ScenePath;
 		std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
     glm::vec4 m_GridColor = glm::vec4(0.8f, 0.8f, 0.8f, 0.31f);
-    int m_GridSize = 50;
+    int m_GridSize = 10;
 
 		// panels
 		Dockspace m_Dockspace;
 		ContentBrowserPanel m_ContentBrowser;
 		SceneHierarchyPanel m_SceneHierarchy;
 
-		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton;
+		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton, m_PauseButton, m_SteppingButton;
+
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;
-		std::shared_ptr<Framebuffer> m_Framebuffer;
+		std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
 
-		enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
+    enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
 		ViewportMenuContext m_VpMenuContext = ViewportMenuContext::CreateMenu;
-		static const char* MenuContextToString(const ViewportMenuContext& context);
 		bool VpMenuContextActive;
 
     glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
-    glm::vec4 color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
-    glm::vec2 position = glm::vec2(0);
-    glm::vec2 scale = glm::vec2(1);
+    glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
+    glm::vec2 m_GameViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
 
-    glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-    glm::vec2 m_ViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
+    // Scene Viewport
+    glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
+    glm::vec2 m_SceneViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
     glm::vec3 cameraPosition = {};
 
   	int lastMouseX = 0, mouseX = 0;
@@ -94,7 +119,7 @@ namespace Origin {
 
     bool drawLineMode = false;
     bool m_VisualizeCollider = false;
-    bool m_ViewportHovered;
-    bool m_ViewportFocused;
+    bool m_SceneViewportHovered;
+    bool m_SceneViewportFocused;
   };
 }

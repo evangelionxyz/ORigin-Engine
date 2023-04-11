@@ -1,37 +1,37 @@
 #pragma once
 #include <Origin.h>
+#include "Draw.h"
 
-namespace Origin {
+#include <glm\glm.hpp>
 
-  class Sandbox : public Layer
-  {
-  public:
-    Sandbox() : Layer("Sandbox")
-    {
-    }
+#include "FPSCamera.h"
 
-    void OnAttach() override;
+using namespace Origin;
 
-    void OnUpdate(Timestep ts) override;
-    void OnEvent(Event& event) override;
+class Sandbox : public Layer
+{
+public:
+  Sandbox();
+  ~Sandbox();
 
-  private:
-    ShaderLibrary m_ShaderLibrary;
-    OrthoCameraController m_CameraController;
+  void OnUpdate(Timestep ts) override;
+  void OnEvent(Event& event) override;
 
-    std::shared_ptr<Texture2D> m_Texture, m_Sprites, m_Logo;
+  void OnGuiRender() override;
+  bool OnWindowResize(WindowResizeEvent& e);
 
-    std::shared_ptr<SubTexture2D> m_StairsTexture;
-    std::shared_ptr<SubTexture2D> m_BarrelTexture;
-    std::shared_ptr<SubTexture2D> m_TreeTexture;
+  FPSCamera camera;
 
-    glm::vec4 color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+  std::shared_ptr<Texture2D> cubeTexture;
+  glm::vec3 cubePosition = glm::vec3(0.0f, -1.0f, 0.0f);
+  glm::vec3 cubeSize = glm::vec3(2.0f, 0.0f, 2.0f);
+  glm::vec4 cubeColor = glm::vec4(1.0f);
 
-    float incremental = 20.0f;
-    float rotation = 0.0f;
-    float rotationSpeed = 50.0f;
+	glm::vec3 lightPosition = glm::vec3(0.0f, 2.0f, 0.0f);
+  glm::vec3 lightSize = glm::vec3(0.5f);
+	glm::vec4 lightColor = glm::vec4(1.0f);
+  float Ambient = 0.8f;
 
-  private:
-  };
-
-}
+private:
+  Draw draw;
+};

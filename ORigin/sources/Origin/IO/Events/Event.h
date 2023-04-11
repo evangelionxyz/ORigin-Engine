@@ -2,7 +2,7 @@
 
 #pragma once
 #include "pch.h"
-#include "Origin\Core\OriginCore.h"
+#include "Origin\Core\Base.h"
 
 namespace Origin {
 

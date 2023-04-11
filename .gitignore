@@ -1,5 +1,6 @@
 *.ipch
 *.vcxproj
+*.csproj
 *.filters
 *.user
 *.vcxproj.filters
@@ -14,7 +15,13 @@
 ORigin.sln.startup.json
 ORigin.sln.licenseheader
 
-# folder
-bin/
-bin-int/
+# folders
+Binaries/
 scripts/__pycache__
+
+ORigin/vendor/projectFiles
+ORigin/vendor/VulkanSDK
+
+ORigin-Editor/assets/cache/
+ORigin-Editor/resources/scripts/
+ORigin-Editor/resources/intermediates/

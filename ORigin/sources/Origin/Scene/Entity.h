@@ -9,23 +9,6 @@
 
 namespace Origin {
 
-	/*template<typename T> const char* ComponentToString()
-	{
-		switch (T)
-		{
-			case SpriteRendererComponent: return "Sprite Renderer"; break;
-			case CircleRendererComponent: return "Circle Renderer"; break;
-			case CameraComponent: return "Camera"; break;
-			case NativeScriptComponent: return "Native C++ Script"; break;
-			case TransformComponent: return "Transform"; break;
-			case Rigidbody2DComponent: return "Rigidbody 2D"; break;
-			case BoxCollider2DComponent: return "Box Collider 2D"; break;
-			case TagComponent: return "Tag"; break;
-			case IDComponent: return "ID"; break;
-
-		}
-	}*/
-
 	class Entity
 	{
 	public:

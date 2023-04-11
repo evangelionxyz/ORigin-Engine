@@ -10,17 +10,9 @@ defaultArgument =
   "ListAllProjects": false,
 
   "MultiProjectConfigurations": {
-    "Sandbox 2D": {
-      "Projects": {
-        "Sandbox2D": {
-            "StartProject": true
-        }
-      }
-    },
-
-    "Sandbox 3D": {
+    "Sandbox": {
     "Projects": {
-      "Sandbox3D": {
+      "Sandbox": {
          "StartProject": true
         }
       }

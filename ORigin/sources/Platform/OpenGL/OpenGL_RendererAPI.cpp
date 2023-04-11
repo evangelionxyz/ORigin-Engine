@@ -10,10 +10,9 @@ namespace Origin
 	void OpenGLRendererAPI::Init()
 	{
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_DEPTH_FUNC);
-		glEnable(GL_BLEND);
 		glEnable(GL_LINE_SMOOTH);
 
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 

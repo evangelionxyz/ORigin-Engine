@@ -1,0 +1,62 @@
+Scene: another scene.org
+Entities:
+  - Entity: 2859896987952487185
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.353552908, 0.5, -0.353553623]
+      Rotation: [-1.57079554, -0.785398245, -3.14159226]
+      Scale: [1.0000006, 0.999999881, 1.00000763]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+  - Entity: 17668825472703576931
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-5.96046448e-08, -3.32385952e-07, -0.707106709]
+      Rotation: [-3.14159226, -0.785398245, -3.14159226]
+      Scale: [0.999996603, 1, 0.999996603]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+  - Entity: 17314940610531229944
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.707106829, 3.32385952e-07, 2.98023224e-08]
+      Rotation: [-3.14159226, -0.785398245, -3.14159226]
+      Scale: [0.999996603, 1, 0.999996603]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+  - Entity: 6156098511688754257
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.707106829, 0, -0.707106709]
+      Rotation: [0, -0.785398245, 0]
+      Scale: [0.999999881, 1, 0.999999881]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+  - Entity: 5525703278723014619
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0.785398245, 0]
+      Scale: [0.999999881, 1, 0.999999881]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+  - Entity: 6283321304473577674
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.353553861, -0.5, -0.353553027]
+      Rotation: [-1.57079554, -0.785398245, -3.14159226]
+      Scale: [1.0000006, 0.999999881, 1.00000763]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
