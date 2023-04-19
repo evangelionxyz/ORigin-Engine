@@ -17,10 +17,13 @@ premakeInstalled = PremakeRequirements.Validate()
 
 if premakeInstalled:
     if platform.system() == "Windows":
-        path = os.path.abspath("./scripts/premake5.bat")
-        path = os.path.abspath("./ORigin-Editor/SandboxProject/Assets/Scripts/WinGen.bat")
-        print(f"\nRunning ORigin Project Generator")
-        subprocess.call([path, "nopause"])
+        print("\nGenerating ORigin.sln...")
+        origin_sln = os.path.abspath("./Scripts/premake5.bat")
+        subprocess.call([origin_sln, "nopause"])
+        
+        print("\nGenerating ORiginSandbox.sln...")
+        originSandbox_sln = os.path.abspath("./ORigin-Editor/SandboxProject/Assets/Scripts/WinGen.bat")
+        subprocess.call([originSandbox_sln, "nopause"])
 
     print("Setup Completed!")
 else:
