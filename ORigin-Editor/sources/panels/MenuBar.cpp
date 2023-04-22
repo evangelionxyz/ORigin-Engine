@@ -128,18 +128,6 @@ namespace Origin
 			ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
 			ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
 			ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
-
-			ImGui::Separator();
-			ImGui::Text("Editor Camera");
-			ImGui::Text("Position (%.3f %.3f %.3f)", m_EditorCamera.GetPosition().x,
-				m_EditorCamera.GetPosition().y, m_EditorCamera.GetPosition().z);
-
-			ImGui::Text("Pitch (%.3f)", m_EditorCamera.GetPitch());
-			ImGui::Text("YAW (%.3f)", m_EditorCamera.GetYaw());
-			ImGui::Text("Hold Time (%.2f)", RMHoldTime);
-
-			ImGui::Separator();
-
 			ImGui::End();
 		}
 

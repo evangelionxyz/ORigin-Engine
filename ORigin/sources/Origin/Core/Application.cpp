@@ -34,6 +34,7 @@ namespace Origin {
 	{
 		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
+		s_Instance = nullptr;
 	}
 
 	void Application::Run()

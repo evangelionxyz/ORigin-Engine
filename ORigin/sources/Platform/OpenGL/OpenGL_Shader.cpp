@@ -36,7 +36,7 @@ namespace Origin {
         case GL_VERTEX_SHADER: return shaderc_glsl_vertex_shader;
         case GL_FRAGMENT_SHADER: return shaderc_glsl_fragment_shader;
       }
-      OGN_CORE_ASSERT(false, "");
+      OGN_CORE_ASSERT(false);
       return (shaderc_shader_kind)0;
     }
 
@@ -47,14 +47,14 @@ namespace Origin {
         case GL_VERTEX_SHADER:  return "GL_VERTEX_SHADER";
         case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
       }
-      OGN_CORE_ASSERT(false, "");
+      OGN_CORE_ASSERT(false);
 
       return nullptr;
     }
 
     static const char* GetCacheDirectory()
     {
-      return "assets/cache/shader/OpenGL";
+      return "Resources/Cache/Shaders/OpenGL";
     }
 
     static void CreateCachedDirectoryIfNeeded()
@@ -72,7 +72,7 @@ namespace Origin {
         case GL_FRAGMENT_SHADER: return ".cached_opengl.frag";
       }
 
-      OGN_CORE_ASSERT(false, "");
+      OGN_CORE_ASSERT(false);
       return nullptr;
     }
 
@@ -84,7 +84,7 @@ namespace Origin {
         case GL_FRAGMENT_SHADER: return ".cached_vulkan.frag";
       }
 
-      OGN_CORE_ASSERT(false, "");
+      OGN_CORE_ASSERT(false);
       return nullptr;
     }
 

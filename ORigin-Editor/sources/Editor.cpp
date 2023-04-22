@@ -16,15 +16,18 @@ namespace Origin
 {
 	extern const std::filesystem::path g_AssetPath;
 
-  Editor::Editor() : Layer("Editor") { }
+  Editor::Editor() : Layer("Editor")
+  {
+
+  }
 
   void Editor::OnAttach()
   {
-    m_PlayButton = Texture2D::Create("resources/textures/playbutton.png");
-    m_SimulateButton = Texture2D::Create("resources/textures/simulatebutton.png");
-    m_StopButton = Texture2D::Create("resources/textures/stopbutton.png");
-    m_PauseButton = Texture2D::Create("resources/textures/pausebutton.png");
-    m_SteppingButton = Texture2D::Create("resources/textures/steppingframebutton.png");
+		m_PlayButton = Texture2D::Create("Resources/UITextures/playbutton.png");
+    m_SimulateButton = Texture2D::Create("Resources/UITextures/simulatebutton.png");
+    m_StopButton = Texture2D::Create("Resources/UITextures/stopbutton.png");
+    m_PauseButton = Texture2D::Create("Resources/UITextures/pausebutton.png");
+    m_SteppingButton = Texture2D::Create("Resources/UITextures/steppingframebutton.png");
 
     // ==============================
     // Main Framebuffer Specification
@@ -64,8 +67,13 @@ namespace Origin
     auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
     if (commandLineArgs.Count > 1)
     {
-      auto sceneFilepath = commandLineArgs[1];
-      OpenScene(sceneFilepath);
+      auto projectFilepath = commandLineArgs[1];
+      OpenProject(projectFilepath);
+    }
+    else
+    {
+      // TODO: prompt the user to select the directory
+      NewProject();
     }
   }
 
@@ -192,7 +200,7 @@ namespace Origin
     //GameViewport();
 
     m_SceneHierarchy.OnImGuiRender();
-    m_ContentBrowser.OnImGuiRender();
+    m_ContentBrowser->OnImGuiRender();
 
     m_Dockspace.End();
   }
@@ -347,6 +355,26 @@ namespace Origin
 
     m_SceneState = SceneState::Edit;
   }
+
+	void Editor::NewProject()
+	{
+    Project::New();
+	}
+
+	void Editor::OpenProject(const std::filesystem::path& path)
+	{
+    if (Project::Load(path))
+    {
+      auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetConfig().StartScene);
+
+      OpenScene(startScenePath);
+      m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
+    }
+	}
+
+	void Editor::SaveProject()
+	{
+	}
 
 	void Editor::NewScene()
   {

@@ -35,7 +35,7 @@ namespace Origin
 				else if (m_GizmosMode == ImGuizmo::MODE::WORLD)
 				{
 					m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
-						m_GizmosType = ImGuizmo::OPERATION::ROTATE : m_GizmosType == ImGuizmo::OPERATION::ROTATE ? m_GizmosType = -1 : m_GizmosType = -1;
+						m_GizmosType = ImGuizmo::OPERATION::ROTATE : m_GizmosType == ImGuizmo::OPERATION::ROTATE ? m_GizmosType = -1 : m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
 				}
 			}
 		}
@@ -46,8 +46,6 @@ namespace Origin
 	{
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
-			lastMouseX = lastMouseX;
-			lastMouseY = lastMouseY;
 			RMHoldTime += time.GetDeltaTime();
 
 			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;

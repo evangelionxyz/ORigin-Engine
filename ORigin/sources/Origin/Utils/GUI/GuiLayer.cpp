@@ -22,7 +22,7 @@ namespace Origin {
 		ImGui::StyleColorsDark();
 
 		float fontSize = 16.0f;
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/segoeui.ttf", fontSize);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 
 		style.ScrollbarSize = 10.0f;
 		style.GrabMinSize = 12.0f;

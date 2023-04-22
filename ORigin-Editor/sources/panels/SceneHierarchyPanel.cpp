@@ -2,6 +2,7 @@
 
 #include "SceneHierarchyPanel.h"
 
+#include "Origin\Project\Project.h"
 #include "Origin\IO\Input.h"
 #include "Origin\IO\KeyCodes.h"
 #include "Origin\Renderer\Texture.h"
@@ -10,8 +11,6 @@
 #include "Origin\Scripting\ScriptEngine.h"
 
 namespace Origin {
-
-	extern const std::filesystem::path g_AssetPath;
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{
@@ -360,7 +359,7 @@ namespace Origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
@@ -392,7 +391,7 @@ namespace Origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}

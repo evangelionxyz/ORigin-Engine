@@ -4,6 +4,7 @@
 
 #include "SceneSerializer.h"
 #include "Origin\Scripting\ScriptEngine.h"
+#include "Origin\Project\Project.h"
 
 #include "Entity.h"
 #include "Component\UUID.h"
@@ -504,8 +505,12 @@ namespace Origin {
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
-					if(spriteRenderer2DComponent["TexturePath"])
-						src.Texture = Texture2D::Create(spriteRenderer2DComponent["TexturePath"].as<std::string>());
+					if (spriteRenderer2DComponent["TexturePath"])
+					{
+						std::string texturePath = spriteRenderer2DComponent["TexturePath"].as<std::string>();
+						auto path = Project::GetAssetFileSystemPath(texturePath);
+						src.Texture = Texture2D::Create(path.string());
+					}
 
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<float>();
 				}

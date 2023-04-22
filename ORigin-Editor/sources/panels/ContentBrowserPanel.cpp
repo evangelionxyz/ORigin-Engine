@@ -1,14 +1,13 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "ContentBrowserPanel.h"
+#include "Origin\Project\Project.h"
 
 namespace Origin
 {
-	extern const std::filesystem::path g_AssetPath = "assets";
-
 	namespace Utils
 	{
-		static void CenteredText(std::string text)
+		static void CenteredText(const std::string& text)
 		{
 			auto windowWidth = ImGui::GetWindowSize().x;
 			auto textWidth = ImGui::CalcTextSize(text.c_str()).x;
@@ -16,7 +15,7 @@ namespace Origin
 			ImGui::Text(text.c_str());
 		}
 
-		static std::string CapitalizeText(std::string text)
+		static std::string CapitalizeText(std::string& text)
 		{
 			for (int i = 0; i < text.length(); i++)
 			{
@@ -37,33 +36,23 @@ namespace Origin
 		}
 	}
 
-	std::shared_ptr<Origin::Texture2D> ContentBrowserPanel::DirectoryIcon(std::filesystem::directory_entry dirEntry)
+	ContentBrowserPanel::ContentBrowserPanel()
 	{
-		auto& fileExtension = dirEntry.path().extension().string();
+		m_BaseDirectory = Project::GetAssetDirectory();
+		m_CurrentDirectory = m_BaseDirectory;
 
-		if (m_DirectoryIconMap.find(fileExtension) == m_DirectoryIconMap.end() && !dirEntry.is_directory())
-			return m_DirectoryIconMap.at(".unkownfile");
+		m_NavigationIconMap["backward_button"] = Texture2D::Create("Resources/UITextures/backward_icon.png");
+		m_NavigationIconMap["forward_button"] = Texture2D::Create("Resources/UITextures/forward_icon.png");
 
-		if (dirEntry.is_directory())
-			return m_DirectoryIconMap.at("directory");
-
-		return m_DirectoryIconMap.at(fileExtension);
-	}
-
-	ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory(g_AssetPath)
-	{
-		m_NavigationIconMap["backward_button"] = Texture2D::Create("resources/textures/backward_icon.png");
-		m_NavigationIconMap["forward_button"] = Texture2D::Create("resources/textures/forward_icon.png");
-
-		m_DirectoryIconMap["directory"] = Texture2D::Create("resources/textures/directory_icon.png");
-		m_DirectoryIconMap[".unkownfile"] = Texture2D::Create("resources/textures/file_icon.png");
-		m_DirectoryIconMap[".org"] = Texture2D::Create("resources/textures/scene_file_icon.png");
-		m_DirectoryIconMap[".png"] = Texture2D::Create("resources/textures/png_file_icon.png");
-		m_DirectoryIconMap[".jpg"] = Texture2D::Create("resources/textures/jpg_file_icon.png");
-		m_DirectoryIconMap[".glsl"] = Texture2D::Create("resources/textures/glsl_file_icon.png");
-		m_DirectoryIconMap[".txt"] = Texture2D::Create("resources/textures/txt_file_icon.png");
-		m_DirectoryIconMap[".cpp"] = Texture2D::Create("resources/textures/cpp_file_icon.png");
-		m_DirectoryIconMap[".cs"] = Texture2D::Create("resources/textures/script_file_icon.png");
+		m_DirectoryIconMap["directory"] = Texture2D::Create("Resources/UITextures/directory_icon.png");
+		m_DirectoryIconMap[".unkownfile"] = Texture2D::Create("Resources/UITextures/file_icon.png");
+		m_DirectoryIconMap[".org"] = Texture2D::Create("Resources/UITextures/scene_file_icon.png");
+		m_DirectoryIconMap[".png"] = Texture2D::Create("Resources/UITextures/png_file_icon.png");
+		m_DirectoryIconMap[".jpg"] = Texture2D::Create("Resources/UITextures/jpg_file_icon.png");
+		m_DirectoryIconMap[".glsl"] = Texture2D::Create("Resources/UITextures/glsl_file_icon.png");
+		m_DirectoryIconMap[".txt"] = Texture2D::Create("Resources/UITextures/txt_file_icon.png");
+		m_DirectoryIconMap[".cpp"] = Texture2D::Create("Resources/UITextures/cpp_file_icon.png");
+		m_DirectoryIconMap[".cs"] = Texture2D::Create("Resources/UITextures/script_file_icon.png");
 	}
 
 	ContentBrowserPanel::~ContentBrowserPanel()
@@ -75,6 +64,19 @@ namespace Origin
 	{
 		FileButton();
 		FileArgument();
+	}
+
+	std::shared_ptr<Texture2D> ContentBrowserPanel::DirectoryIcon(const std::filesystem::directory_entry& dirEntry)
+	{
+		auto& fileExtension = dirEntry.path().extension().string();
+
+		if (m_DirectoryIconMap.find(fileExtension) == m_DirectoryIconMap.end() && !dirEntry.is_directory())
+			return m_DirectoryIconMap.at(".unkownfile");
+
+		if (dirEntry.is_directory())
+			return m_DirectoryIconMap.at("directory");
+
+		return m_DirectoryIconMap.at(fileExtension);
 	}
 
 	void ContentBrowserPanel::FileButton()
@@ -90,7 +92,7 @@ namespace Origin
 		float cellSize = thumbnailSize + padding;
 
 		float panelWidth = ImGui::GetContentRegionAvail().x;
-		auto columnCount = (int)(panelWidth / cellSize);
+		int columnCount = (int)(panelWidth / cellSize);
 		if (columnCount < 1)
 			columnCount = 1;
 
@@ -99,9 +101,9 @@ namespace Origin
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			m_DirectoryEntry = directoryEntry;
-			bool rootDirectory = m_CurrentDirectory == std::filesystem::path(g_AssetPath);
+			bool rootDirectory = m_CurrentDirectory == std::filesystem::path(m_BaseDirectory);
 
-			auto relativePath = std::filesystem::relative(m_DirectoryEntry.path(), g_AssetPath);
+			auto relativePath(m_DirectoryEntry.path());
 			m_IsDirectory = m_DirectoryEntry.is_directory();
 
 			std::string filenameString = relativePath.filename().string();
@@ -160,7 +162,7 @@ namespace Origin
 	void ContentBrowserPanel::NavigationButton()
 	{
 		// Navigation Button
-		bool rootDirectory = m_CurrentDirectory == std::filesystem::path(g_AssetPath);
+		bool rootDirectory = m_CurrentDirectory == std::filesystem::path(m_BaseDirectory);
 
 		ImVec4 navBtColor;
 		uint8_t subDirNumber = m_SubDirectoryCount + 1;
@@ -207,7 +209,8 @@ namespace Origin
 
 	void ContentBrowserPanel::FileArgument()
 	{
-		if (m_DeleteArgument) DeleteFileArgument();
+		if (m_DeleteArgument)
+			DeleteFileArgument();
 	}
 
 	void ContentBrowserPanel::DeleteFileArgument()

@@ -126,7 +126,7 @@ namespace Origin
 		s_3Ddata.CubeVertexPosition[22] = glm::vec4( 0.5f, -0.5f, -0.5f, 1.0f);
 		s_3Ddata.CubeVertexPosition[23] = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
 
-		s_3Ddata.CubeShader = Shader::Create("assets/shaders/Cube.glsl", true, true);
+		s_3Ddata.CubeShader = Shader::Create("Resources/Shaders/Cube.glsl", true);
 	}
 
 	void Renderer3D::BeginScene()

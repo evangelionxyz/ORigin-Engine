@@ -20,7 +20,7 @@ namespace Origin {
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& e);
 
-		void SetPosition(glm::vec3 position) { m_Position = position; }
+		void SetPosition(const glm::vec3& position) { m_Position = position; }
 		void SetViewportSize(float width, float height);
 		inline void SetDistance(float distance) { m_Distance = distance; }
 		inline void SetPitch(float pitch) { m_Pitch = pitch; }

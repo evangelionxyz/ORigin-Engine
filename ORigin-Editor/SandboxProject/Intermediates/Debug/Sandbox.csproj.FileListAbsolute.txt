@@ -7,3 +7,12 @@ C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.cs
 C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.csproj.CopyComplete
 C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.dll
 C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.pdb
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Binaries\Sandbox.dll
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Binaries\Sandbox.pdb
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Binaries\ORigin-ScriptCore.dll
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Binaries\ORigin-ScriptCore.pdb
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.csproj.AssemblyReference.cache
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.csproj.CoreCompileInputs.cache
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.csproj.CopyComplete
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.dll
+C:\Git\ORigin-Engine\ORigin-Editor\SandboxProject\Intermediates\Debug\Sandbox.pdb

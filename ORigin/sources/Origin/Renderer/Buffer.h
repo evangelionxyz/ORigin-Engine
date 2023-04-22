@@ -71,6 +71,7 @@ namespace Origin
 				case ShaderDataType::Float3:	return 3;
 				case ShaderDataType::Float4:	return 4;
 
+				case ShaderDataType::Mat2:		return 2 * 2;
 				case ShaderDataType::Mat3:		return 3 * 3;
 				case ShaderDataType::Mat4:		return 4 * 4;
 
@@ -86,7 +87,7 @@ namespace Origin
 	class BufferLayout
 	{
 	public:
-		BufferLayout() {}
+		BufferLayout() = default;
 
 		BufferLayout(std::initializer_list<BufferElement> elements)
 			: m_Elements(elements)

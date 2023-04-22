@@ -19,7 +19,7 @@ namespace Origin
 			s_RendererAPI->SetViewport(x, y, width, height);
 		}
 
-		inline static void ClearColor(glm::vec4 color)
+		inline static void ClearColor(const glm::vec4& color)
 		{
 			s_RendererAPI->ClearColor(color);
 		}

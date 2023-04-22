@@ -86,9 +86,9 @@ namespace Origin
 		s_2Ddata.QuadVertexPositions[2] = {	 0.5f,  0.5f, 0.0f, 1.0f };
 		s_2Ddata.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		s_2Ddata.QuadShader = Shader::Create("assets/shaders/Default2D.glsl", true);
-		s_2Ddata.CircleShader = Shader::Create("assets/shaders/Circle2D.glsl", true);
-		s_2Ddata.LineShader = Shader::Create("assets/shaders/Line2D.glsl", true);
+		s_2Ddata.QuadShader = Shader::Create("Resources/Shaders/Default2D.glsl", true);
+		s_2Ddata.CircleShader = Shader::Create("Resources/Shaders/Circle2D.glsl", true);
+		s_2Ddata.LineShader = Shader::Create("Resources/Shaders/Line2D.glsl", true);
 	}
 
 	void Renderer2D::Shutdown()

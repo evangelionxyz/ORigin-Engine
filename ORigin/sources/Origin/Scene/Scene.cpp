@@ -40,8 +40,8 @@ namespace Origin {
 
 	Scene::Scene()
 	{
-		m_CameraIcon = Texture2D::Create("resources/textures/camera.png");
-		m_LightingIcon = Texture2D::Create("resources/textures/lighting.png");
+		m_CameraIcon = Texture2D::Create("Resources/UITextures/camera.png");
+		m_LightingIcon = Texture2D::Create("Resources/UITextures/lighting.png");
 	}
 	Scene::~Scene()
 	{

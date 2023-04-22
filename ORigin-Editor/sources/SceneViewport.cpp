@@ -1,11 +1,11 @@
 // Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #include "Editor.h"
+#include "Origin\Project\Project.h"
+#include "panels\ContentBrowserPanel.h"
 
 namespace Origin
 {
-	extern const std::filesystem::path g_AssetPath;
-
 	void Editor::SceneViewport()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -64,6 +64,11 @@ namespace Origin
 		ImGui::Image(viewportID, ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
+
+			// =============================
+			// ==== Scene Drag and Drop ====
+			// =============================
+
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				if (m_SceneState == SceneState::Edit)
@@ -75,7 +80,7 @@ namespace Origin
 						if (entity.HasComponent<SpriteRenderer2DComponent>())
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path textureFile = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path textureFile = path;
 							auto& component = entity.GetComponent<SpriteRenderer2DComponent>();
 							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
 								component.Texture = Texture2D::Create(textureFile.string());
@@ -84,7 +89,7 @@ namespace Origin
 						if (entity.HasComponent<SpriteRendererComponent>())
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path textureFile = std::filesystem::path(g_AssetPath) / path;
+							std::filesystem::path textureFile = path;
 							auto& component = entity.GetComponent<SpriteRendererComponent>();
 							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
 								component.Texture = Texture2D::Create(textureFile.string());
@@ -92,8 +97,8 @@ namespace Origin
 					}
 					else
 					{
-						const auto* path = static_cast<const wchar_t*>(payload->Data);
-						auto scenePath = std::filesystem::path(g_AssetPath) / path;
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path scenePath = path;
 						if (scenePath.extension() == ".org" || scenePath.extension() == ".origin")
 							OpenScene(scenePath);
 					}
@@ -153,7 +158,6 @@ namespace Origin
 		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
 			m_GizmosType = -1;
 
-		// TODO: Fixing Scene Viewport Events To Camera
 		m_EditorCamera.EnableMovement(!ImGuizmo::IsUsing());
 
 		ImGui::End();
@@ -171,7 +175,6 @@ namespace Origin
 			| ImGuiWindowFlags_NoScrollWithMouse
 			| ImGuiWindowFlags_AlwaysAutoResize
 			| ImGuiWindowFlags_NoDecoration
-			| ImGuiWindowFlags_NoCollapse
 			| ImGuiWindowFlags_NoCollapse;
 
 		float wndYpos = { (viewportMinRegion.y + viewportOffset.y) + 4.0f };

@@ -25,8 +25,8 @@ objdir ("%{prj.location}/Intermediates")
 
 files
 {
-    "%{prj.location}/sources/**.cs",
-    "%{prj.location}/properties/**.cs",
+    "%{prj.location}/Assets/Scripts/**.cs",
+    "%{prj.location}/Assets/Properties/**.cs",
 }
 
 links

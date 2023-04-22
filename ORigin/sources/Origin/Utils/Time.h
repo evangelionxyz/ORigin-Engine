@@ -9,7 +9,7 @@ namespace Origin
 	{
 	public:
 		Timestep(float time = 0.0f)
-			: m_Time(time)
+			: m_Time(time), m_DeltaTime(0.0f)
 		{
 		}
 

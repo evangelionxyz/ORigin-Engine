@@ -6,8 +6,8 @@ language "C#"
 dotnetframework "4.8"
 location "../../ORigin-ScriptCore"
 
-targetdir ("../../ORigin-Editor/resources/scripts")
-objdir ("../../ORigin-Editor/resources/intermediates")
+targetdir ("../../ORigin-Editor/Resources/ScriptCore")
+objdir ("../../ORigin-Editor/Resources/ScriptCore/Int")
 
 files {
     "%{prj.location}/sources/**.cs",

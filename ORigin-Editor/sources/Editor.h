@@ -41,6 +41,10 @@ namespace Origin {
     void GameRender(float time);
 		void GameViewport();
 
+    void NewProject();
+    void OpenProject(const std::filesystem::path& path);
+    void SaveProject();
+
 		void MenuBar();
     void NewScene();
     void SaveScene();
@@ -85,7 +89,6 @@ namespace Origin {
 
 		// panels
 		Dockspace m_Dockspace;
-		ContentBrowserPanel m_ContentBrowser;
 		SceneHierarchyPanel m_SceneHierarchy;
 
 		std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton, m_PauseButton, m_SteppingButton;
@@ -97,6 +100,8 @@ namespace Origin {
     enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
 		ViewportMenuContext m_VpMenuContext = ViewportMenuContext::CreateMenu;
 		bool VpMenuContextActive;
+
+		std::unique_ptr<ContentBrowserPanel> m_ContentBrowser;
 
     glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
     glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };

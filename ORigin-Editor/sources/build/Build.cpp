@@ -11,7 +11,7 @@ namespace Origin
     EditorBuild(const ApplicationSpecification& spec)
       : Application(spec)
     {
-      Application::Get().GetWindow().SetIcon("assets/textures/icon_origin.png");
+      Application::Get().GetWindow().SetIcon("Resources/UITextures/icon_origin.png");
 	    PushLayer(new Editor());
     }
     ~EditorBuild() { }
@@ -22,6 +22,8 @@ namespace Origin
     ApplicationSpecification spec;
     spec.Name = "ORigin-Editor";
     spec.CommandLineArgs = args;
+
+    Project::New()->SaveActive("Sandbox.oxproj");
 
     OGN_CORE_INFO(spec.Name);
     return new EditorBuild(spec);

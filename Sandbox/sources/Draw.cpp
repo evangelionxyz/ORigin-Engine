@@ -84,7 +84,7 @@ void Draw::Init()
 	data.cubeVA->AddVertexBuffer(data.cubeVB);
 	std::shared_ptr<IndexBuffer> cubeIB = IndexBuffer::Create(indices, sizeof(indices));
 	data.cubeVA->SetIndexBuffer(cubeIB);
-	data.cubeShader = Shader::Create("assets/shaders/sandbox/default.glsl");
+	data.cubeShader = Shader::Create("Resources/Shaders/Sandbox/default.glsl");
 	data.cubeShader->Bind();
 
 

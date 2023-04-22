@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
+#include "Origin\Project\Project.h"
 #include "Origin\Scene\Component\Component.h"
 
 #include "Origin\Core\Application.h"
@@ -182,7 +183,7 @@ namespace Origin
 		InitMono();
 		ScriptGlue::RegisterFunctions();
 
-		LoadAssembly("resources/scripts/ORigin-ScriptCore.dll");
+		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
 		LoadAppAssembly("SandboxProject/Binaries/Sandbox.dll");
 
 		LoadAssemblyClasses();

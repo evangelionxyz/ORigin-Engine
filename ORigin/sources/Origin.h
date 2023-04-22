@@ -13,6 +13,9 @@
 #include "Origin\IO\Events\KeyEvent.h"
 #include "Origin\IO\Events\MouseEvent.h"
 
+#include "Origin\Project\Project.h"
+#include "Origin\Project\ProjectSerializer.h"
+
 #include "Origin\Renderer\VertexArray.h"
 #include "Origin\Renderer\Buffer.h"
 #include "Origin\Renderer\Renderer.h"
