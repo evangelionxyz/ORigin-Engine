@@ -9,12 +9,14 @@
 
 #include <imgui.h>
 
+#include "ShaderLibs.h"
+
 using namespace Origin;
 
 Sandbox::Sandbox()
 	: Layer("Sandbox")
 {
-	cubeTexture = Texture2D::Create("assets/textures/block.png");
+	cubeTexture = Texture2D::Create("SandboxProject/Assets/Textures/block.png");
 
 	draw.Init();
 	camera = FPSCamera(45.0f, 16.0f / 9.0f);

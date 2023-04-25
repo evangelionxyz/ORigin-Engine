@@ -130,7 +130,7 @@ void Draw::Init()
 		});
 	data.lightVA->AddVertexBuffer(data.lightVB);
 	data.lightVA->SetIndexBuffer(cubeIB);
-	data.lightShader = Shader::Create("assets/shaders/sandbox/lighting.glsl");
+	data.lightShader = Shader::Create("Resources/Shaders/Sandbox/lighting.glsl");
 	data.lightShader->Bind();
 
 	shaderMap["cube"] = data.cubeShader;

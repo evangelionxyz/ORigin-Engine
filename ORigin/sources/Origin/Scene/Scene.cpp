@@ -539,7 +539,7 @@ namespace Origin {
 			}
 		}
 
-		//DrawGrid(m_GridSize, m_GridColor);
+		DrawGrid(m_GridSize, m_GridColor);
 		Renderer::EndScene();
 	}
 

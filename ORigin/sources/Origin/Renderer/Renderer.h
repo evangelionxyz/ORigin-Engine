@@ -10,13 +10,18 @@
 
 namespace Origin
 {
+	struct CameraData
+	{
+		glm::mat4 ViewProjection;
+	};
+
+	struct LightingData
+	{
+
+	};
+
 	struct RendererData
 	{
-		struct CameraData
-		{
-			glm::mat4 ViewProjection;
-		};
-
 		CameraData CameraBufferData;
 		std::shared_ptr<UniformBuffer> CameraUniformBuffer;
 	};
@@ -38,6 +43,7 @@ namespace Origin
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 		static void OnUpdate();
+
 		void DrawLineMode(bool enable);
 	};
 }

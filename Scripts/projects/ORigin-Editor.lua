@@ -22,12 +22,12 @@ files {
     "%{prj.location}/**.aps",
 
     -- shader file
-    "%{prj.location}/assets/shaders/**.glsl",
-    "%{prj.location}/assets/shaders/**.hlsl",
+    "%{prj.location}/Resources/Shaders/**.glsl",
+    "%{prj.location}/Resources/Shaders/**.hlsl",
 
     -- img file
-    "%{prj.location}/assets/textures/**.png",
-    "%{prj.location}/assets/textures/**.jpg",
+    "%{prj.location}/Resources/UITextures/**.png",
+    "%{prj.location}/Resources/UITextures/**.jpg",
     "%{prj.location}/**.ico",
     "%{prj.location}/**.png",
 }
@@ -54,12 +54,14 @@ defines {
 filter "system:windows"
     systemversion "latest"
     postbuildcommands {
-        "{COPY} %{prj.location}imgui.ini ../Binaries/%{cfg.buildcfg}/ORigin",
-
-        "{COPYDIR} %{prj.location}assets ../Binaries/%{cfg.buildcfg}/ORigin/assets",
-        "{COPYDIR} %{prj.location}mono ../Binaries/%{cfg.buildcfg}/ORigin/mono",
-        "{COPYDIR} %{prj.location}resources ../Binaries/%{cfg.buildcfg}/ORigin/resources",
+        -- Copy C# Project Assets
         "{COPYDIR} %{prj.location}SandboxProject/Binaries ../Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Binaries",
+        "{COPYDIR} %{prj.location}SandboxProject/Assets ../Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Assets",
+
+        "{COPYDIR} %{prj.location}mono ../Binaries/%{cfg.buildcfg}/ORigin/mono",
+        "{COPYDIR} %{prj.location}Resources ../Binaries/%{cfg.buildcfg}/ORigin/Resources",
+
+        "{COPY}    %{prj.location}imgui.ini ../Binaries/%{cfg.buildcfg}/ORigin"
     }
 
 filter "configurations:Debug"

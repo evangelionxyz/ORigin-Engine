@@ -59,7 +59,6 @@ namespace Origin
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
 		std::shared_ptr<Texture2D> Texture;
-		bool Terrain = false;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -114,7 +113,6 @@ namespace Origin
 	struct ScriptComponent
 	{
 		std::string ClassName = "None";
-
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;

@@ -99,6 +99,42 @@ namespace Origin
 		entity.GetComponent<TransformComponent>().Translation = *translation;
 	}
 
+	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<TransformComponent>().Rotation = *rotation;
+	}
+
+	static void TransformComponent_GetRotation(UUID entityID, glm::vec3* outRotation)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
+	}
+
+	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<TransformComponent>().Scale = *scale;
+	}
+
+	static void TransformComponent_GetScale(UUID entityID, glm::vec3* outScale)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outScale = entity.GetComponent<TransformComponent>().Scale;
+	}
+
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* point, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -119,6 +155,294 @@ namespace Origin
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		b2Body* body = (b2Body*)rb2d.RuntimeBody;
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+
+	static void CircleRendererComponent_GetColor(UUID entityID, glm::vec4* outColor)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleRendererComponent>().Color = *outColor;
+	}
+
+	static void CircleRendererComponent_SetColor(UUID entityID, glm::vec4* color)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleRendererComponent>().Color = *color;
+	}
+
+	static void CircleRendererComponent_GetFade(UUID entityID, float* outFade)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
+	}
+
+	static void CircleRendererComponent_SetFade(UUID entityID, float* fade)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleRendererComponent>().Fade = *fade;
+	}
+
+	static void CircleRendererComponent_GetThickness(UUID entityID, float* outThickness)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
+	}
+
+	static void CircleRendererComponent_SetThickness(UUID entityID, float* thickness)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleRendererComponent>().Thickness = *thickness;
+	}
+
+	static void SpriteRenderer2DComponent_GetColor(UUID entityID, glm::vec4* outColor)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outColor = entity.GetComponent<SpriteRenderer2DComponent>().Color;
+	}
+
+	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4* color)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<SpriteRenderer2DComponent>().Color= *color;
+	}
+
+	static void BoxCollider2DComponent_GetOffset(UUID entityID, glm::vec2* outOffset)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
+	}
+
+	static void BoxCollider2DComponent_SetOffset(UUID entityID, glm::vec2* offset)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
+	}
+
+	static void BoxCollider2DComponent_GetSize(UUID entityID, glm::vec2* outSize)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
+	}
+
+	static void BoxCollider2DComponent_SetSize(UUID entityID, glm::vec2* size)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<BoxCollider2DComponent>().Size = *size;
+	}
+
+	static void BoxCollider2DComponent_GetDensity(UUID entityID, float* outDensity)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
+	}
+
+	static void BoxCollider2DComponent_SetDensity(UUID entityID, float* density)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<BoxCollider2DComponent>().Density = *density;
+	}
+
+	static void BoxCollider2DComponent_GetFriction(UUID entityID, float* outFriction)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
+	}
+
+	static void BoxCollider2DComponent_SetFriction(UUID entityID, float* friction)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<BoxCollider2DComponent>().Friction = *friction;
+	}
+
+	static void BoxCollider2DComponent_GetRestitution(UUID entityID, float* outRestitution)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
+	}
+
+	static void BoxCollider2DComponent_SetRestitution(UUID entityID, float* restitution)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<BoxCollider2DComponent>().Restitution = *restitution;
+	}
+
+	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityID, float* outRestitutionThreshold)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
+	}
+
+	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityID, float* restitutionThreshold)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
+	}
+
+	static void CircleCollider2DComponent_GetOffset(UUID entityID, glm::vec2* outOffset)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
+	}
+
+	static void CircleCollider2DComponent_SetOffset(UUID entityID, glm::vec2* offset)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
+	}
+
+	static void CircleCollider2DComponent_GetRadius(UUID entityID, float* outRadius)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
+	}
+
+	static void CircleCollider2DComponent_SetRadius(UUID entityID, float* radius)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleCollider2DComponent>().Radius = *radius;
+	}
+
+	static void CircleCollider2DComponent_GetDensity(UUID entityID, float* outDensity)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
+	}
+
+	static void CircleCollider2DComponent_SetDensity(UUID entityID, float* density)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleCollider2DComponent>().Density = *density;
+	}
+
+	static void CircleCollider2DComponent_GetFriction(UUID entityID, float* outFriction)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
+	}
+
+	static void CircleCollider2DComponent_SetFriction(UUID entityID, float* friction)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleCollider2DComponent>().Friction = *friction;
+	}
+
+	static void CircleCollider2DComponent_GetRestitution(UUID entityID, float* outRestituion)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outRestituion = entity.GetComponent<CircleCollider2DComponent>().Restitution;
+	}
+
+	static void CircleCollider2DComponent_SetRestitution(UUID entityID, float* restitution)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleCollider2DComponent>().Restitution = *restitution;
+	}
+
+	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityID, float* outRestitutionThreshold)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
+	}
+
+	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityID, float* restitutionThreshold)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
 	}
 
 	static bool Input_IsKeyPressed(KeyCode keycode)
@@ -174,8 +498,46 @@ namespace Origin
 		// Components
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetTranslation);
+
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
+
+		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_GetColor);
+		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_SetColor);
+		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_GetFade);
+		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_SetFade);
+		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_GetThickness);
+		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_SetThickness);
+
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetColor);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetColor);
+
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetOffset);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetOffset);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetSize);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetSize);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetDensity);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetDensity);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetFriction);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetFriction);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetRestitution);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetRestitution);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetRestitutionThreshold);
+		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetRestitutionThreshold);
+
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetOffset);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetOffset);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRadius);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRadius);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetDensity);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetDensity);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetFriction);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetFriction);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitution);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitution);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitutionThreshold);
+		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitutionThreshold);
+
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 

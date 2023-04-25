@@ -36,7 +36,7 @@ namespace Origin
 		m_ViewportSize.x = (float)width;
 		m_ViewportSize.y = (float)height;
 
-		m_AspectRatio = (float)width / (float)height;
+		m_AspectRatio = m_ViewportSize.x / m_ViewportSize.y;
 		RecalculateProjection();
 	}
 
@@ -61,7 +61,6 @@ namespace Origin
 					m_OrthographicNear, m_OrthographicFar);
 				break;
 			}
-
 		}
 	}
 }

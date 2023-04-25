@@ -23,7 +23,8 @@ namespace Origin
 		Renderer2D::Init();
 		Renderer3D::Init();
 
-		s_RendererData.CameraUniformBuffer = UniformBuffer::Create(sizeof(RendererData::CameraData), 0);
+		uint32_t cameraBinding = 0;
+		s_RendererData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), cameraBinding);
 	}
 
 	void Renderer::Shutdown()
@@ -38,7 +39,7 @@ namespace Origin
 		// Camera
 		s_RendererData.CameraUniformBuffer->Bind();
 		s_RendererData.CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(RendererData::CameraData));
+		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(CameraData));
 		s_RendererData.CameraUniformBuffer->Unbind();
 
 		Renderer2D::BeginScene();
@@ -49,7 +50,7 @@ namespace Origin
 	{
 		s_RendererData.CameraUniformBuffer->Bind();
 		s_RendererData.CameraBufferData.ViewProjection = camera.GetViewProjection();
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(RendererData::CameraData), 0);
+		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(CameraData), 0);
 		s_RendererData.CameraUniformBuffer->Unbind();
 
 		Renderer2D::BeginScene();
