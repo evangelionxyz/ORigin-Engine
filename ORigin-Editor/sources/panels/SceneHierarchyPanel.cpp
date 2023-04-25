@@ -10,6 +10,8 @@
 
 #include "Origin\Scripting\ScriptEngine.h"
 
+#include <glm\gtc\type_ptr.hpp>
+
 namespace Origin {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
@@ -299,6 +301,22 @@ namespace Origin {
 									scriptInstance->SetFieldValue<float>(name, data);
 								}
 							}
+							if (field.Type == ScriptFieldType::Vector3)
+							{
+								glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
+								if (ImGui::DragFloat3(name.c_str(),	glm::value_ptr(data), 0.25f))
+								{
+									scriptInstance->SetFieldValue<glm::vec3>(name, data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector4)
+							{
+								glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
+								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.1f), 0.0f, 1.0f)
+								{
+									scriptInstance->SetFieldValue<glm::vec4>(name, data);
+								}
+							}
 						}
 					}
 				} // !IsRunning
@@ -324,6 +342,30 @@ namespace Origin {
 										scriptField.SetValue<float>(data);
 									}
 								}
+								if (field.Type == ScriptFieldType::Vector2)
+								{
+									glm::vec2 data = scriptField.GetValue<glm::vec3>();
+									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
+									{
+										scriptField.SetValue<glm::vec2>(data);
+									}
+								}
+								if (field.Type == ScriptFieldType::Vector3)
+								{
+									glm::vec3 data = scriptField.GetValue<glm::vec3>();
+									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
+									{
+										scriptField.SetValue<glm::vec3>(data);
+									}
+								}
+								if (field.Type == ScriptFieldType::Vector4)
+								{
+									glm::vec4 data = scriptField.GetValue<glm::vec4>();
+									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.1f), 0.0f, 1.0f)
+									{
+										scriptField.SetValue<glm::vec4>(data);
+									}
+								}
 							}
 							else
 							{
@@ -335,6 +377,39 @@ namespace Origin {
 										ScriptFieldInstance& fieldInstance = entityFields[name];
 										fieldInstance.Field = field;
 										fieldInstance.SetValue<float>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Vector2)
+								{
+									glm::vec2 data = glm::vec2(0.0f);
+									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data)))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<glm::vec2>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Vector3)
+								{
+									glm::vec3 data = glm::vec3(0.0f);
+									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data)))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<glm::vec3>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Vector4)
+								{
+									glm::vec4 data = glm::vec4(0.0f);
+									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data)))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<glm::vec4>(data);
 									}
 								}
 							}

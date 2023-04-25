@@ -107,6 +107,10 @@ namespace ORiginEngine
         internal extern static void SpriteRenderer2DComponent_GetColor(ulong entityID, out Vector4 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void SpriteRenderer2DComponent_SetColor(ulong entityID, ref Vector4 value);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SpriteRenderer2DComponent_GetTilingFator(ulong entityID, out float result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SpriteRenderer2DComponent_SetTilingFator(ulong entityID, ref float value);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Input_IsKeyPressed(KeyCode keycode);

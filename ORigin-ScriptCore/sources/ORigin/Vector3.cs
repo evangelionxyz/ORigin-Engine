@@ -20,10 +20,17 @@ namespace ORiginEngine
             Z = z;
         }
 
-        public Vector3(Vector2 xy, float z)
+        public Vector3(Vector3 vector)
         {
-            X = xy.X;
-            Y = xy.Y;
+            X = vector.X;
+            Y = vector.Y;
+            Z = vector.Z;
+        }
+
+        public Vector3(Vector2 vector, float z)
+        {
+            X = vector.X;
+            Y = vector.Y;
             Z = z;
         }
 

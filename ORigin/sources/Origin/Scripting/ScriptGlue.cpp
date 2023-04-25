@@ -99,15 +99,6 @@ namespace Origin
 		entity.GetComponent<TransformComponent>().Translation = *translation;
 	}
 
-	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation)
-	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-
-		entity.GetComponent<TransformComponent>().Rotation = *rotation;
-	}
-
 	static void TransformComponent_GetRotation(UUID entityID, glm::vec3* outRotation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -117,13 +108,13 @@ namespace Origin
 		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
 	}
 
-	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale)
+	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		entity.GetComponent<TransformComponent>().Scale = *scale;
+		entity.GetComponent<TransformComponent>().Rotation = *rotation;
 	}
 
 	static void TransformComponent_GetScale(UUID entityID, glm::vec3* outScale)
@@ -133,6 +124,15 @@ namespace Origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outScale = entity.GetComponent<TransformComponent>().Scale;
+	}
+
+	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<TransformComponent>().Scale = *scale;
 	}
 
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* point, bool wake)
@@ -227,6 +227,24 @@ namespace Origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<SpriteRenderer2DComponent>().Color= *color;
+	}
+
+	static void SpriteRenderer2DComponent_GetTillingFactor(UUID entityID, float* tilingfactor)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*tilingfactor = entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor;
+	}
+
+	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, float* tilingfactor)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor = *tilingfactor;
 	}
 
 	static void BoxCollider2DComponent_GetOffset(UUID entityID, glm::vec2* outOffset)
@@ -460,7 +478,8 @@ namespace Origin
 			std::string_view structName = typeName.substr(pos + 1);
 			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 
-			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
+			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(),
+				ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
 				OGN_CORE_ERROR("Could not find component type {}", managedTypename);
@@ -498,6 +517,10 @@ namespace Origin
 		// Components
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetTranslation);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRotation);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRotation);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetScale);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetScale);
 
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
@@ -511,6 +534,8 @@ namespace Origin
 
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetColor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetColor);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetTillingFactor);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetTilingFactor);
 
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetOffset);
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetOffset);
@@ -538,9 +563,7 @@ namespace Origin
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitutionThreshold);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitutionThreshold);
 
-
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
-
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
 	}
 }

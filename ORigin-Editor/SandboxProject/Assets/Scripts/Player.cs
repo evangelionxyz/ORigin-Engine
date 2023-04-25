@@ -9,17 +9,22 @@ namespace Game
     {
         private TransformComponent Transform;
         private Rigidbody2DComponent Rigidbody2D;
+        private SpriteRenderer2DComponent SpriteRenderer2D;
 
         public float Speed = 5.0f;
         public float time;
-        public Vector3 Vector;
 
+        public Vector3 scale;
         public Entity entity;
+        public float tilingFactor = 1.0f;
 
         void OnCreate()
         {
+            scale = new Vector3(1.0f);
             Transform = GetComponent<TransformComponent>();
             Rigidbody2D = GetComponent<Rigidbody2DComponent>();
+            SpriteRenderer2D = GetComponent<SpriteRenderer2DComponent>();
+
             time = 0.0f;
         }
 
@@ -27,6 +32,8 @@ namespace Game
         {
             time += deltaTime;
             float speed = Speed;
+            
+            Scale = Transform.Scale;
 
             Vector3 velocity = Vector3.Zero;
 
@@ -41,6 +48,10 @@ namespace Game
 
             velocity *= speed * deltaTime;
             Rigidbody2D.ApplyLinearImpulse(velocity.XY, true);
+            scale.X += velocity.Y * 4.0f * deltaTime;
+            Transform.Scale = scale;
+
+            SpriteRenderer2D.TilingFactor = tilingFactor;
         }
     }
 }

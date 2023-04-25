@@ -18,12 +18,12 @@ namespace ORiginEngine
             W = scalar;
         }
 
-        public Vector4(float r, float g, float b, float a)
+        public Vector4(float x, float y, float z, float w)
         {
-            X = r;
-            Y = g;
-            Z = b;
-            W = a;
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
         }
 
         public Vector4(Vector2 vector)
@@ -37,8 +37,16 @@ namespace ORiginEngine
             X = vector.X;
             Y = vector.Y;
             Z = vector.Z;
-
         }
+
+        public Vector4(Vector4 vector)
+        {
+            X = vector.X;
+            Y = vector.Y;
+            Z = vector.Z;
+            W = vector.W;
+        }
+
         public static Vector4 Zero => new Vector4(0.0f);
 
         public static Vector4 operator+(Vector4 vectorA, Vector4 vectorB)

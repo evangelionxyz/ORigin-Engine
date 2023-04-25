@@ -284,5 +284,18 @@ namespace ORiginEngine
             }
             
         }
+
+        public float TilingFactor
+        {
+            get
+            {
+                InternalCalls.SpriteRenderer2DComponent_GetTilingFator(Entity.ID, out float tilingfactor);
+                return tilingfactor;
+            }
+            set
+            {
+                InternalCalls.SpriteRenderer2DComponent_SetTilingFator(Entity.ID, ref value);
+            }
+        }
     }
 }
