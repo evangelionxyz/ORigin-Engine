@@ -9,4 +9,4 @@
 `git clone --recursive https://github.com/kaks-ev/ORigin-Engine.git`.
 
 ### 3. Generate Visual Studio Project
-+ Run WinGenerat to build Visual Studio Project and Solution.
++ Run WinGenerate.bat to build Visual Studio Project and Solution.
