@@ -56,6 +56,7 @@ links {
     "yaml-cpp",
     "opengl32.lib",
     "%{Library.Vulkan}",
+    "%{Library.Assimp}",
     "%{Library.VulkanUtils}",
 
     "%{Library.MONO}"
@@ -63,6 +64,7 @@ links {
 
 filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
 flags { "NoPCH" }
+
 
 filter "system:windows"
 systemversion "latest"

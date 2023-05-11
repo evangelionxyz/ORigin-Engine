@@ -229,7 +229,7 @@ namespace Origin
 		entity.GetComponent<SpriteRenderer2DComponent>().Color= *color;
 	}
 
-	static void SpriteRenderer2DComponent_GetTillingFactor(UUID entityID, float* tilingfactor)
+	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, float* tilingfactor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -534,7 +534,7 @@ namespace Origin
 
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetColor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetColor);
-		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetTillingFactor);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetTilingFactor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetTilingFactor);
 
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetOffset);

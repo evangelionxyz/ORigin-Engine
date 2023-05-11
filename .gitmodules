@@ -22,9 +22,6 @@
 [submodule "ORigin/vendor/stb_image"]
 	path = ORigin/vendor/stb_image
 	url = https://github.com/kaks-ev/stb_image.git
-[submodule "ORigin/vendor/Assimp"]
-	path = ORigin/vendor/Assimp
-	url = https://github.com/assimp/assimp.git
 [submodule "ORigin/vendor/mono"]
 	path = ORigin/vendor/mono
 	url = https://github.com/kaks-ev/mono.git

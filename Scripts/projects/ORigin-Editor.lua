@@ -35,6 +35,7 @@ files {
 includedirs {
     "%{wks.location}/ORigin/sources",
     "%{IncludeDir.SPDLOG}",
+    "%{IncludeDir.ASSIMP}",
     "%{IncludeDir.GLFW}",
     "%{IncludeDir.GLAD}",
     "%{IncludeDir.BOX2D}",

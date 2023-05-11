@@ -31,6 +31,17 @@ namespace Origin
 		return nullptr;
 	}
 
+	std::shared_ptr<Origin::VertexBuffer> VertexBuffer::Create(std::vector<Vertex> vertices)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case RendererAPI::API::None:			return nullptr;
+			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLVertexBuffer>(vertices);
+		}
+
+		return nullptr;
+	}
+
 	std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
 	{
 		switch (Renderer::GetAPI())
@@ -41,4 +52,16 @@ namespace Origin
 
 		return nullptr;
 	}
+
+	std::shared_ptr<IndexBuffer> IndexBuffer::Create(std::vector<uint32_t> indices)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None:			return nullptr;
+		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLIndexBuffer>(indices);
+		}
+
+		return nullptr;
+	}
+
 }

@@ -3,6 +3,8 @@
 #pragma once
 #include "pch.h"
 
+#include "Mesh.h"
+
 namespace Origin
 {
 	enum class ShaderDataType
@@ -134,6 +136,7 @@ namespace Origin
 
 		static std::shared_ptr<VertexBuffer> Create(uint32_t size);
 		static std::shared_ptr<VertexBuffer> Create(float* vertices, uint32_t size);
+		static std::shared_ptr<VertexBuffer> Create(std::vector<Vertex> vertices);
 
 	};
 
@@ -148,5 +151,6 @@ namespace Origin
 		virtual uint32_t GetCount() const = 0;
 
 		static std::shared_ptr<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		static std::shared_ptr<IndexBuffer> Create(std::vector<uint32_t> indices);
 	};
 }

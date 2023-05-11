@@ -18,7 +18,6 @@ namespace Origin
 
   Editor::Editor() : Layer("Editor")
   {
-
   }
 
   void Editor::OnAttach()
@@ -62,6 +61,10 @@ namespace Origin
 
 		m_EditorCamera.SetPosition(glm::vec3(-20.0f, 10.0f, 50.0f));
     m_EditorCamera.SetDistance(10.0f);
+
+    // Load Model
+    std::shared_ptr<Shader> modelShader = Shader::Create("Resources/Shaders/Sandbox/model.glsl");
+    model = Model::Create("Resources/Models/cone.gltf", modelShader);
 
     m_ActiveScene = std::make_shared<Scene>();
     auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -157,6 +160,8 @@ namespace Origin
     m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
     m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
 
+    model->Draw(m_EditorCamera.GetViewProjection());
+
     OnOverlayRenderer();
     m_Framebuffer->Unbind();
 
@@ -201,7 +206,6 @@ namespace Origin
 
     m_SceneHierarchy.OnImGuiRender();
     m_ContentBrowser->OnImGuiRender();
-
     m_Dockspace.End();
   }
 
@@ -378,7 +382,7 @@ namespace Origin
 
 	void Editor::NewScene()
   {
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
 		m_EditorScene = std::make_shared<Scene>();
@@ -390,6 +394,9 @@ namespace Origin
 
 	void Editor::SaveScene()
 	{
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+			OnSceneStop();
+
     if (!m_ScenePath.empty())
       SerializeScene(m_ActiveScene, m_ScenePath);
     else
@@ -398,6 +405,9 @@ namespace Origin
 
 	void Editor::SaveSceneAs()
   {
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+			OnSceneStop();
+
     std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Scene (*.org,*.origin)\0*.org\0");
 
     if (!filepath.empty())
@@ -409,7 +419,7 @@ namespace Origin
 
   void Editor::OpenScene(const std::filesystem::path& path)
   {
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
     std::shared_ptr<Scene> newScene = std::make_shared<Scene>();

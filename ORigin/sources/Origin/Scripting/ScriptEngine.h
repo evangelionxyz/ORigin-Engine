@@ -33,7 +33,7 @@ namespace Origin {
 		ScriptFieldType Type;
 		std::string Name;
 
-		MonoClassField* ClassField;
+		MonoClassField* ClassField = nullptr;
 	};
 
 	// script field + data storage
@@ -104,7 +104,7 @@ namespace Origin {
 		template<typename T>
 		T GetFieldValue(const std::string& name)
 		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
+			static_assert(sizeof(T) <= 24, "Type too large!");
 
 			bool success = GetFieldValueInternal(name, s_FieldValueBuffer);
 			if (!success)
@@ -116,7 +116,7 @@ namespace Origin {
 		template<typename T>
 		void SetFieldValue(const std::string& name, const T& value)
 		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
+			static_assert(sizeof(T) <= 24, "Type too large!");
 			SetFieldValueInternal(name, &value);
 		}
 
@@ -132,7 +132,7 @@ namespace Origin {
 		MonoMethod* m_OnCreateMethod = nullptr;
 		MonoMethod* m_OnUpdateMethod = nullptr;
 
-		inline static char s_FieldValueBuffer[16];
+		inline static char s_FieldValueBuffer[24];
 		friend class ScriptEngine;
 	};
 
@@ -184,23 +184,23 @@ namespace Origin {
 		{
 			switch (type)
 			{
-				case Origin::ScriptFieldType::None:		 return "None";
-				case Origin::ScriptFieldType::Float:	 return "Float";
-				case Origin::ScriptFieldType::Double:	 return "Double";
-				case Origin::ScriptFieldType::Bool:		 return "Boolean";
-				case Origin::ScriptFieldType::Char:		 return "Char";
-				case Origin::ScriptFieldType::Byte:		 return "Byte";
-				case Origin::ScriptFieldType::Short:	 return "Short";
-				case Origin::ScriptFieldType::Int:		 return "Int";
-				case Origin::ScriptFieldType::Long:		 return "Long";
-				case Origin::ScriptFieldType::UByte:	 return "UByte";
-				case Origin::ScriptFieldType::UShort:	 return "UShort";
-				case Origin::ScriptFieldType::UInt:		 return "UInt";
-				case Origin::ScriptFieldType::ULong:	 return "ULong";
-				case Origin::ScriptFieldType::Vector2: return "Vec2";
-				case Origin::ScriptFieldType::Vector3: return "Vec3";
-				case Origin::ScriptFieldType::Vector4: return "Vec4";
-				case Origin::ScriptFieldType::Entity:	 return "Entity";
+				case ScriptFieldType::None:			return "None";
+				case ScriptFieldType::Float:		return "Float";
+				case ScriptFieldType::Double:		return "Double";
+				case ScriptFieldType::Bool:			return "Boolean";
+				case ScriptFieldType::Char:			return "Char";
+				case ScriptFieldType::Byte:			return "Byte";
+				case ScriptFieldType::Short:		return "Short";
+				case ScriptFieldType::Int:			return "Int";
+				case ScriptFieldType::Long:			return "Long";
+				case ScriptFieldType::UByte:		return "UByte";
+				case ScriptFieldType::UShort:		return "UShort";
+				case ScriptFieldType::UInt:			return "UInt";
+				case ScriptFieldType::ULong:		return "ULong";
+				case ScriptFieldType::Vector2:	return "Vec2";
+				case ScriptFieldType::Vector3:	return "Vec3";
+				case ScriptFieldType::Vector4:	return "Vec4";
+				case ScriptFieldType::Entity:		return "Entity";
 			}
 
 			OGN_CORE_ASSERT(false, "Invalid Script Field Type!");
@@ -209,23 +209,23 @@ namespace Origin {
 
 		inline ScriptFieldType ScriptFieldTypeFromString(std::string_view type)
 		{
-			if (type == "None")		return ScriptFieldType::None;
-			if (type == "Float")	return ScriptFieldType::Float;
-			if (type == "Double")	return ScriptFieldType::Double;
-			if (type == "Boolean")return ScriptFieldType::Bool;
-			if (type == "Char")		return ScriptFieldType::Char;
-			if (type == "Byte")		return ScriptFieldType::Byte;
-			if (type == "Short")	return ScriptFieldType::Short;
-			if (type == "Int")		return ScriptFieldType::Int;
-			if (type == "Long")		return ScriptFieldType::Long;
-			if (type == "UByte")	return ScriptFieldType::UByte;
-			if (type == "UShort")	return ScriptFieldType::UShort;
-			if (type == "UInt")		return ScriptFieldType::UInt;
-			if (type == "ULong")	return ScriptFieldType::ULong;
-			if (type == "Vec2")		return ScriptFieldType::Vector2;
-			if (type == "Vec3")		return ScriptFieldType::Vector3;
-			if (type == "Vec4")		return ScriptFieldType::Vector4;
-			if (type == "Entity")	return ScriptFieldType::Entity;
+			if (type == "None")			return ScriptFieldType::None;
+			if (type == "Float")		return ScriptFieldType::Float;
+			if (type == "Double")		return ScriptFieldType::Double;
+			if (type == "Boolean")	return ScriptFieldType::Bool;
+			if (type == "Char")			return ScriptFieldType::Char;
+			if (type == "Byte")			return ScriptFieldType::Byte;
+			if (type == "Short")		return ScriptFieldType::Short;
+			if (type == "Int")			return ScriptFieldType::Int;
+			if (type == "Long")			return ScriptFieldType::Long;
+			if (type == "UByte")		return ScriptFieldType::UByte;
+			if (type == "UShort")		return ScriptFieldType::UShort;
+			if (type == "UInt")			return ScriptFieldType::UInt;
+			if (type == "ULong")		return ScriptFieldType::ULong;
+			if (type == "Vec2")			return ScriptFieldType::Vector2;
+			if (type == "Vec3")			return ScriptFieldType::Vector3;
+			if (type == "Vec4")			return ScriptFieldType::Vector4;
+			if (type == "Entity")		return ScriptFieldType::Entity;
 
 			return ScriptFieldType::None;
 		}

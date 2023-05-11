@@ -131,14 +131,14 @@ namespace Origin
 			if (data)
 			{
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
-				stbi_image_free(data);
 				OGN_CORE_TRACE("Texture \"{0}\" Successfully Loaded", path[i]);
 			}
 			else
 			{
 				OGN_CORE_ERROR("Failed to load Texture: {0}", path[i]);
-				stbi_image_free(data);
 			}
+
+			stbi_image_free(data);
 		}
 		OGN_CORE_TRACE("Bits Per Pixel : {0}", bpp);
 		OGN_CORE_TRACE("Internal Format: {0}, Data Format: {1}", internalFormat, dataFormat);
@@ -156,6 +156,8 @@ namespace Origin
 
 	void Skybox::Draw(const EditorCamera& camera)
 	{
+		glEnable(GL_DEPTH_TEST);
+
 		glDepthFunc(GL_LESS);
 		s_Data.shader->Bind();
 		s_Data.vertexArray->Bind();
@@ -169,7 +171,8 @@ namespace Origin
 		s_Data.vertexArray->Unbind();
 		s_Data.shader->Unbind();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-		glDepthFunc(GL_LESS);
+
+		glDisable(GL_DEPTH_TEST);
 	}
 
 	void Skybox::Draw(const Camera& camera, glm::mat4& transform)

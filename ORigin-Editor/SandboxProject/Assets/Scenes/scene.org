@@ -228,13 +228,3 @@ Entities:
       ClassName: Game.Player
       StoredFields:
         []
-  - Entity: 11705552453960066972
-    TagComponent:
-      Tag: Cube
-    TransformComponent:
-      Translation: [13.3838577, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: SandboxProject\Assets\Textures\block.png

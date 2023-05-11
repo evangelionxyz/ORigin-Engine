@@ -113,15 +113,15 @@ namespace Origin {
 				{\
 					out << scriptField.GetValue<Type>();\
 					break;\
-				}
+				}\
 
 #define	READ_FIELD_TYPE(FieldType, Type)\
 				case ScriptFieldType::FieldType:\
 				{\
 					Type data = scriptField["Data"].as<Type>();\
-					fieldInstance.SetValue(data); \
+					fieldInstance.SetValue(data);\
 					break;\
-				}
+				}\
 
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
 	{
@@ -606,7 +606,6 @@ namespace Origin {
 								READ_FIELD_TYPE(Entity, UUID);
 							}
 						}
-
 					}
 				}
 

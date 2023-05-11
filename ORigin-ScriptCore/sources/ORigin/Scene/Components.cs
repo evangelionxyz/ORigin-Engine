@@ -289,12 +289,12 @@ namespace ORiginEngine
         {
             get
             {
-                InternalCalls.SpriteRenderer2DComponent_GetTilingFator(Entity.ID, out float tilingfactor);
+                InternalCalls.SpriteRenderer2DComponent_GetTilingFactor(Entity.ID, out float tilingfactor);
                 return tilingfactor;
             }
             set
             {
-                InternalCalls.SpriteRenderer2DComponent_SetTilingFator(Entity.ID, ref value);
+                InternalCalls.SpriteRenderer2DComponent_SetTilingFactor(Entity.ID, ref value);
             }
         }
     }

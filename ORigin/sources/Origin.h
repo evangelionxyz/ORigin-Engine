@@ -22,6 +22,8 @@
 #include "Origin\Renderer\RenderCommand.h"
 #include "Origin\Renderer\Renderer2D.h"
 #include "Origin\Renderer\Renderer3D.h"
+#include "Origin\Renderer\Mesh.h"
+#include "Origin\Renderer\Model.h"
 
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Renderer\Texture.h"

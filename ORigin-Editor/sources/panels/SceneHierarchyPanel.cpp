@@ -312,7 +312,7 @@ namespace Origin {
 							if (field.Type == ScriptFieldType::Vector4)
 							{
 								glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
-								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.1f), 0.0f, 1.0f)
+								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
 								{
 									scriptInstance->SetFieldValue<glm::vec4>(name, data);
 								}
@@ -361,7 +361,7 @@ namespace Origin {
 								if (field.Type == ScriptFieldType::Vector4)
 								{
 									glm::vec4 data = scriptField.GetValue<glm::vec4>();
-									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.1f), 0.0f, 1.0f)
+									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
 									{
 										scriptField.SetValue<glm::vec4>(data);
 									}
@@ -382,7 +382,7 @@ namespace Origin {
 
 								if (field.Type == ScriptFieldType::Vector2)
 								{
-									glm::vec2 data = glm::vec2(0.0f);
+									glm::vec2 data(0.0f);
 									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data)))
 									{
 										ScriptFieldInstance& fieldInstance = entityFields[name];
@@ -393,7 +393,7 @@ namespace Origin {
 
 								if (field.Type == ScriptFieldType::Vector3)
 								{
-									glm::vec3 data = glm::vec3(0.0f);
+									glm::vec3 data(0.0f);
 									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data)))
 									{
 										ScriptFieldInstance& fieldInstance = entityFields[name];
@@ -404,7 +404,7 @@ namespace Origin {
 
 								if (field.Type == ScriptFieldType::Vector4)
 								{
-									glm::vec4 data = glm::vec4(0.0f);
+									glm::vec4 data(0.0f);
 									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data)))
 									{
 										ScriptFieldInstance& fieldInstance = entityFields[name];

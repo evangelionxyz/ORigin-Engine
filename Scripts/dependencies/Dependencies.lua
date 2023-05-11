@@ -3,11 +3,12 @@
 -- Set Dependencies Folder
 
 VULKAN_SDK = os.getenv("VULKAN_SDK")
+ASSIMP_SDK = os.getenv("ASSIMP_SDK")
 
 IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/ORigin/vendor/glfw/include"
 IncludeDir["GLAD"] = "%{wks.location}/ORigin/vendor/glad/include"
-IncludeDir["ASSIMP"] = "%{wks.location}/ORigin/vendor/Assimp/include"
+IncludeDir["ASSIMP"] = "%{wks.location}/ORigin/vendor/assimp/include"
 IncludeDir["IMGUI"] = "%{wks.location}/ORigin/vendor/imgui"
 IncludeDir["IMGUIZMO"] = "%{wks.location}/ORigin/vendor/ImGuizmo"
 IncludeDir["BOX2D"] = "%{wks.location}/ORigin/vendor/Box2D/include"
@@ -22,10 +23,12 @@ IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
+LibraryDir["AssimpSDK"] = "%{ASSIMP_SDK}/lib"
 LibraryDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
 
 Library = {}
 Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
+Library["Assimp"] = "%{LibraryDir.AssimpSDK}/x64/assimp-vc143-mt.lib"
 
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"

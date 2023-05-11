@@ -23,22 +23,22 @@ namespace Origin
 		{"System.Boolean", ScriptFieldType::Bool},
 		{"System.Single", ScriptFieldType::Float},
 
-		{"System.Char", ScriptFieldType::Char},
-		{"System.Byte", ScriptFieldType::Byte},
+		{"System.Char",		ScriptFieldType::Char},
+		{"System.Byte",		ScriptFieldType::Byte},
 		{"System.Double", ScriptFieldType::Double},
 
-		{"System.Int16", ScriptFieldType::Short},
-		{"System.Int32", ScriptFieldType::Int},
-		{"System.Int64", ScriptFieldType::Long},
+		{"System.Int16",	ScriptFieldType::Short},
+		{"System.Int32",	ScriptFieldType::Int},
+		{"System.Int64",	ScriptFieldType::Long},
 
 		{"System.UInt16", ScriptFieldType::UShort},
 		{"System.UInt32", ScriptFieldType::UInt},
 		{"System.UInt64", ScriptFieldType::ULong},
-		{"System.UInt", ScriptFieldType::UByte},
+		{"System.UInt",		ScriptFieldType::UByte},
 
-		{"ORiginEngine.Vector2", ScriptFieldType::Vector2},
-		{"ORiginEngine.Vector3", ScriptFieldType::Vector3},
-		{"ORiginEngine.Vector4", ScriptFieldType::Vector4},
+		{"ORiginEngine.Vector2",ScriptFieldType::Vector2},
+		{"ORiginEngine.Vector3",ScriptFieldType::Vector3},
+		{"ORiginEngine.Vector4",ScriptFieldType::Vector4},
 		{"ORiginEngine.Entity",	ScriptFieldType::Entity},
 	};
 
@@ -189,7 +189,7 @@ namespace Origin
 		LoadAssemblyClasses();
 
 		// storing classes name into storage
-		for (auto it : s_Data->EntityClasses)
+		for (auto& it : s_Data->EntityClasses)
 			s_Data->EntityScriptStorage.emplace_back(it.first);
 
 		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
@@ -265,7 +265,7 @@ namespace Origin
 		// storing classes name into storage
 		s_Data->EntityScriptStorage.clear();
 
-		for (auto it : s_Data->EntityClasses)
+		for (auto& it : s_Data->EntityClasses)
 			s_Data->EntityScriptStorage.emplace_back(it.first);
 
 		// retrieve entity class

@@ -30,6 +30,7 @@ includedirs {
     "%{wks.location}/ORigin/sources",
     "%{prj.location}/sources",
     "%{IncludeDir.SPDLOG}",
+    "%{IncludeDir.ASSIMP}",
     "%{IncludeDir.STBI}",
     "%{IncludeDir.GLFW}",
     "%{IncludeDir.IMGUI}",

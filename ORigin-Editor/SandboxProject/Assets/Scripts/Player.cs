@@ -7,33 +7,35 @@ namespace Game
 {
     public class Player : Entity
     {
-        private TransformComponent Transform;
-        private Rigidbody2DComponent Rigidbody2D;
-        private SpriteRenderer2DComponent SpriteRenderer2D;
+        public Entity entity;
+
+        private TransformComponent transformC;
+        private Rigidbody2DComponent rigidBody2DC;
+        private SpriteRenderer2DComponent spriteRenderer2DC;
+        private BoxCollider2DComponent boxCollider2DC;
 
         public float Speed = 5.0f;
-        public float time;
+        public float time = 0.0f;
 
-        public Vector3 scale;
-        public Entity entity;
-        public float tilingFactor = 1.0f;
+        public float tilingfactor = 1.0f;
+        public Vector3 scale = new Vector3(1.0f);
+
+        public float Bc2Ddensity;
 
         void OnCreate()
         {
-            scale = new Vector3(1.0f);
-            Transform = GetComponent<TransformComponent>();
-            Rigidbody2D = GetComponent<Rigidbody2DComponent>();
-            SpriteRenderer2D = GetComponent<SpriteRenderer2DComponent>();
+            transformC = GetComponent<TransformComponent>();
+            rigidBody2DC = GetComponent<Rigidbody2DComponent>();
+            spriteRenderer2DC = GetComponent<SpriteRenderer2DComponent>();
+            boxCollider2DC = GetComponent<BoxCollider2DComponent>();
 
-            time = 0.0f;
+            Bc2Ddensity = boxCollider2DC.Density;
         }
 
         void OnUpdate(float deltaTime)
         {
             time += deltaTime;
             float speed = Speed;
-            
-            Scale = Transform.Scale;
 
             Vector3 velocity = Vector3.Zero;
 
@@ -47,11 +49,11 @@ namespace Game
                 velocity.X = 1.0f;
 
             velocity *= speed * deltaTime;
-            Rigidbody2D.ApplyLinearImpulse(velocity.XY, true);
-            scale.X += velocity.Y * 4.0f * deltaTime;
-            Transform.Scale = scale;
+            rigidBody2DC.ApplyLinearImpulse(velocity.XY, true);
 
-            SpriteRenderer2D.TilingFactor = tilingFactor;
+            transformC.Scale = scale;
+            spriteRenderer2DC.TilingFactor = tilingfactor;
+            boxCollider2DC.Density = Bc2Ddensity;
         }
     }
 }
