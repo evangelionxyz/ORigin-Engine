@@ -358,7 +358,7 @@ namespace Origin
 		auto& it = s_Data->EntityInstances.find(uuid);
 		if (it == s_Data->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("Script Instnce: Failed to find {} ", uuid);
+			OGN_CORE_ERROR("Script Instance: Failed to find {} ", uuid);
 			return nullptr;
 		}
 

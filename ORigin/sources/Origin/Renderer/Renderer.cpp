@@ -9,7 +9,6 @@
 #include "Origin\Renderer\Renderer3D.h"
 
 #include "Origin\Scene\Skybox.h"
-#include "Origin\Scene\Component\Lighting.h"
 
 #include "Platform\OpenGL\OpenGL_Shader.h"
 #include <glm\gtc\matrix_transform.hpp>

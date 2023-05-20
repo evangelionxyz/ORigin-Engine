@@ -62,9 +62,8 @@ namespace Origin
 		m_EditorCamera.SetPosition(glm::vec3(-20.0f, 10.0f, 50.0f));
     m_EditorCamera.SetDistance(10.0f);
 
-    // Load Model
-    std::shared_ptr<Shader> modelShader = Shader::Create("Resources/Shaders/Sandbox/model.glsl");
-    model = Model::Create("Resources/Models/cone.gltf", modelShader);
+    // Load Skybox
+    skybox = Skybox::Create("Resources/Skybox");
 
     m_ActiveScene = std::make_shared<Scene>();
     auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -113,6 +112,9 @@ namespace Origin
     RenderCommand::Clear();
     m_Framebuffer->ClearAttachment(1, -1);
 
+		if (enableSkybox)
+			skybox->Draw(m_EditorCamera);
+
     switch (m_SceneState)
     {
     case SceneState::Play:
@@ -160,8 +162,6 @@ namespace Origin
     m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
     m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
 
-    model->Draw(m_EditorCamera.GetViewProjection());
-
     OnOverlayRenderer();
     m_Framebuffer->Unbind();
 
@@ -203,7 +203,6 @@ namespace Origin
 
     SceneViewport();
     //GameViewport();
-
     m_SceneHierarchy.OnImGuiRender();
     m_ContentBrowser->OnImGuiRender();
     m_Dockspace.End();
@@ -275,7 +274,7 @@ namespace Origin
 		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
     {
 			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
-      glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
+			glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
 
       if (selectedEntity.HasComponent<CircleRendererComponent>())
       {

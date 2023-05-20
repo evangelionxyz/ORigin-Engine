@@ -88,8 +88,8 @@ namespace Origin
     void SetUniformVector(const std::string& name, const glm::vec4& vector4);
 
     // MATRIX UNIFORM
-    void SetUniformMatrix(const std::string& name, const glm::mat3& MATRIX);
-    void SetUniformMatrix(const std::string& name, const glm::mat4& MATRIX);
+    void SetUniformMatrix(const std::string& name, const glm::mat3& matrix3);
+    void SetUniformMatrix(const std::string& name, const glm::mat4& matrix4);
 
   private:
     std::string m_Filepath;

@@ -3,6 +3,7 @@
 #pragma once
 #include "EditorCamera.h"
 #include "Origin\Utils\Time.h"
+#include "Origin\Scene\Skybox.h"
 #include "Origin\Scene\Component\UUID.h"
 #include "Origin\Scene\Component\Component.h"
 
@@ -30,6 +31,7 @@ namespace Origin
 		Entity CreateCube(const std::string& name = std::string());
 		Entity CreateCamera(const std::string& name = std::string());
 		Entity CreateLighting(const std::string& name = std::string());
+		Entity CreateMesh(const std::string& name = std::string());
 
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
 		Entity GetPrimaryCameraEntity();
@@ -75,7 +77,7 @@ namespace Origin
 		template<typename T> void OnComponentAdded(Entity entity, T& component);
 		int m_GridSize = 5;
 		glm::vec4 m_GridColor = glm::vec4(1.0f);
-		void DrawIcon(EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture, TransformComponent& tc, bool rotate = true);
+		void DrawIcon(const EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture, TransformComponent& tc, bool rotate = true);
 
 		bool IsRunning() const { return m_Running; }
 		bool IsPaused() const { return m_Paused; }

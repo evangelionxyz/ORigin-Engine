@@ -5,6 +5,7 @@
 #include "SceneSerializer.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Project\Project.h"
+#include "Origin\Renderer\Model.h"
 
 #include "Entity.h"
 #include "Component\UUID.h"
@@ -227,6 +228,19 @@ namespace Origin {
 			out << YAML::EndMap; // !CameraComponent
 		}
 
+		if (entity.HasComponent<StaticMeshComponent>())
+		{
+			out << YAML::Key << "StaticMeshComponent";
+			out << YAML::BeginMap; // StaticMeshComponent
+
+			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
+			out << YAML::Key << "ModelPath" << YAML::Value << sMesh.ModelPath;
+			out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.ShaderPath;
+			out << YAML::Key << "Color" << YAML::Value << sMesh.Color;
+
+			out << YAML::EndMap; // !StaticMeshComponent
+		}
+
 		if (entity.HasComponent<SpriteRendererComponent>())
 		{
 			out << YAML::Key << "SpriteRendererComponent";
@@ -254,6 +268,18 @@ namespace Origin {
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
 		}
 
+		if (entity.HasComponent<PointLightComponent>())
+		{
+			out << YAML::Key << "PointLightComponent";
+			out << YAML::BeginMap; // PointLightComponent
+
+			const auto& lc = entity.GetComponent<PointLightComponent>();
+			out << YAML::Key << "Color" << YAML::Value << lc.Color;
+			out << YAML::Key << "Attenuation" << YAML::Value << lc.Attenuation;
+
+			out << YAML::EndMap; // !PointLightComponent
+		}
+
 		if (entity.HasComponent<LightingComponent>())
 		{
 			out << YAML::Key << "LightingComponent";
@@ -261,6 +287,8 @@ namespace Origin {
 
 			const auto& lc = entity.GetComponent<LightingComponent>();
 			out << YAML::Key << "Color" << YAML::Value << lc.Color;
+			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
+			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
 
 			out << YAML::EndMap; // !LightingComponent
 		}
@@ -515,10 +543,19 @@ namespace Origin {
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<float>();
 				}
 
+				if (auto pointLightComponent = entity["PointLightComponent"])
+				{
+					auto& lc = deserializedEntity.AddComponent<PointLightComponent>();
+					lc.Color = pointLightComponent["Color"].as<glm::vec3>();
+					lc.Attenuation = pointLightComponent["Attenuation"].as<float>();
+				}
+
 				if (auto lightingComponent = entity["LightingComponent"])
 				{
 					auto& lc = deserializedEntity.AddComponent<LightingComponent>();
-					lc.Color = lightingComponent["Color"].as<glm::vec4>();
+					lc.Color = lightingComponent["Color"].as<glm::vec3>();
+					lc.Ambient = lightingComponent["Ambient"].as<float>();
+					lc.Specular = lightingComponent["Specular"].as<float>();
 				}
 
 				if (auto circleRendererComponent = entity["CircleRendererComponent"])
@@ -534,6 +571,19 @@ namespace Origin {
 					auto& rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
 					rb2d.Type = RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
+				}
+
+				if (auto staticMeshComponent = entity["StaticMeshComponent"])
+				{
+					auto& sMesh = deserializedEntity.AddComponent<StaticMeshComponent>();
+					sMesh.ModelPath = staticMeshComponent["ModelPath"].as<std::string>();
+					sMesh.ShaderPath = staticMeshComponent["ShaderPath"].as<std::string>();
+					if (!sMesh.ModelPath.empty() && !sMesh.ShaderPath.empty())
+					{
+						std::shared_ptr<Shader> shader = Shader::Create(sMesh.ShaderPath);
+						sMesh.Model = Model::Create(sMesh.ModelPath, shader);
+					}
+					sMesh.Color = staticMeshComponent["Color"].as<glm::vec4>();
 				}
 
 				if (auto boxCollider2DComponent = entity["BoxCollider2DComponent"])

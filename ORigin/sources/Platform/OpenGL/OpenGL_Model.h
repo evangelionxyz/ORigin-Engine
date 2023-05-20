@@ -17,8 +17,14 @@ namespace Origin
 		OpenGLModel() = default;
 		OpenGLModel(const std::string& filepath, std::shared_ptr<Shader>& shader);
 		OpenGLModel(std::shared_ptr<Shader>& shader);
+		virtual ~OpenGLModel() override;
 
-		void Draw(const glm::mat4& viewProjection) override;
+		void Draw() override;
+		void Draw(const EditorCamera& camera) override;
+		void Draw(const glm::mat4& transform, const EditorCamera& camera, int entityID = -1) override;
+
+		void LoadLighting(const glm::vec3& position, const glm::vec4& color, float ambient) override;
+
 		std::shared_ptr<Shader>& GetShader() override { return m_Shader; }
 
 	private:
@@ -31,6 +37,13 @@ namespace Origin
 
 		void ProcessNode(aiNode* node, const aiScene* scene);
 		std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
+		int m_EntityID = -1;
+
+		std::shared_ptr<Texture2D> m_Texture;
+		
+		glm::vec4 m_LightColor;
+		glm::vec3 m_CameraPosition, m_LightPosition;
+		float m_Ambient;
 	};
 }
 

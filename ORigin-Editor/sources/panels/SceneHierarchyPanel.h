@@ -149,7 +149,7 @@ namespace Origin
 	}
 
 	// static function
-	static void DrawVecControl(const std::string& label, float* values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
+	static void DrawVecControl(const std::string& label, float* values, float speed = 0.025f, float minValue = 0.0f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -172,7 +172,7 @@ namespace Origin
 		if (ImGui::Button("V", buttonSize))
 			*values = resetValue;
 		ImGui::SameLine();
-		ImGui::DragFloat("##V", values, speed);
+		ImGui::DragFloat("##V", values, speed, minValue);
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
 

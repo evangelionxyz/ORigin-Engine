@@ -30,12 +30,18 @@ namespace Origin {
     void OnUpdate(Timestep ts) override;
 
   private:
+    std::shared_ptr<Model> model;
+    std::shared_ptr<Skybox> skybox;
+    float skyBlur = 0.005f;
+    bool enableSkybox = true;
+    glm::vec4 modelColor = glm::vec4(1.0f);
 
     // Scene Viewport
 		void SceneViewport();
     void SceneViewportToolbar();
     void SceneViewportMenu();
     void OverlayBeginScene();
+
 
 		// Game Viewport
     void GameRender(float time);

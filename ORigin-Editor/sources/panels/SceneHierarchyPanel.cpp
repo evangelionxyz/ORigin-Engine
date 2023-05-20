@@ -6,6 +6,7 @@
 #include "Origin\IO\Input.h"
 #include "Origin\IO\KeyCodes.h"
 #include "Origin\Renderer\Texture.h"
+#include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Component\Component.h"
 
 #include "Origin\Scripting\ScriptEngine.h"
@@ -28,9 +29,7 @@ namespace Origin {
 	{
 		// reset scene
 		if (reset)
-		{
-			m_SelectedEntity = {};
-		}
+			m_SelectedEntity = Entity();
 
 		// set new scene
 		m_Context = context;
@@ -40,7 +39,7 @@ namespace Origin {
 			return;
 
 		auto entityID = m_SelectedEntity.GetUUID();
-		auto newEntity = m_Context->GetEntityWithUUID(entityID);
+		auto& newEntity = m_Context->GetEntityWithUUID(entityID);
 
 		if (entityID == newEntity.GetUUID())
 			m_SelectedEntity = newEntity;
@@ -76,20 +75,32 @@ namespace Origin {
 			{
 				if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 				{
-					if (ImGui::BeginMenu("Create"))
+					if (ImGui::BeginMenu("CREATE"))
 					{
-						if (ImGui::MenuItem("Empty"))
+						if (ImGui::MenuItem("EMPTY"))
 							m_Context->CreateEntity("Empty");
 
-						if (ImGui::MenuItem("Camera"))
+						if (ImGui::MenuItem("CAMERA"))
 							m_Context->CreateCamera("Camera");
 
+						// 2D Entity
 						if (ImGui::BeginMenu("2D"))
 						{
 							if (ImGui::MenuItem("Sprite"))
 								m_Context->CreateSpriteEntity();
 							if (ImGui::MenuItem("Circle"))
 								m_Context->CreateCircle("Circle");
+
+							ImGui::EndMenu();
+						}
+
+						// 3D Entity
+						if (ImGui::BeginMenu("MESH"))
+						{
+							if (ImGui::MenuItem("Empty Mesh"))
+								m_Context->CreateMesh("Empty Mesh");
+							//if (ImGui::MenuItem("CUBE"))
+								//m_Context->CreateMesh_Cube("Cube");
 
 							ImGui::EndMenu();
 						}
@@ -105,7 +116,7 @@ namespace Origin {
 		ImGui::End(); // !Hierarchy
 
 		// Properties
-		ImGui::Begin("Properties");
+		ImGui::Begin("PROPERTIES");
 		if (m_SelectedEntity)
 			DrawComponents(m_SelectedEntity);
 		ImGui::End(); // !Properties
@@ -166,16 +177,18 @@ namespace Origin {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			DisplayAddComponentEntry<ScriptComponent>("Script");
-			DisplayAddComponentEntry<CameraComponent>("Camera");
-			DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
-			DisplayAddComponentEntry<SpriteRenderer2DComponent>("Sprite Renderer 2D");
-			DisplayAddComponentEntry<LightingComponent>("Lighting");
-			DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
-			DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
-			DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody 2D");
-			DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
-			DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
+			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
+			DisplayAddComponentEntry<CameraComponent>("CAMERA");
+			DisplayAddComponentEntry<SpriteRendererComponent>("SPIRTE RENDERER");
+			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
+			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
+			DisplayAddComponentEntry<LightingComponent>("LIGHTING");
+			DisplayAddComponentEntry<PointLightComponent>("POINT LIGHT");
+			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
+			//DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
+			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
+			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRLCE COLLIDER 2D");
 
 			ImGui::EndPopup();
 		}
@@ -183,7 +196,7 @@ namespace Origin {
 		ImGui::PopStyleVar();
 		ImGui::PopItemWidth();
 
-		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
+		DrawComponent<TransformComponent>("TRANSFORM", entity, [](auto& component)
 		{
 			DrawVec3Control("Translation", component.Translation);
 
@@ -193,7 +206,7 @@ namespace Origin {
 			DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 		});
 
-		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
 			{
 				auto& camera = component.Camera;
 		const char* projectionTypeString[] = { "Perspective", "Orthographic" };
@@ -253,20 +266,20 @@ namespace Origin {
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
-		DrawComponent<ScriptComponent>("Script", entity, [entity, scene = m_Context](auto& component) mutable
+		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
+				bool isSelected = false;
 
 				if (!scriptClassExist)
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
 
-				auto scriptStorage = ScriptEngine::GetScriptClassStorage();
+				auto& scriptStorage = ScriptEngine::GetScriptClassStorage();
 				std::string currentScriptClasses = component.ClassName;
 
 				// drop-down
 				if (ImGui::BeginCombo("Script Class", currentScriptClasses.c_str()))
 				{
-					bool isSelected = false;
 					for (int i = 0; i < scriptStorage.size(); i++)
 					{
 						isSelected = currentScriptClasses == scriptStorage[i];
@@ -280,7 +293,12 @@ namespace Origin {
 					ImGui::EndCombo();
 				}
 
-				if (ImGui::Button("Detach", ImVec2(80, 25))) component.ClassName = "Detached";
+
+				if (ImGui::Button("Detach"))
+				{
+					component.ClassName = "Detached";
+					isSelected = false;
+				}
 
 				// fields
 				bool isRunning = scene->IsRunning();
@@ -421,12 +439,45 @@ namespace Origin {
 					ImGui::PopStyleColor();
 			});
 
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+			DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
+				{
+					if(!component.Model)
+						ImGui::Button("DROP MODEL", ImVec2(80.0f, 25.0f));
+					else
+					{
+						if (ImGui::Button("REMOVE", ImVec2(80.0f, 25.0f)))
+							component.Model.reset();
+
+						ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+						ImGui::Text("Model: %s", component.ModelPath.c_str());
+						ImGui::Text("Shader: %s", component.ShaderPath.c_str());
+					}
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
+							if (modelPath.extension() == ".gltf" || modelPath.extension() == ".fbx")
+							{
+								std::shared_ptr<Shader> modelShader = Shader::Create("Resources/Shaders/Sandbox/model.glsl");
+
+								component.Model = Model::Create(modelPath.string(), modelShader);
+								component.ModelPath = modelPath.string();
+								component.ShaderPath = "Resources/Shaders/Sandbox/model.glsl";
+							}
+						}
+					}
+				});
+
+		DrawComponent<SpriteRendererComponent>("SPRITE RENDERER", entity, [](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
 				if (!component.Texture)
-					ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
+					ImGui::Button("DROP TEXTURE", ImVec2(80.0f, 30.0f));
 				else ImGui::ImageButton((ImTextureID)component.Texture->GetRendererID(), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
 
 				if (ImGui::BeginDragDropTarget())
@@ -453,7 +504,7 @@ namespace Origin {
 				}
 			});
 
-		DrawComponent<SpriteRenderer2DComponent>("Sprite Renderer 2D", entity, [](auto& component)
+		DrawComponent<SpriteRenderer2DComponent>("SPRITE RENDERER 2D", entity, [](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
@@ -487,13 +538,21 @@ namespace Origin {
 					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 				}
 			});
-		DrawComponent<LightingComponent>("Lighting", entity, [](auto& component)
+
+		DrawComponent<PointLightComponent>("POINT LIGHT", entity, [](auto& component)
 			{
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-				DrawVecControl("Intensity", &component.Ambient, 0.01f, 1.0f);
+				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
+				DrawVecControl("Attenuation", &component.Attenuation, 0.01, 1.0);
 			});
 
-		DrawComponent<CircleRendererComponent>("Circle", entity, [](auto& component)
+		DrawComponent<LightingComponent>("LIGHTING", entity, [](auto& component)
+			{
+				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
+				DrawVecControl("Ambient", &component.Ambient, 0.01f, 1.0f, 0.0f);
+				DrawVecControl("Specular", &component.Specular, 0.01f, 1.0f, 0.0f);
+			});
+
+		DrawComponent<CircleRendererComponent>("CIRCLE RENDERER", entity, [](auto& component)
 	{
 		ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 		ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
@@ -501,7 +560,7 @@ namespace Origin {
 
 	});
 
-		DrawComponent<Rigidbody2DComponent>("Rigidbody 2D", entity, [](auto& component)
+		DrawComponent<Rigidbody2DComponent>("RIGIDBODY 2D", entity, [](auto& component)
 		{
 			const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic" };
 			const char* currentBodyTypeString = bodyTypeString[(int)component.Type];
@@ -524,7 +583,7 @@ namespace Origin {
 
 			});
 
-		DrawComponent<BoxCollider2DComponent>("Box 2D Collider", entity, [](auto& component)
+		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto& component)
 			{
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 				DrawVec2Control("Size", component.Size, 0.01f, 0.0f);
@@ -536,7 +595,7 @@ namespace Origin {
 				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 0.01f, 1.0f, width);
 			});
 
-		DrawComponent<CircleCollider2DComponent>("Circle 2D Collider", entity, [](auto& component)
+		DrawComponent<CircleCollider2DComponent>("CIRCLE COLLIDER 2D", entity, [](auto& component)
 			{
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 				DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);

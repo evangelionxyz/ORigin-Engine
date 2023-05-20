@@ -17,8 +17,12 @@ namespace Origin
 	class Mesh
 	{
 	public:
+		virtual ~Mesh() {}
 		virtual void Draw() = 0;
+		virtual bool IsLoaded() const = 0;
+
 		static std::shared_ptr<Mesh> Create(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+
 	};
 }
 

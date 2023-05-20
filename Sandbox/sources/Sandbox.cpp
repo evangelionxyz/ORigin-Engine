@@ -9,17 +9,19 @@
 
 #include <imgui.h>
 
-#include "ShaderLibs.h"
-
 using namespace Origin;
 
 Sandbox::Sandbox()
 	: Layer("Sandbox")
 {
 	cubeTexture = Texture2D::Create("SandboxProject/Assets/Textures/block.png");
-
 	draw.Init();
 	camera = FPSCamera(45.0f, 16.0f / 9.0f);
+
+	// Load Model
+	modelShader = Shader::Create("Resources/Shaders/Sandbox/model.glsl");
+	model = Model::Create("Resources/Models/monkey.gltf", modelShader);
+
 }
 
 Sandbox::~Sandbox()
@@ -32,26 +34,6 @@ void Sandbox::OnUpdate(Timestep ts)
 	RenderCommand::Clear();
 	camera.OnUpdate(ts);
 
-
-	// Cube
-	draw.GetShader("cube")->Bind();
-
-	draw.GetShader("cube")->SetMatrix("uViewProjection", camera.GetViewProjection());
-
-	cubeTexture->Bind(0);
-	draw.GetShader("cube")->SetInt("uTexure", cubeTexture->GetIndex());
-
-	draw.GetShader("cube")->SetVector("uPos", cubePosition);
-	draw.GetShader("cube")->SetVector("uSize", cubeSize);
-	draw.GetShader("cube")->SetVector("uLightPos", lightPosition);
-	draw.GetShader("cube")->SetVector("uLightColor", lightColor);
-	draw.GetShader("cube")->SetFloat("uLightAmbient", Ambient);
-
-	draw.GetShader("cube")->SetVector("uCameraPosition", camera.GetPosition());
-	draw.RenderCube();
-	draw.GetShader("cube")->Unbind();
-
-
 	// Lighting
 	draw.GetShader("light")->Bind();
 	draw.GetShader("light")->SetMatrix("uViewProjection", camera.GetViewProjection());
@@ -60,6 +42,8 @@ void Sandbox::OnUpdate(Timestep ts)
 	draw.GetShader("light")->SetVector("uLightColor", lightColor);
 	draw.RenderLight();
 	draw.GetShader("light")->Unbind();
+
+	model->Draw(camera.GetViewProjection());
 }
 
 void Sandbox::OnEvent(Event& e)
@@ -83,11 +67,11 @@ void Sandbox::OnGuiRender()
 	ImGui::End();
 
 	ImGui::Begin("Control");
-	ImGui::PushID("cube");
-	ImGui::Text("Cube");
-	ImGui::DragFloat3("Position", glm::value_ptr(cubePosition), 0.25);
-	ImGui::DragFloat3("Size", glm::value_ptr(cubeSize), 0.25);
-	ImGui::ColorEdit4("Color", glm::value_ptr(cubeColor));
+	ImGui::PushID("Model");
+	ImGui::Text("Model");
+	ImGui::DragFloat3("Position", glm::value_ptr(modelPosition), 0.25);
+	ImGui::DragFloat3("Size", glm::value_ptr(modelSize), 0.25);
+	ImGui::ColorEdit4("Color", glm::value_ptr(modelColor));
 	ImGui::Separator();
 	ImGui::PopID();
 

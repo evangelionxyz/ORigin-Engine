@@ -32,12 +32,28 @@ namespace Origin
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
+
+		m_Loaded = true;
+	}
+
+	OpenGLMesh::~OpenGLMesh()
+	{
 	}
 
 	void OpenGLMesh::Draw()
 	{
-		m_VertexArray->Bind();
+		if (!m_VertexArray)
+		{
+			m_Loaded = false;
+			return;
+		}
+
 		RenderCommand::DrawIndexed(m_VertexArray);
-		m_VertexArray->Unbind();
 	}
+
+	bool OpenGLMesh::IsLoaded() const
+	{
+		return m_Loaded;
+	}
+
 }

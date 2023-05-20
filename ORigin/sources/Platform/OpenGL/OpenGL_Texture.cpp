@@ -159,6 +159,8 @@ namespace Origin
   OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
     : m_RendererID(0), m_FilePath(path), m_Index(0)
   {
+		OGN_CORE_WARN("TEXTURE: Trying to load {}", path);
+
 		int width, height, bpp;
 		stbi_set_flip_vertically_on_load(1);
 

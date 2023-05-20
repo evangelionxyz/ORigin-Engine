@@ -9,21 +9,21 @@ namespace Origin
 	{
 		switch (type)
 		{
-		case Origin::ShaderDataType::Int:			return GL_INT;
-		case Origin::ShaderDataType::Int2:		return GL_INT;
-		case Origin::ShaderDataType::Int3:		return GL_INT;
-		case Origin::ShaderDataType::Int4:		return GL_INT;
+		case ShaderDataType::Int:			return GL_INT;
+		case ShaderDataType::Int2:		return GL_INT;
+		case ShaderDataType::Int3:		return GL_INT;
+		case ShaderDataType::Int4:		return GL_INT;
 
-		case Origin::ShaderDataType::Float:		return GL_FLOAT;
-		case Origin::ShaderDataType::Float2:	return GL_FLOAT;
-		case Origin::ShaderDataType::Float3:	return GL_FLOAT;
-		case Origin::ShaderDataType::Float4:	return GL_FLOAT;
+		case ShaderDataType::Float:		return GL_FLOAT;
+		case ShaderDataType::Float2:	return GL_FLOAT;
+		case ShaderDataType::Float3:	return GL_FLOAT;
+		case ShaderDataType::Float4:	return GL_FLOAT;
 
-		case Origin::ShaderDataType::Mat2:		return GL_FLOAT;
-		case Origin::ShaderDataType::Mat3:		return GL_FLOAT;
-		case Origin::ShaderDataType::Mat4:		return GL_FLOAT;
+		case ShaderDataType::Mat2:		return GL_FLOAT;
+		case ShaderDataType::Mat3:		return GL_FLOAT;
+		case ShaderDataType::Mat4:		return GL_FLOAT;
 
-		case Origin::ShaderDataType::Boolean: return GL_BOOL;
+		case ShaderDataType::Boolean: return GL_BOOL;
 		}
 
 		OGN_CORE_ASSERT(false, "Unknown Shader Data Type");
@@ -33,6 +33,12 @@ namespace Origin
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
 		glCreateVertexArrays(1, &m_RendererID);
+	}
+
+	OpenGLVertexArray::~OpenGLVertexArray()
+	{
+		OpenGLVertexArray::Unbind();
+		glDeleteVertexArrays(1, &m_RendererID);
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)

@@ -476,8 +476,6 @@ namespace Origin {
 
   void OpenGLShader::Bind() const
   {
-    OGN_CORE_ASSERT(m_RendererID, "Shader is Invalid");
-
     glUseProgram(m_RendererID);
   }
   void OpenGLShader::Unbind() const

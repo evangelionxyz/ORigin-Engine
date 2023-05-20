@@ -66,6 +66,12 @@ namespace Origin
 
 			ImGui::Checkbox("Visualize 2D Colliders", &m_VisualizeCollider);
 
+			ImGui::Separator();
+			ImGui::Text("Skybox");
+			ImGui::Text("Blur"); ImGui::SameLine(); if(ImGui::DragFloat("##blur", &skyBlur, 0.0005f, 0.0f, 1.0f)) skybox->SetBlur(skyBlur);
+			ImGui::Checkbox("Enable", &enableSkybox);
+			ImGui::Separator();
+
 			ImGui::Text("Grid");
 			ImGui::Text("Size "); ImGui::SameLine(0.0f, 1.5f); ImGui::DragInt("##grid_size", &m_GridSize);
 			ImGui::Text("Color"); ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("##grid_color", glm::value_ptr(m_GridColor));

@@ -34,6 +34,7 @@ uniform vec3 uLightPos;
 uniform vec4 uLightColor;
 uniform float uLightAmbient;
 uniform vec3 uCameraPosition;
+
 uniform sampler2D uTexture;
 
 struct Vertex

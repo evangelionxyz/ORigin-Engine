@@ -7,7 +7,7 @@
 #include "Origin\Renderer\Texture.h"
 
 #include "Origin\Scene\Component\UUID.h"
-#include "Origin\Scene\Component\Lighting.h"
+#include "Origin\Renderer\Model.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -33,6 +33,18 @@ namespace Origin
 		TagComponent(const TagComponent&) = default;
 		TagComponent(const std::string& tag)
 			: Tag(tag) {}
+	};
+
+	struct StaticMeshComponent
+	{
+		std::string ModelPath;
+		std::string ShaderPath;
+
+		std::shared_ptr<Model> Model;
+		glm::vec4 Color = glm::vec4(1.0);
+
+		StaticMeshComponent() = default;
+		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
 
 	struct TransformComponent
@@ -78,16 +90,35 @@ namespace Origin
 		SpriteRenderer2DComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
 	};
 
+	struct PointLightComponent
+	{
+		glm::vec3 Color;
+		float Attenuation;
+		
+		PointLightComponent() = default;
+		PointLightComponent(const PointLightComponent&) = default;
+	};
+
+	struct DirectionalLight
+	{
+		glm::vec3 Color;
+		glm::vec3 Direction;
+
+		DirectionalLight() = default;
+		DirectionalLight(const DirectionalLight&) = default;
+		DirectionalLight(const DirectionalLight&, const glm::vec3& color) : Color(Color) {}
+	};
+
 	struct LightingComponent
 	{
-		glm::vec4 Color = glm::vec4(1.0f);
-		float Ambient = 0.8f;
-		LightingType type = LightingType::Direct;
+		glm::vec3 Color = glm::vec3(1.0f);
+		float Ambient = 0.1f;
+		float Specular = 1.0f;
 
 		LightingComponent() = default;
 		LightingComponent(const LightingComponent&) = default;
-		LightingComponent(const LightingComponent&, glm::vec4 color) : Color(color) {}
-		LightingComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
+		LightingComponent(const LightingComponent&, glm::vec3 color) : Color(color) {}
+		LightingComponent(float r, float g, float b) : Color(r, g, b) {}
 	};
 
 	struct CircleRendererComponent
@@ -182,8 +213,8 @@ namespace Origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, LightingComponent,
-		SpriteRendererComponent, SpriteRenderer2DComponent,
+		ComponentGroup<TransformComponent, PointLightComponent, LightingComponent,
+		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent,
 		CircleRendererComponent, CameraComponent,
 		ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;

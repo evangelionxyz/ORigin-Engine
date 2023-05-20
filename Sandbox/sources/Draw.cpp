@@ -155,4 +155,6 @@ std::shared_ptr<Origin::Shader>& Draw::GetShader(std::string name)
 {
 	if (shaderMap.find(name) != shaderMap.end())
 		return shaderMap.at(name);
+
+	OGN_CORE_ASSERT(false);
 }

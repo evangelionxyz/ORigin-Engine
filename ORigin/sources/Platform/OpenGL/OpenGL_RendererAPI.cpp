@@ -44,22 +44,31 @@ namespace Origin
 	void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount)
 	{
 		m_DrawLineMode ? glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) : glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		vertexArray->Bind();
-		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		if (vertexArray)
+		{
+			vertexArray->Bind();
+			uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		}
 	}
 
 	void OpenGLRendererAPI::DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount)
 	{
 		m_DrawLineMode ? glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) : glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		vertexArray->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, indexCount);
+		if (vertexArray)
+		{
+			vertexArray->Bind();
+			glDrawArrays(GL_TRIANGLES, 0, indexCount);
+		}
 	}
 
 	void OpenGLRendererAPI::DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount)
 	{
-		vertexArray->Bind();
-		glDrawArrays(GL_LINES, 0, vertexCount);
+		if (vertexArray)
+		{
+			vertexArray->Bind();
+			glDrawArrays(GL_LINES, 0, vertexCount);
+		}
 	}
 
 	void OpenGLRendererAPI::SetLineWidth(float width)
