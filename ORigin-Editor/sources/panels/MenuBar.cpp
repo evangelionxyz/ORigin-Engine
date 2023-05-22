@@ -19,10 +19,13 @@ namespace Origin
 
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New", "Ctrl+N")) NewScene();
-				if (ImGui::MenuItem("Open", "Ctrl+O"))  OpenScene();
-				if (ImGui::MenuItem("Save", "Ctrl+S"))  SaveScene();
-				if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))  SaveSceneAs();
+				if (ImGui::MenuItem("New Project")) NewProject();
+				if (ImGui::MenuItem("Open Project")) OpenProject();
+				ImGui::Separator();
+				if (ImGui::MenuItem("New Scene", "Ctrl+N")) NewScene();
+				if (ImGui::MenuItem("Open Scene", "Ctrl+O"))  OpenScene();
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))  SaveScene();
+				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S"))  SaveSceneAs();
 				if (ImGui::MenuItem("Exit", "Alt+F4")) window.Close();
 				ImGui::EndMenu();
 			}

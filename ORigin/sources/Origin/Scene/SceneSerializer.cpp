@@ -268,6 +268,34 @@ namespace Origin {
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
 		}
 
+		if (entity.HasComponent<DirectionalLightComponent>())
+		{
+			out << YAML::Key << "DirectionalLightComponent";
+			out << YAML::BeginMap; // DirectionalLightComponent
+
+			const auto& lc = entity.GetComponent<DirectionalLightComponent>();
+			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
+			out << YAML::Key << "Diffuse" << YAML::Value << lc.Diffuse;
+			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
+
+			out << YAML::EndMap; // !DirectionalLightComponent
+		}
+
+		if (entity.HasComponent<SpotLightComponent>())
+		{
+			out << YAML::Key << "SpotLightComponent";
+			out << YAML::BeginMap; // SpotLightComponent
+
+			const auto& lc = entity.GetComponent<SpotLightComponent>();
+			out << YAML::Key << "Color" << YAML::Value << lc.Color;
+			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
+			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
+			out << YAML::Key << "Outercone" << YAML::Value << lc.Outercone;
+			out << YAML::Key << "Innercone" << YAML::Value << lc.Innercone;
+
+			out << YAML::EndMap; // !SpotLightComponent
+		}
+
 		if (entity.HasComponent<PointLightComponent>())
 		{
 			out << YAML::Key << "PointLightComponent";
@@ -275,22 +303,10 @@ namespace Origin {
 
 			const auto& lc = entity.GetComponent<PointLightComponent>();
 			out << YAML::Key << "Color" << YAML::Value << lc.Color;
-			out << YAML::Key << "Attenuation" << YAML::Value << lc.Attenuation;
-
-			out << YAML::EndMap; // !PointLightComponent
-		}
-
-		if (entity.HasComponent<LightingComponent>())
-		{
-			out << YAML::Key << "LightingComponent";
-			out << YAML::BeginMap; // LightingComponent
-
-			const auto& lc = entity.GetComponent<LightingComponent>();
-			out << YAML::Key << "Color" << YAML::Value << lc.Color;
 			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
 			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
 
-			out << YAML::EndMap; // !LightingComponent
+			out << YAML::EndMap; // !PointLightComponent
 		}
 
 		if (entity.HasComponent<CircleRendererComponent>())
@@ -543,19 +559,30 @@ namespace Origin {
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<float>();
 				}
 
+				if (auto directionalLightComponent = entity["DirectionalLightComponent"])
+				{
+					auto& lc = deserializedEntity.AddComponent<DirectionalLightComponent>();
+					lc.Ambient = directionalLightComponent["Ambient"].as<float>();
+					lc.Diffuse = directionalLightComponent["Diffuse"].as<float>();
+					lc.Specular = directionalLightComponent["Specular"].as<float>();
+				}
+
+				if (auto spotLightComponent = entity["SpotLightComponent"])
+				{
+					auto& lc = deserializedEntity.AddComponent<SpotLightComponent>();
+					lc.Color = spotLightComponent["Color"].as<glm::vec3>();
+					lc.Ambient = spotLightComponent["Ambient"].as<float>();
+					lc.Specular = spotLightComponent["Specular"].as<float>();
+					lc.Outercone = spotLightComponent["Outercone"].as<float>();
+					lc.Innercone = spotLightComponent["Innercone"].as<float>();
+				}
+
 				if (auto pointLightComponent = entity["PointLightComponent"])
 				{
 					auto& lc = deserializedEntity.AddComponent<PointLightComponent>();
 					lc.Color = pointLightComponent["Color"].as<glm::vec3>();
-					lc.Attenuation = pointLightComponent["Attenuation"].as<float>();
-				}
-
-				if (auto lightingComponent = entity["LightingComponent"])
-				{
-					auto& lc = deserializedEntity.AddComponent<LightingComponent>();
-					lc.Color = lightingComponent["Color"].as<glm::vec3>();
-					lc.Ambient = lightingComponent["Ambient"].as<float>();
-					lc.Specular = lightingComponent["Specular"].as<float>();
+					lc.Ambient = pointLightComponent["Ambient"].as<float>();
+					lc.Specular = pointLightComponent["Specular"].as<float>();
 				}
 
 				if (auto circleRendererComponent = entity["CircleRendererComponent"])

@@ -1,67 +1,75 @@
 Scene: scene.org
 Entities:
-  - Entity: 376378329527441508
+  - Entity: 442601098095073486
     TagComponent:
-      Tag: Light
+      Tag: Cube
     TransformComponent:
-      Translation: [1.93386185, 0.230390251, 5.02232504]
+      Translation: [-7.3193903, -0.862536311, 1.75216162]
       Rotation: [0, 0, 0]
-      Scale: [1.0588975, 1.02999997, 1.02999997]
-    LightingComponent:
-      Color: [0, 0.101265907, 1]
-      Ambient: 0.660000026
-      Specular: 1.21000004
-    ScriptComponent:
-      ClassName: Game.Light
-      StoredFields:
-        []
-  - Entity: 16809121351660803194
-    TagComponent:
-      Tag: Light
-    TransformComponent:
-      Translation: [1.93386185, 5.6478982, -0.173586965]
-      Rotation: [0, 0, 0]
-      Scale: [1.0588975, 1.02999997, 1.02999997]
-    LightingComponent:
-      Color: [0.392405093, 0.392405093, 0.392405093]
-      Ambient: 0.660000026
-      Specular: 1.21000004
-  - Entity: 14616345612248980793
-    TagComponent:
-      Tag: Empty Mesh
-    TransformComponent:
-      Translation: [0, -1.29999995, 0.590448856]
-      Rotation: [0, 0, 0]
-      Scale: [50, 1, 50]
+      Scale: [0.863208592, 0.378447831, 0.707002699]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\plane.gltf
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
       ShaderPath: Resources/Shaders/Sandbox/model.glsl
       Color: [1, 1, 1, 1]
-  - Entity: 11763434236506433118
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []
+  - Entity: 17735607931302671696
     TagComponent:
       Tag: Cube
     TransformComponent:
-      Translation: [0.303229123, -5.00099247e-07, 0.133666188]
-      Rotation: [1.71433646e-06, 0, 1.92209839e-07]
-      Scale: [1.20600116, 1.20600009, 1.20600116]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\cone.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 0.609571099, 0.282700419, 1]
-  - Entity: 15785514395450597503
-    TagComponent:
-      Tag: Cube
-    TransformComponent:
-      Translation: [-4.16905451, 0, 0]
+      Translation: [-2.00589895, -0.385072321, -3.32514644]
       Rotation: [0, 0, 0]
-      Scale: [1.17933059, 1.17933059, 1.17933059]
+      Scale: [1.2353121, 0.897976995, 0.27857253]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\sphere.gltf
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
       ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [0.538545728, 0.919831216, 0.147483498, 1]
+      Color: [1, 1, 1, 1]
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []
+  - Entity: 9764661735467974625
+    TagComponent:
+      Tag: Point Light
+    TransformComponent:
+      Translation: [5.98774147, 1.05305326, -5.24305725]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [1, 0.607594907, 0]
+      Ambient: 0
+      Specular: 0.920000017
+  - Entity: 11940098746153679732
+    TagComponent:
+      Tag: Point Light
+    TransformComponent:
+      Translation: [-7.02000856, 1.52327526, 0.0182125568]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0.565186977, 0, 0.603375554]
+      Ambient: 0
+      Specular: 0.649999976
+  - Entity: 9326935561330045193
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [2.96290922, -0.862536311, -5.54606056]
+      Rotation: [0, 0, 0]
+      Scale: [0.863208592, 0.378447831, 0.707002699]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
+      ShaderPath: Resources/Shaders/Sandbox/model.glsl
+      Color: [1, 1, 1, 1]
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []
   - Entity: 16781182484111503530
     TagComponent:
-      Tag: Cube
+      Tag: Monkey
     TransformComponent:
       Translation: [3.50877213, -1.13248825e-06, -0.126320183]
       Rotation: [-3.539445e-07, 0.0484216809, -2.43721644e-07]
@@ -74,25 +82,86 @@ Entities:
       ClassName: Game.Model
       StoredFields:
         []
-  - Entity: 11963719504035564436
+  - Entity: 15785514395450597503
     TagComponent:
-      Tag: Light
+      Tag: Sphere
     TransformComponent:
-      Translation: [-7.90228653, 0.90078032, -2.10701966]
+      Translation: [-0.552312255, -0.0998133421, 3.91945434]
       Rotation: [0, 0, 0]
-      Scale: [1.0588975, 1.02999997, 1.02999997]
-    LightingComponent:
-      Color: [1, 0, 0.0253167152]
-      Ambient: -0.75999999
+      Scale: [0.649999976, 0.649999976, 0.649999976]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\sphere.gltf
+      ShaderPath: Resources/Shaders/Sandbox/model.glsl
+      Color: [1, 1, 1, 1]
+  - Entity: 11763434236506433118
+    TagComponent:
+      Tag: Cone
+    TransformComponent:
+      Translation: [0.303229094, -4.76837158e-07, 0.133666188]
+      Rotation: [1.71433646e-06, 0, 1.92209839e-07]
+      Scale: [1.20600116, 1.20600009, 1.20600116]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\cone.gltf
+      ShaderPath: Resources/Shaders/Sandbox/model.glsl
+      Color: [1, 0.607843161, 0.282352954, 1]
+  - Entity: 14616345612248980793
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [0, -1.29999995, 0.590448856]
+      Rotation: [0, 0, 0]
+      Scale: [100, 1, 100]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\plane.gltf
+      ShaderPath: Resources/Shaders/Sandbox/model.glsl
+      Color: [1, 1, 1, 1]
+  - Entity: 1792129654376181530
+    TagComponent:
+      Tag: Point Light
+    TransformComponent:
+      Translation: [-2.17812419, 2.39577961, 4.50828838]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0.206751049, 0.206751049, 0.206751049]
+      Ambient: 0
+      Specular: 1.12
+    ScriptComponent:
+      ClassName: Game.Light
+      StoredFields:
+        []
+  - Entity: 6530748634523804684
+    TagComponent:
+      Tag: Sphere
+    TransformComponent:
+      Translation: [-4.5107832, -0.0998133421, -0.281575799]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\sphere.gltf
+      ShaderPath: Resources/Shaders/Sandbox/model.glsl
+      Color: [0.538545728, 0.919831216, 0.147483498, 1]
+  - Entity: 3283491586376315862
+    TagComponent:
+      Tag: Point Light
+    TransformComponent:
+      Translation: [4.26771593, 0.962742209, 4.69554806]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0, 0.0602469482, 0.594936728]
+      Ambient: 0
+      Specular: 1.50999999
+  - Entity: 9349641680741778292
+    TagComponent:
+      Tag: Spot Light
+    TransformComponent:
+      Translation: [0.252478957, 3.83014965, 0.135883689]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpotLightComponent:
+      Color: [0, 1, 0.405063152]
+      Ambient: 1.07000005
       Specular: 1.79999995
-  - Entity: 3342100106419936575
-    TagComponent:
-      Tag: Light
-    TransformComponent:
-      Translation: [3.06754613, 0.70263505, -5.35706711]
-      Rotation: [0, 0, 0]
-      Scale: [1.0588975, 1.02999997, 1.02999997]
-    LightingComponent:
-      Color: [0, 0.590717316, 0.553330064]
-      Ambient: 1.91999996
-      Specular: 1.95000005
+      Outercone: 0.88499999
+      Innercone: 1.23399997

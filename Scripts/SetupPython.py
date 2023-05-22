@@ -19,6 +19,7 @@ class PythonConfiguration:
                 sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
         if sys.version_info.major < versionMajor or (sys.version_info.major == versionMajor and sys.version_info.minor < versionMinor):
             print("Python version too low, expected version {0:d}.{1:d} or higher.".format(versionMajor, versionMinor))
+            print("You can download from Microsoft Store https://www.microsoft.com/store/productId/9NRWMJP3717K")
             return False
         return True
 

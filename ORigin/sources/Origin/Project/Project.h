@@ -48,6 +48,7 @@ namespace Origin
 		ProjectConfig& GetConfig() { return m_Config; }
 
 		static std::shared_ptr<Project> New();
+		static std::shared_ptr<Project> Open();
 		static std::shared_ptr<Project> Load(const std::filesystem::path& path);
 
 		static bool SaveActive(const std::filesystem::path& path);

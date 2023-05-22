@@ -23,8 +23,6 @@ namespace Origin
     spec.Name = "ORigin-Editor";
     spec.CommandLineArgs = args;
 
-    Project::New()->SaveActive("Sandbox.oxproj");
-
     OGN_CORE_INFO(spec.Name);
     return new EditorBuild(spec);
   };

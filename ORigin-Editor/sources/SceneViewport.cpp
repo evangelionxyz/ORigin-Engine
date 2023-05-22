@@ -334,8 +334,22 @@ namespace Origin
 					ImGui::Separator();
 
 					ImGui::Text("3D"); ImGui::Separator();
-					if (ImGui::MenuItem("Cube")) m_SceneHierarchy.GetContext()->CreateCube("Cube");
-					if (ImGui::MenuItem("Light")) m_SceneHierarchy.GetContext()->CreateLighting("Lighting");
+					if (ImGui::BeginMenu("Light"))
+					{
+						if(ImGui::MenuItem("Point Light"))
+							m_SceneHierarchy.GetContext()->CreatePointlight("Point Light");
+						if (ImGui::MenuItem("Spot Light"))
+							m_SceneHierarchy.GetContext()->CreateSpotLight("Spot Light");
+
+						ImGui::EndMenu();
+					}
+					if (ImGui::BeginMenu("MESH"))
+					{
+						if(ImGui::MenuItem("Empty Mesh"))
+							m_SceneHierarchy.GetContext()->CreateMesh("Empty Mesh");
+
+						ImGui::EndMenu();
+					}
 				}
 
 				// Entity Properties

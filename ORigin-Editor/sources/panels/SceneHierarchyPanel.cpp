@@ -94,13 +94,18 @@ namespace Origin {
 							ImGui::EndMenu();
 						}
 
-						// 3D Entity
+						if (ImGui::BeginMenu("LIGHT"))
+						{
+							if (ImGui::MenuItem("Point Light"))
+								m_Context->CreatePointlight("Point Light");
+							if (ImGui::MenuItem("Spot Light"))
+								m_Context->CreateSpotLight("Spot Light");
+							ImGui::EndMenu();
+						}
 						if (ImGui::BeginMenu("MESH"))
 						{
 							if (ImGui::MenuItem("Empty Mesh"))
 								m_Context->CreateMesh("Empty Mesh");
-							//if (ImGui::MenuItem("CUBE"))
-								//m_Context->CreateMesh_Cube("Cube");
 
 							ImGui::EndMenu();
 						}
@@ -182,8 +187,9 @@ namespace Origin {
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPIRTE RENDERER");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
-			DisplayAddComponentEntry<LightingComponent>("LIGHTING");
 			DisplayAddComponentEntry<PointLightComponent>("POINT LIGHT");
+			DisplayAddComponentEntry<SpotLightComponent>("SPOT LIGHT");
+			DisplayAddComponentEntry<DirectionalLightComponent>("DIRECTIONAL LIGHT");
 			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
 			//DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
@@ -539,17 +545,27 @@ namespace Origin {
 				}
 			});
 
+		DrawComponent<DirectionalLightComponent>("DIRECTIONAL LIGHT", entity, [](auto& component)
+			{
+				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
+				DrawVecControl("Diffuse", &component.Diffuse, 0.01f, 0.0f);
+				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);
+			});
+
+		DrawComponent<SpotLightComponent>("SPOT LIGHT", entity, [](auto& component)
+			{
+				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
+				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
+				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);
+				DrawVecControl("Inner Cone", &component.Innercone, 0.001f, 0.0f);
+				DrawVecControl("Outer cone", &component.Outercone, 0.001f, 0.0f);
+			});
+
 		DrawComponent<PointLightComponent>("POINT LIGHT", entity, [](auto& component)
 			{
 				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
-				DrawVecControl("Attenuation", &component.Attenuation, 0.01, 1.0);
-			});
-
-		DrawComponent<LightingComponent>("LIGHTING", entity, [](auto& component)
-			{
-				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
-				DrawVecControl("Ambient", &component.Ambient, 0.01f, 1.0f, 0.0f);
-				DrawVecControl("Specular", &component.Specular, 0.01f, 1.0f, 0.0f);
+				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
+				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);
 			});
 
 		DrawComponent<CircleRendererComponent>("CIRCLE RENDERER", entity, [](auto& component)

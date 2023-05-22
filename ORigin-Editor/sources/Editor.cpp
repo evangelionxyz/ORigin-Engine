@@ -69,13 +69,12 @@ namespace Origin
     auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
     if (commandLineArgs.Count > 1)
     {
-      auto projectFilepath = commandLineArgs[1];
-      OpenProject(projectFilepath);
+      m_ProjectPath= commandLineArgs[1];
+      OpenProject(m_ProjectPath);
     }
     else
     {
-      // TODO: prompt the user to select the directory
-      NewProject();
+      OpenProject();
     }
   }
 
@@ -375,8 +374,21 @@ namespace Origin
     }
 	}
 
+	void Editor::OpenProject()
+	{
+    if (Project::Open())
+    {
+			auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetConfig().StartScene);
+
+			OpenScene(startScenePath);
+      m_ProjectPath = Project::GetProjectDirectory();
+			m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
+    }
+	}
+
 	void Editor::SaveProject()
 	{
+    Project::SaveActive(m_ProjectPath);
 	}
 
 	void Editor::NewScene()

@@ -56,13 +56,16 @@ filter "system:windows"
     systemversion "latest"
     postbuildcommands {
         -- Copy C# Project Assets
-        "{COPYDIR} %{prj.location}SandboxProject/Binaries ../Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Binaries",
-        "{COPYDIR} %{prj.location}SandboxProject/Assets ../Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Assets",
+        "{COPYDIR} %{prj.location}SandboxProject/Binaries {wks.location}Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Binaries",
+        "{COPYDIR} %{prj.location}SandboxProject/Assets {wks.location}Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Assets",
 
-        "{COPYDIR} %{prj.location}mono ../Binaries/%{cfg.buildcfg}/ORigin/mono",
-        "{COPYDIR} %{prj.location}Resources ../Binaries/%{cfg.buildcfg}/ORigin/Resources",
+        "{COPYDIR} %{prj.location}mono {wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
+        "{COPYDIR} %{prj.location}Resources {wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
 
-        "{COPY}    %{prj.location}imgui.ini ../Binaries/%{cfg.buildcfg}/ORigin"
+        "{COPY} %{prj.location}imgui.ini {wks.location}Binaries/%{cfg.buildcfg}/ORigin",
+
+        -- Copy 3rd Party Library
+        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
     }
 
 filter "configurations:Debug"

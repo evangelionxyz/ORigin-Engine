@@ -131,12 +131,12 @@ namespace Origin {
 		return entity;
 	}
 
-	Entity Scene::CreateLighting(const std::string& name)
+	Entity Scene::CreatePointlight(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(UUID());
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<LightingComponent>();
+		entity.AddComponent<PointLightComponent>();
 
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
@@ -146,6 +146,24 @@ namespace Origin {
 		m_EntityMap.insert(std::make_pair(uuid, entity));
 
 		return entity;
+	}
+
+	Entity Scene::CreateSpotLight(const std::string& name)
+	{
+		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(UUID());
+		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<SpotLightComponent>();
+
+		auto& tag = entity.AddComponent<TagComponent>();
+		tag.Tag = name.empty() ? "Entity" : name;
+
+		UUID& uuid = entity.GetComponent<IDComponent>().ID;
+
+		m_EntityMap.insert(std::make_pair(uuid, entity));
+
+		return entity;
+
 	}
 
 	Entity Scene::CreateMesh(const std::string& name)
@@ -463,15 +481,6 @@ namespace Origin {
 			}
 		}
 
-		{
-			// Lighting
-			auto& view = m_Registry.view<TransformComponent, LightingComponent>();
-			for (auto entity : view)
-			{
-				auto& [tc, lc] = view.get<TransformComponent, LightingComponent>(entity);
-			}
-		}
-
 		// 3D Scene
 		auto& view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (auto entity : view)
@@ -543,42 +552,74 @@ namespace Origin {
 				DrawIcon(camera, (int)entity, m_CameraIcon, tc, true);
 			}
 		}
+
 		{
 			// Mesh
 			auto& view = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto& entity : view)
 			{
 				auto& [tc, sMesh] = view.get<TransformComponent, StaticMeshComponent>(entity);
-
-#if 0
-				m_Registry.view<TransformComponent, LightingComponent>().each([=](auto entity, auto& tc, auto& lc)
-					{
-						DrawIcon(camera, (int)entity, m_LightingIcon, tc);
-						if (sMesh.Model)
-						{
-							std::string uniformName = "pointLights["
-							sMesh.Model->GetShader()->SetVector<
-							sMesh.Model->LoadLighting(tc.Translation, lc.Color, lc.Ambient);
-
-						}
-					});
-#endif
-				int lightIndex = 0;
-				auto lightView = m_Registry.view<TransformComponent, LightingComponent>();
-				for (auto entity : lightView)
+				// ================
+				// Point Light Data
+				// ================
+				int pointLight = 0;
+				auto pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
+				for (auto entity : pointLightView)
 				{
-					auto& [transform, light] = lightView.get<TransformComponent, LightingComponent>(entity);
+					auto& [transform, light] = pointLightView.get<TransformComponent, PointLightComponent>(entity);
+					DrawIcon(camera, (int)entity, m_LightingIcon, transform, true);
+					pointLight++;
+					if (sMesh.Model)
+					{
+						std::string uniformName = "pointLights[" + std::to_string(pointLight) + "].";
+						sMesh.Model->GetShader()->Bind();
+						sMesh.Model->GetShader()->SetInt("pointLightsCount", pointLight);
+						sMesh.Model->GetShader()->SetVector(uniformName + "Position", transform.Translation);
+						sMesh.Model->GetShader()->SetVector(uniformName + "Color", light.Color);
+						sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
+						sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
+					}
+				}
+
+				// ================
+				// Spot Light Data
+				// ================
+				int spotLight = 0;
+				auto& spotLightView = m_Registry.view<TransformComponent, SpotLightComponent>();
+				for (auto entity : spotLightView)
+				{
+					auto& [transform, light] = spotLightView.get<TransformComponent, SpotLightComponent>(entity);
 					DrawIcon(camera, (int)entity, m_LightingIcon, transform, true);
 					if (sMesh.Model)
 					{
-						std::string uniformName = "lights[" + std::to_string(lightIndex) + "].";
-						//std::string uniformName = "light.";
+						//std::string uniformName = "spotLights[" + std::to_string(spotLight) + "].";
+						std::string uniformName = "spotLight.";
 						sMesh.Model->GetShader()->Bind();
 						sMesh.Model->GetShader()->SetVector(uniformName + "Position", transform.Translation);
 						sMesh.Model->GetShader()->SetVector(uniformName + "Color", light.Color);
 						sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
 						sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
-						lightIndex++;
+						sMesh.Model->GetShader()->SetFloat(uniformName + "Innercone", light.Innercone);
+						sMesh.Model->GetShader()->SetFloat(uniformName + "Outercone", light.Outercone);
+						spotLight++;
+					}
+				}
+				// ================
+				// Directional Light Data
+				// ================
+				auto& directionalLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
+				for (auto entity : directionalLightView)
+				{
+					auto& [transform, light] = directionalLightView.get<TransformComponent, DirectionalLightComponent>(entity);
+					DrawIcon(camera, (int)entity, m_LightingIcon, transform, true);
+					if (sMesh.Model)
+					{
+						std::string uniformName = "directionalLight.";
+						sMesh.Model->GetShader()->Bind();
+						sMesh.Model->GetShader()->SetVector(uniformName + "Direction", glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f)));
+						sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
+						sMesh.Model->GetShader()->SetFloat(uniformName + "Diffuse", light.Diffuse);
+						sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
 					}
 				}
 
@@ -593,7 +634,7 @@ namespace Origin {
 			}
 		}
 
-		DrawGrid(m_GridSize, m_GridColor);
+		//DrawGrid(m_GridSize, m_GridColor);
 		Renderer::EndScene();
 	}
 
@@ -790,7 +831,8 @@ namespace Origin {
 	}
 	template<> void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
 	template<> void Scene::OnComponentAdded<PointLightComponent>(Entity entity, PointLightComponent& component) {}
-	template<> void Scene::OnComponentAdded<LightingComponent>(Entity entity, LightingComponent& component) {}
+	template<> void Scene::OnComponentAdded<SpotLightComponent>(Entity entity, SpotLightComponent& component) {}
+	template<> void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component) {}
 	template<> void Scene::OnComponentAdded<SpriteRenderer2DComponent>(Entity entity, SpriteRenderer2DComponent& component) {}
 	template<> void Scene::OnComponentAdded<StaticMeshComponent>(Entity entity, StaticMeshComponent& component) {}
 	template<> void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component) {}

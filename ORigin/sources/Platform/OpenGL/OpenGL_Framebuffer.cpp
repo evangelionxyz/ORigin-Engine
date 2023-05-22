@@ -206,5 +206,4 @@ namespace Origin {
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,
 			Utils::ORiginFBTextureFormatToGL(spec.TextureFormat), GL_INT, &value);
 	}
-
 }

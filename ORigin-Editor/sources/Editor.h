@@ -42,12 +42,12 @@ namespace Origin {
     void SceneViewportMenu();
     void OverlayBeginScene();
 
-
 		// Game Viewport
     void GameRender(float time);
 		void GameViewport();
 
     void NewProject();
+    void OpenProject();
     void OpenProject(const std::filesystem::path& path);
     void SaveProject();
 
@@ -88,7 +88,7 @@ namespace Origin {
     };
 
 		SceneState m_SceneState = SceneState::Edit;
-		std::filesystem::path m_ScenePath;
+		std::filesystem::path m_ScenePath, m_ProjectPath;
 		std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
     glm::vec4 m_GridColor = glm::vec4(0.8f, 0.8f, 0.8f, 0.31f);
     int m_GridSize = 10;

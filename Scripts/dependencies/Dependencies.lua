@@ -23,12 +23,12 @@ IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["AssimpSDK"] = "%{ASSIMP_SDK}/lib"
-LibraryDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
+LibraryDir["AssimpSDK"] = "%{wks.location}/ORigin/vendor/Assimp/lib/x64"
+LibraryDir["MONO"]      = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
 
 Library = {}
 Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
-Library["Assimp"] = "%{LibraryDir.AssimpSDK}/x64/assimp-vc143-mt.lib"
+Library["Assimp"] = "%{LibraryDir.AssimpSDK}/assimp-vc143-mt.lib"
 
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"

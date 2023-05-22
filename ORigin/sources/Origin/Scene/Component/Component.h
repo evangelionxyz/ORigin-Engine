@@ -90,35 +90,47 @@ namespace Origin
 		SpriteRenderer2DComponent(float r, float g, float b, float a) : Color(r, g, b, a) {}
 	};
 
+	struct SpotLightComponent
+	{
+		glm::vec3 Color = glm::vec3(1.0);
+		float Ambient = 0.1f;
+		float Innercone = 1.2f;
+		float Outercone = 0.0f;
+		float Specular = 1.0f;
+	};
+
+	struct MaterialComponent
+	{
+		std::shared_ptr<Texture2D> Diffuse;
+		std::shared_ptr<Texture2D> Specular;
+
+		float Shininess = 1.0;
+		MaterialComponent() = default;
+		MaterialComponent(const MaterialComponent&) = default;
+	};
+
+	struct DirectionalLightComponent
+	{
+		glm::vec3 Direction = glm::vec3(0.0f);
+
+		float Ambient = 0.1f;
+		float Diffuse = 0.5f;
+		float Specular = 0.5f;
+
+		DirectionalLightComponent() = default;
+		DirectionalLightComponent(const DirectionalLightComponent&) = default;
+	};
+
 	struct PointLightComponent
-	{
-		glm::vec3 Color;
-		float Attenuation;
-		
-		PointLightComponent() = default;
-		PointLightComponent(const PointLightComponent&) = default;
-	};
-
-	struct DirectionalLight
-	{
-		glm::vec3 Color;
-		glm::vec3 Direction;
-
-		DirectionalLight() = default;
-		DirectionalLight(const DirectionalLight&) = default;
-		DirectionalLight(const DirectionalLight&, const glm::vec3& color) : Color(Color) {}
-	};
-
-	struct LightingComponent
 	{
 		glm::vec3 Color = glm::vec3(1.0f);
 		float Ambient = 0.1f;
 		float Specular = 1.0f;
 
-		LightingComponent() = default;
-		LightingComponent(const LightingComponent&) = default;
-		LightingComponent(const LightingComponent&, glm::vec3 color) : Color(color) {}
-		LightingComponent(float r, float g, float b) : Color(r, g, b) {}
+		PointLightComponent() = default;
+		PointLightComponent(const PointLightComponent&) = default;
+		PointLightComponent(const PointLightComponent&, glm::vec3 color) : Color(color) {}
+		PointLightComponent(float r, float g, float b) : Color(r, g, b) {}
 	};
 
 	struct CircleRendererComponent
@@ -213,7 +225,7 @@ namespace Origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, PointLightComponent, LightingComponent,
+		ComponentGroup<TransformComponent, PointLightComponent, SpotLightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent,
 		CircleRendererComponent, CameraComponent,
 		ScriptComponent, NativeScriptComponent,

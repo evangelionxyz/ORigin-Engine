@@ -41,7 +41,7 @@ namespace Origin {
 		static float GetB(int colorCode) { return (float)((colorCode & 0x0000FF00) >> 8) / (float)(0xFF); }
 		static float GetA(int alphaCode) { return ((float)alphaCode / (float)0xFF); }
 
-		static ImVec4 GetColor(int c, int a = Alpha80) { return ImVec4(GetR(c), GetG(c), GetB(c), a); }
+		static ImVec4 GetColor(float c, float a = Alpha80) { return ImVec4(GetR(c), GetG(c), GetB(c), a); }
 		static ImVec4 Darken(ImVec4 c, float p) { return ImVec4(fmax(0.f, c.x - 1.0f * p), fmax(0.f, c.y - 1.0f * p), fmax(0.f, c.z - 1.0f * p), c.w); }
 		static ImVec4 Lighten(ImVec4 c, float p) { return ImVec4(fmax(0.f, c.x + 1.0f * p), fmax(0.f, c.y + 1.0f * p), fmax(0.f, c.z + 1.0f * p), c.w); }
 
