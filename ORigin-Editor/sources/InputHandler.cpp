@@ -46,7 +46,7 @@ namespace Origin
 	{
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
-			RMHoldTime += time.GetDeltaTime();
+			RMHoldTime += time.DeltaTime();
 
 			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
 			else if (lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;
@@ -70,8 +70,8 @@ namespace Origin
 	bool Editor::OnKeyPressed(KeyPressedEvent& e)
 	{
 		auto& app = Application::Get();
-		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -134,6 +134,20 @@ namespace Origin
 			{
 				guiMenuFullscreen == false ? guiMenuFullscreen = true : guiMenuFullscreen = false;
 				app.GetWindow().SetFullscreen(guiMenuFullscreen);
+				break;
+			}
+
+			case Key::Delete:
+			{
+				if (Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0)
+				{
+					Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+					if (selectedEntity)
+					{
+						m_SceneHierarchy.SetSelectedEntity({});
+						m_SceneHierarchy.DestroyEntity(selectedEntity);
+					}
+				}
 				break;
 			}
 		}

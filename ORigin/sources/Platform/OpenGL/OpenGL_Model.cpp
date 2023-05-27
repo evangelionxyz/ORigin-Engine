@@ -1,3 +1,5 @@
+// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "OpenGL_Model.h"
 #include "OpenGL_Mesh.h"
@@ -76,7 +78,20 @@ namespace Origin
 		m_Shader->SetMatrix("uModel", transform);
 		m_Shader->SetMatrix("uView", camera.GetViewMatrix());
 		m_Shader->SetMatrix("uProjection", camera.GetProjection());
-		m_Shader->SetVector("uCameraPosition", camera.GetPosition());
+
+		m_Shader->SetInt("uEntityID", m_EntityID);
+
+		Draw();
+	}
+
+	void OpenGLModel::Draw(const glm::mat4& transform, const Camera* camera, int entityID)
+	{
+		m_EntityID = entityID;
+
+		m_Shader->Bind();
+		m_Shader->SetMatrix("uModel", transform);
+		m_Shader->SetMatrix("uView", camera->GetViewMatrix());
+		m_Shader->SetMatrix("uProjection", camera->GetProjection());
 
 		m_Shader->SetInt("uEntityID", m_EntityID);
 

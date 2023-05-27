@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Component\Camera.h"
+#include "Camera.h"
 
 namespace Origin {
 
@@ -16,7 +16,10 @@ namespace Origin {
 		SceneCamera();
 		virtual ~SceneCamera() = default;
 		void SetViewportSize(uint32_t width, uint32_t height);
+
 		const glm::vec2& GetViewportSize() { return m_ViewportSize; }
+
+		const glm::vec3& GetPosition() { return m_Position; }
 
 		// Perspective
 		void SetPerspective(float verticalFov, float nearClip, float farClip);
@@ -50,9 +53,10 @@ namespace Origin {
 
 	private:
 		ProjectionType m_ProjectionType = ProjectionType::Perspective;
-		float m_AspectRatio;
-
+		float m_AspectRatio = 1.778f;
 		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
+
+		glm::vec3 m_Position = glm::vec3(1.0f);
 
 		// Persepective
 		float m_PerspectiveFOV = glm::radians(45.0f);

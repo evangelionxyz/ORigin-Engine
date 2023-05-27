@@ -1,3 +1,5 @@
+// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+
 #pragma once
 #include "Origin\Renderer\Model.h"
 #include "Origin\Renderer\Mesh.h"
@@ -22,6 +24,7 @@ namespace Origin
 		void Draw() override;
 		void Draw(const EditorCamera& camera) override;
 		void Draw(const glm::mat4& transform, const EditorCamera& camera, int entityID = -1) override;
+		void Draw(const glm::mat4& transform, const Camera* camera, int entityID = -1) override;
 
 		void LoadLighting(const glm::vec3& position, const glm::vec4& color, float ambient) override;
 

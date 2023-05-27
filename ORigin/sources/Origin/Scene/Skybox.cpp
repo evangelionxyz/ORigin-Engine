@@ -15,10 +15,9 @@ namespace Origin
 	{
 		switch (RendererAPI::GetAPI())
 		{
-			case RendererAPI::API::None:			return nullptr;
+			case RendererAPI::API::None:		return nullptr;
 			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLSkybox>(filepath);
 		}
-
 		return nullptr;
 	}
 }

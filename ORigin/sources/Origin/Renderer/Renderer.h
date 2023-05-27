@@ -5,7 +5,7 @@
 #include "Origin\Renderer\UniformBuffer.h"
 
 #include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\Component\Camera.h"
+#include "Origin\Scene\Camera.h"
 
 
 namespace Origin

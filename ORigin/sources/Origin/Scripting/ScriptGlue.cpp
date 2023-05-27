@@ -5,8 +5,7 @@
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
 
-#include "Origin\Scene\Component\UUID.h"
-#include "Origin\Scene\Component\Component.h"
+#include "Origin\Scene\Component.h"
 
 #include "Origin\Scene\Scene.h"
 #include "Origin\Scene\Entity.h"

@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 #pragma once
 #include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\Component\Camera.h"
+#include "Origin\Scene\Camera.h"
 
 #include <memory>
 

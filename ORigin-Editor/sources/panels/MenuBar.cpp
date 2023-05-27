@@ -67,6 +67,23 @@ namespace Origin
 		{
 			ImGui::Begin("Render Status", &guiRenderStatus);
 
+			const char* CMSTypeString[] = { "PIVOT", "FREE MOVE" };
+			const char* currentCMSTypeString = CMSTypeString[(int)m_EditorCamera.GetStyle()];
+			ImGui::Text("Distance %.5f", m_EditorCamera.GetDistance());
+
+			if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString)) {
+				for (int i = 0; i < 2; i++) {
+					const bool isSelected = currentCMSTypeString == CMSTypeString[i];
+					if (ImGui::Selectable(CMSTypeString[i], isSelected)) {
+						currentCMSTypeString = CMSTypeString[i];
+						m_EditorCamera.SetStyle((CameraStyle)i);
+
+					} if (isSelected) ImGui::SetItemDefaultFocus();
+				} ImGui::EndCombo();
+			}
+			if (ImGui::SliderFloat("FOV", &m_CameraFov, 0.0f, 90.0f))
+				m_EditorCamera.SetFov(m_CameraFov);
+
 			ImGui::Checkbox("Visualize 2D Colliders", &m_VisualizeCollider);
 
 			ImGui::Separator();

@@ -8,17 +8,19 @@ namespace Origin
 	class Timestep
 	{
 	public:
-		Timestep(float time = 0.0f)
-			: m_Time(time), m_DeltaTime(0.0f)
+		Timestep(float time = 0.0f) : m_Time(time), m_DeltaTime(0.0f)
 		{
 		}
 
 		operator float() const { return m_Time; }
-		inline float GetSeconds() const { return m_Time; }
-		inline float GetMilliSeconds() const { return m_Time * 1000.0f; }
-		inline float GetDeltaTime() const { return m_DeltaTime; }
+		inline float Seconds() const { return m_Time; }
+		inline float MilliSeconds() const { return m_Time * 1000.0f; }
+		inline float DeltaTime() const { return m_DeltaTime; }
 
-		void SetDeltaTime(float time) { m_DeltaTime = time; }
+		void SetDeltaTime(float deltaTime)
+		{
+			m_DeltaTime = deltaTime;
+		}
 
 	private:
 		float m_Time;

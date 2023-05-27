@@ -22,7 +22,7 @@ namespace Origin
 
 		Entity GetSelectedEntity() const { return m_SelectedEntity; }
 		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
-		bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
+		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
 		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
 		void DestroyEntity(Entity entity);
 		std::shared_ptr<Scene> GetContext() { return m_Context; }

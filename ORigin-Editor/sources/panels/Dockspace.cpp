@@ -28,18 +28,18 @@ namespace Origin
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 2));
 
-    ImGui::Begin("ORigin", NULL, window_flags);
+    ImGui::Begin("ORigin", nullptr, window_flags);
 
     ImGuiIO& io = ImGui::GetIO();
     ImGuiStyle& style = ImGui::GetStyle();
-    float minWindowSizeX = style.WindowMinSize.x;
-    float minWindowSizeY = style.WindowMinSize.y;
+    const float minWindowSizeX = style.WindowMinSize.x;
+    const float minWindowSizeY = style.WindowMinSize.y;
     //style.WindowMinSize.x = 220.0f;
     //style.WindowMinSize.y = 120.0f;
 
     if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
     {
-      ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+      const ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
       ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
     }
     style.WindowMinSize.x = minWindowSizeX;

@@ -1,3 +1,5 @@
+// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "OpenGL_Mesh.h"
 #include "Origin\Renderer\RenderCommand.h"
@@ -23,7 +25,7 @@ namespace Origin
 		m_VertexBuffer->SetLayout
 		({
 			{ ShaderDataType::Float3, "aPosition" },
-			{ ShaderDataType::Float3, "aNormal"		},
+			{ ShaderDataType::Float3, "aNormal"	},
 			{ShaderDataType::Float2,	"aTexCoord"	}
 		});
 

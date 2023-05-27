@@ -24,7 +24,6 @@ namespace Origin {
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();
-		ScriptEngine::Init();
 
 		m_GuiLayer = new GuiLayer();
 		PushOverlay(m_GuiLayer);
@@ -43,7 +42,7 @@ namespace Origin {
 
 		while (m_Window->Loop()) {
 
-			auto time = (float)glfwGetTime();
+			float time = static_cast<float>(glfwGetTime());
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
 			timestep.SetDeltaTime(m_LastFrame);
@@ -59,6 +58,7 @@ namespace Origin {
 			for (Layer* layer : m_LayerStack)
 				layer->OnGuiRender();
 			m_GuiLayer->End();
+			
 			m_Window->OnUpdate();
 		}
 	}
@@ -92,7 +92,6 @@ namespace Origin {
 	void Application::SubmitToMainThread(const std::function<void()>& function)
 	{
 		std::scoped_lock<std::mutex> lock(m_MainThreadMutex);
-
 		m_MainThreadQueue.emplace_back(function);
 	}
 

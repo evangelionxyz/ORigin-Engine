@@ -4,10 +4,9 @@
 
 #include "Origin\Project\Project.h"
 #include "Origin\IO\Input.h"
-#include "Origin\IO\KeyCodes.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
-#include "Origin\Scene\Component\Component.h"
+#include "Origin\Scene\Component.h"
 
 #include "Origin\Scripting\ScriptEngine.h"
 
@@ -109,7 +108,6 @@ namespace Origin {
 
 							ImGui::EndMenu();
 						}
-
 						ImGui::EndMenu();
 					}
 					ImGui::EndPopup();
@@ -135,7 +133,10 @@ namespace Origin {
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tagComponent.c_str());
 
-		if (ImGui::IsItemClicked()) m_SelectedEntity = entity;
+		if (ImGui::IsItemClicked())
+		{
+			m_SelectedEntity = entity;
+		}
 
 		// destroy entity
 		if (ImGui::BeginPopupContextItem())
@@ -535,8 +536,7 @@ namespace Origin {
 					if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
 					{
 						component.Texture->Delete();
-						component.Texture = {};
-
+						component.Texture.reset();
 						return;
 					}
 
@@ -556,9 +556,9 @@ namespace Origin {
 			{
 				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
 				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
-				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);
-				DrawVecControl("Inner Cone", &component.Innercone, 0.001f, 0.0f);
-				DrawVecControl("Outer cone", &component.Outercone, 0.001f, 0.0f);
+				ImGui::SliderFloat("Specular", &component.Specular, 0.01f, 0.0f);
+				ImGui::SliderFloat("Inner Cone", &component.Innercone, 1.0f, 3.0f);
+				ImGui::SliderFloat("Outer cone", &component.Outercone, 0.0f, 1.0f);
 			});
 
 		DrawComponent<PointLightComponent>("POINT LIGHT", entity, [](auto& component)
@@ -569,12 +569,11 @@ namespace Origin {
 			});
 
 		DrawComponent<CircleRendererComponent>("CIRCLE RENDERER", entity, [](auto& component)
-	{
-		ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-		ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
-		ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
-
-	});
+			{
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
+				ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
+			});
 
 		DrawComponent<Rigidbody2DComponent>("RIGIDBODY 2D", entity, [](auto& component)
 		{

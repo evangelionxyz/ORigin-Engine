@@ -4,7 +4,6 @@
 #include "Origin\Renderer\Texture.h"
 
 #include <string>
-#include <imgui.h>
 #include <filesystem>
 #include <unordered_map>
 
@@ -29,7 +28,6 @@ namespace Origin
 		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_NavigationIconMap;
 
 		std::filesystem::path m_CurrentDirectory;
-		std::filesystem::path m_BaseDirectory;
 		std::filesystem::path m_DeletePathTarget;
 		std::filesystem::directory_entry m_DirectoryEntry;
 

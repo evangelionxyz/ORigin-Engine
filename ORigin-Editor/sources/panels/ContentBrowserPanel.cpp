@@ -2,6 +2,7 @@
 
 #include "ContentBrowserPanel.h"
 #include "Origin\Project\Project.h"
+#include <imgui.h>
 
 namespace Origin
 {
@@ -9,8 +10,8 @@ namespace Origin
 	{
 		static void CenteredText(const std::string& text)
 		{
-			auto windowWidth = ImGui::GetWindowSize().x;
-			auto textWidth = ImGui::CalcTextSize(text.c_str()).x;
+			const auto windowWidth = ImGui::GetWindowSize().x;
+			const auto textWidth = ImGui::CalcTextSize(text.c_str()).x;
 			ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
 			ImGui::Text(text.c_str());
 		}
@@ -19,9 +20,9 @@ namespace Origin
 		{
 			for (int i = 0; i < text.length(); i++)
 			{
-				if (i == 0) text[i] = std::toupper(text[i]);
+				if (i == 0) text[i] = (int)std::toupper(text[i]);
 				else if (text[i - 1] == ' ')
-					text[i] = toupper(text[i]);
+					text[i] = std::toupper(text[i]);
 			}
 
 			return text;
@@ -29,7 +30,7 @@ namespace Origin
 
 		static std::string CapitalizeWholeText(std::string text)
 		{
-			for (int i = 0; i < text.length(); i++)
+			for (int i = 0; i < (int)text.length(); i++)
 				text[i] = std::toupper(text[i]);
 
 			return text;
@@ -38,8 +39,7 @@ namespace Origin
 
 	ContentBrowserPanel::ContentBrowserPanel()
 	{
-		m_BaseDirectory = Project::GetAssetDirectory();
-		m_CurrentDirectory = m_BaseDirectory;
+		m_CurrentDirectory = Project::GetAssetDirectory();
 
 		m_NavigationIconMap["backward_button"] = Texture2D::Create("Resources/UITextures/backward_icon.png");
 		m_NavigationIconMap["forward_button"] = Texture2D::Create("Resources/UITextures/forward_icon.png");
@@ -101,7 +101,7 @@ namespace Origin
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			m_DirectoryEntry = directoryEntry;
-			bool rootDirectory = m_CurrentDirectory == std::filesystem::path(m_BaseDirectory);
+			bool rootDirectory = m_CurrentDirectory == Project::GetAssetDirectory();
 
 			auto relativePath(m_DirectoryEntry.path());
 			m_IsDirectory = m_DirectoryEntry.is_directory();
@@ -162,7 +162,7 @@ namespace Origin
 	void ContentBrowserPanel::NavigationButton()
 	{
 		// Navigation Button
-		bool rootDirectory = m_CurrentDirectory == std::filesystem::path(m_BaseDirectory);
+		bool rootDirectory = m_CurrentDirectory == Project::GetAssetDirectory();
 
 		ImVec4 navBtColor;
 		uint8_t subDirNumber = m_SubDirectoryCount + 1;

@@ -8,6 +8,7 @@
 #include <imgui.h>
 #include <backends\imgui_impl_glfw.h>
 #include <backends\imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 
 #include <ImGuizmo.h>
 
@@ -75,6 +76,11 @@ namespace Origin {
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_context_current);
 		}
+	}
+
+	uint32_t GuiLayer::GetActiveWidgetID()
+	{
+		return GImGui->ActiveId;
 	}
 
 	void GuiLayer::OnDetach()

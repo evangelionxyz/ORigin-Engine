@@ -1,20 +1,9 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\VertexArray.h"
-#include "Origin\Renderer\Buffer.h"
-#include "Origin\Renderer\Shader.h"
 #include "Origin\Renderer\Texture.h"
-
-#include "Origin\Scene\Component\Component.h"
-#include "Origin\Scene\Component\Camera.h"
-#include "Origin\Scene\EditorCamera.h"
-
-#include "Origin\Renderer\VertexArray.h"
-#include "Origin\Renderer\RenderCommand.h"
-
+#include "Origin\Scene\Component.h"
 #include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
 namespace Origin

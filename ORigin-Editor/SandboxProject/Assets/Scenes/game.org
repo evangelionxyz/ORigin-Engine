@@ -1,0 +1,206 @@
+Scene: game.org
+Entities:
+  - Entity: 15329966084395514897
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-0.689859092, 2.8732965, 0.418042779]
+      Rotation: [0, 0, -2.72271371]
+      Scale: [2.63185382, 0.575198352, 1.00000012]
+    SpriteRenderer2DComponent:
+      Color: [0.763713062, 0.167565778, 0.167565778, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 10163039406884030298
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [-1.04559755, 4.90817785, 8.3093214]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 16.5
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+    ScriptComponent:
+      ClassName: Game.Camera
+      StoredFields:
+        []
+  - Entity: 18041176591427886479
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-1.29090166, 9.86556149, -0.00657244399]
+      Rotation: [0, 0, 3.14116883]
+      Scale: [12.8745489, 0.512960017, 1.37]
+    SpriteRenderer2DComponent:
+      Color: [0.1703787, 0.341659427, 0.734177232, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 11197107584716113332
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-7.61472845, 0.160215512, 0]
+      Rotation: [0, 0, -1.57156503]
+      Scale: [19.511116, 0.51272577, 1.37]
+    SpriteRenderer2DComponent:
+      Color: [0.0651605055, 0.512623489, 0.772151887, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 4899489394819337587
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [5.0464406, 0.15048331, 0]
+      Rotation: [0, 0, -1.57156503]
+      Scale: [19.5122223, 0.51272577, 1.37]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.58227843, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 12335084062266131148
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-0.973481536, -9.24277973, 0]
+      Rotation: [0, 0, 3.14116883]
+      Scale: [12.7362213, 0.512866676, 1.37]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.58227843, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 5405575950547511320
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [-3.92465615, 6.57035255, 0.00222227909]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.839999974
+      Restitution: 0
+      RestitutionThreshold: 0.5
+    ScriptComponent:
+      ClassName: Game.Player
+      StoredFields:
+        []
+  - Entity: 2904441788415971363
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-0.851341367, -3.14085436, -0.426762491]
+      Rotation: [0.117007874, -0.0284839142, 0.393023252]
+      Scale: [2.63170695, 0.575196326, 1.00000012]
+    SpriteRenderer2DComponent:
+      Color: [0.763713062, 0.167565778, 0.167565778, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 10474093649358434274
+    TagComponent:
+      Tag: Sprite6
+    TransformComponent:
+      Translation: [-4.96701145, -0.739441752, -0.396270245]
+      Rotation: [0.146387964, -0.0248155333, -0.392628938]
+      Scale: [2.63170695, 0.575196326, 1.00000012]
+    SpriteRenderer2DComponent:
+      Color: [0.167565733, 0.710889876, 0.763713062, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3023556114083725870
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-1.30592394, 0.159027308, -4.66839552]
+      Rotation: [0, 0, 0]
+      Scale: [93.2188263, 68.2171249, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.291139245, 0.291139245, 0.291139245, 1]
+      TexturePath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Textures\checkerboard.png
+      TillingFactor: 5.69999981
+  - Entity: 6688487768955178568
+    TagComponent:
+      Tag: Monkey
+    TransformComponent:
+      Translation: [0.28062588, 2.83731318, 2.95760155]
+      Rotation: [0, 0, 0]
+      Scale: [0.797500074, 0.797500074, 0.797500074]

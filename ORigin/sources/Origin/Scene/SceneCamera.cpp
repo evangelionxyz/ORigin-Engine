@@ -33,8 +33,8 @@ namespace Origin
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		m_ViewportSize.x = (float)width;
-		m_ViewportSize.y = (float)height;
+		m_ViewportSize.x = static_cast<float>(width);
+		m_ViewportSize.y = static_cast<float>(height);
 
 		m_AspectRatio = m_ViewportSize.x / m_ViewportSize.y;
 		RecalculateProjection();
@@ -47,6 +47,10 @@ namespace Origin
 			case ProjectionType::Perspective:
 			{
 				m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+
+				m_View = glm::translate(glm::mat4(1.0f), m_Position);
+				m_View = glm::inverse(m_View);
+
 				break;
 			}
 
@@ -59,6 +63,10 @@ namespace Origin
 
 				m_Projection = glm::ortho(OrthoLeft, OrthoRight, OrthoTop, OrthoBottom,
 					m_OrthographicNear, m_OrthographicFar);
+
+				m_View = glm::translate(glm::mat4(1.0f), m_Position);
+				m_View = glm::inverse(m_View);
+
 				break;
 			}
 		}

@@ -23,6 +23,7 @@ namespace Origin
 
 		void Begin();
 		void End();
+		uint32_t GetActiveWidgetID();
 
 	private:
 		bool m_BlockEvents = false;

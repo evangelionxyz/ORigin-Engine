@@ -3,8 +3,8 @@
 #include "pch.h"
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
+#include "Origin\Scene\Component.h"
 #include "Origin\Project\Project.h"
-#include "Origin\Scene\Component\Component.h"
 
 #include "Origin\Core\Application.h"
 
@@ -158,7 +158,7 @@ namespace Origin
 		mono_set_assemblies_path("mono/lib");
 
 		MonoDomain* rootDomain = mono_jit_init("ORiginJITRuntime");
-		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!");
+		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!")
 
 		s_Data->RootDomain = rootDomain;
 	}
@@ -182,9 +182,12 @@ namespace Origin
 
 		InitMono();
 		ScriptGlue::RegisterFunctions();
-
+		
+		// Script Core Assembly
 		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
-		LoadAppAssembly("SandboxProject/Binaries/Sandbox.dll");
+
+		auto appAssemblyPath = Project::GetProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
+		LoadAppAssembly(appAssemblyPath);
 
 		LoadAssemblyClasses();
 
@@ -418,7 +421,7 @@ namespace Origin
 			if(monoClass == entityClass)
 				continue;
 
-			bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
+			const bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
 			if (!isEntity)
 				continue;
 

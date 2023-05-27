@@ -12,18 +12,19 @@ namespace Origin {
 		virtual ~OpenGL_Framebuffer();
 
 		void Invalidate();
-		virtual void Resize(uint32_t width, uint32_t height) override;
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
-		virtual void ClearAttachment(uint32_t attachmentIndex, int value) override;
 
-		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
-		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
+		void Resize(uint32_t width, uint32_t height) override;
+		int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
+		void ClearAttachment(uint32_t attachmentIndex, int value) override;
 
-		virtual void Bind() override;
-		virtual void Unbind() override;
+		uint32_t GetWidth() const override { return m_Specification.Width; }
+		uint32_t GetHeight() const override { return m_Specification.Height; }
 
-		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { return m_ColorAttachments[index]; };
-		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; }
+		void Bind() override;
+		void Unbind() override;
+
+		uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { return m_ColorAttachments[index]; };
+		const FramebufferSpecification& GetSpecification() const override { return m_Specification; }
 
 	private:
 		uint32_t m_RendererID = 0;

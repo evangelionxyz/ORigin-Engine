@@ -6,11 +6,6 @@
 
 namespace Origin
 {
-	struct Vector3
-	{
-		float x, y, z;
-	};
-
 	class ScriptableEntity
 	{
 	public:
@@ -30,7 +25,6 @@ namespace Origin
 		virtual void OnCreate() {}
 		virtual void OnUpdate(Timestep time) {}
 		virtual void OnDestroy() {}
-
 
 	private:
 		Entity m_Entity;

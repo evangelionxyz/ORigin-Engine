@@ -26,9 +26,9 @@ namespace Origin
 		SceneViewportMenu();
 		SceneViewportToolbar();
 
-		ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		ImVec2& viewportOffset = ImGui::GetWindowPos();
+		const ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		const ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		const ImVec2& viewportOffset = ImGui::GetWindowPos();
 		m_SceneViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_SceneViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
@@ -158,7 +158,7 @@ namespace Origin
 		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
 			m_GizmosType = -1;
 
-		m_EditorCamera.EnableMovement(!ImGuizmo::IsUsing());
+		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -278,7 +278,7 @@ namespace Origin
 		ImGui::SetNextWindowBgAlpha(0.0f);
 		if (ImGui::Begin("##gizmo_mode", nullptr, window_flags))
 		{
-			ImVec4 btActive = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+			const ImVec4 btActive = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
 			ImVec4 btLOCAL, btGLOBAL;
 			if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
 			{

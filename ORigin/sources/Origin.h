@@ -35,9 +35,8 @@
 #include "Origin\Scene\Scene.h"
 #include "Origin\Scene\Skybox.h"
 #include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\Component\Component.h"
-#include "Origin\Scene\Component\Camera.h"
-#include "Origin\Scene\Component\CameraController.h"
+#include "Origin\Scene\Component.h"
+#include "Origin\Scene\Camera.h"
 
 #include "Origin\Utils\GUI\GuiLayer.h"
 #include "Origin\Utils\Time.h"

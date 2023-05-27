@@ -1,8 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Component\UUID.h"
-#include "Component\Component.h"
+#include "Component.h"
 
 #include "Scene.h"
 #include "entt\entt.hpp"

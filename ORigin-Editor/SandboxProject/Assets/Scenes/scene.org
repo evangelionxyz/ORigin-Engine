@@ -1,167 +1,237 @@
 Scene: scene.org
 Entities:
-  - Entity: 442601098095073486
+  - Entity: 2093774505848521231
     TagComponent:
-      Tag: Cube
+      Tag: Player
     TransformComponent:
-      Translation: [-7.3193903, -0.862536311, 1.75216162]
-      Rotation: [0, 0, 0]
-      Scale: [0.863208592, 0.378447831, 0.707002699]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 1, 1, 1]
+      Translation: [-0.867959261, 1.94813836, 0]
+      Rotation: [0, 0, -0.270693779]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.0253164768, 1, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 0.800000012
+      Friction: 0.140000001
+      Restitution: 0.310000002
+      RestitutionThreshold: 0.25999999
     ScriptComponent:
-      ClassName: Game.Model
+      ClassName: Game.Player
       StoredFields:
         []
-  - Entity: 17735607931302671696
+  - Entity: 10163039406884030298
     TagComponent:
-      Tag: Cube
+      Tag: Camera
     TransformComponent:
-      Translation: [-2.00589895, -0.385072321, -3.32514644]
-      Rotation: [0, 0, 0]
-      Scale: [1.2353121, 0.897976995, 0.27857253]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 1, 1, 1]
-    ScriptComponent:
-      ClassName: Game.Model
-      StoredFields:
-        []
-  - Entity: 9764661735467974625
-    TagComponent:
-      Tag: Point Light
-    TransformComponent:
-      Translation: [5.98774147, 1.05305326, -5.24305725]
+      Translation: [-1.02121723, -0.864659071, 8.31221008]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [1, 0.607594907, 0]
-      Ambient: 0
-      Specular: 0.920000017
-  - Entity: 11940098746153679732
-    TagComponent:
-      Tag: Point Light
-    TransformComponent:
-      Translation: [-7.02000856, 1.52327526, 0.0182125568]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0.565186977, 0, 0.603375554]
-      Ambient: 0
-      Specular: 0.649999976
-  - Entity: 9326935561330045193
-    TagComponent:
-      Tag: Cube
-    TransformComponent:
-      Translation: [2.96290922, -0.862536311, -5.54606056]
-      Rotation: [0, 0, 0]
-      Scale: [0.863208592, 0.378447831, 0.707002699]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 5
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
     ScriptComponent:
-      ClassName: Game.Model
+      ClassName: Game.Camera
       StoredFields:
         []
-  - Entity: 16781182484111503530
+  - Entity: 9978194220308888093
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-2.96906471, -1.18794656, 0]
+      Rotation: [0, 0, -0.270641565]
+      Scale: [17.8516178, 0.625600874, 1.67159986]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.959461629, 0.902953565, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3832955182581467926
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [4.4375248, 0.177419901, 0]
+      Rotation: [0, 0, -2.35696268]
+      Scale: [12.4034567, 0.512725651, 1.37]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.58227843, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 13687578473926614854
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-7.03356886, 7.49956703, -2.78203327e-09]
+      Rotation: [0, 0, -0.462686539]
+      Scale: [0.479999989, 0.479999989, 0.480000019]
+    SpriteRenderer2DComponent:
+      Color: [0.481012702, 1, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.860000014
+      RestitutionThreshold: 0.879999995
+  - Entity: 13938741839783394602
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Translation: [3.15551686, 0.0899626538, 0]
+      Rotation: [0, 0, 5.89039946]
+      Scale: [1.15667188, 1.15667188, 1.15667188]
+    CircleRendererComponent:
+      Color: [1, 0, 0, 1]
+      Fade: 0
+      Thickness: 0.174999997
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2435099613109741254
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Translation: [1.25035703, -1.34468102, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3.6145997, 3.6145997, 3.6145997]
+    CircleRendererComponent:
+      Color: [1, 0.543342412, 0.198312223, 1]
+      Fade: 0
+      Thickness: 0.174999997
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 8030982402616849055
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-3.94591045, 3.13217497, -2.740977e-09]
+      Rotation: [0, 0, -0.462686539]
+      Scale: [0.479999989, 0.479999989, 0.480000019]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.860000014
+      RestitutionThreshold: 0.879999995
+  - Entity: 2624106634389913817
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-4.17316055, 6.41814041, -2.68945732e-09]
+      Rotation: [0, 0, -0.462686539]
+      Scale: [0.479999989, 0.479999989, 0.480000019]
+    SpriteRenderer2DComponent:
+      Color: [0.481012702, 1, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.860000014
+      RestitutionThreshold: 0.879999995
+  - Entity: 10935278620207543740
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-1.65246809, 4.9314146, -2.77132428e-09]
+      Rotation: [0, 0, -0.462686539]
+      Scale: [0.479999989, 0.479999989, 0.480000019]
+    SpriteRenderer2DComponent:
+      Color: [0, 0.278481245, 1, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.860000014
+      RestitutionThreshold: 0.879999995
+  - Entity: 6900299981100665697
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.442948222, 7.66721582, -2.6775524e-09]
+      Rotation: [0, 0, -0.462686539]
+      Scale: [0.479999989, 0.479999989, 0.480000019]
+    SpriteRenderer2DComponent:
+      Color: [1, 0, 0, 1]
+      TillingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0.860000014
+      RestitutionThreshold: 0.879999995
+  - Entity: 6688487768955178568
     TagComponent:
       Tag: Monkey
     TransformComponent:
-      Translation: [3.50877213, -1.13248825e-06, -0.126320183]
-      Rotation: [-3.539445e-07, 0.0484216809, -2.43721644e-07]
-      Scale: [1.20599651, 1.20600009, 1.20599651]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\monkey.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 0.232067525, 0.931955576, 1]
-    ScriptComponent:
-      ClassName: Game.Model
-      StoredFields:
-        []
-  - Entity: 15785514395450597503
-    TagComponent:
-      Tag: Sphere
-    TransformComponent:
-      Translation: [-0.552312255, -0.0998133421, 3.91945434]
+      Translation: [0.28062588, 2.83731318, 2.95760155]
       Rotation: [0, 0, 0]
-      Scale: [0.649999976, 0.649999976, 0.649999976]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\sphere.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 1, 1, 1]
-  - Entity: 11763434236506433118
-    TagComponent:
-      Tag: Cone
-    TransformComponent:
-      Translation: [0.303229094, -4.76837158e-07, 0.133666188]
-      Rotation: [1.71433646e-06, 0, 1.92209839e-07]
-      Scale: [1.20600116, 1.20600009, 1.20600116]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\cone.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 0.607843161, 0.282352954, 1]
-  - Entity: 14616345612248980793
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [0, -1.29999995, 0.590448856]
-      Rotation: [0, 0, 0]
-      Scale: [100, 1, 100]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\plane.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [1, 1, 1, 1]
-  - Entity: 1792129654376181530
-    TagComponent:
-      Tag: Point Light
-    TransformComponent:
-      Translation: [-2.17812419, 2.39577961, 4.50828838]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0.206751049, 0.206751049, 0.206751049]
-      Ambient: 0
-      Specular: 1.12
-    ScriptComponent:
-      ClassName: Game.Light
-      StoredFields:
-        []
-  - Entity: 6530748634523804684
-    TagComponent:
-      Tag: Sphere
-    TransformComponent:
-      Translation: [-4.5107832, -0.0998133421, -0.281575799]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    StaticMeshComponent:
-      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Models\sphere.gltf
-      ShaderPath: Resources/Shaders/Sandbox/model.glsl
-      Color: [0.538545728, 0.919831216, 0.147483498, 1]
-  - Entity: 3283491586376315862
-    TagComponent:
-      Tag: Point Light
-    TransformComponent:
-      Translation: [4.26771593, 0.962742209, 4.69554806]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    PointLightComponent:
-      Color: [0, 0.0602469482, 0.594936728]
-      Ambient: 0
-      Specular: 1.50999999
-  - Entity: 9349641680741778292
-    TagComponent:
-      Tag: Spot Light
-    TransformComponent:
-      Translation: [0.252478957, 3.83014965, 0.135883689]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpotLightComponent:
-      Color: [0, 1, 0.405063152]
-      Ambient: 1.07000005
-      Specular: 1.79999995
-      Outercone: 0.88499999
-      Innercone: 1.23399997
+      Scale: [0.797500074, 0.797500074, 0.797500074]

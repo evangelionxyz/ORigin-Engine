@@ -6,7 +6,7 @@
 #include "Origin\Scene\SceneCamera.h"
 #include "Origin\Renderer\Texture.h"
 
-#include "Origin\Scene\Component\UUID.h"
+#include "Origin\Scene\UUID.h"
 #include "Origin\Renderer\Model.h"
 
 #include <glm\glm.hpp>

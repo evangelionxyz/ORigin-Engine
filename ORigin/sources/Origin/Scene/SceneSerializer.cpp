@@ -8,8 +8,7 @@
 #include "Origin\Renderer\Model.h"
 
 #include "Entity.h"
-#include "Component\UUID.h"
-#include "Component\Component.h"
+#include "Component.h"
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>

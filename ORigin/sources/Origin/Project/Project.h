@@ -28,22 +28,22 @@ namespace Origin
 	public:
 		static const std::filesystem::path& GetProjectDirectory()
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject)
 			return s_ActiveProject->m_ProjectDirectory;
 		}
 
 		static std::filesystem::path GetAssetDirectory()
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject)
 			return GetProjectDirectory() / s_ActiveProject->m_Config.AssetDirectory;
 		}
 
 		static std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path)
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject)
 			return GetAssetDirectory() / path;
 		}
-
+		
 		static std::shared_ptr<Project> GetActive() { return s_ActiveProject; }
 		ProjectConfig& GetConfig() { return m_Config; }
 
