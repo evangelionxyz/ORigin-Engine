@@ -4,7 +4,7 @@
 #include "Origin\Renderer\Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 
-namespace Origin
+namespace origin
 {
 
 	void Renderer2D::Init()

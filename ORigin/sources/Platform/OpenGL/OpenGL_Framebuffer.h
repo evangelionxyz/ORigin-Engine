@@ -3,7 +3,7 @@
 #pragma once
 #include "Origin/Renderer/Framebuffer.h"
 
-namespace Origin {
+namespace origin {
 
 	class OpenGL_Framebuffer : public Framebuffer
 	{

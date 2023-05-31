@@ -4,7 +4,7 @@
 #include "Origin\Project\Project.h"
 #include <imgui.h>
 
-namespace Origin
+namespace origin
 {
 	namespace Utils
 	{

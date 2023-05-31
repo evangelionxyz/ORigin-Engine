@@ -11,7 +11,7 @@
 
 class b2World;
 
-namespace Origin
+namespace origin
 {
     class Entity;
 

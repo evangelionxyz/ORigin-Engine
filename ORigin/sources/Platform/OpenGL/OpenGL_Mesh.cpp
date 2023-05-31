@@ -4,7 +4,7 @@
 #include "OpenGL_Mesh.h"
 #include "Origin\Renderer\RenderCommand.h"
 
-namespace Origin
+namespace origin
 {
 	OpenGLMesh::OpenGLMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
 	{

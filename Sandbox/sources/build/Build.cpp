@@ -2,7 +2,7 @@
 #include <Origin.h>
 #include "..\Sandbox.h"
 
-namespace Origin
+namespace origin
 {
 	class SandboxBuild : public Application
 	{

@@ -1,0 +1,6 @@
+C:\dev\ORigin-Engine\ORigin-Editor\Resources\ScriptCore\Int\Release\ORigin-ScriptCore.csproj.AssemblyReference.cache
+C:\dev\ORigin-Engine\ORigin-Editor\Resources\ScriptCore\Int\Release\ORigin-ScriptCore.csproj.CoreCompileInputs.cache
+C:\dev\ORigin-Engine\ORigin-Editor\Resources\ScriptCore\Int\Release\ORigin-ScriptCore.dll
+C:\dev\ORigin-Engine\ORigin-Editor\Resources\ScriptCore\Int\Release\ORigin-ScriptCore.pdb
+C:\dev\ORigin-Engine\ORigin-Editor\Resources\ScriptCore\ORigin-ScriptCore.dll
+C:\dev\ORigin-Engine\ORigin-Editor\Resources\ScriptCore\ORigin-ScriptCore.pdb

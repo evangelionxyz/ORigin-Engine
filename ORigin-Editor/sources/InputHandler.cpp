@@ -2,7 +2,7 @@
 
 #include "Editor.h"
 
-namespace Origin
+namespace origin
 {
 	bool Editor::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{

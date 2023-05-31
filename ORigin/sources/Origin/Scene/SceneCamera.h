@@ -3,7 +3,7 @@
 #pragma once
 #include "Camera.h"
 
-namespace Origin {
+namespace origin {
 
 	class SceneCamera : public Camera
 	{

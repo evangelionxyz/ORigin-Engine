@@ -3,7 +3,7 @@
 #pragma once
 #include <chrono>
 
-namespace Origin
+namespace origin
 {
 	class Timestep
 	{

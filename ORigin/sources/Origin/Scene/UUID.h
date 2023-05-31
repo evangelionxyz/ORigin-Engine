@@ -3,7 +3,7 @@
 #pragma once
 #include <xhash>
 
-namespace Origin
+namespace origin
 {
 	class UUID
 	{
@@ -23,9 +23,9 @@ namespace Origin
 namespace std
 {
 	template<>
-	struct hash<Origin::UUID>
+	struct hash<origin::UUID>
 	{
-		std::size_t operator() (const Origin::UUID& uuid) const
+		std::size_t operator() (const origin::UUID& uuid) const
 		{
 			return hash<uint64_t>()((uint64_t)uuid);
 		}

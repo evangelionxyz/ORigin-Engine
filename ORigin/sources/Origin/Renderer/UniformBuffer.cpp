@@ -6,7 +6,7 @@
 #include "Origin\Renderer\Renderer.h"
 #include "Platform\OpenGL\OpenGL_UniformBuffer.h"
 
-namespace Origin
+namespace origin
 {
 	std::shared_ptr<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 	{

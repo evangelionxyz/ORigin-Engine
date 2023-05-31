@@ -6,7 +6,7 @@
 
 #include "Time.h"
 
-namespace Origin {
+namespace origin {
 
 	class Layer
 	{

@@ -5,7 +5,7 @@
 #include "Origin\Renderer\Renderer.h"
 #include "Platform\OpenGL\OpenGL_Context.h"
 
-namespace Origin
+namespace origin
 {
 	std::unique_ptr<GraphicsContext> GraphicsContext::Create(void* window)
 	{

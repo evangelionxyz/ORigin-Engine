@@ -5,7 +5,7 @@
 #include "Origin\Renderer\Buffer.h"
 #include <vector>
 
-namespace Origin
+namespace origin
 {
 	class OpenGLMesh : public Mesh
 	{

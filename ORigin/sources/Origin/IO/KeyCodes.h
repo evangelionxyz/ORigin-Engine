@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace Origin
+namespace origin
 {
 	using KeyCode = uint16_t;
 

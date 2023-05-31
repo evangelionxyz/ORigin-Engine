@@ -5,7 +5,7 @@
 
 #include "Mesh.h"
 
-namespace Origin
+namespace origin
 {
 	enum class ShaderDataType
 	{

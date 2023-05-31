@@ -16,7 +16,7 @@
 
 #include <FileWatch.hpp>
 
-namespace Origin
+namespace origin
 {
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{

@@ -13,10 +13,11 @@
 #include <imgui_internal.h>
 #include <filesystem>
 
-namespace Origin
+namespace origin
 {
     Editor::Editor() : Layer("Editor")
     {
+      EditorTheme::ApplyOriginTheme(true, 1.0f);
     }
 
     void Editor::OnAttach()

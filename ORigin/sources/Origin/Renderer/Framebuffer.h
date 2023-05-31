@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 
-namespace Origin
+namespace origin
 {
 	enum class FramebufferTextureFormat
 	{

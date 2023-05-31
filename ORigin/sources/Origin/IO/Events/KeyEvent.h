@@ -5,7 +5,7 @@
 
 #include "Origin\IO\KeyCodes.h"
 
-namespace Origin {
+namespace origin {
 
 	class KeyEvent : public Event
 	{

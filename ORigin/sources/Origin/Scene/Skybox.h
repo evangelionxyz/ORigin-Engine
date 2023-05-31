@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace Origin
+namespace origin
 {
 	class Skybox
 	{

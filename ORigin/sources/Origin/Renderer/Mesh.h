@@ -5,7 +5,7 @@
 #include "glm\glm.hpp"
 #include <string>
 
-namespace Origin
+namespace origin
 {
 	struct Vertex
 	{

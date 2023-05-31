@@ -4,7 +4,7 @@
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
-namespace Origin
+namespace origin
 {
 
 	ProjectSerializer::ProjectSerializer(std::shared_ptr<Project> project)

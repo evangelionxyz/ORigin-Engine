@@ -9,7 +9,7 @@
 
 #include "stb_image.h"
 
-namespace Origin
+namespace origin
 {
 	std::shared_ptr<Skybox> Skybox::Create(const std::string& filepath)
 	{

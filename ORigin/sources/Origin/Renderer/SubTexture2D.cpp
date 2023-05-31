@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "SubTexture2D.h"
 
-namespace Origin
+namespace origin
 {
 
 	SubTexture2D::SubTexture2D(const std::shared_ptr<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max)

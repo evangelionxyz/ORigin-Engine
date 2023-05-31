@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace Origin
+namespace origin
 {
 	using MouseCode = uint16_t;
 

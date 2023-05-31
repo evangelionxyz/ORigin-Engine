@@ -18,8 +18,8 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
-    <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Debug\</BaseIntermediateOutputPath>
+    <OutputPath>..\ORigin-Editor\Resources\ScriptCore\</OutputPath>
+    <BaseIntermediateOutputPath>..\ORigin-Editor\Resources\ScriptCore\Int\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -30,8 +30,8 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
-    <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Release\</BaseIntermediateOutputPath>
+    <OutputPath>..\ORigin-Editor\Resources\ScriptCore\</OutputPath>
+    <BaseIntermediateOutputPath>..\ORigin-Editor\Resources\ScriptCore\Int\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -42,8 +42,8 @@
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\ORigin-Editor\resources\scripts\</OutputPath>
-    <BaseIntermediateOutputPath>..\ORigin-Editor\resources\intermediates\Dist\</BaseIntermediateOutputPath>
+    <OutputPath>..\ORigin-Editor\Resources\ScriptCore\</OutputPath>
+    <BaseIntermediateOutputPath>..\ORigin-Editor\Resources\ScriptCore\Int\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -63,6 +63,7 @@
     <Compile Include="sources\ORigin\Scene\Entity.cs" />
     <Compile Include="sources\ORigin\Vector2.cs" />
     <Compile Include="sources\ORigin\Vector3.cs" />
+    <Compile Include="sources\ORigin\Vector4.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

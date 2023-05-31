@@ -3,7 +3,7 @@
 
 #include "stb_image.h"
 
-namespace Origin
+namespace origin
 {
 	OpenGLSkybox::OpenGLSkybox(const std::string& filepath)
 	{

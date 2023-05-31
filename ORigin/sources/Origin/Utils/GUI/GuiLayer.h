@@ -7,7 +7,7 @@
 #include "Origin\IO\Events\KeyEvent.h"
 #include "Origin\IO\Events\MouseEvent.h"
 
-namespace Origin
+namespace origin
 {
 	class GuiLayer : public Layer
 	{

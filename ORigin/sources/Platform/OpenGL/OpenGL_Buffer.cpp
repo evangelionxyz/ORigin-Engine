@@ -5,7 +5,7 @@
 
 #include <glad\glad.h>
 
-namespace Origin
+namespace origin
 {
 	// OpenGL VertexBuffer
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)

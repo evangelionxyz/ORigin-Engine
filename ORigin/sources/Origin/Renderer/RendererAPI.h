@@ -4,7 +4,7 @@
 #include "VertexArray.h"
 #include <glm\glm.hpp>
 
-namespace Origin
+namespace origin
 {
 	class RendererAPI
 	{

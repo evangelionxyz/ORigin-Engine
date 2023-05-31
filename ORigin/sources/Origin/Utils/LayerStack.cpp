@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace Origin
+namespace origin
 {
 	LayerStack::LayerStack()
 	{

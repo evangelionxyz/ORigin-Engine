@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "Origin\Core\Base.h"
 
-namespace Origin {
+namespace origin {
 
 	enum class EventType
 	{

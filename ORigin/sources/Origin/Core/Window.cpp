@@ -7,7 +7,7 @@
 	#include "Platform/Windows/Win_Window.h"
 #endif
 
-namespace Origin
+namespace origin
 {
 	std::unique_ptr<Window> Window::Create(const std::string& title)
 	{

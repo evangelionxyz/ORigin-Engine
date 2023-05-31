@@ -4,7 +4,7 @@
 #include "Origin\Project\Project.h"
 #include "panels\ContentBrowserPanel.h"
 
-namespace Origin
+namespace origin
 {
 	void Editor::SceneViewport()
 	{

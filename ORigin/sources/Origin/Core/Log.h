@@ -10,7 +10,7 @@
 #include "spdlog\fmt\ostr.h"
 #pragma warning(pop)
 
-namespace Origin {
+namespace origin {
 
 	class Log
 	{
@@ -43,15 +43,15 @@ inline OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion)
 }
 
 // ORIGIN LOG
-#define OGN_CORE_ERROR(...)			::Origin::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define OGN_CORE_WARN(...)			::Origin::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define OGN_CORE_INFO(...)			::Origin::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define OGN_CORE_TRACE(...)			::Origin::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define OGN_CORE_CRITICAL(...)	::Origin::Log::GetCoreLogger()->critical(__VA_ARGS__)
+#define OGN_CORE_ERROR(...)			::origin::Log::GetCoreLogger()->error(__VA_ARGS__)
+#define OGN_CORE_WARN(...)			::origin::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define OGN_CORE_INFO(...)			::origin::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define OGN_CORE_TRACE(...)			::origin::Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define OGN_CORE_CRITICAL(...)	::origin::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 // SANDBOX LOG
-#define OGN_ERROR(...)					::Origin::Log::GetClientLogger()->error(__VA_ARGS__)
-#define OGN_WARN(...)						::Origin::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define OGN_INFO(...)						::Origin::Log::GetClientLogger()->info(__VA_ARGS__)
-#define OGN_TRACE(...)					::Origin::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define OGN_CRITICAL(...)				::Origin::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define OGN_ERROR(...)					::origin::Log::GetClientLogger()->error(__VA_ARGS__)
+#define OGN_WARN(...)						::origin::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define OGN_INFO(...)						::origin::Log::GetClientLogger()->info(__VA_ARGS__)
+#define OGN_TRACE(...)					::origin::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define OGN_CRITICAL(...)				::origin::Log::GetClientLogger()->critical(__VA_ARGS__)

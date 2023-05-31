@@ -5,7 +5,7 @@
 #include "pch.h"
 #include "Origin\Renderer\Buffer.h"
 
-namespace Origin
+namespace origin
 {
 	class OpenGLVertexBuffer : public VertexBuffer
 	{

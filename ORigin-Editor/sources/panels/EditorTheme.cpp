@@ -3,7 +3,7 @@
 #include "EditorTheme.h"
 #include "IconFontAwesome.h"
 
-namespace Origin
+namespace origin
 {
 	void EditorTheme::SetColors(int backGroundColor, int textColor, int mainColor, int mainAccentColor, int highlightColor)
 	{

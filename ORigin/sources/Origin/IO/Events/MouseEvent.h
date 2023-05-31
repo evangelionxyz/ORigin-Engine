@@ -5,7 +5,7 @@
 
 #include "Origin\IO\MouseCodes.h"
 
-namespace Origin {
+namespace origin {
 
 	class MouseMovedEvent : public Event
 	{

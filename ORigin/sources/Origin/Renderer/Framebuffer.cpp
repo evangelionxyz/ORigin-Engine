@@ -6,7 +6,7 @@
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGL_Framebuffer.h"
 
-namespace Origin
+namespace origin
 {
 	std::shared_ptr<Framebuffer> Framebuffer::Create(const FramebufferSpecification& specification)
 	{

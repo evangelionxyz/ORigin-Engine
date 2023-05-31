@@ -6,7 +6,7 @@
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
-namespace Origin
+namespace origin
 {
 	class Renderer3D
 	{

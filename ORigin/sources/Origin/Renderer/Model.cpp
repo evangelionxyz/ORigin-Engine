@@ -4,7 +4,7 @@
 
 #include "Platform\OpenGL\OpenGL_Model.h"
 
-namespace Origin
+namespace origin
 {
 
 	std::shared_ptr<Model> Model::Create(const std::string& filepath, std::shared_ptr<Shader>& shader)

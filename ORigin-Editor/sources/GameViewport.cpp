@@ -3,7 +3,7 @@
 #include "Origin/Scene/Component.h"
 #include "Editor.h"
 
-namespace Origin
+namespace origin
 {
     void Editor::GameViewport()
     {

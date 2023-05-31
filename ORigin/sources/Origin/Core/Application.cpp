@@ -5,7 +5,7 @@
 
 #include "Origin\Scripting\ScriptEngine.h"
 
-namespace Origin {
+namespace origin {
 
 	Application* Application::s_Instance = nullptr;
 

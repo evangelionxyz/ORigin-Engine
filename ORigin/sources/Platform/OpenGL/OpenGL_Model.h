@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace Origin
+namespace origin
 {
 	class OpenGLModel : public Model
 	{

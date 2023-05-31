@@ -10,7 +10,7 @@
 #include "Origin\IO\Events\AppEvent.h"
 #include "Origin\Core\Application.h"
 
-namespace Origin
+namespace origin
 {
 	WinWindow::WinWindow(const std::string& title)
 	{

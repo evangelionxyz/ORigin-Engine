@@ -6,7 +6,7 @@
 #include "Origin\Renderer\Renderer.h"
 #include "Platform\OpenGL\OpenGL_Buffer.h"
 
-namespace Origin
+namespace origin
 {
 
 	std::shared_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size)
@@ -31,7 +31,7 @@ namespace Origin
 		return nullptr;
 	}
 
-	std::shared_ptr<Origin::VertexBuffer> VertexBuffer::Create(std::vector<Vertex> vertices)
+	std::shared_ptr<origin::VertexBuffer> VertexBuffer::Create(std::vector<Vertex> vertices)
 	{
 		switch (Renderer::GetAPI())
 		{

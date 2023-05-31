@@ -4,7 +4,7 @@
 #include "Scene.h"
 #include <filesystem>
 
-namespace Origin
+namespace origin
 {
 	class SceneSerializer
 	{

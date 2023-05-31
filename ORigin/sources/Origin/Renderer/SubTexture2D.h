@@ -4,7 +4,7 @@
 #include "Origin/Renderer/Texture.h"
 #include <glm/glm.hpp>
 
-namespace Origin {
+namespace origin {
 
 	class SubTexture2D
 	{

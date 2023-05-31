@@ -17,7 +17,7 @@
 
 #include <algorithm>
 
-namespace Origin {
+namespace origin {
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
 		: Camera(m_Projection), m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip)

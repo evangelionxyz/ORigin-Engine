@@ -4,7 +4,7 @@
 #include "OpenGL_UniformBuffer.h"
 #include <glad/glad.h>
 
-namespace Origin
+namespace origin
 {
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding)
 	{

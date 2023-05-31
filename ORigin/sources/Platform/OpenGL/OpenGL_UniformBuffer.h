@@ -3,7 +3,7 @@
 #pragma once
 #include "Origin\Renderer\UniformBuffer.h"
 
-namespace Origin
+namespace origin
 {
 	class OpenGLUniformBuffer : public UniformBuffer
 	{

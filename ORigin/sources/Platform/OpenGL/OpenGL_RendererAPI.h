@@ -4,7 +4,7 @@
 #include "Origin\Renderer\RendererAPI.h"
 #include <glm\glm.hpp>
 
-namespace Origin
+namespace origin
 {
 	class OpenGLRendererAPI : public RendererAPI
 	{

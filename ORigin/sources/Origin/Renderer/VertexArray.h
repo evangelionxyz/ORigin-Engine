@@ -3,7 +3,7 @@
 #pragma once
 #include "Origin\Renderer\Buffer.h"
 
-namespace Origin {
+namespace origin {
 
 	class VertexArray
 	{

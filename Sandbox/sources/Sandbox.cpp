@@ -8,7 +8,7 @@
 
 #include <imgui.h>
 
-using namespace Origin;
+using namespace origin;
 
 Sandbox::Sandbox()
 	: Layer("Sandbox")

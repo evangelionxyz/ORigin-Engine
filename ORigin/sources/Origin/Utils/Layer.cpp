@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Layer.h"
 
-namespace Origin
+namespace origin
 {
 	Layer::Layer(const std::string& name) : m_Name(name) { }
 	Layer::~Layer() { }

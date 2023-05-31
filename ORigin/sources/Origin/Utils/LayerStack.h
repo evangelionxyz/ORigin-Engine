@@ -3,7 +3,7 @@
 #pragma once
 #include "Layer.h"
 
-namespace Origin {
+namespace origin {
 
 	class LayerStack
 	{

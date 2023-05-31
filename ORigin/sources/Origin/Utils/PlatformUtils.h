@@ -3,7 +3,7 @@
 #pragma once
 #include <string>
 
-namespace Origin
+namespace origin
 {
 	class FileDialogs
 	{

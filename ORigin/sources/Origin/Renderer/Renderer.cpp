@@ -13,7 +13,7 @@
 #include "Platform\OpenGL\OpenGL_Shader.h"
 #include <glm\gtc\matrix_transform.hpp>
 
-namespace Origin
+namespace origin
 {
 
 	void Renderer::Init()

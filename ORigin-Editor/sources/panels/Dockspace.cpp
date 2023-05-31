@@ -6,7 +6,7 @@
 
 #include <imgui.h>
 
-namespace Origin
+namespace origin
 {
   void Dockspace::Begin()
   {

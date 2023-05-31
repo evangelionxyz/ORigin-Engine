@@ -8,7 +8,7 @@
 #include "Origin/Renderer/Shader.h"
 #include <glm/gtc/type_ptr.hpp>
 
-namespace Origin
+namespace origin
 {
 	class Renderer2D
 	{

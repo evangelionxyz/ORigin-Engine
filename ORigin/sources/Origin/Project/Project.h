@@ -6,7 +6,7 @@
 #include <string>
 #include <filesystem>
 
-namespace Origin
+namespace origin
 {
 	struct ProjectConfig
 	{

@@ -7,7 +7,7 @@
 
 #include "Origin\Renderer\UniformBuffer.h"
 
-namespace Origin
+namespace origin
 {
 	struct CubeVertex
 	{

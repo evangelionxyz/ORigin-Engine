@@ -21,15 +21,15 @@
 
 #include <glm/glm.hpp>
 
-namespace Origin
+namespace origin
 {
     static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
     {
         switch (type)
         {
-        case Origin::Rigidbody2DComponent::BodyType::Static: return b2BodyType::b2_staticBody;
-        case Origin::Rigidbody2DComponent::BodyType::Dynamic: return b2BodyType::b2_dynamicBody;
-        case Origin::Rigidbody2DComponent::BodyType::Kinematic: return b2BodyType::b2_kinematicBody;
+        case origin::Rigidbody2DComponent::BodyType::Static: return b2BodyType::b2_staticBody;
+        case origin::Rigidbody2DComponent::BodyType::Dynamic: return b2BodyType::b2_dynamicBody;
+        case origin::Rigidbody2DComponent::BodyType::Kinematic: return b2BodyType::b2_kinematicBody;
         }
 
         OGN_ASSERT(false, "Unkown Body Type");

@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "OpenGL_VertexArray.h"
 
-namespace Origin
+namespace origin
 {
 	static GLenum ShaderDataType_OpenGL(ShaderDataType type)
 	{

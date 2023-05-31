@@ -4,7 +4,7 @@
 #include "icon.h"
 #include "stb_image.h"
 
-namespace Origin
+namespace origin
 {
 	Icon::Icon(GLFWwindow* window, const std::string& path)
 		: m_Data(nullptr), m_FilePath(path), m_Width(0), m_Height(0), m_nChannels(0)

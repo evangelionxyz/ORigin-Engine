@@ -3,7 +3,7 @@
 #include "Origin\Utils\PlatformUtils.h"
 #include "ProjectSerializer.h"
 
-namespace Origin
+namespace origin
 {
 	std::shared_ptr<Project> Project::New()
 	{

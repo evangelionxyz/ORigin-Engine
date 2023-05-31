@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace Origin
+namespace origin
 {
 	template<typename T>
 	struct WndVec2 { T x; T y; };

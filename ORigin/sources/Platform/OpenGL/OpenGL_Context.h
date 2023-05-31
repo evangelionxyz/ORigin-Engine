@@ -4,7 +4,7 @@
 #include "Origin\Renderer\GraphicsContext.h"
 #include <GLFW\glfw3.h>
 
-namespace Origin
+namespace origin
 {
 	class OpenGLContext : public GraphicsContext
 	{

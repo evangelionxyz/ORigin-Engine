@@ -1,7 +1,7 @@
 #pragma once
 #include "Project.h"
 
-namespace Origin
+namespace origin
 {
 	class ProjectSerializer
 	{

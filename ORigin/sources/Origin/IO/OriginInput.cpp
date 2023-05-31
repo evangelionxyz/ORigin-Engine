@@ -4,7 +4,7 @@
 #include "Input.h"
 #include "Origin\Core\Application.h"
 
-namespace Origin
+namespace origin
 {
 	bool Input::IsKeyPressed(const KeyCode keycode)
 	{

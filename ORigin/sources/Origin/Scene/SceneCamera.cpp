@@ -4,7 +4,7 @@
 #include "SceneCamera.h"
 #include <glm\gtc\matrix_transform.hpp>
 
-namespace Origin
+namespace origin
 {
 	SceneCamera::SceneCamera()
 	{

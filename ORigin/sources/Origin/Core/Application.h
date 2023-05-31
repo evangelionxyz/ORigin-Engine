@@ -14,7 +14,7 @@
 #include "Origin\Renderer\Renderer.h"
 #include <mutex>
 
-namespace Origin {
+namespace origin {
 
 	struct ApplicationCommandLineArgs
 	{

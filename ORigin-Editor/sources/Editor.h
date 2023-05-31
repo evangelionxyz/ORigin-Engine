@@ -8,7 +8,7 @@
 
 #include <ImGuizmo.h>
 
-namespace Origin {
+namespace origin {
 
 	static float RMHoldTime = 0.0f;
 	static float LMHoldTime = 0.0f;

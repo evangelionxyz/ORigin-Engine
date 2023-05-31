@@ -16,16 +16,16 @@
 namespace YAML
 {
 	template<>
-	struct convert<Origin::UUID>
+	struct convert<origin::UUID>
 	{
-		static Node encode(const Origin::UUID uuid)
+		static Node encode(const origin::UUID uuid)
 		{
 			Node node;
 			node.push_back((uint64_t)uuid);
 			return node;
 		}
 
-		static bool decode(const Node& node, Origin::UUID uuid)
+		static bool decode(const Node& node, origin::UUID uuid)
 		{
 			uuid = node.as<uint64_t>();
 			return true;
@@ -106,7 +106,7 @@ namespace YAML
 	};
 
 }
-namespace Origin {
+namespace origin {
 
 #define WRITE_FIELD_TYPE(FieldType, Type)\
 				case ScriptFieldType::FieldType:\

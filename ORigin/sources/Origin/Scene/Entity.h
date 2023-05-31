@@ -6,7 +6,7 @@
 #include "Scene.h"
 #include "entt\entt.hpp"
 
-namespace Origin {
+namespace origin {
 
 	class Entity
 	{

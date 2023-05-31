@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "Origin/IO/Events/Event.h"
 
-namespace Origin
+namespace origin
 {
 	class Window
 	{

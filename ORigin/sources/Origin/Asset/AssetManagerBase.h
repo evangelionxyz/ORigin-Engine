@@ -2,8 +2,8 @@
 
 #pragma once
 
-namespace Origin
-{
+namespace origin {
+
     class AssetManagerBase
     {
     public:

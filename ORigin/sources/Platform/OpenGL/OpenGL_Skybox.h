@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace Origin
+namespace origin
 {
 	class OpenGLSkybox : public Skybox
 	{

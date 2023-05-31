@@ -3,7 +3,7 @@
 #pragma once
 #include "RendererAPI.h"
 
-namespace Origin
+namespace origin
 {
 	class RenderCommand
 	{

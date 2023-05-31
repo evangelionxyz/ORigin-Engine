@@ -9,7 +9,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
 
-namespace Origin
+namespace origin
 {
 	OpenGLModel::OpenGLModel(const std::string& filepath, std::shared_ptr<Shader>& shader)
 		: m_Shader(shader)

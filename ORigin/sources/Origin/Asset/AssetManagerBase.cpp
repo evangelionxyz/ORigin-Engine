@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "AssetManagerBase.h"
 
-namespace Origin
-{
-    
+namespace origin {
+
+
 }

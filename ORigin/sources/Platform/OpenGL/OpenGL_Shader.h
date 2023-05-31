@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "Origin\Renderer\Shader.h"
 
-namespace Origin
+namespace origin
 {
   enum class ShaderType
   {

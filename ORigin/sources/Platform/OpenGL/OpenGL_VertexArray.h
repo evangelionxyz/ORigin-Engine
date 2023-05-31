@@ -4,7 +4,7 @@
 #include "Origin\Renderer\VertexArray.h"
 #include <glad\glad.h>
 
-namespace Origin
+namespace origin
 {
 	class OpenGLVertexArray : public VertexArray
 	{

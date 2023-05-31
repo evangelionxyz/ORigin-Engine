@@ -5,7 +5,7 @@
 
 #include <glad/glad.h>
 
-namespace Origin {
+namespace origin {
 
 	static const uint32_t s_MaxFramebufferSize = 8192;
 
@@ -65,8 +65,8 @@ namespace Origin {
 		{
 			switch (format)
 			{
-				case Origin::FramebufferTextureFormat::RGBA8: return GL_RGBA8;
-				case Origin::FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+				case origin::FramebufferTextureFormat::RGBA8: return GL_RGBA8;
+				case origin::FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
 
 			OGN_CORE_ASSERT(false, "Unkown Framebuffer Format");

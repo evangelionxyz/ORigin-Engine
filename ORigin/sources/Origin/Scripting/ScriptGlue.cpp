@@ -18,7 +18,7 @@
 
 #include "box2d\b2_body.h"
 
-namespace Origin
+namespace origin
 {
 #define OGN_ADD_INTERNAL_CALLS(Name) mono_add_internal_call("ORiginEngine.InternalCalls::"#Name, Name)
 

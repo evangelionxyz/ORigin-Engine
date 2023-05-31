@@ -12,7 +12,7 @@
 
 #include <glm\gtc\type_ptr.hpp>
 
-namespace Origin {
+namespace origin {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{

@@ -3,7 +3,7 @@
 #include "..\Editor.h"
 #include "Origin\Scripting\ScriptEngine.h"
 
-namespace Origin
+namespace origin
 {
 	void Editor::MenuBar()
 	{

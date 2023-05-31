@@ -4,7 +4,7 @@
 #include "OpenGL_Context.h"
 #include <glad/glad.h>
 
-namespace Origin
+namespace origin
 {
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
 		: m_WindowHandle(windowHandle)

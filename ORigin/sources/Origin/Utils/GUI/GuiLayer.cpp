@@ -12,7 +12,7 @@
 
 #include <ImGuizmo.h>
 
-namespace Origin {
+namespace origin {
 
 	void GuiLayer::OnAttach()
 	{

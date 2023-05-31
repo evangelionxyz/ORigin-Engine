@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #include "Platform\OpenGL\OpenGL_Shader.h"
 
-namespace Origin
+namespace origin
 {
 	std::shared_ptr<Shader> Shader::Create(const std::string& filepath, bool enableSpirv, bool recompileSpirv)
 	{

@@ -7,7 +7,7 @@
 
 #include <glm\glm.hpp>
 
-namespace Origin
+namespace origin
 {
 	class Input
 	{

@@ -8,7 +8,7 @@
 #include "Origin\Scene\Camera.h"
 
 
-namespace Origin
+namespace origin
 {
 	struct CameraData
 	{

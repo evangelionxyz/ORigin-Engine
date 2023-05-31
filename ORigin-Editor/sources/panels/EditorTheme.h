@@ -4,7 +4,7 @@
 #include <cmath>
 #include <imgui.h>
 
-namespace Origin {
+namespace origin {
 
 	class EditorTheme
 	{

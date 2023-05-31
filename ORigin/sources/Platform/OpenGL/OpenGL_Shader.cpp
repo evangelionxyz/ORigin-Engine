@@ -12,7 +12,7 @@
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 
-namespace Origin {
+namespace origin {
 
   namespace Utils{
     static GLenum ShaderTypeFromString(const std::string& type, const std::string& filepath = std::string())

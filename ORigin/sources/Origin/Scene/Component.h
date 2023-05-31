@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace Origin
+namespace origin
 {
 	struct IDComponent
 	{

@@ -16,7 +16,7 @@ extern "C" {
 	typedef struct _MonoClassField MonoClassField;
 }
 
-namespace Origin {
+namespace origin {
 
 	enum class ScriptFieldType
 	{

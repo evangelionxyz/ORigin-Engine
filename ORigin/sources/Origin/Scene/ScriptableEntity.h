@@ -4,7 +4,7 @@
 #include "Origin\Utils\Time.h"
 #include "Origin\Scene\Entity.h"
 
-namespace Origin
+namespace origin
 {
 	class ScriptableEntity
 	{

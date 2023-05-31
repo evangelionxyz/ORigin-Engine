@@ -3,7 +3,7 @@
 #pragma once
 #include "Event.h"
 
-namespace Origin {
+namespace origin {
 
 	class WindowResizeEvent : public Event {
 	private:

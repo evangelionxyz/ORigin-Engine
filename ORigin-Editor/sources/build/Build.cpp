@@ -3,7 +3,7 @@
 #include <Origin.h>
 #include "..\Editor.h"
 
-namespace Origin
+namespace origin
 {
   class EditorBuild : public Application
   {

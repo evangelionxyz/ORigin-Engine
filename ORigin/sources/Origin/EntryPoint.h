@@ -8,12 +8,12 @@
 	#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
-extern Origin::Application* Origin::CreateApplication(ApplicationCommandLineArgs args);
+extern origin::Application* origin::CreateApplication(ApplicationCommandLineArgs args);
 
 int main(int argc, char** argv)
 {
-	Origin::Log::Init();
-	Origin::Application* app = Origin::CreateApplication({argc, argv});
+	origin::Log::Init();
+	origin::Application* app = origin::CreateApplication({argc, argv});
 	app->Run();
 	delete app;
 }

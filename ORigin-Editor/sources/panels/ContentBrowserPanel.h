@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <unordered_map>
 
-namespace Origin
+namespace origin
 {
 	class ContentBrowserPanel
 	{

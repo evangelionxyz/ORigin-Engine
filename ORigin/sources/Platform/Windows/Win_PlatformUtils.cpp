@@ -11,7 +11,7 @@
 	#include <GLFW\glfw3native.h>
 #endif
 
-namespace Origin
+namespace origin
 {
 	std::string FileDialogs::OpenFile(const char* filter)
 	{
