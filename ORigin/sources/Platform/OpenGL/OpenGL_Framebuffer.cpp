@@ -154,6 +154,9 @@ namespace origin {
 			glDrawBuffer(GL_NONE);
 		}
 
+		if (m_Specification.ReadBuffer == false)
+			glReadBuffer(GL_NONE);
+
 		OGN_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer incomplete");
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

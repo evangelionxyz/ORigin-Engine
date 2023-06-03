@@ -1,14 +1,13 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Renderer\Renderer3D.h"
-#include "Origin\Renderer\Renderer2D.h"
+#include "Renderer.h"
+#include "Renderer3D.h"
+#include "Renderer2D.h"
+#include "UniformBuffer.h"
 
-#include "Origin\Renderer\UniformBuffer.h"
+namespace origin {
 
-namespace origin
-{
 	struct CubeVertex
 	{
 		glm::vec3 Position;
@@ -126,7 +125,7 @@ namespace origin
 		s_3Ddata.CubeVertexPosition[22] = glm::vec4( 0.5f, -0.5f, -0.5f, 1.0f);
 		s_3Ddata.CubeVertexPosition[23] = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
 
-		s_3Ddata.CubeShader = Shader::Create("Resources/Shaders/Cube.glsl", true);
+		s_3Ddata.CubeShader = Renderer::GetGShader("Cube");
 	}
 
 	void Renderer3D::BeginScene()

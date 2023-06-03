@@ -2,10 +2,9 @@
 
 #include "pch.h"
 #include "Origin\Renderer\Renderer.h"
-#include "Origin/Renderer/Renderer2D.h"
+#include "Origin\Renderer\Renderer2D.h"
 
-namespace origin
-{
+namespace origin {
 
 	void Renderer2D::Init()
 	{
@@ -86,9 +85,9 @@ namespace origin
 		s_2Ddata.QuadVertexPositions[2] = {	 0.5f,  0.5f, 0.0f, 1.0f };
 		s_2Ddata.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		s_2Ddata.QuadShader = Shader::Create("Resources/Shaders/Default2D.glsl", true);
-		s_2Ddata.CircleShader = Shader::Create("Resources/Shaders/Circle2D.glsl", true);
-		s_2Ddata.LineShader = Shader::Create("Resources/Shaders/Line2D.glsl", true);
+		s_2Ddata.QuadShader = Renderer::GetGShader("Quad2D");
+		s_2Ddata.CircleShader = Renderer::GetGShader("Circle2D");
+		s_2Ddata.LineShader = Renderer::GetGShader("Line2D");
 	}
 
 	void Renderer2D::Shutdown()
@@ -128,6 +127,7 @@ namespace origin
 			s_2Ddata.LineVertexBuffer->SetData(s_2Ddata.LineVertexBufferBase, dataSize);
 
 			s_2Ddata.LineShader->Bind();
+
 			RenderCommand::DrawLines(s_2Ddata.LineVertexArray, s_2Ddata.LineVertexCount);
 			s_2Ddata.Stats.DrawCalls++;
 		}
@@ -142,6 +142,7 @@ namespace origin
 				s_2Ddata.TextureSlots[i]->Bind(i);
 
 			s_2Ddata.QuadShader->Bind();
+				
 			RenderCommand::DrawIndexed(s_2Ddata.QuadVertexArray, s_2Ddata.QuadIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
 		}
@@ -152,6 +153,7 @@ namespace origin
 			s_2Ddata.CircleVertexBuffer->SetData(s_2Ddata.CircleVertexBufferBase, dataSize);
 
 			s_2Ddata.CircleShader->Bind();
+
 			RenderCommand::DrawIndexed(s_2Ddata.CircleVertexArray, s_2Ddata.CircleIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
 		}

@@ -7,13 +7,14 @@
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Component.h"
-
+#include "Origin\Utils\PlatformUtils.h"
 #include "Origin\Scripting\ScriptEngine.h"
+#include "Origin\Renderer\Renderer.h"
 
 #include <glm\gtc\type_ptr.hpp>
 
 namespace origin {
-
+	
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{
 		SetContext(context);
@@ -28,7 +29,7 @@ namespace origin {
 	{
 		// reset scene
 		if (reset)
-			m_SelectedEntity = Entity();
+			m_SelectedEntity = {};
 
 		// set new scene
 		m_Context = context;
@@ -448,18 +449,10 @@ namespace origin {
 
 			DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
 				{
-					if(!component.Model)
-						ImGui::Button("DROP MODEL", ImVec2(80.0f, 25.0f));
-					else
-					{
-						if (ImGui::Button("REMOVE", ImVec2(80.0f, 25.0f)))
-							component.Model.reset();
-
-						ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-
-						ImGui::Text("Model: %s", component.ModelPath.c_str());
-						ImGui::Text("Shader: %s", component.ShaderPath.c_str());
-					}
+					std::shared_ptr<Shader> modelShader;
+				
+					if (!component.Model)
+						ImGui::Button("DROP MODEL", ImVec2(85.0f, 25.0f));
 
 					if (ImGui::BeginDragDropTarget())
 					{
@@ -467,16 +460,45 @@ namespace origin {
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
 							std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
-							if (modelPath.extension() == ".gltf" || modelPath.extension() == ".fbx")
+							if (modelPath.extension() == ".gltf" || modelPath.extension() == ".fbx" ||
+								modelPath.extension() == ".obj")
 							{
-								std::shared_ptr<Shader> modelShader = Shader::Create("Resources/Shaders/Sandbox/model.glsl");
+								modelShader = Renderer::GetGShader("Mesh");
 
 								component.Model = Model::Create(modelPath.string(), modelShader);
 								component.ModelPath = modelPath.string();
-								component.ShaderPath = "Resources/Shaders/Sandbox/model.glsl";
+								component.ShaderPath = modelShader->GetFilepath();
 							}
 						}
 					}
+					if (component.Model)
+					{
+						if (ImGui::Button("REMOVE", ImVec2(85.0f, 25.0f)))
+							component.Model.reset();
+					}
+
+					ImGui::SameLine(0.0f, 1.0f);
+					// Open Mesh
+					if (ImGui::Button("OPEN", ImVec2(85.0f, 25.0f)))
+					{
+						std::filesystem::path modelPath = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
+
+						if (!modelPath.string().empty())
+						{
+							modelShader = Renderer::GetGShader("Mesh");
+
+							component.Model = Model::Create(modelPath.string(), modelShader);
+							component.ModelPath = modelPath.string();
+							component.ShaderPath = modelShader->GetFilepath();
+						}
+					}
+
+					if (component.Model)
+					{
+						ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+						ImGui::Text("Path: %s", component.ModelPath.c_str());
+					}
+					
 				});
 
 		DrawComponent<SpriteRendererComponent>("SPRITE RENDERER", entity, [](auto& component)

@@ -154,10 +154,7 @@ namespace origin {
 		const auto& tc = entity.GetComponent<TransformComponent>();
 		m_TargetPosition = tc.Translation;
 
-		m_Distance = glm::lerp(m_Distance, glm::length(m_FocalPoint - m_TargetPosition), m_DeltaTime * 8.0f);
-
-		m_Distance = std::min(m_Distance, 180.0f);
-		m_Distance = std::max(m_Distance, 0.0f);
+		m_Distance = glm::lerp(m_Distance, glm::length(m_FocalPoint - m_TargetPosition) / 2.0f, m_DeltaTime * 15.0f);
 	}
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)

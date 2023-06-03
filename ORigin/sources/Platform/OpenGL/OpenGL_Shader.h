@@ -22,20 +22,26 @@ namespace origin
   class OpenGLShader : public Shader
   {
   public:
-    OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv = false);
     OpenGLShader(const std::string& name, const std::string& filepath);
     OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+    OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv = false);
 
     ~OpenGLShader();
 
     void Bind() const override;
     void Unbind() const override;
 
-    const std::string& GetName() const override {  return m_Name; }
+    const std::string& GetName() const override { return m_Name; }
 
-    std::string GetFile() const override {  std::string source = (m_Filepath + "\n" +
-        "\nVertex\n" + m_ShaderSource.VertexSources +
-        "Fragment\n" + m_ShaderSource.FragmentSources); return source; }
+    std::string ReadFile() const override
+    {
+      std::string source = (m_Filepath + "\n" +
+      "\nVertex\n" + m_ShaderSource.VertexSources +
+      "Fragment\n" + m_ShaderSource.FragmentSources); 
+      return source; 
+    }
+
+    std::string GetFilepath() const override { return m_Filepath; }
 
   public:
 		// BOOLEAN UNIFORM

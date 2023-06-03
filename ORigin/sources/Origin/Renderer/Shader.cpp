@@ -5,8 +5,8 @@
 #include "Renderer.h"
 #include "Platform\OpenGL\OpenGL_Shader.h"
 
-namespace origin
-{
+namespace origin {
+
 	std::shared_ptr<Shader> Shader::Create(const std::string& filepath, bool enableSpirv, bool recompileSpirv)
 	{
 		switch (Renderer::GetAPI())
@@ -40,40 +40,79 @@ namespace origin
 		return nullptr;
 	}
 
+	// ///////////////
+	// Shader Library
+	// ///////////////
+
+	/*
+	* Add an existing shaders and providing 
+	* the shader name into the map
+	*/
 	void ShaderLibrary::Add(const std::string& name, const std::shared_ptr<Shader>& shader)
 	{
 		OGN_CORE_ASSERT(!Exist(name), "Shader already exists!");
-		m_Shaders[name] = shader;
+		m_ShaderMap[name] = shader;
 	}
 
+	/*
+	* Add an existing shaders and auto detect the shader name
+	*/
 	void ShaderLibrary::Add(const std::shared_ptr<Shader>& shader)
 	{
-		auto& name = shader->GetName();
+		std::string name = shader->GetName();
 		Add(name, shader);
 	}
 
 	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& filepath)
 	{
-		auto shader = Shader::Create(filepath);
+		std::shared_ptr<Shader> shader = Shader::Create(filepath);
+
 		Add(shader);
 		return shader;
 	}
+
+	/*
+	* Load shader with filepath and auto create it 
+	* and providing shader name into the map
+	*/
 	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 	{
-		auto shader = Shader::Create(name, filepath);
+		std::shared_ptr<Shader> shader = Shader::Create(name, filepath);
+
 		Add(shader);
-		shader->Bind();
 		return shader;
 	}
 
-	std::shared_ptr<Shader> ShaderLibrary::Get(const std::string& name)
+	/*
+	* Load shader with filepath and auto create it
+	* and providing shader name into the map
+	* 
+	* can using the SPIRV compiled/recompile
+	* 
+	* name, filepath, enable spirv, recompile
+	*/
+	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath, bool enableSpirv, bool recompileSpirv)
 	{
-		OGN_CORE_ASSERT(Exist(name), "Shader not found!");
-		return m_Shaders[name];
+		std::shared_ptr<Shader> shader = Shader::Create(filepath, enableSpirv, recompileSpirv);
+
+		Add(name, shader);
+		return shader;
 	}
 
+	/*
+	* Get all shaders from the map using string name 
+	*/
+	std::shared_ptr<Shader> ShaderLibrary::Get(const std::string& name)
+	{
+		OGN_CORE_ASSERT(Exist(name), "Shader not found at");
+		return m_ShaderMap[name];
+	}
+
+	/*
+	* Checking if the shader already in map
+	*/
 	bool ShaderLibrary::Exist(const std::string& name)
 	{
-		return m_Shaders.find(name) != m_Shaders.end();
+		return m_ShaderMap.find(name) != m_ShaderMap.end();
 	}
 }

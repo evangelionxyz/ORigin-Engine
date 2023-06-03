@@ -5,20 +5,31 @@
 #include "RenderCommand.h"
 #include "GraphicsContext.h"
 
-#include "Origin\Renderer\Renderer2D.h"
-#include "Origin\Renderer\Renderer3D.h"
+#include "Renderer2D.h"
+#include "Renderer3D.h"
 
 #include "Origin\Scene\Skybox.h"
-
 #include "Platform\OpenGL\OpenGL_Shader.h"
+
 #include <glm\gtc\matrix_transform.hpp>
 
-namespace origin
-{
+namespace origin {
+
+	static ShaderLibrary GShaderLibrary;
 
 	void Renderer::Init()
 	{
 		RenderCommand::Init();
+
+		// Load All Default shaders
+		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true);
+		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true);
+		GShaderLibrary.Load("Quad2D", "Resources/Shaders/Quad2D.glsl", true);
+
+		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true);
+		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
+		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
+
 		Renderer2D::Init();
 		Renderer3D::Init();
 
@@ -28,9 +39,10 @@ namespace origin
 
 	void Renderer::Shutdown()
 	{
-		OGN_CORE_WARN("Renderer Shutdown");
 		Renderer2D::Shutdown();
 		Renderer3D::Shutdown();
+
+		OGN_CORE_WARN("Renderer Shutdown");
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
@@ -71,6 +83,11 @@ namespace origin
 	{
 		RenderCommand::ClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 		RenderCommand::Clear();
+	}
+
+	std::shared_ptr<Shader> Renderer::GetGShader(const std::string& name)
+	{
+		return GShaderLibrary.Get(name);
 	}
 
 	void Renderer::DrawLineMode(bool enable)

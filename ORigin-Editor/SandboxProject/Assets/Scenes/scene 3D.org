@@ -1,5 +1,31 @@
 Scene: scene 3D.org
 Entities:
+  - Entity: 2915252405143351420
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [32.2105522, 2.87395978, -14.5905352]
+      Rotation: [-1.57075441, 0.20818989, 0.000516770117]
+      Scale: [68.0119934, 68.0122833, 68.0102844]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\candle.fbx
+      ShaderPath: Resources/Shaders/Sandbox/model.glsl
+      Color: [1, 1, 1, 1]
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []
+  - Entity: 12640448023286169070
+    TagComponent:
+      Tag: Point Light
+    TransformComponent:
+      Translation: [27.9538975, 12.6866922, -5.83221388]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [1, 0.607594907, 0]
+      Ambient: 0
+      Specular: 0.920000017
   - Entity: 9349641680741778292
     TagComponent:
       Tag: Spot Light
@@ -117,7 +143,7 @@ Entities:
     TagComponent:
       Tag: Point Light
     TransformComponent:
-      Translation: [5.98774147, 1.05305326, -5.24305725]
+      Translation: [5.46417189, 0.834839761, -5.0339241]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     PointLightComponent:
@@ -172,3 +198,18 @@ Entities:
         OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
+  - Entity: 6375069751085064346
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-1.17545962, 2.85649157, -2.05509543]
+      Rotation: [-1.57075596, 0.208190933, 0.000517032226]
+      Scale: [5.00830889, 5.00835943, 5.00825691]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\candle.fbx
+      ShaderPath: Resources/Shaders/Sandbox/model.glsl
+      Color: [1, 1, 1, 1]
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []

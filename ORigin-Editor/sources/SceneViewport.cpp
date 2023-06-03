@@ -324,29 +324,54 @@ namespace origin
 				{
 					ImGui::Text("Add"); ImGui::Separator();
 
-					if (ImGui::MenuItem("Empty")) m_SceneHierarchy.GetContext()->CreateEntity("Empty");
-					if (ImGui::MenuItem("Camera")) m_SceneHierarchy.GetContext()->CreateCamera("Camera");
+					if (ImGui::MenuItem("Empty"))
+					{
+						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Empty");
+						m_SceneHierarchy.SetSelectedEntity(entity);
+					}
+					if (ImGui::MenuItem("Camera"))
+					{
+						Entity entity = m_SceneHierarchy.GetContext()->CreateCamera("Camera");
+						m_SceneHierarchy.SetSelectedEntity(entity);
+					}
 					ImGui::Separator();
 
 					ImGui::Text("2D"); ImGui::Separator();
-					if (ImGui::MenuItem("Sprite")) m_SceneHierarchy.GetContext()->CreateSpriteEntity("Sprite");
-					if (ImGui::MenuItem("Circle")) m_SceneHierarchy.GetContext()->CreateCircle("Circle");
+					if (ImGui::MenuItem("Sprite"))
+					{
+						Entity entity = m_SceneHierarchy.GetContext()->CreateSpriteEntity("Sprite");
+						m_SceneHierarchy.SetSelectedEntity(entity);
+					}
+					if (ImGui::MenuItem("Circle"))
+					{
+						Entity entity = m_SceneHierarchy.GetContext()->CreateCircle("Circle");
+						m_SceneHierarchy.SetSelectedEntity(entity);
+					}
 					ImGui::Separator();
 
 					ImGui::Text("3D"); ImGui::Separator();
 					if (ImGui::BeginMenu("Light"))
 					{
 						if(ImGui::MenuItem("Point Light"))
-							m_SceneHierarchy.GetContext()->CreatePointlight("Point Light");
+						{
+							Entity entity = m_SceneHierarchy.GetContext()->CreatePointlight("Point Light");
+							m_SceneHierarchy.SetSelectedEntity(entity);
+						}
 						if (ImGui::MenuItem("Spot Light"))
-							m_SceneHierarchy.GetContext()->CreateSpotLight("Spot Light");
+						{
+							Entity entity = m_SceneHierarchy.GetContext()->CreateSpotLight("Spot Light");
+							m_SceneHierarchy.SetSelectedEntity(entity);
+						}
 
 						ImGui::EndMenu();
 					}
 					if (ImGui::BeginMenu("MESH"))
 					{
 						if(ImGui::MenuItem("Empty Mesh"))
-							m_SceneHierarchy.GetContext()->CreateMesh("Empty Mesh");
+						{
+							Entity entity = m_SceneHierarchy.GetContext()->CreateMesh("Empty Mesh");
+							m_SceneHierarchy.SetSelectedEntity(entity);
+						}
 
 						ImGui::EndMenu();
 					}

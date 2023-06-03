@@ -2,22 +2,16 @@
 
 #pragma once
 #include "RenderCommand.h"
-#include "Origin\Renderer\UniformBuffer.h"
+#include "UniformBuffer.h"
 
 #include "Origin\Scene\EditorCamera.h"
 #include "Origin\Scene\Camera.h"
 
+namespace origin {
 
-namespace origin
-{
 	struct CameraData
 	{
 		glm::mat4 ViewProjection;
-	};
-
-	struct LightingData
-	{
-
 	};
 
 	struct RendererData
@@ -43,6 +37,8 @@ namespace origin
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 		static void OnUpdate();
+
+		static std::shared_ptr<Shader> GetGShader(const std::string& name);
 
 		void DrawLineMode(bool enable);
 	};

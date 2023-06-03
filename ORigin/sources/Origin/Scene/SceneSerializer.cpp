@@ -471,6 +471,7 @@ namespace origin {
 
 			SerializeEntity(out, entity);
 		});
+
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 

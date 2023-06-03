@@ -7,9 +7,6 @@ namespace origin
 {
     void Editor::GameViewport()
     {
-        auto camera = m_SceneHierarchy.GetContext()->GetPrimaryCameraEntity();
-        auto& cc = camera.GetComponent<CameraComponent>();
-        
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar
@@ -25,14 +22,7 @@ namespace origin
         m_GameViewportBounds[1] = {viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y};
 
         const ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
-        if(cc.FixedAspectRatio)
-        {
-            m_GameViewportSize = {viewportPanelSize.x / 16.0f, viewportPanelSize.y / 9.0f};
-        }
-        else
-        {
-            m_GameViewportSize = {viewportPanelSize.x, viewportPanelSize.y};
-        }
+        m_GameViewportSize = {viewportPanelSize.x, viewportPanelSize.y};
 
         const auto viewportID = reinterpret_cast<ImTextureID>(m_GameFramebuffer->GetColorAttachmentRendererID(m_RenderTarget));
         ImGui::Image(viewportID, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));

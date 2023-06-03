@@ -44,6 +44,7 @@ namespace origin
 		uint32_t Width = 0, Height = 0;
 		FramebufferAttachmentSpecification Attachments;
 		uint32_t Samples = 1;
+		bool ReadBuffer = true;
 
 		bool SwapChainTarget = false;
 	};

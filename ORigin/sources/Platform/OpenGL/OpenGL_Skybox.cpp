@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "OpenGL_Skybox.h"
+#include "Origin\Renderer\Renderer.h"
 
 #include "stb_image.h"
 
@@ -68,7 +69,7 @@ namespace origin
 		delete[] indices;
 
 		LoadTexture(filepath);
-		m_Shader = Shader::Create("Resources/Shaders/Skybox.glsl");
+		m_Shader = Renderer::GetGShader("Skybox");
 		m_Shader->Bind();
 	}
 
@@ -81,6 +82,7 @@ namespace origin
 		m_Shader->SetMatrix("uViewProjection", viewProjection);
 		m_Shader->SetInt("uSkybox", m_TextureID);
 		m_Shader->SetFloat("blurFactor", m_BlurFactor);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 		RenderCommand::DrawIndexed(m_VertexArray, 36);
