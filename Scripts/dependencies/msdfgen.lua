@@ -48,6 +48,7 @@ project "freetype"
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/psnames/psnames.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/raster/raster.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/sdf/sdf.c",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/svg/svg.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/sfnt/sfnt.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/smooth/smooth.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/truetype/truetype.c",

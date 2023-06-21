@@ -22,6 +22,8 @@ scripts/__pycache__
 ORigin/vendor/projectFiles
 ORigin/vendor/VulkanSDK
 
-ORigin-Editor/assets/cache/
-ORigin-Editor/resources/scripts/
-ORigin-Editor/resources/intermediates/
+ORigin-Editor/Rssets/Cache/
+ORigin-Editor/Resources/ScriptCore/
+ORigin-Editor/Resources/intermediates/
+
+ORigin-Editor/SandboxProject/Intermediates/
