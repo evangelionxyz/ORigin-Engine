@@ -50,6 +50,7 @@ namespace origin
 
 		bool Looping = false;
 		bool Spatial = false;
+		bool PlayAtStart = false;
 
 		AudioComponent() = default;
 		AudioComponent(const AudioComponent&) = default;

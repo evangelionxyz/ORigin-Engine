@@ -35,7 +35,7 @@ namespace origin {
 		RenderCommand::Init();
 
 		// Load All Default shaders
-		bool recompileShader = true;
+		bool recompileShader = false;
 
 		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true, recompileShader);
 		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true, recompileShader);

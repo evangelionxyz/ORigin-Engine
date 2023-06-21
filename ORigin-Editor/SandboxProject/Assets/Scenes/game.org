@@ -16,7 +16,7 @@ Entities:
       Scale: [45.3731575, 38.5779419, 1]
     SpriteRenderer2DComponent:
       Color: [0.0254232977, 0.143459916, 0, 1]
-      TexturePath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets/Textures\checkerboard.png
+      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\checkerboard.png
       TillingFactor: 5.69999981
   - Entity: 10474093649358434274
     TagComponent:

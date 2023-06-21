@@ -204,6 +204,7 @@ namespace origin {
 			out << YAML::Key << "MaxDistance" << YAML::Value << ac.MaxDistance;
 			out << YAML::Key << "Looping" << YAML::Value << ac.Looping;
 			out << YAML::Key << "Spatial" << YAML::Value << ac.Spatial;
+			out << YAML::Key << "PlayAtStart" << YAML::Value << ac.PlayAtStart;
 
 			out << YAML::EndMap; // AudioComponent
 		}
@@ -560,6 +561,7 @@ namespace origin {
 					ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
 					ac.Looping = audioComponent["Looping"].as<bool>();
 					ac.Spatial = audioComponent["Spatial"].as<bool>();
+					ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
 
 					if (audioComponent["Filepath"])
 					{

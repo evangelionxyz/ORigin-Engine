@@ -15,7 +15,7 @@
 #include "Origin\Renderer\Renderer.h"
 
 #include <glm\gtc\type_ptr.hpp>
-#include <misc/cpp/imgui_stdlib.h>
+#include <misc\cpp\imgui_stdlib.h>
 
 namespace origin {
 	
@@ -289,7 +289,7 @@ namespace origin {
 						creationWindow = true;
 				}
 
-				if (creationWindow)
+				if(creationWindow)
 				{
 					ImGuiWindowFlags winFlags = 
 						ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDocking;
@@ -375,9 +375,8 @@ namespace origin {
 							OGN_CORE_WARN("Audio Component: Creating Audio...");
 						}
 						else
-							OGN_CORE_WARN("Audio Creation: Invalid Audio Creation. Check the name or filepath");
+							OGN_CORE_ERROR("Audio Creation: Invalid Audio Creation. Check the Name or Filepath");
 					}
-
 					ImGui::End();
 				}
 
@@ -397,12 +396,13 @@ namespace origin {
 					if (ImGui::Button("Open Audio Library"))
 						guiAudioLibrary = true;
 
-					if (ImGui::Button("Preview")) component.Audio->Play();
+					if (ImGui::Button("Play")) component.Audio->Play();
 					ImGui::SameLine();
 					if (ImGui::Button("Stop")) component.Audio->Stop();
 					ImGui::SameLine();
 					component.Looping = component.Audio->IsLooping();
 					ImGui::Checkbox("Looping", &component.Looping);
+					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
 
 					component.Volume = component.Audio->GetGain();
 					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f);
@@ -612,6 +612,7 @@ namespace origin {
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
 							std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
+
 							if (modelPath.extension() == ".gltf" || modelPath.extension() == ".fbx" ||
 								modelPath.extension() == ".obj")
 							{
@@ -675,7 +676,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path).generic_string();
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
@@ -783,8 +784,8 @@ namespace origin {
 
 		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto& component)
 			{
-				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
-				DrawVec2Control("Size", component.Size, 0.01f, 0.0f);
+				DrawVec2Control("Offset", component.Offset, 0.01f, 0.5f);
+				DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
 				float width = 118.0f;
 				DrawVecControl("Density", &component.Density, 0.01f, 1.0f, width);

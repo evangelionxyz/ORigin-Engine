@@ -263,172 +263,268 @@ namespace origin
 
     void Scene::OnUpdateRuntime(Timestep time)
     {
-        
-      AudioEngine::SystemUpdate();
-
       if (!m_Paused || m_StepFrames-- > 0)
       {
-          // Update Scripts
+        // Update Scripts
+        {
+          auto& view = m_Registry.view<ScriptComponent>();
+          for (auto& e : view)
           {
-              auto& view = m_Registry.view<ScriptComponent>();
-              for (auto e : view)
-              {
-                  Entity entity = {e, this};
-                  ScriptEngine::OnUpdateEntity(entity, time);
-              }
-
-              m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-              {
-                  if (!nsc.Instance)
-                  {
-                      nsc.Instance = nsc.InstantiateScript();
-                      nsc.Instance->m_Entity = Entity{entity, this};
-                      nsc.Instance->OnCreate();
-                  }
-                  nsc.Instance->OnUpdate(time);
-              });
+            Entity entity = { e, this };
+            ScriptEngine::OnUpdateEntity(entity, time);
           }
 
-          // Physics
+          m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
           {
-              const int32_t velocityIterations = 6;
-              const int32_t positionIterations = 2;
-              m_Box2DWorld->Step(time, velocityIterations, positionIterations);
-
-              // Retrieve transform from Box2D
-              auto view = m_Registry.view<Rigidbody2DComponent>();
-              for (auto e : view)
-              {
-                  Entity entity = {e, this};
-                  auto& transform = entity.GetComponent<TransformComponent>();
-                  auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-                  auto body = (b2Body*)rb2d.RuntimeBody;
-
-                  const auto& position = body->GetPosition();
-
-                  transform.Translation.x = position.x;
-                  transform.Translation.y = position.y;
-                  transform.Rotation.z = body->GetAngle();
-              }
-          }
+            if (!nsc.Instance)
+            {
+              nsc.Instance = nsc.InstantiateScript();
+              nsc.Instance->m_Entity = Entity{ entity, this };
+              nsc.Instance->OnCreate();
+            }
+            nsc.Instance->OnUpdate(time);
+          });
         }
 
-        // Rendering
-        Camera* mainCamera = nullptr;
-        TransformComponent cameraTransform;
-        auto& view = m_Registry.view<CameraComponent, TransformComponent>();
+        // Physics
+        {
+          const int32_t velocityIterations = 6;
+          const int32_t positionIterations = 2;
+          m_Box2DWorld->Step(time, velocityIterations, positionIterations);
+
+          // Retrieve transform from Box2D
+          auto& view = m_Registry.view<Rigidbody2DComponent>();
+          for (auto& e : view)
+          {
+            Entity entity = { e, this };
+            auto& transform = entity.GetComponent<TransformComponent>();
+            auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+
+            auto body = (b2Body*)rb2d.RuntimeBody;
+
+            const auto& position = body->GetPosition();
+
+            transform.Translation.x = position.x;
+            transform.Translation.y = position.y;
+            transform.Rotation.z = body->GetAngle();
+          }
+        }
+      }
+
+      // Rendering
+      Camera* mainCamera = nullptr;
+      TransformComponent cameraTransform;
+      auto& view = m_Registry.view<CameraComponent, TransformComponent>();
+      for (auto entity : view)
+      {
+          auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+
+          if (camera.Primary)
+          {
+              mainCamera = &camera.Camera;
+              cameraTransform = transform;
+              break;
+          }
+      }
+
+      if (mainCamera)
+          RenderScene(mainCamera, cameraTransform);
+
+      // Audio Update
+      {
+        auto view = m_Registry.view<TransformComponent, AudioComponent>();
         for (auto entity : view)
         {
-            auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
+          if (ac.Audio)
+          {
+            ac.Audio->SetMaxDistance(ac.MaxDistance);
+            ac.Audio->SetMinDistance(ac.MinDistance);
+            ac.Audio->SetLoop(ac.Looping);
+            ac.Audio->SetGain(ac.Volume);
 
-            if (camera.Primary)
+            if (ac.Spatial)
             {
-                mainCamera = &camera.Camera;
-                cameraTransform = transform;
-                break;
+              ac.Audio->SetPosition(tc.Translation);
             }
+          }
         }
 
-        if (mainCamera)
-            RenderScene(mainCamera, cameraTransform);
+        AudioEngine::SetListener(cameraTransform.Translation, cameraTransform.GetForward(), cameraTransform.GetUp());
+        AudioEngine::SystemUpdate();
+      }
     }
 
     void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
     {
-        AudioEngine::SystemUpdate();
-        m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-        {
-            if (!nsc.Instance)
-            {
-                nsc.Instance = nsc.InstantiateScript();
-                nsc.Instance->m_Entity = Entity{entity, this};
-                nsc.Instance->OnCreate();
-            }
-            nsc.Instance->OnUpdate(time);
-        });
+      m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+      {
+          if (!nsc.Instance)
+          {
+              nsc.Instance = nsc.InstantiateScript();
+              nsc.Instance->m_Entity = Entity{entity, this};
+              nsc.Instance->OnCreate();
+          }
+          nsc.Instance->OnUpdate(time);
+      });
 
-        //Render
-        RenderScene(camera);
+      //Render
+      RenderScene(camera);
+
+      // Audio Update
+      {
+        Renderer2D::BeginScene();
+        auto view = m_Registry.view<TransformComponent, AudioComponent>();
+        for (auto entity : view)
+        {
+          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
+          if (ac.Audio)
+          {
+            ac.Audio->SetMaxDistance(ac.MaxDistance);
+            ac.Audio->SetMinDistance(ac.MinDistance);
+            ac.Audio->SetLoop(ac.Looping);
+            ac.Audio->SetGain(ac.Volume);
+
+            if (ac.Spatial)
+            {
+              ac.Audio->SetPosition(tc.Translation);
+            }
+          }
+          DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
+        }
+        Renderer2D::EndScene();
+
+        AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
+        AudioEngine::SystemUpdate();
+      }
     }
 
     void Scene::OnUpdateSimulation(Timestep time, EditorCamera& camera)
     {
-        if (!m_Paused || m_StepFrames-- > 0)
+      if (!m_Paused || m_StepFrames-- > 0)
+      {
+        // Update Scripts
         {
-            AudioEngine::SystemUpdate();
+          auto& view = m_Registry.view<ScriptComponent>();
+          for (auto e : view)
+          {
+              Entity entity = {e, this};
+              ScriptEngine::OnUpdateEntity(entity, time);
+          }
 
-            // Update Scripts
-            {
-                auto& view = m_Registry.view<ScriptComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    ScriptEngine::OnUpdateEntity(entity, time);
-                }
-
-                m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-                {
-                    if (!nsc.Instance)
-                    {
-                        nsc.Instance = nsc.InstantiateScript();
-                        nsc.Instance->m_Entity = Entity{entity, this};
-                        nsc.Instance->OnCreate();
-                    }
-                    nsc.Instance->OnUpdate(time);
-                });
-            }
-
-            // Physics
-            {
-                const int32_t velocityIterations = 6;
-                const int32_t positionIterations = 2;
-                m_Box2DWorld->Step(time, velocityIterations, positionIterations);
-
-                // Retrieve transform from Box2D
-                auto view = m_Registry.view<Rigidbody2DComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    auto& transform = entity.GetComponent<TransformComponent>();
-                    auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-                    auto body = (b2Body*)rb2d.RuntimeBody;
-
-                    const auto& position = body->GetPosition();
-
-                    transform.Translation.x = position.x;
-                    transform.Translation.y = position.y;
-                    transform.Rotation.z = body->GetAngle();
-                }
-            }
+          m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+          {
+              if (!nsc.Instance)
+              {
+                  nsc.Instance = nsc.InstantiateScript();
+                  nsc.Instance->m_Entity = Entity{entity, this};
+                  nsc.Instance->OnCreate();
+              }
+              nsc.Instance->OnUpdate(time);
+          });
         }
 
-        // Render
-        RenderScene(camera);
+        // Physics
+        {
+          const int32_t velocityIterations = 6;
+          const int32_t positionIterations = 2;
+          m_Box2DWorld->Step(time, velocityIterations, positionIterations);
+
+          // Retrieve transform from Box2D
+          auto view = m_Registry.view<Rigidbody2DComponent>();
+          for (auto e : view)
+          {
+              Entity entity = {e, this};
+              auto& transform = entity.GetComponent<TransformComponent>();
+              auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+
+              auto body = (b2Body*)rb2d.RuntimeBody;
+
+              const auto& position = body->GetPosition();
+
+              transform.Translation.x = position.x;
+              transform.Translation.y = position.y;
+              transform.Rotation.z = body->GetAngle();
+          }
+        }
+      }
+
+      // Render
+      RenderScene(camera);
+
+      // Audio Update
+      {
+        Renderer2D::BeginScene();
+        auto view = m_Registry.view<TransformComponent, AudioComponent>();
+        for (auto entity : view)
+        {
+          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
+          if (ac.Audio)
+          {
+            ac.Audio->SetMaxDistance(ac.MaxDistance);
+            ac.Audio->SetMinDistance(ac.MinDistance);
+            ac.Audio->SetLoop(ac.Looping);
+            ac.Audio->SetGain(ac.Volume);
+
+            if (ac.Spatial)
+            {
+              ac.Audio->SetPosition(tc.Translation);
+            }
+          }
+          DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
+        }
+        Renderer2D::EndScene();
+      }
+
+      AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
+      AudioEngine::SystemUpdate();
     }
 
     void Scene::OnSimulationStart()
     {
-       
+      {
         OnPhysics2DStart();
 
         // Scripting
+        ScriptEngine::OnRuntimeStart(this);
+        auto view = m_Registry.view<ScriptComponent>();
+        for (auto e : view)
         {
-            ScriptEngine::OnRuntimeStart(this);
-            auto view = m_Registry.view<ScriptComponent>();
-            for (auto e : view)
-            {
-                Entity entity = {e, this};
-                ScriptEngine::OnCreateEntity(entity);
-            }
+          Entity entity = { e, this };
+          ScriptEngine::OnCreateEntity(entity);
         }
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for (auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio && ac.PlayAtStart)
+            {
+              ac.Audio->SetGain(ac.Volume);
+              ac.Audio->Play();
+            }
+          }
+        }
+      }
     }
 
     void Scene::OnSimulationStop()
     {
         OnPhysics2DStop();
         ScriptEngine::OnRuntimeStop();
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for (auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio)
+              ac.Audio->Stop();
+          }
+        }
     }
 
     void Scene::RenderScene(Camera* camera, const TransformComponent& cameraTransform)
@@ -545,8 +641,7 @@ namespace origin
                 auto& directionalLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
                 for (auto entity : directionalLightView)
                 {
-                    auto& [transform, light] = directionalLightView.get<TransformComponent, DirectionalLightComponent>(
-                        entity);
+                    auto& [transform, light] = directionalLightView.get<TransformComponent, DirectionalLightComponent>(entity);
                     if (sMesh.Model)
                     {
                         std::string uniformName = "directionalLight.";
@@ -732,31 +827,6 @@ namespace origin
             }
         }
 
-        // AudioComponent
-        {
-            auto view = m_Registry.view<TransformComponent, AudioComponent>();
-            for (auto entity : view)
-            {
-                auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
-                if (ac.Audio)
-                {
-                  ac.Audio->SetMaxDistance(ac.MaxDistance);
-                  ac.Audio->SetMinDistance(ac.MinDistance);
-                  ac.Audio->SetLoop(ac.Looping);
-                  ac.Audio->SetGain(ac.Volume);
-
-                  if (ac.Spatial)
-                  {
-                    ac.Audio->SetPosition(tc.Translation);
-                  }
-                }
-                DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
-            }
-        }
-
-        AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
-        //AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), camera.GetUpDirection());
-
         //DrawGrid(m_GridSize, m_GridColor);
         Renderer::EndScene();
     }
@@ -775,12 +845,34 @@ namespace origin
                 ScriptEngine::OnCreateEntity(entity);
             }
         }
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for(auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio && ac.PlayAtStart)
+              ac.Audio->Play();
+          }
+        }
     }
 
     void Scene::OnRuntimeStop()
     {
         OnPhysics2DStop();
         ScriptEngine::OnRuntimeStop();
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for (auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio)
+              ac.Audio->Stop();
+          }
+        }
     }
 
     void Scene::OnViewportResize(const uint32_t width, const uint32_t height)

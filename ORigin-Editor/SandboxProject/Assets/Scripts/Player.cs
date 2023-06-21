@@ -10,27 +10,18 @@ namespace Game
         public Entity entity;
         public Entity textEntity;
 
-        private TransformComponent transformC;
         private Rigidbody2DComponent rigidBody2DC;
         private SpriteRenderer2DComponent spriteRenderer2DC;
-        private BoxCollider2DComponent boxCollider2DC;
+        private TransformComponent transformC;
 
+        private float time;
         public float Speed = 5.0f;
-        private float time = 0.0f;
-
-        public float tilingfactor = 1.0f;
-        public Vector3 scale = new Vector3(1.0f);
-
-        public float Bc2Ddensity;
+        public float yAxis = 0.0f;
 
         void OnCreate()
         {
             transformC = GetComponent<TransformComponent>();
             rigidBody2DC = GetComponent<Rigidbody2DComponent>();
-            spriteRenderer2DC = GetComponent<SpriteRenderer2DComponent>();
-            boxCollider2DC = GetComponent<BoxCollider2DComponent>();
-
-            Bc2Ddensity = boxCollider2DC.Density;
 
             textEntity = FindEntityByName("TimeStep");
         }
@@ -49,9 +40,9 @@ namespace Game
 
             Vector3 velocity = Vector3.Zero;
 
-            if (Translation.Y < 3.0f)
+            if (Translation.Y < 6.0f)
                 if (Input.IsKeyPressed(KeyCode.Space))
-                    velocity.Y = 3.0f;
+                    velocity.Y = 4.0f;
 
             if (Input.IsKeyPressed(KeyCode.A))
                 velocity.X = -1.0f;
@@ -61,9 +52,7 @@ namespace Game
             velocity *= speed * deltaTime;
             rigidBody2DC.ApplyLinearImpulse(velocity.XY, true);
 
-            transformC.Scale = scale;
-            spriteRenderer2DC.TilingFactor = tilingfactor;
-            boxCollider2DC.Density = Bc2Ddensity;
+            yAxis = velocity.Y;
         }
     }
 }

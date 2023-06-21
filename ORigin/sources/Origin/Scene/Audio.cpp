@@ -85,8 +85,13 @@ namespace origin {
 		if (m_Channel)
 			s_Data.Result = m_Channel->stop();
 
-		s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &m_Channel);
-		FMOD_CHECK(s_Data.Result);
+		bool playing;
+		m_Channel->isPlaying(&playing);
+		if (!playing)
+		{
+			s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &m_Channel);
+			FMOD_CHECK(s_Data.Result);
+		}
 	}
 
 	void Audio::Pause(bool paused)
