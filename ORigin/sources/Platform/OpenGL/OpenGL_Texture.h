@@ -16,12 +16,16 @@ namespace origin {
 
     GLenum m_InternalFormat, m_DataFormat;
 
+		TextureSpecification m_Config;
+
 		bool m_IsLoaded = false;
 
   public:
-    OpenGLTexture2D(uint32_t width, uint32_t height);
+    OpenGLTexture2D(const TextureSpecification& specification);
     OpenGLTexture2D(const std::string& path);
     ~OpenGLTexture2D();
+
+		const TextureSpecification& GetSpecification() const override { return m_Config; }
 
 		void SetData(void* data, uint32_t size) override;
 		std::string GetFilepath() override { return m_FilePath; }
@@ -48,6 +52,8 @@ namespace origin {
 		uint32_t m_LoadCount = 0;
 		GLenum m_InternalFormat, m_DataFormat;
 
+		TextureSpecification m_Config;
+
 	public:
 		OpenGLTextureCube(uint32_t width, uint32_t height);
 		OpenGLTextureCube(const std::string& path);
@@ -60,6 +66,8 @@ namespace origin {
 
 		void Bind(uint32_t slot = 0) override;
 		void Delete() override;
+
+		const TextureSpecification& GetSpecification() const override { return m_Config; }
 
 		uint32_t GetRendererID() const override { return m_RendererID; }
 		uint32_t GetIndex() const override { return m_Index; }

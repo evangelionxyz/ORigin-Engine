@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include <Origin.h>
-#include "..\Editor.h"
+#include "Editor.h"
 
 namespace origin
 {
@@ -14,7 +14,10 @@ namespace origin
       Application::Get().GetWindow().SetIcon("Resources/UITextures/icon_origin.png");
 	    PushLayer(new Editor());
     }
-    ~EditorBuild() { }
+
+    ~EditorBuild()
+    {
+    }
   };
 
   Application* CreateApplication(ApplicationCommandLineArgs args)

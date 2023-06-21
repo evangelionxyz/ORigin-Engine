@@ -15,6 +15,19 @@
 
 namespace origin {
 
+	struct CameraData
+	{
+		glm::mat4 ViewProjection;
+	};
+
+	struct RendererData
+	{
+		CameraData CameraBuffer;
+		std::shared_ptr<UniformBuffer> CamUBO;
+	};
+
+	static RendererData s_Data;
+
 	static ShaderLibrary GShaderLibrary;
 
 	void Renderer::Init()
@@ -22,11 +35,14 @@ namespace origin {
 		RenderCommand::Init();
 
 		// Load All Default shaders
-		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true);
-		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true);
-		GShaderLibrary.Load("Quad2D", "Resources/Shaders/Quad2D.glsl", true);
+		bool recompileShader = true;
 
-		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true);
+		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true, recompileShader);
+		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true, recompileShader);
+		GShaderLibrary.Load("Quad2D", "Resources/Shaders/Quad2D.glsl", true, recompileShader);
+		GShaderLibrary.Load("Text", "Resources/Shaders/TextRenderer.glsl", true, recompileShader);
+
+		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true, recompileShader);
 		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
 		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 
@@ -34,7 +50,7 @@ namespace origin {
 		Renderer3D::Init();
 
 		uint32_t cameraBinding = 0;
-		s_RendererData.CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), cameraBinding);
+		s_Data.CamUBO = UniformBuffer::Create(sizeof(CameraData), cameraBinding);
 	}
 
 	void Renderer::Shutdown()
@@ -47,11 +63,12 @@ namespace origin {
 
 	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
-		// Camera
-		s_RendererData.CameraUniformBuffer->Bind();
-		s_RendererData.CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(CameraData));
-		s_RendererData.CameraUniformBuffer->Unbind();
+		s_Data.CamUBO->Bind();
+
+		s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+		s_Data.CamUBO->SetData(glm::value_ptr(s_Data.CameraBuffer.ViewProjection), sizeof(glm::mat4));
+
+		s_Data.CamUBO->Unbind();
 
 		Renderer2D::BeginScene();
 		Renderer3D::BeginScene();
@@ -59,10 +76,12 @@ namespace origin {
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
-		s_RendererData.CameraUniformBuffer->Bind();
-		s_RendererData.CameraBufferData.ViewProjection = camera.GetViewProjection();
-		s_RendererData.CameraUniformBuffer->SetData(&s_RendererData.CameraBufferData, sizeof(CameraData), 0);
-		s_RendererData.CameraUniformBuffer->Unbind();
+		s_Data.CamUBO->Bind();
+
+		s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
+		s_Data.CamUBO->SetData(glm::value_ptr(s_Data.CameraBuffer.ViewProjection), sizeof(glm::mat4));
+
+		s_Data.CamUBO->Unbind();
 
 		Renderer2D::BeginScene();
 		Renderer3D::BeginScene();

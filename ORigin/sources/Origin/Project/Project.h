@@ -3,6 +3,10 @@
 
 #include "Origin\Core\Assert.h"
 
+#include "Origin\Asset\Asset.h"
+#include "Origin\Asset\EditorAssetManager.h"
+#include "Origin\Asset\RuntimeAssetManager.h"
+
 #include <string>
 #include <filesystem>
 
@@ -22,7 +26,7 @@ namespace origin
 	private:
 		ProjectConfig m_Config;
 		std::filesystem::path m_ProjectDirectory;
-
+		std::shared_ptr<AssetManagerBase> m_AssetManager;
 		inline static std::shared_ptr<Project> s_ActiveProject;
 
 	public:
@@ -45,7 +49,11 @@ namespace origin
 		}
 		
 		static std::shared_ptr<Project> GetActive() { return s_ActiveProject; }
+
 		ProjectConfig& GetConfig() { return m_Config; }
+		std::shared_ptr<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
+		std::shared_ptr<EditorAssetManager> GetEditorAssetManager() { return std::static_pointer_cast<EditorAssetManager>(m_AssetManager); }
+		std::shared_ptr<RuntimeAssetManager> GetRuntimeAssetManager() { return std::static_pointer_cast<RuntimeAssetManager>(m_AssetManager); }
 
 		static std::shared_ptr<Project> New();
 		static std::shared_ptr<Project> Open();

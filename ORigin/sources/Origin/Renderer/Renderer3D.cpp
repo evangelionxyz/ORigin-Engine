@@ -79,7 +79,7 @@ namespace origin {
 		delete[] CubeIndices;
 
 		// Data Settings
-		s_3Ddata.WhiteTexture = Texture2D::Create(1, 1);
+		s_3Ddata.WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
 		s_3Ddata.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 

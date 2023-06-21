@@ -330,6 +330,11 @@ namespace origin
 		instance->InvokeOnUpdate(time);
 	}
 
+	MonoString* ScriptEngine::CreateString(const char* string)
+	{
+		return mono_string_new(s_Data->AppDomain, string);
+	}
+
 	std::shared_ptr<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
 	{
 		if (s_Data->EntityClasses.find(name) == s_Data->EntityClasses.end())

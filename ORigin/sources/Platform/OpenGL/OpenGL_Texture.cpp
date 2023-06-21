@@ -4,19 +4,50 @@
 #include "stb_image.h"
 #include "OpenGL_Texture.h"
 
-namespace origin
-{
+namespace origin {
 
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
-    : m_Width(width), m_Height(height)
+	namespace Utils {
+		
+		static GLenum ORiginImageFormatToGLDataFormat(ImageFormat format)
+		{
+			switch (format)
+			{
+				case ImageFormat::RGB8: return GL_RGB;
+				case ImageFormat::RGBA8: return GL_RGBA;
+			}
+
+			OGN_CORE_ASSERT(false);
+			return 0;
+		}
+
+		static GLenum ORiginImageFormatToGLInternalFormat(ImageFormat format)
+		{
+			switch (format)
+			{
+			case ImageFormat::RGB8: return GL_RGB8;
+			case ImageFormat::RGBA8: return GL_RGBA8;
+			}
+
+			OGN_CORE_ASSERT(false);
+			return 0;
+		}
+	}
+
+	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& specification)
+    : m_Config(specification), m_Width(specification.Width), m_Height(specification.Height)
 	{
-		m_InternalFormat = GL_RGBA8;
-		m_DataFormat = GL_RGBA;
+		OGN_CORE_ASSERT(m_Config.Width == m_Width);
+		OGN_CORE_ASSERT(m_Config.Height == m_Height);
+
+		m_DataFormat = Utils::ORiginImageFormatToGLDataFormat(m_Config.Format);
+		m_InternalFormat = Utils::ORiginImageFormatToGLInternalFormat(m_Config.Format);
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+
 		glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -24,7 +55,7 @@ namespace origin
 	}
 
   OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-    : m_RendererID(0), m_FilePath(path), m_Index(0)
+    : m_FilePath(path)
   {
 		OGN_CORE_WARN("TEXTURE: Trying to load {}", path);
 
@@ -60,6 +91,8 @@ namespace origin
 		m_InternalFormat = internalFormat;
 		m_DataFormat = dataFormat;
 
+		OGN_CORE_ASSERT(internalFormat & dataFormat, "Format not supported!");
+
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
@@ -81,6 +114,7 @@ namespace origin
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
+		// Verify the actual BPP
     uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
     OGN_CORE_ASSERT(size == m_Width * m_Height * bpp, "data must be entire texture!");
     glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);

@@ -2,16 +2,20 @@
 
 #include "SceneHierarchyPanel.h"
 
+#include "..\GUIData.h"
+
 #include "Origin\Project\Project.h"
 #include "Origin\IO\Input.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Component.h"
+#include "Origin\Scene\Audio.h"
 #include "Origin\Utils\PlatformUtils.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
 
 #include <glm\gtc\type_ptr.hpp>
+#include <misc/cpp/imgui_stdlib.h>
 
 namespace origin {
 	
@@ -186,14 +190,15 @@ namespace origin {
 		{
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
+			DisplayAddComponentEntry<AudioComponent>("AUDIO");
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPIRTE RENDERER");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
+			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
 			DisplayAddComponentEntry<PointLightComponent>("POINT LIGHT");
 			DisplayAddComponentEntry<SpotLightComponent>("SPOT LIGHT");
 			DisplayAddComponentEntry<DirectionalLightComponent>("DIRECTIONAL LIGHT");
 			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
-			//DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRLCE COLLIDER 2D");
@@ -215,11 +220,11 @@ namespace origin {
 		});
 
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
-			{
-				auto& camera = component.Camera;
-		const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-		const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
-		ImGui::Checkbox("Primary", &component.Primary);
+		{
+			auto& camera = component.Camera;
+			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
+			const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
+			ImGui::Checkbox("Primary", &component.Primary);
 
 		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
 		{
@@ -274,6 +279,154 @@ namespace origin {
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
+		DrawComponent<AudioComponent>("AUDIO", entity, [entity, scene = m_Context](auto& component)
+			{
+				static bool creationWindow = false;
+
+				if (!component.Audio)
+				{
+					if (ImGui::Button("Create Audio"))
+						creationWindow = true;
+				}
+
+				if (creationWindow)
+				{
+					ImGuiWindowFlags winFlags = 
+						ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDocking;
+
+					ImGui::Begin("Audio Creation", &creationWindow, winFlags);
+					ImGui::Button("Drop Audio");
+					
+					static std::string filepath;
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path audioPath = Project::GetAssetFileSystemPath(path);
+							if (audioPath.extension() == ".wav" || 
+								audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
+							{
+								filepath = audioPath.string();
+								OGN_CORE_WARN("Audio Component: Drop Audio From {}", filepath);
+							}
+
+							else if (audioPath.extension() == ".oxau")
+							{
+
+							}
+						}
+					}
+					ImGui::SameLine();
+					ImGui::Text("Path: %s", filepath.c_str());
+
+					std::string& name = component.Name;
+					ImGui::Text("Name: "); ImGui::SameLine();
+					char buffer[256];
+					strcpy_s(buffer, sizeof(buffer), name.c_str());
+					if (ImGui::InputText("##audioName", buffer, sizeof(buffer)))
+					{
+						name = std::string(buffer);
+						component.Name = name;
+					}
+					static bool spatial = false;
+					static bool looping = false;
+					static float minDistance = 2.0f;
+					static float maxDistance = 100.0f;
+					ImGui::Text("Spatial");
+					ImGui::SameLine();
+					ImGui::Checkbox("##Spatial", &spatial);
+					ImGui::Text("Looping");
+					ImGui::SameLine();
+					ImGui::Checkbox("##Looping", &looping);
+
+					ImGui::Text("Min Distance");
+					ImGui::SameLine();
+					ImGui::DragFloat("##MinDistance", &minDistance, 0.1f, 0.0f, 10000.0f);
+					ImGui::Text("Max Distance");
+					ImGui::SameLine();
+					ImGui::DragFloat("##MaxDistance", &maxDistance, 0.1f, 0.0f, 10000.0f);
+					
+					static bool valid = false;
+					if (ImGui::Button("Create"))
+					{
+						AudioConfig config;
+
+						config.Name = component.Name;
+						config.Spatial = spatial;
+						config.Filepath = filepath;
+						config.MinDistance = minDistance;
+						config.MaxDistance = maxDistance;
+						config.Looping = looping;
+
+						component.Spatial = spatial;
+						component.Looping = looping;
+
+						valid = (!name.empty() && !filepath.empty());
+						if (valid)
+						{
+							if (component.Audio)
+							{
+								component.Audio->Stop();
+								component.Audio.reset();
+							}
+
+							component.Audio = Audio::Create(config);
+							OGN_CORE_WARN("Audio Component: Creating Audio...");
+						}
+						else
+							OGN_CORE_WARN("Audio Creation: Invalid Audio Creation. Check the name or filepath");
+					}
+
+					ImGui::End();
+				}
+
+				if (component.Audio)
+				{
+					ImGui::Text("%s | Spatialization: %s", component.Name.c_str(), component.Spatial ? "On" : "Off");
+					ImGui::Separator();
+
+					component.Spatial = component.Audio->IsSpatial();
+
+					if (ImGui::Button("Insert To Library"))
+						AudioEngine::AudioStorageInsert(component.Audio);
+					ImGui::SameLine();
+					if (ImGui::Button("Delete From Library"))
+						AudioEngine::AudioStorageDelete(component.Audio);
+					ImGui::SameLine();
+					if (ImGui::Button("Open Audio Library"))
+						guiAudioLibrary = true;
+
+					if (ImGui::Button("Preview")) component.Audio->Play();
+					ImGui::SameLine();
+					if (ImGui::Button("Stop")) component.Audio->Stop();
+					ImGui::SameLine();
+					component.Looping = component.Audio->IsLooping();
+					ImGui::Checkbox("Looping", &component.Looping);
+
+					component.Volume = component.Audio->GetGain();
+					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f);
+
+					component.MinDistance = component.Audio->GetMinDistance();
+					DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+
+					component.MaxDistance = component.Audio->GetMaxDistance();
+					DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+
+					if (ImGui::Button("Delete"))
+					{
+						component.Audio->Stop();
+						component.Audio.reset();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Re-Create"))
+					{
+						component.Audio->Stop();
+						creationWindow = true;
+					}
+				}
+			});
+
 		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
@@ -300,7 +453,6 @@ namespace origin {
 					}
 					ImGui::EndCombo();
 				}
-
 
 				if (ImGui::Button("Detach"))
 				{
@@ -471,6 +623,7 @@ namespace origin {
 							}
 						}
 					}
+
 					if (component.Model)
 					{
 						if (ImGui::Button("REMOVE", ImVec2(85.0f, 25.0f)))
@@ -499,6 +652,14 @@ namespace origin {
 						ImGui::Text("Path: %s", component.ModelPath.c_str());
 					}
 					
+				});
+
+			DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
+				{
+					ImGui::InputTextMultiline("Text String", &component.TextString);
+					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
+					ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
 				});
 
 		DrawComponent<SpriteRendererComponent>("SPRITE RENDERER", entity, [](auto& component)

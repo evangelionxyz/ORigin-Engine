@@ -14,6 +14,7 @@ extern "C" {
 	typedef struct _MonoAssembly MonoAssembly;
 	typedef struct _MonoImage MonoImage;
 	typedef struct _MonoClassField MonoClassField;
+	typedef struct _MonoString MonoString;
 }
 
 namespace origin {
@@ -154,6 +155,8 @@ namespace origin {
 
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, float time);
+
+		static MonoString* CreateString(const char* string);
 
 		static std::shared_ptr<ScriptClass> GetEntityClass(const std::string& name);
 		static std::unordered_map<std::string, std::shared_ptr<ScriptClass>> GetEntityClasses();

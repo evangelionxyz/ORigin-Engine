@@ -47,7 +47,7 @@ namespace ORiginEngine
                 InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
             }
         }
-        
+
     }
 
     public class Rigidbody2DComponent : Component
@@ -60,6 +60,40 @@ namespace ORiginEngine
         public void ApplyLinearImpulse(Vector2 impulse, bool wake)
         {
             InternalCalls.Rigidbody2DComponent_ApplyLinearImpulseToCenter(Entity.ID, ref impulse, wake);
+        }
+    }
+
+    public class TextComponent : Component
+    {
+        public string Text
+        {
+            get => InternalCalls.TextComponent_GetText(Entity.ID);
+            set => InternalCalls.TextComponent_SetText(Entity.ID, value);
+        }
+
+        public Vector4 Color
+        {
+            get
+            {
+                InternalCalls.TextComponent_GetColor(Entity.ID, out Vector4 color);
+                return color;
+            }
+            set
+            {
+                InternalCalls.TextComponent_SetColor(Entity.ID, ref value);
+            }
+        }
+
+        public float Kerning
+        {
+            get => InternalCalls.TextComponent_GetKerning(Entity.ID);
+            set => InternalCalls.TextComponent_SetKerning(Entity.ID, value);
+        }
+
+        public float LineSpacing
+        {
+            get => InternalCalls.TextComponent_GetLineSpacing(Entity.ID);
+            set => InternalCalls.TextComponent_SetLineSpacing(Entity.ID, value);
         }
     }
 
@@ -252,7 +286,7 @@ namespace ORiginEngine
             {
                 InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, ref value); ;
             }
-            
+
         }
 
         public float Fade
@@ -269,7 +303,7 @@ namespace ORiginEngine
         }
     }
 
-    public class SpriteRenderer2DComponent : Component 
+    public class SpriteRenderer2DComponent : Component
     {
         public Vector4 Color
         {
@@ -282,7 +316,7 @@ namespace ORiginEngine
             {
                 InternalCalls.SpriteRenderer2DComponent_SetColor(Entity.ID, ref value);
             }
-            
+
         }
 
         public float TilingFactor

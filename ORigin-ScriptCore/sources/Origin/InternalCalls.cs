@@ -36,6 +36,24 @@ namespace ORiginEngine
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(ulong entityID, ref Vector2 impulse, bool wake);
 
+        // TextComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static string TextComponent_GetText(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TextComponent_SetText(ulong entityID, string textString);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TextComponent_GetColor(ulong entityID, out Vector4 color);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TextComponent_SetColor(ulong entityID, ref Vector4 color);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float TextComponent_GetKerning(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TextComponent_SetKerning(ulong entityID, float kerning);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float TextComponent_GetLineSpacing(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TextComponent_SetLineSpacing(ulong entityID, float lineSpacing);
+
         // Circle Renderer
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void CircleRendererComponent_GetColor(ulong entityID, out Vector4 result);

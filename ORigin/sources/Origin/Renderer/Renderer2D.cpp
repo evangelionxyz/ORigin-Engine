@@ -4,6 +4,8 @@
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\Renderer2D.h"
 
+#include "MSDFData.h"
+
 namespace origin {
 
 	void Renderer2D::Init()
@@ -43,6 +45,21 @@ namespace origin {
 		s_2Ddata.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
+		// Text
+		s_2Ddata.TextVertexArray = VertexArray::Create();
+		s_2Ddata.TextVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(TextVertex));
+
+		s_2Ddata.TextVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "a_Position"     },
+			{ ShaderDataType::Float4, "a_Color"        },
+			{ ShaderDataType::Float2, "a_TexCoord"     },
+			{ ShaderDataType::Int,    "a_EntityID"     }
+			});
+
+		s_2Ddata.TextVertexArray->AddVertexBuffer(s_2Ddata.TextVertexBuffer);
+		s_2Ddata.TextVertexArray->SetIndexBuffer(quadIB);
+		s_2Ddata.TextVertexBufferBase = new TextVertex[s_2Ddata.MaxVertices];
+
 		// Circles
 		s_2Ddata.CircleVertexArray = VertexArray::Create();
 		s_2Ddata.CircleVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(CircleVertex));
@@ -69,7 +86,7 @@ namespace origin {
 		s_2Ddata.LineVertexArray->AddVertexBuffer(s_2Ddata.LineVertexBuffer);
 		s_2Ddata.LineVertexBufferBase = new LineVertex[s_2Ddata.MaxVertices];
 
-		s_2Ddata.WhiteTexture = Texture2D::Create(1, 1);
+		s_2Ddata.WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
 		s_2Ddata.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
@@ -86,6 +103,7 @@ namespace origin {
 		s_2Ddata.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		s_2Ddata.QuadShader = Renderer::GetGShader("Quad2D");
+		s_2Ddata.TextShader = Renderer::GetGShader("Text");
 		s_2Ddata.CircleShader = Renderer::GetGShader("Circle2D");
 		s_2Ddata.LineShader = Renderer::GetGShader("Line2D");
 	}
@@ -109,6 +127,9 @@ namespace origin {
 	{
 		s_2Ddata.QuadIndexCount = 0;
 		s_2Ddata.QuadVertexBufferPtr = s_2Ddata.QuadVertexBufferBase;
+
+		s_2Ddata.TextIndexCount = 0;
+		s_2Ddata.TextVertexBufferPtr = s_2Ddata.TextVertexBufferBase;
 
 		s_2Ddata.CircleIndexCount = 0;
 		s_2Ddata.CircleVertexBufferPtr = s_2Ddata.CircleVertexBufferBase;
@@ -144,6 +165,20 @@ namespace origin {
 			s_2Ddata.QuadShader->Bind();
 				
 			RenderCommand::DrawIndexed(s_2Ddata.QuadVertexArray, s_2Ddata.QuadIndexCount);
+			s_2Ddata.Stats.DrawCalls++;
+		}
+
+		if (s_2Ddata.TextIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.TextVertexBufferPtr - (uint8_t*)s_2Ddata.TextVertexBufferBase);
+			s_2Ddata.TextVertexBuffer->SetData(s_2Ddata.TextVertexBufferBase, dataSize);
+
+			auto buf = s_2Ddata.TextVertexBufferBase;
+			s_2Ddata.FontAtlasTexture->Bind(0);
+
+			s_2Ddata.TextShader->Bind();
+
+			RenderCommand::DrawIndexed(s_2Ddata.TextVertexArray, s_2Ddata.TextIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
 		}
 
@@ -354,6 +389,127 @@ namespace origin {
 			DrawQuad(transform, src.Texture, src.TillingFactor, src.Color, entityID);
 		else
 			DrawQuad(transform, src.Color, entityID);
+	}
+
+	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, int entityID)
+	{
+		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
+		const auto& metrics = fontGeometry.getMetrics();
+
+		std::shared_ptr<Texture2D> fontAtlas = font->GetAtlasTexture();
+		
+		s_2Ddata.FontAtlasTexture = fontAtlas;
+		double x = 0.0;
+		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+
+		double y = 0.0;
+
+		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+
+		for (size_t i = 0; i < string.size(); i++)
+		{
+			char character = string[i];
+			if (character == '\r')
+				continue;
+
+			if (character == '\n')
+			{
+				x = 0.0;
+				y -= fsScale * metrics.lineHeight + textParams.LineSpacing;
+				continue;
+			}
+
+			if (character == ' ')
+			{
+				float advance = spaceGlyphAdvance;
+				if (i < string.size() - 1)
+				{
+					char nextCharacter = string[i + 1];
+					double dAdvance;
+					fontGeometry.getAdvance(dAdvance, character, nextCharacter);
+					advance = (float)advance;
+				}
+
+				x += fsScale * advance + textParams.Kerning;
+				continue;
+			}
+
+			if (character == '\t')
+			{
+				x += 4.0f * (fsScale * spaceGlyphAdvance + textParams.Kerning);
+				continue;
+			}
+
+			auto glyph = fontGeometry.getGlyph(character);
+			if (!glyph)
+				glyph = fontGeometry.getGlyph('?');
+			if (!glyph)
+				return;
+
+			double al, ab, ar, at;
+			glyph->getQuadAtlasBounds(al, ab, ar, at);
+			glm::vec2 texCoordMin(float(al), (float)ab);
+			glm::vec2 texCoordMax(float(ar), (float) at);
+
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+			glm::vec2 quadMin((float)pl, (float)pb);
+			glm::vec2 quadMax((float)pr, (float)pt);
+
+			quadMin *= fsScale, quadMax *= fsScale;
+			quadMin += glm::vec2(x, y);
+			quadMax += glm::vec2(x, y);
+
+			float texelWidth = 1.0f / fontAtlas->GetWidth();
+			float texelHeight = 1.0f / fontAtlas->GetHeight();
+
+			texCoordMin *= glm::vec2(texelWidth, texelHeight);
+			texCoordMax *= glm::vec2(texelWidth, texelHeight);
+
+			// Render Here
+			s_2Ddata.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+			s_2Ddata.TextVertexBufferPtr->Color = textParams.Color;
+			s_2Ddata.TextVertexBufferPtr->TexCoord = texCoordMin;
+			s_2Ddata.TextVertexBufferPtr->EntityID = entityID;
+			s_2Ddata.TextVertexBufferPtr++;
+
+			s_2Ddata.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+			s_2Ddata.TextVertexBufferPtr->Color = textParams.Color;
+			s_2Ddata.TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
+			s_2Ddata.TextVertexBufferPtr->EntityID = entityID;
+			s_2Ddata.TextVertexBufferPtr++;
+
+			s_2Ddata.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+			s_2Ddata.TextVertexBufferPtr->Color = textParams.Color;
+			s_2Ddata.TextVertexBufferPtr->TexCoord = texCoordMax;
+			s_2Ddata.TextVertexBufferPtr->EntityID = entityID;
+			s_2Ddata.TextVertexBufferPtr++;
+
+			s_2Ddata.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+			s_2Ddata.TextVertexBufferPtr->Color = textParams.Color;
+			s_2Ddata.TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
+			s_2Ddata.TextVertexBufferPtr->EntityID = entityID;
+			s_2Ddata.TextVertexBufferPtr++;
+
+			s_2Ddata.TextIndexCount += 6;
+			s_2Ddata.Stats.QuadCount++;
+
+			if (i < string.size() - 1)
+			{
+				double advance = glyph->getAdvance();
+				char nextCharacter = string[i + 1];
+				fontGeometry.getAdvance(advance, character, nextCharacter);
+
+				float kerningOffset = 0.0f;
+				x += fsScale * advance + textParams.Kerning;
+			}
+
+		}
+	}
+
+	void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component, int entityID)
+	{
+		DrawString(string, component.FontAsset, transform, { component.Color, component.Kerning, component.LineSpacing }, entityID);
 	}
 
 	void Renderer2D::ResetStats()

@@ -97,9 +97,9 @@ namespace origin {
 			// Pivot Camera (rotate based on object)
 			if (m_CameraStyle == Pivot)
 			{
-				if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
 					MouseRotate(delta);
-				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl))
 					MousePan(delta);
 				
 				float moveSpeed = 10.0f;
@@ -113,9 +113,9 @@ namespace origin {
 				auto velocity = glm::vec3(0.0f);
 				auto movement = m_Position;
 				
-				if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
 					MouseRotate(delta);
-				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl))
 					MousePan(delta);
 				
 				if (Input::IsKeyPressed(Key::A))
@@ -142,11 +142,11 @@ namespace origin {
 
 	void EditorCamera::SetEntityObject(Entity entity)
 	{
-		float currentDistance = m_Distance;
+		//float currentDistance = m_Distance;
 		if(!entity)
 		{
 			m_TargetPosition = glm::vec3(0.0f);
-			m_Distance = currentDistance;
+			//m_Distance = currentDistance;
 
 			return;
 		}
@@ -154,7 +154,7 @@ namespace origin {
 		const auto& tc = entity.GetComponent<TransformComponent>();
 		m_TargetPosition = tc.Translation;
 
-		m_Distance = glm::lerp(m_Distance, glm::length(m_FocalPoint - m_TargetPosition) / 2.0f, m_DeltaTime * 15.0f);
+		//m_Distance = glm::lerp(m_Distance, glm::length(m_FocalPoint - m_TargetPosition) / 2.0f, m_DeltaTime * 15.0f);
 	}
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
@@ -193,6 +193,10 @@ namespace origin {
 
 	void EditorCamera::MouseZoom(const float delta)
 	{
+		m_Distance -= delta * ZoomSpeed();
+
+		m_Distance = std::max(m_Distance, 3.0f);
+
 		m_FocalPoint += delta * GetForwardDirection() * ZoomSpeed();
 	}
 

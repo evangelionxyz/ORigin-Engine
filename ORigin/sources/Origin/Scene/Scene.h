@@ -35,10 +35,12 @@ namespace origin
 
         Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
         Entity GetPrimaryCameraEntity();
+        Entity DuplicateEntity(Entity entity);
+
+        Entity GetEntityWithUUID(UUID uuid);
+        Entity FindEntityByName(std::string_view name);
 
         void DestroyEntity(Entity entity);
-
-        void OnUpdateGame(Timestep time);
 
         void OnRuntimeStart();
         void OnRuntimeStop();
@@ -51,14 +53,9 @@ namespace origin
         void OnUpdateEditor(Timestep time, EditorCamera& camera);
 
         void OnViewportResize(const uint32_t width, const uint32_t height);
-        void OnGameViewportResize(const uint32_t width, const uint32_t height);
-        Entity DuplicateEntity(Entity entity);
 
         void DrawGrid(int size = 5, glm::vec4 color = glm::vec4(1.0f));
         void SetGrid(int size, glm::vec4 color);
-
-        Entity GetEntityWithUUID(UUID uuid);
-        Entity FindEntityByName(std::string_view name);
 
         template <typename... Components>
         auto GetAllEntitiesWith()
@@ -89,7 +86,7 @@ namespace origin
 
     private:
         std::unordered_map<UUID, entt::entity> m_EntityMap;
-        std::shared_ptr<Texture2D> m_CameraIcon, m_LightingIcon;
+        std::shared_ptr<Texture2D> m_CameraIcon, m_LightingIcon, m_AudioIcon;
 
         entt::registry m_Registry;
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
@@ -99,7 +96,7 @@ namespace origin
 
         bool m_Running = false;
         bool m_Paused = false;
-        int m_StempFrames = 0;
+        int m_StepFrames = 0;
 
         friend class Entity;
         friend class Editor;

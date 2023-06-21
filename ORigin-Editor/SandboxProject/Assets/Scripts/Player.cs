@@ -8,6 +8,7 @@ namespace Game
     public class Player : Entity
     {
         public Entity entity;
+        public Entity textEntity;
 
         private TransformComponent transformC;
         private Rigidbody2DComponent rigidBody2DC;
@@ -15,7 +16,7 @@ namespace Game
         private BoxCollider2DComponent boxCollider2DC;
 
         public float Speed = 5.0f;
-        public float time = 0.0f;
+        private float time = 0.0f;
 
         public float tilingfactor = 1.0f;
         public Vector3 scale = new Vector3(1.0f);
@@ -30,11 +31,20 @@ namespace Game
             boxCollider2DC = GetComponent<BoxCollider2DComponent>();
 
             Bc2Ddensity = boxCollider2DC.Density;
+
+            textEntity = FindEntityByName("TimeStep");
         }
 
         void OnUpdate(float deltaTime)
         {
             time += deltaTime;
+
+            if(textEntity != null)
+            {
+                TextComponent text = textEntity.GetComponent<TextComponent>();
+                text.Text = "Time: " + time.ToString();
+            }
+
             float speed = Speed;
 
             Vector3 velocity = Vector3.Zero;

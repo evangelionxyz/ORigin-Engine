@@ -9,19 +9,6 @@
 
 namespace origin {
 
-	struct CameraData
-	{
-		glm::mat4 ViewProjection;
-	};
-
-	struct RendererData
-	{
-		CameraData CameraBufferData;
-		std::shared_ptr<UniformBuffer> CameraUniformBuffer;
-	};
-
-	static RendererData s_RendererData;
-
 	class Renderer
 	{
 	public:

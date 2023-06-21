@@ -272,7 +272,7 @@ namespace origin {
       std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
 
       std::ifstream infile(cachedPath, std::ios::in | std::ios::binary);
-      if (infile.is_open())
+      if (infile.is_open() && !m_RecompileSPIRV)
       {
         OGN_CORE_WARN("Get Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
         infile.seekg(0, std::ios::end);

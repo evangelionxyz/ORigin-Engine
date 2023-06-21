@@ -3,6 +3,7 @@
 #pragma once
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Scene/Component.h"
+#include "Origin\Renderer\Font.h"
 
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Shader.h"
@@ -41,6 +42,16 @@ namespace origin
 		static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
 		static void DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID = -1);
 
+		struct TextParams
+		{
+			glm::vec4 Color = glm::vec4(1.0);
+			float Kerning = 0.0f;
+			float LineSpacing = 0.0f;
+		};
+
+		static void DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, int entityID = -1);
+		static void DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& textComponent, int entityID = -1);
+
 		// Stats
 		struct Statistics
 		{
@@ -58,6 +69,17 @@ namespace origin
 	private:
 		static void StartBatch();
 		static void NextBatch();
+	};
+
+	struct TextVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;
+
+		// TODO: background color for outline/bg
+		// Editor Only
+		int EntityID;
 	};
 
 	struct QuadVertex
@@ -100,6 +122,18 @@ namespace origin
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
 		std::shared_ptr<Texture2D> WhiteTexture;
+
+		// =============================================
+		// =================== Texts ===================
+		// =============================================
+		std::shared_ptr<VertexArray> TextVertexArray;
+		std::shared_ptr<VertexBuffer> TextVertexBuffer;
+		std::shared_ptr<Shader> TextShader;
+		std::shared_ptr<Texture2D> FontAtlasTexture;
+
+		uint32_t TextIndexCount = 0;
+		TextVertex* TextVertexBufferBase = nullptr;
+		TextVertex* TextVertexBufferPtr = nullptr;
 
 		// =============================================
 		// =================== Quads ===================

@@ -72,7 +72,7 @@ namespace ORiginEngine
         public Entity FindEntityByName(string name)
         {
             ulong entityID = InternalCalls.Entity_FindEntityByName(name);
-            if(entityID == 0)
+            if (entityID == 0)
                 return null;
 
             return new Entity(entityID);

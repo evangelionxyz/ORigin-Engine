@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "Entity.h"
 #include "Scene.h"
+#include "Audio.h"
 #include "ScriptableEntity.h"
 #include "Component.h"
 
@@ -40,6 +41,7 @@ namespace origin
     {
         m_CameraIcon = Texture2D::Create("Resources/UITextures/camera.png");
         m_LightingIcon = Texture2D::Create("Resources/UITextures/lighting.png");
+        m_AudioIcon = Texture2D::Create("Resources/UITextures/audio.png");
     }
 
     Scene::~Scene()
@@ -259,79 +261,57 @@ namespace origin
         m_Registry.destroy(entity);
     }
 
-    void Scene::OnUpdateGame(Timestep time)
-    {
-        // OnUpdateGame Only Needed Rendering
-        // Exclude Scripting
-
-        Camera* mainCamera = nullptr;
-        TransformComponent cameraTransform;
-
-        auto& view = m_Registry.view<CameraComponent, TransformComponent>();
-        for (auto entity : view)
-        {
-            auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
-
-            if (camera.Primary)
-            {
-                mainCamera = &camera.Camera;
-                cameraTransform = transform;
-                break;
-            }
-        }
-
-        if (mainCamera)
-            RenderScene(mainCamera, cameraTransform);
-    }
-
     void Scene::OnUpdateRuntime(Timestep time)
     {
-        if (!m_Paused || m_StempFrames-- > 0)
-        {
-            // Update Scripts
-            {
-                auto& view = m_Registry.view<ScriptComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    ScriptEngine::OnUpdateEntity(entity, time);
-                }
+        
+      AudioEngine::SystemUpdate();
 
-                m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-                {
-                    if (!nsc.Instance)
-                    {
-                        nsc.Instance = nsc.InstantiateScript();
-                        nsc.Instance->m_Entity = Entity{entity, this};
-                        nsc.Instance->OnCreate();
-                    }
-                    nsc.Instance->OnUpdate(time);
-                });
-            }
+      if (!m_Paused || m_StepFrames-- > 0)
+      {
+          // Update Scripts
+          {
+              auto& view = m_Registry.view<ScriptComponent>();
+              for (auto e : view)
+              {
+                  Entity entity = {e, this};
+                  ScriptEngine::OnUpdateEntity(entity, time);
+              }
 
-            // Physics
-            {
-                const int32_t velocityIterations = 6;
-                const int32_t positionIterations = 2;
-                m_Box2DWorld->Step(time, velocityIterations, positionIterations);
+              m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+              {
+                  if (!nsc.Instance)
+                  {
+                      nsc.Instance = nsc.InstantiateScript();
+                      nsc.Instance->m_Entity = Entity{entity, this};
+                      nsc.Instance->OnCreate();
+                  }
+                  nsc.Instance->OnUpdate(time);
+              });
+          }
 
-                // Retrieve transform from Box2D
-                auto view = m_Registry.view<Rigidbody2DComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    auto& transform = entity.GetComponent<TransformComponent>();
-                    auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+          // Physics
+          {
+              const int32_t velocityIterations = 6;
+              const int32_t positionIterations = 2;
+              m_Box2DWorld->Step(time, velocityIterations, positionIterations);
 
-                    auto body = (b2Body*)rb2d.RuntimeBody;
+              // Retrieve transform from Box2D
+              auto view = m_Registry.view<Rigidbody2DComponent>();
+              for (auto e : view)
+              {
+                  Entity entity = {e, this};
+                  auto& transform = entity.GetComponent<TransformComponent>();
+                  auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 
-                    const auto& position = body->GetPosition();
+                  auto body = (b2Body*)rb2d.RuntimeBody;
 
-                    transform.Translation.x = position.x;
-                    transform.Translation.y = position.y;
-                    transform.Rotation.z = body->GetAngle();
-                }
-            }
+                  const auto& position = body->GetPosition();
+
+                  transform.Translation.x = position.x;
+                  transform.Translation.y = position.y;
+                  transform.Rotation.z = body->GetAngle();
+              }
+          }
         }
 
         // Rendering
@@ -356,6 +336,7 @@ namespace origin
 
     void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
     {
+        AudioEngine::SystemUpdate();
         m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
         {
             if (!nsc.Instance)
@@ -373,8 +354,10 @@ namespace origin
 
     void Scene::OnUpdateSimulation(Timestep time, EditorCamera& camera)
     {
-        if (!m_Paused || m_StempFrames-- > 0)
+        if (!m_Paused || m_StepFrames-- > 0)
         {
+            AudioEngine::SystemUpdate();
+
             // Update Scripts
             {
                 auto& view = m_Registry.view<ScriptComponent>();
@@ -427,6 +410,7 @@ namespace origin
 
     void Scene::OnSimulationStart()
     {
+       
         OnPhysics2DStart();
 
         // Scripting
@@ -444,8 +428,6 @@ namespace origin
     void Scene::OnSimulationStop()
     {
         OnPhysics2DStop();
-
-        // Scripting
         ScriptEngine::OnRuntimeStop();
     }
 
@@ -487,6 +469,17 @@ namespace origin
                 Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
                                        (int)entity);
             }
+        }
+
+
+        // Text
+        {
+          auto& view = m_Registry.view<TransformComponent, TextComponent>();
+          for (auto entity : view)
+          {
+            auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
+            Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, (int)entity);
+          }
         }
 
         // 3D Scene
@@ -617,6 +610,16 @@ namespace origin
             }
         }
 
+        // Text
+        {
+          auto& view = m_Registry.view<TransformComponent, TextComponent>();
+          for (auto entity : view)
+          {
+            auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
+            Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, (int)entity);
+          }
+        }
+
         // 3D Scene
         // Cube
         auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
@@ -729,6 +732,31 @@ namespace origin
             }
         }
 
+        // AudioComponent
+        {
+            auto view = m_Registry.view<TransformComponent, AudioComponent>();
+            for (auto entity : view)
+            {
+                auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
+                if (ac.Audio)
+                {
+                  ac.Audio->SetMaxDistance(ac.MaxDistance);
+                  ac.Audio->SetMinDistance(ac.MinDistance);
+                  ac.Audio->SetLoop(ac.Looping);
+                  ac.Audio->SetGain(ac.Volume);
+
+                  if (ac.Spatial)
+                  {
+                    ac.Audio->SetPosition(tc.Translation);
+                  }
+                }
+                DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
+            }
+        }
+
+        AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
+        //AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), camera.GetUpDirection());
+
         //DrawGrid(m_GridSize, m_GridColor);
         Renderer::EndScene();
     }
@@ -752,8 +780,6 @@ namespace origin
     void Scene::OnRuntimeStop()
     {
         OnPhysics2DStop();
-
-        // Scripting
         ScriptEngine::OnRuntimeStop();
     }
 
@@ -765,23 +791,6 @@ namespace origin
         m_ViewportWidth = width;
         m_ViewportHeight = height;
 
-        const auto view = m_Registry.view<CameraComponent>();
-        for (auto& entity : view)
-        {
-            auto& cameraComponent = view.get<CameraComponent>(entity);
-            if (!cameraComponent.FixedAspectRatio)
-                cameraComponent.Camera.SetViewportSize(width, height);
-        }
-    }
-
-    void Scene::OnGameViewportResize(const uint32_t width, const uint32_t height)
-    {
-        if(m_GameViewportWidth == width && m_GameViewportHeight == height)
-            return;
-
-        m_GameViewportWidth = width;
-        m_GameViewportHeight = height;
-        
         const auto view = m_Registry.view<CameraComponent>();
         for (auto& entity : view)
         {
@@ -822,6 +831,7 @@ namespace origin
         m_GridSize = size;
         m_GridColor = color;
     }
+
 
     Entity Scene::GetEntityWithUUID(UUID uuid)
     {
@@ -933,7 +943,7 @@ namespace origin
 
     void Scene::Step(int frames)
     {
-        m_StempFrames = frames;
+        m_StepFrames = frames;
     }
 
     template <typename T>
@@ -948,6 +958,11 @@ namespace origin
 
     template <>
     void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+    {
+    }
+
+    template <>
+    void Scene::OnComponentAdded<AudioComponent>(Entity entity, AudioComponent& component)
     {
     }
 
@@ -985,6 +1000,11 @@ namespace origin
 
     template <>
     void Scene::OnComponentAdded<StaticMeshComponent>(Entity entity, StaticMeshComponent& component)
+    {
+    }
+
+    template <>
+    void Scene::OnComponentAdded<TextComponent>(Entity entity, TextComponent& component)
     {
     }
 

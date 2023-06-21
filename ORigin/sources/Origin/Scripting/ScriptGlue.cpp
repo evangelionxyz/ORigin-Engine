@@ -22,6 +22,17 @@ namespace origin
 {
 #define OGN_ADD_INTERNAL_CALLS(Name) mono_add_internal_call("ORiginEngine.InternalCalls::"#Name, Name)
 
+	namespace Utils {
+		std::string MonoStringToString(MonoString* string)
+		{
+			char* cStr = mono_string_to_utf8(string);
+			std::string str = std::string(cStr);
+			mono_free(cStr);
+
+			return str;
+		}
+	}
+
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 
 	// Entity
@@ -58,9 +69,7 @@ namespace origin
 	// Logging
 	static void NativeLog(MonoString* string, int parameter)
 	{
-		char* cStr = mono_string_to_utf8(string);
-		std::string str(cStr);
-		mono_free(cStr);
+		std::string str = Utils::MonoStringToString(string);
 		std::cout << str << ", " << parameter << std::endl;
 	}
 
@@ -154,6 +163,102 @@ namespace origin
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		b2Body* body = (b2Body*)rb2d.RuntimeBody;
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+
+	static MonoString* TextComponent_GetText(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		return ScriptEngine::CreateString(tc.TextString.c_str());
+	}
+
+	static void TextComponent_SetText(UUID entityID, MonoString* textString)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.TextString = Utils::MonoStringToString(textString);
+	}
+
+	static void TextComponent_GetColor(UUID entityID, glm::vec4* color)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		*color = tc.Color;
+	}
+
+	static void TextComponent_SetColor(UUID entityID, glm::vec4* color)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.Color = *color;
+	}
+
+	static float TextComponent_GetKerning(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		return tc.Kerning;
+	}
+
+	static void TextComponent_SetKerning(UUID entityID, float kerning)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.Kerning = kerning;
+	}
+
+	static float TextComponent_GetLineSpacing(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		return tc.LineSpacing;
+	}
+
+	static void TextComponent_SetLineSpacing(UUID entityID, float lineSpacing)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity);
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>());
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.LineSpacing = lineSpacing;
 	}
 
 	static void CircleRendererComponent_GetColor(UUID entityID, glm::vec4* outColor)
@@ -523,6 +628,15 @@ namespace origin
 
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
+
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetText);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetText);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetColor);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetColor);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetKerning);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetKerning);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetLineSpacing);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetLineSpacing);
 
 		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_GetColor);
 		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_SetColor);

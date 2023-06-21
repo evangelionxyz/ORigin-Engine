@@ -17,16 +17,21 @@ IncludeDir["SPDLOG"] = "%{wks.location}/ORigin/vendor/spdlog/include"
 IncludeDir["GLM"] = "%{wks.location}/ORigin/vendor/glm"
 IncludeDir["ENTT"] = "%{wks.location}/ORigin/vendor/entt/"
 IncludeDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/include"
+IncludeDir["FMOD"] = "%{wks.location}/ORigin/vendor/FMOD/include"
 IncludeDir["FILEWATCHER"] = "%{wks.location}/ORigin/vendor/Filewatcher/include"
 IncludeDir["YAML_CPP"] = "%{wks.location}/ORigin/vendor/yaml-cpp/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
+IncludeDir["msdf_atlas_gen"] = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen"
+IncludeDir["msdfgen"] = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen"
 
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["AssimpSDK"] = "%{wks.location}/ORigin/vendor/Assimp/lib/x64"
+LibraryDir["FMOD"] = "%{wks.location}/ORigin/vendor/FMOD/lib"
 LibraryDir["MONO"]      = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
+LibraryDir["AssimpSDK"] = "%{wks.location}/ORigin/vendor/Assimp/lib/x64"
 
 Library = {}
+Library["FMOD"] = "%{LibraryDir.FMOD}/fmod_vc.lib"
 Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
 Library["Assimp"] = "%{LibraryDir.AssimpSDK}/assimp-vc143-mt.lib"
 
@@ -55,4 +60,5 @@ include "glad.lua"
 include "imgui.lua"
 include "yaml-cpp.lua"
 include "box2d.lua"
+include "msdf-atlas-gen.lua"
 group ""

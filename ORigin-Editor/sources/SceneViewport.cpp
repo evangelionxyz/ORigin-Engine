@@ -1,6 +1,8 @@
 // Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #include "Editor.h"
+#include "GUIData.h"
+
 #include "Origin\Project\Project.h"
 #include "panels\ContentBrowserPanel.h"
 

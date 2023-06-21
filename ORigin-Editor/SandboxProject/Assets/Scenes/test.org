@@ -1,0 +1,37 @@
+Scene: test.org
+Entities:
+  - Entity: 9709662152101524875
+    TagComponent:
+      Tag: Spot Light
+    TransformComponent:
+      Translation: [-0.242713973, 339.367126, -4.9743247]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpotLightComponent:
+      Color: [0.700421929, 0.776264548, 1]
+      Ambient: 0.100000001
+      Specular: 0.00600000005
+      Outercone: 0
+      Innercone: 1
+  - Entity: 3378364972912457264
+    TagComponent:
+      Tag: Point Light
+    TransformComponent:
+      Translation: [0, 119.852211, 165.186096]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0, 1, 0.430379629]
+      Ambient: 0.649999976
+      Specular: 1
+  - Entity: 2896299013156617672
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-0.0208006818, -225.051712, -6.39541197]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    StaticMeshComponent:
+      ModelPath: C:\dev\ORigin-Engine\ORigin-Editor\SandboxProject\Assets\Models\Earth_Continent1.obj
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      Color: [1, 1, 1, 1]

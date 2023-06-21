@@ -3,11 +3,12 @@
 #pragma once
 #include "pch.h"
 
-#include "Origin\Scene\SceneCamera.h"
-#include "Origin\Renderer\Texture.h"
+#include "SceneCamera.h"
+#include "Origin\Core\UUID.h"
 
-#include "Origin\Scene\UUID.h"
+#include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Model.h"
+#include "Origin\Renderer\Font.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -35,6 +36,25 @@ namespace origin
 			: Tag(tag) {}
 	};
 
+	class Audio;
+	struct AudioComponent
+	{
+		std::shared_ptr<Audio> Audio;
+		std::string Name = "Audio";
+		std::string ListenerName;
+
+		float Volume = 1.0f;
+		float Pitch = 1.0f;
+		float MinDistance;
+		float MaxDistance;
+
+		bool Looping = false;
+		bool Spatial = false;
+
+		AudioComponent() = default;
+		AudioComponent(const AudioComponent&) = default;
+	};
+
 	struct StaticMeshComponent
 	{
 		std::string ModelPath;
@@ -45,6 +65,15 @@ namespace origin
 
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
+	};
+
+	struct TextComponent
+	{
+		std::string TextString;
+		std::shared_ptr<Font> FontAsset = Font::GetDefault();
+		glm::vec4 Color = glm::vec4(1.0f);
+		float Kerning = 0.0f;
+		float LineSpacing = 0.0f;
 	};
 
 	struct TransformComponent
@@ -65,6 +94,28 @@ namespace origin
 			return glm::translate(glm::mat4(1.0f), Translation)
 				* rotation * glm::scale(glm::mat4(1.0f), Scale);
 		}
+
+		glm::vec3 GetForward() const
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::vec4 forward = rotation * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+			return glm::normalize(glm::vec3(forward));
+		}
+
+		glm::vec3 GetUp() const
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::vec4 up = rotation * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+			return glm::normalize(glm::vec3(up));
+		}
+
+		glm::vec3 GetRight() const
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+			return glm::normalize(glm::vec3(right));
+		}
+
 	};
 
 	struct SpriteRendererComponent
@@ -225,8 +276,8 @@ namespace origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, PointLightComponent, SpotLightComponent,
-		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent,
+		ComponentGroup<TransformComponent, AudioComponent, PointLightComponent, SpotLightComponent,
+		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, CameraComponent,
 		ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;

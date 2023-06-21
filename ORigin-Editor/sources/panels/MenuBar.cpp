@@ -1,6 +1,9 @@
 // Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #include "..\Editor.h"
+#include "..\GUIData.h"
+
+#include "Origin\Scene\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
 
 namespace origin
@@ -39,6 +42,12 @@ namespace origin
 
 					ScriptEngine::ReloadAssembly();
 				}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Object"))
+			{
+				ImGui::MenuItem("Audio Library", nullptr, &guiAudioLibrary);
 				ImGui::EndMenu();
 			}
 
@@ -132,6 +141,26 @@ namespace origin
 					} if (isSelected) ImGui::SetItemDefaultFocus();
 				} ImGui::EndCombo();
 			}
+
+			ImGui::End();
+		}
+
+		if (guiAudioLibrary)
+		{
+			ImGui::Begin("Audio Library", &guiAudioLibrary);
+			ImGui::Text("List: ");
+			for (const auto& map : AudioEngine::GetMap())
+				ImGui::Text("%s", map.first.c_str());
+
+			if (ImGui::Button("Clear All"))
+				AudioEngine::GetMap().clear();
+
+			ImGui::End();
+		}
+
+		if (guiAudioCreation)
+		{
+			ImGui::Begin("Audio Creation", &guiAudioCreation);
 
 			ImGui::End();
 		}

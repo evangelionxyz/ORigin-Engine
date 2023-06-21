@@ -6,6 +6,7 @@
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Model.h"
+#include "Audio.h"
 
 #include "Entity.h"
 #include "Component.h"
@@ -189,6 +190,24 @@ namespace origin {
 			out << YAML::EndMap; // TagComponent
 		}
 
+		if (entity.HasComponent<AudioComponent>())
+		{
+			out << YAML::Key << "AudioComponent";
+			out << YAML::BeginMap; // AudioComponent
+
+			const auto& ac = entity.GetComponent<AudioComponent>();
+			out << YAML::Key << "Name" << YAML::Value << ac.Name;
+			out << YAML::Key << "Filepath" << YAML::Value << ac.Audio->GetFilepath();
+			out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
+			out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
+			out << YAML::Key << "MinDistance" << YAML::Value << ac.MinDistance;
+			out << YAML::Key << "MaxDistance" << YAML::Value << ac.MaxDistance;
+			out << YAML::Key << "Looping" << YAML::Value << ac.Looping;
+			out << YAML::Key << "Spatial" << YAML::Value << ac.Spatial;
+
+			out << YAML::EndMap; // AudioComponent
+		}
+
 		if (entity.HasComponent<TransformComponent>())
 		{
 			out << YAML::Key << "TransformComponent";
@@ -238,6 +257,19 @@ namespace origin {
 			out << YAML::Key << "Color" << YAML::Value << sMesh.Color;
 
 			out << YAML::EndMap; // !StaticMeshComponent
+		}
+
+		if (entity.HasComponent<TextComponent>())
+		{
+			out << YAML::Key << "TextComponent";
+			out << YAML::BeginMap; // TextComponent
+			auto& textComponent = entity.GetComponent<TextComponent>();
+			out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
+			out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
+			out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
+			out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
+
+			out << YAML::EndMap; // !TextComponent
 		}
 
 		if (entity.HasComponent<SpriteRendererComponent>())
@@ -518,6 +550,33 @@ namespace origin {
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
 				}
 
+				if (auto audioComponent = entity["AudioComponent"])
+				{
+					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
+					ac.Name = audioComponent["Name"].as<std::string>();
+					ac.Volume = audioComponent["Volume"].as<float>();
+					ac.Pitch = audioComponent["Pitch"].as<float>();
+					ac.MinDistance = audioComponent["MinDistance"].as<float>();
+					ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
+					ac.Looping = audioComponent["Looping"].as<bool>();
+					ac.Spatial = audioComponent["Spatial"].as<bool>();
+
+					if (audioComponent["Filepath"])
+					{
+						auto& filepath = audioComponent["Filepath"].as<std::string>();
+
+						AudioConfig spec;
+						spec.Name = ac.Name;
+						spec.Looping = ac.Looping;
+						spec.MinDistance = ac.MinDistance;
+						spec.MaxDistance = ac.MaxDistance;
+						spec.Spatial = ac.Spatial;
+						spec.Filepath = Project::GetAssetFileSystemPath(filepath).string();
+
+						ac.Audio = Audio::Create(spec);
+					}
+				}
+
 				if (auto cameraComponent = entity["CameraComponent"])
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
@@ -611,6 +670,16 @@ namespace origin {
 						sMesh.Model = Model::Create(sMesh.ModelPath, shader);
 					}
 					sMesh.Color = staticMeshComponent["Color"].as<glm::vec4>();
+				}
+
+				if (auto textComponent = entity["TextComponent"])
+				{
+					auto& text = deserializedEntity.AddComponent<TextComponent>();
+					text.TextString = textComponent["TextString"].as<std::string>();
+					text.Color = textComponent["Color"].as<glm::vec4>();
+					text.Kerning = textComponent["Kerning"].as<float>();
+					text.LineSpacing = textComponent["LineSpacing"].as<float>();
+
 				}
 
 				if (auto boxCollider2DComponent = entity["BoxCollider2DComponent"])

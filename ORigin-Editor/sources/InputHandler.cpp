@@ -1,6 +1,7 @@
 // Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #include "Editor.h"
+#include "GUIData.h"
 
 namespace origin
 {

@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "Application.h"
-
+#include "Origin\Scene\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
 
 namespace origin {
@@ -10,21 +10,21 @@ namespace origin {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const ApplicationSpecification& spec)
-		: m_Specification(spec)
+		: m_Config(spec)
 	{
 
 		OGN_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
 		// Set working directory here
-		if (!m_Specification.WorkingDirectory.empty())
-			std::filesystem::current_path(m_Specification.WorkingDirectory);
+		if (!m_Config.WorkingDirectory.empty())
+			std::filesystem::current_path(m_Config.WorkingDirectory);
 
-		m_Window = Window::Create(m_Specification.Name);
+		m_Window = Window::Create(m_Config.Name);
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();
-
+		AudioEngine::Init();
 		m_GuiLayer = new GuiLayer();
 		PushOverlay(m_GuiLayer);
 	}
@@ -32,6 +32,7 @@ namespace origin {
 	Application::~Application()
 	{
 		ScriptEngine::Shutdown();
+		AudioEngine::Shutdown();
 		Renderer::Shutdown();
 		s_Instance = nullptr;
 	}
