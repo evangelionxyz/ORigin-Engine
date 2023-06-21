@@ -25,3 +25,6 @@
 [submodule "ORigin/vendor/mono"]
 	path = ORigin/vendor/mono
 	url = https://github.com/kaks-ev/mono.git
+[submodule "ORigin/vendor/msdf-atlas-gen"]
+	path = ORigin/vendor/msdf-atlas-gen
+	url = https://github.com/kaks-ev/msdf-atlas-gen.git
