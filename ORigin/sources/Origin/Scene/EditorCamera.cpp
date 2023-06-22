@@ -35,7 +35,7 @@ namespace origin {
 	{
 		float speed = (m_Distance * m_Distance) * 0.2f;
 		speed = std::min(speed, 50.0f);
-		speed = std::max(speed, 1.0f);
+		speed = std::max(speed, 5.0f);
 		
 		return speed;
 	}
@@ -195,7 +195,7 @@ namespace origin {
 	{
 		m_Distance -= delta * ZoomSpeed();
 
-		m_Distance = std::max(m_Distance, 3.0f);
+		m_Distance = std::max(m_Distance, 5.0f);
 
 		m_FocalPoint += delta * GetForwardDirection() * ZoomSpeed();
 	}

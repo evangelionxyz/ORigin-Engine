@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Entity.h"
 #include "Scene.h"
-#include "Audio.h"
+#include "Origin\Audio\Audio.h"
 #include "ScriptableEntity.h"
 #include "Component.h"
 
@@ -853,7 +853,10 @@ namespace origin
           {
             auto& ac = view.get<AudioComponent>(e);
             if (ac.Audio && ac.PlayAtStart)
+            {
+              ac.Audio->SetGain(ac.Volume);
               ac.Audio->Play();
+            }
           }
         }
     }

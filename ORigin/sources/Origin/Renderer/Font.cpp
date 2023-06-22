@@ -9,7 +9,11 @@
 #include "FontGeometry.h"
 #include "BitmapAtlasStorage.h"
 
+#include <map>
+
 namespace origin {
+
+	static std::map<std::string, Font> m_WindowsFontMap;
 
 	template<typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
 	static std::shared_ptr<Texture2D> CreateAndCacheAtlas(const std::string fontName,
@@ -40,7 +44,7 @@ namespace origin {
 	};
 
 	Font::Font(const std::filesystem::path& filepath)
-		: m_Data(new MSDFData())
+		: m_Data(new MSDFData()), m_Filepath(filepath.generic_string())
 	{
 		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
 		OGN_CORE_ASSERT(ft, "Font: FreeTypeHandle Error");
@@ -123,27 +127,17 @@ namespace origin {
 		m_AtlasTexture = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>
 		("Test", emSize, m_Data->Glyphs, m_Data->FontGeometry, widht, height);
 
-#if 0
-		msdfgen::Shape shape;
-		if (msdfgen::loadGlyph(shape, font, 'A'))
-		{
-			shape.normalize();
-			msdfgen::edgeColoringSimple(shape, 3.0);
-			msdfgen::Bitmap<float, 3> msdf(32, 32);
-			msdfgen::generateMSDF(msdf, shape, 4.0, 1.0, msdfgen::Vector2(4.0, 4.0));
-			msdfgen::savePng(msdf, "output.png");
-		}
-#endif
-
 		msdfgen::destroyFont(font);
 		msdfgen::deinitializeFreetype(ft);
 
-		//OGN_CORE_ASSERT(false);
+		m_Loaded = true;
 	}
+	
 	Font::~Font()
 	{
 		delete m_Data;
 	}
+	
 	std::shared_ptr<Font> Font::GetDefault()
 	{
 		static std::shared_ptr<Font> DefaultFont;

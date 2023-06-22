@@ -36,6 +36,45 @@ namespace ORiginEngine
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(ulong entityID, ref Vector2 impulse, bool wake);
 
+        // Audio Component
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetName(ulong entityID, string nameString);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static string AudioComponent_GetName(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetPitch(ulong entityID, float pitch);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float AudioComponent_GetPitch(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetVolume(ulong entityID, float volume);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float AudioComponent_GetVolume(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetMinDistance(ulong entityID, float minDistance);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float AudioComponent_GetMinDistance(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetMaxDistance(ulong entityID, float maxDistance);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float AudioComponent_GetMaxDistance(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetLooping(ulong entityID, bool looping);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool AudioComponent_IsLooping(ulong entityID);
+        
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetPlayAtStart(ulong entityID, bool playAtStart);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool AudioComponent_IsPlayAtStart(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_SetSpatial(ulong entityID, bool spatial);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool AudioComponent_IsSpatial(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_Play(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_Stop(ulong entityID);
+        
         // TextComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static string TextComponent_GetText(ulong entityID);

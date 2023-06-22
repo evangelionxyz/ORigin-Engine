@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "Application.h"
-#include "Origin\Scene\Audio.h"
+#include "Origin\Audio\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
 
 namespace origin {
@@ -10,17 +10,16 @@ namespace origin {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const ApplicationSpecification& spec)
-		: m_Config(spec)
+		: m_Spec(spec)
 	{
-
 		OGN_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
 		// Set working directory here
-		if (!m_Config.WorkingDirectory.empty())
-			std::filesystem::current_path(m_Config.WorkingDirectory);
+		if (!m_Spec.WorkingDirectory.empty())
+			std::filesystem::current_path(m_Spec.WorkingDirectory);
 
-		m_Window = Window::Create(m_Config.Name);
+		m_Window = Window::Create(m_Spec.Name);
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();

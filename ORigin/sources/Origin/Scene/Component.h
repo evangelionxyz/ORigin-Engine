@@ -15,8 +15,6 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
-#include <unordered_map>
-#include <vector>
 
 namespace origin
 {
@@ -45,8 +43,8 @@ namespace origin
 
 		float Volume = 1.0f;
 		float Pitch = 1.0f;
-		float MinDistance;
-		float MaxDistance;
+		float MinDistance = 1.0f;
+		float MaxDistance = 100.0f;
 
 		bool Looping = false;
 		bool Spatial = false;
@@ -71,7 +69,8 @@ namespace origin
 	struct TextComponent
 	{
 		std::string TextString;
-		std::shared_ptr<Font> FontAsset = Font::GetDefault();
+		std::shared_ptr<Font> FontAsset;
+		
 		glm::vec4 Color = glm::vec4(1.0f);
 		float Kerning = 0.0f;
 		float LineSpacing = 0.0f;

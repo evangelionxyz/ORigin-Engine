@@ -59,6 +59,7 @@
     <Compile Include="sources\ORigin\Input.cs" />
     <Compile Include="sources\ORigin\InternalCalls.cs" />
     <Compile Include="sources\ORigin\KeyCodes.cs" />
+    <Compile Include="sources\ORigin\Scene\AudioLibrary.cs" />
     <Compile Include="sources\ORigin\Scene\Components.cs" />
     <Compile Include="sources\ORigin\Scene\Entity.cs" />
     <Compile Include="sources\ORigin\Vector2.cs" />

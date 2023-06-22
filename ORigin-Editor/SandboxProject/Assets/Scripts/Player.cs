@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 using System;
 using ORiginEngine;
@@ -9,7 +9,7 @@ namespace Game
     {
         public Entity entity;
         public Entity textEntity;
-
+        private AudioComponent jumpAudio;
         private Rigidbody2DComponent rigidBody2DC;
         private SpriteRenderer2DComponent spriteRenderer2DC;
         private TransformComponent transformC;
@@ -18,12 +18,16 @@ namespace Game
         public float Speed = 5.0f;
         public float yAxis = 0.0f;
 
+        public int keyPressedCount = 0;
+        public float jumpTimeOut = 1.0f;
+
         void OnCreate()
         {
             transformC = GetComponent<TransformComponent>();
             rigidBody2DC = GetComponent<Rigidbody2DComponent>();
 
             textEntity = FindEntityByName("TimeStep");
+            jumpAudio = FindEntityByName("JumpAudio").GetComponent<AudioComponent>();
         }
 
         void OnUpdate(float deltaTime)
@@ -40,9 +44,23 @@ namespace Game
 
             Vector3 velocity = Vector3.Zero;
 
-            if (Translation.Y < 6.0f)
-                if (Input.IsKeyPressed(KeyCode.Space))
-                    velocity.Y = 4.0f;
+            if (Input.IsKeyPressed(KeyCode.Space))
+            {
+                if(keyPressedCount <= 1)
+                    jumpAudio.Play();
+
+                if (Translation.Y < 6.0f && jumpTimeOut > 0.0f)
+                    velocity.Y = 3.0f;
+
+                keyPressedCount++;
+                jumpTimeOut -= deltaTime;
+            }
+            else
+            {
+                keyPressedCount = 0;
+                jumpTimeOut = 1.0f;
+            }
+                
 
             if (Input.IsKeyPressed(KeyCode.A))
                 velocity.X = -1.0f;
