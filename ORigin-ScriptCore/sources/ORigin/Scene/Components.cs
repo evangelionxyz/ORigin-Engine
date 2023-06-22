@@ -63,6 +63,56 @@ namespace ORiginEngine
         }
     }
 
+    public class AudioComponent : Component
+    {
+        public void Play()
+        {
+            InternalCalls.AudioComponent_Play(Entity.ID);
+        }
+        public void Stop()
+        {
+            InternalCalls.AudioComponent_Stop(Entity.ID);
+        }
+        
+        public string Name
+        {
+            get => InternalCalls.AudioComponent_GetName(Entity.ID);
+            set => InternalCalls.AudioComponent_SetName(Entity.ID, value);
+        }
+        public float Volume
+        {
+            get => InternalCalls.AudioComponent_GetVolume(Entity.ID);
+            set => InternalCalls.AudioComponent_SetVolume(Entity.ID, value);
+        }
+        public float MinDistance
+        {
+            get => InternalCalls.AudioComponent_GetMinDistance(Entity.ID);
+            set => InternalCalls.AudioComponent_SetMinDistance(Entity.ID, value);
+        }
+        
+        public float MaxDistance
+        {
+            get => InternalCalls.AudioComponent_GetMaxDistance(Entity.ID);
+            set => InternalCalls.AudioComponent_SetMaxDistance(Entity.ID, value);
+        }
+        public bool Looping
+        {
+            get => InternalCalls.AudioComponent_IsLooping(Entity.ID);
+            set => InternalCalls.AudioComponent_SetLooping(Entity.ID, value);
+        }
+        public bool Spatial
+        {
+            get => InternalCalls.AudioComponent_IsSpatial(Entity.ID);
+            set => InternalCalls.AudioComponent_SetSpatial(Entity.ID, value);
+        }
+        public bool PlayAtStart
+        {
+            get => InternalCalls.AudioComponent_IsPlayAtStart(Entity.ID);
+            set => InternalCalls.AudioComponent_SetPlayAtStart(Entity.ID, value);
+        }
+
+    }
+
     public class TextComponent : Component
     {
         public string Text

@@ -9,7 +9,7 @@
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Component.h"
-#include "Origin\Scene\Audio.h"
+#include "Origin\Audio\Audio.h"
 #include "Origin\Utils\PlatformUtils.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
@@ -479,6 +479,14 @@ namespace origin {
 									scriptInstance->SetFieldValue<float>(name, data);
 								}
 							}
+							if (field.Type == ScriptFieldType::Int)
+							{
+								int data = scriptInstance->GetFieldValue<int>(name);
+								if (ImGui::DragInt(name.c_str(), &data, 1))
+								{
+									scriptInstance->SetFieldValue<int>(name, data);
+								}
+							}
 							if (field.Type == ScriptFieldType::Vector3)
 							{
 								glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
@@ -520,6 +528,14 @@ namespace origin {
 										scriptField.SetValue<float>(data);
 									}
 								}
+								if (field.Type == ScriptFieldType::Int)
+								{
+									int data = scriptField.GetValue<int>();
+									if (ImGui::DragInt(name.c_str(), &data, 1))
+									{
+										scriptField.SetValue<int>(data);
+									}
+								}
 								if (field.Type == ScriptFieldType::Vector2)
 								{
 									glm::vec2 data = scriptField.GetValue<glm::vec3>();
@@ -555,6 +571,17 @@ namespace origin {
 										ScriptFieldInstance& fieldInstance = entityFields[name];
 										fieldInstance.Field = field;
 										fieldInstance.SetValue<float>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Int)
+								{
+									int data = 0.0f;
+									if (ImGui::DragInt(name.c_str(), &data))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<int>(data);
 									}
 								}
 
@@ -657,6 +684,27 @@ namespace origin {
 
 			DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
 				{
+				if(!component.FontAsset)
+					component.FontAsset = Font::GetDefault();
+					
+					ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path fontPath = Project::GetAssetFileSystemPath(path).generic_string();
+							if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
+							{
+								if(component.FontAsset)
+										component.FontAsset.reset();
+								
+								component.FontAsset = std::make_shared<Font>(fontPath);
+							}
+						}
+					}
+				
 					ImGui::InputTextMultiline("Text String", &component.TextString);
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);

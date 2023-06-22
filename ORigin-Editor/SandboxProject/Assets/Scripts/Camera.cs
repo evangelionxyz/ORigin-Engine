@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 using ORiginEngine;
 
@@ -17,7 +17,7 @@ namespace Game
         void OnUpdate(float deltaTime)
         {
             if(player != null)
-                Translation = new Vector3(player.Translation.XY, distance);
+                Translation = new Vector3(player.Translation.X, player.Translation.Y + 1.5f, distance);
         }
     }
 }

@@ -6,7 +6,7 @@
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Model.h"
-#include "Audio.h"
+#include "Origin\Audio\Audio.h"
 
 #include "Entity.h"
 #include "Component.h"
@@ -266,6 +266,7 @@ namespace origin {
 			out << YAML::BeginMap; // TextComponent
 			auto& textComponent = entity.GetComponent<TextComponent>();
 			out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
+			out << YAML::Key << "FontFilepath" << YAML::Value << textComponent.FontAsset->GetFilepath();
 			out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
 			out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
 			out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
@@ -677,11 +678,21 @@ namespace origin {
 				if (auto textComponent = entity["TextComponent"])
 				{
 					auto& text = deserializedEntity.AddComponent<TextComponent>();
+					const std::string filepath = textComponent["FontFilepath"].as<std::string>();
+					
+					if(filepath.empty() || filepath == Font::GetDefault()->GetFilepath())
+						text.FontAsset = Font::GetDefault();
+					
+					else if(!filepath.empty() && !text.FontAsset)
+					{
+						auto path = Project::GetAssetFileSystemPath(filepath);
+						text.FontAsset = std::make_shared<Font>(path);
+					}
+					
 					text.TextString = textComponent["TextString"].as<std::string>();
 					text.Color = textComponent["Color"].as<glm::vec4>();
 					text.Kerning = textComponent["Kerning"].as<float>();
 					text.LineSpacing = textComponent["LineSpacing"].as<float>();
-
 				}
 
 				if (auto boxCollider2DComponent = entity["BoxCollider2DComponent"])

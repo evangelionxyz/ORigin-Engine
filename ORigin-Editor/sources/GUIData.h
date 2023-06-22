@@ -6,13 +6,14 @@ namespace origin {
 
 	static float RMHoldTime = 0.0f;
 	static float LMHoldTime = 0.0f;
+	
 	static bool guiDockingSpaceOpen = true;
 	static bool guiMenuFullscreen = false;
-	static bool guiMenuStyle = true;
+	static bool guiMenuStyle = false;
 	static bool guiPrompt = false;
 	static bool guiRenderStatus = true;
 	static bool guiDebugInfo = true;
-	static bool guiImGuiDemoWindow = true;
+	static bool guiImGuiDemoWindow = false;
 	static bool guiOverlay = true;
 
 	// Audio

@@ -3,7 +3,7 @@
 #include "..\Editor.h"
 #include "..\GUIData.h"
 
-#include "Origin\Scene\Audio.h"
+#include "Origin\Audio\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
 
 namespace origin

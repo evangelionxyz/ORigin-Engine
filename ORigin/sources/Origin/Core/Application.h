@@ -53,13 +53,13 @@ namespace origin {
 		inline static Application& Get() { return *s_Instance; }
 		inline bool GetMinimized() { return m_Minimized; }
 		inline Window& GetWindow() { return *m_Window; }
-		const ApplicationSpecification& GetSpecification() const { return m_Config; }
+		const ApplicationSpecification& GetSpecification() const { return m_Spec; }
 		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
 		void SubmitToMainThread(const std::function<void()>& function);
 
 	private:
-		ApplicationSpecification m_Config;
+		ApplicationSpecification m_Spec;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);

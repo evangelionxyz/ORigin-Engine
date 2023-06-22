@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+
+using System;
 using ORiginEngine;
 
 namespace Game

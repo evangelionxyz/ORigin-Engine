@@ -15,7 +15,6 @@ namespace origin
 		GuiLayer() : Layer("Gui Layer") {}
 		~GuiLayer();
 
-		void OnUpdate(Timestep ts) override;
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnEvent(Event& e) override;

@@ -1,9 +1,7 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include <string>
-#include "Entity.h"
-
 #include <fmod.hpp>
 #include <fmod_errors.h>
 

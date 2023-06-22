@@ -76,6 +76,7 @@ namespace origin
 		glm::vec3 Position;
 		glm::vec4 Color;
 		glm::vec2 TexCoord;
+		float TexIndex;
 
 		// TODO: background color for outline/bg
 		// Editor Only
@@ -129,8 +130,8 @@ namespace origin
 		std::shared_ptr<VertexArray> TextVertexArray;
 		std::shared_ptr<VertexBuffer> TextVertexBuffer;
 		std::shared_ptr<Shader> TextShader;
-		std::shared_ptr<Texture2D> FontAtlasTexture;
-
+		uint32_t FontAtlasTextureIndex = 0;
+		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> FontAtlasTextureSlots;
 		uint32_t TextIndexCount = 0;
 		TextVertex* TextVertexBufferBase = nullptr;
 		TextVertex* TextVertexBufferPtr = nullptr;
