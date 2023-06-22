@@ -4,11 +4,7 @@ Entities:
     TagComponent:
       Tag: Empty
     TransformComponent:
-<<<<<<< HEAD
       Translation: [-15.8174181, 2.82672691, -1]
-=======
-      Translation: [-15.8174181, 2.82672691, 0]
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
       Rotation: [0, 0, 0]
       Scale: [0.819999993, 0.819999993, 0.819999993]
     TextComponent:
@@ -19,15 +15,9 @@ Entities:
       LineSpacing: 0
   - Entity: 2805043780644485860
     TagComponent:
-<<<<<<< HEAD
       Tag: ORigin Engine
     TransformComponent:
       Translation: [-15.9844332, 1.84517574, -1]
-=======
-      Tag: Empty
-    TransformComponent:
-      Translation: [-15.9844332, 1.84517574, -0.149936736]
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
       Rotation: [0, 0, 0]
       Scale: [0.730000019, 0.730000019, 0.730000019]
     TextComponent:
@@ -39,13 +29,7 @@ Entities:
     ScriptComponent:
       ClassName: Game.TextAnimation
       StoredFields:
-<<<<<<< HEAD
         []
-=======
-        - Name: speed
-          Type: Float
-          Data: 18
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
   - Entity: 2046730225581698533
     TagComponent:
       Tag: JumpAudio
@@ -87,7 +71,6 @@ Entities:
       Translation: [-2.5019424, 6.32906961, 0.0081782192]
       Rotation: [-3.14159226, 0, -3.14159226]
       Scale: [1.10787785, 1.10787785, 1.10787785]
-<<<<<<< HEAD
     SpriteRenderer2DComponent:
       Color: [0, 0.759493828, 1, 1]
       TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
@@ -136,12 +119,6 @@ Entities:
     SpriteRenderer2DComponent:
       Color: [1, 0.58227843, 0, 1]
       TillingFactor: 1
-=======
-    SpriteRenderer2DComponent:
-      Color: [0, 0.759493828, 1, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
-      TillingFactor: 2
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
     Rigidbody2DComponent:
       BodyType: Static
       FixedRotation: false
@@ -204,50 +181,6 @@ Entities:
       TillingFactor: 2
     Rigidbody2DComponent:
       BodyType: Dynamic
-      FixedRotation: true
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 2711569248296025484
-    TagComponent:
-      Tag: Audio
-    AudioComponent:
-      Name: Ambient Sound
-      Filepath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Audio\ambient.mp3
-      Volume: 1
-      Pitch: 1
-      MinDistance: 2.79999995
-      MaxDistance: 100
-      Looping: true
-      Spatial: false
-      PlayAtStart: true
-    TransformComponent:
-      Translation: [-3.85015678, -2.99952507, -1]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 6688487768955178568
-    TagComponent:
-      Tag: Monkey
-    TransformComponent:
-      Translation: [0.28062588, 2.83731318, 2.95760155]
-      Rotation: [0, 0, 0]
-      Scale: [0.797500074, 0.797500074, 0.797500074]
-  - Entity: 7638181103855123601
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [63.7287521, 12.7346058, 0]
-      Rotation: [0, 0, 0]
-      Scale: [163.262024, 0.512739241, 1.37]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
       FixedRotation: false
     BoxCollider2DComponent:
       Offset: [0, 0]
@@ -256,7 +189,6 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-<<<<<<< HEAD
   - Entity: 3832955182581467926
     TagComponent:
       Tag: ground
@@ -395,279 +327,6 @@ Entities:
       Translation: [45.2835045, -4.27540493, -0.000517347362]
       Rotation: [0, 0, 0]
       Scale: [1.28399992, 1.28399992, 1.28399992]
-=======
-  - Entity: 17001563282134585311
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [87.3836823, 5.82719898, 0]
-      Rotation: [0, 0, 1.57079637]
-      Scale: [14.1192627, 0.512574792, 1.37]
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 208478295841425013
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [-16.8437748, 5.82720137, 0]
-      Rotation: [0, 0, 1.57079637]
-      Scale: [14.1203089, 0.512640178, 1.37]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 13010196428877968905
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [5.56176233, 0.170815706, -0.000825058727]
-      Rotation: [0, 0, -0.275102496]
-      Scale: [2.14000058, 2.13999963, 2.13999963]
-    SpriteRenderer2DComponent:
-      Color: [1, 0, 0, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
-      TillingFactor: 2
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-<<<<<<< HEAD
-  - Entity: 8588012879625845848
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [61.499939, 3.33491373, -2]
-=======
-  - Entity: 3832955182581467926
-    TagComponent:
-      Tag: ground
-    TransformComponent:
-      Translation: [-5.97317171, -1.19934154, 0]
-      Rotation: [0, 0, 0]
-      Scale: [22.6886368, 0.512739241, 1.37]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 10163039406884030298
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [-14.395545, -0.864659071, 8.31221008]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 5
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-      FixedAspectRatio: false
-    ScriptComponent:
-      ClassName: Game.Camera
-      StoredFields:
-        []
-  - Entity: 9453662782248772370
-    TagComponent:
-      Tag: Player
-    TransformComponent:
-      Translation: [-14.0674, 0.359363735, -1.08545646e-06]
-      Rotation: [-3.14159226, 0, -3.14159226]
-      Scale: [1.25999999, 1.25999999, 1.25999999]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets\Textures\player.png
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.379999995, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0.5
-      RestitutionThreshold: 0.5
-    ScriptComponent:
-      ClassName: Game.Player
-      StoredFields:
-        []
-  - Entity: 6521376844893389123
-    TagComponent:
-      Tag: TimeStep
-    TransformComponent:
-      Translation: [-4.74184322, -0.325691044, 0.549536109]
-      Rotation: [0, 0, 0]
-      Scale: [0.689999998, 0.689999998, 0.689999998]
-    TextComponent:
-      TextString: "Time:"
-      FontFilepath: Resources/Fonts/segoeui.ttf
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 0
-  - Entity: 3670575809214081069
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [4.27050877, 3.33491373, -2]
-      Rotation: [0, 0, 0]
-      Scale: [57.3826294, 27.0660172, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.0525556915, 0.172995806, 0, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
-      TillingFactor: 10
-  - Entity: 379364759296721968
-    TagComponent:
-      Tag: ground
-    TransformComponent:
-      Translation: [7.17211628, -3.31660175, 0]
-      Rotation: [0, 0, -0.785398304]
-      Scale: [6.23909569, 0.512739778, 1.37]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 11597316506447393189
-    TagComponent:
-      Tag: ground
-    TransformComponent:
-      Translation: [53.9325981, -5.21151876, 0]
-      Rotation: [0, 0, 0]
-      Scale: [89.3078537, 0.512739241, 1.37]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.58227843, 0, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 11270766886998620903
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [23.359293, 2.16160536, -0.311987728]
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
-      Rotation: [0, 0, 0]
-      Scale: [57.3826294, 27.0660172, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.0525556915, 0.172995806, 0, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
-      TillingFactor: 10
-  - Entity: 14264270732088883041
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [27.7669239, 4.6716156, -0.316683412]
-      Rotation: [0, 0, -0.627642274]
-      Scale: [0.890453875, 0.890453875, 0.890453994]
-    SpriteRenderer2DComponent:
-      Color: [0, 1, 0.126582146, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
-      TillingFactor: 2
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-<<<<<<< HEAD
-  - Entity: 7290089729736976403
-    TagComponent:
-      Tag: Level 2
-    TransformComponent:
-      Translation: [26.6783161, -2.47805071, 0.549536109]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    TextComponent:
-      TextString: Level 2
-      FontFilepath: Resources/Fonts/segoeui.ttf
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 0
-  - Entity: 10995863503049135073
-    TagComponent:
-      Tag: Level 1
-    TransformComponent:
-      Translation: [-4.33982563, 0.896393418, 0.549536109]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    TextComponent:
-      TextString: Level 1
-      FontFilepath: Resources/Fonts/segoeui.ttf
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 0
-  - Entity: 12507365440801323191
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-=======
-  - Entity: 1935799031924590342
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [45.2835045, -4.27540493, -0.000517347362]
-      Rotation: [0, 0, 0]
-      Scale: [1.28399992, 1.28399992, 1.28399992]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets\Textures\block.png
@@ -714,27 +373,6 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 1353238535539756
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [17.0123043, 2.99267554, -0.311923295]
-      Rotation: [0, 0, -0.627642274]
-      Scale: [0.890453875, 0.890453875, 0.890453994]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.810126543, 0, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
-      TillingFactor: 2
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
   - Entity: 7290089729736976403
     TagComponent:
       Tag: Level 2
@@ -765,7 +403,6 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
       Translation: [33.7644272, 7.1036005, -0.316744626]
       Rotation: [0, 0, -0.627642274]
       Scale: [0.890453875, 0.890453875, 0.890453994]
@@ -1010,30 +647,6 @@ Entities:
       TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets\Textures\block.png
       TillingFactor: 2
     Rigidbody2DComponent:
-<<<<<<< HEAD
-=======
-      BodyType: Dynamic
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 522739880100008399
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [14.5427904, -0.624390125, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets\Textures\flappybird\bird.png
-      TillingFactor: 1
-    Rigidbody2DComponent:
->>>>>>> f1659539fb0018360a4c9b046737157afdde0004
       BodyType: Dynamic
       FixedRotation: false
     BoxCollider2DComponent:
