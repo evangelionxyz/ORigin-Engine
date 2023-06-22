@@ -4,26 +4,26 @@ Entities:
     TagComponent:
       Tag: Empty
     TransformComponent:
-      Translation: [-15.8174181, 2.82672691, -1]
+      Translation: [-15.8174181, 3.00105047, -1]
       Rotation: [0, 0, 0]
       Scale: [0.819999993, 0.819999993, 0.819999993]
     TextComponent:
       TextString: Evangelion
       FontFilepath: C:/dev/ORigin/ORigin-Editor/SandboxProject/Assets/Fonts/barcool.ttf
-      Color: [0.807936788, 1, 0.510548532, 1]
+      Color: [1, 0.556962013, 0, 1]
       Kerning: 0
       LineSpacing: 0
   - Entity: 2805043780644485860
     TagComponent:
       Tag: ORigin Engine
     TransformComponent:
-      Translation: [-15.9844332, 1.84517574, -1]
+      Translation: [-15.9844332, 1.99958205, -1]
       Rotation: [0, 0, 0]
       Scale: [0.730000019, 0.730000019, 0.730000019]
     TextComponent:
-      TextString: ORgin Engine
+      TextString: ORigin Engine
       FontFilepath: C:/dev/ORigin/ORigin-Editor/SandboxProject/Assets/Fonts/barcool.ttf
-      Color: [1, 1, 1, 1]
+      Color: [0, 0.987341881, 1, 1]
       Kerning: 0
       LineSpacing: 0
     ScriptComponent:
@@ -277,9 +277,9 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [57.3826294, 27.0660172, 1]
     SpriteRenderer2DComponent:
-      Color: [0.0525556915, 0.172995806, 0, 1]
+      Color: [0.261603355, 0.261603355, 0.261603355, 1]
       TexturePath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Textures\images.jpg
-      TillingFactor: 10
+      TillingFactor: 20
   - Entity: 379364759296721968
     TagComponent:
       Tag: ground
@@ -656,3 +656,20 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
+  - Entity: 7657282945458876478
+    TagComponent:
+      Tag: ORigin Engine
+    TransformComponent:
+      Translation: [-15.9844332, 1.24596727, -1.0933392]
+      Rotation: [0, 0, 0]
+      Scale: [0.408800006, 0.408800006, 0.408800006]
+    TextComponent:
+      TextString: C++ Based
+      FontFilepath: C:/dev/ORigin/ORigin-Editor/SandboxProject/Assets/Fonts/Cooper Regular.ttf
+      Color: [1, 0.244725764, 0.799230814, 1]
+      Kerning: 0
+      LineSpacing: 0
+    ScriptComponent:
+      ClassName: Game.TextAnimation
+      StoredFields:
+        []
