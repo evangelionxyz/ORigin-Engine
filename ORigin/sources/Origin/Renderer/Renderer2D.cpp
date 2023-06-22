@@ -197,6 +197,36 @@ namespace origin {
 			RenderCommand::DrawIndexed(s_2Ddata.QuadVertexArray, s_2Ddata.QuadIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
 		}
+<<<<<<< HEAD
+=======
+
+		if (s_2Ddata.TextIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.TextVertexBufferPtr - (uint8_t*)s_2Ddata.TextVertexBufferBase);
+			s_2Ddata.TextVertexBuffer->SetData(s_2Ddata.TextVertexBufferBase, dataSize);
+
+			auto buf = s_2Ddata.TextVertexBufferBase;
+			// Bind textures
+			for (uint32_t i = 0; i < s_2Ddata.FontAtlasTextureIndex; i++)
+				s_2Ddata.FontAtlasTextureSlots[i]->Bind(i);
+
+			s_2Ddata.TextShader->Bind();
+
+			RenderCommand::DrawIndexed(s_2Ddata.TextVertexArray, s_2Ddata.TextIndexCount);
+			s_2Ddata.Stats.DrawCalls++;
+		}
+
+		if (s_2Ddata.CircleIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.CircleVertexBufferPtr - (uint8_t*)s_2Ddata.CircleVertexBufferBase);
+			s_2Ddata.CircleVertexBuffer->SetData(s_2Ddata.CircleVertexBufferBase, dataSize);
+
+			s_2Ddata.CircleShader->Bind();
+
+			RenderCommand::DrawIndexed(s_2Ddata.CircleVertexArray, s_2Ddata.CircleIndexCount);
+			s_2Ddata.Stats.DrawCalls++;
+		}
+>>>>>>> f1659539fb0018360a4c9b046737157afdde0004
 	}
 
 	void Renderer2D::NextBatch()

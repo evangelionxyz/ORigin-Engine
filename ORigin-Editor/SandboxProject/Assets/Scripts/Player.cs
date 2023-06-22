@@ -19,7 +19,11 @@ namespace Game
         public float yAxis = 0.0f;
 
         public int keyPressedCount = 0;
+<<<<<<< HEAD
         public float jumpTimeOut = 1.5f;
+=======
+        public float jumpTimeOut = 1.0f;
+>>>>>>> f1659539fb0018360a4c9b046737157afdde0004
 
         void OnCreate()
         {
@@ -50,7 +54,21 @@ namespace Game
                     jumpAudio.Play();
 
                 if (Translation.Y < 6.0f && jumpTimeOut > 0.0f)
+<<<<<<< HEAD
                     velocity.Y = 4.0f;
+=======
+                    velocity.Y = 3.0f;
+
+                keyPressedCount++;
+                jumpTimeOut -= deltaTime;
+            }
+            else
+            {
+                keyPressedCount = 0;
+                jumpTimeOut = 1.0f;
+            }
+                
+>>>>>>> f1659539fb0018360a4c9b046737157afdde0004
 
                 keyPressedCount++;
                 jumpTimeOut -= deltaTime;
