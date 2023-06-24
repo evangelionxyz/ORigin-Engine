@@ -2,7 +2,7 @@
 
 #pragma once
 #include "Origin\Core\Application.h"
-
+#include "Origin\Animation\Animation.h"
 #include "Origin\Math\Math.h"
 
 #include "Origin\IO\Input.h"
@@ -26,6 +26,7 @@
 #include "Origin\Renderer\Model.h"
 
 #include "Origin\Renderer\Shader.h"
+#include "Origin\Renderer\ParticleSystem.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\subTexture2D.h"
 #include "Origin\Renderer\Framebuffer.h"

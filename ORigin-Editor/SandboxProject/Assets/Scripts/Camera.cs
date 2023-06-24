@@ -17,7 +17,9 @@ namespace Game
         void OnUpdate(float deltaTime)
         {
             if(player != null)
-                Translation = new Vector3(player.Translation.X, player.Translation.Y + 1.5f, distance);
+            {
+                Translation = new Vector3(player.Translation.XY, distance);
+            }
         }
     }
 }

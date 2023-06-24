@@ -39,9 +39,9 @@ namespace origin
 
     Scene::Scene()
     {
-        m_CameraIcon = Texture2D::Create("Resources/UITextures/camera.png");
-        m_LightingIcon = Texture2D::Create("Resources/UITextures/lighting.png");
-        m_AudioIcon = Texture2D::Create("Resources/UITextures/audio.png");
+      m_CameraIcon = Texture2D::Create("Resources/UITextures/camera.png");
+      m_LightingIcon = Texture2D::Create("Resources/UITextures/lighting.png");
+      m_AudioIcon = Texture2D::Create("Resources/UITextures/audio.png");
     }
 
     Scene::~Scene()
@@ -261,7 +261,8 @@ namespace origin
         m_Registry.destroy(entity);
     }
 
-    void Scene::OnUpdateRuntime(Timestep time)
+    
+    void Scene::OnUpdateRuntime(Timestep deltaTime)
     {
       if (!m_Paused || m_StepFrames-- > 0)
       {
@@ -271,7 +272,7 @@ namespace origin
           for (auto& e : view)
           {
             Entity entity = { e, this };
-            ScriptEngine::OnUpdateEntity(entity, time);
+            ScriptEngine::OnUpdateEntity(entity, deltaTime);
           }
 
           m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -282,7 +283,7 @@ namespace origin
               nsc.Instance->m_Entity = Entity{ entity, this };
               nsc.Instance->OnCreate();
             }
-            nsc.Instance->OnUpdate(time);
+            nsc.Instance->OnUpdate(deltaTime);
           });
         }
 
@@ -290,7 +291,7 @@ namespace origin
         {
           const int32_t velocityIterations = 6;
           const int32_t positionIterations = 2;
-          m_Box2DWorld->Step(time, velocityIterations, positionIterations);
+          m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
 
           // Retrieve transform from Box2D
           auto& view = m_Registry.view<Rigidbody2DComponent>();
@@ -330,6 +331,13 @@ namespace origin
       if (mainCamera)
           RenderScene(mainCamera, cameraTransform);
 
+      {
+        m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
+          {
+            pc.Particle.OnUpdate(deltaTime);
+          });
+      }
+
       // Audio Update
       {
         auto view = m_Registry.view<TransformComponent, AudioComponent>();
@@ -355,7 +363,7 @@ namespace origin
       }
     }
 
-    void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
+    void Scene::OnUpdateEditor(Timestep deltaTime, EditorCamera& camera)
     {
       m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
       {
@@ -365,11 +373,18 @@ namespace origin
               nsc.Instance->m_Entity = Entity{entity, this};
               nsc.Instance->OnCreate();
           }
-          nsc.Instance->OnUpdate(time);
+          nsc.Instance->OnUpdate(deltaTime);
       });
 
       //Render
       RenderScene(camera);
+
+      {
+        m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
+        {
+            pc.Particle.OnUpdate(deltaTime);
+        });
+      }
 
       // Audio Update
       {
@@ -399,7 +414,7 @@ namespace origin
       }
     }
 
-    void Scene::OnUpdateSimulation(Timestep time, EditorCamera& camera)
+    void Scene::OnUpdateSimulation(Timestep deltaTime, EditorCamera& camera)
     {
       if (!m_Paused || m_StepFrames-- > 0)
       {
@@ -409,7 +424,7 @@ namespace origin
           for (auto e : view)
           {
               Entity entity = {e, this};
-              ScriptEngine::OnUpdateEntity(entity, time);
+              ScriptEngine::OnUpdateEntity(entity, deltaTime);
           }
 
           m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -420,7 +435,7 @@ namespace origin
                   nsc.Instance->m_Entity = Entity{entity, this};
                   nsc.Instance->OnCreate();
               }
-              nsc.Instance->OnUpdate(time);
+              nsc.Instance->OnUpdate(deltaTime);
           });
         }
 
@@ -428,7 +443,7 @@ namespace origin
         {
           const int32_t velocityIterations = 6;
           const int32_t positionIterations = 2;
-          m_Box2DWorld->Step(time, velocityIterations, positionIterations);
+          m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
 
           // Retrieve transform from Box2D
           auto view = m_Registry.view<Rigidbody2DComponent>();
@@ -451,6 +466,13 @@ namespace origin
 
       // Render
       RenderScene(camera);
+
+      {
+        m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
+          {
+            pc.Particle.OnUpdate(deltaTime);
+          });
+      }
 
       // Audio Update
       {
@@ -532,6 +554,20 @@ namespace origin
         Renderer::BeginScene(*camera, cameraTransform.GetTransform());
         // Get Camera Position
         const glm::vec3& MainCameraPosition = cameraTransform.Translation;
+
+        // Particle
+        {
+          auto& view = m_Registry.view<TransformComponent, Particle2DComponent>();
+          for (auto entity : view)
+          {
+            auto& [tc, pc] = view.get<TransformComponent, Particle2DComponent>(entity);
+
+            for (int i = 0; i < 5; i++)
+              pc.Particle.Emit(pc, glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis), (int)entity);
+
+            pc.Particle.OnRender();
+          }
+        }
 
         // Sprites
         {
@@ -671,6 +707,20 @@ namespace origin
     void Scene::RenderScene(const EditorCamera& camera)
     {
         Renderer::BeginScene(camera);
+
+        // Particle
+        {
+          auto& view = m_Registry.view<TransformComponent, Particle2DComponent>();
+          for (auto entity : view)
+          {
+            auto& [tc, pc] = view.get<TransformComponent, Particle2DComponent>(entity);
+
+            for (int i = 0; i < 5; i++)
+              pc.Particle.Emit(pc, glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis), (int)entity);
+
+            pc.Particle.OnRender();
+          }
+        }
 
         // Sprites
         {
@@ -1135,6 +1185,11 @@ namespace origin
 
     template <>
     void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component)
+    {
+    }
+
+    template <>
+    void Scene::OnComponentAdded<Particle2DComponent>(Entity entity, Particle2DComponent& component)
     {
     }
 }

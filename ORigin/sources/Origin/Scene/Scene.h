@@ -6,6 +6,8 @@
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Scene/Component.h"
 
+#include "Origin\Renderer\ParticleSystem.h"
+
 #include "Origin/Renderer/Texture.h"
 #include "entt/entt.hpp"
 

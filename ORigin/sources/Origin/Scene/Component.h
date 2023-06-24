@@ -9,6 +9,7 @@
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Model.h"
 #include "Origin\Renderer\Font.h"
+#include "Origin\Renderer\ParticleSystem.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -52,6 +53,26 @@ namespace origin
 
 		AudioComponent() = default;
 		AudioComponent(const AudioComponent&) = default;
+	};
+
+	struct Particle2DComponent
+	{
+		ParticleSystem Particle;
+
+		glm::vec2 Velocity = glm::vec2(0.0f);
+		glm::vec2 VelocityVariation = glm::vec2(3.0f, 1.0f);
+		glm::vec4 ColorBegin = { 254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f };
+		glm::vec4 ColorEnd = { 254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f };
+		uint32_t PoolIndex = 1000;
+
+		float SizeBegin = 0.5f;
+		float SizeEnd = 0.0f;
+		float SizeVariation = 0.3f;
+		float ZAxis = 0.0f;
+		float LifeTime = 1.0f;
+
+		Particle2DComponent() = default;
+		Particle2DComponent(const Particle2DComponent&) = default;
 	};
 
 	struct StaticMeshComponent
@@ -278,7 +299,7 @@ namespace origin
 	using AllComponents =
 		ComponentGroup<TransformComponent, AudioComponent, PointLightComponent, SpotLightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
-		CircleRendererComponent, CameraComponent,
+		CircleRendererComponent, CameraComponent, Particle2DComponent,
 		ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
 }

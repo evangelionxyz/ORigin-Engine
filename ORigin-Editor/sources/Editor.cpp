@@ -17,10 +17,12 @@ namespace origin
 {
   Editor::Editor() : Layer("Editor")
   {
+
   }
 
   Editor::~Editor()
   {
+    ScriptEngine::Shutdown();
   }
 
   void Editor::OnAttach()

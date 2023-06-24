@@ -274,6 +274,24 @@ namespace origin {
 			out << YAML::EndMap; // !TextComponent
 		}
 
+		if (entity.HasComponent<Particle2DComponent>())
+		{
+			out << YAML::Key << "Particle2DComponent";
+			out << YAML::BeginMap; // Particle2DComponent
+			auto& particle2DComponent = entity.GetComponent<Particle2DComponent>();
+			out << YAML::Key << "Velocity" << YAML::Value << particle2DComponent.Velocity;
+			out << YAML::Key << "VelocityVariation" << YAML::Value << particle2DComponent.VelocityVariation;
+			out << YAML::Key << "ColorBegin" << YAML::Value << particle2DComponent.ColorBegin;
+			out << YAML::Key << "ColorEnd" << YAML::Value << particle2DComponent.ColorEnd;
+			out << YAML::Key << "SizeBegin" << YAML::Value << particle2DComponent.SizeBegin;
+			out << YAML::Key << "SizeEnd" << YAML::Value << particle2DComponent.SizeEnd;
+			out << YAML::Key << "SizeVariation" << YAML::Value << particle2DComponent.SizeVariation;
+			out << YAML::Key << "ZAxis" << YAML::Value << particle2DComponent.ZAxis;
+			out << YAML::Key << "LifeTime" << YAML::Value << particle2DComponent.LifeTime;
+
+			out << YAML::EndMap; // !Particle2DComponent
+		}
+
 		if (entity.HasComponent<SpriteRendererComponent>())
 		{
 			out << YAML::Key << "SpriteRendererComponent";
@@ -605,6 +623,20 @@ namespace origin {
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 					if (spriteRendererComponent["TexturePath"])
 						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
+				}
+
+				if (auto particle2DComponent = entity["Particle2DComponent"])
+				{
+					auto& pc = deserializedEntity.AddComponent<Particle2DComponent>();
+					pc.Velocity = particle2DComponent["Velocity"].as<glm::vec2>();
+					pc.VelocityVariation = particle2DComponent["VelocityVariation"].as<glm::vec2>();
+					pc.ColorBegin = particle2DComponent["ColorBegin"].as<glm::vec4>();
+					pc.ColorEnd = particle2DComponent["ColorEnd"].as<glm::vec4>();
+					pc.SizeBegin = particle2DComponent["SizeBegin"].as<float>();
+					pc.SizeEnd = particle2DComponent["SizeEnd"].as<float>();
+					pc.SizeVariation = particle2DComponent["SizeVariation"].as<float>();
+					pc.ZAxis = particle2DComponent["ZAxis"].as<float>();
+					pc.LifeTime = particle2DComponent["LifeTime"].as<float>();
 				}
 
 				if (auto spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])

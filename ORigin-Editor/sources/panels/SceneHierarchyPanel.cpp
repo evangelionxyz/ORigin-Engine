@@ -201,6 +201,7 @@ namespace origin {
 			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
+			DisplayAddComponentEntry<Particle2DComponent>("PARTICLE 2D");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRLCE COLLIDER 2D");
 
 			ImGui::EndPopup();
@@ -431,6 +432,7 @@ namespace origin {
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 				bool isSelected = false;
+				
 
 				if (!scriptClassExist)
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
@@ -453,19 +455,21 @@ namespace origin {
 					}
 					ImGui::EndCombo();
 				}
-
+				
 				if (ImGui::Button("Detach"))
 				{
 					component.ClassName = "Detached";
 					isSelected = false;
 				}
 
+				bool detached = component.ClassName == "Detached";
+
 				// fields
 				bool isRunning = scene->IsRunning();
 				if (isRunning)
 				{
 					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-					if (scriptInstance)
+					if (scriptInstance && !detached)
 					{
 						auto& fields = scriptInstance->GetScriptClass()->GetFields();
 
@@ -508,7 +512,7 @@ namespace origin {
 				} // !IsRunning
 				else
 				{
-					if (scriptClassExist)
+					if (scriptClassExist && !detached)
 					{
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 						const auto& fields = entityClass->GetFields();
@@ -709,6 +713,22 @@ namespace origin {
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
 					ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
+				});
+
+			DrawComponent<Particle2DComponent>("PARTICLE 2D", entity, [](auto& component)
+				{
+					float columnWidth = 100.0f;
+
+					ImGui::ColorEdit4("Color Begin", glm::value_ptr(component.ColorBegin));
+					ImGui::ColorEdit4("Color End", glm::value_ptr(component.ColorEnd));
+					DrawVec2Control("Velocity", component.Velocity, 0.01f, 0.5f, columnWidth);
+					DrawVec2Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
+
+					DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
+					DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
+					DrawVecControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
+					DrawVecControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
+					DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
 				});
 
 		DrawComponent<SpriteRendererComponent>("SPRITE RENDERER", entity, [](auto& component)
