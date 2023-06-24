@@ -32,10 +32,9 @@ namespace origin {
 		}
 	}
 
-	void Animation::Render()
+	void Animation::Render(const glm::mat4& transform)
 	{
 		GetCurrentSprite()->Bind();
-		glm::mat4 transform = glm::mat4(1.0f);
 		Renderer2D::DrawQuad(transform, GetCurrentSprite());
 	}
 

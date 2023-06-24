@@ -38,7 +38,7 @@ namespace origin {
 
 		void Reset();
 		void Update(float deltaTime);
-		void Render();
+		void Render(const glm::mat4& transform);
 
 		void SetLoop(bool looping);
 

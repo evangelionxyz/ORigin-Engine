@@ -17,9 +17,15 @@ namespace origin {
 
   private:
     EditorCamera camera;
-    Animation anim;
-    std::shared_ptr<Texture2D> tex1, tex2, tex3, tex4, tex5;
-    float frameTime = 0.23f;
+    Animation marioAnim, fireballAnim;
+    std::shared_ptr<Texture2D> mario1, mario2, mario3, mario4, mario5;
+    std::shared_ptr<Texture2D> fireball1, fireball2, fireball3, fireball4, fireball5, fireball6, fireball7, fireball8;
+
+    glm::vec3 marioPosition = glm::vec3(-1.0f, 0.0f, 0.0f);
+    glm::vec3 fireballPosition = glm::vec3(1.0f, 0.0f, 0.0f);
+
+    float marioFrameTime = 0.1f;
+    float fireballFrameTime = 0.3f;
     bool looping = true;
   };
 
