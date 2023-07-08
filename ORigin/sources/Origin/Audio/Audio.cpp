@@ -20,15 +20,17 @@ namespace origin {
 	static AudioData s_Data;
 
 	Audio::Audio(const AudioConfig& config)
-		: m_Config(config)
+		: m_Spec(config)
 	{
 		m_Sound = AudioEngine::CreateSound(config.Name, config.Filepath.c_str(), config.Spatial ? FMOD_3D : FMOD_2D);
 		FMOD_CHECK(s_Data.Result);
 
+		OGN_CORE_ASSERT(m_Sound);
+
 		s_Data.Result = m_Sound->setMode(config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 		FMOD_CHECK(s_Data.Result)
 
-		if (m_Config.Spatial)
+		if (m_Spec.Spatial)
 		{
 			s_Data.Result = s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
 			FMOD_CHECK(s_Data.Result);
@@ -36,25 +38,25 @@ namespace origin {
 			s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
 			FMOD_CHECK(s_Data.Result);
 
-			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
 			FMOD_CHECK(s_Data.Result);
 		}
 	}
 
 	Audio::Audio(const std::string& name, const std::filesystem::path& filepath, bool loop, bool spatial)
 	{
-		m_Config.Name = name;
-		m_Config.Filepath = filepath.string();
-		m_Config.Looping = loop;
-		m_Config.Spatial = spatial;
+		m_Spec.Name = name;
+		m_Spec.Filepath = filepath.string();
+		m_Spec.Looping = loop;
+		m_Spec.Spatial = spatial;
 
-		m_Sound = AudioEngine::CreateSound(name, m_Config.Filepath.c_str(), FMOD_3D);
+		m_Sound = AudioEngine::CreateSound(name, m_Spec.Filepath.c_str(), FMOD_3D);
 		FMOD_CHECK(s_Data.Result);
 
-		s_Data.Result = m_Sound->setMode(m_Config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+		s_Data.Result = m_Sound->setMode(m_Spec.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 		FMOD_CHECK(s_Data.Result)
 
-		if (m_Config.Spatial)
+		if (m_Spec.Spatial)
 		{
 			s_Data.Result = s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
 			FMOD_CHECK(s_Data.Result);
@@ -62,7 +64,7 @@ namespace origin {
 			s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
 			FMOD_CHECK(s_Data.Result);
 
-			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
 			FMOD_CHECK(s_Data.Result);
 		}
 	}
@@ -116,31 +118,31 @@ namespace origin {
 
 	void Audio::SetMinDistance(float value)
 	{
-		m_Config.MinDistance = value;
-		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+		m_Spec.MinDistance = value;
+		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
 		FMOD_CHECK(s_Data.Result);
 	}
 
 	void Audio::SetMaxDistance(float value)
 	{
-		m_Config.MaxDistance = value;
-		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+		m_Spec.MaxDistance = value;
+		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
 		FMOD_CHECK(s_Data.Result);
 	}
 
 	float Audio::GetMinDistance()
 	{
-		return m_Config.MinDistance;
+		return m_Spec.MinDistance;
 	}
 
 	float Audio::GetMaxDistance()
 	{
-		return m_Config.MaxDistance;
+		return m_Spec.MaxDistance;
 	}
 
 	void Audio::Release()
 	{
-		OGN_CORE_WARN("Audio Releasing: {}", m_Config.Name);
+		OGN_CORE_WARN("Audio Releasing: {}", m_Spec.Name);
 
 		s_Data.Result = m_Channel->stop();
 		FMOD_CHECK(s_Data.Result);
@@ -150,7 +152,7 @@ namespace origin {
 
 	void Audio::SetLoop(bool loop)
 	{
-		m_Config.Looping = loop;
+		m_Spec.Looping = loop;
 
 		s_Data.Result = m_Sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 		FMOD_CHECK(s_Data.Result);
@@ -158,7 +160,7 @@ namespace origin {
 
 	void Audio::SetName(const std::string& name)
 	{
-		m_Config.Name = name;
+		m_Spec.Name = name;
 	}
 
 	void Audio::SetPosition(const glm::vec3& position)
@@ -183,12 +185,14 @@ namespace origin {
 	//////////////// Audio Engine ////////////////
 	//////////////////////////////////////////////
 
-	void AudioEngine::Init()
+	bool AudioEngine::Init()
 	{
 		s_Data.Result = FMOD::System_Create(&s_Data.AudioSystem);
 		FMOD_CHECK(s_Data.Result);
 		s_Data.Result = s_Data.AudioSystem->init(s_Data.MAX_CHANNELS, FMOD_INIT_NORMAL, 0);
 		FMOD_CHECK(s_Data.Result);
+
+		return true;
 	}
 
 	void AudioEngine::Shutdown()

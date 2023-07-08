@@ -5,6 +5,7 @@
 #include "Scene.h"
 #include "Origin\Audio\Audio.h"
 #include "ScriptableEntity.h"
+
 #include "Component.h"
 
 #include "Origin/Scripting/ScriptEngine.h"
@@ -12,6 +13,8 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer3D.h"
+
+#include "Origin\Animation\Animation.h"
 
 // Box2D
 #include "box2d/b2_world.h"
@@ -409,6 +412,17 @@ namespace origin
         }
         Renderer2D::EndScene();
 
+        // Animation
+        {
+          auto view = m_Registry.view<AnimationComponent>();
+          for (auto entity : view)
+          {
+            auto& ac = view.get<AnimationComponent>(entity);
+            if (ac.Animation)
+              ac.Animation->Update(deltaTime);
+          }
+        }
+
         AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
         AudioEngine::SystemUpdate();
       }
@@ -741,7 +755,14 @@ namespace origin
                 auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
                 Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
             }
-            Renderer::EndScene();
+
+            auto& view2 = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
+            for (auto& entity : view2)
+            {
+              auto& [sprite, anim] = view2.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
+              if (anim.State.HasAnimation())
+                sprite.Texture = anim.State.GetAnimation()->GetCurrentSprite();
+            }
         }
 
         // Circles
@@ -1108,6 +1129,11 @@ namespace origin
 
     template <>
     void Scene::OnComponentAdded<AudioComponent>(Entity entity, AudioComponent& component)
+    {
+    }
+
+   template <>
+    void Scene::OnComponentAdded<AnimationComponent>(Entity entity, AnimationComponent& component)
     {
     }
 

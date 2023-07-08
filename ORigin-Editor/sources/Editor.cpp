@@ -13,11 +13,13 @@
 #include <imgui_internal.h>
 #include <filesystem>
 
-namespace origin
-{
+namespace origin {
+
+  Editor* Editor::s_Instance = nullptr;
+
   Editor::Editor() : Layer("Editor")
   {
-
+    s_Instance = this;
   }
 
   Editor::~Editor()
@@ -187,12 +189,10 @@ namespace origin
   {
       m_Dockspace.Begin();
       MenuBar();
-
       SceneViewport();
-
       m_SceneHierarchy.OnImGuiRender();
       m_ContentBrowser->OnImGuiRender();
-        
+      GUIRender();
       m_Dockspace.End();
   }
 

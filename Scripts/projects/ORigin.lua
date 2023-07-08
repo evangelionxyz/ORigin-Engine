@@ -22,7 +22,9 @@ files {
     "%{IncludeDir.STBI}/**.cpp",
     "%{IncludeDir.STBI}/**.h",
     "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
-    "%{IncludeDir.IMGUIZMO}/ImGuizmo.h",
+    "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
+    "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
+    "%{IncludeDir.IMGUIZMO}/ImSequencer.h",
 }
 
 includedirs {

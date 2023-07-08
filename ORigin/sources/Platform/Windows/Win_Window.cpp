@@ -10,29 +10,32 @@
 #include "Origin\IO\Events\AppEvent.h"
 #include "Origin\Core\Application.h"
 
-namespace origin
-{
-	WinWindow::WinWindow(const std::string& title)
+namespace origin {
+
+	WinWindow::WinWindow(const WindowConfig& config) : m_Config(config)
 	{
-		m_Data.Width = 1280;
-		m_Data.Height = 640;
+		m_Data.Title = config.Title;
+		m_Data.Width = config.Width;
+		m_Data.Height = config.Height;
+		Init();
+	}
+
+	WinWindow::WinWindow(const std::string& title, uint32_t width, uint32_t height)
+	{
+		m_Data.Width = width;
+		m_Data.Height = height;
+
 		m_Data.Title = title;
 		Init();
 	}
 
 	WinWindow::~WinWindow()
 	{
-		glfwTerminate();
-		glfwDestroyWindow(m_Window);
+		Destroy();
 	}
 
 	void WinWindow::Init()
 	{
-		if (!glfwInit())
-		{
-			OGN_CORE_ASSERT(false);
-		}
-
 		m_Monitor = glfwGetPrimaryMonitor();
 		glfwGetMonitorWorkarea(m_Monitor, &monitorPos.x, &monitorPos.y, &monitorSize.x, &monitorSize.y);
 
@@ -41,11 +44,15 @@ namespace origin
 
 #if defined(OGN_DEBUG)
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		{
 			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+		}
 #endif
+		glfwWindowHint(GLFW_DECORATED, m_Config.Decorated ? GLFW_TRUE : GLFW_FALSE);
 		m_Window = glfwCreateWindow(windowSize.x, windowSize.y, m_Data.Title.c_str(), nullptr, nullptr);
 
-		if (!m_Window) {
+		if (!m_Window)
+		{
 			OGN_CORE_ERROR("ERROR : FAILED TO CREATE WINDOW");
 			glfwTerminate();
 		}
@@ -55,10 +62,11 @@ namespace origin
 		windowPos.x = m_Data.xPos;
 		windowPos.y = m_Data.yPos;
 		glfwSetWindowPos(m_Window, m_Data.xPos, m_Data.yPos);
+	}
 
-		m_Context = GraphicsContext::Create(m_Window);
-		m_Context->Init();
-
+	void WinWindow::SetEventCallback(const std::function<void(Event&)>& callback)
+	{
+		m_Data.EventCallback = callback;
 		WindowCallbacks();
 	}
 
@@ -66,30 +74,27 @@ namespace origin
 	{
 		glfwPollEvents();
 		if (m_Data.Fullscreen)
-		{
 			glfwSetWindowMonitor(m_Window, m_Monitor, monitorPos.x, monitorPos.y, monitorSize.x, monitorSize.y, 0);
-		}
 
-		if (!m_Data.Fullscreen)
+		if(!m_Data.Fullscreen && !m_Data.Maximized)
 		{
-			if (!m_Data.Maximized)
-			{
-				if ((int)m_Data.Width >= monitorSize.x)
-					m_Data.Width = windowSize.x;
-				if ((int)m_Data.Height >= monitorSize.y)
-					m_Data.Height = windowSize.y;
+			if ((int)m_Data.Width >= monitorSize.x)
+				m_Data.Width = windowSize.x;
+			if ((int)m_Data.Height >= monitorSize.y)
+				m_Data.Height = windowSize.y;
 
-				if ((int)m_Data.xPos == 0)
-					m_Data.xPos = windowPos.x;
-				if ((int)m_Data.yPos == 0)
-					m_Data.yPos = windowPos.y;
-			}
+			if ((int)m_Data.xPos == 0)
+				m_Data.xPos = windowPos.x;
+			if ((int)m_Data.yPos == 0)
+				m_Data.yPos = windowPos.y;
+
 			glfwSetWindowMonitor(m_Window, nullptr, (int)m_Data.xPos, (int)m_Data.yPos, (int)m_Data.Width, (int)m_Data.Height, 0);
 		}
 
 		auto& app = Application::Get();
+
 		if (!app.GetMinimized())
-			m_Context->SwapBuffers();
+			glfwSwapBuffers(m_Window);
 	}
 
 	void WinWindow::SetVSync(bool enable)
@@ -179,6 +184,8 @@ namespace origin
 				}
 			});
 
+		
+
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -221,6 +228,33 @@ namespace origin
 				MouseMovedEvent event((float)xPos, (float)yPos);
 				data.EventCallback(event);
 			});
+	}
+
+	void WinWindow::Destroy()
+	{
+		glfwMakeContextCurrent(nullptr);
+		glfwDestroyWindow(m_Window);
+	}
+
+	void WinWindow::Decorated(bool enable)
+	{
+		m_Config.Decorated = enable;
+		glfwSetWindowAttrib(m_Window, GLFW_DECORATED, enable ? GLFW_TRUE : GLFW_FALSE);
+	}
+
+	void WinWindow::SetSize(uint32_t width, uint32_t height)
+	{
+		m_Data.Width = width;
+		m_Data.Height = height;
+
+		glfwSetWindowSize(m_Window, width, height);
+
+		m_Data.xPos = (monitorSize.x - width) / 2;
+		m_Data.yPos = (monitorSize.y - height) / 2;
+
+		windowPos.x = m_Data.xPos;
+		windowPos.y = m_Data.yPos;
+		glfwSetWindowPos(m_Window, m_Data.xPos, m_Data.yPos);
 	}
 
 	void WinWindow::SetIcon(const std::string& filepath)

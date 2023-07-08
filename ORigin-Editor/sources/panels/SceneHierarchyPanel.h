@@ -10,32 +10,34 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-namespace origin
-{
+namespace origin {
+
 	class SceneHierarchyPanel
 	{
 	public:
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const std::shared_ptr<Scene>& context);
-
-		Entity SetSelectedEntity(Entity entity);
-
-		Entity GetSelectedEntity() const { return m_SelectedEntity; }
-		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
-		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
-		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
-		void DestroyEntity(Entity entity);
+		static SceneHierarchyPanel& Get() { return *s_Instance; }
 		std::shared_ptr<Scene> GetContext() { return m_Context; }
 
-		void OnImGuiRender();
-	private:
-		template<typename T>
-		void DisplayAddComponentEntry(const std::string& entryName);
+		Entity SetSelectedEntity(Entity entity);
+		Entity GetSelectedEntity() const;
 
+		void OnImGuiRender();
+		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
+		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
+		void DestroyEntity(Entity entity);
+		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
+
+	private:
+		static SceneHierarchyPanel* s_Instance;
+
+		template<typename T>
+		bool DisplayAddComponentEntry(const std::string& entryName);
 		bool m_HierarchyMenuActive = false;
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
-	private:
+
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;
 

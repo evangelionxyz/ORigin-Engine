@@ -1,6 +1,6 @@
 -- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
--- Sandbox Project
+-- ORigin Editor Project
 project "ORigin-Editor"
 kind "ConsoleApp"
 language "C++"
@@ -73,13 +73,13 @@ filter "configurations:Debug"
     }
     
     postbuildcommands {
-        "{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
-        "{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
-        "{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
+        --"{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
+        --"{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
+        --"{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
 
         -- Copy 3rd Party Library
-        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-        "{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
+        --"{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
+        --"{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
     }
 
 filter "configurations:Release"

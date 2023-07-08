@@ -7,7 +7,8 @@
 
 namespace origin {
 
-	struct AudioConfig {
+	struct AudioConfig 
+	{
 		std::string Name;
 		std::string Filepath;
 		float MinDistance = 2.0f;
@@ -26,8 +27,8 @@ namespace origin {
 		
 		bool IsPlaying() { return !m_Paused; }
 		bool IsPaused() { return m_Paused; }
-		bool IsLooping() { return m_Config.Looping; }
-		bool IsSpatial() { return m_Config.Spatial; }
+		bool IsLooping() { return m_Spec.Looping; }
+		bool IsSpatial() { return m_Spec.Spatial; }
 
 		void SetLoop(bool enable);
 		void SetGain(float volume);
@@ -46,24 +47,24 @@ namespace origin {
 		float GetMaxDistance();
 
 		float GetGain();
-		const std::string& GetFilepath() { return m_Config.Filepath; }
-		std::string& GetName() { return m_Config.Name; }
+		const std::string& GetFilepath() { return m_Spec.Filepath; }
+		std::string& GetName() { return m_Spec.Name; }
 
 		static std::shared_ptr<Audio> Create(const AudioConfig& spec);
 		static std::shared_ptr<Audio> Create(const std::string& name, const std::string& filepath, bool loop = false, bool spatial = false);
 
 		bool operator == (const Audio& rhs)
 		{
-			return (m_Sound == rhs.m_Sound && m_Config.Name == rhs.m_Config.Name);
+			return (m_Sound == rhs.m_Sound && m_Spec.Name == rhs.m_Spec.Name);
 		}
 
 		bool operator != (const Audio& rhs)
 		{
-			return (m_Sound != rhs.m_Sound && m_Config.Name != rhs.m_Config.Name);
+			return (m_Sound != rhs.m_Sound && m_Spec.Name != rhs.m_Spec.Name);
 		}
 
 	private:
-		AudioConfig m_Config;
+		AudioConfig m_Spec;
 		FMOD_VECTOR m_AudioPosition = {0.0f, 0.0f, 0.0f};
 
 		FMOD::Sound* m_Sound = nullptr;
@@ -77,7 +78,7 @@ namespace origin {
 	class AudioEngine
 	{
 	public:
-		static void Init();
+		static bool Init();
 		static void Shutdown();
 
 		static FMOD::System* GetSystem();

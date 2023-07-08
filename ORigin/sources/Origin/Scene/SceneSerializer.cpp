@@ -197,7 +197,9 @@ namespace origin {
 
 			const auto& ac = entity.GetComponent<AudioComponent>();
 			out << YAML::Key << "Name" << YAML::Value << ac.Name;
-			out << YAML::Key << "Filepath" << YAML::Value << ac.Audio->GetFilepath();
+
+			auto& audioPath = std::filesystem::relative(ac.Audio->GetFilepath(), Project::GetAssetDirectory());
+			out << YAML::Key << "Filepath" << YAML::Value << audioPath.generic_string();
 			out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
 			out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
 			out << YAML::Key << "MinDistance" << YAML::Value << ac.MinDistance;
@@ -253,7 +255,8 @@ namespace origin {
 			out << YAML::BeginMap; // StaticMeshComponent
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
-			out << YAML::Key << "ModelPath" << YAML::Value << sMesh.ModelPath;
+			auto& modelPath = std::filesystem::relative(sMesh.ModelPath, Project::GetAssetDirectory());
+			out << YAML::Key << "ModelPath" << YAML::Value << modelPath.generic_string();
 			out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.ShaderPath;
 			out << YAML::Key << "Color" << YAML::Value << sMesh.Color;
 
@@ -266,7 +269,8 @@ namespace origin {
 			out << YAML::BeginMap; // TextComponent
 			auto& textComponent = entity.GetComponent<TextComponent>();
 			out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
-			out << YAML::Key << "FontFilepath" << YAML::Value << textComponent.FontAsset->GetFilepath();
+			auto& textAssetPath = std::filesystem::relative(textComponent.FontAsset->GetFilepath(), Project::GetAssetDirectory());
+			out << YAML::Key << "FontFilepath" << YAML::Value << textAssetPath.generic_string();
 			out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
 			out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
 			out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
@@ -300,7 +304,10 @@ namespace origin {
 			const auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			if (src.Texture)
-				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
+			{
+				auto& texturePath = std::filesystem::relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
+				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
+			}
 
 			out << YAML::EndMap; // !SpriteRendererComponent
 		}
@@ -312,8 +319,11 @@ namespace origin {
 
 			const auto& src = entity.GetComponent<SpriteRenderer2DComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
-			if(src.Texture)
-				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
+			if (src.Texture)
+			{
+				auto& texturePath = std::filesystem::relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
+				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
+			}
 			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
 
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
@@ -592,7 +602,8 @@ namespace origin {
 						spec.MinDistance = ac.MinDistance;
 						spec.MaxDistance = ac.MaxDistance;
 						spec.Spatial = ac.Spatial;
-						spec.Filepath = Project::GetAssetFileSystemPath(filepath).string();
+
+						spec.Filepath = Project::GetAssetFileSystemPath(filepath).generic_string();
 
 						ac.Audio = Audio::Create(spec);
 					}
@@ -701,8 +712,9 @@ namespace origin {
 					sMesh.ShaderPath = staticMeshComponent["ShaderPath"].as<std::string>();
 					if (!sMesh.ModelPath.empty() && !sMesh.ShaderPath.empty())
 					{
+						auto& modelPath = Project::GetAssetFileSystemPath(sMesh.ModelPath);
 						std::shared_ptr<Shader> shader = Shader::Create(sMesh.ShaderPath);
-						sMesh.Model = Model::Create(sMesh.ModelPath, shader);
+						sMesh.Model = Model::Create(modelPath.string(), shader);
 					}
 					sMesh.Color = staticMeshComponent["Color"].as<glm::vec4>();
 				}

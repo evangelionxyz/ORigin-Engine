@@ -32,6 +32,6 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Models\sphere.gltf
+      ModelPath: Models\sphere.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [1, 1, 1, 1]

@@ -3,6 +3,8 @@
 #pragma once
 #include "pch.h"
 
+#include "Origin\Animation\AnimationState.h"
+
 #include "SceneCamera.h"
 #include "Origin\Core\UUID.h"
 
@@ -33,6 +35,20 @@ namespace origin
 		TagComponent(const TagComponent&) = default;
 		TagComponent(const std::string& tag)
 			: Tag(tag) {}
+	};
+
+	struct Animator
+	{
+	};
+
+	class Animation;
+	struct AnimationComponent
+	{
+		std::shared_ptr<Animation> Animation;
+		AnimationState State;
+
+		AnimationComponent() = default;
+		AnimationComponent(const AnimationComponent&) = default;
 	};
 
 	class Audio;
@@ -297,7 +313,7 @@ namespace origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, AudioComponent, PointLightComponent, SpotLightComponent,
+		ComponentGroup<TransformComponent, AnimationComponent, AudioComponent, PointLightComponent, SpotLightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, CameraComponent, Particle2DComponent,
 		ScriptComponent, NativeScriptComponent,

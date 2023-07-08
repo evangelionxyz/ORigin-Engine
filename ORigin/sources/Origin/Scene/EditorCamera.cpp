@@ -99,7 +99,7 @@ namespace origin {
 			{
 				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
 					MouseRotate(delta);
-				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl))
+				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);
 				
 				float moveSpeed = 10.0f;

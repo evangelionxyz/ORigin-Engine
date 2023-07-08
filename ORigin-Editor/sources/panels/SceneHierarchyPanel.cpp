@@ -2,7 +2,7 @@
 
 #include "SceneHierarchyPanel.h"
 
-#include "..\GUIData.h"
+#include "..\Editor.h"
 
 #include "Origin\Project\Project.h"
 #include "Origin\IO\Input.h"
@@ -19,14 +19,22 @@
 
 namespace origin {
 	
+	SceneHierarchyPanel* SceneHierarchyPanel::s_Instance = nullptr;
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{
 		SetContext(context);
+		s_Instance = this;
 	}
 
 	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
 	{
 		return m_SelectedEntity = entity;
+	}
+
+	Entity SceneHierarchyPanel::GetSelectedEntity() const
+	{
+		return m_SelectedEntity;
 	}
 
 	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context, bool reset)
@@ -191,6 +199,12 @@ namespace origin {
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
 			DisplayAddComponentEntry<AudioComponent>("AUDIO");
+
+			if (DisplayAddComponentEntry<AnimationComponent>("ANIMATION"))
+			{
+				m_SelectedEntity.GetComponent<AnimationComponent>().Animation = Animation::Create();
+			};
+
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPIRTE RENDERER");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
@@ -280,6 +294,11 @@ namespace origin {
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
+		DrawComponent<AnimationComponent>("ANIMATION", entity, [entity](auto& component)
+		{
+
+		});
+
 		DrawComponent<AudioComponent>("AUDIO", entity, [entity, scene = m_Context](auto& component)
 			{
 				static bool creationWindow = false;
@@ -304,7 +323,7 @@ namespace origin {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path audioPath = Project::GetAssetFileSystemPath(path);
+							std::filesystem::path audioPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
 							if (audioPath.extension() == ".wav" || 
 								audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
 							{
@@ -395,7 +414,7 @@ namespace origin {
 						AudioEngine::AudioStorageDelete(component.Audio);
 					ImGui::SameLine();
 					if (ImGui::Button("Open Audio Library"))
-						guiAudioLibrary = true;
+						Editor::Get().guiAudioLibraryWindow = true;
 
 					if (ImGui::Button("Play")) component.Audio->Play();
 					ImGui::SameLine();
@@ -650,7 +669,7 @@ namespace origin {
 								modelShader = Renderer::GetGShader("Mesh");
 
 								component.Model = Model::Create(modelPath.string(), modelShader);
-								component.ModelPath = modelPath.string();
+								component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
 								component.ShaderPath = modelShader->GetFilepath();
 							}
 						}
@@ -666,14 +685,15 @@ namespace origin {
 					// Open Mesh
 					if (ImGui::Button("OPEN", ImVec2(85.0f, 25.0f)))
 					{
-						std::filesystem::path modelPath = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
+						std::filesystem::path path = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
+						auto modelPath = Project::GetAssetFileSystemPath(path);
 
 						if (!modelPath.string().empty())
 						{
 							modelShader = Renderer::GetGShader("Mesh");
 
 							component.Model = Model::Create(modelPath.string(), modelShader);
-							component.ModelPath = modelPath.string();
+							component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
 							component.ShaderPath = modelShader->GetFilepath();
 						}
 					}
@@ -698,7 +718,7 @@ namespace origin {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path fontPath = Project::GetAssetFileSystemPath(path).generic_string();
+							std::filesystem::path fontPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
 							if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
 							{
 								if(component.FontAsset)
@@ -744,7 +764,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path).generic_string();
+						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
@@ -777,6 +797,7 @@ namespace origin {
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
 						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
@@ -792,7 +813,9 @@ namespace origin {
 						return;
 					}
 
-					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
+					auto& path = std::filesystem::relative(component.Texture->GetFilepath(), Project::GetAssetDirectory());
+
+					ImGui::Text("Path: %s", path.string().c_str());
 					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 				}
 			});
@@ -876,14 +899,17 @@ namespace origin {
 	}
 
 	template<typename T>
-	void SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName) {
+	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)
+	{
 		if (!m_SelectedEntity.HasComponent<T>())
 		{
 			if (ImGui::MenuItem(entryName.c_str()))
 			{
 				m_SelectedEntity.AddComponent<T>();
 				ImGui::CloseCurrentPopup();
+				return true;
 			}
 		}
+		return false;
 	}
 }

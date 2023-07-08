@@ -17,7 +17,7 @@ namespace origin {
 	public:
 
 	private:
-		AudioConfig m_Config;
+		AudioConfig m_Spec;
 	};
 }
 

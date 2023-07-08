@@ -33,7 +33,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [0.863208592, 0.378447831, 0.707002699]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
+      ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [1, 1, 1, 1]
     ScriptComponent:
@@ -48,7 +48,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1.2353121, 0.897976995, 0.27857253]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
+      ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [1, 1, 1, 1]
     ScriptComponent:
@@ -85,7 +85,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [0.863208592, 0.378447831, 0.707002699]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets\Models\cube.gltf
+      ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [1, 1, 1, 1]
     ScriptComponent:
@@ -100,7 +100,7 @@ Entities:
       Rotation: [-3.539445e-07, 0.0484216809, -2.43721644e-07]
       Scale: [1.20599651, 1.20600009, 1.20599651]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Models\monkey.gltf
+      ModelPath: Models/monkey.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [1, 0.232067525, 0.931955576, 1]
     ScriptComponent:
@@ -115,7 +115,7 @@ Entities:
       Rotation: [1.71433646e-06, 0, 1.92209839e-07]
       Scale: [1.20600116, 1.20600009, 1.20600116]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Models\cone.gltf
+      ModelPath: Models/cone.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [1, 0.607843161, 0.282352954, 1]
   - Entity: 14616345612248980793
@@ -126,7 +126,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [100, 1, 100]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Models\plane.gltf
+      ModelPath: Models/plane.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [1, 1, 1, 1]
   - Entity: 1792129654376181530
@@ -152,7 +152,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     StaticMeshComponent:
-      ModelPath: C:\dev\ORigin\ORigin-Editor\SandboxProject\Assets/Models\sphere.gltf
+      ModelPath: Models/sphere.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       Color: [0.538545728, 0.919831216, 0.147483498, 1]
   - Entity: 3283491586376315862

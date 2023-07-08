@@ -7,67 +7,18 @@
 #include "panels\ContentBrowserPanel.h"
 
 #include <ImGuizmo.h>
+#include <ImSequencer.h>
 
 namespace origin {
 
   class Editor : public Layer
   {
-  public:
-    Editor();
-    ~Editor();
-
-    void OnAttach() override;
-    void OnUpdate(Timestep ts) override;
-
   private:
-    std::shared_ptr<Skybox> skybox;
-    float skyBlur = 0.005f;
-    bool enableSkybox = false;
-    glm::vec4 modelColor = glm::vec4(1.0f);
-    float m_CameraFov = 45.0f;
-  	std::shared_ptr<Audio> myAudio, MainThemeAudio;
-
-    // Scene Viewport
-  	void SceneViewport();
-    void SceneViewportToolbar();
-    void SceneViewportMenu();
-    void OverlayBeginScene();
-
-    void NewProject();
-    void OpenProject();
-    void OpenProject(const std::filesystem::path& path);
-    void SaveProject();
-
-	  void MenuBar();
-    void NewScene();
-    void SaveScene();
-    void SaveSceneAs();
-    void OpenScene();
-    void OpenScene(const std::filesystem::path& path);
-    void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
-    void OnDuplicateEntity();
-    void OnOverlayRenderer();
-
-    bool OnWindowResize(WindowResizeEvent& e);
-    bool OnMouseMovedEvent(MouseMovedEvent& e);
-    bool OnMouseButtonEvent(MouseButtonEvent& e);
-
-    void OnEvent(Event& e) override;
-    bool OnKeyPressed(KeyPressedEvent& e);
-    bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-    void InputProcedure(Timestep time);
-    void OnGuiRender() override;
-
-    void OnScenePlay();
-    void OnScenePause();
-    void OnSceneSimulate();
-    void OnSceneStop();
-
     Entity m_HoveredEntity = {};
     Entity m_SelectedEntity = {};
 
-	  // Scene
-	  enum class SceneState
+    // Scene
+    enum class SceneState
     {
       Edit = 0,
       Play = 1,
@@ -116,5 +67,84 @@ namespace origin {
     bool m_VisualizeCollider = false;
     bool m_SceneViewportHovered;
     bool m_SceneViewportFocused;
+
+    float RMHoldTime = 0.0f;
+    float LMHoldTime = 0.0f;
+
+  public:
+    bool guiDockingSpaceOpen = true;
+    bool guiMenuFullscreen = false;
+    bool guiMenuStyle = false;
+    bool guiPrompt = false;
+    bool guiRenderStatusWindow = true;
+    bool guiDebugInfo = true;
+    bool guiImGuiDemoWindow = false;
+    bool guiOverlay = true;
+
+    // Audio
+    bool guiAudioLibraryWindow = false;
+    bool guiAudioCreationWindow = false;
+
+    // Animation
+    bool guiAnimationWindow = true;
+
+  public:
+    Editor();
+    ~Editor();
+
+    void OnAttach() override;
+    void OnUpdate(Timestep ts) override;
+
+    inline static Editor& Get() { return *s_Instance; }
+
+    SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
+
+  private:
+    static Editor* s_Instance;
+
+    std::shared_ptr<Skybox> skybox;
+    float skyBlur = 0.005f;
+    bool enableSkybox = false;
+    glm::vec4 modelColor = glm::vec4(1.0f);
+    float m_CameraFov = 45.0f;
+
+    // Scene Viewport
+  	void SceneViewport();
+    void SceneViewportToolbar();
+    void SceneViewportMenu();
+    void OverlayBeginScene();
+
+    void NewProject();
+    void OpenProject();
+    void OpenProject(const std::filesystem::path& path);
+    void SaveProject();
+
+	  void MenuBar();
+
+    void NewScene();
+    void SaveScene();
+    void SaveSceneAs();
+    void OpenScene();
+    void OpenScene(const std::filesystem::path& path);
+    void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
+    void OnDuplicateEntity();
+    void OnOverlayRenderer();
+
+    bool OnWindowResize(WindowResizeEvent& e);
+    bool OnMouseMovedEvent(MouseMovedEvent& e);
+    bool OnMouseButtonEvent(MouseButtonEvent& e);
+
+    void OnEvent(Event& e) override;
+    bool OnKeyPressed(KeyPressedEvent& e);
+    bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+    void InputProcedure(Timestep time);
+    void OnGuiRender() override;
+
+    void OnScenePlay();
+    void OnScenePause();
+    void OnSceneSimulate();
+    void OnSceneStop();
+
+    void GUIRender();
   };
 }

@@ -14,7 +14,8 @@ namespace origin {
 	public:
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
-		static void Init();
+		static bool Init();
+
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
@@ -27,6 +28,11 @@ namespace origin {
 
 		static std::shared_ptr<Shader> GetGShader(const std::string& name);
 
+		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetSaderLibrary();
+
 		void DrawLineMode(bool enable);
+
+	private:
+		static void LoadShader();
 	};
 }

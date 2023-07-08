@@ -75,9 +75,9 @@ namespace origin {
 	}
 
 	OpenGL_Framebuffer::OpenGL_Framebuffer(const FramebufferSpecification& specification)
-		: m_Config(specification)
+		: m_Spec(specification)
 	{
-		for (auto spec : m_Config.Attachments.Attachments)
+		for (auto spec : m_Spec.Attachments.Attachments)
 		{
 			if (!Utils::isDepthFormat(spec.TextureFormat))
 				m_ColorAttachmentSpecifications.emplace_back(spec);
@@ -110,7 +110,7 @@ namespace origin {
 		glCreateFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-		bool multisample = m_Config.Samples > 1;
+		bool multisample = m_Spec.Samples > 1;
 
 		// Attachments
 		if (m_ColorAttachmentSpecifications.size())
@@ -123,10 +123,10 @@ namespace origin {
 				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
 				{
 				case FramebufferTextureFormat::RGBA8:
-					Utils::AttachColorTexture(m_ColorAttachments[i], m_Config.Samples, GL_RGBA8, GL_RGBA, m_Config.Width, m_Config.Height, i);
+					Utils::AttachColorTexture(m_ColorAttachments[i], m_Spec.Samples, GL_RGBA8, GL_RGBA, m_Spec.Width, m_Spec.Height, i);
 					break;
 				case FramebufferTextureFormat::RED_INTEGER:
-					Utils::AttachColorTexture(m_ColorAttachments[i], m_Config.Samples, GL_R32I, GL_RED_INTEGER, m_Config.Width, m_Config.Height, i);
+					Utils::AttachColorTexture(m_ColorAttachments[i], m_Spec.Samples, GL_R32I, GL_RED_INTEGER, m_Spec.Width, m_Spec.Height, i);
 					break;
 				}
 			}
@@ -139,7 +139,7 @@ namespace origin {
 			switch (m_DepthAttachmentSpecification.TextureFormat)
 			{
 			case FramebufferTextureFormat::DEPTH24STENCIL8:
-				Utils::AttachDepthTexture(m_DepthAttachment, m_Config.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Config.Width, m_Config.Height);
+				Utils::AttachDepthTexture(m_DepthAttachment, m_Spec.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Spec.Width, m_Spec.Height);
 				break;
 			}
 		}
@@ -154,7 +154,7 @@ namespace origin {
 			glDrawBuffer(GL_NONE);
 		}
 
-		if (m_Config.ReadBuffer == false)
+		if (m_Spec.ReadBuffer == false)
 			glReadBuffer(GL_NONE);
 
 		OGN_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer incomplete");
@@ -165,7 +165,7 @@ namespace origin {
 	void OpenGL_Framebuffer::Bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		glViewport(0, 0, m_Config.Width, m_Config.Height);
+		glViewport(0, 0, m_Spec.Width, m_Spec.Height);
 	}
 
 	void OpenGL_Framebuffer::Unbind()
@@ -181,8 +181,8 @@ namespace origin {
 			return;
 		}
 
-		m_Config.Width = width;
-		m_Config.Height = height;
+		m_Spec.Width = width;
+		m_Spec.Height = height;
 		
 		Invalidate();
 	}

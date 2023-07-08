@@ -298,6 +298,48 @@ namespace origin {
 		s_2Ddata.Stats.QuadCount++;
 	}
 
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, float tilingFactor, const glm::vec4& tintColor, int entityID)
+	{
+		constexpr int QuadVertexCount = 4;
+		const glm::vec2* textureCoords = subTexture->GetTexCoords();
+		const std::shared_ptr<Texture2D> texture = subTexture->GetTexture();
+
+		if (s_2Ddata.QuadIndexCount >= Renderer2DData::MaxIndices)
+			NextBatch();
+
+		float textureIndex = 0.0f;
+		for (uint32_t i = 1; i < s_2Ddata.TextureSlotIndex; i++)
+		{
+			if (*s_2Ddata.TextureSlots[i] == *texture)
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0.0f)
+		{
+			if (s_2Ddata.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+				NextBatch();
+
+			textureIndex = (float)s_2Ddata.TextureSlotIndex;
+			s_2Ddata.TextureSlots[s_2Ddata.TextureSlotIndex] = texture;
+			s_2Ddata.TextureSlotIndex++;
+		}
+
+		for (size_t i = 0; i < QuadVertexCount; i++)
+		{
+			s_2Ddata.QuadVertexBufferPtr->Position = transform * s_2Ddata.QuadVertexPositions[i];
+			s_2Ddata.QuadVertexBufferPtr->Color = tintColor;
+			s_2Ddata.QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			s_2Ddata.QuadVertexBufferPtr->TexIndex = textureIndex;
+			s_2Ddata.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_2Ddata.QuadVertexBufferPtr++;
+		}
+		s_2Ddata.QuadIndexCount += 6;
+		s_2Ddata.Stats.QuadCount++;
+	}
+
 	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);

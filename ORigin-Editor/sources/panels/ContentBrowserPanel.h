@@ -29,6 +29,8 @@ namespace origin
 
 		std::filesystem::path m_CurrentDirectory;
 		std::filesystem::path m_DeletePathTarget;
+		std::filesystem::path m_RootDirectory;
+
 		std::filesystem::directory_entry m_DirectoryEntry;
 
 		std::unordered_map<uint8_t, std::filesystem::path> m_SubDirectoryMap;

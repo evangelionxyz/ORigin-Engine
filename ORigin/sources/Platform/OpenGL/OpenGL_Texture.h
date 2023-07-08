@@ -9,23 +9,21 @@ namespace origin {
   class OpenGLTexture2D : public Texture2D
   {
   private:
+		TextureSpecification m_Spec;
+
     uint32_t m_RendererID;
     std::string m_FilePath;
     uint32_t m_Width = 0, m_Height = 0, m_BPP = 0;
     uint32_t m_Index = 0;
-
-    GLenum m_InternalFormat, m_DataFormat;
-
-		TextureSpecification m_Config;
-
+    GLenum m_InternalFormat, m_DataFormat, m_MinFilter, m_MagFilter;
 		bool m_IsLoaded = false;
 
   public:
     OpenGLTexture2D(const TextureSpecification& specification);
-    OpenGLTexture2D(const std::string& path);
+    OpenGLTexture2D(const std::string& path, const TextureSpecification& specification);
     ~OpenGLTexture2D();
 
-		const TextureSpecification& GetSpecification() const override { return m_Config; }
+		const TextureSpecification& GetSpecification() const override { return m_Spec; }
 
 		void SetData(void* data, uint32_t size) override;
 		std::string GetFilepath() override { return m_FilePath; }
@@ -52,7 +50,7 @@ namespace origin {
 		uint32_t m_LoadCount = 0;
 		GLenum m_InternalFormat, m_DataFormat;
 
-		TextureSpecification m_Config;
+		TextureSpecification m_Spec;
 
 	public:
 		OpenGLTextureCube(uint32_t width, uint32_t height);
@@ -67,7 +65,7 @@ namespace origin {
 		void Bind(uint32_t slot = 0) override;
 		void Delete() override;
 
-		const TextureSpecification& GetSpecification() const override { return m_Config; }
+		const TextureSpecification& GetSpecification() const override { return m_Spec; }
 
 		uint32_t GetRendererID() const override { return m_RendererID; }
 		uint32_t GetIndex() const override { return m_Index; }

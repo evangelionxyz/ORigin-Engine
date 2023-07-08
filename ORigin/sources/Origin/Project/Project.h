@@ -24,7 +24,7 @@ namespace origin
 	class Project
 	{
 	private:
-		ProjectConfig m_Config;
+		ProjectConfig m_Spec;
 		std::filesystem::path m_ProjectDirectory;
 		std::shared_ptr<AssetManagerBase> m_AssetManager;
 		inline static std::shared_ptr<Project> s_ActiveProject;
@@ -39,7 +39,7 @@ namespace origin
 		static std::filesystem::path GetAssetDirectory()
 		{
 			OGN_CORE_ASSERT(s_ActiveProject)
-			return GetProjectDirectory() / s_ActiveProject->m_Config.AssetDirectory;
+			return GetProjectDirectory() / s_ActiveProject->m_Spec.AssetDirectory;
 		}
 
 		static std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path)
@@ -50,7 +50,7 @@ namespace origin
 		
 		static std::shared_ptr<Project> GetActive() { return s_ActiveProject; }
 
-		ProjectConfig& GetConfig() { return m_Config; }
+		ProjectConfig& GetConfig() { return m_Spec; }
 		std::shared_ptr<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
 		std::shared_ptr<EditorAssetManager> GetEditorAssetManager() { return std::static_pointer_cast<EditorAssetManager>(m_AssetManager); }
 		std::shared_ptr<RuntimeAssetManager> GetRuntimeAssetManager() { return std::static_pointer_cast<RuntimeAssetManager>(m_AssetManager); }

@@ -9,21 +9,19 @@
 
 namespace origin
 {
-	template<typename T>
-	struct WndVec2 { T x; T y; };
-
 	class WinWindow : public Window
 	{
 	public:
-		WinWindow(const std::string& title);
+
+		WinWindow(const WindowConfig& config);
+		WinWindow(const std::string& title, uint32_t width, uint32_t height);
 		virtual ~WinWindow();
 
 		void SetVSync(bool enable = false) override;
 		void SetClose(bool close = false) override;
 
 		void Init();
-		void SetEventCallback(const std::function<void(Event&)>& callback) override {
-			m_Data.EventCallback = callback; };
+		void SetEventCallback(const std::function<void(Event&)>& callback) override;
 
 		void OnUpdate() override;
 		bool Loop() const override { return glfwWindowShouldClose(m_Window) == m_Data.Close; }
@@ -32,12 +30,19 @@ namespace origin
 		void SetIcon(const std::string& filepath) override;
 		void WindowCallbacks();
 
+		void Destroy() override;
+		void Decorated(bool enable) override;
+
+		void SetSize(uint32_t width, uint32_t height) override;
+
+		glm::uvec2 GetPosition() override { return { m_Data.xPos, m_Data.yPos }; }
 		uint32_t GetWidth() const override { return m_Data.Width; }
 		uint32_t GetHeight() const override { return m_Data.Height; }
 		std::string GetTitle() const override { return m_Data.Title; }
-		GLFWwindow* GetMainWindow() override { return m_Window; }
+		GLFWwindow* GetNativeWindow() override { return m_Window; }
 
 	private:
+
 		struct WindowData
 		{
 			std::string Title;
@@ -53,13 +58,14 @@ namespace origin
 			std::function<void(Event&)> EventCallback;
 		} m_Data;
 
-		std::unique_ptr<GraphicsContext> m_Context;
+		WindowConfig m_Config;
 		GLFWwindow* m_Window;
 		GLFWmonitor* m_Monitor;
-		WndVec2<int> monitorSize;
-		WndVec2<int> monitorPos;
-		WndVec2<int> windowSize;
-		WndVec2<int> windowPos;
+
+		glm::ivec2 monitorSize;
+		glm::ivec2 monitorPos;
+		glm::ivec2 windowSize;
+		glm::ivec2 windowPos;
 	};
 }
 

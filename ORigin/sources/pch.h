@@ -5,6 +5,8 @@
 #include <fstream>
 #include <memory>
 #include <utility>
+#include <atomic>
+#include <thread>
 #include <algorithm>
 #include <functional>
 #include <string>

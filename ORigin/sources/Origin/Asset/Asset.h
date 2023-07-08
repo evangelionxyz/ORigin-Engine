@@ -15,7 +15,8 @@ namespace origin {
 		TextureCube,
 		Audio,
 		StaticMesh,
-		Mesh
+		Mesh,
+		Animation
 	};
 
 	class Asset

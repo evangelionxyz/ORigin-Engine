@@ -186,7 +186,10 @@ namespace origin {
     GLint isLinked;
 
     glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-    OGN_CORE_TRACE("Shader Linked Status : {0}", isLinked);
+    if(isLinked < 0)
+      OGN_CORE_ERROR("Shader Linked Status : {0}", isLinked);
+    else
+      OGN_CORE_INFO("Shader Linked Status : {0}", isLinked);
 
     if (isLinked == GL_FALSE)
     {

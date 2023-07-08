@@ -31,22 +31,39 @@ namespace origin {
 			OGN_CORE_ASSERT(false);
 			return 0;
 		}
+
+		static GLenum ORiginImageFilterToGLImageFilter(ImageFilter filter)
+		{
+			switch (filter)
+			{
+			case ImageFilter::Linear: return GL_LINEAR;
+			case ImageFilter::Nearest: return GL_NEAREST;
+			case ImageFilter::LinearMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
+			case ImageFilter::LinearMipmapNearest: return GL_LINEAR_MIPMAP_NEAREST;
+			case ImageFilter::NearestMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
+			case ImageFilter::NearestMipmapNearest: return GL_LINEAR_MIPMAP_NEAREST;
+			}
+		}
+
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& specification)
-    : m_Config(specification), m_Width(specification.Width), m_Height(specification.Height)
+    : m_Spec(specification), m_Width(specification.Width), m_Height(specification.Height)
 	{
-		OGN_CORE_ASSERT(m_Config.Width == m_Width);
-		OGN_CORE_ASSERT(m_Config.Height == m_Height);
+		OGN_CORE_ASSERT(m_Spec.Width == m_Width);
+		OGN_CORE_ASSERT(m_Spec.Height == m_Height);
 
-		m_DataFormat = Utils::ORiginImageFormatToGLDataFormat(m_Config.Format);
-		m_InternalFormat = Utils::ORiginImageFormatToGLInternalFormat(m_Config.Format);
+		m_DataFormat = Utils::ORiginImageFormatToGLDataFormat(m_Spec.Format);
+		m_InternalFormat = Utils::ORiginImageFormatToGLInternalFormat(m_Spec.Format);
+
+		m_MinFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MinFilter);
+		m_MagFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MagFilter);
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
-		glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
+		glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
 
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -54,8 +71,8 @@ namespace origin {
 		m_IsLoaded = true;
 	}
 
-  OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-    : m_FilePath(path)
+  OpenGLTexture2D::OpenGLTexture2D(const std::string& path, const TextureSpecification& specification)
+    : m_FilePath(path), m_Spec(specification)
   {
 		OGN_CORE_WARN("TEXTURE: Trying to load {}", path);
 
@@ -91,13 +108,16 @@ namespace origin {
 		m_InternalFormat = internalFormat;
 		m_DataFormat = dataFormat;
 
+		m_MinFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MinFilter);
+		m_MagFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MagFilter);
+
 		OGN_CORE_ASSERT(internalFormat & dataFormat, "Format not supported!");
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
-		glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
+		glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
 
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

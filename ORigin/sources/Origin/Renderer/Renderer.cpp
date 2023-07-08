@@ -3,7 +3,6 @@
 #include "pch.h"
 #include "Renderer.h"
 #include "RenderCommand.h"
-#include "GraphicsContext.h"
 
 #include "Renderer2D.h"
 #include "Renderer3D.h"
@@ -30,27 +29,19 @@ namespace origin {
 
 	static ShaderLibrary GShaderLibrary;
 
-	void Renderer::Init()
+	bool Renderer::Init()
 	{
 		RenderCommand::Init();
 
-		// Load All Default shaders
-		bool recompileShader = false;
-
-		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true, recompileShader);
-		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true, recompileShader);
-		GShaderLibrary.Load("Quad2D", "Resources/Shaders/Quad2D.glsl", true, recompileShader);
-		GShaderLibrary.Load("Text", "Resources/Shaders/TextRenderer.glsl", true, recompileShader);
-
-		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true, recompileShader);
-		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
-		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
+		Renderer::LoadShader();
 
 		Renderer2D::Init();
 		Renderer3D::Init();
 
 		uint32_t cameraBinding = 0;
 		s_Data.CamUBO = UniformBuffer::Create(sizeof(CameraData), cameraBinding);
+
+		return true;
 	}
 
 	void Renderer::Shutdown()
@@ -109,8 +100,28 @@ namespace origin {
 		return GShaderLibrary.Get(name);
 	}
 
+	const std::unordered_map<std::string, std::shared_ptr<Shader>> Renderer::GetSaderLibrary()
+	{
+		return GShaderLibrary.GetMap();
+	}
+
 	void Renderer::DrawLineMode(bool enable)
 	{
 		RenderCommand::DrawLineMode(enable);
+	}
+
+	void Renderer::LoadShader()
+	{
+		// Load All Default shaders
+		bool recompileShader = true;
+
+		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true, recompileShader);
+		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true, recompileShader);
+		GShaderLibrary.Load("Quad2D", "Resources/Shaders/Quad2D.glsl", true, recompileShader);
+		GShaderLibrary.Load("Text", "Resources/Shaders/TextRenderer.glsl", true, recompileShader);
+
+		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true, recompileShader);
+		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
+		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 	}
 }

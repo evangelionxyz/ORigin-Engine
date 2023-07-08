@@ -4,6 +4,9 @@
 #include "Application.h"
 #include "Origin\Audio\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
+#include "imgui.h"
+
+#include "stb_image.h"
 
 namespace origin {
 
@@ -19,17 +22,68 @@ namespace origin {
 		if (!m_Spec.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Spec.WorkingDirectory);
 
-		m_Window = Window::Create(m_Spec.Name);
+		Window::GLFWInit();
+		WindowConfig splashScreenWinConfig;
+		splashScreenWinConfig.Title = spec.Name;
+		splashScreenWinConfig.Decorated = false;
+		splashScreenWinConfig.Width = 800;
+		splashScreenWinConfig.Height = 420;
+
+		m_Window = Window::Create(splashScreenWinConfig);
+		m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
+		m_GraphicContext->Init();
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
+
+		m_GuiLayer = new GuiLayer();
+		m_GuiLayer->SetContext(m_Window->GetNativeWindow());
+		PushOverlay(m_GuiLayer);
+
+		TextureSpecification splashImageSpec;
+		splashImageSpec.MagFilter = ImageFilter::Linear;
+		splashImageSpec.MinFilter = ImageFilter::Linear;
+		splashImageSpec.Format = ImageFormat::RGB8;
+		std::shared_ptr<Texture2D> splashImage = Texture2D::Create("Resources/UITextures/splashscreen b.png", splashImageSpec);
+		m_GuiLayer->Begin();
+		ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
+		ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		{
+			ImGuiWindowFlags imageWinFlags = ImGuiWindowFlags_NoTitleBar 
+				| ImGuiWindowFlags_NoResize
+				| ImGuiWindowFlags_NoMove 
+				| ImGuiWindowFlags_NoScrollbar 
+				| ImGuiWindowFlags_NoDocking 
+				| ImGuiWindowFlags_NoScrollWithMouse
+				| ImGuiWindowFlags_NoBackground;
+
+			ImGui::SetNextWindowSize(windowSize);
+			ImGui::SetNextWindowPos(windowPos);
+			ImGui::Begin("Splash Screen", nullptr, imageWinFlags);
+			ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::End();
+		}
+		ImGui::PopStyleVar();
+
+		m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
+		m_GuiLayer->End();
+
+		m_Window->OnUpdate();
 
 		Renderer::Init();
 		AudioEngine::Init();
-		m_GuiLayer = new GuiLayer();
-		PushOverlay(m_GuiLayer);
+
+		RenderCommand::Clear();
+		RenderCommand::ClearColor(glm::vec4(0.7f));
+		m_Window->OnUpdate();
+
+		m_Window->Decorated(true);
+		m_Window->SetSize(1280, 640);
 	}
 
 	Application::~Application()
 	{
+		Window::GLFWShutdown();
 		AudioEngine::Shutdown();
 		Renderer::Shutdown();
 		s_Instance = nullptr;
@@ -39,8 +93,8 @@ namespace origin {
 	{
 		m_Window->SetVSync(false);
 
-		while (m_Window->Loop()) {
-
+		while (m_Window->Loop())
+		{
 			float time = static_cast<float>(glfwGetTime());
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
@@ -56,6 +110,7 @@ namespace origin {
 			m_GuiLayer->Begin();
 			for (Layer* layer : m_LayerStack)
 				layer->OnGuiRender();
+			m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 			m_GuiLayer->End();
 			
 			m_Window->OnUpdate();
