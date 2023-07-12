@@ -42,7 +42,7 @@ namespace origin {
 		splashImageSpec.MagFilter = ImageFilter::Linear;
 		splashImageSpec.MinFilter = ImageFilter::Linear;
 		splashImageSpec.Format = ImageFormat::RGB8;
-		std::shared_ptr<Texture2D> splashImage = Texture2D::Create("Resources/UITextures/splashscreen b.png", splashImageSpec);
+		std::shared_ptr<Texture2D> splashImage = Texture2D::Create("Resources/UITextures/splashscreen.png", splashImageSpec);
 		m_GuiLayer->Begin();
 		ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
 		ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
