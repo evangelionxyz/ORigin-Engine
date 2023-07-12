@@ -12,6 +12,8 @@
 #include "Origin\Utils\GUI\GuiLayer.h"
 
 #include "Origin\Renderer\Renderer.h"
+#include "Origin\Renderer\GraphicsContext.h"
+
 #include <mutex>
 
 namespace origin {
@@ -53,13 +55,16 @@ namespace origin {
 		inline static Application& Get() { return *s_Instance; }
 		inline bool GetMinimized() { return m_Minimized; }
 		inline Window& GetWindow() { return *m_Window; }
-		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
+		const ApplicationSpecification& GetSpecification() const { return m_Spec; }
 		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
 		void SubmitToMainThread(const std::function<void()>& function);
 
 	private:
-		ApplicationSpecification m_Specification;
+
+		std::unique_ptr<GraphicsContext> m_GraphicContext;
+
+		ApplicationSpecification m_Spec;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
@@ -69,7 +74,8 @@ namespace origin {
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
-		GuiLayer* m_GuiLayer;
+		GuiLayer* m_GuiLayer, *m_SplashScreenGui;
+
 		float m_LastFrame = 0.0f;
 
 		std::vector<std::function<void()>> m_MainThreadQueue;

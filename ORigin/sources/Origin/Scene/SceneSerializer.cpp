@@ -6,6 +6,7 @@
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Model.h"
+#include "Origin\Audio\Audio.h"
 
 #include "Entity.h"
 #include "Component.h"
@@ -189,6 +190,27 @@ namespace origin {
 			out << YAML::EndMap; // TagComponent
 		}
 
+		if (entity.HasComponent<AudioComponent>())
+		{
+			out << YAML::Key << "AudioComponent";
+			out << YAML::BeginMap; // AudioComponent
+
+			const auto& ac = entity.GetComponent<AudioComponent>();
+			out << YAML::Key << "Name" << YAML::Value << ac.Name;
+
+			auto& audioPath = std::filesystem::relative(ac.Audio->GetFilepath(), Project::GetAssetDirectory());
+			out << YAML::Key << "Filepath" << YAML::Value << audioPath.generic_string();
+			out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
+			out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
+			out << YAML::Key << "MinDistance" << YAML::Value << ac.MinDistance;
+			out << YAML::Key << "MaxDistance" << YAML::Value << ac.MaxDistance;
+			out << YAML::Key << "Looping" << YAML::Value << ac.Looping;
+			out << YAML::Key << "Spatial" << YAML::Value << ac.Spatial;
+			out << YAML::Key << "PlayAtStart" << YAML::Value << ac.PlayAtStart;
+
+			out << YAML::EndMap; // AudioComponent
+		}
+
 		if (entity.HasComponent<TransformComponent>())
 		{
 			out << YAML::Key << "TransformComponent";
@@ -233,11 +255,45 @@ namespace origin {
 			out << YAML::BeginMap; // StaticMeshComponent
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
-			out << YAML::Key << "ModelPath" << YAML::Value << sMesh.ModelPath;
+			auto& modelPath = std::filesystem::relative(sMesh.ModelPath, Project::GetAssetDirectory());
+			out << YAML::Key << "ModelPath" << YAML::Value << modelPath.generic_string();
 			out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.ShaderPath;
 			out << YAML::Key << "Color" << YAML::Value << sMesh.Color;
 
 			out << YAML::EndMap; // !StaticMeshComponent
+		}
+
+		if (entity.HasComponent<TextComponent>())
+		{
+			out << YAML::Key << "TextComponent";
+			out << YAML::BeginMap; // TextComponent
+			auto& textComponent = entity.GetComponent<TextComponent>();
+			out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
+			auto& textAssetPath = std::filesystem::relative(textComponent.FontAsset->GetFilepath(), Project::GetAssetDirectory());
+			out << YAML::Key << "FontFilepath" << YAML::Value << textAssetPath.generic_string();
+			out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
+			out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
+			out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
+
+			out << YAML::EndMap; // !TextComponent
+		}
+
+		if (entity.HasComponent<Particle2DComponent>())
+		{
+			out << YAML::Key << "Particle2DComponent";
+			out << YAML::BeginMap; // Particle2DComponent
+			auto& particle2DComponent = entity.GetComponent<Particle2DComponent>();
+			out << YAML::Key << "Velocity" << YAML::Value << particle2DComponent.Velocity;
+			out << YAML::Key << "VelocityVariation" << YAML::Value << particle2DComponent.VelocityVariation;
+			out << YAML::Key << "ColorBegin" << YAML::Value << particle2DComponent.ColorBegin;
+			out << YAML::Key << "ColorEnd" << YAML::Value << particle2DComponent.ColorEnd;
+			out << YAML::Key << "SizeBegin" << YAML::Value << particle2DComponent.SizeBegin;
+			out << YAML::Key << "SizeEnd" << YAML::Value << particle2DComponent.SizeEnd;
+			out << YAML::Key << "SizeVariation" << YAML::Value << particle2DComponent.SizeVariation;
+			out << YAML::Key << "ZAxis" << YAML::Value << particle2DComponent.ZAxis;
+			out << YAML::Key << "LifeTime" << YAML::Value << particle2DComponent.LifeTime;
+
+			out << YAML::EndMap; // !Particle2DComponent
 		}
 
 		if (entity.HasComponent<SpriteRendererComponent>())
@@ -248,7 +304,10 @@ namespace origin {
 			const auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			if (src.Texture)
-				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
+			{
+				auto& texturePath = std::filesystem::relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
+				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
+			}
 
 			out << YAML::EndMap; // !SpriteRendererComponent
 		}
@@ -260,8 +319,11 @@ namespace origin {
 
 			const auto& src = entity.GetComponent<SpriteRenderer2DComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
-			if(src.Texture)
-				out << YAML::Key << "TexturePath" << YAML::Value << src.Texture->GetFilepath();
+			if (src.Texture)
+			{
+				auto& texturePath = std::filesystem::relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
+				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
+			}
 			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
 
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
@@ -518,6 +580,35 @@ namespace origin {
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
 				}
 
+				if (auto audioComponent = entity["AudioComponent"])
+				{
+					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
+					ac.Name = audioComponent["Name"].as<std::string>();
+					ac.Volume = audioComponent["Volume"].as<float>();
+					ac.Pitch = audioComponent["Pitch"].as<float>();
+					ac.MinDistance = audioComponent["MinDistance"].as<float>();
+					ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
+					ac.Looping = audioComponent["Looping"].as<bool>();
+					ac.Spatial = audioComponent["Spatial"].as<bool>();
+					ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
+
+					if (audioComponent["Filepath"])
+					{
+						auto& filepath = audioComponent["Filepath"].as<std::string>();
+
+						AudioConfig spec;
+						spec.Name = ac.Name;
+						spec.Looping = ac.Looping;
+						spec.MinDistance = ac.MinDistance;
+						spec.MaxDistance = ac.MaxDistance;
+						spec.Spatial = ac.Spatial;
+
+						spec.Filepath = Project::GetAssetFileSystemPath(filepath).generic_string();
+
+						ac.Audio = Audio::Create(spec);
+					}
+				}
+
 				if (auto cameraComponent = entity["CameraComponent"])
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
@@ -543,6 +634,20 @@ namespace origin {
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 					if (spriteRendererComponent["TexturePath"])
 						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
+				}
+
+				if (auto particle2DComponent = entity["Particle2DComponent"])
+				{
+					auto& pc = deserializedEntity.AddComponent<Particle2DComponent>();
+					pc.Velocity = particle2DComponent["Velocity"].as<glm::vec2>();
+					pc.VelocityVariation = particle2DComponent["VelocityVariation"].as<glm::vec2>();
+					pc.ColorBegin = particle2DComponent["ColorBegin"].as<glm::vec4>();
+					pc.ColorEnd = particle2DComponent["ColorEnd"].as<glm::vec4>();
+					pc.SizeBegin = particle2DComponent["SizeBegin"].as<float>();
+					pc.SizeEnd = particle2DComponent["SizeEnd"].as<float>();
+					pc.SizeVariation = particle2DComponent["SizeVariation"].as<float>();
+					pc.ZAxis = particle2DComponent["ZAxis"].as<float>();
+					pc.LifeTime = particle2DComponent["LifeTime"].as<float>();
 				}
 
 				if (auto spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])
@@ -607,10 +712,31 @@ namespace origin {
 					sMesh.ShaderPath = staticMeshComponent["ShaderPath"].as<std::string>();
 					if (!sMesh.ModelPath.empty() && !sMesh.ShaderPath.empty())
 					{
+						auto& modelPath = Project::GetAssetFileSystemPath(sMesh.ModelPath);
 						std::shared_ptr<Shader> shader = Shader::Create(sMesh.ShaderPath);
-						sMesh.Model = Model::Create(sMesh.ModelPath, shader);
+						sMesh.Model = Model::Create(modelPath.string(), shader);
 					}
 					sMesh.Color = staticMeshComponent["Color"].as<glm::vec4>();
+				}
+
+				if (auto textComponent = entity["TextComponent"])
+				{
+					auto& text = deserializedEntity.AddComponent<TextComponent>();
+					const std::string filepath = textComponent["FontFilepath"].as<std::string>();
+					
+					if(filepath.empty() || filepath == Font::GetDefault()->GetFilepath())
+						text.FontAsset = Font::GetDefault();
+					
+					else if(!filepath.empty() && !text.FontAsset)
+					{
+						auto path = Project::GetAssetFileSystemPath(filepath);
+						text.FontAsset = std::make_shared<Font>(path);
+					}
+					
+					text.TextString = textComponent["TextString"].as<std::string>();
+					text.Color = textComponent["Color"].as<glm::vec4>();
+					text.Kerning = textComponent["Kerning"].as<float>();
+					text.LineSpacing = textComponent["LineSpacing"].as<float>();
 				}
 
 				if (auto boxCollider2DComponent = entity["BoxCollider2DComponent"])

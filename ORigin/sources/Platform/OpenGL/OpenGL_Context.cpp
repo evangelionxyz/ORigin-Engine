@@ -26,9 +26,4 @@ namespace origin
 		OGN_CORE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5),
 			"ORigin requires at least OpenGL version 4.5!");
 	}
-
-	void OpenGLContext::SwapBuffers()
-	{
-		glfwSwapBuffers(m_WindowHandle);
-	}
 }

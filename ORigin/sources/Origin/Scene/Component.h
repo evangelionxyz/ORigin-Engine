@@ -3,19 +3,21 @@
 #pragma once
 #include "pch.h"
 
-#include "Origin\Scene\SceneCamera.h"
-#include "Origin\Renderer\Texture.h"
+#include "Origin\Animation\AnimationState.h"
 
-#include "Origin\Scene\UUID.h"
+#include "SceneCamera.h"
+#include "Origin\Core\UUID.h"
+
+#include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Model.h"
+#include "Origin\Renderer\Font.h"
+#include "Origin\Renderer\ParticleSystem.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
-#include <unordered_map>
-#include <vector>
 
 namespace origin
 {
@@ -35,6 +37,60 @@ namespace origin
 			: Tag(tag) {}
 	};
 
+	struct Animator
+	{
+	};
+
+	class Animation;
+	struct AnimationComponent
+	{
+		std::shared_ptr<Animation> Animation;
+		AnimationState State;
+
+		AnimationComponent() = default;
+		AnimationComponent(const AnimationComponent&) = default;
+	};
+
+	class Audio;
+	struct AudioComponent
+	{
+		std::shared_ptr<Audio> Audio;
+		std::string Name = "Audio";
+		std::string ListenerName;
+
+		float Volume = 1.0f;
+		float Pitch = 1.0f;
+		float MinDistance = 1.0f;
+		float MaxDistance = 100.0f;
+
+		bool Looping = false;
+		bool Spatial = false;
+		bool PlayAtStart = false;
+
+		AudioComponent() = default;
+		AudioComponent(const AudioComponent&) = default;
+	};
+
+	struct Particle2DComponent
+	{
+		ParticleSystem Particle;
+
+		glm::vec2 Velocity = glm::vec2(0.0f);
+		glm::vec2 VelocityVariation = glm::vec2(3.0f, 1.0f);
+		glm::vec4 ColorBegin = { 254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f };
+		glm::vec4 ColorEnd = { 254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f };
+		uint32_t PoolIndex = 1000;
+
+		float SizeBegin = 0.5f;
+		float SizeEnd = 0.0f;
+		float SizeVariation = 0.3f;
+		float ZAxis = 0.0f;
+		float LifeTime = 1.0f;
+
+		Particle2DComponent() = default;
+		Particle2DComponent(const Particle2DComponent&) = default;
+	};
+
 	struct StaticMeshComponent
 	{
 		std::string ModelPath;
@@ -45,6 +101,16 @@ namespace origin
 
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
+	};
+
+	struct TextComponent
+	{
+		std::string TextString;
+		std::shared_ptr<Font> FontAsset;
+		
+		glm::vec4 Color = glm::vec4(1.0f);
+		float Kerning = 0.0f;
+		float LineSpacing = 0.0f;
 	};
 
 	struct TransformComponent
@@ -65,6 +131,28 @@ namespace origin
 			return glm::translate(glm::mat4(1.0f), Translation)
 				* rotation * glm::scale(glm::mat4(1.0f), Scale);
 		}
+
+		glm::vec3 GetForward() const
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::vec4 forward = rotation * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+			return glm::normalize(glm::vec3(forward));
+		}
+
+		glm::vec3 GetUp() const
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::vec4 up = rotation * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+			return glm::normalize(glm::vec3(up));
+		}
+
+		glm::vec3 GetRight() const
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+			return glm::normalize(glm::vec3(right));
+		}
+
 	};
 
 	struct SpriteRendererComponent
@@ -225,9 +313,9 @@ namespace origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, PointLightComponent, SpotLightComponent,
-		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent,
-		CircleRendererComponent, CameraComponent,
+		ComponentGroup<TransformComponent, AnimationComponent, AudioComponent, PointLightComponent, SpotLightComponent,
+		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
+		CircleRendererComponent, CameraComponent, Particle2DComponent,
 		ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
 }

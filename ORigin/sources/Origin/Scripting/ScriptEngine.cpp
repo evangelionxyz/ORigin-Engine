@@ -165,7 +165,6 @@ namespace origin
 
 	void ScriptEngine::ShutdownMono()
 	{
-		// cleanup
 		mono_domain_set(mono_get_root_domain(), false);
 
 		mono_domain_unload(s_Data->AppDomain);
@@ -328,6 +327,11 @@ namespace origin
 
 		std::shared_ptr<ScriptInstance> instance = s_Data->EntityInstances.at(entityID);
 		instance->InvokeOnUpdate(time);
+	}
+
+	MonoString* ScriptEngine::CreateString(const char* string)
+	{
+		return mono_string_new(s_Data->AppDomain, string);
 	}
 
 	std::shared_ptr<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)

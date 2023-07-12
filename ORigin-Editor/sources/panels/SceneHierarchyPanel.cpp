@@ -2,27 +2,39 @@
 
 #include "SceneHierarchyPanel.h"
 
+#include "..\Editor.h"
+
 #include "Origin\Project\Project.h"
 #include "Origin\IO\Input.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Component.h"
+#include "Origin\Audio\Audio.h"
 #include "Origin\Utils\PlatformUtils.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
 
 #include <glm\gtc\type_ptr.hpp>
+#include <misc\cpp\imgui_stdlib.h>
 
 namespace origin {
 	
+	SceneHierarchyPanel* SceneHierarchyPanel::s_Instance = nullptr;
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{
 		SetContext(context);
+		s_Instance = this;
 	}
 
 	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
 	{
 		return m_SelectedEntity = entity;
+	}
+
+	Entity SceneHierarchyPanel::GetSelectedEntity() const
+	{
+		return m_SelectedEntity;
 	}
 
 	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context, bool reset)
@@ -186,16 +198,24 @@ namespace origin {
 		{
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
+			DisplayAddComponentEntry<AudioComponent>("AUDIO");
+
+			if (DisplayAddComponentEntry<AnimationComponent>("ANIMATION"))
+			{
+				m_SelectedEntity.GetComponent<AnimationComponent>().Animation = Animation::Create();
+			};
+
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPIRTE RENDERER");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
+			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
 			DisplayAddComponentEntry<PointLightComponent>("POINT LIGHT");
 			DisplayAddComponentEntry<SpotLightComponent>("SPOT LIGHT");
 			DisplayAddComponentEntry<DirectionalLightComponent>("DIRECTIONAL LIGHT");
 			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
-			//DisplayAddComponentEntry<NativeScriptComponent>("C++ Native Script");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
+			DisplayAddComponentEntry<Particle2DComponent>("PARTICLE 2D");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRLCE COLLIDER 2D");
 
 			ImGui::EndPopup();
@@ -215,11 +235,11 @@ namespace origin {
 		});
 
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
-			{
-				auto& camera = component.Camera;
-		const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-		const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
-		ImGui::Checkbox("Primary", &component.Primary);
+		{
+			auto& camera = component.Camera;
+			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
+			const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
+			ImGui::Checkbox("Primary", &component.Primary);
 
 		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
 		{
@@ -274,10 +294,164 @@ namespace origin {
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
+		DrawComponent<AnimationComponent>("ANIMATION", entity, [entity](auto& component)
+		{
+
+		});
+
+		DrawComponent<AudioComponent>("AUDIO", entity, [entity, scene = m_Context](auto& component)
+			{
+				static bool creationWindow = false;
+
+				if (!component.Audio)
+				{
+					if (ImGui::Button("Create Audio"))
+						creationWindow = true;
+				}
+
+				if(creationWindow)
+				{
+					ImGuiWindowFlags winFlags = 
+						ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDocking;
+
+					ImGui::Begin("Audio Creation", &creationWindow, winFlags);
+					ImGui::Button("Drop Audio");
+					
+					static std::string filepath;
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path audioPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
+							if (audioPath.extension() == ".wav" || 
+								audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
+							{
+								filepath = audioPath.string();
+								OGN_CORE_WARN("Audio Component: Drop Audio From {}", filepath);
+							}
+
+							else if (audioPath.extension() == ".oxau")
+							{
+
+							}
+						}
+					}
+					ImGui::SameLine();
+					ImGui::Text("Path: %s", filepath.c_str());
+
+					std::string& name = component.Name;
+					ImGui::Text("Name: "); ImGui::SameLine();
+					char buffer[256];
+					strcpy_s(buffer, sizeof(buffer), name.c_str());
+					if (ImGui::InputText("##audioName", buffer, sizeof(buffer)))
+					{
+						name = std::string(buffer);
+						component.Name = name;
+					}
+					static bool spatial = false;
+					static bool looping = false;
+					static float minDistance = 2.0f;
+					static float maxDistance = 100.0f;
+					ImGui::Text("Spatial");
+					ImGui::SameLine();
+					ImGui::Checkbox("##Spatial", &spatial);
+					ImGui::Text("Looping");
+					ImGui::SameLine();
+					ImGui::Checkbox("##Looping", &looping);
+
+					ImGui::Text("Min Distance");
+					ImGui::SameLine();
+					ImGui::DragFloat("##MinDistance", &minDistance, 0.1f, 0.0f, 10000.0f);
+					ImGui::Text("Max Distance");
+					ImGui::SameLine();
+					ImGui::DragFloat("##MaxDistance", &maxDistance, 0.1f, 0.0f, 10000.0f);
+					
+					static bool valid = false;
+					if (ImGui::Button("Create"))
+					{
+						AudioConfig config;
+
+						config.Name = component.Name;
+						config.Spatial = spatial;
+						config.Filepath = filepath;
+						config.MinDistance = minDistance;
+						config.MaxDistance = maxDistance;
+						config.Looping = looping;
+
+						component.Spatial = spatial;
+						component.Looping = looping;
+
+						valid = (!name.empty() && !filepath.empty());
+						if (valid)
+						{
+							if (component.Audio)
+							{
+								component.Audio->Stop();
+								component.Audio.reset();
+							}
+
+							component.Audio = Audio::Create(config);
+							OGN_CORE_WARN("Audio Component: Creating Audio...");
+						}
+						else
+							OGN_CORE_ERROR("Audio Creation: Invalid Audio Creation. Check the Name or Filepath");
+					}
+					ImGui::End();
+				}
+
+				if (component.Audio)
+				{
+					ImGui::Text("%s | Spatialization: %s", component.Name.c_str(), component.Spatial ? "On" : "Off");
+					ImGui::Separator();
+
+					component.Spatial = component.Audio->IsSpatial();
+
+					if (ImGui::Button("Insert To Library"))
+						AudioEngine::AudioStorageInsert(component.Audio);
+					ImGui::SameLine();
+					if (ImGui::Button("Delete From Library"))
+						AudioEngine::AudioStorageDelete(component.Audio);
+					ImGui::SameLine();
+					if (ImGui::Button("Open Audio Library"))
+						Editor::Get().guiAudioLibraryWindow = true;
+
+					if (ImGui::Button("Play")) component.Audio->Play();
+					ImGui::SameLine();
+					if (ImGui::Button("Stop")) component.Audio->Stop();
+					ImGui::SameLine();
+					component.Looping = component.Audio->IsLooping();
+					ImGui::Checkbox("Looping", &component.Looping);
+					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
+
+					component.Volume = component.Audio->GetGain();
+					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f);
+
+					component.MinDistance = component.Audio->GetMinDistance();
+					DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+
+					component.MaxDistance = component.Audio->GetMaxDistance();
+					DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+
+					if (ImGui::Button("Delete"))
+					{
+						component.Audio->Stop();
+						component.Audio.reset();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Re-Create"))
+					{
+						component.Audio->Stop();
+						creationWindow = true;
+					}
+				}
+			});
+
 		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 				bool isSelected = false;
+				
 
 				if (!scriptClassExist)
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
@@ -300,20 +474,21 @@ namespace origin {
 					}
 					ImGui::EndCombo();
 				}
-
-
+				
 				if (ImGui::Button("Detach"))
 				{
 					component.ClassName = "Detached";
 					isSelected = false;
 				}
 
+				bool detached = component.ClassName == "Detached";
+
 				// fields
 				bool isRunning = scene->IsRunning();
 				if (isRunning)
 				{
 					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-					if (scriptInstance)
+					if (scriptInstance && !detached)
 					{
 						auto& fields = scriptInstance->GetScriptClass()->GetFields();
 
@@ -325,6 +500,14 @@ namespace origin {
 								if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
 								{
 									scriptInstance->SetFieldValue<float>(name, data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Int)
+							{
+								int data = scriptInstance->GetFieldValue<int>(name);
+								if (ImGui::DragInt(name.c_str(), &data, 1))
+								{
+									scriptInstance->SetFieldValue<int>(name, data);
 								}
 							}
 							if (field.Type == ScriptFieldType::Vector3)
@@ -348,7 +531,7 @@ namespace origin {
 				} // !IsRunning
 				else
 				{
-					if (scriptClassExist)
+					if (scriptClassExist && !detached)
 					{
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 						const auto& fields = entityClass->GetFields();
@@ -366,6 +549,14 @@ namespace origin {
 									if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
 									{
 										scriptField.SetValue<float>(data);
+									}
+								}
+								if (field.Type == ScriptFieldType::Int)
+								{
+									int data = scriptField.GetValue<int>();
+									if (ImGui::DragInt(name.c_str(), &data, 1))
+									{
+										scriptField.SetValue<int>(data);
 									}
 								}
 								if (field.Type == ScriptFieldType::Vector2)
@@ -403,6 +594,17 @@ namespace origin {
 										ScriptFieldInstance& fieldInstance = entityFields[name];
 										fieldInstance.Field = field;
 										fieldInstance.SetValue<float>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Int)
+								{
+									int data = 0.0f;
+									if (ImGui::DragInt(name.c_str(), &data))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<int>(data);
 									}
 								}
 
@@ -460,17 +662,19 @@ namespace origin {
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
 							std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
+
 							if (modelPath.extension() == ".gltf" || modelPath.extension() == ".fbx" ||
 								modelPath.extension() == ".obj")
 							{
 								modelShader = Renderer::GetGShader("Mesh");
 
 								component.Model = Model::Create(modelPath.string(), modelShader);
-								component.ModelPath = modelPath.string();
+								component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
 								component.ShaderPath = modelShader->GetFilepath();
 							}
 						}
 					}
+
 					if (component.Model)
 					{
 						if (ImGui::Button("REMOVE", ImVec2(85.0f, 25.0f)))
@@ -481,14 +685,15 @@ namespace origin {
 					// Open Mesh
 					if (ImGui::Button("OPEN", ImVec2(85.0f, 25.0f)))
 					{
-						std::filesystem::path modelPath = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
+						std::filesystem::path path = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
+						auto modelPath = Project::GetAssetFileSystemPath(path);
 
 						if (!modelPath.string().empty())
 						{
 							modelShader = Renderer::GetGShader("Mesh");
 
 							component.Model = Model::Create(modelPath.string(), modelShader);
-							component.ModelPath = modelPath.string();
+							component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
 							component.ShaderPath = modelShader->GetFilepath();
 						}
 					}
@@ -499,6 +704,51 @@ namespace origin {
 						ImGui::Text("Path: %s", component.ModelPath.c_str());
 					}
 					
+				});
+
+			DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
+				{
+				if(!component.FontAsset)
+					component.FontAsset = Font::GetDefault();
+					
+					ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							const wchar_t* path = (const wchar_t*)payload->Data;
+							std::filesystem::path fontPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
+							if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
+							{
+								if(component.FontAsset)
+										component.FontAsset.reset();
+								
+								component.FontAsset = std::make_shared<Font>(fontPath);
+							}
+						}
+					}
+				
+					ImGui::InputTextMultiline("Text String", &component.TextString);
+					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
+					ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
+				});
+
+			DrawComponent<Particle2DComponent>("PARTICLE 2D", entity, [](auto& component)
+				{
+					float columnWidth = 100.0f;
+
+					ImGui::ColorEdit4("Color Begin", glm::value_ptr(component.ColorBegin));
+					ImGui::ColorEdit4("Color End", glm::value_ptr(component.ColorEnd));
+					DrawVec2Control("Velocity", component.Velocity, 0.01f, 0.5f, columnWidth);
+					DrawVec2Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
+
+					DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
+					DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
+					DrawVecControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
+					DrawVecControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
+					DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
 				});
 
 		DrawComponent<SpriteRendererComponent>("SPRITE RENDERER", entity, [](auto& component)
@@ -547,6 +797,7 @@ namespace origin {
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
 						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
@@ -562,7 +813,9 @@ namespace origin {
 						return;
 					}
 
-					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
+					auto& path = std::filesystem::relative(component.Texture->GetFilepath(), Project::GetAssetDirectory());
+
+					ImGui::Text("Path: %s", path.string().c_str());
 					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
 				}
 			});
@@ -622,8 +875,8 @@ namespace origin {
 
 		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto& component)
 			{
-				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
-				DrawVec2Control("Size", component.Size, 0.01f, 0.0f);
+				DrawVec2Control("Offset", component.Offset, 0.01f, 0.5f);
+				DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
 				float width = 118.0f;
 				DrawVecControl("Density", &component.Density, 0.01f, 1.0f, width);
@@ -646,14 +899,17 @@ namespace origin {
 	}
 
 	template<typename T>
-	void SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName) {
+	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)
+	{
 		if (!m_SelectedEntity.HasComponent<T>())
 		{
 			if (ImGui::MenuItem(entryName.c_str()))
 			{
 				m_SelectedEntity.AddComponent<T>();
 				ImGui::CloseCurrentPopup();
+				return true;
 			}
 		}
+		return false;
 	}
 }

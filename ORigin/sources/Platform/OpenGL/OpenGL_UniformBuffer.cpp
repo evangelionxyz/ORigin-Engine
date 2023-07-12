@@ -33,13 +33,13 @@ namespace origin
 
 	void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		/*
-		buffer: The name of the buffer object that you want to update.
-		offset: The starting offset within the buffer's data store where the new data will be placed.
-		size: The size of the data in bytes that you want to update.
-		data: A pointer to the data that you want to update the buffer with.
-		*/
+		glBindBufferBase(GL_UNIFORM_BUFFER, m_Binding, m_RendererID);
 		glNamedBufferSubData(m_RendererID, offset, size, data);
+	}
+
+	uint32_t OpenGLUniformBuffer::Get()
+	{
+		return m_RendererID;
 	}
 
 }

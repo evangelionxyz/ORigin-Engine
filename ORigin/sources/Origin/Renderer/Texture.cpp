@@ -7,23 +7,23 @@
 
 namespace origin {
 
-	std::shared_ptr<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+	std::shared_ptr<Texture2D> Texture2D::Create(const TextureSpecification& specification)
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:			return nullptr;
-			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLTexture2D>(width, height);
+		case RendererAPI::API::None:			return nullptr;
+		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLTexture2D>(specification);
 		}
 
 		return nullptr;
 	}
 
-	std::shared_ptr<Texture2D> Texture2D::Create(const std::string& filepath)
+	std::shared_ptr<Texture2D> Texture2D::Create(const std::string& filepath, const TextureSpecification& specification)
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:			return nullptr;
-			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLTexture2D>(filepath);
+		case RendererAPI::API::None:			return nullptr;
+		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLTexture2D>(filepath, specification);
 		}
 
 		return nullptr;

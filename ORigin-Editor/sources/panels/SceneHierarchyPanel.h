@@ -10,32 +10,34 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-namespace origin
-{
+namespace origin {
+
 	class SceneHierarchyPanel
 	{
 	public:
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const std::shared_ptr<Scene>& context);
-
-		Entity SetSelectedEntity(Entity entity);
-
-		Entity GetSelectedEntity() const { return m_SelectedEntity; }
-		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
-		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
-		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
-		void DestroyEntity(Entity entity);
+		static SceneHierarchyPanel& Get() { return *s_Instance; }
 		std::shared_ptr<Scene> GetContext() { return m_Context; }
 
-		void OnImGuiRender();
-	private:
-		template<typename T>
-		void DisplayAddComponentEntry(const std::string& entryName);
+		Entity SetSelectedEntity(Entity entity);
+		Entity GetSelectedEntity() const;
 
+		void OnImGuiRender();
+		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
+		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
+		void DestroyEntity(Entity entity);
+		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
+
+	private:
+		static SceneHierarchyPanel* s_Instance;
+
+		template<typename T>
+		bool DisplayAddComponentEntry(const std::string& entryName);
 		bool m_HierarchyMenuActive = false;
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
-	private:
+
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;
 
@@ -149,8 +151,9 @@ namespace origin
 	}
 
 	// static function
-	static void DrawVecControl(const std::string& label, float* values, float speed = 0.025f, float minValue = 0.0f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
+	static bool DrawVecControl(const std::string& label, float* values, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
+		bool changed = false;
 		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::PushID(label.c_str());
@@ -172,7 +175,10 @@ namespace origin
 		if (ImGui::Button("V", buttonSize))
 			*values = resetValue;
 		ImGui::SameLine();
-		ImGui::DragFloat("##V", values, speed, minValue);
+
+		if(ImGui::DragFloat("##V", values, speed, minValue, maxValue))
+			changed = true;
+
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
 
@@ -180,6 +186,8 @@ namespace origin
 		ImGui::Columns(1);
 
 		ImGui::PopID();
+
+		return changed;
 	}
 
 	template<typename T, typename UIFunction>

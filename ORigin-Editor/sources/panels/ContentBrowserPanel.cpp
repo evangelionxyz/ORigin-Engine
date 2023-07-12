@@ -2,6 +2,7 @@
 
 #include "ContentBrowserPanel.h"
 #include "Origin\Project\Project.h"
+#include "..\Editor.h"
 #include <imgui.h>
 
 namespace origin
@@ -39,8 +40,6 @@ namespace origin
 
 	ContentBrowserPanel::ContentBrowserPanel()
 	{
-		m_CurrentDirectory = Project::GetAssetDirectory();
-
 		m_NavigationIconMap["backward_button"] = Texture2D::Create("Resources/UITextures/backward_icon.png");
 		m_NavigationIconMap["forward_button"] = Texture2D::Create("Resources/UITextures/forward_icon.png");
 
@@ -53,6 +52,9 @@ namespace origin
 		m_DirectoryIconMap[".txt"] = Texture2D::Create("Resources/UITextures/txt_file_icon.png");
 		m_DirectoryIconMap[".cpp"] = Texture2D::Create("Resources/UITextures/cpp_file_icon.png");
 		m_DirectoryIconMap[".cs"] = Texture2D::Create("Resources/UITextures/script_file_icon.png");
+
+		m_RootDirectory = Project::GetAssetDirectory();
+		m_CurrentDirectory = m_RootDirectory;
 	}
 
 	ContentBrowserPanel::~ContentBrowserPanel()
@@ -101,7 +103,7 @@ namespace origin
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			m_DirectoryEntry = directoryEntry;
-			bool rootDirectory = m_CurrentDirectory == Project::GetAssetDirectory();
+			bool rootDirectory = m_CurrentDirectory == m_RootDirectory;
 
 			auto relativePath(m_DirectoryEntry.path());
 			m_IsDirectory = m_DirectoryEntry.is_directory();
@@ -109,7 +111,6 @@ namespace origin
 			std::string filenameString = relativePath.filename().string();
 
 			ImGui::PushID(filenameString.c_str());
-
 			// Folder Icon
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
@@ -156,13 +157,27 @@ namespace origin
 			ImGui::PopID();
 		}
 		ImGui::Columns(1);
+
+		// Right Click Context
+		if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
+		{
+			if (ImGui::BeginMenu("CREATE"))
+			{
+				ImGui::MenuItem("Animation", nullptr, &Editor::Get().guiAnimationWindow);
+
+				
+				ImGui::EndMenu();
+			}
+			ImGui::EndPopup();
+		}
+
 		ImGui::End();
 	}
 
 	void ContentBrowserPanel::NavigationButton()
 	{
 		// Navigation Button
-		bool rootDirectory = m_CurrentDirectory == Project::GetAssetDirectory();
+		bool rootDirectory = m_CurrentDirectory == m_RootDirectory;
 
 		ImVec4 navBtColor;
 		uint8_t subDirNumber = m_SubDirectoryCount + 1;

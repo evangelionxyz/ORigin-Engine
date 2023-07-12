@@ -17,10 +17,22 @@
 #include "mono\metadata\reflection.h"
 
 #include "box2d\b2_body.h"
+#include "Origin/Audio/Audio.h"
 
 namespace origin
 {
 #define OGN_ADD_INTERNAL_CALLS(Name) mono_add_internal_call("ORiginEngine.InternalCalls::"#Name, Name)
+
+	namespace Utils {
+		std::string MonoStringToString(MonoString* string)
+		{
+			char* cStr = mono_string_to_utf8(string);
+			std::string str = std::string(cStr);
+			mono_free(cStr);
+
+			return str;
+		}
+	}
 
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 
@@ -28,23 +40,21 @@ namespace origin
 	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "");
+		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "")
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
 
-	static uint64_t Entity_FindEntityByName(MonoString* name)
+	static uint64_t Entity_FindEntityByName(MonoString* stringName)
 	{
-		char* nameCStr = mono_string_to_utf8(name);
-
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 
-		Entity entity = scene->FindEntityByName(nameCStr);
-		mono_free(nameCStr);
+		std::string name = Utils::MonoStringToString(stringName);
+		Entity entity = scene->FindEntityByName(name);
 
 		if (!entity)
 		{
@@ -58,9 +68,7 @@ namespace origin
 	// Logging
 	static void NativeLog(MonoString* string, int parameter)
 	{
-		char* cStr = mono_string_to_utf8(string);
-		std::string str(cStr);
-		mono_free(cStr);
+		std::string str = Utils::MonoStringToString(string);
 		std::cout << str << ", " << parameter << std::endl;
 	}
 
@@ -83,7 +91,7 @@ namespace origin
 	static void TransformComponent_GetTranslation(UUID entityID, glm::vec3* outTranslation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outTranslation = entity.GetComponent<TransformComponent>().Translation;
@@ -92,7 +100,7 @@ namespace origin
 	static void TransformComponent_SetTranslation(UUID entityID, glm::vec3* translation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<TransformComponent>().Translation = *translation;
@@ -101,7 +109,7 @@ namespace origin
 	static void TransformComponent_GetRotation(UUID entityID, glm::vec3* outRotation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
@@ -110,7 +118,7 @@ namespace origin
 	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<TransformComponent>().Rotation = *rotation;
@@ -119,7 +127,7 @@ namespace origin
 	static void TransformComponent_GetScale(UUID entityID, glm::vec3* outScale)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outScale = entity.GetComponent<TransformComponent>().Scale;
@@ -128,7 +136,7 @@ namespace origin
 	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<TransformComponent>().Scale = *scale;
@@ -137,7 +145,7 @@ namespace origin
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* point, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
@@ -148,7 +156,7 @@ namespace origin
 	static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(UUID entityID, glm::vec2* impulse, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
@@ -156,10 +164,305 @@ namespace origin
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
 	}
 
+	static MonoString* AudioComponent_GetName(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		auto& ac = entity.GetComponent<AudioComponent>();
+		return ScriptEngine::CreateString(ac.Name.c_str());
+	}
+
+	static void AudioComponent_SetName(UUID entityID, MonoString* name)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		auto& ac = entity.GetComponent<AudioComponent>();
+		ac.Name = Utils::MonoStringToString(name);
+	}
+
+	static void AudioComponent_Play(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		auto& ac = entity.GetComponent<AudioComponent>();
+		OGN_CORE_ASSERT(ac.Audio)
+		ac.Audio->Play();
+	}
+
+	static void AudioComponent_Stop(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		auto& ac = entity.GetComponent<AudioComponent>();
+		OGN_CORE_ASSERT(ac.Audio)
+		ac.Audio->Stop();
+	}
+
+	static void AudioComponent_SetVolume(UUID entityID, float volume)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		entity.GetComponent<AudioComponent>().Volume = volume;
+	}
+
+	static float AudioComponent_GetVolume(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		return entity.GetComponent<AudioComponent>().Volume;
+	}
+
+	static void AudioComponent_SetMinDistance(UUID entityID, float minDistance)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		entity.GetComponent<AudioComponent>().MinDistance = minDistance;
+	}
+
+	static float AudioComponent_GetMinDistance(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		return entity.GetComponent<AudioComponent>().MinDistance;
+	}
+
+	static void AudioComponent_SetMaxDistance(UUID entityID, float maxDistance)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		entity.GetComponent<AudioComponent>().MaxDistance = maxDistance;
+	}
+
+	static float AudioComponent_GetMaxDistance(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		return entity.GetComponent<AudioComponent>().MinDistance;
+	}
+
+	static void AudioComponent_SetPitch(UUID entityID, float pitch)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		entity.GetComponent<AudioComponent>().Pitch = pitch;
+	}
+
+	static float AudioComponent_GetPitch(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		return entity.GetComponent<AudioComponent>().Pitch;
+	}
+
+	static void AudioComponent_SetLooping(UUID entityID, bool looping)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		entity.GetComponent<AudioComponent>().Looping = looping;
+	}
+
+	static bool AudioComponent_IsLooping(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		return entity.GetComponent<AudioComponent>().Looping;
+	}
+
+	static void AudioComponent_SetSpatial(UUID entityID, bool spatial)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		entity.GetComponent<AudioComponent>().Spatial = spatial;
+	}
+
+	static bool AudioComponent_IsSpatial(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		return entity.GetComponent<AudioComponent>().Spatial;
+	}
+
+	static void AudioComponent_SetPlayAtStart(UUID entityID, bool playAtStart)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		entity.GetComponent<AudioComponent>().PlayAtStart = playAtStart;
+	}
+
+	static bool AudioComponent_IsPlayAtStart(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+
+		return entity.GetComponent<AudioComponent>().PlayAtStart;
+	}
+
+	static MonoString* TextComponent_GetText(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>())
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		return ScriptEngine::CreateString(tc.TextString.c_str());
+	}
+
+	static void TextComponent_SetText(UUID entityID, MonoString* textString)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>())
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.TextString = Utils::MonoStringToString(textString);
+	}
+
+	static void TextComponent_GetColor(UUID entityID, glm::vec4* color)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>())
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		*color = tc.Color;
+	}
+
+	static void TextComponent_SetColor(UUID entityID, glm::vec4* color)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.Color = *color;
+	}
+
+	static float TextComponent_GetKerning(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		return tc.Kerning;
+	}
+
+	static void TextComponent_SetKerning(UUID entityID, float kerning)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.Kerning = kerning;
+	}
+
+	static float TextComponent_GetLineSpacing(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		return tc.LineSpacing;
+	}
+
+	static void TextComponent_SetLineSpacing(UUID entityID, float lineSpacing)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		auto& tc = entity.GetComponent<TextComponent>();
+		tc.LineSpacing = lineSpacing;
+	}
+
 	static void CircleRendererComponent_GetColor(UUID entityID, glm::vec4* outColor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Color = *outColor;
@@ -168,7 +471,7 @@ namespace origin
 	static void CircleRendererComponent_SetColor(UUID entityID, glm::vec4* color)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Color = *color;
@@ -177,7 +480,7 @@ namespace origin
 	static void CircleRendererComponent_GetFade(UUID entityID, float* outFade)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
@@ -186,7 +489,7 @@ namespace origin
 	static void CircleRendererComponent_SetFade(UUID entityID, float* fade)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Fade = *fade;
@@ -195,7 +498,7 @@ namespace origin
 	static void CircleRendererComponent_GetThickness(UUID entityID, float* outThickness)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
@@ -204,7 +507,7 @@ namespace origin
 	static void CircleRendererComponent_SetThickness(UUID entityID, float* thickness)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Thickness = *thickness;
@@ -213,7 +516,7 @@ namespace origin
 	static void SpriteRenderer2DComponent_GetColor(UUID entityID, glm::vec4* outColor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outColor = entity.GetComponent<SpriteRenderer2DComponent>().Color;
@@ -222,7 +525,7 @@ namespace origin
 	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4* color)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<SpriteRenderer2DComponent>().Color= *color;
@@ -231,7 +534,7 @@ namespace origin
 	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, float* tilingfactor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*tilingfactor = entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor;
@@ -240,7 +543,7 @@ namespace origin
 	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, float* tilingfactor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor = *tilingfactor;
@@ -249,7 +552,7 @@ namespace origin
 	static void BoxCollider2DComponent_GetOffset(UUID entityID, glm::vec2* outOffset)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
@@ -258,7 +561,7 @@ namespace origin
 	static void BoxCollider2DComponent_SetOffset(UUID entityID, glm::vec2* offset)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
@@ -267,7 +570,7 @@ namespace origin
 	static void BoxCollider2DComponent_GetSize(UUID entityID, glm::vec2* outSize)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
@@ -276,7 +579,7 @@ namespace origin
 	static void BoxCollider2DComponent_SetSize(UUID entityID, glm::vec2* size)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Size = *size;
@@ -285,7 +588,7 @@ namespace origin
 	static void BoxCollider2DComponent_GetDensity(UUID entityID, float* outDensity)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
@@ -294,7 +597,7 @@ namespace origin
 	static void BoxCollider2DComponent_SetDensity(UUID entityID, float* density)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Density = *density;
@@ -303,7 +606,7 @@ namespace origin
 	static void BoxCollider2DComponent_GetFriction(UUID entityID, float* outFriction)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
@@ -312,7 +615,7 @@ namespace origin
 	static void BoxCollider2DComponent_SetFriction(UUID entityID, float* friction)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Friction = *friction;
@@ -321,7 +624,7 @@ namespace origin
 	static void BoxCollider2DComponent_GetRestitution(UUID entityID, float* outRestitution)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
@@ -330,7 +633,7 @@ namespace origin
 	static void BoxCollider2DComponent_SetRestitution(UUID entityID, float* restitution)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Restitution = *restitution;
@@ -339,7 +642,7 @@ namespace origin
 	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityID, float* outRestitutionThreshold)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
@@ -348,7 +651,7 @@ namespace origin
 	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityID, float* restitutionThreshold)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
@@ -357,7 +660,7 @@ namespace origin
 	static void CircleCollider2DComponent_GetOffset(UUID entityID, glm::vec2* outOffset)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
@@ -366,7 +669,7 @@ namespace origin
 	static void CircleCollider2DComponent_SetOffset(UUID entityID, glm::vec2* offset)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
@@ -375,7 +678,7 @@ namespace origin
 	static void CircleCollider2DComponent_GetRadius(UUID entityID, float* outRadius)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
@@ -384,7 +687,7 @@ namespace origin
 	static void CircleCollider2DComponent_SetRadius(UUID entityID, float* radius)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Radius = *radius;
@@ -393,7 +696,7 @@ namespace origin
 	static void CircleCollider2DComponent_GetDensity(UUID entityID, float* outDensity)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
@@ -402,7 +705,7 @@ namespace origin
 	static void CircleCollider2DComponent_SetDensity(UUID entityID, float* density)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Density = *density;
@@ -411,7 +714,7 @@ namespace origin
 	static void CircleCollider2DComponent_GetFriction(UUID entityID, float* outFriction)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
@@ -420,7 +723,7 @@ namespace origin
 	static void CircleCollider2DComponent_SetFriction(UUID entityID, float* friction)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Friction = *friction;
@@ -429,7 +732,7 @@ namespace origin
 	static void CircleCollider2DComponent_GetRestitution(UUID entityID, float* outRestituion)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestituion = entity.GetComponent<CircleCollider2DComponent>().Restitution;
@@ -438,7 +741,7 @@ namespace origin
 	static void CircleCollider2DComponent_SetRestitution(UUID entityID, float* restitution)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Restitution = *restitution;
@@ -447,7 +750,7 @@ namespace origin
 	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityID, float* outRestitutionThreshold)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
@@ -456,7 +759,7 @@ namespace origin
 	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityID, float* restitutionThreshold)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
@@ -523,6 +826,34 @@ namespace origin
 
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
+
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_Play);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_Stop);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetVolume);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_GetVolume);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetName);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_GetName);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetPitch);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_GetPitch);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetMinDistance);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetMaxDistance);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_GetMinDistance);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_GetMaxDistance);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetLooping);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsLooping);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetSpatial);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsSpatial);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetPlayAtStart);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsPlayAtStart);
+		
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetText);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetText);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetColor);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetColor);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetKerning);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetKerning);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_GetLineSpacing);
+		OGN_ADD_INTERNAL_CALLS(TextComponent_SetLineSpacing);
 
 		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_GetColor);
 		OGN_ADD_INTERNAL_CALLS(CircleRendererComponent_SetColor);

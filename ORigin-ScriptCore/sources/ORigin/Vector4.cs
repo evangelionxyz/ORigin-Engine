@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ORiginEngine
+﻿namespace ORiginEngine
 {
     public class Vector4
     {
@@ -49,7 +43,7 @@ namespace ORiginEngine
 
         public static Vector4 Zero => new Vector4(0.0f);
 
-        public static Vector4 operator+(Vector4 vectorA, Vector4 vectorB)
+        public static Vector4 operator +(Vector4 vectorA, Vector4 vectorB)
         {
             return new Vector4(vectorA.X + vectorB.X, vectorA.Y + vectorB.Y, vectorA.Z + vectorB.Z, vectorA.W + vectorB.W);
         }

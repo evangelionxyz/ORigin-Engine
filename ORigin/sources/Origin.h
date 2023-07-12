@@ -2,7 +2,8 @@
 
 #pragma once
 #include "Origin\Core\Application.h"
-
+#include "Origin\Animation\Animation.h"
+#include "Origin\Animation\AnimationState.h"
 #include "Origin\Math\Math.h"
 
 #include "Origin\IO\Input.h"
@@ -26,8 +27,9 @@
 #include "Origin\Renderer\Model.h"
 
 #include "Origin\Renderer\Shader.h"
+#include "Origin\Renderer\ParticleSystem.h"
 #include "Origin\Renderer\Texture.h"
-#include "Origin\Renderer\subTexture2D.h"
+#include "Origin\Renderer\SubTexture2D.h"
 #include "Origin\Renderer\Framebuffer.h"
 
 #include "Origin\Scene\Entity.h"
@@ -39,4 +41,5 @@
 #include "Origin\Scene\Camera.h"
 
 #include "Origin\Utils\GUI\GuiLayer.h"
+//#include "Origin\Utils\GUI\Sequencer.h"
 #include "Origin\Utils\Time.h"

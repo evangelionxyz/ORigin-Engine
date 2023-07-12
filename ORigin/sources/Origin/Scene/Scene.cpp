@@ -3,7 +3,9 @@
 #include "pch.h"
 #include "Entity.h"
 #include "Scene.h"
+#include "Origin\Audio\Audio.h"
 #include "ScriptableEntity.h"
+
 #include "Component.h"
 
 #include "Origin/Scripting/ScriptEngine.h"
@@ -11,6 +13,8 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer3D.h"
+
+#include "Origin\Animation\Animation.h"
 
 // Box2D
 #include "box2d/b2_world.h"
@@ -38,8 +42,9 @@ namespace origin
 
     Scene::Scene()
     {
-        m_CameraIcon = Texture2D::Create("Resources/UITextures/camera.png");
-        m_LightingIcon = Texture2D::Create("Resources/UITextures/lighting.png");
+      m_CameraIcon = Texture2D::Create("Resources/UITextures/camera.png");
+      m_LightingIcon = Texture2D::Create("Resources/UITextures/lighting.png");
+      m_AudioIcon = Texture2D::Create("Resources/UITextures/audio.png");
     }
 
     Scene::~Scene()
@@ -259,194 +264,303 @@ namespace origin
         m_Registry.destroy(entity);
     }
 
-    void Scene::OnUpdateGame(Timestep time)
+    
+    void Scene::OnUpdateRuntime(Timestep deltaTime)
     {
-        // OnUpdateGame Only Needed Rendering
-        // Exclude Scripting
-
-        Camera* mainCamera = nullptr;
-        TransformComponent cameraTransform;
-
-        auto& view = m_Registry.view<CameraComponent, TransformComponent>();
-        for (auto entity : view)
+      if (!m_Paused || m_StepFrames-- > 0)
+      {
+        // Update Scripts
         {
-            auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+          auto& view = m_Registry.view<ScriptComponent>();
+          for (auto& e : view)
+          {
+            Entity entity = { e, this };
+            ScriptEngine::OnUpdateEntity(entity, deltaTime);
+          }
 
-            if (camera.Primary)
-            {
-                mainCamera = &camera.Camera;
-                cameraTransform = transform;
-                break;
-            }
-        }
-
-        if (mainCamera)
-            RenderScene(mainCamera, cameraTransform);
-    }
-
-    void Scene::OnUpdateRuntime(Timestep time)
-    {
-        if (!m_Paused || m_StempFrames-- > 0)
-        {
-            // Update Scripts
-            {
-                auto& view = m_Registry.view<ScriptComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    ScriptEngine::OnUpdateEntity(entity, time);
-                }
-
-                m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-                {
-                    if (!nsc.Instance)
-                    {
-                        nsc.Instance = nsc.InstantiateScript();
-                        nsc.Instance->m_Entity = Entity{entity, this};
-                        nsc.Instance->OnCreate();
-                    }
-                    nsc.Instance->OnUpdate(time);
-                });
-            }
-
-            // Physics
-            {
-                const int32_t velocityIterations = 6;
-                const int32_t positionIterations = 2;
-                m_Box2DWorld->Step(time, velocityIterations, positionIterations);
-
-                // Retrieve transform from Box2D
-                auto view = m_Registry.view<Rigidbody2DComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    auto& transform = entity.GetComponent<TransformComponent>();
-                    auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-                    auto body = (b2Body*)rb2d.RuntimeBody;
-
-                    const auto& position = body->GetPosition();
-
-                    transform.Translation.x = position.x;
-                    transform.Translation.y = position.y;
-                    transform.Rotation.z = body->GetAngle();
-                }
-            }
-        }
-
-        // Rendering
-        Camera* mainCamera = nullptr;
-        TransformComponent cameraTransform;
-        auto& view = m_Registry.view<CameraComponent, TransformComponent>();
-        for (auto entity : view)
-        {
-            auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
-
-            if (camera.Primary)
-            {
-                mainCamera = &camera.Camera;
-                cameraTransform = transform;
-                break;
-            }
-        }
-
-        if (mainCamera)
-            RenderScene(mainCamera, cameraTransform);
-    }
-
-    void Scene::OnUpdateEditor(Timestep time, EditorCamera& camera)
-    {
-        m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-        {
+          m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+          {
             if (!nsc.Instance)
             {
-                nsc.Instance = nsc.InstantiateScript();
-                nsc.Instance->m_Entity = Entity{entity, this};
-                nsc.Instance->OnCreate();
+              nsc.Instance = nsc.InstantiateScript();
+              nsc.Instance->m_Entity = Entity{ entity, this };
+              nsc.Instance->OnCreate();
             }
-            nsc.Instance->OnUpdate(time);
-        });
-
-        //Render
-        RenderScene(camera);
-    }
-
-    void Scene::OnUpdateSimulation(Timestep time, EditorCamera& camera)
-    {
-        if (!m_Paused || m_StempFrames-- > 0)
-        {
-            // Update Scripts
-            {
-                auto& view = m_Registry.view<ScriptComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    ScriptEngine::OnUpdateEntity(entity, time);
-                }
-
-                m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-                {
-                    if (!nsc.Instance)
-                    {
-                        nsc.Instance = nsc.InstantiateScript();
-                        nsc.Instance->m_Entity = Entity{entity, this};
-                        nsc.Instance->OnCreate();
-                    }
-                    nsc.Instance->OnUpdate(time);
-                });
-            }
-
-            // Physics
-            {
-                const int32_t velocityIterations = 6;
-                const int32_t positionIterations = 2;
-                m_Box2DWorld->Step(time, velocityIterations, positionIterations);
-
-                // Retrieve transform from Box2D
-                auto view = m_Registry.view<Rigidbody2DComponent>();
-                for (auto e : view)
-                {
-                    Entity entity = {e, this};
-                    auto& transform = entity.GetComponent<TransformComponent>();
-                    auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-                    auto body = (b2Body*)rb2d.RuntimeBody;
-
-                    const auto& position = body->GetPosition();
-
-                    transform.Translation.x = position.x;
-                    transform.Translation.y = position.y;
-                    transform.Rotation.z = body->GetAngle();
-                }
-            }
+            nsc.Instance->OnUpdate(deltaTime);
+          });
         }
 
-        // Render
-        RenderScene(camera);
+        // Physics
+        {
+          const int32_t velocityIterations = 6;
+          const int32_t positionIterations = 2;
+          m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
+
+          // Retrieve transform from Box2D
+          auto& view = m_Registry.view<Rigidbody2DComponent>();
+          for (auto& e : view)
+          {
+            Entity entity = { e, this };
+            auto& transform = entity.GetComponent<TransformComponent>();
+            auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+
+            auto body = (b2Body*)rb2d.RuntimeBody;
+
+            const auto& position = body->GetPosition();
+
+            transform.Translation.x = position.x;
+            transform.Translation.y = position.y;
+            transform.Rotation.z = body->GetAngle();
+          }
+        }
+      }
+
+      // Rendering
+      Camera* mainCamera = nullptr;
+      TransformComponent cameraTransform;
+      auto& view = m_Registry.view<CameraComponent, TransformComponent>();
+      for (auto entity : view)
+      {
+          auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+
+          if (camera.Primary)
+          {
+              mainCamera = &camera.Camera;
+              cameraTransform = transform;
+              break;
+          }
+      }
+
+      if (mainCamera)
+          RenderScene(mainCamera, cameraTransform);
+
+      {
+        m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
+          {
+            pc.Particle.OnUpdate(deltaTime);
+          });
+      }
+
+      // Audio Update
+      {
+        auto view = m_Registry.view<TransformComponent, AudioComponent>();
+        for (auto entity : view)
+        {
+          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
+          if (ac.Audio)
+          {
+            ac.Audio->SetMaxDistance(ac.MaxDistance);
+            ac.Audio->SetMinDistance(ac.MinDistance);
+            ac.Audio->SetLoop(ac.Looping);
+            ac.Audio->SetGain(ac.Volume);
+
+            if (ac.Spatial)
+            {
+              ac.Audio->SetPosition(tc.Translation);
+            }
+          }
+        }
+
+        AudioEngine::SetListener(cameraTransform.Translation, cameraTransform.GetForward(), cameraTransform.GetUp());
+        AudioEngine::SystemUpdate();
+      }
+    }
+
+    void Scene::OnUpdateEditor(Timestep deltaTime, EditorCamera& camera)
+    {
+      m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+      {
+          if (!nsc.Instance)
+          {
+              nsc.Instance = nsc.InstantiateScript();
+              nsc.Instance->m_Entity = Entity{entity, this};
+              nsc.Instance->OnCreate();
+          }
+          nsc.Instance->OnUpdate(deltaTime);
+      });
+
+      //Render
+      RenderScene(camera);
+
+      {
+        m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
+        {
+            pc.Particle.OnUpdate(deltaTime);
+        });
+      }
+
+      // Audio Update
+      {
+        Renderer2D::BeginScene();
+        auto view = m_Registry.view<TransformComponent, AudioComponent>();
+        for (auto entity : view)
+        {
+          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
+          if (ac.Audio)
+          {
+            ac.Audio->SetMaxDistance(ac.MaxDistance);
+            ac.Audio->SetMinDistance(ac.MinDistance);
+            ac.Audio->SetLoop(ac.Looping);
+            ac.Audio->SetGain(ac.Volume);
+
+            if (ac.Spatial)
+            {
+              ac.Audio->SetPosition(tc.Translation);
+            }
+          }
+          DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
+        }
+        Renderer2D::EndScene();
+
+        // Animation
+        {
+          auto view = m_Registry.view<AnimationComponent>();
+          for (auto entity : view)
+          {
+            auto& ac = view.get<AnimationComponent>(entity);
+            if (ac.Animation)
+              ac.Animation->Update(deltaTime);
+          }
+        }
+
+        AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
+        AudioEngine::SystemUpdate();
+      }
+    }
+
+    void Scene::OnUpdateSimulation(Timestep deltaTime, EditorCamera& camera)
+    {
+      if (!m_Paused || m_StepFrames-- > 0)
+      {
+        // Update Scripts
+        {
+          auto& view = m_Registry.view<ScriptComponent>();
+          for (auto e : view)
+          {
+              Entity entity = {e, this};
+              ScriptEngine::OnUpdateEntity(entity, deltaTime);
+          }
+
+          m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+          {
+              if (!nsc.Instance)
+              {
+                  nsc.Instance = nsc.InstantiateScript();
+                  nsc.Instance->m_Entity = Entity{entity, this};
+                  nsc.Instance->OnCreate();
+              }
+              nsc.Instance->OnUpdate(deltaTime);
+          });
+        }
+
+        // Physics
+        {
+          const int32_t velocityIterations = 6;
+          const int32_t positionIterations = 2;
+          m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
+
+          // Retrieve transform from Box2D
+          auto view = m_Registry.view<Rigidbody2DComponent>();
+          for (auto e : view)
+          {
+              Entity entity = {e, this};
+              auto& transform = entity.GetComponent<TransformComponent>();
+              auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+
+              auto body = (b2Body*)rb2d.RuntimeBody;
+
+              const auto& position = body->GetPosition();
+
+              transform.Translation.x = position.x;
+              transform.Translation.y = position.y;
+              transform.Rotation.z = body->GetAngle();
+          }
+        }
+      }
+
+      // Render
+      RenderScene(camera);
+
+      {
+        m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
+          {
+            pc.Particle.OnUpdate(deltaTime);
+          });
+      }
+
+      // Audio Update
+      {
+        Renderer2D::BeginScene();
+        auto view = m_Registry.view<TransformComponent, AudioComponent>();
+        for (auto entity : view)
+        {
+          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
+          if (ac.Audio)
+          {
+            ac.Audio->SetMaxDistance(ac.MaxDistance);
+            ac.Audio->SetMinDistance(ac.MinDistance);
+            ac.Audio->SetLoop(ac.Looping);
+            ac.Audio->SetGain(ac.Volume);
+
+            if (ac.Spatial)
+            {
+              ac.Audio->SetPosition(tc.Translation);
+            }
+          }
+          DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
+        }
+        Renderer2D::EndScene();
+      }
+
+      AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
+      AudioEngine::SystemUpdate();
     }
 
     void Scene::OnSimulationStart()
     {
+      {
         OnPhysics2DStart();
 
         // Scripting
+        ScriptEngine::OnRuntimeStart(this);
+        auto view = m_Registry.view<ScriptComponent>();
+        for (auto e : view)
         {
-            ScriptEngine::OnRuntimeStart(this);
-            auto view = m_Registry.view<ScriptComponent>();
-            for (auto e : view)
-            {
-                Entity entity = {e, this};
-                ScriptEngine::OnCreateEntity(entity);
-            }
+          Entity entity = { e, this };
+          ScriptEngine::OnCreateEntity(entity);
         }
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for (auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio && ac.PlayAtStart)
+            {
+              ac.Audio->SetGain(ac.Volume);
+              ac.Audio->Play();
+            }
+          }
+        }
+      }
     }
 
     void Scene::OnSimulationStop()
     {
         OnPhysics2DStop();
-
-        // Scripting
         ScriptEngine::OnRuntimeStop();
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for (auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio)
+              ac.Audio->Stop();
+          }
+        }
     }
 
     void Scene::RenderScene(Camera* camera, const TransformComponent& cameraTransform)
@@ -454,6 +568,20 @@ namespace origin
         Renderer::BeginScene(*camera, cameraTransform.GetTransform());
         // Get Camera Position
         const glm::vec3& MainCameraPosition = cameraTransform.Translation;
+
+        // Particle
+        {
+          auto& view = m_Registry.view<TransformComponent, Particle2DComponent>();
+          for (auto entity : view)
+          {
+            auto& [tc, pc] = view.get<TransformComponent, Particle2DComponent>(entity);
+
+            for (int i = 0; i < 5; i++)
+              pc.Particle.Emit(pc, glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis), (int)entity);
+
+            pc.Particle.OnRender();
+          }
+        }
 
         // Sprites
         {
@@ -487,6 +615,17 @@ namespace origin
                 Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
                                        (int)entity);
             }
+        }
+
+
+        // Text
+        {
+          auto& view = m_Registry.view<TransformComponent, TextComponent>();
+          for (auto entity : view)
+          {
+            auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
+            Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, (int)entity);
+          }
         }
 
         // 3D Scene
@@ -552,8 +691,7 @@ namespace origin
                 auto& directionalLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
                 for (auto entity : directionalLightView)
                 {
-                    auto& [transform, light] = directionalLightView.get<TransformComponent, DirectionalLightComponent>(
-                        entity);
+                    auto& [transform, light] = directionalLightView.get<TransformComponent, DirectionalLightComponent>(entity);
                     if (sMesh.Model)
                     {
                         std::string uniformName = "directionalLight.";
@@ -584,6 +722,20 @@ namespace origin
     {
         Renderer::BeginScene(camera);
 
+        // Particle
+        {
+          auto& view = m_Registry.view<TransformComponent, Particle2DComponent>();
+          for (auto entity : view)
+          {
+            auto& [tc, pc] = view.get<TransformComponent, Particle2DComponent>(entity);
+
+            for (int i = 0; i < 5; i++)
+              pc.Particle.Emit(pc, glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis), (int)entity);
+
+            pc.Particle.OnRender();
+          }
+        }
+
         // Sprites
         {
             auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
@@ -603,7 +755,14 @@ namespace origin
                 auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
                 Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
             }
-            Renderer::EndScene();
+
+            auto& view2 = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
+            for (auto& entity : view2)
+            {
+              auto& [sprite, anim] = view2.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
+              if (anim.State.HasAnimation())
+                sprite.Texture = anim.State.GetAnimation()->GetCurrentSprite();
+            }
         }
 
         // Circles
@@ -615,6 +774,16 @@ namespace origin
                 Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
                                        (int)entity);
             }
+        }
+
+        // Text
+        {
+          auto& view = m_Registry.view<TransformComponent, TextComponent>();
+          for (auto entity : view)
+          {
+            auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
+            Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, (int)entity);
+          }
         }
 
         // 3D Scene
@@ -747,14 +916,37 @@ namespace origin
                 ScriptEngine::OnCreateEntity(entity);
             }
         }
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for(auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio && ac.PlayAtStart)
+            {
+              ac.Audio->SetGain(ac.Volume);
+              ac.Audio->Play();
+            }
+          }
+        }
     }
 
     void Scene::OnRuntimeStop()
     {
         OnPhysics2DStop();
-
-        // Scripting
         ScriptEngine::OnRuntimeStop();
+
+        // Audio
+        {
+          auto view = m_Registry.view<AudioComponent>();
+          for (auto& e : view)
+          {
+            auto& ac = view.get<AudioComponent>(e);
+            if (ac.Audio)
+              ac.Audio->Stop();
+          }
+        }
     }
 
     void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
@@ -765,23 +957,6 @@ namespace origin
         m_ViewportWidth = width;
         m_ViewportHeight = height;
 
-        const auto view = m_Registry.view<CameraComponent>();
-        for (auto& entity : view)
-        {
-            auto& cameraComponent = view.get<CameraComponent>(entity);
-            if (!cameraComponent.FixedAspectRatio)
-                cameraComponent.Camera.SetViewportSize(width, height);
-        }
-    }
-
-    void Scene::OnGameViewportResize(const uint32_t width, const uint32_t height)
-    {
-        if(m_GameViewportWidth == width && m_GameViewportHeight == height)
-            return;
-
-        m_GameViewportWidth = width;
-        m_GameViewportHeight = height;
-        
         const auto view = m_Registry.view<CameraComponent>();
         for (auto& entity : view)
         {
@@ -822,6 +997,7 @@ namespace origin
         m_GridSize = size;
         m_GridColor = color;
     }
+
 
     Entity Scene::GetEntityWithUUID(UUID uuid)
     {
@@ -933,7 +1109,7 @@ namespace origin
 
     void Scene::Step(int frames)
     {
-        m_StempFrames = frames;
+        m_StepFrames = frames;
     }
 
     template <typename T>
@@ -948,6 +1124,16 @@ namespace origin
 
     template <>
     void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+    {
+    }
+
+    template <>
+    void Scene::OnComponentAdded<AudioComponent>(Entity entity, AudioComponent& component)
+    {
+    }
+
+   template <>
+    void Scene::OnComponentAdded<AnimationComponent>(Entity entity, AnimationComponent& component)
     {
     }
 
@@ -989,6 +1175,11 @@ namespace origin
     }
 
     template <>
+    void Scene::OnComponentAdded<TextComponent>(Entity entity, TextComponent& component)
+    {
+    }
+
+    template <>
     void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component)
     {
     }
@@ -1020,6 +1211,11 @@ namespace origin
 
     template <>
     void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component)
+    {
+    }
+
+    template <>
+    void Scene::OnComponentAdded<Particle2DComponent>(Entity entity, Particle2DComponent& component)
     {
     }
 }

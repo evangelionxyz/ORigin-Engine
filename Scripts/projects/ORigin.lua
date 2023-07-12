@@ -22,7 +22,9 @@ files {
     "%{IncludeDir.STBI}/**.cpp",
     "%{IncludeDir.STBI}/**.h",
     "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
-    "%{IncludeDir.IMGUIZMO}/ImGuizmo.h",
+    "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
+    "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
+    "%{IncludeDir.IMGUIZMO}/ImSequencer.h",
 }
 
 includedirs {
@@ -35,12 +37,15 @@ includedirs {
     "%{IncludeDir.IMGUIZMO}",
     "%{IncludeDir.GLAD}",
     "%{IncludeDir.GLM}",
+    "%{IncludeDir.FMOD}",
     "%{IncludeDir.ENTT}",
     "%{IncludeDir.MONO}",
     "%{IncludeDir.FILEWATCHER}",
     "%{IncludeDir.YAML_CPP}",
     "%{IncludeDir.VulkanSDK}",
     "%{IncludeDir.ASSIMP}",
+    "%{IncludeDir.msdfgen}",
+    "%{IncludeDir.msdf_atlas_gen}"
 }
 
 defines {
@@ -53,12 +58,14 @@ links {
     "glfw",
     "glad",
     "ImGui",
+    "msdf-atlas-gen",
+    "msdfgen",
     "yaml-cpp",
     "opengl32.lib",
     "%{Library.Vulkan}",
+    "%{Library.FMOD}",
     "%{Library.Assimp}",
     "%{Library.VulkanUtils}",
-
     "%{Library.MONO}"
 }
 

@@ -2,7 +2,9 @@
 
 #pragma once
 #include "Origin/Renderer/Texture.h"
+#include "Origin/Renderer/SubTexture2D.h"
 #include "Origin/Scene/Component.h"
+#include "Origin\Renderer\Font.h"
 
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Shader.h"
@@ -27,6 +29,7 @@ namespace origin
 		static void DrawQuad(const glm::vec3& position, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
+		static void DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f), int entityID = -1);
 		static void DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f), int entityID = -1);
 
 		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color);
@@ -40,6 +43,16 @@ namespace origin
 		static void DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade = 0.0f, int entityID = -1);
 		static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, glm::vec4& color = glm::vec4(1.0f), int entityID = -1);
 		static void DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID = -1);
+
+		struct TextParams
+		{
+			glm::vec4 Color = glm::vec4(1.0);
+			float Kerning = 0.0f;
+			float LineSpacing = 0.0f;
+		};
+
+		static void DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, int entityID = -1);
+		static void DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& textComponent, int entityID = -1);
 
 		// Stats
 		struct Statistics
@@ -58,6 +71,18 @@ namespace origin
 	private:
 		static void StartBatch();
 		static void NextBatch();
+	};
+
+	struct TextVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;
+		float TexIndex;
+
+		// TODO: background color for outline/bg
+		// Editor Only
+		int EntityID;
 	};
 
 	struct QuadVertex
@@ -100,6 +125,18 @@ namespace origin
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
 		std::shared_ptr<Texture2D> WhiteTexture;
+
+		// =============================================
+		// =================== Texts ===================
+		// =============================================
+		std::shared_ptr<VertexArray> TextVertexArray;
+		std::shared_ptr<VertexBuffer> TextVertexBuffer;
+		std::shared_ptr<Shader> TextShader;
+		uint32_t FontAtlasTextureIndex = 0;
+		std::array<std::shared_ptr<Texture2D>, MaxTextureSlots> FontAtlasTextureSlots;
+		uint32_t TextIndexCount = 0;
+		TextVertex* TextVertexBufferBase = nullptr;
+		TextVertex* TextVertexBufferPtr = nullptr;
 
 		// =============================================
 		// =================== Quads ===================

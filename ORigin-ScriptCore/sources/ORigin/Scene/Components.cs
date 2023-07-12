@@ -47,7 +47,7 @@ namespace ORiginEngine
                 InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
             }
         }
-        
+
     }
 
     public class Rigidbody2DComponent : Component
@@ -60,6 +60,90 @@ namespace ORiginEngine
         public void ApplyLinearImpulse(Vector2 impulse, bool wake)
         {
             InternalCalls.Rigidbody2DComponent_ApplyLinearImpulseToCenter(Entity.ID, ref impulse, wake);
+        }
+    }
+
+    public class AudioComponent : Component
+    {
+        public void Play()
+        {
+            InternalCalls.AudioComponent_Play(Entity.ID);
+        }
+        public void Stop()
+        {
+            InternalCalls.AudioComponent_Stop(Entity.ID);
+        }
+        
+        public string Name
+        {
+            get => InternalCalls.AudioComponent_GetName(Entity.ID);
+            set => InternalCalls.AudioComponent_SetName(Entity.ID, value);
+        }
+        public float Volume
+        {
+            get => InternalCalls.AudioComponent_GetVolume(Entity.ID);
+            set => InternalCalls.AudioComponent_SetVolume(Entity.ID, value);
+        }
+        public float MinDistance
+        {
+            get => InternalCalls.AudioComponent_GetMinDistance(Entity.ID);
+            set => InternalCalls.AudioComponent_SetMinDistance(Entity.ID, value);
+        }
+        
+        public float MaxDistance
+        {
+            get => InternalCalls.AudioComponent_GetMaxDistance(Entity.ID);
+            set => InternalCalls.AudioComponent_SetMaxDistance(Entity.ID, value);
+        }
+        public bool Looping
+        {
+            get => InternalCalls.AudioComponent_IsLooping(Entity.ID);
+            set => InternalCalls.AudioComponent_SetLooping(Entity.ID, value);
+        }
+        public bool Spatial
+        {
+            get => InternalCalls.AudioComponent_IsSpatial(Entity.ID);
+            set => InternalCalls.AudioComponent_SetSpatial(Entity.ID, value);
+        }
+        public bool PlayAtStart
+        {
+            get => InternalCalls.AudioComponent_IsPlayAtStart(Entity.ID);
+            set => InternalCalls.AudioComponent_SetPlayAtStart(Entity.ID, value);
+        }
+
+    }
+
+    public class TextComponent : Component
+    {
+        public string Text
+        {
+            get => InternalCalls.TextComponent_GetText(Entity.ID);
+            set => InternalCalls.TextComponent_SetText(Entity.ID, value);
+        }
+
+        public Vector4 Color
+        {
+            get
+            {
+                InternalCalls.TextComponent_GetColor(Entity.ID, out Vector4 color);
+                return color;
+            }
+            set
+            {
+                InternalCalls.TextComponent_SetColor(Entity.ID, ref value);
+            }
+        }
+
+        public float Kerning
+        {
+            get => InternalCalls.TextComponent_GetKerning(Entity.ID);
+            set => InternalCalls.TextComponent_SetKerning(Entity.ID, value);
+        }
+
+        public float LineSpacing
+        {
+            get => InternalCalls.TextComponent_GetLineSpacing(Entity.ID);
+            set => InternalCalls.TextComponent_SetLineSpacing(Entity.ID, value);
         }
     }
 
@@ -252,7 +336,7 @@ namespace ORiginEngine
             {
                 InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, ref value); ;
             }
-            
+
         }
 
         public float Fade
@@ -269,7 +353,7 @@ namespace ORiginEngine
         }
     }
 
-    public class SpriteRenderer2DComponent : Component 
+    public class SpriteRenderer2DComponent : Component
     {
         public Vector4 Color
         {
@@ -282,7 +366,7 @@ namespace ORiginEngine
             {
                 InternalCalls.SpriteRenderer2DComponent_SetColor(Entity.ID, ref value);
             }
-            
+
         }
 
         public float TilingFactor

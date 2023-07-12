@@ -80,7 +80,7 @@ namespace origin
 						if (entity.HasComponent<SpriteRenderer2DComponent>())
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path textureFile = path;
+							std::filesystem::path textureFile = Project::GetAssetFileSystemPath(path);
 							auto& component = entity.GetComponent<SpriteRenderer2DComponent>();
 							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
 								component.Texture = Texture2D::Create(textureFile.string());
@@ -89,7 +89,7 @@ namespace origin
 						if (entity.HasComponent<SpriteRendererComponent>())
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path textureFile = path;
+							std::filesystem::path textureFile = Project::GetAssetFileSystemPath(path);
 							auto& component = entity.GetComponent<SpriteRendererComponent>();
 							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
 								component.Texture = Texture2D::Create(textureFile.string());

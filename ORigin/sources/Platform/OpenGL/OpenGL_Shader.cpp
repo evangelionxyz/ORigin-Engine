@@ -186,7 +186,10 @@ namespace origin {
     GLint isLinked;
 
     glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-    OGN_CORE_TRACE("Shader Linked Status : {0}", isLinked);
+    if(isLinked < 0)
+      OGN_CORE_ERROR("Shader Linked Status : {0}", isLinked);
+    else
+      OGN_CORE_INFO("Shader Linked Status : {0}", isLinked);
 
     if (isLinked == GL_FALSE)
     {
@@ -272,7 +275,7 @@ namespace origin {
       std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
 
       std::ifstream infile(cachedPath, std::ios::in | std::ios::binary);
-      if (infile.is_open())
+      if (infile.is_open() && !m_RecompileSPIRV)
       {
         OGN_CORE_WARN("Get Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
         infile.seekg(0, std::ios::end);

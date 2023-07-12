@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 using System;
 using ORiginEngine;
@@ -8,52 +8,63 @@ namespace Game
     public class Player : Entity
     {
         public Entity entity;
+        public Entity textEntity;
+        private AudioComponent jumpAudio;
+        private TransformComponent transform;
+        private BoxCollider2DComponent bc2D;
 
-        private TransformComponent transformC;
-        private Rigidbody2DComponent rigidBody2DC;
-        private SpriteRenderer2DComponent spriteRenderer2DC;
-        private BoxCollider2DComponent boxCollider2DC;
+        public float Speed = 2.0f;
+        public float Increment = 10.0f;
 
-        public float Speed = 5.0f;
-        public float time = 0.0f;
+        private float time;
+        private int keyPressedCount = 0;
 
-        public float tilingfactor = 1.0f;
-        public Vector3 scale = new Vector3(1.0f);
-
-        public float Bc2Ddensity;
+        private Vector2 velocity;
+        private Vector2 translation;
 
         void OnCreate()
         {
-            transformC = GetComponent<TransformComponent>();
-            rigidBody2DC = GetComponent<Rigidbody2DComponent>();
-            spriteRenderer2DC = GetComponent<SpriteRenderer2DComponent>();
-            boxCollider2DC = GetComponent<BoxCollider2DComponent>();
+            velocity = Vector2.Zero;
+            translation = Vector2.Zero;
 
-            Bc2Ddensity = boxCollider2DC.Density;
+            transform = GetComponent<TransformComponent>();
+            bc2D = GetComponent<BoxCollider2DComponent>();
+
+            textEntity = FindEntityByName("TimeStep");
+            jumpAudio = FindEntityByName("JumpAudio").GetComponent<AudioComponent>();
         }
 
         void OnUpdate(float deltaTime)
         {
             time += deltaTime;
-            float speed = Speed;
 
-            Vector3 velocity = Vector3.Zero;
+            if(textEntity != null)
+            {
+                TextComponent text = textEntity.GetComponent<TextComponent>();
+                text.Text = "Time: " + time.ToString();
+            }
 
-            if (Translation.Y < 3.0f)
-                if (Input.IsKeyPressed(KeyCode.Space))
-                    velocity.Y = 3.0f;
+            if (Input.IsKeyPressed(KeyCode.Space))
+            {
+                if(keyPressedCount < 1)
+                    jumpAudio.Play();
 
-            if (Input.IsKeyPressed(KeyCode.A))
-                velocity.X = -1.0f;
-            else if (Input.IsKeyPressed(KeyCode.D))
-                velocity.X = 1.0f;
+                velocity.Y += Increment;
 
-            velocity *= speed * deltaTime;
-            rigidBody2DC.ApplyLinearImpulse(velocity.XY, true);
+                keyPressedCount++;
+            }
+            else
+            {
+                velocity.Y -= Increment;
+                keyPressedCount = 0;
+            }
 
-            transformC.Scale = scale;
-            spriteRenderer2DC.TilingFactor = tilingfactor;
-            boxCollider2DC.Density = Bc2Ddensity;
+            velocity.X += Increment;
+
+            velocity *= Speed * deltaTime;
+            translation += velocity;
+
+            transform.Translation = new Vector3(translation, 0.0f);
         }
     }
 }

@@ -1,0 +1,13 @@
+Scene: testScene.org
+Entities:
+  - Entity: 8215238067624018017
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures/block.png
+      TillingFactor: 1

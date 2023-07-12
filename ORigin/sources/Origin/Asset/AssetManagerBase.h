@@ -1,12 +1,15 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 
+#include "Asset.h"
+
 namespace origin {
 
-    class AssetManagerBase
-    {
-    public:
-        
-    };
+	class AssetManagerBase
+	{
+	public:
+		virtual std::shared_ptr<Asset> GetAsset(AssetHandle handle) const = 0;
+	};
+
 }

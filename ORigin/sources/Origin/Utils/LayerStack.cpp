@@ -13,7 +13,9 @@ namespace origin
 
 	LayerStack::~LayerStack()
 	{
-		for (Layer* layer : m_Layers) {
+		for (Layer* layer : m_Layers) 
+		{
+			OGN_CORE_WARN("Deleting Layer '{}'", layer->GetName());
 			delete layer;
 		}
 	}
