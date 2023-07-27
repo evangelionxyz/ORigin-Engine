@@ -2,8 +2,9 @@
 
 #pragma once
 #include "pch.h"
-
 #include "Origin\Animation\AnimationState.h"
+
+#include "Origin\Audio\AudioListener.h"
 
 #include "SceneCamera.h"
 #include "Origin\Core\UUID.h"
@@ -33,22 +34,24 @@ namespace origin
 		std::string Tag;
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
-		TagComponent(const std::string& tag)
-			: Tag(tag) {}
-	};
-
-	struct Animator
-	{
+		TagComponent(const std::string& tag) : Tag(tag) {}
 	};
 
 	class Animation;
 	struct AnimationComponent
 	{
-		std::shared_ptr<Animation> Animation;
-		AnimationState State;
-
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent&) = default;
+		std::shared_ptr<Animation> Animation;
+		AnimationState State;
+	};
+
+	struct AudioListenerComponent
+	{
+		AudioListener Listener;
+		bool Enable = true;
+		AudioListenerComponent() = default;
+		AudioListenerComponent(const AudioListenerComponent&) = default;
 	};
 
 	class Audio;
@@ -56,7 +59,6 @@ namespace origin
 	{
 		std::shared_ptr<Audio> Audio;
 		std::string Name = "Audio";
-		std::string ListenerName;
 
 		float Volume = 1.0f;
 		float Pitch = 1.0f;
@@ -152,7 +154,6 @@ namespace origin
 			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 			return glm::normalize(glm::vec3(right));
 		}
-
 	};
 
 	struct SpriteRendererComponent
@@ -313,9 +314,9 @@ namespace origin
 	struct ComponentGroup { };
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, AnimationComponent, AudioComponent, PointLightComponent, SpotLightComponent,
+		ComponentGroup<TransformComponent, CameraComponent, AnimationComponent,
+		AudioComponent, AudioListenerComponent, PointLightComponent, SpotLightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
-		CircleRendererComponent, CameraComponent, Particle2DComponent,
-		ScriptComponent, NativeScriptComponent,
+		CircleRendererComponent, Particle2DComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
 }

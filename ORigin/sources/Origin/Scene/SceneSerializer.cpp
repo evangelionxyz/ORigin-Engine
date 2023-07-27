@@ -249,6 +249,17 @@ namespace origin {
 			out << YAML::EndMap; // !CameraComponent
 		}
 
+		if (entity.HasComponent<AudioListenerComponent>())
+		{
+			out << YAML::Key << "AudioListenerComponent";
+			out << YAML::BeginMap; // AudioListenerComponent
+
+			const auto& al = entity.GetComponent<AudioListenerComponent>();
+			out << YAML::Key << "Enable" << YAML::Value << al.Enable;
+
+			out << YAML::EndMap; // !AudioListenerComponent
+		}
+
 		if (entity.HasComponent<StaticMeshComponent>())
 		{
 			out << YAML::Key << "StaticMeshComponent";
@@ -578,6 +589,12 @@ namespace origin {
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
 					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
+				}
+
+				if (auto audioListnerComponent = entity["AudioListenerComponent"])
+				{
+					auto& al = deserializedEntity.AddComponent<AudioListenerComponent>();
+					al.Enable = audioListnerComponent["Enable"].as<bool>();
 				}
 
 				if (auto audioComponent = entity["AudioComponent"])

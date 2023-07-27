@@ -13,6 +13,7 @@ namespace origin {
 	{
 		FMOD_RESULT Result;
 		FMOD::System* AudioSystem;
+
 		std::unordered_map<std::string, std::shared_ptr<Audio>> AudioStorage;
 		const int MAX_CHANNELS = 32;
 	};
@@ -166,7 +167,6 @@ namespace origin {
 	void Audio::SetPosition(const glm::vec3& position)
 	{
 		m_AudioPosition = { position.x, position.y, position.z };
-
 		s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
 		FMOD_CHECK(s_Data.Result);
 	}
@@ -219,20 +219,18 @@ namespace origin {
 		return sound;
 	}
 
+	void AudioEngine::SetMute(bool enable)
+	{
+		FMOD::ChannelGroup* channelControl;
+		s_Data.AudioSystem->getMasterChannelGroup(&channelControl);
+
+		s_Data.Result = channelControl->setMute(enable);
+		FMOD_CHECK(s_Data.Result);
+	}
+
 	void AudioEngine::SystemUpdate()
 	{
 		s_Data.Result = s_Data.AudioSystem->update();
-	}
-
-	void AudioEngine::SetListener(const glm::vec3& position, const glm::vec3& forward, const glm::vec3& up)
-	{
-		// Set Global Listener
-		FMOD_VECTOR listenerPos = { -position.x, -position.y, -position.z };
-		FMOD_VECTOR listenerForward = { forward.x, forward.y, forward.z };
-		FMOD_VECTOR listenerUp = { up.x, up.y, up.z };
-
-		s_Data.Result = s_Data.AudioSystem->set3DListenerAttributes(0, &listenerPos, nullptr, &listenerForward, &listenerUp);
-		FMOD_CHECK(s_Data.Result);
 	}
 
 	bool AudioEngine::AudioStorageInsert(std::shared_ptr<Audio>& audio)

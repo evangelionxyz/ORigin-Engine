@@ -92,6 +92,12 @@ namespace origin {
 						if (ImGui::MenuItem("EMPTY"))
 							m_Context->CreateEntity("Empty");
 
+						if (ImGui::MenuItem("MAIN CAMERA"))
+						{
+							m_Context->CreateCamera("Main Camera");
+							m_SelectedEntity.AddComponent<AudioListenerComponent>();
+						}
+
 						if (ImGui::MenuItem("CAMERA"))
 							m_Context->CreateCamera("Camera");
 
@@ -196,9 +202,16 @@ namespace origin {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
+			std::string search = "Search Component";
+			char searchBuffer[256];
+			strcpy_s(searchBuffer, sizeof(searchBuffer), search.c_str());
+			if (ImGui::InputText("##SearchComponent", searchBuffer, sizeof(searchBuffer)))
+				search = std::string(searchBuffer);
+
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
 			DisplayAddComponentEntry<AudioComponent>("AUDIO");
+			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
 
 			if (DisplayAddComponentEntry<AnimationComponent>("ANIMATION"))
 			{
@@ -294,12 +307,13 @@ namespace origin {
 			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
-		DrawComponent<AnimationComponent>("ANIMATION", entity, [entity](auto& component)
+		DrawComponent<AnimationComponent>("ANIMATION", entity, [](auto& component)
 		{
-
 		});
 
-		DrawComponent<AudioComponent>("AUDIO", entity, [entity, scene = m_Context](auto& component)
+		
+
+		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
 				static bool creationWindow = false;
 
@@ -311,8 +325,7 @@ namespace origin {
 
 				if(creationWindow)
 				{
-					ImGuiWindowFlags winFlags = 
-						ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDocking;
+					ImGuiWindowFlags winFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDocking;
 
 					ImGui::Begin("Audio Creation", &creationWindow, winFlags);
 					ImGui::Button("Drop Audio");
@@ -330,13 +343,9 @@ namespace origin {
 								filepath = audioPath.string();
 								OGN_CORE_WARN("Audio Component: Drop Audio From {}", filepath);
 							}
-
-							else if (audioPath.extension() == ".oxau")
-							{
-
-							}
 						}
 					}
+
 					ImGui::SameLine();
 					ImGui::Text("Path: %s", filepath.c_str());
 
@@ -344,11 +353,13 @@ namespace origin {
 					ImGui::Text("Name: "); ImGui::SameLine();
 					char buffer[256];
 					strcpy_s(buffer, sizeof(buffer), name.c_str());
+
 					if (ImGui::InputText("##audioName", buffer, sizeof(buffer)))
 					{
 						name = std::string(buffer);
 						component.Name = name;
 					}
+
 					static bool spatial = false;
 					static bool looping = false;
 					static float minDistance = 2.0f;
@@ -385,8 +396,7 @@ namespace origin {
 						valid = (!name.empty() && !filepath.empty());
 						if (valid)
 						{
-							if (component.Audio)
-							{
+							if (component.Audio) {
 								component.Audio->Stop();
 								component.Audio.reset();
 							}
@@ -424,14 +434,16 @@ namespace origin {
 					ImGui::Checkbox("Looping", &component.Looping);
 					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
 
+					float columnWidth = 100.0f;
+
 					component.Volume = component.Audio->GetGain();
-					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f);
+					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f, columnWidth);
 
 					component.MinDistance = component.Audio->GetMinDistance();
-					DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+					DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
 
 					component.MaxDistance = component.Audio->GetMaxDistance();
-					DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+					DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
 
 					if (ImGui::Button("Delete"))
 					{
@@ -895,6 +907,11 @@ namespace origin {
 				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, width);
 				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, width);
 				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 0.5f, width);
+			});
+
+		DrawComponent<AudioListenerComponent>("AUDIO LISTENER", entity, [](auto& component)
+			{
+				ImGui::Checkbox("Enable", &component.Enable);
 			});
 	}
 

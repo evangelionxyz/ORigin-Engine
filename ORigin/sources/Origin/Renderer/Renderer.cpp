@@ -4,11 +4,11 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 
-#include "Renderer2D.h"
-#include "Renderer3D.h"
-
 #include "Origin\Scene\Skybox.h"
 #include "Platform\OpenGL\OpenGL_Shader.h"
+
+#include "Renderer2D.h"
+#include "Renderer3D.h"
 
 #include <glm\gtc\matrix_transform.hpp>
 
@@ -28,6 +28,7 @@ namespace origin {
 	static RendererData s_Data;
 
 	static ShaderLibrary GShaderLibrary;
+	static std::unordered_map<std::string, std::shared_ptr<Texture2D>> GUITextures;
 
 	bool Renderer::Init()
 	{
@@ -100,6 +101,15 @@ namespace origin {
 		return GShaderLibrary.Get(name);
 	}
 
+	std::shared_ptr<Texture2D> Renderer::GetGTexture(const std::string& name)
+	{
+		auto& it = GUITextures.find(name);
+		if (it != GUITextures.end())
+			return it->second;
+
+		return nullptr;
+	}
+
 	const std::unordered_map<std::string, std::shared_ptr<Shader>> Renderer::GetSaderLibrary()
 	{
 		return GShaderLibrary.GetMap();
@@ -113,7 +123,7 @@ namespace origin {
 	void Renderer::LoadShader()
 	{
 		// Load All Default shaders
-		bool recompileShader = true;
+		bool recompileShader = false;
 
 		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true, recompileShader);
 		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true, recompileShader);
@@ -123,5 +133,10 @@ namespace origin {
 		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true, recompileShader);
 		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
 		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
+
+		// Load UI Texture
+		GUITextures.insert(std::make_pair("CameraIcon", Texture2D::Create("Resources/UITextures/camera.png")));
+		GUITextures.insert(std::make_pair("LightingIcon", Texture2D::Create("Resources/UITextures/lighting.png")));
+		GUITextures.insert(std::make_pair("AudioIcon", Texture2D::Create("Resources/UITextures/audio.png")));
 	}
 }

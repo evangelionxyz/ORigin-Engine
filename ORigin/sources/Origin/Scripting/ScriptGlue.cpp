@@ -17,7 +17,7 @@
 #include "mono\metadata\reflection.h"
 
 #include "box2d\b2_body.h"
-#include "Origin/Audio/Audio.h"
+#include "Origin\Audio\Audio.h"
 
 namespace origin
 {
@@ -784,7 +784,7 @@ namespace origin
 				ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
-				OGN_CORE_ERROR("Could not find component type {}", managedTypename);
+				OGN_CORE_ERROR("SCRIPT GLUE : Could not find component type {}", managedTypename);
 				return;
 			}
 

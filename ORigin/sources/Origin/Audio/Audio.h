@@ -84,18 +84,13 @@ namespace origin {
 		static FMOD::System* GetSystem();
 
 		static FMOD::Sound* CreateSound(const std::string& name, const std::string& filepath, FMOD_MODE mode);
+		static void SetMute(bool enable);
 		static void SystemUpdate();
 
 		static bool AudioStorageInsert(std::shared_ptr<Audio>& audio);
 		static bool AudioStorageInsert(const std::string& name, std::shared_ptr<Audio>& audio);
 		static bool AudioStorageDelete(std::shared_ptr<Audio>& audio);
 		static bool AudioStorageExist(const std::string& name);
-
-		static void SetListener(const glm::vec3& position, const glm::vec3& forward, const glm::vec3& up);
-
-		FMOD_VECTOR m_ListenerPosition = { 0.0f, 0.0f, 0.0f };
-		FMOD_VECTOR m_ListenerForward = { 0.0f, 0.0f, -1.0f };;
-		FMOD_VECTOR m_ListenerUp = { 0.0f, 1.0f, 0.0f };;
 
 		static std::unordered_map<std::string, std::shared_ptr<Audio>>& GetMap();
 	};

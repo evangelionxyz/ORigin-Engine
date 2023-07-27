@@ -7,6 +7,8 @@
 #include "Origin\Scene\EditorCamera.h"
 #include "Origin\Scene\Camera.h"
 
+#include "Origin\Renderer\Texture.h"
+
 namespace origin {
 
 	class Renderer
@@ -27,6 +29,7 @@ namespace origin {
 		static void OnUpdate();
 
 		static std::shared_ptr<Shader> GetGShader(const std::string& name);
+		static std::shared_ptr<Texture2D> GetGTexture(const std::string& name);
 
 		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetSaderLibrary();
 
