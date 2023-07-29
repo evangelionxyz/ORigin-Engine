@@ -2,11 +2,13 @@
 
 #pragma once
 
-#include "Origin/Scene/Camera.h"
-#include "Origin/IO/Events/Event.h"
-#include "Origin/IO/Events/MouseEvent.h"
+#include "Origin\Scene\Camera.h"
+#include "Origin\IO\Events\Event.h"
+#include "Origin\IO\Events\MouseEvent.h"
 
-#include <glm/glm.hpp>
+#include "Origin\Audio\AudioListener.h"
+
+#include <glm\glm.hpp>
 
 namespace origin {
 
@@ -55,7 +57,11 @@ namespace origin {
 
 		float GetZoomSpeed() { return ZoomSpeed(); }
 		float GetFOV() { return m_FOV; }
+
+		void UpdateAudioListener();
+
 	private:
+		AudioListener m_AudioListener;
 		CameraStyle m_CameraStyle = Pivot;
 
 		void UpdateProjection();

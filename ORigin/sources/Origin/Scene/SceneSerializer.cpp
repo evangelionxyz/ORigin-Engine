@@ -249,6 +249,17 @@ namespace origin {
 			out << YAML::EndMap; // !CameraComponent
 		}
 
+		if (entity.HasComponent<AudioListenerComponent>())
+		{
+			out << YAML::Key << "AudioListenerComponent";
+			out << YAML::BeginMap; // AudioListenerComponent
+
+			const auto& al = entity.GetComponent<AudioListenerComponent>();
+			out << YAML::Key << "Enable" << YAML::Value << al.Enable;
+
+			out << YAML::EndMap; // !AudioListenerComponent
+		}
+
 		if (entity.HasComponent<StaticMeshComponent>())
 		{
 			out << YAML::Key << "StaticMeshComponent";
@@ -580,9 +591,17 @@ namespace origin {
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
 				}
 
+				if (auto audioListnerComponent = entity["AudioListenerComponent"])
+				{
+					auto& al = deserializedEntity.AddComponent<AudioListenerComponent>();
+					al.Enable = audioListnerComponent["Enable"].as<bool>();
+				}
+
 				if (auto audioComponent = entity["AudioComponent"])
 				{
 					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
+					ac.Audio = Audio::Create();
+
 					ac.Name = audioComponent["Name"].as<std::string>();
 					ac.Volume = audioComponent["Volume"].as<float>();
 					ac.Pitch = audioComponent["Pitch"].as<float>();
@@ -592,20 +611,18 @@ namespace origin {
 					ac.Spatial = audioComponent["Spatial"].as<bool>();
 					ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
 
-					if (audioComponent["Filepath"])
+					std::string& filepath = audioComponent["Filepath"].as<std::string>();
+
+					if (!filepath.empty())
 					{
-						auto& filepath = audioComponent["Filepath"].as<std::string>();
-
-						AudioConfig spec;
-						spec.Name = ac.Name;
-						spec.Looping = ac.Looping;
-						spec.MinDistance = ac.MinDistance;
-						spec.MaxDistance = ac.MaxDistance;
-						spec.Spatial = ac.Spatial;
-
-						spec.Filepath = Project::GetAssetFileSystemPath(filepath).generic_string();
-
-						ac.Audio = Audio::Create(spec);
+						AudioConfig config;
+						config.Name = ac.Name;
+						config.Looping = ac.Looping;
+						config.MinDistance = ac.MinDistance;
+						config.MaxDistance = ac.MaxDistance;
+						config.Spatial = ac.Spatial;
+						config.Filepath = Project::GetAssetFileSystemPath(filepath).generic_string();
+						ac.Audio->LoadSource(config);
 					}
 				}
 

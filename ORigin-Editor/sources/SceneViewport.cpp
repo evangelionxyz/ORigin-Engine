@@ -329,6 +329,15 @@ namespace origin
 						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Empty");
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
+
+					if (ImGui::MenuItem("Main Camera"))
+					{
+						Entity entity = m_SceneHierarchy.GetContext()->CreateCamera("Main Camera");
+						entity.AddComponent<AudioListenerComponent>();
+
+						m_SceneHierarchy.SetSelectedEntity(entity);
+					}
+
 					if (ImGui::MenuItem("Camera"))
 					{
 						Entity entity = m_SceneHierarchy.GetContext()->CreateCamera("Camera");

@@ -42,9 +42,9 @@ namespace origin
 
     Scene::Scene()
     {
-      m_CameraIcon = Texture2D::Create("Resources/UITextures/camera.png");
-      m_LightingIcon = Texture2D::Create("Resources/UITextures/lighting.png");
-      m_AudioIcon = Texture2D::Create("Resources/UITextures/audio.png");
+      m_CameraIcon = Renderer::GetGTexture("CameraIcon");
+      m_LightingIcon = Renderer::GetGTexture("LightingIcon");
+      m_AudioIcon = Renderer::GetGTexture("AudioIcon");
     }
 
     Scene::~Scene()
@@ -52,8 +52,7 @@ namespace origin
     }
 
     template <typename... Component>
-    static void CopyComponent(entt::registry& dst, entt::registry& src,
-                              const std::unordered_map<UUID, entt::entity>& enttMap)
+    static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
     {
         ([&]()
         {
@@ -270,25 +269,23 @@ namespace origin
       if (!m_Paused || m_StepFrames-- > 0)
       {
         // Update Scripts
+        auto& scriptView = m_Registry.view<ScriptComponent>();
+        for (auto& e : scriptView)
         {
-          auto& view = m_Registry.view<ScriptComponent>();
-          for (auto& e : view)
-          {
-            Entity entity = { e, this };
-            ScriptEngine::OnUpdateEntity(entity, deltaTime);
-          }
-
-          m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-          {
-            if (!nsc.Instance)
-            {
-              nsc.Instance = nsc.InstantiateScript();
-              nsc.Instance->m_Entity = Entity{ entity, this };
-              nsc.Instance->OnCreate();
-            }
-            nsc.Instance->OnUpdate(deltaTime);
-          });
+          Entity entity = { e, this };
+          ScriptEngine::OnUpdateEntity(entity, deltaTime);
         }
+
+        m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+        {
+          if (!nsc.Instance)
+          {
+            nsc.Instance = nsc.InstantiateScript();
+            nsc.Instance->m_Entity = Entity{ entity, this };
+            nsc.Instance->OnCreate();
+          }
+          nsc.Instance->OnUpdate(deltaTime);
+        });
 
         // Physics
         {
@@ -334,39 +331,40 @@ namespace origin
       if (mainCamera)
           RenderScene(mainCamera, cameraTransform);
 
+      // Particle Update
+      m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
       {
-        m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
-          {
-            pc.Particle.OnUpdate(deltaTime);
-          });
-      }
+        pc.Particle.OnUpdate(deltaTime);
+      });
 
       // Audio Update
+      auto audioView = m_Registry.view<TransformComponent, AudioComponent>();
+      for (auto entity : audioView)
       {
-        auto view = m_Registry.view<TransformComponent, AudioComponent>();
-        for (auto entity : view)
+        auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
+        if (ac.Audio)
         {
-          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
-          if (ac.Audio)
-          {
-            ac.Audio->SetMaxDistance(ac.MaxDistance);
-            ac.Audio->SetMinDistance(ac.MinDistance);
-            ac.Audio->SetLoop(ac.Looping);
-            ac.Audio->SetGain(ac.Volume);
-
-            if (ac.Spatial)
-            {
-              ac.Audio->SetPosition(tc.Translation);
-            }
-          }
+          ac.Audio->SetMaxDistance(ac.MaxDistance);
+          ac.Audio->SetMinDistance(ac.MinDistance);
+          ac.Audio->SetLoop(ac.Looping);
+          ac.Audio->SetGain(ac.Volume);
+          ac.Audio->SetPosition(tc.Translation);
         }
-
-        AudioEngine::SetListener(cameraTransform.Translation, cameraTransform.GetForward(), cameraTransform.GetUp());
-        AudioEngine::SystemUpdate();
       }
+
+      auto audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
+      for (auto entity : audioListenerView)
+      {
+        auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
+        if (al.Enable)
+          al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
+        AudioEngine::SetMute(!al.Enable);
+      }
+
+      AudioEngine::SystemUpdate();
     }
 
-    void Scene::OnUpdateEditor(Timestep deltaTime, EditorCamera& camera)
+    void Scene::OnUpdateEditor(Timestep deltaTime, EditorCamera& editorCamera)
     {
       m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
       {
@@ -380,8 +378,7 @@ namespace origin
       });
 
       //Render
-      RenderScene(camera);
-
+      RenderScene(editorCamera);
       {
         m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
         {
@@ -389,46 +386,40 @@ namespace origin
         });
       }
 
-      // Audio Update
+      // Animation
+      auto animView = m_Registry.view<AnimationComponent>();
+      for (auto entity : animView)
       {
-        Renderer2D::BeginScene();
-        auto view = m_Registry.view<TransformComponent, AudioComponent>();
-        for (auto entity : view)
-        {
-          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
-          if (ac.Audio)
-          {
-            ac.Audio->SetMaxDistance(ac.MaxDistance);
-            ac.Audio->SetMinDistance(ac.MinDistance);
-            ac.Audio->SetLoop(ac.Looping);
-            ac.Audio->SetGain(ac.Volume);
-
-            if (ac.Spatial)
-            {
-              ac.Audio->SetPosition(tc.Translation);
-            }
-          }
-          DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
-        }
-        Renderer2D::EndScene();
-
-        // Animation
-        {
-          auto view = m_Registry.view<AnimationComponent>();
-          for (auto entity : view)
-          {
-            auto& ac = view.get<AnimationComponent>(entity);
-            if (ac.Animation)
-              ac.Animation->Update(deltaTime);
-          }
-        }
-
-        AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
-        AudioEngine::SystemUpdate();
+        auto& ac = animView.get<AnimationComponent>(entity);
+        if (ac.Animation)
+          ac.Animation->Update(deltaTime);
       }
+
+      // Audio Update
+      Renderer2D::BeginScene();
+      auto audioView = m_Registry.view<TransformComponent, AudioComponent>();
+      for (auto entity : audioView)
+      {
+        auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
+        if (ac.Audio)
+        {
+          ac.Audio->SetMaxDistance(ac.MaxDistance);
+          ac.Audio->SetMinDistance(ac.MinDistance);
+          ac.Audio->SetLoop(ac.Looping);
+          ac.Audio->SetGain(ac.Volume);
+          ac.Audio->SetPosition(tc.Translation);
+        }
+
+        DrawIcon(editorCamera, (int)entity, m_AudioIcon, tc, true);
+      }
+      Renderer2D::EndScene();
+
+      editorCamera.UpdateAudioListener();
+      AudioEngine::SetMute(false);
+      AudioEngine::SystemUpdate();
     }
 
-    void Scene::OnUpdateSimulation(Timestep deltaTime, EditorCamera& camera)
+    void Scene::OnUpdateSimulation(Timestep deltaTime, EditorCamera& editorCamera)
     {
       if (!m_Paused || m_StepFrames-- > 0)
       {
@@ -479,7 +470,7 @@ namespace origin
       }
 
       // Render
-      RenderScene(camera);
+      RenderScene(editorCamera);
 
       {
         m_Registry.view<Particle2DComponent>().each([=](auto entity, auto& pc)
@@ -489,60 +480,64 @@ namespace origin
       }
 
       // Audio Update
+      Renderer2D::BeginScene();
+      AudioEngine::SetMute(false);
+      auto audioView = m_Registry.view<TransformComponent, AudioComponent>();
+      for (auto entity : audioView)
       {
-        Renderer2D::BeginScene();
-        auto view = m_Registry.view<TransformComponent, AudioComponent>();
-        for (auto entity : view)
+        auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
+        if (ac.Audio)
         {
-          auto& [tc, ac] = view.get<TransformComponent, AudioComponent>(entity);
-          if (ac.Audio)
-          {
-            ac.Audio->SetMaxDistance(ac.MaxDistance);
-            ac.Audio->SetMinDistance(ac.MinDistance);
-            ac.Audio->SetLoop(ac.Looping);
-            ac.Audio->SetGain(ac.Volume);
+          ac.Audio->SetMaxDistance(ac.MaxDistance);
+          ac.Audio->SetMinDistance(ac.MinDistance);
+          ac.Audio->SetLoop(ac.Looping);
+          ac.Audio->SetGain(ac.Volume);
 
-            if (ac.Spatial)
-            {
-              ac.Audio->SetPosition(tc.Translation);
-            }
-          }
-          DrawIcon(camera, (int)entity, m_AudioIcon, tc, true);
+          if(ac.Spatial)
+            ac.Audio->SetPosition(tc.Translation);
         }
-        Renderer2D::EndScene();
+
+        DrawIcon(editorCamera, (int)entity, m_AudioIcon, tc, true);
+      }
+      Renderer2D::EndScene();
+
+      bool isMainCameraListening = false;
+      auto audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
+      for (auto entity : audioListenerView)
+      {
+        auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
+        if (al.Enable)
+          al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
+
+        isMainCameraListening = al.Enable;
       }
 
-      AudioEngine::SetListener(camera.GetPosition(), camera.GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
+      if (!isMainCameraListening)
+        editorCamera.UpdateAudioListener();
+      
       AudioEngine::SystemUpdate();
     }
 
     void Scene::OnSimulationStart()
     {
+      OnPhysics2DStart();
+
+      // Scripting
+      ScriptEngine::OnRuntimeStart(this);
+      auto scriptView = m_Registry.view<ScriptComponent>();
+      for (auto e : scriptView)
       {
-        OnPhysics2DStart();
+        Entity entity = { e, this };
+        ScriptEngine::OnCreateEntity(entity);
+      }
 
-        // Scripting
-        ScriptEngine::OnRuntimeStart(this);
-        auto view = m_Registry.view<ScriptComponent>();
-        for (auto e : view)
-        {
-          Entity entity = { e, this };
-          ScriptEngine::OnCreateEntity(entity);
-        }
-
-        // Audio
-        {
-          auto view = m_Registry.view<AudioComponent>();
-          for (auto& e : view)
-          {
-            auto& ac = view.get<AudioComponent>(e);
-            if (ac.Audio && ac.PlayAtStart)
-            {
-              ac.Audio->SetGain(ac.Volume);
-              ac.Audio->Play();
-            }
-          }
-        }
+      // Audio
+      auto audioView = m_Registry.view<AudioComponent>();
+      for (auto& e : audioView)
+      {
+        auto& ac = audioView.get<AudioComponent>(e);
+        if (ac.Audio && ac.PlayAtStart)
+          ac.Audio->Play();
       }
     }
 
@@ -552,14 +547,12 @@ namespace origin
         ScriptEngine::OnRuntimeStop();
 
         // Audio
+        auto view = m_Registry.view<AudioComponent>();
+        for (auto& e : view)
         {
-          auto view = m_Registry.view<AudioComponent>();
-          for (auto& e : view)
-          {
-            auto& ac = view.get<AudioComponent>(e);
-            if (ac.Audio)
-              ac.Audio->Stop();
-          }
+          auto& ac = view.get<AudioComponent>(e);
+          if (ac.Audio)
+            ac.Audio->Stop();
         }
     }
 
@@ -589,13 +582,13 @@ namespace origin
             std::vector<entt::entity> spriteEntities(view.begin(), view.end());
 
             std::sort(spriteEntities.begin(), spriteEntities.end(),
-                      [=](const entt::entity& a, const entt::entity& b)
-                      {
-                          const auto& objA = m_Registry.get<TransformComponent>(a);
-                          const auto& objB = m_Registry.get<TransformComponent>(b);
-                          return glm::length(MainCameraPosition.z - objA.Translation.z) > glm::length(
-                              MainCameraPosition.z - objB.Translation.z);
-                      });
+            [=](const entt::entity& a, const entt::entity& b)
+            {
+                const auto& objA = m_Registry.get<TransformComponent>(a);
+                const auto& objB = m_Registry.get<TransformComponent>(b);
+                return glm::length(MainCameraPosition.z - objA.Translation.z) > glm::length(
+                    MainCameraPosition.z - objB.Translation.z);
+            });
 
             for (const entt::entity& entity : spriteEntities)
             {
@@ -616,7 +609,6 @@ namespace origin
                                        (int)entity);
             }
         }
-
 
         // Text
         {
@@ -742,13 +734,13 @@ namespace origin
             std::vector<entt::entity> spriteEntities(view.begin(), view.end());
 
             std::sort(spriteEntities.begin(), spriteEntities.end(),
-                      [=](const entt::entity& a, const entt::entity& b)
-                      {
-                          const auto& objA = m_Registry.get<TransformComponent>(a);
-                          const auto& objB = m_Registry.get<TransformComponent>(b);
-                          return glm::length(camera.GetPosition() - objA.Translation) > glm::length(
-                              camera.GetPosition() - objB.Translation);
-                      });
+            [=](const entt::entity& a, const entt::entity& b)
+            {
+                const auto& objA = m_Registry.get<TransformComponent>(a);
+                const auto& objB = m_Registry.get<TransformComponent>(b);
+                return glm::length(camera.GetPosition() - objA.Translation) > glm::length(
+                    camera.GetPosition() - objB.Translation);
+            });
 
             for (const entt::entity& entity : spriteEntities)
             {
@@ -791,13 +783,13 @@ namespace origin
         auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
         std::vector<entt::entity> cubeEntities(cubeView.begin(), cubeView.end());
         std::sort(cubeEntities.begin(), cubeEntities.end(),
-                  [=](const entt::entity& a, const entt::entity& b)
-                  {
-                      const auto& objA = m_Registry.get<TransformComponent>(a);
-                      const auto& objB = m_Registry.get<TransformComponent>(b);
-                      return glm::length(camera.GetPosition() - objA.Translation) > glm::length(
-                          camera.GetPosition() - objB.Translation);
-                  });
+        [=](const entt::entity& a, const entt::entity& b)
+        {
+            const auto& objA = m_Registry.get<TransformComponent>(a);
+            const auto& objB = m_Registry.get<TransformComponent>(b);
+            return glm::length(camera.GetPosition() - objA.Translation) > glm::length(
+                camera.GetPosition() - objB.Translation);
+        });
 
         for (const entt::entity cube : cubeEntities)
         {
@@ -898,7 +890,7 @@ namespace origin
             }
         }
 
-        //DrawGrid(m_GridSize, m_GridColor);
+        DrawGrid(m_GridSize, m_GridColor);
         Renderer::EndScene();
     }
 
@@ -907,27 +899,23 @@ namespace origin
         OnPhysics2DStart();
 
         // Scripting
+        ScriptEngine::OnRuntimeStart(this);
+        auto scriptView = m_Registry.view<ScriptComponent>();
+        for (auto e : scriptView)
         {
-            ScriptEngine::OnRuntimeStart(this);
-            auto view = m_Registry.view<ScriptComponent>();
-            for (auto e : view)
-            {
-                Entity entity = {e, this};
-                ScriptEngine::OnCreateEntity(entity);
-            }
+          Entity entity = { e, this };
+          ScriptEngine::OnCreateEntity(entity);
         }
 
         // Audio
+        auto audioView = m_Registry.view<AudioComponent>();
+        for (auto& e : audioView)
         {
-          auto view = m_Registry.view<AudioComponent>();
-          for(auto& e : view)
+          auto& ac = audioView.get<AudioComponent>(e);
+          if (ac.Audio && ac.PlayAtStart)
           {
-            auto& ac = view.get<AudioComponent>(e);
-            if (ac.Audio && ac.PlayAtStart)
-            {
-              ac.Audio->SetGain(ac.Volume);
-              ac.Audio->Play();
-            }
+            ac.Audio->SetGain(ac.Volume);
+            ac.Audio->Play();
           }
         }
     }
@@ -938,14 +926,12 @@ namespace origin
         ScriptEngine::OnRuntimeStop();
 
         // Audio
+        auto audioView = m_Registry.view<AudioComponent>();
+        for (auto& e : audioView)
         {
-          auto view = m_Registry.view<AudioComponent>();
-          for (auto& e : view)
-          {
-            auto& ac = view.get<AudioComponent>(e);
-            if (ac.Audio)
-              ac.Audio->Stop();
-          }
+          auto& ac = audioView.get<AudioComponent>(e);
+          if (ac.Audio)
+            ac.Audio->Stop();
         }
     }
 
@@ -997,7 +983,6 @@ namespace origin
         m_GridSize = size;
         m_GridColor = color;
     }
-
 
     Entity Scene::GetEntityWithUUID(UUID uuid)
     {
@@ -1117,105 +1102,35 @@ namespace origin
     {
     }
 
-    template <>
-    void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
-    {
-    }
+#define OGN_REG_COMPONENT(components)\
+template<>\
+void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 
-    template <>
-    void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<AudioComponent>(Entity entity, AudioComponent& component)
-    {
-    }
-
-   template <>
-    void Scene::OnComponentAdded<AnimationComponent>(Entity entity, AnimationComponent& component)
-    {
-    }
+    OGN_REG_COMPONENT(IDComponent)
+    OGN_REG_COMPONENT(TransformComponent)
+    OGN_REG_COMPONENT(AudioComponent)
+    OGN_REG_COMPONENT(AudioListenerComponent)
+    OGN_REG_COMPONENT(AnimationComponent)
+    OGN_REG_COMPONENT(SpriteRendererComponent)
+    OGN_REG_COMPONENT(SpriteRenderer2DComponent)
+    OGN_REG_COMPONENT(PointLightComponent)
+    OGN_REG_COMPONENT(SpotLightComponent)
+    OGN_REG_COMPONENT(DirectionalLightComponent)
+    OGN_REG_COMPONENT(StaticMeshComponent)
+    OGN_REG_COMPONENT(TextComponent)
+    OGN_REG_COMPONENT(CircleRendererComponent)
+    OGN_REG_COMPONENT(TagComponent)
+    OGN_REG_COMPONENT(NativeScriptComponent)
+    OGN_REG_COMPONENT(ScriptComponent)
+    OGN_REG_COMPONENT(Rigidbody2DComponent)
+    OGN_REG_COMPONENT(BoxCollider2DComponent)
+    OGN_REG_COMPONENT(CircleCollider2DComponent)
+    OGN_REG_COMPONENT(Particle2DComponent)
 
     template <>
     void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
     {
         if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
             component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-    }
-
-    template <>
-    void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<PointLightComponent>(Entity entity, PointLightComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<SpotLightComponent>(Entity entity, SpotLightComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<SpriteRenderer2DComponent>(Entity entity, SpriteRenderer2DComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<StaticMeshComponent>(Entity entity, StaticMeshComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<TextComponent>(Entity entity, TextComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<Rigidbody2DComponent>(Entity entity, Rigidbody2DComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component)
-    {
-    }
-
-    template <>
-    void Scene::OnComponentAdded<Particle2DComponent>(Entity entity, Particle2DComponent& component)
-    {
     }
 }
