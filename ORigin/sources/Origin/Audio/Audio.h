@@ -20,20 +20,23 @@ namespace origin {
 	class Audio
 	{
 	public:
-		Audio() = default;
-		Audio(const AudioConfig& config);
-		Audio(const std::string& name, const std::filesystem::path& filepath, bool loop = false, bool spatial = false);
+		Audio();
 		~Audio();
 		
 		bool IsPlaying() { return !m_Paused; }
 		bool IsPaused() { return m_Paused; }
-		bool IsLooping() { return m_Spec.Looping; }
-		bool IsSpatial() { return m_Spec.Spatial; }
+		bool IsLooping() { return m_Config.Looping; }
+		bool IsSpatial() { return m_Config.Spatial; }
+		bool IsLoaded() { return m_IsLoaded; }
 
 		void SetLoop(bool enable);
 		void SetGain(float volume);
 		void SetName(const std::string& name);
 		void SetPosition(const glm::vec3& position);
+		void SetSpatial(bool enable);
+
+		void LoadSource(const AudioConfig& config);
+		void LoadSource(const std::string& name, const std::filesystem::path& filepath, bool loop = false, bool spatial = false);
 
 		void Play();
 		void Pause(bool paused);
@@ -47,24 +50,23 @@ namespace origin {
 		float GetMaxDistance();
 
 		float GetGain();
-		const std::string& GetFilepath() { return m_Spec.Filepath; }
-		std::string& GetName() { return m_Spec.Name; }
+		const std::string& GetFilepath() { return m_Config.Filepath; }
+		std::string& GetName() { return m_Config.Name; }
 
-		static std::shared_ptr<Audio> Create(const AudioConfig& spec);
-		static std::shared_ptr<Audio> Create(const std::string& name, const std::string& filepath, bool loop = false, bool spatial = false);
+		static std::shared_ptr<Audio> Create();
 
 		bool operator == (const Audio& rhs)
 		{
-			return (m_Sound == rhs.m_Sound && m_Spec.Name == rhs.m_Spec.Name);
+			return (m_Sound == rhs.m_Sound && m_Config.Name == rhs.m_Config.Name);
 		}
 
 		bool operator != (const Audio& rhs)
 		{
-			return (m_Sound != rhs.m_Sound && m_Spec.Name != rhs.m_Spec.Name);
+			return (m_Sound != rhs.m_Sound && m_Config.Name != rhs.m_Config.Name);
 		}
 
 	private:
-		AudioConfig m_Spec;
+		AudioConfig m_Config;
 		FMOD_VECTOR m_AudioPosition = {0.0f, 0.0f, 0.0f};
 
 		FMOD::Sound* m_Sound = nullptr;
@@ -73,6 +75,7 @@ namespace origin {
 		float m_Gain = 1.0f;
 		float m_Pitch = 1.0f;
 		bool m_Paused = false;
+		bool m_IsLoaded = false;
 	};
 
 	class AudioEngine

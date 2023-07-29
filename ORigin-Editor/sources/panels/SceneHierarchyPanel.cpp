@@ -210,7 +210,11 @@ namespace origin {
 
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
-			DisplayAddComponentEntry<AudioComponent>("AUDIO");
+			if (DisplayAddComponentEntry<AudioComponent>("AUDIO"))
+			{
+				m_SelectedEntity.GetComponent<AudioComponent>().Audio = Audio::Create();
+			}
+
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
 
 			if (DisplayAddComponentEntry<AnimationComponent>("ANIMATION"))
@@ -317,7 +321,7 @@ namespace origin {
 			{
 				static bool creationWindow = false;
 
-				if (!component.Audio)
+				if (!component.Audio->IsLoaded())
 				{
 					if (ImGui::Button("Create Audio"))
 						creationWindow = true;
@@ -336,11 +340,10 @@ namespace origin {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path audioPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
-							if (audioPath.extension() == ".wav" || 
-								audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
+							std::filesystem::path audioPath = Project::GetAssetFileSystemPath(path);
+							if (audioPath.extension() == ".wav" || audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
 							{
-								filepath = audioPath.string();
+								filepath = audioPath.generic_string();
 								OGN_CORE_WARN("Audio Component: Drop Audio From {}", filepath);
 							}
 						}
@@ -362,8 +365,9 @@ namespace origin {
 
 					static bool spatial = false;
 					static bool looping = false;
-					static float minDistance = 2.0f;
+					static float minDistance = 1.0f;
 					static float maxDistance = 100.0f;
+
 					ImGui::Text("Spatial");
 					ImGui::SameLine();
 					ImGui::Checkbox("##Spatial", &spatial);
@@ -371,13 +375,16 @@ namespace origin {
 					ImGui::SameLine();
 					ImGui::Checkbox("##Looping", &looping);
 
-					ImGui::Text("Min Distance");
-					ImGui::SameLine();
-					ImGui::DragFloat("##MinDistance", &minDistance, 0.1f, 0.0f, 10000.0f);
-					ImGui::Text("Max Distance");
-					ImGui::SameLine();
-					ImGui::DragFloat("##MaxDistance", &maxDistance, 0.1f, 0.0f, 10000.0f);
-					
+					if (spatial)
+					{
+						ImGui::Text("Min Distance");
+						ImGui::SameLine();
+						ImGui::DragFloat("##MinDistance", &minDistance, 0.1f, 0.0f, 10000.0f);
+						ImGui::Text("Max Distance");
+						ImGui::SameLine();
+						ImGui::DragFloat("##MaxDistance", &maxDistance, 0.1f, 0.0f, 10000.0f);
+					}
+
 					static bool valid = false;
 					if (ImGui::Button("Create"))
 					{
@@ -396,27 +403,31 @@ namespace origin {
 						valid = (!name.empty() && !filepath.empty());
 						if (valid)
 						{
-							if (component.Audio) {
+							if (component.Audio->IsLoaded())
+							{
 								component.Audio->Stop();
 								component.Audio.reset();
+
+								component.Audio = Audio::Create();
 							}
 
-							component.Audio = Audio::Create(config);
-							OGN_CORE_WARN("Audio Component: Creating Audio...");
+							component.Audio->LoadSource(config);
+							OGN_CORE_WARN("Audio Component: Creating {} Audio...", config.Name);
 						}
 						else
+						{
 							OGN_CORE_ERROR("Audio Creation: Invalid Audio Creation. Check the Name or Filepath");
+						}
 					}
 					ImGui::End();
 				}
 
-				if (component.Audio)
+				if (component.Audio->IsLoaded())
 				{
 					ImGui::Text("%s | Spatialization: %s", component.Name.c_str(), component.Spatial ? "On" : "Off");
 					ImGui::Separator();
 
-					component.Spatial = component.Audio->IsSpatial();
-
+#if 0
 					if (ImGui::Button("Insert To Library"))
 						AudioEngine::AudioStorageInsert(component.Audio);
 					ImGui::SameLine();
@@ -425,31 +436,42 @@ namespace origin {
 					ImGui::SameLine();
 					if (ImGui::Button("Open Audio Library"))
 						Editor::Get().guiAudioLibraryWindow = true;
-
+#endif
 					if (ImGui::Button("Play")) component.Audio->Play();
 					ImGui::SameLine();
 					if (ImGui::Button("Stop")) component.Audio->Stop();
 					ImGui::SameLine();
-					component.Looping = component.Audio->IsLooping();
-					ImGui::Checkbox("Looping", &component.Looping);
+
 					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
+					ImGui::SameLine();
+					if (ImGui::Checkbox("Looping", &component.Looping))
+						component.Audio->SetLoop(component.Looping);
 
 					float columnWidth = 100.0f;
 
 					component.Volume = component.Audio->GetGain();
 					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f, columnWidth);
 
-					component.MinDistance = component.Audio->GetMinDistance();
-					DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
+					if(ImGui::Checkbox("Spatialization", &component.Spatial))
+						component.Audio->SetSpatial(component.Spatial);
 
-					component.MaxDistance = component.Audio->GetMaxDistance();
-					DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
+					if (component.Spatial)
+					{
+						component.MinDistance = component.Audio->GetMinDistance();
+						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
+
+						component.MaxDistance = component.Audio->GetMaxDistance();
+						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
+					}
 
 					if (ImGui::Button("Delete"))
 					{
 						component.Audio->Stop();
 						component.Audio.reset();
+
+						component.Audio = Audio::Create();
 					}
+
 					ImGui::SameLine();
 					if (ImGui::Button("Re-Create"))
 					{

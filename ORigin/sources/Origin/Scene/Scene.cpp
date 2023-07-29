@@ -348,9 +348,7 @@ namespace origin
           ac.Audio->SetMinDistance(ac.MinDistance);
           ac.Audio->SetLoop(ac.Looping);
           ac.Audio->SetGain(ac.Volume);
-
-          if(ac.Spatial)
-            ac.Audio->SetPosition(tc.Translation);
+          ac.Audio->SetPosition(tc.Translation);
         }
       }
 
@@ -503,7 +501,20 @@ namespace origin
       }
       Renderer2D::EndScene();
 
-      editorCamera.UpdateAudioListener();
+      bool isMainCameraListening = false;
+      auto audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
+      for (auto entity : audioListenerView)
+      {
+        auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
+        if (al.Enable)
+          al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
+
+        isMainCameraListening = al.Enable;
+      }
+
+      if (!isMainCameraListening)
+        editorCamera.UpdateAudioListener();
+      
       AudioEngine::SystemUpdate();
     }
 

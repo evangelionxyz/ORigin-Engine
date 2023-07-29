@@ -600,6 +600,8 @@ namespace origin {
 				if (auto audioComponent = entity["AudioComponent"])
 				{
 					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
+					ac.Audio = Audio::Create();
+
 					ac.Name = audioComponent["Name"].as<std::string>();
 					ac.Volume = audioComponent["Volume"].as<float>();
 					ac.Pitch = audioComponent["Pitch"].as<float>();
@@ -609,20 +611,18 @@ namespace origin {
 					ac.Spatial = audioComponent["Spatial"].as<bool>();
 					ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
 
-					if (audioComponent["Filepath"])
+					std::string& filepath = audioComponent["Filepath"].as<std::string>();
+
+					if (!filepath.empty())
 					{
-						auto& filepath = audioComponent["Filepath"].as<std::string>();
-
-						AudioConfig spec;
-						spec.Name = ac.Name;
-						spec.Looping = ac.Looping;
-						spec.MinDistance = ac.MinDistance;
-						spec.MaxDistance = ac.MaxDistance;
-						spec.Spatial = ac.Spatial;
-
-						spec.Filepath = Project::GetAssetFileSystemPath(filepath).generic_string();
-
-						ac.Audio = Audio::Create(spec);
+						AudioConfig config;
+						config.Name = ac.Name;
+						config.Looping = ac.Looping;
+						config.MinDistance = ac.MinDistance;
+						config.MaxDistance = ac.MaxDistance;
+						config.Spatial = ac.Spatial;
+						config.Filepath = Project::GetAssetFileSystemPath(filepath).generic_string();
+						ac.Audio->LoadSource(config);
 					}
 				}
 

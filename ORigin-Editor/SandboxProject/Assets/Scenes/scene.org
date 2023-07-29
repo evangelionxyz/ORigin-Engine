@@ -20,30 +20,20 @@ Entities:
       FixedAspectRatio: false
     AudioListenerComponent:
       Enable: true
-  - Entity: 15370008676805398657
+  - Entity: 13937395941068028013
     TagComponent:
-      Tag: Jump Audio
+      Tag: Empty
     AudioComponent:
-      Name: Audio
-      Filepath: ""
+      Name: Main Theme
+      Filepath: Audio/mainTheme.mp3
       Volume: 1
       Pitch: 1
-      MinDistance: 2
+      MinDistance: 5
       MaxDistance: 100
       Looping: true
-      Spatial: false
+      Spatial: true
       PlayAtStart: true
     TransformComponent:
-      Translation: [0.347352564, 0, 0]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-  - Entity: 16558494675144472203
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [-1.76333237, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-      TillingFactor: 1
