@@ -30,7 +30,8 @@ void main()
 #version 450 core
 layout (location = 0) out vec4 oColor;
 layout(location = 1) out int oEntityID;
-const int MAX_LIGHTS = 8;
+
+const int MAX_LIGHTS = 32;
 
 struct Vertex
 {
@@ -38,24 +39,24 @@ struct Vertex
     vec3 Normal;
     vec2 TexCoord;
 };
+
 in Vertex vertex;
+
+uniform vec3 uCameraPosition;
+uniform vec4 uColor;
+uniform int uEntityID;
+uniform bool uHasTexture;
 
 struct Material
 {
-    sampler2D Diffuse;
-    sampler2D Specular;
+    sampler2D texture_diffuse1;
+    sampler2D texture_diffuse2;
+    sampler2D texture_diffuse3;
+    sampler2D texture_specular1;
+    sampler2D texture_specular2;
     float Shininess;
 };
 uniform Material material;
-
-struct DirLight
-{
-    vec3 Direction;
-    vec3 Ambient;
-    vec3 Diffuse;
-    vec3 Specular;
-};
-uniform DirLight directionalLight;
 
 struct PointLight
 {
@@ -64,102 +65,104 @@ struct PointLight
     float Ambient;
     float Specular;
 };
+
 uniform PointLight pointLights[MAX_LIGHTS];
-uniform int pointLightsCount;
+uniform int pointLightCount;
 
 struct SpotLight
 {
     vec3 Position;
+    vec3 Direction;
     vec3 Color;
     float Ambient;
     float Specular;
-    float Innercone;
-    float Outercone;
+    float InnerCone;
+    float OuterCone;
 };
-uniform SpotLight spotLight;
 
-uniform vec3 uCameraPosition;
-uniform vec4 uColor;
-uniform int uEntityID;
+uniform SpotLight spotLights[MAX_LIGHTS];
+uniform int spotLightCount;
 
-vec3 CalcDirectionalLights();
-vec3 CalcPointLights();
-vec3 CalcSpotLights();
+vec3 CalcPointLights(vec3 normal, vec3 viewDir, vec3 diffuseTexture, vec3 specularTexture);
+vec3 CalcSpotLights(vec3 normal, vec3 viewDir, vec3 diffuseTexture, vec3 specularTexture);
 
 void main()
 {
     oEntityID = uEntityID;
 
+    vec3 diffuseTex = vec3(1.0);
+    vec3 specularTex = vec3(1.0);
+
+    if (uHasTexture)
+    {
+        diffuseTex = texture(material.texture_diffuse1, vertex.TexCoord).rgb;
+        specularTex = texture(material.texture_specular1, vertex.TexCoord).rgb;
+    }
+
     vec3 lights = vec3(0.0);
-    lights += CalcDirectionalLights();
-    lights += CalcPointLights();
-    lights += CalcSpotLights();
+
+    vec3 normal = normalize(vertex.Normal);
+    vec3 viewDirection = normalize(uCameraPosition - vertex.Position);
+
+    lights += CalcPointLights(normal, viewDirection, diffuseTex, specularTex);
+    lights += CalcSpotLights(normal, viewDirection, diffuseTex, specularTex);
 
     oColor = vec4(lights, 1.0) * uColor;
 }
 
-vec3 CalcPointLights()
+vec3 CalcPointLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
 {
     vec3 ambient = vec3(0.0);
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
 
-    for(int i; i < pointLightsCount + 1; i++)
+    for (int i = 0; i <= pointLightCount; i++)
     {
         // Ambient
-        ambient += pointLights[i].Ambient * pointLights[i].Color;
-    
+        ambient += pointLights[i].Ambient * diffuseTexture;
+
         // Diffuse
-        vec3 norm = normalize(vertex.Normal);
         vec3 lightDirection = normalize(pointLights[i].Position - vertex.Position);
-        float diff = max(dot(norm, lightDirection), 0.0);
-        vec3 iDiffuse = diff * pointLights[i].Color;
-        diffuse += iDiffuse;
+        float diff = max(dot(normal, lightDirection), 0.0);
+        diffuse += diff * pointLights[i].Color * diffuseTexture;
 
         // Specular
-        vec3 viewDir = normalize(uCameraPosition - vertex.Position);
-        vec3 reflectDir = reflect(-lightDirection, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-        vec3 iSpecular = pointLights[i].Specular * spec * pointLights[i].Color;
-        specular += iSpecular;
+        vec3 reflectionDirection = reflect(-lightDirection, normal);
+        float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
+        specular += spec * pointLights[i].Specular * specularTexture * pointLights[i].Color;
     }
-    
-    if(pointLightsCount == 1)
-        return vec3(0.0);
 
     return diffuse + ambient + specular;
 }
 
-vec3 CalcDirectionalLights()
+vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
 {
-    vec3 lightDir = normalize(-directionalLight.Direction);
-    float diff = max(dot(vertex.Normal, lightDir), 0.0);
-    vec3 reflectDir = reflect(-lightDir, vertex.Normal);
-    float spec = pow(max(dot(reflectDir, normalize(-vertex.Position)), 0.0), 32.0);
+    vec3 ambient = vec3(0.0);
+    vec3 diffuse = vec3(0.0);
+    vec3 specular = vec3(0.0);
+    float intensity = 0.0;
 
-    vec3 ambient = directionalLight.Ambient;
-    vec3 diffuse = directionalLight.Diffuse * diff;
-    vec3 specular = directionalLight.Specular * spec;
+    for (int i = 0; i <= spotLightCount; i++)
+    {
+        // Ambient
+        ambient += spotLights[i].Ambient * diffuseTexture;
 
-    return ambient + diffuse + specular;
-}
+        // Diffuse
+        vec3 lightDirection = normalize(spotLights[i].Position - vertex.Position);
+        float diff = max(dot(normal, lightDirection), 0.0);
+        diffuse += diff * spotLights[i].Color * diffuseTexture;
 
-vec3 CalcSpotLights()
-{
-    vec3 ambient = spotLight.Ambient * spotLight.Color;
+        // Specular
+        vec3 reflectionDirection = reflect(-lightDirection, normal);
+        float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
+        specular += spec * spotLights[i].Specular * specularTexture * spotLights[i].Color;
 
-    vec3 normal = normalize(vertex.Normal);
-    vec3 lightDirection = normalize(spotLight.Position - vertex.Position);
-    float diff = max(dot(normal, lightDirection), 0.0f);
-    vec3 diffuse = diff * spotLight.Color;
+        // Spot Light Intensity
+        float angle = dot(spotLights[i].Direction, lightDirection);
+        float falloff = clamp((angle - spotLights[i].OuterCone) / (spotLights[i].InnerCone - spotLights[i].OuterCone), 0.0, 1.0);
 
-	vec3 viewDirection = normalize(uCameraPosition - vertex.Position);
-	vec3 reflectionDirection = reflect(-lightDirection, normal);
-	float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 32);
-	vec3 specular = spotLight.Specular * spec * spotLight.Color;
+        intensity += falloff;
+    }
 
-	float angle = dot(vec3(0.0, -1.0, 0.0), -lightDirection);
-	float intensity = clamp((angle - spotLight.Outercone) / (spotLight.Innercone - spotLight.Outercone), 0.0f, 1.0f);
-
-	return (diffuse + ambient + specular) * intensity;
+    return (diffuse + ambient + specular) * intensity;
 }

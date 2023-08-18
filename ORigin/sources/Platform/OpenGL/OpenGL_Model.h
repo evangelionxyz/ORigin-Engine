@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Origin\Renderer\Model.h"
@@ -11,42 +11,32 @@
 
 #include <vector>
 
+#include "Origin\Renderer\Material.h"
+
 namespace origin
 {
 	class OpenGLModel : public Model
 	{
 	public:
 		OpenGLModel() = default;
-		OpenGLModel(const std::string& filepath, std::shared_ptr<Shader>& shader);
-		OpenGLModel(std::shared_ptr<Shader>& shader);
+		OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material);
+
 		virtual ~OpenGLModel() override;
-
-		void Draw() override;
-		void Draw(const EditorCamera& camera) override;
-		void Draw(const glm::mat4& transform, const EditorCamera& camera, int entityID = -1) override;
-		void Draw(const glm::mat4& transform, const Camera* camera, int entityID = -1) override;
-
-		void LoadLighting(const glm::vec3& position, const glm::vec4& color, float ambient) override;
-
-		std::shared_ptr<Shader>& GetShader() override { return m_Shader; }
+		void Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID = -1) override;
+		const std::string& GetFilepath() const override { return m_Filepath; }
 
 	private:
+		void DrawMesh();
+
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
-
 		std::vector<std::shared_ptr<Mesh>> m_Meshes;
-		std::vector<std::shared_ptr<Texture2D>> m_Textures;
-		std::shared_ptr<Shader> m_Shader;
 
 		void ProcessNode(aiNode* node, const aiScene* scene);
 		std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
-		int m_EntityID = -1;
 
-		std::shared_ptr<Texture2D> m_Texture;
-		
-		glm::vec4 m_LightColor;
-		glm::vec3 m_CameraPosition, m_LightPosition;
-		float m_Ambient;
+		std::shared_ptr<Material> m_Material;
+		std::string m_Filepath;
 	};
 }
 

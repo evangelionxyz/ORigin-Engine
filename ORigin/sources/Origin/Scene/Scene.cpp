@@ -149,6 +149,7 @@ namespace origin
         tag.Tag = name.empty() ? "Entity" : name;
 
         UUID& uuid = entity.GetComponent<IDComponent>().ID;
+        entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
 
         m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -166,6 +167,7 @@ namespace origin
         tag.Tag = name.empty() ? "Entity" : name;
 
         UUID& uuid = entity.GetComponent<IDComponent>().ID;
+        entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
 
         m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -628,84 +630,15 @@ namespace origin
             Renderer3D::DrawCube(transform.GetTransform(), sprite, static_cast<int>(entity));
         }
 
-        {
-            // Mesh
-            auto& view = m_Registry.view<TransformComponent, StaticMeshComponent>();
-            for (auto& entity : view)
-            {
-                auto& [tc, sMesh] = view.get<TransformComponent, StaticMeshComponent>(entity);
-                // ================
-                // Point Light Data
-                // ================
-                int pointLight = 0;
-                auto pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
-                for (auto entity : pointLightView)
-                {
-                    auto& [transform, light] = pointLightView.get<TransformComponent, PointLightComponent>(entity);
-                    pointLight++;
-                    if (sMesh.Model)
-                    {
-                        std::string uniformName = "pointLights[" + std::to_string(pointLight) + "].";
-                        sMesh.Model->GetShader()->Bind();
-                        sMesh.Model->GetShader()->SetInt("pointLightsCount", pointLight);
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Position", transform.Translation);
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Color", light.Color);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
-                    }
-                }
-
-                // ================
-                // Spot Light Data
-                // ================
-                int spotLight = 0;
-                auto& spotLightView = m_Registry.view<TransformComponent, SpotLightComponent>();
-                for (auto entity : spotLightView)
-                {
-                    auto& [transform, light] = spotLightView.get<TransformComponent, SpotLightComponent>(entity);
-                    if (sMesh.Model)
-                    {
-                        //std::string uniformName = "spotLights[" + std::to_string(spotLight) + "].";
-                        std::string uniformName = "spotLight.";
-                        sMesh.Model->GetShader()->Bind();
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Position", transform.Translation);
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Color", light.Color);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Innercone", light.Innercone);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Outercone", light.Outercone);
-                        spotLight++;
-                    }
-                }
-                // ================
-                // Directional Light Data
-                // ================
-                auto& directionalLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
-                for (auto entity : directionalLightView)
-                {
-                    auto& [transform, light] = directionalLightView.get<TransformComponent, DirectionalLightComponent>(entity);
-                    if (sMesh.Model)
-                    {
-                        std::string uniformName = "directionalLight.";
-                        sMesh.Model->GetShader()->Bind();
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Direction",
-                                                            glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f)));
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Diffuse", light.Diffuse);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
-                    }
-                }
-
-                if (sMesh.Model)
-                {
-                    sMesh.Model->GetShader()->Bind();
-                    sMesh.Model->GetShader()->SetVector("uColor", sMesh.Color);
-                    sMesh.Model->GetShader()->SetVector("uCameraPosition", MainCameraPosition);
-
-                    sMesh.Model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
-                }
-            }
-        }
+				// Mesh
+				auto& mehsView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+				for (auto& entity : mehsView)
+				{
+					auto& [tc, mesh] = mehsView.get<TransformComponent, StaticMeshComponent>(entity);
+					if (mesh.Model)
+					{
+					}
+				}
 
         Renderer::EndScene();
     }
@@ -798,99 +731,87 @@ namespace origin
         }
 
         // Camera
+				auto& cameraView = m_Registry.view<TransformComponent, CameraComponent>();
+				for (auto& entity : cameraView)
+				{
+					auto& [tc, cc] = cameraView.get<TransformComponent, CameraComponent>(entity);
+					DrawIcon(camera, (int)entity, m_CameraIcon, tc, true);
+				}
+
+        
+        auto& pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
+        for (auto& pointLight : pointLightView)
         {
-            auto& view = m_Registry.view<TransformComponent, CameraComponent>();
-            for (auto& entity : view)
-            {
-                auto& [tc, cc] = view.get<TransformComponent, CameraComponent>(entity);
-                DrawIcon(camera, (int)entity, m_CameraIcon, tc, true);
-            }
+          auto& [tc, lc] = pointLightView.get<TransformComponent, PointLightComponent>(pointLight);
+          DrawIcon(camera, (int)pointLight, m_LightingIcon, tc, true);
         }
 
+        auto& spotLightView = m_Registry.view<TransformComponent, SpotLightComponent>();
+        for (auto& spotLight : spotLightView)
         {
-            // Mesh
-            auto& view = m_Registry.view<TransformComponent, StaticMeshComponent>();
-            for (auto& entity : view)
-            {
-                auto& [tc, sMesh] = view.get<TransformComponent, StaticMeshComponent>(entity);
-                // ================
-                // Point Light Data
-                // ================
-                int pointLight = 0;
-                auto pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
-                for (auto entity : pointLightView)
-                {
-                    auto& [transform, light] = pointLightView.get<TransformComponent, PointLightComponent>(entity);
-                    DrawIcon(camera, (int)entity, m_LightingIcon, transform, true);
-                    pointLight++;
-                    if (sMesh.Model)
-                    {
-                        std::string uniformName = "pointLights[" + std::to_string(pointLight) + "].";
-                        sMesh.Model->GetShader()->Bind();
-                        sMesh.Model->GetShader()->SetInt("pointLightsCount", pointLight);
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Position", transform.Translation);
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Color", light.Color);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
-                    }
-                }
-
-                // ================
-                // Spot Light Data
-                // ================
-                int spotLight = 0;
-                auto& spotLightView = m_Registry.view<TransformComponent, SpotLightComponent>();
-                for (auto entity : spotLightView)
-                {
-                    auto& [transform, light] = spotLightView.get<TransformComponent, SpotLightComponent>(entity);
-                    DrawIcon(camera, (int)entity, m_LightingIcon, transform, true);
-                    if (sMesh.Model)
-                    {
-                        //std::string uniformName = "spotLights[" + std::to_string(spotLight) + "].";
-                        std::string uniformName = "spotLight.";
-                        sMesh.Model->GetShader()->Bind();
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Position", transform.Translation);
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Color", light.Color);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Innercone", light.Innercone);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Outercone", light.Outercone);
-                        spotLight++;
-                    }
-                }
-                // ================
-                // Directional Light Data
-                // ================
-                auto& directionalLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
-                for (auto entity : directionalLightView)
-                {
-                    auto& [transform, light] = directionalLightView.get<TransformComponent, DirectionalLightComponent>(
-                        entity);
-                    DrawIcon(camera, (int)entity, m_LightingIcon, transform, true);
-                    if (sMesh.Model)
-                    {
-                        std::string uniformName = "directionalLight.";
-                        sMesh.Model->GetShader()->Bind();
-                        sMesh.Model->GetShader()->SetVector(uniformName + "Direction",
-                                                            glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f)));
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Ambient", light.Ambient);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Diffuse", light.Diffuse);
-                        sMesh.Model->GetShader()->SetFloat(uniformName + "Specular", light.Specular);
-                    }
-                }
-
-                if (sMesh.Model)
-                {
-                    sMesh.Model->GetShader()->Bind();
-                    sMesh.Model->GetShader()->SetVector("uCameraPosition", camera.GetPosition());
-                    sMesh.Model->GetShader()->SetVector("uColor", sMesh.Color);
-
-                    sMesh.Model->Draw(tc.GetTransform(), camera, (int)entity);
-                }
-            }
+          auto& [tc, lc] = spotLightView.get<TransformComponent, SpotLightComponent>(spotLight);
+          DrawIcon(camera, (int)spotLight, m_LightingIcon, tc, true);
         }
 
-        DrawGrid(m_GridSize, m_GridColor);
+        
+
+				// Mesh
+				auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+				for (auto& entity : meshView)
+				{
+					auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+
+					int pointLightCount = 0;
+					int spotLightCount = 0;
+
+          if (mesh.Model)
+          {
+            std::string lightUniformName;
+					  mesh.Material->EnableShader();
+
+            for (auto& pointLight : pointLightView)
+            {
+              auto& [tc, lc] = pointLightView.get<TransformComponent, PointLightComponent>(pointLight);
+
+              lightUniformName = std::string("pointLights[" + std::to_string(pointLightCount) + "].");
+              mesh.Material->SetInt("pointLightCount", pointLightCount);
+              mesh.Material->SetVector(lightUniformName + "Position", tc.Translation);
+              mesh.Material->SetVector(lightUniformName + "Color", lc.Color);
+              mesh.Material->SetFloat(lightUniformName + "Ambient", lc.Ambient);
+              mesh.Material->SetFloat(lightUniformName + "Specular", lc.Specular);
+
+              pointLightCount++;
+            }
+
+						for (auto& spotLight : spotLightView)
+						{
+							auto& [tc, lc] = spotLightView.get<TransformComponent, SpotLightComponent>(spotLight);
+
+							lightUniformName = std::string("spotLights[" + std::to_string(spotLightCount) + "].");
+              
+              mesh.Material->SetInt("spotLightCount", spotLightCount);
+
+							mesh.Material->SetVector(lightUniformName + "Position", tc.Translation);
+              mesh.Material->SetVector(lightUniformName + "Direction", tc.GetRotationEulerAngles());
+							mesh.Material->SetVector(lightUniformName + "Color", lc.Color);
+							mesh.Material->SetFloat(lightUniformName + "Ambient", lc.Ambient);
+							mesh.Material->SetFloat(lightUniformName + "Specular", lc.Specular);
+							mesh.Material->SetFloat(lightUniformName + "InnerCone", lc.InnerCone);
+							mesh.Material->SetFloat(lightUniformName + "OuterCone", lc.OuterCone);
+
+							spotLightCount++;
+						}
+
+						mesh.Model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
+
+            mesh.Material->DisableShader();
+
+            mesh.PointLightCount = pointLightCount;
+            mesh.SpotLightCount = spotLightCount;
+          }
+				}
+
+        //DrawGrid(m_GridSize, m_GridColor);
         Renderer::EndScene();
     }
 

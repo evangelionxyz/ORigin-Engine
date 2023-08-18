@@ -6,6 +6,8 @@
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Model.h"
+#include "Origin\Renderer\Shader.h"
+#include "Origin\Renderer\Renderer.h"
 #include "Origin\Audio\Audio.h"
 
 #include "Entity.h"
@@ -266,10 +268,13 @@ namespace origin {
 			out << YAML::BeginMap; // StaticMeshComponent
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
-			auto& modelPath = std::filesystem::relative(sMesh.ModelPath, Project::GetAssetDirectory());
-			out << YAML::Key << "ModelPath" << YAML::Value << modelPath.generic_string();
-			out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.ShaderPath;
-			out << YAML::Key << "Color" << YAML::Value << sMesh.Color;
+
+			std::filesystem::path modelFilepath = std::filesystem::relative(sMesh.Model->GetFilepath(), Project::GetAssetDirectory());
+			out << YAML::Key << "ModelPath" << YAML::Value << modelFilepath.generic_string();
+			out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.Material->GetShaderFilepath();
+			out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
+			out << YAML::Key << "Color" << YAML::Value << sMesh.Material->Color;
+			out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
 
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
@@ -362,8 +367,8 @@ namespace origin {
 			out << YAML::Key << "Color" << YAML::Value << lc.Color;
 			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
 			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
-			out << YAML::Key << "Outercone" << YAML::Value << lc.Outercone;
-			out << YAML::Key << "Innercone" << YAML::Value << lc.Innercone;
+			out << YAML::Key << "OuterCone" << YAML::Value << lc.OuterCone;
+			out << YAML::Key << "InnerCone" << YAML::Value << lc.InnerCone;
 
 			out << YAML::EndMap; // !SpotLightComponent
 		}
@@ -571,7 +576,7 @@ namespace origin {
 		std::string sceneName = data["Scene"].as<std::string>();
 		OGN_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
-		if (auto entities = data["Entities"])
+		if (YAML::Node entities = data["Entities"])
 		{
 			for (auto entity : entities)
 			{
@@ -583,7 +588,7 @@ namespace origin {
 
 				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
 
-				if (auto transformComponent = entity["TransformComponent"])
+				if (YAML::Node transformComponent = entity["TransformComponent"])
 				{
 					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
@@ -591,13 +596,13 @@ namespace origin {
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
 				}
 
-				if (auto audioListnerComponent = entity["AudioListenerComponent"])
+				if (YAML::Node audioListnerComponent = entity["AudioListenerComponent"])
 				{
 					auto& al = deserializedEntity.AddComponent<AudioListenerComponent>();
 					al.Enable = audioListnerComponent["Enable"].as<bool>();
 				}
 
-				if (auto audioComponent = entity["AudioComponent"])
+				if (YAML::Node audioComponent = entity["AudioComponent"])
 				{
 					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
 					ac.Audio = Audio::Create();
@@ -626,7 +631,7 @@ namespace origin {
 					}
 				}
 
-				if (auto cameraComponent = entity["CameraComponent"])
+				if (YAML::Node cameraComponent = entity["CameraComponent"])
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
@@ -645,7 +650,7 @@ namespace origin {
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}
 
-				if (auto spriteRendererComponent = entity["SpriteRendererComponent"])
+				if (YAML::Node spriteRendererComponent = entity["SpriteRendererComponent"])
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
@@ -653,7 +658,7 @@ namespace origin {
 						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
 				}
 
-				if (auto particle2DComponent = entity["Particle2DComponent"])
+				if (YAML::Node particle2DComponent = entity["Particle2DComponent"])
 				{
 					auto& pc = deserializedEntity.AddComponent<Particle2DComponent>();
 					pc.Velocity = particle2DComponent["Velocity"].as<glm::vec2>();
@@ -667,7 +672,7 @@ namespace origin {
 					pc.LifeTime = particle2DComponent["LifeTime"].as<float>();
 				}
 
-				if (auto spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])
+				if (YAML::Node spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
@@ -681,7 +686,7 @@ namespace origin {
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<float>();
 				}
 
-				if (auto directionalLightComponent = entity["DirectionalLightComponent"])
+				if (YAML::Node directionalLightComponent = entity["DirectionalLightComponent"])
 				{
 					auto& lc = deserializedEntity.AddComponent<DirectionalLightComponent>();
 					lc.Ambient = directionalLightComponent["Ambient"].as<float>();
@@ -689,17 +694,17 @@ namespace origin {
 					lc.Specular = directionalLightComponent["Specular"].as<float>();
 				}
 
-				if (auto spotLightComponent = entity["SpotLightComponent"])
+				if (YAML::Node spotLightComponent = entity["SpotLightComponent"])
 				{
 					auto& lc = deserializedEntity.AddComponent<SpotLightComponent>();
 					lc.Color = spotLightComponent["Color"].as<glm::vec3>();
 					lc.Ambient = spotLightComponent["Ambient"].as<float>();
 					lc.Specular = spotLightComponent["Specular"].as<float>();
-					lc.Outercone = spotLightComponent["Outercone"].as<float>();
-					lc.Innercone = spotLightComponent["Innercone"].as<float>();
+					lc.OuterCone = spotLightComponent["OuterCone"].as<float>();
+					lc.InnerCone = spotLightComponent["InnerCone"].as<float>();
 				}
 
-				if (auto pointLightComponent = entity["PointLightComponent"])
+				if (YAML::Node pointLightComponent = entity["PointLightComponent"])
 				{
 					auto& lc = deserializedEntity.AddComponent<PointLightComponent>();
 					lc.Color = pointLightComponent["Color"].as<glm::vec3>();
@@ -707,7 +712,7 @@ namespace origin {
 					lc.Specular = pointLightComponent["Specular"].as<float>();
 				}
 
-				if (auto circleRendererComponent = entity["CircleRendererComponent"])
+				if (YAML::Node circleRendererComponent = entity["CircleRendererComponent"])
 				{
 					auto& src = deserializedEntity.AddComponent<CircleRendererComponent>();
 					src.Color = circleRendererComponent["Color"].as<glm::vec4>();
@@ -715,28 +720,35 @@ namespace origin {
 					src.Thickness = circleRendererComponent["Thickness"].as<float>();
 				}
 
-				if (auto rigidbody2DComponent = entity["Rigidbody2DComponent"])
+				if (YAML::Node rigidbody2DComponent = entity["Rigidbody2DComponent"])
 				{
 					auto& rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
 					rb2d.Type = RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
 				}
 
-				if (auto staticMeshComponent = entity["StaticMeshComponent"])
+				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
 				{
 					auto& sMesh = deserializedEntity.AddComponent<StaticMeshComponent>();
-					sMesh.ModelPath = staticMeshComponent["ModelPath"].as<std::string>();
-					sMesh.ShaderPath = staticMeshComponent["ShaderPath"].as<std::string>();
-					if (!sMesh.ModelPath.empty() && !sMesh.ShaderPath.empty())
+					std::string modelFilepath = staticMeshComponent["ModelPath"].as<std::string>();
+					std::string shaderFilepath = staticMeshComponent["ShaderPath"].as<std::string>();
+
+					if (!modelFilepath.empty() && !shaderFilepath.empty())
 					{
-						auto& modelPath = Project::GetAssetFileSystemPath(sMesh.ModelPath);
-						std::shared_ptr<Shader> shader = Shader::Create(sMesh.ShaderPath);
-						sMesh.Model = Model::Create(modelPath.string(), shader);
+						auto& modelPath = Project::GetAssetFileSystemPath(modelFilepath);
+
+						std::shared_ptr<Shader> shader = Shader::Create(shaderFilepath);
+
+						sMesh.Material = Material::Create(staticMeshComponent["MaterialName"].as<std::string>());
+						sMesh.Material->LoadShader(shader);
+						sMesh.Material->Color = staticMeshComponent["Color"].as<glm::vec4>();
+						sMesh.Material->Shininess = staticMeshComponent["Shininess"].as<float>();
+
+						sMesh.Model = Model::Create(modelPath.string(), sMesh.Material);
 					}
-					sMesh.Color = staticMeshComponent["Color"].as<glm::vec4>();
 				}
 
-				if (auto textComponent = entity["TextComponent"])
+				if (YAML::Node textComponent = entity["TextComponent"])
 				{
 					auto& text = deserializedEntity.AddComponent<TextComponent>();
 					const std::string filepath = textComponent["FontFilepath"].as<std::string>();
@@ -756,7 +768,7 @@ namespace origin {
 					text.LineSpacing = textComponent["LineSpacing"].as<float>();
 				}
 
-				if (auto boxCollider2DComponent = entity["BoxCollider2DComponent"])
+				if (YAML::Node boxCollider2DComponent = entity["BoxCollider2DComponent"])
 				{
 					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
 					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
@@ -767,7 +779,7 @@ namespace origin {
 					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
-				if (auto circleCollider2DComponent = entity["CircleCollider2DComponent"])
+				if (YAML::Node circleCollider2DComponent = entity["CircleCollider2DComponent"])
 				{
 					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
 					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
@@ -778,7 +790,7 @@ namespace origin {
 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
-				if (auto scriptComponent = entity["ScriptComponent"])
+				if (YAML::Node scriptComponent = entity["ScriptComponent"])
 				{
 					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
 					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
@@ -827,10 +839,6 @@ namespace origin {
 							}
 						}
 					}
-				}
-
-				if (auto nativeScriptComponent = entity["NativeScriptComponent"])
-				{
 				}
 			}
 		}

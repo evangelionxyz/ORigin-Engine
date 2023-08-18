@@ -31,6 +31,9 @@ namespace origin
     void Bind() const override;
     void Unbind() const override;
 
+    bool IsSpirvEnabled() const { return m_EnableSpirv; }
+    bool IsRecompilerSpirv() const { return m_RecompileSPIRV; }
+
     const std::string& GetName() const override { return m_Name; }
 
     std::string ReadFile() const override
@@ -62,13 +65,14 @@ namespace origin
     void SetIntArray(const std::string& name, int* values, uint32_t count) override;
 
 		// VECTOR UNIFORM
-		void SetVector(const std::string& name, const glm::vec2& vector2)override;
-		void SetVector(const std::string& name, const glm::vec3& vector3) override;
-		void SetVector(const std::string& name, const glm::vec4& vector4) override;
+		void SetVector(const std::string& name, const glm::vec2& vectors)override;
+		void SetVector(const std::string& name, const glm::vec3& vectors) override;
+		void SetVector(const std::string& name, const glm::vec4& vectors) override;
 
 		// MATRIX UNIFORM
-		void SetMatrix(const std::string& name, const glm::mat3& vector3) override;
-		void SetMatrix(const std::string& name, const glm::mat4& vector4) override;
+		void SetMatrix(const std::string& name, const glm::mat2& matrices) override;
+		void SetMatrix(const std::string& name, const glm::mat3& matrices) override;
+		void SetMatrix(const std::string& name, const glm::mat4& matrices) override;
 
   private:
     // BOOLEAN UNIFORM
@@ -89,13 +93,14 @@ namespace origin
     void SetUniformIntArray(const std::string& name, int* values, uint32_t count);
 
     // VECTOR UNIFORM
-		void SetUniformVector(const std::string& name, const glm::vec2& vector2);
-    void SetUniformVector(const std::string& name, const glm::vec3& vector3);
-    void SetUniformVector(const std::string& name, const glm::vec4& vector4);
+		void SetUniformVector(const std::string& name, const glm::vec2& vectors);
+    void SetUniformVector(const std::string& name, const glm::vec3& vectors);
+    void SetUniformVector(const std::string& name, const glm::vec4& vectors);
 
     // MATRIX UNIFORM
-    void SetUniformMatrix(const std::string& name, const glm::mat3& matrix3);
-    void SetUniformMatrix(const std::string& name, const glm::mat4& matrix4);
+    void SetUniformMatrix(const std::string& name, const glm::mat2& matrices);
+    void SetUniformMatrix(const std::string& name, const glm::mat3& matrices);
+    void SetUniformMatrix(const std::string& name, const glm::mat4& matrices);
 
   private:
     std::string m_Filepath;

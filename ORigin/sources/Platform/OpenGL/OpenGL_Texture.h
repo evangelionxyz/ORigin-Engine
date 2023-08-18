@@ -11,7 +11,9 @@ namespace origin {
   private:
 		TextureSpecification m_Spec;
 
-    uint32_t m_RendererID;
+		std::string m_MaterialTypeName;
+
+    uint32_t m_RendererID = 0;
     std::string m_FilePath;
     uint32_t m_Width = 0, m_Height = 0, m_BPP = 0;
     uint32_t m_Index = 0;
@@ -28,8 +30,13 @@ namespace origin {
 		void SetData(void* data, uint32_t size) override;
 		std::string GetFilepath() override { return m_FilePath; }
 		void Bind(uint32_t slot = 0) override;
+		void Unbind() override;
 		void Delete() override;
 		uint32_t GetRendererID() const override { return m_RendererID; }
+		std::string GetName() const override
+		{
+			return m_FilePath.substr(m_FilePath.find_last_of('/') + 1, m_FilePath.size());
+		}
 		uint32_t GetIndex() const override { return m_Index; }
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
@@ -38,19 +45,24 @@ namespace origin {
     {
       return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
     }
+
+		void SetMaterialTypeName(const std::string& typeName) override { m_MaterialTypeName = typeName; }
+		const std::string& GetMaterialTypeName() const override { return m_MaterialTypeName; }
   };
 
 	class OpenGLTextureCube : public TextureCube
 	{
 	private:
+		TextureSpecification m_Spec;
+
+		std::string m_MaterialTypeName;
+
 		uint32_t m_RendererID;
 		std::string m_FilePath;
 		uint32_t m_Width = 0, m_Height = 0, m_BPP = 0;
 		uint32_t m_Index = 0;
 		uint32_t m_LoadCount = 0;
 		GLenum m_InternalFormat, m_DataFormat;
-
-		TextureSpecification m_Spec;
 
 	public:
 		OpenGLTextureCube(uint32_t width, uint32_t height);
@@ -63,6 +75,7 @@ namespace origin {
 		void LoadFaces(std::string& filepath, Faces faces);
 
 		void Bind(uint32_t slot = 0) override;
+		void Unbind() override;
 		void Delete() override;
 
 		const TextureSpecification& GetSpecification() const override { return m_Spec; }
@@ -71,10 +84,18 @@ namespace origin {
 		uint32_t GetIndex() const override { return m_Index; }
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
+		std::string GetName() const override 
+		{
+			return m_FilePath.substr(m_FilePath.find_last_of('/') + 1, m_FilePath.size());
+		}
+
 		bool IsLoaded() const override { return false; }
 		bool operator== (const Texture& other) const override
 		{
 			return m_RendererID == ((OpenGLTextureCube&)other).m_RendererID;
 		}
+
+		void SetMaterialTypeName(const std::string& typeName) override { m_MaterialTypeName = typeName; }
+		const std::string& GetMaterialTypeName() const override { return m_MaterialTypeName; }
 	};
 }

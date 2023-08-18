@@ -132,6 +132,7 @@ namespace origin {
 
 		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true, recompileShader);
 		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
+		GShaderLibrary.Load("Mesh2", "Resources/Shaders/Mesh2.glsl", false);
 		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 
 		// Load UI Texture

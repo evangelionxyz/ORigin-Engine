@@ -1,39 +1,54 @@
 Scene: scene.org
 Entities:
-  - Entity: 2518162305684256183
+  - Entity: 8750608957913231971
     TagComponent:
-      Tag: Main Camera
+      Tag: Spot Light
     TransformComponent:
-      Translation: [0, 0, 8]
+      Translation: [0, 10, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-      FixedAspectRatio: false
-    AudioListenerComponent:
-      Enable: true
-  - Entity: 13937395941068028013
+      Scale: [1, 1.0000006, 1]
+    SpotLightComponent:
+      Color: [0, 0.126582384, 1]
+      Ambient: 0.100000001
+      Specular: 1
+      OuterCone: 0.5
+      InnerCone: 1
+  - Entity: 9517417316748885895
     TagComponent:
-      Tag: Empty
-    AudioComponent:
-      Name: Main Theme
-      Filepath: Audio/mainTheme.mp3
-      Volume: 1
-      Pitch: 1
-      MinDistance: 5
-      MaxDistance: 100
-      Looping: true
-      Spatial: true
-      PlayAtStart: true
+      Tag: Red Cube 2
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
+      Scale: [0.999999881, 0.999999881, 0.999999881]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.481012583, 1]
+      Shininess: 32
+  - Entity: 108747309007881784
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [0, -3, 0]
+      Rotation: [0, 0, 0]
+      Scale: [99.9999924, 0.999999881, 100.000038]
+    StaticMeshComponent:
+      ModelPath: Models/plane.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 1, 1, 1]
+      Shininess: 256
+  - Entity: 16981391991617349720
+    TagComponent:
+      Tag: Red Cube 1
+    TransformComponent:
+      Translation: [5, 0, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 0.312236309, 0.312236309, 1]
+      Shininess: 32

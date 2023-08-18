@@ -2,8 +2,9 @@
 
 #pragma once
 #include "pch.h"
-#include "Origin\Animation\AnimationState.h"
 
+#include "Origin\Animation\AnimationState.h"
+#include "Origin\Math\Math.h"
 #include "Origin\Audio\AudioListener.h"
 
 #include "SceneCamera.h"
@@ -16,9 +17,14 @@
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtc\quaternion.hpp>
+
+#include "Origin\Renderer\Material.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm\gtx\quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
+
 
 namespace origin
 {
@@ -95,11 +101,11 @@ namespace origin
 
 	struct StaticMeshComponent
 	{
-		std::string ModelPath;
-		std::string ShaderPath;
-
+		std::shared_ptr<Material> Material;
 		std::shared_ptr<Model> Model;
-		glm::vec4 Color = glm::vec4(1.0);
+
+		int PointLightCount = 0;
+		int SpotLightCount = 0;
 
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
@@ -126,12 +132,19 @@ namespace origin
 		TransformComponent(const glm::vec3& translation)
 			: Translation(translation) {}
 
+
 		glm::mat4 GetTransform() const
 		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 
 			return glm::translate(glm::mat4(1.0f), Translation)
 				* rotation * glm::scale(glm::mat4(1.0f), Scale);
+		}
+
+		glm::vec3 GetRotationEulerAngles() const
+		{
+			glm::vec4 rotation = glm::toMat4(glm::quat(Rotation)) * glm::vec4(1.0f);
+			return glm::vec3(rotation);
 		}
 
 		glm::vec3 GetForward() const
@@ -183,19 +196,9 @@ namespace origin
 	{
 		glm::vec3 Color = glm::vec3(1.0);
 		float Ambient = 0.1f;
-		float Innercone = 1.2f;
-		float Outercone = 0.0f;
+		float InnerCone = 1.0f;
+		float OuterCone = 0.5f;
 		float Specular = 1.0f;
-	};
-
-	struct MaterialComponent
-	{
-		std::shared_ptr<Texture2D> Diffuse;
-		std::shared_ptr<Texture2D> Specular;
-
-		float Shininess = 1.0;
-		MaterialComponent() = default;
-		MaterialComponent(const MaterialComponent&) = default;
 	};
 
 	struct DirectionalLightComponent

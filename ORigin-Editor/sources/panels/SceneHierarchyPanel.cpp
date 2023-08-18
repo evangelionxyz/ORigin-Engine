@@ -633,7 +633,7 @@ namespace origin {
 
 								if (field.Type == ScriptFieldType::Int)
 								{
-									int data = 0.0f;
+									int data = 0;
 									if (ImGui::DragInt(name.c_str(), &data))
 									{
 										ScriptFieldInstance& fieldInstance = entityFields[name];
@@ -683,107 +683,121 @@ namespace origin {
 					ImGui::PopStyleColor();
 			});
 
-			DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
+		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
+			{
+				float buttonSize[2] = { 85.0f, 25.0f };
+
+				if (!component.Model)
+					ImGui::Button("DROP MODEL", ImVec2(buttonSize[0], buttonSize[1]));
+
+				if (ImGui::BeginDragDropTarget())
 				{
-					std::shared_ptr<Shader> modelShader;
-				
-					if (!component.Model)
-						ImGui::Button("DROP MODEL", ImVec2(85.0f, 25.0f));
-
-					if (ImGui::BeginDragDropTarget())
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						const wchar_t* path = (const wchar_t*)payload->Data;
+
+						// Get the actual Location from Project Assets Directory
+						std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
+
+						if (modelPath.extension() == ".gltf"
+							|| modelPath.extension() == ".fbx"
+							|| modelPath.extension() == ".obj")
 						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
+							std::shared_ptr<Shader> matShader = Renderer::GetGShader("Mesh");
 
-							if (modelPath.extension() == ".gltf" || modelPath.extension() == ".fbx" ||
-								modelPath.extension() == ".obj")
-							{
-								modelShader = Renderer::GetGShader("Mesh");
+							component.Material = Material::Create("MeshMaterial");
+							component.Material->LoadShader(matShader);
 
-								component.Model = Model::Create(modelPath.string(), modelShader);
-								component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
-								component.ShaderPath = modelShader->GetFilepath();
-							}
+							component.Model = Model::Create(modelPath.string(), component.Material);
 						}
 					}
+				}
 
-					if (component.Model)
+				if (component.Model)
+				{
+					if (ImGui::Button("REMOVE", ImVec2(buttonSize[0], buttonSize[1])))
 					{
-						if (ImGui::Button("REMOVE", ImVec2(85.0f, 25.0f)))
-							component.Model.reset();
+						component.Model.reset();
+						component.Material.reset();
 					}
+				}
 
-					ImGui::SameLine(0.0f, 1.0f);
-					// Open Mesh
-					if (ImGui::Button("OPEN", ImVec2(85.0f, 25.0f)))
+				ImGui::SameLine();
+
+				// Open Mesh
+				/*
+				if (ImGui::Button("OPEN", ImVec2(85.0f, 25.0f)))
+				{
+					std::filesystem::path path = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
+					auto modelPath = Project::GetAssetFileSystemPath(path);
+
+					if (!modelPath.string().empty())
 					{
-						std::filesystem::path path = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
-						auto modelPath = Project::GetAssetFileSystemPath(path);
-
-						if (!modelPath.string().empty())
-						{
-							modelShader = Renderer::GetGShader("Mesh");
-
-							component.Model = Model::Create(modelPath.string(), modelShader);
-							component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
-							component.ShaderPath = modelShader->GetFilepath();
-						}
+						component.Material.LoadShader("Resources/Shaders/Mesh2.glsl", false);
+						component.Model = Model::Create(modelPath.generic_string(), component.Material);
+						component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
 					}
+				}*/
 
-					if (component.Model)
-					{
-						ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-						ImGui::Text("Path: %s", component.ModelPath.c_str());
-					}
+				if (component.Model)
+				{
+					if (ImGui::Button("Refresh Shader", ImVec2(buttonSize[0] + 3.0f, buttonSize[1])))
+						component.Material->RefreshShader();
+
+					ImGui::Separator();
+					ImGui::Text("Material");
+
+					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
+					ImGui::DragFloat("Shininess", &component.Material->Shininess, 1.0f, 0.0f, 256.0f);
+
+					ImGui::Text("Point Light: %i", component.PointLightCount);
+					ImGui::Text("Spot Light : %i", component.SpotLightCount);
+				}
+
+			});
+
+		DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
+			{
+			if(!component.FontAsset)
+				component.FontAsset = Font::GetDefault();
 					
-				});
+				ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
 
-			DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
+				if (ImGui::BeginDragDropTarget())
 				{
-				if(!component.FontAsset)
-					component.FontAsset = Font::GetDefault();
-					
-					ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
-
-					if (ImGui::BeginDragDropTarget())
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path fontPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
+						if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
 						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path fontPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
-							if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
-							{
-								if(component.FontAsset)
-										component.FontAsset.reset();
-								
-								component.FontAsset = std::make_shared<Font>(fontPath);
-							}
+							if(component.FontAsset) component.FontAsset.reset();
+							component.FontAsset = std::make_shared<Font>(fontPath);
 						}
 					}
+				}
 				
-					ImGui::InputTextMultiline("Text String", &component.TextString);
-					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
-					ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
-				});
+				ImGui::InputTextMultiline("Text String", &component.TextString);
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
+				ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
+			});
 
-			DrawComponent<Particle2DComponent>("PARTICLE 2D", entity, [](auto& component)
-				{
-					float columnWidth = 100.0f;
+		DrawComponent<Particle2DComponent>("PARTICLE 2D", entity, [](auto& component)
+			{
+				float columnWidth = 100.0f;
 
-					ImGui::ColorEdit4("Color Begin", glm::value_ptr(component.ColorBegin));
-					ImGui::ColorEdit4("Color End", glm::value_ptr(component.ColorEnd));
-					DrawVec2Control("Velocity", component.Velocity, 0.01f, 0.5f, columnWidth);
-					DrawVec2Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
+				ImGui::ColorEdit4("Color Begin", glm::value_ptr(component.ColorBegin));
+				ImGui::ColorEdit4("Color End", glm::value_ptr(component.ColorEnd));
+				DrawVec2Control("Velocity", component.Velocity, 0.01f, 0.5f, columnWidth);
+				DrawVec2Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
 
-					DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
-					DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
-					DrawVecControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
-					DrawVecControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
-					DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
-				});
+				DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
+				DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
+				DrawVecControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
+				DrawVecControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
+				DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
+			});
 
 		DrawComponent<SpriteRendererComponent>("SPRITE RENDERER", entity, [](auto& component)
 			{
@@ -864,10 +878,10 @@ namespace origin {
 		DrawComponent<SpotLightComponent>("SPOT LIGHT", entity, [](auto& component)
 			{
 				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
-				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
-				ImGui::SliderFloat("Specular", &component.Specular, 0.01f, 0.0f);
-				ImGui::SliderFloat("Inner Cone", &component.Innercone, 1.0f, 3.0f);
-				ImGui::SliderFloat("Outer cone", &component.Outercone, 0.0f, 1.0f);
+				ImGui::DragFloat("Ambient", &component.Ambient, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Specular", &component.Specular, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Inner Cone", &component.InnerCone, 0.01f);
+				ImGui::DragFloat("Outer cone", &component.OuterCone, 0.01f);
 			});
 
 		DrawComponent<PointLightComponent>("POINT LIGHT", entity, [](auto& component)

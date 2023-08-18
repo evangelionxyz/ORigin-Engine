@@ -36,13 +36,16 @@ namespace origin {
 		{
 			switch (filter)
 			{
-			case ImageFilter::Linear: return GL_LINEAR;
-			case ImageFilter::Nearest: return GL_NEAREST;
-			case ImageFilter::LinearMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
-			case ImageFilter::LinearMipmapNearest: return GL_LINEAR_MIPMAP_NEAREST;
-			case ImageFilter::NearestMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
-			case ImageFilter::NearestMipmapNearest: return GL_LINEAR_MIPMAP_NEAREST;
+				case ImageFilter::Linear: return GL_LINEAR;
+				case ImageFilter::Nearest: return GL_NEAREST;
+				case ImageFilter::LinearMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
+				case ImageFilter::LinearMipmapNearest: return GL_LINEAR_MIPMAP_NEAREST;
+				case ImageFilter::NearestMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
+				case ImageFilter::NearestMipmapNearest: return GL_LINEAR_MIPMAP_NEAREST;
+
+				default: return GL_NONE;
 			}
+			return GL_NONE;
 		}
 
 	}
@@ -129,6 +132,7 @@ namespace origin {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
+		Unbind();
     glDeleteTextures(1, &m_RendererID);
   }
 
@@ -146,10 +150,15 @@ namespace origin {
 		glBindTextureUnit(index, m_RendererID); // bind texture index to renderID
   }
 
+	void OpenGLTexture2D::Unbind()
+	{
+		glBindTextureUnit(m_Index, NULL);
+	}
+
 	void OpenGLTexture2D::Delete()
 	{
-		glBindTextureUnit(m_Index, 0); // bind texture index to nothing (0)
-		OGN_CORE_WARN("Texture \"{}\" at index {} has been deleted", m_FilePath, m_Index);
+		glDeleteTextures(1, &m_RendererID);
+		OGN_CORE_WARN("TEXTURE: \"{}\" at index {} has been deleted", m_FilePath, m_Index);
 	}
 
 	OpenGLTextureCube::OpenGLTextureCube(uint32_t width, uint32_t height)
@@ -279,4 +288,10 @@ namespace origin {
 	{
 
 	}
+
+	void OpenGLTextureCube::Unbind()
+	{
+
+	}
+
 }
