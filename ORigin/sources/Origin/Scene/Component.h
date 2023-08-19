@@ -104,9 +104,6 @@ namespace origin
 		std::shared_ptr<Material> Material;
 		std::shared_ptr<Model> Model;
 
-		int PointLightCount = 0;
-		int SpotLightCount = 0;
-
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};

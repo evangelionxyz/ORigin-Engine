@@ -749,9 +749,6 @@ namespace origin {
 
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
 					ImGui::DragFloat("Shininess", &component.Material->Shininess, 1.0f, 0.0f, 256.0f);
-
-					ImGui::Text("Point Light: %i", component.PointLightCount);
-					ImGui::Text("Spot Light : %i", component.SpotLightCount);
 				}
 
 			});

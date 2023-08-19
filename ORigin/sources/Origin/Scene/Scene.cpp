@@ -806,8 +806,13 @@ namespace origin
 
             mesh.Material->DisableShader();
 
-            mesh.PointLightCount = pointLightCount;
-            mesh.SpotLightCount = spotLightCount;
+            if (mesh.Material->m_PointLightCount != pointLightCount || mesh.Material->m_SpotLightCount != spotLightCount)
+            {
+              mesh.Material->RefreshShader();
+            }
+
+            mesh.Material->m_PointLightCount = pointLightCount;
+            mesh.Material->m_SpotLightCount = spotLightCount;
           }
 				}
 

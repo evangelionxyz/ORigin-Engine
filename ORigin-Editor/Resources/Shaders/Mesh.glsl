@@ -116,22 +116,19 @@ vec3 CalcPointLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
 
+    vec3 reflectionDirection = reflect(viewDirection, normal);
+
     for (int i = 0; i <= pointLightCount; i++)
     {
-        // Ambient
         ambient += pointLights[i].Ambient * diffuseTexture;
 
-        // Diffuse
         vec3 lightDirection = normalize(pointLights[i].Position - vertex.Position);
         float diff = max(dot(normal, lightDirection), 0.0);
         diffuse += diff * pointLights[i].Color * diffuseTexture;
 
-        // Specular
-        vec3 reflectionDirection = reflect(-lightDirection, normal);
         float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
         specular += spec * pointLights[i].Specular * specularTexture * pointLights[i].Color;
     }
-
     return diffuse + ambient + specular;
 }
 
@@ -142,27 +139,24 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
     vec3 specular = vec3(0.0);
     float intensity = 0.0;
 
+    vec3 reflectionDirection = reflect(viewDirection, normal);
+
     for (int i = 0; i <= spotLightCount; i++)
     {
-        // Ambient
+        vec3 lightDirection = normalize(spotLights[i].Position - vertex.Position);
+
         ambient += spotLights[i].Ambient * diffuseTexture;
 
-        // Diffuse
-        vec3 lightDirection = normalize(spotLights[i].Position - vertex.Position);
         float diff = max(dot(normal, lightDirection), 0.0);
         diffuse += diff * spotLights[i].Color * diffuseTexture;
 
-        // Specular
-        vec3 reflectionDirection = reflect(-lightDirection, normal);
         float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
         specular += spec * spotLights[i].Specular * specularTexture * spotLights[i].Color;
 
-        // Spot Light Intensity
         float angle = dot(lightDirection, spotLights[i].Direction);
-        float falloff = clamp((angle - spotLights[i].OuterCone) / (spotLights[i].InnerCone - spotLights[i].OuterCone), 0.0, 1.0);
+        float falloff = max((angle - spotLights[i].OuterCone) / (spotLights[i].InnerCone - spotLights[i].OuterCone), 0.0);
 
         intensity += falloff;
     }
-
     return (diffuse + ambient + specular) * intensity;
 }

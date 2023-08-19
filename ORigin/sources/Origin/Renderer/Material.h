@@ -45,6 +45,9 @@ namespace origin {
 
 		static std::shared_ptr<Material> Create(const std::string& name);
 
+		int m_SpotLightCount = 0;
+		int m_PointLightCount = 0;
+
 	private:
 		std::string m_ShaderFilepath = "";
 		bool m_ShaderEnableSpirv = false;
