@@ -168,6 +168,7 @@ namespace origin
 
         UUID& uuid = entity.GetComponent<IDComponent>().ID;
         entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
+        entity.GetComponent<TransformComponent>().Rotation.x = glm::radians(-90.0f);
 
         m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -790,9 +791,8 @@ namespace origin
 							lightUniformName = std::string("spotLights[" + std::to_string(spotLightCount) + "].");
               
               mesh.Material->SetInt("spotLightCount", spotLightCount);
-
 							mesh.Material->SetVector(lightUniformName + "Position", tc.Translation);
-              mesh.Material->SetVector(lightUniformName + "Direction", tc.GetRotationEulerAngles());
+              mesh.Material->SetVector(lightUniformName + "Direction", -tc.GetForward());
 							mesh.Material->SetVector(lightUniformName + "Color", lc.Color);
 							mesh.Material->SetFloat(lightUniformName + "Ambient", lc.Ambient);
 							mesh.Material->SetFloat(lightUniformName + "Specular", lc.Specular);

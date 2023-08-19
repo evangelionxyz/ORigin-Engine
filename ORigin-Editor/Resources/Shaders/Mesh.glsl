@@ -158,7 +158,7 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
         specular += spec * spotLights[i].Specular * specularTexture * spotLights[i].Color;
 
         // Spot Light Intensity
-        float angle = dot(spotLights[i].Direction, lightDirection);
+        float angle = dot(lightDirection, spotLights[i].Direction);
         float falloff = clamp((angle - spotLights[i].OuterCone) / (spotLights[i].InnerCone - spotLights[i].OuterCone), 0.0, 1.0);
 
         intensity += falloff;

@@ -136,15 +136,8 @@ namespace origin
 		glm::mat4 GetTransform() const
 		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
-
 			return glm::translate(glm::mat4(1.0f), Translation)
 				* rotation * glm::scale(glm::mat4(1.0f), Scale);
-		}
-
-		glm::vec3 GetRotationEulerAngles() const
-		{
-			glm::vec4 rotation = glm::toMat4(glm::quat(Rotation)) * glm::vec4(1.0f);
-			return glm::vec3(rotation);
 		}
 
 		glm::vec3 GetForward() const
@@ -194,6 +187,7 @@ namespace origin
 
 	struct SpotLightComponent
 	{
+		glm::vec3 Direction = glm::vec3(0.0f, -1.0f, 0.0f);
 		glm::vec3 Color = glm::vec3(1.0);
 		float Ambient = 0.1f;
 		float InnerCone = 1.0f;
@@ -204,7 +198,6 @@ namespace origin
 	struct DirectionalLightComponent
 	{
 		glm::vec3 Direction = glm::vec3(0.0f);
-
 		float Ambient = 0.1f;
 		float Diffuse = 0.5f;
 		float Specular = 0.5f;
