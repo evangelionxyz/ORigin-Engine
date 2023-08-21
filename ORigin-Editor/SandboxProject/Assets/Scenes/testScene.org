@@ -1,154 +1,6 @@
-Scene: testScene.org
+Scene: scene.org
 Entities:
-  - Entity: 4104929033688609072
-    TagComponent:
-      Tag: Empty
-    TransformComponent:
-      Translation: [-14.1126413, -1.54524219, -1]
-      Rotation: [0, 0, 0]
-      Scale: [0.819999993, 0.819999993, 0.819999993]
-    TextComponent:
-      TextString: Evangelion
-      FontFilepath: Fonts/barcool.ttf
-      Color: [1, 0.556962013, 0, 1]
-      Kerning: 0
-      LineSpacing: 0
-  - Entity: 2805043780644485860
-    TagComponent:
-      Tag: ORigin Engine
-    TransformComponent:
-      Translation: [-14.2302704, -2.49055529, -1]
-      Rotation: [0, 0, 0]
-      Scale: [0.730000019, 0.730000019, 0.730000019]
-    TextComponent:
-      TextString: ORigin Engine
-      FontFilepath: Fonts/barcool.ttf
-      Color: [0, 0.987341881, 1, 1]
-      Kerning: 0
-      LineSpacing: 0
-    ScriptComponent:
-      ClassName: Game.TextAnimation
-      StoredFields:
-        []
-  - Entity: 2046730225581698533
-    TagComponent:
-      Tag: JumpAudio
-    AudioComponent:
-      Name: Jump
-      Filepath: Audio/jump_sound.mp3
-      Volume: 0.5
-      Pitch: 1
-      MinDistance: 2
-      MaxDistance: 100
-      Looping: false
-      Spatial: false
-      PlayAtStart: false
-    TransformComponent:
-      Translation: [-10.6134768, -6.67603064, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 12758502551452850327
-    TagComponent:
-      Tag: Empty
-    AudioComponent:
-      Name: Main Theme
-      Filepath: Audio/mainTheme.mp3
-      Volume: 0.680000007
-      Pitch: 1
-      MinDistance: 2
-      MaxDistance: 100
-      Looping: true
-      Spatial: false
-      PlayAtStart: true
-    TransformComponent:
-      Translation: [-11.8557453, -6.65758181, 6.10686839e-05]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 2711569248296025484
-    TagComponent:
-      Tag: Audio
-    AudioComponent:
-      Name: Ambient Sound
-      Filepath: Audio/ambient.mp3
-      Volume: 1
-      Pitch: 1
-      MinDistance: 2.79999995
-      MaxDistance: 100
-      Looping: true
-      Spatial: false
-      PlayAtStart: true
-    TransformComponent:
-      Translation: [-13.4848318, -6.71624947, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 6688487768955178568
-    TagComponent:
-      Tag: Monkey
-    TransformComponent:
-      Translation: [0.28062588, 2.83731318, 2.95760155]
-      Rotation: [0, 0, 0]
-      Scale: [0.797500074, 0.797500074, 0.797500074]
-  - Entity: 3546931719940843500
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [80, 8, 0]
-      Rotation: [0, 0, 0]
-      Scale: [190, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.329113901, 0.329113901, 0.329113901, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 974053034653979213
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [-15.0872784, -7.1941754e-06, 0]
-      Rotation: [0, 0, 1.57079685]
-      Scale: [17, 0.999913931, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.329113901, 0.329113901, 0.329113901, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 3539775589428833874
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [80, -8, 0]
-      Rotation: [0, 0, 0]
-      Scale: [190, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.329113901, 0.329113901, 0.329113901, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 7429559863542183402
+  - Entity: 15702597099835745465
     TagComponent:
       Tag: Main Camera
     TransformComponent:
@@ -157,121 +9,149 @@ Entities:
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
-        ProjectionType: 1
+        ProjectionType: 0
         PerspectiveFOV: 0.785398185
         PerspectiveNear: 0.00999999978
         PerspectiveFar: 100
-        OrthographicSize: 15
+        OrthographicSize: 10
         OrthographicNear: -1
         OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
     AudioListenerComponent:
       Enable: true
-    ScriptComponent:
-      ClassName: Game.Camera
-      StoredFields:
-        []
-  - Entity: 9453662782248772370
+  - Entity: 16981391991617349720
     TagComponent:
-      Tag: Player
+      Tag: Red Cube 1
     TransformComponent:
-      Translation: [-12.3799438, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.680400014, 0.680400014, 1]
-    Particle2DComponent:
-      Velocity: [0, 0]
-      VelocityVariation: [3, 3]
-      ColorBegin: [0, 0.83544302, 1, 1]
-      ColorEnd: [0.430379868, 0, 1, 1]
-      SizeBegin: 0.230000004
-      SizeEnd: 0
-      SizeVariation: 0.300000012
-      ZAxis: -0.100000001
-      LifeTime: 1
-    CircleRendererComponent:
-      Color: [0.687763691, 0.73519206, 1, 1]
-      Fade: 0.00499999989
-      Thickness: 1
-    ScriptComponent:
-      ClassName: Game.Player
-      StoredFields:
-        []
-  - Entity: 6521376844893389123
-    TagComponent:
-      Tag: TimeStep
-    TransformComponent:
-      Translation: [-13.6940937, 6.49587774, 0.549536109]
-      Rotation: [0, 0, 0]
-      Scale: [0.689999998, 0.689999998, 0.689999998]
-    TextComponent:
-      TextString: "Time:"
-      FontFilepath: ../../Resources/Fonts/segoeui.ttf
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 0
-  - Entity: 10995863503049135073
-    TagComponent:
-      Tag: Level 1
-    TransformComponent:
-      Translation: [-4.03744507, 0, 0]
+      Translation: [5, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    TextComponent:
-      TextString: Level 1
-      FontFilepath: ../../Resources/Fonts/segoeui.ttf
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 0
-    ScriptComponent:
-      ClassName: Game.TextAnimation
-      StoredFields:
-        []
-  - Entity: 13783427103288360416
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 0.312236309, 0.312236309, 1]
+      Shininess: 183
+  - Entity: 108747309007881784
     TagComponent:
-      Tag: Sprite
+      Tag: Plane
     TransformComponent:
-      Translation: [175, 0.00216806354, 0]
-      Rotation: [0, 0, 1.57079685]
-      Scale: [16.9930077, 0.99969542, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.329113901, 0.329113901, 0.329113901, 1]
-      TillingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 7657282945458876478
-    TagComponent:
-      Tag: ORigin Engine
-    TransformComponent:
-      Translation: [-14.0522709, -3.49499893, -1.0933392]
+      Translation: [0, -1.31631517, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.408800006, 0.408800006, 0.408800006]
-    TextComponent:
-      TextString: Written In C++, May 2022
-      FontFilepath: Fonts/Cooper Regular.ttf
-      Color: [1, 0.244725764, 0.799230814, 1]
-      Kerning: 0
-      LineSpacing: 0
-    ScriptComponent:
-      ClassName: Game.TextAnimation
-      StoredFields:
-        []
-  - Entity: 8009381107176282934
+      Scale: [99.9999924, 0.999999881, 100.000038]
+    StaticMeshComponent:
+      ModelPath: Models/plane.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 1, 1, 1]
+      Shininess: 92
+  - Entity: 9517417316748885895
+    TagComponent:
+      Tag: Red Cube 2
+    TransformComponent:
+      Translation: [-7.17380238, 0, -5.26339817]
+      Rotation: [0, 0, 0]
+      Scale: [0.999999881, 1.00000048, 1.00000048]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.481012583, 1]
+      Shininess: 32
+  - Entity: 6958338104473991136
+    TagComponent:
+      Tag: Spot Light
+    TransformComponent:
+      Translation: [-16.2659798, 5.01689339, 1.00716369e-09]
+      Rotation: [-1.57079637, 0, 0]
+      Scale: [1, 0.999960542, 0.999960542]
+    SpotLightComponent:
+      Color: [0.0421940684, 0.114938855, 1]
+      Ambient: 0.419999987
+      Specular: 0
+      OuterCone: 0.699999988
+      InnerCone: 1.37
+  - Entity: 8647927898058597211
+    TagComponent:
+      Tag: Spot Light
+    TransformComponent:
+      Translation: [16.8661613, 5.01677084, 0.000183403492]
+      Rotation: [-1.57079637, 0, 0]
+      Scale: [1, 0.999966204, 0.999966204]
+    SpotLightComponent:
+      Color: [0.0421940684, 1, 0.163435221]
+      Ambient: 0.419999987
+      Specular: 0
+      OuterCone: 0.699999988
+      InnerCone: 1.37
+  - Entity: 14706961056331819129
+    TagComponent:
+      Tag: Point Light
+    TransformComponent:
+      Translation: [0, 5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLightComponent:
+      Color: [0.303797483, 0.303797483, 0.303797483]
+      Ambient: 0
+      Specular: 0
+  - Entity: 13582170620000308246
     TagComponent:
       Tag: Empty
+    AudioComponent:
+      Name: Ambient
+      Filepath: Audio/ambient.mp3
+      Volume: 1
+      Pitch: 1
+      MinDistance: 10
+      MaxDistance: 100
+      Looping: true
+      Spatial: true
+      PlayAtStart: true
     TransformComponent:
-      Translation: [-14.1981926, 1.62804794, -2.0217545]
+      Translation: [-3.0964613e-05, 16.6211662, -5.36441803e-07]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    ScriptComponent:
-      ClassName: Game.Light
-      StoredFields:
-        []
+  - Entity: 5044450763098641287
+    TagComponent:
+      Tag: Main Theme Audio
+    AudioComponent:
+      Name: Audio
+      Filepath: Audio/mainTheme.mp3
+      Volume: 0.300000012
+      Pitch: 1
+      MinDistance: 1
+      MaxDistance: 100
+      Looping: true
+      Spatial: false
+      PlayAtStart: true
+    TransformComponent:
+      Translation: [-5, 8.67344475, -1.49011612e-08]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 8252333927327219879
+    TagComponent:
+      Tag: Spot Light
+    TransformComponent:
+      Translation: [0, 4.65823555, -11.7250004]
+      Rotation: [-2.36924148, 0, 0]
+      Scale: [1, 0.999953568, 0.999953568]
+    SpotLightComponent:
+      Color: [1, 0, 0]
+      Ambient: 0
+      Specular: 1
+      OuterCone: 0.790000021
+      InnerCone: 1.22000003
+  - Entity: 13634316432345324057
+    TagComponent:
+      Tag: Directional Light
+    TransformComponent:
+      Translation: [0, 10.9294224, 3.49444349e-06]
+      Rotation: [-0.837758064, 0, -1.20427716]
+      Scale: [0.99999094, 0.999979854, 0.999975502]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Ambient: 0.389999986
+      Diffuse: 0.319999993
+      Specular: 0.379999995

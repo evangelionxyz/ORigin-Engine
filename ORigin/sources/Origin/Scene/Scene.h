@@ -31,8 +31,9 @@ namespace origin
 
         Entity CreateCube(const std::string& name = std::string());
         Entity CreateCamera(const std::string& name = std::string());
-        Entity CreatePointlight(const std::string& name = std::string());
-        Entity CreateSpotLight(const std::string& name = std::string());
+        Entity CreatePointlight();
+        Entity CreateSpotLight();
+        Entity CreateDirectionalLight();
         Entity CreateMesh(const std::string& name = std::string());
 
         Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());

@@ -69,7 +69,7 @@ namespace origin
 
     template <typename... Component>
     static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src,
-                              const std::unordered_map<UUID, entt::entity>& enttMap)
+                              const std::unordered_map<UUID, entt::entity> enttMap)
     {
         CopyComponent<Component...>(dst, src, enttMap);
     }
@@ -92,23 +92,23 @@ namespace origin
 
     std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
     {
-        auto newScene = std::make_shared<Scene>();
+        std::shared_ptr<Scene> newScene = std::make_shared<Scene>();
 
         newScene->m_ViewportWidth = other->m_ViewportWidth;
         newScene->m_ViewportHeight = other->m_ViewportHeight;
 
-        auto& srcSceneRegistry = other->m_Registry;
-        auto& dstSceneRegistry = newScene->m_Registry;
+        entt::registry& srcSceneRegistry = other->m_Registry;
+        entt::registry& dstSceneRegistry = newScene->m_Registry;
         std::unordered_map<UUID, entt::entity> enttMap;
         auto newEntity = Entity();
 
         // create entities in new scene
-        auto& idView = srcSceneRegistry.view<IDComponent>();
+        auto idView = srcSceneRegistry.view<IDComponent>();
         for (auto e : idView)
         {
             UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
 
-            const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
+            const auto name = srcSceneRegistry.get<TagComponent>(e).Tag;
             newEntity = newScene->CreateEntityWithUUID(uuid, name);
 
             enttMap[uuid] = (entt::entity)newEntity;
@@ -138,7 +138,7 @@ namespace origin
         return entity;
     }
 
-    Entity Scene::CreatePointlight(const std::string& name)
+    Entity Scene::CreatePointlight()
     {
         Entity entity = {m_Registry.create(), this};
         entity.AddComponent<IDComponent>(UUID());
@@ -146,7 +146,7 @@ namespace origin
         entity.AddComponent<PointLightComponent>();
 
         auto& tag = entity.AddComponent<TagComponent>();
-        tag.Tag = name.empty() ? "Entity" : name;
+        tag.Tag = "Point Light";
 
         UUID& uuid = entity.GetComponent<IDComponent>().ID;
         entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
@@ -156,7 +156,7 @@ namespace origin
         return entity;
     }
 
-    Entity Scene::CreateSpotLight(const std::string& name)
+    Entity Scene::CreateSpotLight()
     {
         Entity entity = {m_Registry.create(), this};
         entity.AddComponent<IDComponent>(UUID());
@@ -164,7 +164,7 @@ namespace origin
         entity.AddComponent<SpotLightComponent>();
 
         auto& tag = entity.AddComponent<TagComponent>();
-        tag.Tag = name.empty() ? "Entity" : name;
+        tag.Tag = "Spot Light";
 
         UUID& uuid = entity.GetComponent<IDComponent>().ID;
         entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
@@ -173,6 +173,24 @@ namespace origin
         m_EntityMap.insert(std::make_pair(uuid, entity));
 
         return entity;
+    }
+
+    Entity Scene::CreateDirectionalLight()
+    {
+      Entity entity = { m_Registry.create(), this };
+      entity.AddComponent<IDComponent>(UUID());
+      entity.AddComponent<TransformComponent>();
+      entity.AddComponent<DirectionalLightComponent>();
+
+      auto& tag = entity.AddComponent<TagComponent>();
+      tag.Tag = "Directional Light";
+
+      UUID& uuid = entity.GetComponent<IDComponent>().ID;
+      entity.GetComponent<TransformComponent>().Rotation.x = glm::radians(-90.0f);
+
+      m_EntityMap.insert(std::make_pair(uuid, entity));
+
+      return entity;
     }
 
     Entity Scene::CreateMesh(const std::string& name)
@@ -739,7 +757,7 @@ namespace origin
 					DrawIcon(camera, (int)entity, m_CameraIcon, tc, true);
 				}
 
-        
+        // Lighting
         auto& pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
         for (auto& pointLight : pointLightView)
         {
@@ -754,7 +772,12 @@ namespace origin
           DrawIcon(camera, (int)spotLight, m_LightingIcon, tc, true);
         }
 
-        
+        auto& dirLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
+        for (auto& dirLight : dirLightView)
+        {
+          auto& [tc, lc] = dirLightView.get<TransformComponent, DirectionalLightComponent>(dirLight);
+          DrawIcon(camera, (int)dirLight, m_LightingIcon, tc, true);
+        }
 
 				// Mesh
 				auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
@@ -802,14 +825,23 @@ namespace origin
 							spotLightCount++;
 						}
 
+            for (auto& dirLight : dirLightView)
+            {
+              auto& [tc, lc] = dirLightView.get<TransformComponent, DirectionalLightComponent>(dirLight);
+
+              mesh.Material->SetVector("dirLight.Direction", -tc.GetForward());
+              mesh.Material->SetVector("dirLight.Color", lc.Color);
+              mesh.Material->SetFloat("dirLight.Ambient", lc.Ambient);
+              mesh.Material->SetFloat("dirLight.Diffuse", lc.Diffuse);
+              mesh.Material->SetFloat("dirLight.Specular", lc.Specular);
+            }
+
 						mesh.Model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
 
             mesh.Material->DisableShader();
 
             if (mesh.Material->m_PointLightCount != pointLightCount || mesh.Material->m_SpotLightCount != spotLightCount)
-            {
               mesh.Material->RefreshShader();
-            }
 
             mesh.Material->m_PointLightCount = pointLightCount;
             mesh.Material->m_SpotLightCount = spotLightCount;

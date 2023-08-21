@@ -361,17 +361,22 @@ namespace origin
 					ImGui::Text("3D"); ImGui::Separator();
 					if (ImGui::BeginMenu("Light"))
 					{
+						if (ImGui::MenuItem("Directional Light"))
+						{
+							Entity entity = m_SceneHierarchy.GetContext()->CreateDirectionalLight();
+							m_SceneHierarchy.SetSelectedEntity(entity);
+						}
 						if(ImGui::MenuItem("Point Light"))
 						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreatePointlight("Point Light");
+							Entity entity = m_SceneHierarchy.GetContext()->CreatePointlight();
 							m_SceneHierarchy.SetSelectedEntity(entity);
 						}
 						if (ImGui::MenuItem("Spot Light"))
 						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreateSpotLight("Spot Light");
+							Entity entity = m_SceneHierarchy.GetContext()->CreateSpotLight();
 							m_SceneHierarchy.SetSelectedEntity(entity);
 						}
-
+						
 						ImGui::EndMenu();
 					}
 					if (ImGui::BeginMenu("MESH"))

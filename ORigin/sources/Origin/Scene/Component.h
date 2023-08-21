@@ -184,7 +184,6 @@ namespace origin
 
 	struct SpotLightComponent
 	{
-		glm::vec3 Direction = glm::vec3(0.0f, -1.0f, 0.0f);
 		glm::vec3 Color = glm::vec3(1.0);
 		float Ambient = 0.1f;
 		float InnerCone = 1.0f;
@@ -195,6 +194,7 @@ namespace origin
 	struct DirectionalLightComponent
 	{
 		glm::vec3 Direction = glm::vec3(0.0f);
+		glm::vec3 Color = glm::vec3(1.0f);
 		float Ambient = 0.1f;
 		float Diffuse = 0.5f;
 		float Specular = 0.5f;

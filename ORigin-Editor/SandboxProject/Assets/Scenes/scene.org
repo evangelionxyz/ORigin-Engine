@@ -1,54 +1,175 @@
 Scene: scene.org
 Entities:
-  - Entity: 8750608957913231971
+  - Entity: 8555162328588728025
     TagComponent:
       Tag: Spot Light
     TransformComponent:
-      Translation: [0, 10, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1.0000006, 1]
+      Translation: [-0.557579875, 7.94674492, 17.9559002]
+      Rotation: [-1.57079637, 0, 0]
+      Scale: [1, 0.99995029, 0.99995029]
     SpotLightComponent:
-      Color: [0, 0.126582384, 1]
-      Ambient: 0.100000001
-      Specular: 1
-      OuterCone: 0.5
-      InnerCone: 1
-  - Entity: 9517417316748885895
+      Color: [0.632911205, 0, 1]
+      Ambient: 0
+      Specular: 0.460000008
+      OuterCone: 0.839999974
+      InnerCone: 0.959999979
+  - Entity: 7709600702242141259
     TagComponent:
-      Tag: Red Cube 2
+      Tag: Spot Light
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [-6.77414322, 5.34926128, 6.60807323]
+      Rotation: [-1.57079637, 0, 0]
+      Scale: [1, 0.999962866, 0.999962866]
+    SpotLightComponent:
+      Color: [1, 0.379746795, 0]
+      Ambient: 0
+      Specular: 1
+      OuterCone: 0.870000005
+      InnerCone: 1.13999999
+  - Entity: 2537080087409360067
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-6.78324127, 3.12557173, 12.6671896]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [1.22992599, 1.23000002, 1.22992599]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures/checkerboard.jpg
+      TillingFactor: 1
+  - Entity: 389463785250392796
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [-6.76337385, 1.31129324, 11.0900097]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [0.38187021, 0.381900042, 0.38187021]
+    TextComponent:
+      TextString: Software Engineer
+      FontFilepath: ../../Resources/Fonts/segoeui.ttf
+      Color: [0, 1, 0.658227921, 1]
+      Kerning: 0
+      LineSpacing: 0
+  - Entity: 10529251631033258467
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [-6.76337385, 1.73641753, 11.0900097]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [0.669956684, 0.670000017, 0.669956684]
+    TextComponent:
+      TextString: Evangelion Manuhutu
+      FontFilepath: ../../Resources/Fonts/segoeui.ttf
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+  - Entity: 15362443795989298186
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-6.78324175, 3.12557173, 9.71367359]
+      Rotation: [0, 1.57079637, 0]
+      Scale: [3.23655319, 1.23000002, 1.22993231]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.734177172, 0, 1]
+      TexturePath: Textures/origin-white.png
+      TillingFactor: 1
+  - Entity: 14734913124836330825
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-6.78324175, 3.12557173, 6.99059677]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [1.22994387, 1.23000002, 1.22994387]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures/checkerboard.jpg
+      TillingFactor: 1
+  - Entity: 9424006960501587687
+    TagComponent:
+      Tag: Spot Light
+    TransformComponent:
+      Translation: [-6.2667098, 5.40455484, 12.9030104]
+      Rotation: [-1.57079637, 0, 0]
+      Scale: [1, 0.999967396, 0.999967396]
+    SpotLightComponent:
+      Color: [1, 0.860759497, 0]
+      Ambient: 0.0399999991
+      Specular: 1
+      OuterCone: 0.839999974
+      InnerCone: 0.959999979
+  - Entity: 17860525578363853999
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [0, 0, 2.33927226]
       Rotation: [0, 0, 0]
-      Scale: [0.999999881, 0.999999881, 0.999999881]
+      Scale: [15, 0.379000008, 20]
     StaticMeshComponent:
       ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
-      Color: [0, 1, 0.481012583, 1]
-      Shininess: 32
-  - Entity: 108747309007881784
+      Color: [0.421940923, 0.421940923, 0.421940923, 1]
+      Shininess: 256
+  - Entity: 16211457867216592736
     TagComponent:
-      Tag: Plane
+      Tag: Directional Light
     TransformComponent:
-      Translation: [0, -3, 0]
-      Rotation: [0, 0, 0]
-      Scale: [99.9999924, 0.999999881, 100.000038]
+      Translation: [0, 0, 0]
+      Rotation: [-0.244346097, 2.21656823, 0.942477763]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Ambient: 0.519999981
+      Diffuse: 0.310000002
+      Specular: 1
+  - Entity: 18049743204963642200
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-7.06514263, 2.42124033, 9.97794342]
+      Rotation: [-3.14159203, 0, 0]
+      Scale: [0.279181123, 1.85485899, 4.21451807]
     StaticMeshComponent:
-      ModelPath: Models/plane.gltf
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.362869203, 1, 0.669337153, 1]
+      Shininess: 4
+  - Entity: 11130045106081062695
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-2.36759424, 3.94058037, 17.1235771]
+      Rotation: [0, -2.09439516, 0]
+      Scale: [0.279181093, 3.68135142, 4.21451807]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.189873397, 0.292421162, 1, 1]
+      Shininess: 4
+  - Entity: 3144853846743053361
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [-2.11153793, 4.17472076, 16.9397182]
+      Rotation: [-3.14159226, 0.523598969, -3.14159226]
+      Scale: [7.15269852, 2.7183001, 2.71810246]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Textures/origin-white.png
+      TillingFactor: 1
+  - Entity: 8184239326583468909
+    TagComponent:
+      Tag: Backpack
+    TransformComponent:
+      Translation: [-6.01377583, 1.34278166, 12.5753746]
+      Rotation: [2.92958355, 1.15191579, -3.14159155]
+      Scale: [0.608291507, 0.608300328, 0.608295858]
+    StaticMeshComponent:
+      ModelPath: Models/backpack/backpack.obj
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
       Color: [1, 1, 1, 1]
       Shininess: 256
-  - Entity: 16981391991617349720
-    TagComponent:
-      Tag: Red Cube 1
-    TransformComponent:
-      Translation: [5, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    StaticMeshComponent:
-      ModelPath: Models/cube.gltf
-      ShaderPath: Resources/Shaders/Mesh.glsl
-      MaterialName: MeshMaterial
-      Color: [1, 0.312236309, 0.312236309, 1]
-      Shininess: 32

@@ -83,8 +83,19 @@ struct SpotLight
 uniform SpotLight spotLights[MAX_LIGHTS];
 uniform int spotLightCount;
 
-vec3 CalcPointLights(vec3 normal, vec3 viewDir, vec3 diffuseTexture, vec3 specularTexture);
-vec3 CalcSpotLights(vec3 normal, vec3 viewDir, vec3 diffuseTexture, vec3 specularTexture);
+struct DirLight
+{
+    vec3 Direction;
+    vec3 Color;
+    float Ambient;
+    float Diffuse;
+    float Specular;
+};
+uniform DirLight dirLight;
+
+vec3 CalcPointLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture);
+vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture);
+vec3 CalcDirLight(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture);
 
 void main()
 {
@@ -106,6 +117,7 @@ void main()
 
     lights += CalcPointLights(normal, viewDirection, diffuseTex, specularTex);
     lights += CalcSpotLights(normal, viewDirection, diffuseTex, specularTex);
+    lights += CalcDirLight(normal, viewDirection, diffuseTex, specularTex);
 
     oColor = vec4(lights, 1.0) * uColor;
 }
@@ -145,7 +157,7 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
     {
         vec3 lightDirection = normalize(spotLights[i].Position - vertex.Position);
 
-        ambient += spotLights[i].Ambient * diffuseTexture;
+        ambient += spotLights[i].Ambient * spotLights[i].Color * diffuseTexture;
 
         float diff = max(dot(normal, lightDirection), 0.0);
         diffuse += diff * spotLights[i].Color * diffuseTexture;
@@ -159,4 +171,20 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
         intensity += falloff;
     }
     return (diffuse + ambient + specular) * intensity;
+}
+
+vec3 CalcDirLight(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
+{
+    vec3 reflectionDirection = reflect(viewDirection, normal);
+
+    vec3 ambient = dirLight.Ambient * dirLight.Color * diffuseTexture;
+
+    vec3 lightDirection = normalize(dirLight.Direction);
+    float diff = max(dot(normal, lightDirection), 0.0);
+    vec3 diffuse = diff * dirLight.Diffuse * dirLight.Color * diffuseTexture;
+
+    float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
+    vec3 specular = spec * dirLight.Specular * specularTexture;
+
+    return diffuse + ambient + specular;
 }

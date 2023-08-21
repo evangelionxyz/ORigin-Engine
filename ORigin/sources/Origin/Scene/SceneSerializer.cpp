@@ -269,12 +269,15 @@ namespace origin {
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
 
-			std::filesystem::path modelFilepath = std::filesystem::relative(sMesh.Model->GetFilepath(), Project::GetAssetDirectory());
-			out << YAML::Key << "ModelPath" << YAML::Value << modelFilepath.generic_string();
-			out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.Material->GetShaderFilepath();
-			out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
-			out << YAML::Key << "Color" << YAML::Value << sMesh.Material->Color;
-			out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
+			if (sMesh.Model)
+			{
+				std::filesystem::path modelFilepath = std::filesystem::relative(sMesh.Model->GetFilepath(), Project::GetAssetDirectory());
+				out << YAML::Key << "ModelPath" << YAML::Value << modelFilepath.generic_string();
+				out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.Material->GetShaderFilepath();
+				out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
+				out << YAML::Key << "Color" << YAML::Value << sMesh.Material->Color;
+				out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
+			}
 
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
@@ -351,6 +354,7 @@ namespace origin {
 			out << YAML::BeginMap; // DirectionalLightComponent
 
 			const auto& lc = entity.GetComponent<DirectionalLightComponent>();
+			out << YAML::Key << "Color" << YAML::Value << lc.Color;
 			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
 			out << YAML::Key << "Diffuse" << YAML::Value << lc.Diffuse;
 			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
@@ -689,6 +693,7 @@ namespace origin {
 				if (YAML::Node directionalLightComponent = entity["DirectionalLightComponent"])
 				{
 					auto& lc = deserializedEntity.AddComponent<DirectionalLightComponent>();
+					lc.Color = directionalLightComponent["Color"].as<glm::vec3>();
 					lc.Ambient = directionalLightComponent["Ambient"].as<float>();
 					lc.Diffuse = directionalLightComponent["Diffuse"].as<float>();
 					lc.Specular = directionalLightComponent["Specular"].as<float>();

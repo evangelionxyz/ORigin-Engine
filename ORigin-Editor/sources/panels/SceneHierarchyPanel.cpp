@@ -89,7 +89,7 @@ namespace origin {
 				{
 					if (ImGui::BeginMenu("CREATE"))
 					{
-						if (ImGui::MenuItem("EMPTY"))
+						if (ImGui::MenuItem("Empty"))
 							m_Context->CreateEntity("Empty");
 
 						if (ImGui::MenuItem("MAIN CAMERA"))
@@ -112,21 +112,28 @@ namespace origin {
 							ImGui::EndMenu();
 						}
 
-						if (ImGui::BeginMenu("LIGHT"))
+						if (ImGui::BeginMenu("Lights"))
 						{
+							if (ImGui::MenuItem("Directional Light"))
+								m_Context->CreateDirectionalLight();
+
 							if (ImGui::MenuItem("Point Light"))
-								m_Context->CreatePointlight("Point Light");
+								m_Context->CreatePointlight();
+							
 							if (ImGui::MenuItem("Spot Light"))
-								m_Context->CreateSpotLight("Spot Light");
+								m_Context->CreateSpotLight();
+							
 							ImGui::EndMenu();
 						}
-						if (ImGui::BeginMenu("MESH"))
+
+						if (ImGui::BeginMenu("Mesh"))
 						{
 							if (ImGui::MenuItem("Empty Mesh"))
 								m_Context->CreateMesh("Empty Mesh");
 
 							ImGui::EndMenu();
 						}
+
 						ImGui::EndMenu();
 					}
 					ImGui::EndPopup();
@@ -708,7 +715,7 @@ namespace origin {
 							component.Material = Material::Create("MeshMaterial");
 							component.Material->LoadShader(matShader);
 
-							component.Model = Model::Create(modelPath.string(), component.Material);
+							component.Model = Model::Create(modelPath.generic_string(), component.Material);
 						}
 					}
 				}
@@ -867,6 +874,7 @@ namespace origin {
 
 		DrawComponent<DirectionalLightComponent>("DIRECTIONAL LIGHT", entity, [](auto& component)
 			{
+				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
 				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
 				DrawVecControl("Diffuse", &component.Diffuse, 0.01f, 0.0f);
 				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);

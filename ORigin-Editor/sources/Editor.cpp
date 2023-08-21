@@ -180,7 +180,7 @@ namespace origin {
 
       if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
       {
-          auto entity = m_EditorScene->DuplicateEntity(selectedEntity);
+          Entity entity = m_EditorScene->DuplicateEntity(selectedEntity);
           m_SceneHierarchy.SetSelectedEntity(entity);
       }
   }
