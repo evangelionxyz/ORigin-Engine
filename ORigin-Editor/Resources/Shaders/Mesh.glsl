@@ -149,15 +149,15 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
     vec3 ambient = vec3(0.0);
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
-    float intensity = 0.0;
+    float totalIntensity = 0.0;
 
     vec3 reflectionDirection = reflect(viewDirection, normal);
 
-    for (int i = 0; i <= spotLightCount; i++)
+    for (int i = 0; i <= spotLightCount; i++)  // Change to "<" instead of "<="
     {
         vec3 lightDirection = normalize(spotLights[i].Position - vertex.Position);
 
-        ambient += spotLights[i].Ambient * spotLights[i].Color * diffuseTexture;
+        ambient += spotLights[i].Ambient * spotLights[i].Color;
 
         float diff = max(dot(normal, lightDirection), 0.0);
         diffuse += diff * spotLights[i].Color * diffuseTexture;
@@ -166,25 +166,33 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
         specular += spec * spotLights[i].Specular * specularTexture * spotLights[i].Color;
 
         float angle = dot(lightDirection, spotLights[i].Direction);
-        float falloff = max((angle - spotLights[i].OuterCone) / (spotLights[i].InnerCone - spotLights[i].OuterCone), 0.0);
+        float falloff = smoothstep(spotLights[i].OuterCone, spotLights[i].InnerCone, angle);
 
-        intensity += falloff;
+        totalIntensity += falloff;
     }
-    return (diffuse + ambient + specular) * intensity;
+
+    totalIntensity = clamp(totalIntensity, 0.0, 1.0);
+    return (diffuse + ambient + specular) * totalIntensity;
 }
 
 vec3 CalcDirLight(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
 {
-    vec3 reflectionDirection = reflect(viewDirection, normal);
+    vec3 lightDirection = normalize(dirLight.Direction);
+    vec3 reflectDirection = reflect(-lightDirection, normal);
 
+    // Ambient
     vec3 ambient = dirLight.Ambient * dirLight.Color * diffuseTexture;
 
-    vec3 lightDirection = normalize(dirLight.Direction);
-    float diff = max(dot(normal, lightDirection), 0.0);
-    vec3 diffuse = diff * dirLight.Diffuse * dirLight.Color * diffuseTexture;
+    // Diffuse
+    float diffuseContrib = max(dot(lightDirection, normal), 0.0);
+    vec3 diffuse = diffuseContrib * dirLight.Diffuse * dirLight.Color * diffuseTexture;
 
-    float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
-    vec3 specular = spec * dirLight.Specular * specularTexture;
+    // Specular
+    float specularContrib = pow(max(dot(viewDirection, reflectDirection), 0.0), material.Shininess);
+    vec3 specular = dirLight.Specular * specularContrib * dirLight.Color * specularTexture;
 
-    return diffuse + ambient + specular;
+    //float shadow = shadowCalculation(vertex.LightSpacePosition);
+    //return ambient + (1.0 - shadow) * (diffuse + specular);
+
+    return ambient + diffuse + specular;
 }

@@ -4,35 +4,35 @@ Entities:
     TagComponent:
       Tag: Spot Light
     TransformComponent:
-      Translation: [-0.557579875, 7.94674492, 17.9559002]
+      Translation: [-0.576012552, 8.44081497, 10.3433084]
       Rotation: [-1.57079637, 0, 0]
-      Scale: [1, 0.99995029, 0.99995029]
+      Scale: [1, 0.999933064, 0.999933064]
     SpotLightComponent:
       Color: [0.632911205, 0, 1]
       Ambient: 0
-      Specular: 0.460000008
+      Specular: 0
       OuterCone: 0.839999974
       InnerCone: 0.959999979
   - Entity: 7709600702242141259
     TagComponent:
       Tag: Spot Light
     TransformComponent:
-      Translation: [-6.77414322, 5.34926128, 6.60807323]
+      Translation: [-6.77426624, 5.34923077, -1.93397009]
       Rotation: [-1.57079637, 0, 0]
-      Scale: [1, 0.999962866, 0.999962866]
+      Scale: [1, 0.999959052, 0.999959052]
     SpotLightComponent:
       Color: [1, 0.379746795, 0]
       Ambient: 0
-      Specular: 1
+      Specular: 0
       OuterCone: 0.870000005
       InnerCone: 1.13999999
   - Entity: 2537080087409360067
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [-6.78324127, 3.12557173, 12.6671896]
+      Translation: [-6.78318071, 3.12560272, 5.16706753]
       Rotation: [0, -1.57079637, 0]
-      Scale: [1.22992599, 1.23000002, 1.22992599]
+      Scale: [1.22991884, 1.23000002, 1.22991884]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: Textures/checkerboard.jpg
@@ -41,22 +41,22 @@ Entities:
     TagComponent:
       Tag: Empty
     TransformComponent:
-      Translation: [-6.76337385, 1.31129324, 11.0900097]
+      Translation: [-6.76337337, 1.31129324, 2.09000969]
       Rotation: [0, 1.57079637, 0]
-      Scale: [0.38187021, 0.381900042, 0.38187021]
+      Scale: [0.381868482, 0.381900042, 0.381868482]
     TextComponent:
       TextString: Software Engineer
       FontFilepath: ../../Resources/Fonts/segoeui.ttf
-      Color: [0, 1, 0.658227921, 1]
+      Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 0
   - Entity: 10529251631033258467
     TagComponent:
       Tag: Empty
     TransformComponent:
-      Translation: [-6.76337385, 1.73641753, 11.0900097]
+      Translation: [-6.76337337, 1.73641753, 2.09000969]
       Rotation: [0, 1.57079637, 0]
-      Scale: [0.669956684, 0.670000017, 0.669956684]
+      Scale: [0.669953942, 0.670000017, 0.669953942]
     TextComponent:
       TextString: Evangelion Manuhutu
       FontFilepath: ../../Resources/Fonts/segoeui.ttf
@@ -67,9 +67,9 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [-6.78324175, 3.12557173, 9.71367359]
+      Translation: [-6.78324127, 3.12557173, 1.1803211]
       Rotation: [0, 1.57079637, 0]
-      Scale: [3.23655319, 1.23000002, 1.22993231]
+      Scale: [4.01323605, 1.38752675, 1.52508831]
     SpriteRenderer2DComponent:
       Color: [1, 0.734177172, 0, 1]
       TexturePath: Textures/origin-white.png
@@ -78,9 +78,9 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [-6.78324175, 3.12557173, 6.99059677]
+      Translation: [-6.78324223, 3.12557173, -2.70905447]
       Rotation: [0, -1.57079637, 0]
-      Scale: [1.22994387, 1.23000002, 1.22994387]
+      Scale: [1.22990918, 1.23000002, 1.22990918]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       TexturePath: Textures/checkerboard.jpg
@@ -89,13 +89,13 @@ Entities:
     TagComponent:
       Tag: Spot Light
     TransformComponent:
-      Translation: [-6.2667098, 5.40455484, 12.9030104]
+      Translation: [-6.26689291, 5.40437174, 4.38376808]
       Rotation: [-1.57079637, 0, 0]
-      Scale: [1, 0.999967396, 0.999967396]
+      Scale: [1, 0.999964237, 0.999964237]
     SpotLightComponent:
       Color: [1, 0.860759497, 0]
-      Ambient: 0.0399999991
-      Specular: 1
+      Ambient: 0
+      Specular: 0
       OuterCone: 0.839999974
       InnerCone: 0.959999979
   - Entity: 17860525578363853999
@@ -109,51 +109,51 @@ Entities:
       ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
-      Color: [0.421940923, 0.421940923, 0.421940923, 1]
-      Shininess: 256
+      Color: [1, 0.972119868, 0.924050629, 1]
+      Shininess: 129
   - Entity: 16211457867216592736
     TagComponent:
       Tag: Directional Light
     TransformComponent:
       Translation: [0, 0, 0]
-      Rotation: [-0.244346097, 2.21656823, 0.942477763]
+      Rotation: [-1.91986215, 2.21656823, 0.942477763]
       Scale: [1, 1, 1]
     DirectionalLightComponent:
       Color: [1, 1, 1]
-      Ambient: 0.519999981
-      Diffuse: 0.310000002
-      Specular: 1
+      Ambient: 0.479999989
+      Diffuse: 0.460000008
+      Specular: 0.300000012
   - Entity: 18049743204963642200
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [-7.06514263, 2.42124033, 9.97794342]
+      Translation: [-7.06514263, 2.42124557, 1.47794342]
       Rotation: [-3.14159203, 0, 0]
-      Scale: [0.279181123, 1.85485899, 4.21451807]
+      Scale: [0.279181123, 1.85485899, 5.15333605]
     StaticMeshComponent:
       ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
-      Color: [0.362869203, 1, 0.669337153, 1]
-      Shininess: 4
+      Color: [1, 0, 0, 1]
+      Shininess: 256
   - Entity: 11130045106081062695
     TagComponent:
       Tag: Wall
     TransformComponent:
-      Translation: [-2.36759424, 3.94058037, 17.1235771]
-      Rotation: [0, -2.09439516, 0]
-      Scale: [0.279181093, 3.68135142, 4.21451807]
+      Translation: [-3.06995583, 3.94057798, 9.41010571]
+      Rotation: [-3.14159226, -1.04719758, -3.14159226]
+      Scale: [0.279181093, 3.68135142, 4.21451855]
     StaticMeshComponent:
       ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
       Color: [0.189873397, 0.292421162, 1, 1]
-      Shininess: 4
+      Shininess: 256
   - Entity: 3144853846743053361
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [-2.11153793, 4.17472076, 16.9397182]
+      Translation: [-2.92783809, 4.17624521, 9.15587997]
       Rotation: [-3.14159226, 0.523598969, -3.14159226]
       Scale: [7.15269852, 2.7183001, 2.71810246]
     SpriteRenderer2DComponent:
@@ -164,12 +164,29 @@ Entities:
     TagComponent:
       Tag: Backpack
     TransformComponent:
-      Translation: [-6.01377583, 1.34278166, 12.5753746]
-      Rotation: [2.92958355, 1.15191579, -3.14159155]
-      Scale: [0.608291507, 0.608300328, 0.608295858]
+      Translation: [-5.42063141, 1.42848575, 5.054317]
+      Rotation: [2.73405099, 1.35314512, 2.93682623]
+      Scale: [0.462301672, 0.46230799, 0.462305039]
     StaticMeshComponent:
       ModelPath: Models/backpack/backpack.obj
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
       Color: [1, 1, 1, 1]
       Shininess: 256
+  - Entity: 1582807562134502319
+    TagComponent:
+      Tag: Monkey
+    TransformComponent:
+      Translation: [-5.88333988, 1.20442486, 3.12098503]
+      Rotation: [-3.14159226, 1.57030797, -3.14159226]
+      Scale: [0.639999926, 0.639999986, 0.639999926]
+    StaticMeshComponent:
+      ModelPath: Models/monkey.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.607594967, 1, 0, 1]
+      Shininess: 32
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []
