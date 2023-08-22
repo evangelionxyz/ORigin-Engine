@@ -731,21 +731,6 @@ namespace origin {
 
 				ImGui::SameLine();
 
-				// Open Mesh
-				/*
-				if (ImGui::Button("OPEN", ImVec2(85.0f, 25.0f)))
-				{
-					std::filesystem::path path = FileDialogs::OpenFile("Mesh (*.gltf)\0*.gltf\0");
-					auto modelPath = Project::GetAssetFileSystemPath(path);
-
-					if (!modelPath.string().empty())
-					{
-						component.Material.LoadShader("Resources/Shaders/Mesh2.glsl", false);
-						component.Model = Model::Create(modelPath.generic_string(), component.Material);
-						component.ModelPath = std::filesystem::relative(modelPath, Project::GetAssetDirectory()).generic_string();
-					}
-				}*/
-
 				if (component.Model)
 				{
 					if (ImGui::Button("Refresh Shader", ImVec2(buttonSize[0] + 3.0f, buttonSize[1])))
@@ -756,6 +741,41 @@ namespace origin {
 
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
 					ImGui::DragFloat("Shininess", &component.Material->Shininess, 1.0f, 0.0f, 256.0f);
+
+					// Drop Texture
+					if (component.Material->HasTexture == false)
+					{
+						if (!component.Material->Texture)
+							ImGui::Button("DROP TEXTURE", ImVec2(80.0f, 30.0f));
+						else ImGui::ImageButton((ImTextureID)component.Material->Texture->GetRendererID(), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+
+						if (ImGui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								const wchar_t* path = (const wchar_t*)payload->Data;
+								std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+									component.Material->LoadTextureFromFile(texturePath.generic_string());
+							}
+						}
+
+						if (component.Material->Texture)
+						{
+							ImGui::SameLine();
+							if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
+							{
+								component.Material->Texture->Delete();
+								component.Material->Texture = {};
+								return;
+							}
+
+							DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f);
+
+							ImGui::Text("Path: %s", component.Material->Texture->GetFilepath().c_str());
+						}
+					}
+					
 				}
 
 			});
@@ -772,7 +792,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path fontPath = std::filesystem::relative(Project::GetAssetFileSystemPath(path), Project::GetAssetDirectory());
+						std::filesystem::path fontPath = Project::GetAssetFileSystemPath(path);
 						if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
 						{
 							if(component.FontAsset) component.FontAsset.reset();
@@ -783,8 +803,9 @@ namespace origin {
 				
 				ImGui::InputTextMultiline("Text String", &component.TextString);
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-				ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
-				ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
+
+				DrawVecControl("Kerning", &component.Kerning, 0.5f);
+				DrawVecControl("Line Spacing", &component.LineSpacing, 1.0f);
 			});
 
 		DrawComponent<Particle2DComponent>("PARTICLE 2D", entity, [](auto& component)
@@ -883,10 +904,16 @@ namespace origin {
 		DrawComponent<SpotLightComponent>("SPOT LIGHT", entity, [](auto& component)
 			{
 				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
-				ImGui::DragFloat("Ambient", &component.Ambient, 0.01f, 0.0f, 1.0f);
-				ImGui::DragFloat("Specular", &component.Specular, 0.01f, 0.0f, 1.0f);
-				ImGui::DragFloat("Inner Cone", &component.InnerCone, 0.01f);
-				ImGui::DragFloat("Outer cone", &component.OuterCone, 0.01f);
+
+				float angle = glm::degrees(component.InnerConeAngle);
+				ImGui::DragFloat("Inner Cone", &angle);
+				component.InnerConeAngle = glm::radians(angle);
+
+				angle = glm::degrees(component.OuterConeAngle);
+				ImGui::DragFloat("Outer Cone", &angle);
+				component.OuterConeAngle = glm::radians(angle);
+
+				ImGui::DragFloat("Exponent", &component.Exponent, 0.01f, 0.0f, 1.0f);
 			});
 
 		DrawComponent<PointLightComponent>("POINT LIGHT", entity, [](auto& component)

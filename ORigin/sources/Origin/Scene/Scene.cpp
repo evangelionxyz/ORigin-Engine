@@ -167,8 +167,7 @@ namespace origin
         tag.Tag = "Spot Light";
 
         UUID& uuid = entity.GetComponent<IDComponent>().ID;
-        entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
-        entity.GetComponent<TransformComponent>().Rotation.x = glm::radians(-90.0f);
+        entity.GetComponent<TransformComponent>().Translation.y = 3.0f;
 
         m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -817,10 +816,9 @@ namespace origin
 							mesh.Material->SetVector(lightUniformName + "Position", tc.Translation);
               mesh.Material->SetVector(lightUniformName + "Direction", -tc.GetForward());
 							mesh.Material->SetVector(lightUniformName + "Color", lc.Color);
-							mesh.Material->SetFloat(lightUniformName + "Ambient", lc.Ambient);
-							mesh.Material->SetFloat(lightUniformName + "Specular", lc.Specular);
-							mesh.Material->SetFloat(lightUniformName + "InnerCone", lc.InnerCone);
-							mesh.Material->SetFloat(lightUniformName + "OuterCone", lc.OuterCone);
+							mesh.Material->SetFloat(lightUniformName + "InnerConeAngle", lc.InnerConeAngle);
+							mesh.Material->SetFloat(lightUniformName + "OuterConeAngle", lc.OuterConeAngle);
+							mesh.Material->SetFloat(lightUniformName + "Exponent", lc.Exponent);
 
 							spotLightCount++;
 						}

@@ -277,6 +277,18 @@ namespace origin {
 				out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
 				out << YAML::Key << "Color" << YAML::Value << sMesh.Material->Color;
 				out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
+
+				std::filesystem::path texturePath = "";
+				glm::vec2 tilingFactor = glm::vec2(1.0f);
+
+				if (sMesh.Material->Texture)
+				{
+					texturePath = std::filesystem::relative(sMesh.Material->Texture->GetFilepath(), Project::GetAssetDirectory());
+					tilingFactor = sMesh.Material->TilingFactor;
+				}
+
+				out << YAML::Key << "TextureFilepath" << YAML::Value << texturePath.generic_string();
+				out << YAML::Key << "TilingFactor" << YAML::Value << tilingFactor;
 			}
 
 			out << YAML::EndMap; // !StaticMeshComponent
@@ -369,10 +381,9 @@ namespace origin {
 
 			const auto& lc = entity.GetComponent<SpotLightComponent>();
 			out << YAML::Key << "Color" << YAML::Value << lc.Color;
-			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
-			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
-			out << YAML::Key << "OuterCone" << YAML::Value << lc.OuterCone;
-			out << YAML::Key << "InnerCone" << YAML::Value << lc.InnerCone;
+			out << YAML::Key << "InnerConeAngle" << YAML::Value << lc.InnerConeAngle;
+			out << YAML::Key << "OuterConeAngle" << YAML::Value << lc.OuterConeAngle;
+			out << YAML::Key << "Exponent" << YAML::Value << lc.Exponent;
 
 			out << YAML::EndMap; // !SpotLightComponent
 		}
@@ -703,10 +714,9 @@ namespace origin {
 				{
 					auto& lc = deserializedEntity.AddComponent<SpotLightComponent>();
 					lc.Color = spotLightComponent["Color"].as<glm::vec3>();
-					lc.Ambient = spotLightComponent["Ambient"].as<float>();
-					lc.Specular = spotLightComponent["Specular"].as<float>();
-					lc.OuterCone = spotLightComponent["OuterCone"].as<float>();
-					lc.InnerCone = spotLightComponent["InnerCone"].as<float>();
+					lc.InnerConeAngle = spotLightComponent["InnerConeAngle"].as<float>();
+					lc.OuterConeAngle = spotLightComponent["OuterConeAngle"].as<float>();
+					lc.Exponent = spotLightComponent["Exponent"].as<float>();
 				}
 
 				if (YAML::Node pointLightComponent = entity["PointLightComponent"])
@@ -742,6 +752,7 @@ namespace origin {
 					{
 						auto& modelPath = Project::GetAssetFileSystemPath(modelFilepath);
 
+						// Prepare The Materials
 						std::shared_ptr<Shader> shader = Shader::Create(shaderFilepath);
 
 						sMesh.Material = Material::Create(staticMeshComponent["MaterialName"].as<std::string>());
@@ -749,6 +760,19 @@ namespace origin {
 						sMesh.Material->Color = staticMeshComponent["Color"].as<glm::vec4>();
 						sMesh.Material->Shininess = staticMeshComponent["Shininess"].as<float>();
 
+						std::string& textureFilepath = staticMeshComponent["TextureFilepath"].as<std::string>();
+						if (!textureFilepath.empty())
+						{
+							std::string& path = Project::GetAssetFileSystemPath(textureFilepath).generic_string();
+							sMesh.Material->LoadTextureFromFile(path);
+							sMesh.Material->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
+						}
+						else
+						{
+							sMesh.Material->TilingFactor = glm::vec2(1.0f);
+						}
+
+						// Create The Model After
 						sMesh.Model = Model::Create(modelPath.string(), sMesh.Material);
 					}
 				}
@@ -756,7 +780,7 @@ namespace origin {
 				if (YAML::Node textComponent = entity["TextComponent"])
 				{
 					auto& text = deserializedEntity.AddComponent<TextComponent>();
-					const std::string filepath = textComponent["FontFilepath"].as<std::string>();
+					std::string filepath = textComponent["FontFilepath"].as<std::string>();
 					
 					if(filepath.empty() || filepath == Font::GetDefault()->GetFilepath())
 						text.FontAsset = Font::GetDefault();

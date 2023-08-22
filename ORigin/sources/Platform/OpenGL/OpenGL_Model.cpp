@@ -46,19 +46,33 @@ namespace origin
 		// Applying Main Shader Uniforms
 		m_Material->EnableShader();
 
+		m_Material->SetBool("uHasOneTexture", m_Material->Texture != nullptr);
+		
+		if (m_Material->Texture)
+		{
+			m_Material->Texture->Bind(0);
+			m_Material->SetInt("material.Texture", m_Material->Texture->GetIndex());
+			m_Material->SetVector("material.TilingFactor", m_Material->TilingFactor);
+		}
+
 		m_Material->SetMatrix("uModel", modelTransform);
 		m_Material->SetMatrix("uView", camera.GetViewMatrix());
 		m_Material->SetMatrix("uProjection", camera.GetProjection());
 		m_Material->SetVector("uCameraPosition", camera.GetPosition());
 
 		m_Material->SetVector("uColor", m_Material->Color);
-		m_Material->SetBool("uHasTexture", m_Material->HasTexture);
+		m_Material->SetBool("uHasTextures", m_Material->HasTexture);
 		m_Material->SetFloat("material.Shininess", m_Material->Shininess);
 
 		m_Material->SetInt("uEntityID", entityID);
 
 		// Draw Mesh
 		DrawMesh();
+
+		if (m_Material->Texture)
+		{
+			m_Material->Texture->Unbind();
+		}
 
 		m_Material->DisableShader();
 	}
@@ -108,10 +122,6 @@ namespace origin
 					mesh->mTextureCoords[0][i].x,
 					mesh->mTextureCoords[0][i].y
 				);
-			}
-			else
-			{
-				vertex.TexCoord = glm::vec2(0.0f);
 			}
 
 			vertices.push_back(vertex);
