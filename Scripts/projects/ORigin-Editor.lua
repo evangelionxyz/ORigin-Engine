@@ -57,6 +57,12 @@ defines {
 
 filter "system:windows"
     systemversion "latest"
+    postbuildcommands {
+
+    -- Copy 3rd Party Library
+        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
+        "{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
+    }
 
 filter "configurations:Debug"
     defines {
@@ -76,36 +82,24 @@ filter "configurations:Debug"
         --"{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
         --"{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
         --"{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-
-        -- Copy 3rd Party Library
-        --"{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-        --"{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
     }
 
 filter "configurations:Release"
     defines "OGN_RELEASE"
     runtime "Release"
     optimize "On"
-     postbuildcommands {
+    postbuildcommands {
         "{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
         "{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
         "{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-
-        -- Copy 3rd Party Library
-        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-        "{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
     }
 
 filter "configurations:Dist"
     defines "OGN_DIST"
     runtime "Release"
     optimize "On"
-     postbuildcommands {
+    postbuildcommands {
         "{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
         "{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
         "{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-
-        -- Copy 3rd Party Library
-        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-        "{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
     }

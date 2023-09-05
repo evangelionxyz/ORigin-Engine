@@ -51,7 +51,8 @@ filter "system:windows"
     systemversion "latest"
     postbuildcommands {
         -- Copy 3rd Party Library
-        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
+        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/Sandbox",
+        "{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/Sandbox"
     }
 
 filter "configurations:Debug"

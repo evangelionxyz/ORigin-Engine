@@ -187,7 +187,7 @@ namespace origin
 		glm::vec3 Color = glm::vec3(1.0);
 		float InnerConeAngle = 1.0f;
 		float OuterConeAngle = 0.5f;
-		float Exponent = 0.5f;
+		float Exponent = 1.0f;
 	};
 
 	struct DirectionalLightComponent
@@ -307,7 +307,7 @@ namespace origin
 
 	using AllComponents =
 		ComponentGroup<TransformComponent, CameraComponent, AnimationComponent,
-		AudioComponent, AudioListenerComponent, PointLightComponent, SpotLightComponent,
+		AudioComponent, AudioListenerComponent, PointLightComponent, SpotLightComponent, DirectionalLightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, Particle2DComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
