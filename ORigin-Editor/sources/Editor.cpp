@@ -43,7 +43,7 @@ namespace origin {
     {
         FramebufferTextureFormat::RGBA8,
         FramebufferTextureFormat::RED_INTEGER,
-        FramebufferTextureFormat::Depth
+        FramebufferTextureFormat::DEPTH
     };
 
     mainFramebufferSpec.Width = 1280;
@@ -57,7 +57,7 @@ namespace origin {
     gameFramebufferSpec.Attachments =
     {
         FramebufferTextureFormat::RGBA8,
-        FramebufferTextureFormat::Depth
+        FramebufferTextureFormat::DEPTH
     };
 
     gameFramebufferSpec.Width = 1280;
@@ -122,9 +122,13 @@ namespace origin {
                                           static_cast<uint32_t>(m_SceneViewportSize.y));
       }
 
+      m_ActiveScene->OnShadowRender();
+
       m_Framebuffer->Bind();
+
       RenderCommand::Clear();
       RenderCommand::ClearColor(clearColor);
+      
       m_Framebuffer->ClearAttachment(1, -1);
 
       if (enableSkybox)
@@ -190,6 +194,18 @@ namespace origin {
       m_Dockspace.Begin();
       MenuBar();
       SceneViewport();
+
+      ImGui::Begin("Window", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+			ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
+			auto texture = m_ActiveScene->shadowFramebuffer->GetDepthAttachmentRendererID();
+
+      ImGui::Text("Shadow Debugging");
+      ImGui::DragFloat("NearFar", &m_ActiveScene->NearFar, 0.1f);
+      ImGui::DragFloat("Size", &m_ActiveScene->ShadowSize);
+			ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(256.0f, 256.0f), ImVec2(0, 1), ImVec2(1, 0));
+
+      ImGui::End();
+
       m_SceneHierarchy.OnImGuiRender();
       m_ContentBrowser->OnImGuiRender();
       GUIRender();
@@ -357,7 +373,7 @@ namespace origin {
 
       OpenScene(startScenePath);
       ScriptEngine::Init();
-            
+
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
     }
   }
@@ -371,7 +387,7 @@ namespace origin {
       OpenScene(startScenePath);
       m_ProjectPath = Project::GetProjectDirectory();
       ScriptEngine::Init();
-            
+
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
     }
   }
@@ -387,6 +403,7 @@ namespace origin {
       OnSceneStop();
 
     m_EditorScene = std::make_shared<Scene>();
+
     m_SceneHierarchy.SetContext(m_EditorScene, true);
 
     m_ActiveScene = m_EditorScene;
@@ -424,6 +441,7 @@ namespace origin {
       OnSceneStop();
 
     auto newScene = std::make_shared<Scene>();
+
     SceneSerializer serializer(newScene);
     if (serializer.Deserialize(path.string()))
     {

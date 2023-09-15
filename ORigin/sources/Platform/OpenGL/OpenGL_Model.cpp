@@ -32,7 +32,7 @@ namespace origin
 		m_Material.reset();
 	}
 
-	void OpenGLModel::DrawMesh()
+	void OpenGLModel::Draw()
 	{
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
@@ -67,7 +67,7 @@ namespace origin
 		m_Material->SetInt("uEntityID", entityID);
 
 		// Draw Mesh
-		DrawMesh();
+		Draw();
 
 		if (m_Material->Texture)
 		{

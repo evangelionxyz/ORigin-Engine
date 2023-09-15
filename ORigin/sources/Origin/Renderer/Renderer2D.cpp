@@ -155,7 +155,7 @@ namespace origin {
 			for (uint32_t i = 0; i < s_2Ddata.FontAtlasTextureIndex; i++)
 				s_2Ddata.FontAtlasTextureSlots[i]->Bind(i);
 
-			s_2Ddata.TextShader->Bind();
+			s_2Ddata.TextShader->Enable();
 
 			RenderCommand::DrawIndexed(s_2Ddata.TextVertexArray, s_2Ddata.TextIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
@@ -166,7 +166,7 @@ namespace origin {
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.LineVertexBufferPtr - (uint8_t*)s_2Ddata.LineVertexBufferBase);
 			s_2Ddata.LineVertexBuffer->SetData(s_2Ddata.LineVertexBufferBase, dataSize);
 
-			s_2Ddata.LineShader->Bind();
+			s_2Ddata.LineShader->Enable();
 
 			RenderCommand::DrawLines(s_2Ddata.LineVertexArray, s_2Ddata.LineVertexCount);
 			s_2Ddata.Stats.DrawCalls++;
@@ -177,7 +177,7 @@ namespace origin {
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.CircleVertexBufferPtr - (uint8_t*)s_2Ddata.CircleVertexBufferBase);
 			s_2Ddata.CircleVertexBuffer->SetData(s_2Ddata.CircleVertexBufferBase, dataSize);
 
-			s_2Ddata.CircleShader->Bind();
+			s_2Ddata.CircleShader->Enable();
 
 			RenderCommand::DrawIndexed(s_2Ddata.CircleVertexArray, s_2Ddata.CircleIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
@@ -192,7 +192,7 @@ namespace origin {
 			for (uint32_t i = 0; i < s_2Ddata.TextureSlotIndex; i++)
 				s_2Ddata.TextureSlots[i]->Bind(i);
 
-			s_2Ddata.QuadShader->Bind();
+			s_2Ddata.QuadShader->Enable();
 
 			RenderCommand::DrawIndexed(s_2Ddata.QuadVertexArray, s_2Ddata.QuadIndexCount);
 			s_2Ddata.Stats.DrawCalls++;

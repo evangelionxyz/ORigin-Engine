@@ -70,7 +70,7 @@ namespace origin
 
 		LoadTexture(filepath);
 		m_Shader = Renderer::GetGShader("Skybox");
-		m_Shader->Bind();
+		m_Shader->Enable();
 	}
 
 	void OpenGLSkybox::Draw(const glm::mat4& viewProjection)
@@ -78,7 +78,7 @@ namespace origin
 		// Disable depth testing
 		glDisable(GL_DEPTH_TEST);
 
-		m_Shader->Bind();
+		m_Shader->Enable();
 		m_Shader->SetMatrix("uViewProjection", viewProjection);
 		m_Shader->SetInt("uSkybox", m_TextureID);
 		m_Shader->SetFloat("blurFactor", m_BlurFactor);
@@ -87,7 +87,7 @@ namespace origin
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 		RenderCommand::DrawIndexed(m_VertexArray, 36);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-		m_Shader->Unbind();
+		m_Shader->Disable();
 
 		glEnable(GL_DEPTH_TEST);
 	}

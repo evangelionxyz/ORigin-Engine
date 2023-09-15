@@ -5,6 +5,7 @@
 #include "Origin/Utils/Time.h"
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Scene/Component.h"
+#include "Origin/Renderer/Framebuffer.h"
 
 #include "Origin\Renderer\ParticleSystem.h"
 
@@ -66,6 +67,12 @@ namespace origin
             return m_Registry.view<Components...>();
         }
 
+        void OnShadowRender();
+
+        std::shared_ptr<Framebuffer> shadowFramebuffer;
+				float NearFar = 20.0f;
+				float ShadowSize = 15.0f;
+
     private:
         // 2D Scene
         void OnPhysics2DStart();
@@ -74,6 +81,9 @@ namespace origin
         void RenderScene(const EditorCamera& camera);
         void RenderScene(Camera* camera, const TransformComponent& transform);
 
+        std::shared_ptr<Shader> m_DepthShader;
+        glm::mat4 m_LightSpaceMatrix = glm::mat4(1.0f);
+        
         template <typename T>
         void OnComponentAdded(Entity entity, T& component);
         int m_GridSize = 5;

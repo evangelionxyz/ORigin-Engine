@@ -192,7 +192,6 @@ namespace origin
 
 	struct DirectionalLightComponent
 	{
-		glm::vec3 Direction = glm::vec3(0.0f);
 		glm::vec3 Color = glm::vec3(1.0f);
 		float Ambient = 0.1f;
 		float Diffuse = 0.5f;
@@ -237,7 +236,6 @@ namespace origin
 	struct ScriptComponent
 	{
 		std::string ClassName = "None";
-
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
 	};
@@ -307,7 +305,8 @@ namespace origin
 
 	using AllComponents =
 		ComponentGroup<TransformComponent, CameraComponent, AnimationComponent,
-		AudioComponent, AudioListenerComponent, PointLightComponent, SpotLightComponent, DirectionalLightComponent,
+		AudioComponent, AudioListenerComponent,
+		PointLightComponent, SpotLightComponent, DirectionalLightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, Particle2DComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;

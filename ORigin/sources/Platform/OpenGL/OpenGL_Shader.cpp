@@ -477,11 +477,11 @@ namespace origin {
     return shaderProgram;
   }
 
-  void OpenGLShader::Bind() const
+  void OpenGLShader::Enable() const
   {
     glUseProgram(m_RendererID);
   }
-  void OpenGLShader::Unbind() const
+  void OpenGLShader::Disable() const
   {
     glUseProgram(0);
   }

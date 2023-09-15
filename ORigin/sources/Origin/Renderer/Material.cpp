@@ -50,12 +50,12 @@ namespace origin {
 
 	void Material::EnableShader()
 	{
-		m_Shader->Bind();
+		m_Shader->Enable();
 	}
 
 	void Material::DisableShader()
 	{
-		m_Shader->Unbind();
+		m_Shader->Disable();
 	}
 
 	void Material::SetFloat(const std::string& name, float value)

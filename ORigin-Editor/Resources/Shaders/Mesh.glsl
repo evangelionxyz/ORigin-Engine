@@ -9,6 +9,7 @@ struct Vertex
     vec3 Position;
     vec3 Normal;
     vec2 TexCoord;
+    vec4 LightSpacePosition;
 };
 
 out Vertex vertex;
@@ -16,13 +17,15 @@ out Vertex vertex;
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProjection;
+uniform mat4 uLightSpaceMatrix;
 
 void main()
 {
 	vertex.Position = vec3(uModel * vec4(aPos, 1.0));
-    vertex.Normal = mat3(transpose(inverse(uModel))) * aNormal;
+    vertex.Normal = transpose(inverse(mat3(uModel))) * aNormal;
 	vertex.TexCoord = aTexCoord;
 
+    vertex.LightSpacePosition = uLightSpaceMatrix * vec4(vertex.Position, 1.0);
 	gl_Position = uProjection * uView * vec4(vertex.Position, 1.0);
 }
 
@@ -35,6 +38,7 @@ uniform int uEntityID;
 
 uniform vec3 uCameraPosition;
 uniform vec4 uColor;
+uniform sampler2D uShadowMap;
 
 uniform bool uHasTextures;
 uniform bool uHasOneTexture;
@@ -46,6 +50,7 @@ struct Vertex
     vec3 Position;
     vec3 Normal;
     vec2 TexCoord;
+    vec4 LightSpacePosition;
 };
 
 in Vertex vertex;
@@ -64,6 +69,39 @@ struct Material
     vec2 TilingFactor;
 };
 uniform Material material;
+
+float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
+{
+    vec3 projectionCoords = lightSpacePosition.xyz / lightSpacePosition.w;
+    projectionCoords = projectionCoords * 0.5 + 0.5;
+
+    float currentDepth = projectionCoords.z;
+
+    vec3 normal = normalize(vertex.Normal);
+    vec3 lightDir = normalize(lightDirection - vertex.Position);
+
+    // bias with max 0.05 and min 0.005
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
+    float shadow = 0.0;
+
+    for(int x = -1; x <= 1; x++)
+    {
+        for(int y = -1; y <= 1; y++)
+        {
+            float pcfDepth = texture(uShadowMap, projectionCoords.xy + vec2(x,y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+
+    shadow /= 9.0;
+
+    if(projectionCoords.z > 1.0 || projectionCoords.z < 0.0)
+        shadow = 1.0;
+
+    return shadow;
+
+}
 
 struct PointLight
 {
@@ -158,35 +196,6 @@ vec3 CalcPointLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 
     return diffuse + ambient + specular;
 }
 
-/*
-vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
-{
-    vec3 ambient = vec3(0.0);
-    vec3 diffuse = vec3(0.0);
-    vec3 specular = vec3(0.0);
-    float intensity = 0.0;
-
-    vec3 reflectionDirection = reflect(viewDirection, normal);
-
-    for (int i = 0; i <= spotLightCount; i++)
-    {
-        vec3 lightDirection = normalize(spotLights[i].Position - vertex.Position);
-
-        ambient += spotLights[i].Ambient * spotLights[i].Color;
-
-        float diff = max(dot(normal, lightDirection), 0.0);
-        diffuse += diff * spotLights[i].Color * diffuseTexture * 0.8;
-
-        float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
-        specular += spec * spotLights[i].Specular * specularTexture * spotLights[i].Color;
-
-        float angle = dot(lightDirection, spotLights[i].Direction);
-        intensity += clamp((angle - spotLights[i].OuterCone) / (spotLights[i].InnerCone - spotLights[i].OuterCone), 0.0, 1.0);
-    }
-    return (diffuse + ambient + specular) * intensity;
-}
-*/
-
 vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
 {
     vec3 totalDiffuse = vec3(0.0);
@@ -240,8 +249,6 @@ vec3 CalcDirLight(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 spe
     float specularContrib = pow(max(dot(viewDirection, reflectDirection), 0.0), material.Shininess);
     vec3 specular = dirLight.Specular * specularContrib * dirLight.Color * specularTexture;
 
-    //float shadow = shadowCalculation(vertex.LightSpacePosition);
-    //return ambient + (1.0 - shadow) * (diffuse + specular);
-
-    return ambient + diffuse + specular;
+    float shadow = ShadowCalculation(vertex.LightSpacePosition, dirLight.Direction);
+    return ambient + (1.0 - shadow) * (diffuse + specular);
 }

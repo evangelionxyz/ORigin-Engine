@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Origin/Renderer/Framebuffer.h"
@@ -24,6 +24,7 @@ namespace origin {
 		void Unbind() override;
 
 		uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { return m_ColorAttachments[index]; };
+		uint32_t GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
 		const FramebufferSpecification& GetSpecification() const override { return m_Spec; }
 
 	private:

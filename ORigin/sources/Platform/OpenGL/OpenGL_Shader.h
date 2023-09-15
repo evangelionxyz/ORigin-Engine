@@ -28,8 +28,8 @@ namespace origin
 
     ~OpenGLShader();
 
-    void Bind() const override;
-    void Unbind() const override;
+    void Enable() const override;
+    void Disable() const override;
 
     bool IsSpirvEnabled() const { return m_EnableSpirv; }
     bool IsRecompilerSpirv() const { return m_RecompileSPIRV; }

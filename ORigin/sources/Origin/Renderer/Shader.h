@@ -14,8 +14,8 @@ namespace origin
 	public:
 		virtual ~Shader() {}
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		virtual void Enable() const = 0;
+		virtual void Disable() const = 0;
 
     virtual std::string ReadFile() const = 0;
     virtual std::string GetFilepath() const = 0;

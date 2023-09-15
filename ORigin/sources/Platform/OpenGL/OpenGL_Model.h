@@ -22,12 +22,11 @@ namespace origin
 		OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material);
 
 		virtual ~OpenGLModel() override;
-		void Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID = -1) override;
+		void Draw() override;
+		void Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID) override;
 		const std::string& GetFilepath() const override { return m_Filepath; }
 
 	private:
-		void DrawMesh();
-
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
 		std::vector<std::shared_ptr<Mesh>> m_Meshes;
