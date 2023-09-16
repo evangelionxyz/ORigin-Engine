@@ -36,8 +36,8 @@ layout(location = 1) out int oEntityID;
 
 uniform int uEntityID;
 
-uniform vec3 uCameraPosition;
 uniform vec4 uColor;
+uniform vec3 uCameraPosition;
 uniform sampler2D uShadowMap;
 
 uniform bool uHasTextures;
@@ -66,6 +66,8 @@ struct Material
     sampler2D texture_specular2;
 
     float Shininess;
+    float Bias;
+    
     vec2 TilingFactor;
 };
 uniform Material material;
@@ -75,13 +77,11 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
     vec3 projectionCoords = lightSpacePosition.xyz / lightSpacePosition.w;
     projectionCoords = projectionCoords * 0.5 + 0.5;
 
-    float currentDepth = projectionCoords.z;
-
     vec3 normal = normalize(vertex.Normal);
     vec3 lightDir = normalize(lightDirection - vertex.Position);
 
     // bias with max 0.05 and min 0.005
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(material.Bias * (1.0 - dot(normal, lightDir)), 0.005);
     vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
     float shadow = 0.0;
 
@@ -90,17 +90,16 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
         for(int y = -1; y <= 1; y++)
         {
             float pcfDepth = texture(uShadowMap, projectionCoords.xy + vec2(x,y) * texelSize).r;
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            shadow += projectionCoords.z - bias > pcfDepth ? 1.0 : 0.0;
         }
     }
 
     shadow /= 9.0;
 
-    if(projectionCoords.z > 1.0 || projectionCoords.z < 0.0)
-        shadow = 1.0;
+    if(projectionCoords.z > 1.0)
+        shadow = 0.0;
 
     return shadow;
-
 }
 
 struct PointLight

@@ -123,6 +123,10 @@ namespace origin
 					mesh->mTextureCoords[0][i].y
 				);
 			}
+			else
+			{
+				vertex.TexCoord = glm::vec2(0.0f, 0.0f);
+			}
 
 			vertices.push_back(vertex);
 		}

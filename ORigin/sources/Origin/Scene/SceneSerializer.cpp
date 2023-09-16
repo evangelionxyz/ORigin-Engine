@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 
@@ -370,6 +370,9 @@ namespace origin {
 			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
 			out << YAML::Key << "Diffuse" << YAML::Value << lc.Diffuse;
 			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
+			out << YAML::Key << "Near" << YAML::Value << lc.Near;
+			out << YAML::Key << "Far" << YAML::Value << lc.Far;
+			out << YAML::Key << "Size" << YAML::Value << lc.Size;
 
 			out << YAML::EndMap; // !DirectionalLightComponent
 		}
@@ -708,6 +711,19 @@ namespace origin {
 					lc.Ambient = directionalLightComponent["Ambient"].as<float>();
 					lc.Diffuse = directionalLightComponent["Diffuse"].as<float>();
 					lc.Specular = directionalLightComponent["Specular"].as<float>();
+					lc.Near = directionalLightComponent["Near"].as<float>();
+					lc.Far = directionalLightComponent["Far"].as<float>();
+					lc.Size = directionalLightComponent["Size"].as<float>();
+
+					FramebufferSpecification fbSpec;
+					// Resolution
+
+					fbSpec.Width = 1080;
+					fbSpec.Height = 1920;
+					fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
+					fbSpec.ReadBuffer = false;
+					fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
+					lc.ShadowFb = Framebuffer::Create(fbSpec);
 				}
 
 				if (YAML::Node spotLightComponent = entity["SpotLightComponent"])

@@ -134,6 +134,8 @@ namespace origin {
 		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
 		GShaderLibrary.Load("Mesh2", "Resources/Shaders/Mesh2.glsl", false);
 		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
+		
+		GShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl", false);
 
 		// Load UI Texture
 		GUITextures.insert(std::make_pair("CameraIcon", Texture2D::Create("Resources/UITextures/camera.png")));

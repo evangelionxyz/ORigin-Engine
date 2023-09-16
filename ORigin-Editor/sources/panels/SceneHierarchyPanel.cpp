@@ -229,7 +229,7 @@ namespace origin {
 				m_SelectedEntity.GetComponent<AnimationComponent>().Animation = Animation::Create();
 			};
 
-			DisplayAddComponentEntry<SpriteRendererComponent>("SPIRTE RENDERER");
+			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
 			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
@@ -240,7 +240,7 @@ namespace origin {
 			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
 			DisplayAddComponentEntry<Particle2DComponent>("PARTICLE 2D");
-			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRLCE COLLIDER 2D");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRCLE COLLIDER 2D");
 
 			ImGui::EndPopup();
 		}
@@ -431,7 +431,7 @@ namespace origin {
 
 				if (component.Audio->IsLoaded())
 				{
-					ImGui::Text("%s | Spatialization: %s", component.Name.c_str(), component.Spatial ? "On" : "Off");
+					ImGui::Text("%s | Spatialize: %s", component.Name.c_str(), component.Spatial ? "On" : "Off");
 					ImGui::Separator();
 
 #if 0
@@ -459,7 +459,7 @@ namespace origin {
 					component.Volume = component.Audio->GetGain();
 					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f, columnWidth);
 
-					if(ImGui::Checkbox("Spatialization", &component.Spatial))
+					if(ImGui::Checkbox("Spatialize", &component.Spatial))
 						component.Audio->SetSpatial(component.Spatial);
 
 					if (component.Spatial)
@@ -741,6 +741,7 @@ namespace origin {
 
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
 					ImGui::DragFloat("Shininess", &component.Material->Shininess, 1.0f, 0.0f, 256.0f);
+					ImGui::SliderFloat("Bias", &component.Material->Bias, 0.005f, 0.1f);
 
 					// Drop Texture
 					if (component.Material->HasTexture == false)
@@ -770,7 +771,7 @@ namespace origin {
 								return;
 							}
 
-							DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f);
+							DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f, 1.0f);
 
 							ImGui::Text("Path: %s", component.Material->Texture->GetFilepath().c_str());
 						}
@@ -899,6 +900,16 @@ namespace origin {
 				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
 				DrawVecControl("Diffuse", &component.Diffuse, 0.01f, 0.0f);
 				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);
+
+				ImGui::DragFloat("Near", &component.Near, 0.1f);
+				ImGui::DragFloat("Far", &component.Far, 0.1f);
+				ImGui::DragFloat("Size", &component.Size, 0.1);
+
+				if(component.ShadowFb)
+				{
+					uint32_t texture = component.ShadowFb->GetDepthAttachmentRendererID();
+					ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(128.0f, 128.0f), ImVec2(0, 1), ImVec2(1, 0));
+				}
 			});
 
 		DrawComponent<SpotLightComponent>("SPOT LIGHT", entity, [](auto& component)

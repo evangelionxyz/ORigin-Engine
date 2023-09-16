@@ -195,16 +195,7 @@ namespace origin {
       MenuBar();
       SceneViewport();
 
-      ImGui::Begin("Window", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-			ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
-			auto texture = m_ActiveScene->shadowFramebuffer->GetDepthAttachmentRendererID();
-
-      ImGui::Text("Shadow Debugging");
-      ImGui::DragFloat("NearFar", &m_ActiveScene->NearFar, 0.1f);
-      ImGui::DragFloat("Size", &m_ActiveScene->ShadowSize);
-			ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(256.0f, 256.0f), ImVec2(0, 1), ImVec2(1, 0));
-
-      ImGui::End();
+      
 
       m_SceneHierarchy.OnImGuiRender();
       m_ContentBrowser->OnImGuiRender();

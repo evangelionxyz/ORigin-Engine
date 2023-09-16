@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Entity.h"
@@ -29,15 +29,15 @@ namespace origin
 {
     static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
     {
-        switch (type)
-        {
+      switch (type)
+      {
         case origin::Rigidbody2DComponent::BodyType::Static: return b2BodyType::b2_staticBody;
         case origin::Rigidbody2DComponent::BodyType::Dynamic: return b2BodyType::b2_dynamicBody;
         case origin::Rigidbody2DComponent::BodyType::Kinematic: return b2BodyType::b2_kinematicBody;
-        }
+      }
 
-        OGN_ASSERT(false, "Unkown Body Type");
-        return b2_staticBody;
+      OGN_ASSERT(false, "Unkown Body Type");
+      return b2_staticBody;
     }
 
     Scene::Scene()
@@ -46,21 +46,7 @@ namespace origin
       m_LightingIcon = Renderer::GetGTexture("LightingIcon");
       m_AudioIcon = Renderer::GetGTexture("AudioIcon");
 
-      FramebufferSpecification fbSpec;
-      fbSpec.Width = 1080;
-      fbSpec.Height = 1080;
-
-      fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
-      fbSpec.ReadBuffer = false;
-      fbSpec.Attachments =
-      {
-        FramebufferTextureFormat::DEPTH
-      };
-
-      shadowFramebuffer = Framebuffer::Create(fbSpec);
-
-			// Create Depth Shader
-			m_DepthShader = Shader::Create("Resources/Shaders/DepthMap.glsl");
+      
     }
 
     Scene::~Scene()
@@ -77,7 +63,7 @@ namespace origin
             {
                 entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
 
-                auto& srcComponent = src.get<Component>(srcEntity);
+                const auto& srcComponent = src.get<Component>(srcEntity);
                 dst.emplace_or_replace<Component>(dstEntity, srcComponent);
             }
         }(), ...);
@@ -202,6 +188,16 @@ namespace origin
 
       UUID& uuid = entity.GetComponent<IDComponent>().ID;
       entity.GetComponent<TransformComponent>().Rotation.x = glm::radians(-90.0f);
+
+      FramebufferSpecification fbSpec;
+      fbSpec.Width = 1080;
+      fbSpec.Height = 1080;
+
+      fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
+      fbSpec.ReadBuffer = false;
+      fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
+      
+      entity.GetComponent<DirectionalLightComponent>().ShadowFb = Framebuffer::Create(fbSpec);
 
       m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -679,42 +675,52 @@ namespace origin
 
     void Scene::OnShadowRender()
     {
-      m_DepthShader->Enable();
+      Renderer::GetGShader("DepthMap")->Enable();
 
-      auto dirLight = m_Registry.view<TransformComponent, DirectionalLightComponent>();
-      for (auto light : dirLight)
+      // Directional Light Shadow
+      const auto& dirLight = m_Registry.view<TransformComponent, DirectionalLightComponent>();
+      for (auto& light : dirLight)
       {
-        auto [tc, lc] = dirLight.get<TransformComponent, DirectionalLightComponent>(light);
-				glm::mat4 lightProjection = glm::ortho(-ShadowSize, ShadowSize,
-					-ShadowSize, ShadowSize, -NearFar, NearFar);
+        auto& [tc, lc] = dirLight.get<TransformComponent, DirectionalLightComponent>(light);
+				glm::mat4 lightProjection = glm::ortho(-lc.Size, lc.Size,
+					-lc.Size, lc.Size, lc.Near, lc.Far);
 
 				// direction/eye, center, up
-				glm::mat4 lightView = glm::lookAt(glm::radians(-tc.GetForward()), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        m_LightSpaceMatrix = lightProjection * lightView;
-				m_DepthShader->SetMatrix("uLightSpaceMatrix", m_LightSpaceMatrix);
-      }
+				glm::mat4 lightView = glm::lookAt(glm::radians(-tc.GetForward()), glm::vec3(0.0f), glm::radians(-tc.GetUp()));
+        lc.LightSpaceMatrix = lightProjection * lightView;
+        
+				Renderer::GetGShader("DepthMap")->SetMatrix("uLightSpaceMatrix", lc.LightSpaceMatrix);
 
-      glCullFace(GL_FRONT);
-      shadowFramebuffer->Bind();
-      glClear(GL_DEPTH_BUFFER_BIT);
-		  // Mesh
-		  auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		  for (auto& entity : meshView)
-		  {
-			  auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+        // Skip if the framebuffer is not available
+        if(lc.ShadowFb == nullptr)
+          continue;
 
-        if (mesh.Model)
+        glFrontFace(GL_CCW);
+        glCullFace(GL_FRONT);
+
+        lc.ShadowFb->Bind();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        
+        // Render
+        auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+        for (auto& entity : meshView)
         {
-          // Set Depth shader
-          m_DepthShader->SetMatrix("uModel", tc.GetTransform());
-          mesh.Model->Draw();
+          auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+
+          if (mesh.Model)
+          {
+            // Set Depth shader
+            Renderer::GetGShader("DepthMap")->SetMatrix("uModel", tc.GetTransform());
+            mesh.Model->Draw();
+          }
         }
+        
+        lc.ShadowFb->Unbind();
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CW);
       }
-
-      m_DepthShader->Disable();
-      shadowFramebuffer->Unbind();
-      glCullFace(GL_BACK);
-
+      
+      Renderer::GetGShader("DepthMap")->Disable();
     }
 
     void Scene::RenderScene(const EditorCamera& camera)
@@ -766,18 +772,17 @@ namespace origin
 
       // Circles
       {
-          auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+          const auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
           for (auto& entity : view)
           {
               auto& [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
-              Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
-                                      (int)entity);
+              Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
           }
       }
 
       // Text
       {
-        auto& view = m_Registry.view<TransformComponent, TextComponent>();
+        const auto& view = m_Registry.view<TransformComponent, TextComponent>();
         for (auto entity : view)
         {
           auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
@@ -787,7 +792,7 @@ namespace origin
 
       // 3D Scene
       // Cube
-      auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+      const auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
       std::vector<entt::entity> cubeEntities(cubeView.begin(), cubeView.end());
       std::sort(cubeEntities.begin(), cubeEntities.end(),
       [=](const entt::entity& a, const entt::entity& b)
@@ -805,7 +810,7 @@ namespace origin
       }
 
       // Camera
-			auto& cameraView = m_Registry.view<TransformComponent, CameraComponent>();
+			const auto& cameraView = m_Registry.view<TransformComponent, CameraComponent>();
 			for (auto& entity : cameraView)
 			{
 				auto& [tc, cc] = cameraView.get<TransformComponent, CameraComponent>(entity);
@@ -813,21 +818,21 @@ namespace origin
 			}
 
       // Lighting
-      auto& pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
+      const auto& pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
       for (auto& pointLight : pointLightView)
       {
         auto& [tc, lc] = pointLightView.get<TransformComponent, PointLightComponent>(pointLight);
-        DrawIcon(camera, (int)pointLight, m_LightingIcon, tc, true);
+        DrawIcon(camera, static_cast<int>(pointLight), m_LightingIcon, tc, true);
       }
 
-      auto& spotLightView = m_Registry.view<TransformComponent, SpotLightComponent>();
+      const auto& spotLightView = m_Registry.view<TransformComponent, SpotLightComponent>();
       for (auto& spotLight : spotLightView)
       {
         auto& [tc, lc] = spotLightView.get<TransformComponent, SpotLightComponent>(spotLight);
-        DrawIcon(camera, (int)spotLight, m_LightingIcon, tc, true);
+        DrawIcon(camera, static_cast<int>(spotLight), m_LightingIcon, tc, true);
       }
 
-      auto& dirLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
+      const auto& dirLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
       for (auto& dirLight : dirLightView)
       {
         auto& [tc, lc] = dirLightView.get<TransformComponent, DirectionalLightComponent>(dirLight);
@@ -835,7 +840,7 @@ namespace origin
       }
 
 			// Mesh
-			auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto& entity : meshView)
 			{
 				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
@@ -847,6 +852,8 @@ namespace origin
         {
           std::string lightUniformName;
 					mesh.Material->EnableShader();
+
+          mesh.Material->SetFloat("material.Bias", mesh.Material->Bias);
 
           mesh.Material->SetMatrix("uLightSpaceMatrix", glm::mat4(1.0f));
 
@@ -885,20 +892,22 @@ namespace origin
           {
             auto& [tc, lc] = dirLightView.get<TransformComponent, DirectionalLightComponent>(dirLight);
             
-            mesh.Material->SetMatrix("uLightSpaceMatrix", m_LightSpaceMatrix);
+            mesh.Material->SetMatrix("uLightSpaceMatrix", lc.LightSpaceMatrix);
             mesh.Material->SetVector("dirLight.Direction", -tc.GetForward());
             mesh.Material->SetVector("dirLight.Color", lc.Color);
             mesh.Material->SetFloat("dirLight.Ambient", lc.Ambient);
             mesh.Material->SetFloat("dirLight.Diffuse", lc.Diffuse);
             mesh.Material->SetFloat("dirLight.Specular", lc.Specular);
+
+            if(lc.ShadowFb)
+            {
+              glActiveTexture(lc.ShadowFb->GetDepthAttachmentRendererID());
+              glBindTexture(GL_TEXTURE_2D, lc.ShadowFb->GetDepthAttachmentRendererID());
+              mesh.Material->SetInt("uShadowMap", 0);
+            }
           }
 
-          glActiveTexture(shadowFramebuffer->GetDepthAttachmentRendererID());
-          glBindTexture(GL_TEXTURE_2D, shadowFramebuffer->GetDepthAttachmentRendererID());
-          mesh.Material->SetInt("uShadowMap", 0);
-
 					mesh.Model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
-
           mesh.Material->DisableShader();
 
           if (mesh.Material->m_PointLightCount != pointLightCount || mesh.Material->m_SpotLightCount != spotLightCount)
@@ -945,7 +954,7 @@ namespace origin
         ScriptEngine::OnRuntimeStop();
 
         // Audio
-        auto audioView = m_Registry.view<AudioComponent>();
+        const auto& audioView = m_Registry.view<AudioComponent>();
         for (auto& e : audioView)
         {
           auto& ac = audioView.get<AudioComponent>(e);
@@ -962,7 +971,7 @@ namespace origin
         m_ViewportWidth = width;
         m_ViewportHeight = height;
 
-        const auto view = m_Registry.view<CameraComponent>();
+        const auto& view = m_Registry.view<CameraComponent>();
         for (auto& entity : view)
         {
             auto& cameraComponent = view.get<CameraComponent>(entity);
@@ -988,7 +997,7 @@ namespace origin
         Renderer2D::DrawLine(glm::vec3(0.0f, -1.0f, -size), glm::vec3(0.0f, -1.0f, size), glm::vec4(0, 0, 1, 1));
 
         // TODO: XY axis
-        for (int i = 1; i <= size; i++)
+        for (float i = 1.0f; i <= size; i++)
         {
             Renderer2D::DrawLine(glm::vec3(0.0f + i, -1.0f, -size), glm::vec3(0.0f + i, -1.0f, size), color);
             Renderer2D::DrawLine(glm::vec3(0.0f - i, -1.0f, -size), glm::vec3(0.0f - i, -1.0f, size), color);
@@ -1026,10 +1035,10 @@ namespace origin
 
     Entity Scene::GetPrimaryCameraEntity()
     {
-        auto& view = m_Registry.view<CameraComponent>();
-        for (auto entity : view)
+        const auto& view = m_Registry.view<CameraComponent>();
+        for (auto& entity : view)
         {
-            const auto& camera = view.get<CameraComponent>(entity);
+            const CameraComponent& camera = view.get<CameraComponent>(entity);
             if (camera.Primary)
                 return Entity{entity, this};
         }
@@ -1076,7 +1085,7 @@ namespace origin
 
             if (entity.HasComponent<CircleCollider2DComponent>())
             {
-                auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+                const auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
 
                 b2CircleShape circleShape;
                 circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
@@ -1100,10 +1109,9 @@ namespace origin
         m_Box2DWorld = nullptr;
     }
 
-    void Scene::DrawIcon(const EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture,
-                         TransformComponent& tc, bool rotate)
+    void Scene::DrawIcon(const EditorCamera& camera, int entity, const std::shared_ptr<Texture2D>& texture, const TransformComponent& tc, bool rotate)
     {
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
+        const glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
             * glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
             * glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
             * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));

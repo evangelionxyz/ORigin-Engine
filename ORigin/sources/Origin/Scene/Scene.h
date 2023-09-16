@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "EditorCamera.h"
@@ -69,10 +69,6 @@ namespace origin
 
         void OnShadowRender();
 
-        std::shared_ptr<Framebuffer> shadowFramebuffer;
-				float NearFar = 20.0f;
-				float ShadowSize = 15.0f;
-
     private:
         // 2D Scene
         void OnPhysics2DStart();
@@ -80,24 +76,20 @@ namespace origin
 
         void RenderScene(const EditorCamera& camera);
         void RenderScene(Camera* camera, const TransformComponent& transform);
-
-        std::shared_ptr<Shader> m_DepthShader;
-        glm::mat4 m_LightSpaceMatrix = glm::mat4(1.0f);
         
         template <typename T>
         void OnComponentAdded(Entity entity, T& component);
-        int m_GridSize = 5;
-        glm::vec4 m_GridColor = glm::vec4(1.0f);
-        void DrawIcon(const EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture,
-                      TransformComponent& tc, bool rotate = true);
-
+        
+        void DrawIcon(const EditorCamera& camera, int entity, const std::shared_ptr<Texture2D>& texture, const TransformComponent& tc, bool rotate = true);
         bool IsRunning() const { return m_Running; }
         bool IsPaused() const { return m_Paused; }
 
         void SetPaused(bool paused) { m_Paused = paused; }
         void Step(int frames);
 
-    private:
+        glm::vec4 m_GridColor = glm::vec4(1.0f);
+        int m_GridSize = 5;
+
         std::unordered_map<UUID, entt::entity> m_EntityMap;
         std::shared_ptr<Texture2D> m_CameraIcon, m_LightingIcon, m_AudioIcon;
 

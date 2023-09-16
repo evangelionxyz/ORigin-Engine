@@ -20,6 +20,7 @@
 #include <glm\gtc\quaternion.hpp>
 
 #include "Origin\Renderer\Material.h"
+#include "Origin\Renderer\Framebuffer.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -187,15 +188,21 @@ namespace origin
 		glm::vec3 Color = glm::vec3(1.0);
 		float InnerConeAngle = 1.0f;
 		float OuterConeAngle = 0.5f;
-		float Exponent = 1.0f;
+		float Exponent = 0.5f;
 	};
 
 	struct DirectionalLightComponent
 	{
 		glm::vec3 Color = glm::vec3(1.0f);
-		float Ambient = 0.1f;
+		float Ambient = 0.5f;
 		float Diffuse = 0.5f;
-		float Specular = 0.5f;
+		float Specular = 1.0f;
+
+		std::shared_ptr<Framebuffer> ShadowFb;
+		float Near = -1.0f;
+		float Far = 7.5f;
+		float Size = 25.0f;
+		glm::mat4 LightSpaceMatrix = glm::mat4(1.0f);
 
 		DirectionalLightComponent() = default;
 		DirectionalLightComponent(const DirectionalLightComponent&) = default;
