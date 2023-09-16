@@ -277,6 +277,7 @@ namespace origin {
 				out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
 				out << YAML::Key << "Color" << YAML::Value << sMesh.Material->Color;
 				out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
+				out << YAML::Key << "Bias" << YAML::Value << sMesh.Material->Bias;
 
 				std::filesystem::path texturePath = "";
 				glm::vec2 tilingFactor = glm::vec2(1.0f);
@@ -717,12 +718,13 @@ namespace origin {
 
 					FramebufferSpecification fbSpec;
 					// Resolution
-
 					fbSpec.Width = 1080;
-					fbSpec.Height = 1920;
+					fbSpec.Height = 1080;
+
 					fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
 					fbSpec.ReadBuffer = false;
-					fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
+
+					fbSpec.Attachments = { FramebufferTextureFormat::DEPTH };
 					lc.ShadowFb = Framebuffer::Create(fbSpec);
 				}
 
@@ -775,6 +777,7 @@ namespace origin {
 						sMesh.Material->LoadShader(shader);
 						sMesh.Material->Color = staticMeshComponent["Color"].as<glm::vec4>();
 						sMesh.Material->Shininess = staticMeshComponent["Shininess"].as<float>();
+						sMesh.Material->Bias = staticMeshComponent["Bias"].as<float>();
 
 						std::string& textureFilepath = staticMeshComponent["TextureFilepath"].as<std::string>();
 						if (!textureFilepath.empty())

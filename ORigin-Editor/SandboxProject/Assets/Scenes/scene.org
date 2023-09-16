@@ -1,134 +1,42 @@
 Scene: scene.org
 Entities:
-  - Entity: 12149903540586298152
+  - Entity: 17660520711803307435
+    TagComponent:
+      Tag: Monkey
+    TransformComponent:
+      Translation: [14.1919947, 1.40530658, 10.5363407]
+      Rotation: [-6.2898107e-07, -1.17672539, 6.37396965e-07]
+      Scale: [3.11000156, 3.1099999, 3.11000156]
+    StaticMeshComponent:
+      ModelPath: Models/monkey.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.744271696, 1, 0.679324865, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 1779268253014771028
     TagComponent:
       Tag: Cube
     TransformComponent:
-      Translation: [4.50455809, -0.584729791, -5.55620527]
+      Translation: [-14.9359741, -1.27099538, -1.14697659]
       Rotation: [0, 0, 0]
       Scale: [1.0010922, 1, 1]
     StaticMeshComponent:
       ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
-      Color: [1, 1, 1, 1]
+      Color: [0.172995806, 0.591732025, 1, 1]
       Shininess: 32
-      TextureFilepath: Textures/checkerboard.jpg
-      TilingFactor: [5, 5]
-  - Entity: 16334922964600789874
-    TagComponent:
-      Tag: Directional Light
-    TransformComponent:
-      Translation: [0, 3.04999995, 0]
-      Rotation: [-1.0995574, 0, 0]
-      Scale: [0.999999642, 0.999993265, 0.999992132]
-    DirectionalLightComponent:
-      Color: [1, 1, 1]
-      Ambient: 0.180000007
-      Diffuse: 0.5
-      Specular: 1
-      Near: -20
-      Far: 20
-      Size: 20.7999992
-    ScriptComponent:
-      ClassName: Game.Model
-      StoredFields:
-        []
-  - Entity: 9018303064199255844
-    TagComponent:
-      Tag: Plane
-    TransformComponent:
-      Translation: [0, -2.8561883, 0]
-      Rotation: [0, 0, 0]
-      Scale: [100, 0.5, 100]
-    StaticMeshComponent:
-      ModelPath: Models/cube.gltf
-      ShaderPath: Resources/Shaders/Mesh.glsl
-      MaterialName: MeshMaterial
-      Color: [1, 1, 1, 1]
-      Shininess: 46
-      TextureFilepath: ""
-      TilingFactor: [1, 1]
-  - Entity: 17481569782657353424
-    TagComponent:
-      Tag: Sphere
-    TransformComponent:
-      Translation: [-4.07441092, -0.969436765, -4.73180103]
-      Rotation: [-2.86353043e-05, 1.56724167, -2.79178821e-05]
-      Scale: [1, 1, 1]
-    StaticMeshComponent:
-      ModelPath: Models/sphere.gltf
-      ShaderPath: Resources/Shaders/Mesh.glsl
-      MaterialName: MeshMaterial
-      Color: [1, 1, 1, 1]
-      Shininess: 32
-      TextureFilepath: Sprites/fireballC.png
-      TilingFactor: [1, 1]
-  - Entity: 16771711495524342754
-    TagComponent:
-      Tag: Sphere
-    TransformComponent:
-      Translation: [-6.14412129e-05, -0.253719985, -7.23793888]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    StaticMeshComponent:
-      ModelPath: Models/sphere.gltf
-      ShaderPath: Resources/Shaders/Mesh.glsl
-      MaterialName: MeshMaterial
-      Color: [0, 1, 0.759493589, 1]
-      Shininess: 32
-      TextureFilepath: ""
-      TilingFactor: [1, 1]
-  - Entity: 13143099136088583757
-    TagComponent:
-      Tag: Sphere
-    TransformComponent:
-      Translation: [0.944334149, -0.918318152, -0.248971343]
-      Rotation: [0, 0, 0]
-      Scale: [1.55999994, 1.55999994, 1.55999994]
-    StaticMeshComponent:
-      ModelPath: Models/sphere.gltf
-      ShaderPath: Resources/Shaders/Mesh.glsl
-      MaterialName: MeshMaterial
-      Color: [1, 0.911392331, 0, 1]
-      Shininess: 32
-      TextureFilepath: ""
-      TilingFactor: [1, 1]
-  - Entity: 4938450940758165088
-    TagComponent:
-      Tag: Cube
-    TransformComponent:
-      Translation: [-8.79983139, -1.94402254, -5.71878242]
-      Rotation: [0, 0.878180087, 0]
-      Scale: [0.31557101, 0.525723279, 3.20699072]
-    StaticMeshComponent:
-      ModelPath: Models/cube.gltf
-      ShaderPath: Resources/Shaders/Mesh.glsl
-      MaterialName: MeshMaterial
-      Color: [1, 0, 0, 1]
-      Shininess: 32
-      TextureFilepath: ""
-      TilingFactor: [1, 1]
-  - Entity: 4832205102639340210
-    TagComponent:
-      Tag: Cube
-    TransformComponent:
-      Translation: [0.136294007, -1.32733285, -15.6998234]
-      Rotation: [0, 0, 0]
-      Scale: [12.663537, 1.22447324, 0.198123515]
-    StaticMeshComponent:
-      ModelPath: Models/cube.gltf
-      ShaderPath: Resources/Shaders/Mesh.glsl
-      MaterialName: MeshMaterial
-      Color: [0.936121345, 0.61181438, 1, 1]
-      Shininess: 32
+      Bias: 0.00499999989
       TextureFilepath: ""
       TilingFactor: [1, 1]
   - Entity: 6136206317458845055
     TagComponent:
       Tag: Cube
     TransformComponent:
-      Translation: [8.44912052, -0.991977811, -0.672238708]
+      Translation: [8.44912052, -0.991977811, -0.523833275]
       Rotation: [3.14159226, -0.751579702, -3.14159203]
       Scale: [4.90259886, 1.22447324, 0.198123634]
     StaticMeshComponent:
@@ -137,20 +45,141 @@ Entities:
       MaterialName: MeshMaterial
       Color: [0, 1, 0.911392212, 1]
       Shininess: 32
+      Bias: 0.00499999989
       TextureFilepath: ""
       TilingFactor: [1, 1]
-  - Entity: 1779268253014771028
+  - Entity: 4832205102639340210
     TagComponent:
       Tag: Cube
     TransformComponent:
-      Translation: [-9.44225407, -0.584729791, -8.13883305]
+      Translation: [5.91589832, -1.32733285, -14.298131]
+      Rotation: [0, -0.37466979, 0]
+      Scale: [3.1372931, 1.22447324, 0.198123336]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.936121345, 0.61181438, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []
+  - Entity: 4938450940758165088
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [-11.6582518, -1.94402432, 10.9703369]
+      Rotation: [0, 0.878180087, 0]
+      Scale: [0.31557101, 0.525723279, 3.20699072]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 0, 0, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 13143099136088583757
+    TagComponent:
+      Tag: Sphere
+    TransformComponent:
+      Translation: [0.944334149, -0.918318152, 8.25072289]
       Rotation: [0, 0, 0]
-      Scale: [1.0010922, 1, 1]
+      Scale: [1.55999994, 1.55999994, 1.55999994]
+    StaticMeshComponent:
+      ModelPath: Models/sphere.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 0.911392331, 0, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 16771711495524342754
+    TagComponent:
+      Tag: Sphere
+    TransformComponent:
+      Translation: [5.30333805, -1.49098802, -7.23793888]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    StaticMeshComponent:
+      ModelPath: Models/sphere.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.759493589, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 17481569782657353424
+    TagComponent:
+      Tag: Sphere
+    TransformComponent:
+      Translation: [-3.46160173, -1.08838999, 0.485512912]
+      Rotation: [-2.86455361e-05, 1.56734371, -2.79278065e-05]
+      Scale: [2.09000015, 2.09000015, 2.09000015]
+    StaticMeshComponent:
+      ModelPath: Models/sphere.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 0.227450982, 0.227450982, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 9018303064199255844
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [0, -2.8561883, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20, 0.5, 20]
     StaticMeshComponent:
       ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
       Color: [1, 1, 1, 1]
+      Shininess: 46
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 16334922964600789874
+    TagComponent:
+      Tag: Directional Light
+    TransformComponent:
+      Translation: [0, 3.04999995, 0]
+      Rotation: [-0.847254455, 0, 0]
+      Scale: [0.999999642, 0.999994397, 0.999993682]
+    DirectionalLightComponent:
+      Color: [1, 1, 1]
+      Ambient: 0.280000001
+      Diffuse: 0.670000017
+      Specular: 0.430000007
+      Near: -20
+      Far: 20
+      Size: 20
+    ScriptComponent:
+      ClassName: Game.Model
+      StoredFields:
+        []
+  - Entity: 9414834469869702950
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [-9.55591869, 1.11016846, -10.0118885]
+      Rotation: [0, 0, -0.839514852]
+      Scale: [1.30053222, 0.334740072, 0.198123515]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.810126662, 1, 0, 1]
       Shininess: 32
-      TextureFilepath: Sprites/marioB.png
-      TilingFactor: [5, 5]
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]

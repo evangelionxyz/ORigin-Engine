@@ -195,8 +195,8 @@ namespace origin
 
       fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
       fbSpec.ReadBuffer = false;
-      fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
-      
+
+      fbSpec.Attachments = { FramebufferTextureFormat::DEPTH };
       entity.GetComponent<DirectionalLightComponent>().ShadowFb = Framebuffer::Create(fbSpec);
 
       m_EntityMap.insert(std::make_pair(uuid, entity));
@@ -682,8 +682,7 @@ namespace origin
       for (auto& light : dirLight)
       {
         auto& [tc, lc] = dirLight.get<TransformComponent, DirectionalLightComponent>(light);
-				glm::mat4 lightProjection = glm::ortho(-lc.Size, lc.Size,
-					-lc.Size, lc.Size, lc.Near, lc.Far);
+				glm::mat4 lightProjection = glm::ortho(-lc.Size, lc.Size, -lc.Size, lc.Size, lc.Near, lc.Far);
 
 				// direction/eye, center, up
 				glm::mat4 lightView = glm::lookAt(glm::radians(-tc.GetForward()), glm::vec3(0.0f), glm::radians(-tc.GetUp()));
@@ -694,9 +693,6 @@ namespace origin
         // Skip if the framebuffer is not available
         if(lc.ShadowFb == nullptr)
           continue;
-
-        glFrontFace(GL_CCW);
-        glCullFace(GL_FRONT);
 
         lc.ShadowFb->Bind();
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -716,8 +712,6 @@ namespace origin
         }
         
         lc.ShadowFb->Unbind();
-        glCullFace(GL_BACK);
-        glFrontFace(GL_CW);
       }
       
       Renderer::GetGShader("DepthMap")->Disable();

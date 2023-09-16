@@ -16,14 +16,14 @@ namespace origin {
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D; 
 		}
 
-		static void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
+		static void CreateTextures(bool multisampled, uint32_t* outTextureID, uint32_t count)
 		{
-			glCreateTextures(TextureTarget(multisampled), count, outID);
+			glCreateTextures(TextureTarget(multisampled), count, outTextureID);
 		}
 
-		static void BindTexture(bool multisampled, uint32_t id)
+		static void BindTexture(bool multisampled, uint32_t textureID)
 		{ 
-			glBindTexture(TextureTarget(multisampled), id); 
+			glBindTexture(TextureTarget(multisampled), textureID);
 		}
 
 		static void AttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, GLenum filterMode, GLenum wrapMode, int index)
@@ -36,11 +36,12 @@ namespace origin {
 			else
 			{
 				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
 			}
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
 			
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, NULL);
 		}
@@ -52,20 +53,23 @@ namespace origin {
 			{
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, width, height, GL_FALSE);
 			}
-
 			else
 			{
-				glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, width, height);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-
-				float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-				glTextureParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+				if(attachmentType == GL_DEPTH_STENCIL_ATTACHMENT)
+					glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, width, height);
+				else if(attachmentType == GL_DEPTH_ATTACHMENT)
+					glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat, GL_FLOAT, nullptr);
 			}
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+
+			float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, NULL);
 		}
 
 		static bool IsDepthFormat(FramebufferTextureFormat format)
@@ -73,6 +77,7 @@ namespace origin {
 			switch (format)
 			{
 				case FramebufferTextureFormat::DEPTH: return true;
+				case FramebufferTextureFormat::DEPTH24STENCIL8: return true;
 			}
 
 			return false;
@@ -161,7 +166,10 @@ namespace origin {
 
 			switch (m_DepthAttachmentSpecification.TextureFormat)
 			{
-				// ID, Samples, Internal Format, Attachment Type, Width, Height, Filter, Wrap
+			// ID, Samples, Internal Format, Attachment Type, Width, Height, Filter, Wrap
+			case FramebufferTextureFormat::DEPTH:
+				Utils::AttachDepthTexture(m_DepthAttachment, m_Spec.Samples, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, m_Spec.Width, m_Spec.Height, m_Spec.FilterMode, m_Spec.WrapMode);
+				break;
 			case FramebufferTextureFormat::DEPTH24STENCIL8:
 				Utils::AttachDepthTexture(m_DepthAttachment, m_Spec.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Spec.Width, m_Spec.Height, m_Spec.FilterMode, m_Spec.WrapMode);
 				break;
@@ -177,10 +185,10 @@ namespace origin {
 		if(m_ColorAttachments.empty())
 			glDrawBuffer(GL_NONE);
 		if (m_Spec.ReadBuffer == false);
-		glReadBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
 
 		OGN_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer incomplete");
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 	}
 
 	void OpenGL_Framebuffer::Bind()

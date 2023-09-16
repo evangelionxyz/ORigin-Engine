@@ -43,7 +43,7 @@ namespace origin {
 		glm::vec4 Color = glm::vec4(1.0f);
 		float Shininess = 32.0f;
 
-		float Bias = 0.05f;
+		float Bias = 0.005f;
 
 		bool HasTexture = false;
 		std::shared_ptr<Shader> m_Shader;

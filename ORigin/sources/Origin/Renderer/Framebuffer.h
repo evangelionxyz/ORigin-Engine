@@ -17,9 +17,8 @@ namespace origin
 		RGBA8,
 		RED_INTEGER,
 
-		// depth/stencil
-		DEPTH24STENCIL8,
-		DEPTH = DEPTH24STENCIL8
+		DEPTH,
+		DEPTH24STENCIL8
 	};
 
 	struct FramebufferTextureSpecification

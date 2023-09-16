@@ -72,6 +72,7 @@ struct Material
 };
 uniform Material material;
 
+// LightSpace Position, World Light Position
 float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
 {
     vec3 projectionCoords = lightSpacePosition.xyz / lightSpacePosition.w;
@@ -85,11 +86,11 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
     vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
     float shadow = 0.0;
 
-    for(int x = -1; x <= 1; x++)
+    for(int x = -1; x <= 1; ++x)
     {
-        for(int y = -1; y <= 1; y++)
+        for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(uShadowMap, projectionCoords.xy + vec2(x,y) * texelSize).r;
+            float pcfDepth = texture(uShadowMap, projectionCoords.xy + vec2(x, y) * texelSize).r;
             shadow += projectionCoords.z - bias > pcfDepth ? 1.0 : 0.0;
         }
     }
