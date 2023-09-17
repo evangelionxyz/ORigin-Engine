@@ -18,7 +18,9 @@ namespace origin
 		RED_INTEGER,
 
 		DEPTH,
-		DEPTH24STENCIL8
+		DEPTH24STENCIL8,
+
+		DEPTH_CUBE
 	};
 
 	struct FramebufferTextureSpecification
@@ -65,6 +67,7 @@ namespace origin
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
 		virtual uint32_t GetDepthAttachmentRendererID() const = 0;
+		virtual uint32_t GetDepthCubeAttachmentRendererID() const = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;

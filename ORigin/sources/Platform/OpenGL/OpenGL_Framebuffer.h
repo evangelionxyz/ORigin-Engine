@@ -25,6 +25,8 @@ namespace origin {
 
 		uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { return m_ColorAttachments[index]; };
 		uint32_t GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
+		uint32_t GetDepthCubeAttachmentRendererID() const override { return m_DepthCubeAttachment; }
+
 		const FramebufferSpecification& GetSpecification() const override { return m_Spec; }
 
 	private:
@@ -36,6 +38,7 @@ namespace origin {
 		// Texture ID
 		std::vector<uint32_t> m_ColorAttachments;
 		uint32_t m_DepthAttachment = 0;
+		uint32_t m_DepthCubeAttachment = 0;
 	};
 
 

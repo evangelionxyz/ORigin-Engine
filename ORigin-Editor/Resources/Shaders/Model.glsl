@@ -6,10 +6,13 @@ layout(location = 2) in vec2 aTexCoord;
 layout(location = 3) in vec4 aColor;
 layout(location = 4) in int aEntityID;
 
-layout (std140, binding = 0) uniform Camera
+layout (std140, binding = 0) uniform UBO
 {
 	mat4 ViewProjection;
-} cameraBuffer;
+	mat4 LightSpaceMatrix;
+	vec3 CameraPosition;
+
+} uboData;
 
 layout(std140, binding = 1) uniform PointLight
 {
@@ -38,7 +41,7 @@ void main()
 	outVertex.Color = aColor;
 	vEntityID = aEntityID;
 
-	gl_Position = cameraBuffer.ViewProjection * vec4(aPosition, 1.0);
+	gl_Position = uboData.ViewProjection * vec4(aPosition, 1.0);
 }
 
 // type fragment

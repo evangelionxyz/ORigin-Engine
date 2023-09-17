@@ -42,10 +42,9 @@ namespace origin {
 
 		glm::vec4 Color = glm::vec4(1.0f);
 		float Shininess = 32.0f;
-
 		float Bias = 0.005f;
-
 		bool HasTexture = false;
+
 		std::shared_ptr<Shader> m_Shader;
 		std::vector<std::shared_ptr<Texture2D>> LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type, std::string typeName);
 

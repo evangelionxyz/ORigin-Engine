@@ -740,7 +740,7 @@ namespace origin {
 					ImGui::Text("Material");
 
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
-					ImGui::DragFloat("Shininess", &component.Material->Shininess, 1.0f, 0.0f, 256.0f);
+					ImGui::DragFloat("Shininess", &component.Material->Shininess, 0.1f, 1.0f, 256.0f);
 					ImGui::SliderFloat("Bias", &component.Material->Bias, 0.005f, 0.1f);
 
 					// Drop Texture

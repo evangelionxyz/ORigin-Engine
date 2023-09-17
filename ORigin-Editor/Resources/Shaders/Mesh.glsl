@@ -22,7 +22,7 @@ uniform mat4 uLightSpaceMatrix;
 void main()
 {
 	vertex.Position = vec3(uModel * vec4(aPos, 1.0));
-    vertex.Normal = transpose(inverse(mat3(uModel))) * aNormal;
+    vertex.Normal = mat3(transpose(inverse(uModel))) * aNormal;
 	vertex.TexCoord = aTexCoord;
 
     vertex.LightSpacePosition = uLightSpaceMatrix * vec4(vertex.Position, 1.0);
@@ -82,13 +82,13 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
     vec3 lightDir = normalize(lightDirection - vertex.Position);
 
     // bias with max 0.05 and min 0.005
-    float bias = max(material.Bias * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(material.Bias * (1.0 - dot(normal, lightDir)), 0.0001);
     vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
     float shadow = 0.0;
 
-    for(int x = -1; x <= 1; ++x)
+    for(int x = -1; x <= 1; x++)
     {
-        for(int y = -1; y <= 1; ++y)
+        for(int y = -1; y <= 1; y++)
         {
             float pcfDepth = texture(uShadowMap, projectionCoords.xy + vec2(x, y) * texelSize).r;
             shadow += projectionCoords.z - bias > pcfDepth ? 1.0 : 0.0;
@@ -155,8 +155,7 @@ void main()
     }
     else if(uHasOneTexture)
     {
-        vec2 texCoordTimesTiling = vec2(vertex.TexCoord.x * material.TilingFactor.x,
-        vertex.TexCoord.y * material.TilingFactor.y);
+        vec2 texCoordTimesTiling = vec2(vertex.TexCoord * material.TilingFactor);
 
         diffuseTex = texture(material.Texture, texCoordTimesTiling).rgb;
         specularTex = texture(material.Texture, texCoordTimesTiling).rgb;

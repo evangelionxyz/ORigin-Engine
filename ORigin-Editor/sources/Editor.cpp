@@ -96,7 +96,6 @@ namespace origin {
 
   void Editor::OnUpdate(Timestep time)
   {
-
     m_ActiveScene->OnShadowRender();
 
     m_Time += time.Seconds();

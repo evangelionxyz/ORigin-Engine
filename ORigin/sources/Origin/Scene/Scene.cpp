@@ -590,6 +590,8 @@ namespace origin
 
     void Scene::RenderScene(Camera* camera, const TransformComponent& cameraTransform)
     {
+      
+
         Renderer::BeginScene(*camera, cameraTransform.GetTransform());
         // Get Camera Position
         const glm::vec3& MainCameraPosition = cameraTransform.Translation;
@@ -660,6 +662,9 @@ namespace origin
             Renderer3D::DrawCube(transform.GetTransform(), sprite, static_cast<int>(entity));
         }
 
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+
 				// Mesh
 				auto& mehsView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 				for (auto& entity : mehsView)
@@ -670,14 +675,20 @@ namespace origin
 					}
 				}
 
+        glDisable(GL_CULL_FACE);
+
         Renderer::EndScene();
     }
 
     void Scene::OnShadowRender()
     {
-      Renderer::GetGShader("DepthMap")->Enable();
+      
 
+      // ==============================
       // Directional Light Shadow
+      // ==============================
+      Renderer::GetGShader("DirLightDepthMap")->Enable();
+
       const auto& dirLight = m_Registry.view<TransformComponent, DirectionalLightComponent>();
       for (auto& light : dirLight)
       {
@@ -688,11 +699,15 @@ namespace origin
 				glm::mat4 lightView = glm::lookAt(glm::radians(-tc.GetForward()), glm::vec3(0.0f), glm::radians(-tc.GetUp()));
         lc.LightSpaceMatrix = lightProjection * lightView;
         
-				Renderer::GetGShader("DepthMap")->SetMatrix("uLightSpaceMatrix", lc.LightSpaceMatrix);
+				Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uLightSpaceMatrix", lc.LightSpaceMatrix);
 
         // Skip if the framebuffer is not available
         if(lc.ShadowFb == nullptr)
           continue;
+
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
 
         lc.ShadowFb->Bind();
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -706,15 +721,21 @@ namespace origin
           if (mesh.Model)
           {
             // Set Depth shader
-            Renderer::GetGShader("DepthMap")->SetMatrix("uModel", tc.GetTransform());
+            Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uModel", tc.GetTransform());
             mesh.Model->Draw();
           }
         }
         
         lc.ShadowFb->Unbind();
       }
-      
-      Renderer::GetGShader("DepthMap")->Disable();
+     
+      Renderer::GetGShader("DirLightDepthMap")->Disable();
+
+      // ==============================
+      // Point Light Shadow
+      // ==============================
+
+      glDisable(GL_CULL_FACE);
     }
 
     void Scene::RenderScene(const EditorCamera& camera)
@@ -784,6 +805,8 @@ namespace origin
         }
       }
 
+      glEnable(GL_CULL_FACE);
+      glCullFace(GL_BACK);
       // 3D Scene
       // Cube
       const auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
@@ -911,6 +934,7 @@ namespace origin
           mesh.Material->m_SpotLightCount = spotLightCount;
         }
 			}
+      glDisable(GL_CULL_FACE);
 
       //DrawGrid(m_GridSize, m_GridColor);
       Renderer::EndScene();

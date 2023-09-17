@@ -125,7 +125,7 @@ namespace origin
 			}
 			else
 			{
-				vertex.TexCoord = glm::vec2(0.0f, 0.0f);
+				vertex.TexCoord = glm::vec2(0.0f);
 			}
 
 			vertices.push_back(vertex);

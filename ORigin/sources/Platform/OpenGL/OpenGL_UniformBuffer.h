@@ -19,7 +19,8 @@ namespace origin
 	private:
 
 		uint32_t m_RendererID = 0;
-		uint32_t m_Binding;
+		uint32_t m_BufferSize = 0;
+		uint32_t m_BindingPoint;
 	};
 }
 
