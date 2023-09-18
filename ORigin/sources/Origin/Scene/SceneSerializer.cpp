@@ -310,20 +310,21 @@ namespace origin {
 			out << YAML::EndMap; // !TextComponent
 		}
 
-		if (entity.HasComponent<Particle2DComponent>())
+		if (entity.HasComponent<ParticleComponent>())
 		{
 			out << YAML::Key << "Particle2DComponent";
 			out << YAML::BeginMap; // Particle2DComponent
-			auto& particle2DComponent = entity.GetComponent<Particle2DComponent>();
-			out << YAML::Key << "Velocity" << YAML::Value << particle2DComponent.Velocity;
-			out << YAML::Key << "VelocityVariation" << YAML::Value << particle2DComponent.VelocityVariation;
-			out << YAML::Key << "ColorBegin" << YAML::Value << particle2DComponent.ColorBegin;
-			out << YAML::Key << "ColorEnd" << YAML::Value << particle2DComponent.ColorEnd;
-			out << YAML::Key << "SizeBegin" << YAML::Value << particle2DComponent.SizeBegin;
-			out << YAML::Key << "SizeEnd" << YAML::Value << particle2DComponent.SizeEnd;
-			out << YAML::Key << "SizeVariation" << YAML::Value << particle2DComponent.SizeVariation;
-			out << YAML::Key << "ZAxis" << YAML::Value << particle2DComponent.ZAxis;
-			out << YAML::Key << "LifeTime" << YAML::Value << particle2DComponent.LifeTime;
+			auto& particleComponent = entity.GetComponent<ParticleComponent>();
+			out << YAML::Key << "Velocity" << YAML::Value << particleComponent.Velocity;
+			out << YAML::Key << "VelocityVariation" << YAML::Value << particleComponent.VelocityVariation;
+			out << YAML::Key << "Rotation" << YAML::Value << particleComponent.Rotation;
+			out << YAML::Key << "ColorBegin" << YAML::Value << particleComponent.ColorBegin;
+			out << YAML::Key << "ColorEnd" << YAML::Value << particleComponent.ColorEnd;
+			out << YAML::Key << "SizeBegin" << YAML::Value << particleComponent.SizeBegin;
+			out << YAML::Key << "SizeEnd" << YAML::Value << particleComponent.SizeEnd;
+			out << YAML::Key << "SizeVariation" << YAML::Value << particleComponent.SizeVariation;
+			out << YAML::Key << "ZAxis" << YAML::Value << particleComponent.ZAxis;
+			out << YAML::Key << "LifeTime" << YAML::Value << particleComponent.LifeTime;
 
 			out << YAML::EndMap; // !Particle2DComponent
 		}
@@ -677,18 +678,19 @@ namespace origin {
 						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
 				}
 
-				if (YAML::Node particle2DComponent = entity["Particle2DComponent"])
+				if (YAML::Node particleComponent = entity["ParticleComponent"])
 				{
-					auto& pc = deserializedEntity.AddComponent<Particle2DComponent>();
-					pc.Velocity = particle2DComponent["Velocity"].as<glm::vec2>();
-					pc.VelocityVariation = particle2DComponent["VelocityVariation"].as<glm::vec2>();
-					pc.ColorBegin = particle2DComponent["ColorBegin"].as<glm::vec4>();
-					pc.ColorEnd = particle2DComponent["ColorEnd"].as<glm::vec4>();
-					pc.SizeBegin = particle2DComponent["SizeBegin"].as<float>();
-					pc.SizeEnd = particle2DComponent["SizeEnd"].as<float>();
-					pc.SizeVariation = particle2DComponent["SizeVariation"].as<float>();
-					pc.ZAxis = particle2DComponent["ZAxis"].as<float>();
-					pc.LifeTime = particle2DComponent["LifeTime"].as<float>();
+					auto& pc = deserializedEntity.AddComponent<ParticleComponent>();
+					pc.Velocity = particleComponent["Velocity"].as<glm::vec3>();
+					pc.VelocityVariation = particleComponent["VelocityVariation"].as<glm::vec3>();
+					pc.Rotation = particleComponent["Rotation"].as<glm::vec3>();
+					pc.ColorBegin = particleComponent["ColorBegin"].as<glm::vec4>();
+					pc.ColorEnd = particleComponent["ColorEnd"].as<glm::vec4>();
+					pc.SizeBegin = particleComponent["SizeBegin"].as<float>();
+					pc.SizeEnd = particleComponent["SizeEnd"].as<float>();
+					pc.SizeVariation = particleComponent["SizeVariation"].as<float>();
+					pc.ZAxis = particleComponent["ZAxis"].as<float>();
+					pc.LifeTime = particleComponent["LifeTime"].as<float>();
 				}
 
 				if (YAML::Node spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])

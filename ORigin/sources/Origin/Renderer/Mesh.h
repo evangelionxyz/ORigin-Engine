@@ -9,7 +9,7 @@
 
 namespace origin
 {
-	struct Vertex
+	struct MeshVertex
 	{
 		glm::vec3 Position;
 		glm::vec3 Normal;
@@ -24,7 +24,7 @@ namespace origin
 		virtual bool IsLoaded() const = 0;
 
 		static std::shared_ptr<Mesh> Create(
-			const std::vector<Vertex>& vertices,
+			const std::vector<MeshVertex>& vertices,
 			const std::vector<uint32_t>& indices,
 			const std::vector<std::shared_ptr<Texture2D>>& textures,
 			const std::string& modelFilepath = "");

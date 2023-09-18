@@ -15,12 +15,12 @@ namespace origin {
 
 		s_2Ddata.QuadVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(QuadVertex));
 		s_2Ddata.QuadVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position"     },
-			{ ShaderDataType::Float4, "a_Color"        },
-			{ ShaderDataType::Float2, "a_TexCoord"     },
-			{ ShaderDataType::Float,  "a_TexIndex"     },
-			{ ShaderDataType::Float,  "a_TilingFactor" },
-			{ ShaderDataType::Int,    "a_EntityID"     }
+			{ ShaderDataType::Float3, "aPosition"     },
+			{ ShaderDataType::Float4, "aColor"        },
+			{ ShaderDataType::Float2, "aTexCoord"     },
+			{ ShaderDataType::Float,  "aTexIndex"     },
+			{ ShaderDataType::Float,  "aTilingFactor" },
+			{ ShaderDataType::Int,    "aEntityID"     }
 			});
 		s_2Ddata.QuadVertexArray->AddVertexBuffer(s_2Ddata.QuadVertexBuffer);
 		s_2Ddata.QuadVertexBufferBase = new QuadVertex[s_2Ddata.MaxVertices];
@@ -65,12 +65,12 @@ namespace origin {
 		s_2Ddata.CircleVertexArray = VertexArray::Create();
 		s_2Ddata.CircleVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(CircleVertex));
 		s_2Ddata.CircleVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_WorldPosition" },
-			{ ShaderDataType::Float3, "a_LocalPosition" },
-			{ ShaderDataType::Float4, "a_Color"					},
-			{ ShaderDataType::Float,  "a_Thickness"			},
-			{ ShaderDataType::Float,  "a_Fade"					},
-			{ ShaderDataType::Int,    "a_EntityID"			}
+			{ ShaderDataType::Float3, "aWorldPosition" },
+			{ ShaderDataType::Float3, "aLocalPosition" },
+			{ ShaderDataType::Float4, "aColor"					},
+			{ ShaderDataType::Float,  "aThickness"			},
+			{ ShaderDataType::Float,  "aFade"					},
+			{ ShaderDataType::Int,    "aEntityID"			}
 			});
 		s_2Ddata.CircleVertexArray->AddVertexBuffer(s_2Ddata.CircleVertexBuffer);
 		s_2Ddata.CircleVertexArray->SetIndexBuffer(quadIB);
@@ -80,9 +80,9 @@ namespace origin {
 		s_2Ddata.LineVertexArray = VertexArray::Create();
 		s_2Ddata.LineVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(LineVertex));
 		s_2Ddata.LineVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position"},
-			{ ShaderDataType::Float4, "a_Color"		},
-			{ ShaderDataType::Int,    "a_EntityID"}
+			{ ShaderDataType::Float3, "aPosition"},
+			{ ShaderDataType::Float4, "aColor"		},
+			{ ShaderDataType::Int,    "aEntityID"}
 			});
 		s_2Ddata.LineVertexArray->AddVertexBuffer(s_2Ddata.LineVertexBuffer);
 		s_2Ddata.LineVertexBufferBase = new LineVertex[s_2Ddata.MaxVertices];

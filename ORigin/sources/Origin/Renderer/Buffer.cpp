@@ -31,7 +31,7 @@ namespace origin
 		return nullptr;
 	}
 
-	std::shared_ptr<origin::VertexBuffer> VertexBuffer::Create(std::vector<Vertex> vertices)
+	std::shared_ptr<origin::VertexBuffer> VertexBuffer::Create(std::vector<MeshVertex> vertices)
 	{
 		switch (Renderer::GetAPI())
 		{

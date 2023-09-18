@@ -13,7 +13,7 @@ namespace origin
 		OpenGLMesh() = default;
 
 		OpenGLMesh(
-			const std::vector<Vertex>& vertices, 
+			const std::vector<MeshVertex>& vertices, 
 			const std::vector<uint32_t>& indices, 
 			const std::vector<std::shared_ptr<Texture2D>>& textures, 
 			const std::string& modelFilepath = "");

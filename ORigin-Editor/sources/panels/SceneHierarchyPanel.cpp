@@ -239,7 +239,7 @@ namespace origin {
 			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
-			DisplayAddComponentEntry<Particle2DComponent>("PARTICLE 2D");
+			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRCLE COLLIDER 2D");
 
 			ImGui::EndPopup();
@@ -809,14 +809,15 @@ namespace origin {
 				DrawVecControl("Line Spacing", &component.LineSpacing, 1.0f);
 			});
 
-		DrawComponent<Particle2DComponent>("PARTICLE 2D", entity, [](auto& component)
+		DrawComponent<ParticleComponent>("PARTICLE", entity, [](auto& component)
 			{
 				float columnWidth = 100.0f;
 
 				ImGui::ColorEdit4("Color Begin", glm::value_ptr(component.ColorBegin));
 				ImGui::ColorEdit4("Color End", glm::value_ptr(component.ColorEnd));
-				DrawVec2Control("Velocity", component.Velocity, 0.01f, 0.5f, columnWidth);
-				DrawVec2Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
+				DrawVec3Control("Velocity", component.Velocity, 0.01f, 0.0f, columnWidth);
+				DrawVec3Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
+				DrawVec3Control("Rotation", component.Rotation, 0.01f, 0.0f, columnWidth);
 
 				DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
 				DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
@@ -903,7 +904,7 @@ namespace origin {
 
 				ImGui::DragFloat("Near", &component.Near, 0.1f);
 				ImGui::DragFloat("Far", &component.Far, 0.1f);
-				ImGui::DragFloat("Size", &component.Size, 0.1);
+				ImGui::DragFloat("Size", &component.Size, 0.1f);
 
 				if(component.ShadowFb)
 				{

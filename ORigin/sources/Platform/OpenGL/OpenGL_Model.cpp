@@ -93,13 +93,13 @@ namespace origin
 
 	std::shared_ptr<Mesh> OpenGLModel::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	{
-		std::vector<Vertex> vertices;
+		std::vector<MeshVertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<std::shared_ptr<Texture2D>> textures;
 
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
 		{
-			Vertex vertex;
+			MeshVertex vertex;
 
 			vertex.Position = glm::vec3(
 				mesh->mVertices[i].x,

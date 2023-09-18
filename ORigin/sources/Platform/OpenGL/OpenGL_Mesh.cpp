@@ -8,25 +8,27 @@
 namespace origin
 {
 	OpenGLMesh::OpenGLMesh(
-		const std::vector<Vertex>& vertices, 
+		const std::vector<MeshVertex>& vertices, 
 		const std::vector<uint32_t>& indices, 
 		const std::vector<std::shared_ptr<Texture2D>>& textures,
 		const std::string& modelFilepath)
 	{
 		OGN_CORE_WARN("MESH INFO: \"{}\"", modelFilepath);
 		OGN_CORE_TRACE("VERTEX");
-		OGN_CORE_TRACE("	Size : {} bytes", sizeof(Vertex));
+		OGN_CORE_TRACE("	Size : {} bytes", sizeof(MeshVertex));
 
 		OGN_CORE_TRACE("VERTICES");
 		OGN_CORE_TRACE("	Count: {}", vertices.size());
-		OGN_CORE_TRACE("	Size : {} bytes", vertices.size() * sizeof(Vertex));
+		OGN_CORE_TRACE("	Size : {} bytes", vertices.size() * sizeof(MeshVertex));
 
 		OGN_CORE_TRACE("INDICES");
 		OGN_CORE_TRACE("	Count: {}", indices.size());
 		OGN_CORE_TRACE("	Size : {} bytes", indices.size() * sizeof(uint32_t));
 
 		m_VertexArray = VertexArray::Create();
+		//m_VertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(MeshVertex));
 		m_VertexBuffer = VertexBuffer::Create(vertices);
+
 		m_VertexBuffer->SetLayout
 		({
 			{ ShaderDataType::Float3, "aPosition" },

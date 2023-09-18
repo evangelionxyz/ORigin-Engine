@@ -136,7 +136,7 @@ namespace origin
 
 		static std::shared_ptr<VertexBuffer> Create(uint32_t size);
 		static std::shared_ptr<VertexBuffer> Create(float* vertices, uint32_t size);
-		static std::shared_ptr<VertexBuffer> Create(std::vector<Vertex> vertices);
+		static std::shared_ptr<VertexBuffer> Create(std::vector<MeshVertex> vertices);
 
 	};
 
