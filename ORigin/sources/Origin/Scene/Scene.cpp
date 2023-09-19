@@ -751,7 +751,7 @@ namespace origin
 				{
 					pc.Particle.Emit(pc,
 					                 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-					                 tc.Scale, tc.Rotation, static_cast<int>(entity)
+					                 tc.Scale, pc.Rotation, static_cast<int>(entity)
 					);
 				}
 

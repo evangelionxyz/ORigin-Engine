@@ -5,29 +5,30 @@
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
 
-#include "Origin\Scene\Component.h"
+#include "Origin/Scene/Component.h"
 
-#include "Origin\Scene\Scene.h"
-#include "Origin\Scene\Entity.h"
+#include "Origin/Scene/Scene.h"
+#include "Origin/Scene/Entity.h"
 
-#include "Origin\IO\KeyCodes.h"
-#include "Origin\IO\Input.h"
+#include "Origin/IO/KeyCodes.h"
+#include "Origin/IO/Input.h"
 
-#include "mono\metadata\object.h"
-#include "mono\metadata\reflection.h"
+#include "mono/metadata/object.h"
+#include "mono/metadata/reflection.h"
 
-#include "box2d\b2_body.h"
-#include "Origin\Audio\Audio.h"
+#include "box2d/b2_body.h"
+#include "Origin/Audio/Audio.h"
 
 namespace origin
 {
 #define OGN_ADD_INTERNAL_CALLS(Name) mono_add_internal_call("ORiginEngine.InternalCalls::"#Name, Name)
 
-	namespace Utils {
+	namespace Utils
+	{
 		std::string MonoStringToString(MonoString* string)
 		{
 			char* cStr = mono_string_to_utf8(string);
-			std::string str = std::string(cStr);
+			auto str = std::string(cStr);
 			mono_free(cStr);
 
 			return str;
@@ -74,12 +75,12 @@ namespace origin
 
 	static void NativeLog_Vector(glm::vec3* parameter, glm::vec3* outResult)
 	{
-		*outResult = glm::normalize(*parameter);
+		*outResult = normalize(*parameter);
 	}
 
 	static float NativeLog_VectorDot(glm::vec3* parameter)
 	{
-		return glm::dot(*parameter, *parameter);
+		return dot(*parameter, *parameter);
 	}
 
 	// Component
@@ -149,7 +150,7 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 		body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
 	}
 
@@ -160,7 +161,7 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
 	}
 
@@ -528,7 +529,7 @@ namespace origin
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		entity.GetComponent<SpriteRenderer2DComponent>().Color= *color;
+		entity.GetComponent<SpriteRenderer2DComponent>().Color = *color;
 	}
 
 	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, float* tilingfactor)
@@ -770,7 +771,7 @@ namespace origin
 		return Input::IsKeyPressed(keycode);
 	}
 
-	template<typename... Component>
+	template <typename... Component>
 	static void RegisterComponent()
 	{
 		([]()
@@ -781,19 +782,18 @@ namespace origin
 			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(),
-				ScriptEngine::GetCoreAssemblyImage());
+			                                                       ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
-				OGN_CORE_ERROR("SCRIPT GLUE : Could not find component type {}", managedTypename);
+				OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
 				return;
 			}
 
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
-
 		}(), ...);
 	}
 
-	template<typename... Component>
+	template <typename... Component>
 	static void RegisterComponent(ComponentGroup<Component...>)
 	{
 		RegisterComponent<Component...>();
@@ -845,7 +845,7 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsSpatial);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetPlayAtStart);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsPlayAtStart);
-		
+
 		OGN_ADD_INTERNAL_CALLS(TextComponent_GetText);
 		OGN_ADD_INTERNAL_CALLS(TextComponent_SetText);
 		OGN_ADD_INTERNAL_CALLS(TextComponent_GetColor);

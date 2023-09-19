@@ -3,12 +3,12 @@
 #include "pch.h"
 
 #include "SceneSerializer.h"
-#include "Origin\Scripting\ScriptEngine.h"
-#include "Origin\Project\Project.h"
-#include "Origin\Renderer\Model.h"
-#include "Origin\Renderer\Shader.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Audio\Audio.h"
+#include "Origin/Scripting/ScriptEngine.h"
+#include "Origin/Project/Project.h"
+#include "Origin/Renderer/Model.h"
+#include "Origin/Renderer/Shader.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Audio/Audio.h"
 
 #include "Entity.h"
 #include "Component.h"
@@ -18,13 +18,13 @@
 
 namespace YAML
 {
-	template<>
+	template <>
 	struct convert<origin::UUID>
 	{
 		static Node encode(const origin::UUID uuid)
 		{
 			Node node;
-			node.push_back((uint64_t)uuid);
+			node.push_back(static_cast<uint64_t>(uuid));
 			return node;
 		}
 
@@ -35,7 +35,7 @@ namespace YAML
 		}
 	};
 
-	template<>
+	template <>
 	struct convert<glm::vec2>
 	{
 		static Node encode(const glm::vec2& rhs)
@@ -57,7 +57,7 @@ namespace YAML
 		}
 	};
 
-	template<>
+	template <>
 	struct convert<glm::vec3>
 	{
 		static Node encode(const glm::vec3& rhs)
@@ -81,7 +81,7 @@ namespace YAML
 		}
 	};
 
-	template<>
+	template <>
 	struct convert<glm::vec4>
 	{
 		static Node encode(const glm::vec4& rhs)
@@ -105,26 +105,24 @@ namespace YAML
 			rhs.w = node[3].as<float>();
 			return true;
 		}
-
 	};
-
 }
-namespace origin {
 
+namespace origin
+{
 #define WRITE_FIELD_TYPE(FieldType, Type)\
 				case ScriptFieldType::FieldType:\
 				{\
 					out << scriptField.GetValue<Type>();\
 					break;\
-				}\
-
+				}
 #define	READ_FIELD_TYPE(FieldType, Type)\
 				case ScriptFieldType::FieldType:\
 				{\
 					Type data = scriptField["Data"].as<Type>();\
 					fieldInstance.SetValue(data);\
 					break;\
-				}\
+				}
 
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
 	{
@@ -151,9 +149,9 @@ namespace origin {
 	{
 		switch (bodyType)
 		{
-			case Rigidbody2DComponent::BodyType::Static:    return "Static";
-			case Rigidbody2DComponent::BodyType::Dynamic:   return "Dynamic";
-			case Rigidbody2DComponent::BodyType::Kinematic: return "Kinematic";
+		case Rigidbody2DComponent::BodyType::Static: return "Static";
+		case Rigidbody2DComponent::BodyType::Dynamic: return "Dynamic";
+		case Rigidbody2DComponent::BodyType::Kinematic: return "Kinematic";
 		}
 
 		OGN_CORE_ASSERT(false, "Unknown body type");
@@ -162,8 +160,8 @@ namespace origin {
 
 	static Rigidbody2DComponent::BodyType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
 	{
-		if (bodyTypeString == "Static")    return Rigidbody2DComponent::BodyType::Static;
-		if (bodyTypeString == "Dynamic")   return Rigidbody2DComponent::BodyType::Dynamic;
+		if (bodyTypeString == "Static") return Rigidbody2DComponent::BodyType::Static;
+		if (bodyTypeString == "Dynamic") return Rigidbody2DComponent::BodyType::Dynamic;
 		if (bodyTypeString == "Kinematic") return Rigidbody2DComponent::BodyType::Kinematic;
 
 		OGN_CORE_ASSERT(false, "Unknown body type");
@@ -200,7 +198,7 @@ namespace origin {
 			const auto& ac = entity.GetComponent<AudioComponent>();
 			out << YAML::Key << "Name" << YAML::Value << ac.Name;
 
-			auto& audioPath = std::filesystem::relative(ac.Audio->GetFilepath(), Project::GetAssetDirectory());
+			auto& audioPath = relative(ac.Audio->GetFilepath(), Project::GetAssetDirectory());
 			out << YAML::Key << "Filepath" << YAML::Value << audioPath.generic_string();
 			out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
 			out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
@@ -236,7 +234,7 @@ namespace origin {
 
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap; // Camera
-			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
+			out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(camera.GetProjectionType());
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveFov();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
@@ -271,7 +269,7 @@ namespace origin {
 
 			if (sMesh.Model)
 			{
-				std::filesystem::path modelFilepath = std::filesystem::relative(sMesh.Model->GetFilepath(), Project::GetAssetDirectory());
+				std::filesystem::path modelFilepath = relative(sMesh.Model->GetFilepath(), Project::GetAssetDirectory());
 				out << YAML::Key << "ModelPath" << YAML::Value << modelFilepath.generic_string();
 				out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.Material->GetShaderFilepath();
 				out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
@@ -280,11 +278,11 @@ namespace origin {
 				out << YAML::Key << "Bias" << YAML::Value << sMesh.Material->Bias;
 
 				std::filesystem::path texturePath = "";
-				glm::vec2 tilingFactor = glm::vec2(1.0f);
+				auto tilingFactor = glm::vec2(1.0f);
 
 				if (sMesh.Material->Texture)
 				{
-					texturePath = std::filesystem::relative(sMesh.Material->Texture->GetFilepath(), Project::GetAssetDirectory());
+					texturePath = relative(sMesh.Material->Texture->GetFilepath(), Project::GetAssetDirectory());
 					tilingFactor = sMesh.Material->TilingFactor;
 				}
 
@@ -299,9 +297,9 @@ namespace origin {
 		{
 			out << YAML::Key << "TextComponent";
 			out << YAML::BeginMap; // TextComponent
-			auto& textComponent = entity.GetComponent<TextComponent>();
+			const auto& textComponent = entity.GetComponent<TextComponent>();
 			out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
-			auto& textAssetPath = std::filesystem::relative(textComponent.FontAsset->GetFilepath(), Project::GetAssetDirectory());
+			const auto& textAssetPath = relative(textComponent.FontAsset->GetFilepath(), Project::GetAssetDirectory());
 			out << YAML::Key << "FontFilepath" << YAML::Value << textAssetPath.generic_string();
 			out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
 			out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
@@ -312,9 +310,9 @@ namespace origin {
 
 		if (entity.HasComponent<ParticleComponent>())
 		{
-			out << YAML::Key << "Particle2DComponent";
-			out << YAML::BeginMap; // Particle2DComponent
-			auto& particleComponent = entity.GetComponent<ParticleComponent>();
+			out << YAML::Key << "ParticleComponent";
+			out << YAML::BeginMap; // ParticleComponent
+			const auto& particleComponent = entity.GetComponent<ParticleComponent>();
 			out << YAML::Key << "Velocity" << YAML::Value << particleComponent.Velocity;
 			out << YAML::Key << "VelocityVariation" << YAML::Value << particleComponent.VelocityVariation;
 			out << YAML::Key << "Rotation" << YAML::Value << particleComponent.Rotation;
@@ -326,7 +324,7 @@ namespace origin {
 			out << YAML::Key << "ZAxis" << YAML::Value << particleComponent.ZAxis;
 			out << YAML::Key << "LifeTime" << YAML::Value << particleComponent.LifeTime;
 
-			out << YAML::EndMap; // !Particle2DComponent
+			out << YAML::EndMap; // !ParticleComponent
 		}
 
 		if (entity.HasComponent<SpriteRendererComponent>())
@@ -338,7 +336,7 @@ namespace origin {
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			if (src.Texture)
 			{
-				auto& texturePath = std::filesystem::relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
+				auto& texturePath = relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
 				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
 			}
 
@@ -354,7 +352,7 @@ namespace origin {
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			if (src.Texture)
 			{
-				auto& texturePath = std::filesystem::relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
+				auto& texturePath = relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
 				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
 			}
 			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
@@ -501,22 +499,22 @@ namespace origin {
 					ScriptFieldInstance& scriptField = entityFields.at(name);
 					switch (field.Type)
 					{
-						WRITE_FIELD_TYPE(Float,		float);
-						WRITE_FIELD_TYPE(Double,	double);
-						WRITE_FIELD_TYPE(Bool,		bool);
-						WRITE_FIELD_TYPE(Char,		char);
-						WRITE_FIELD_TYPE(Byte,		int8_t);
-						WRITE_FIELD_TYPE(Short,		int16_t);
-						WRITE_FIELD_TYPE(Int,			int32_t);
-						WRITE_FIELD_TYPE(Long,		int64_t);
-						WRITE_FIELD_TYPE(UByte,		uint8_t);
-						WRITE_FIELD_TYPE(UShort,	uint16_t);
-						WRITE_FIELD_TYPE(UInt,		uint32_t);
-						WRITE_FIELD_TYPE(ULong,		uint64_t);
-						WRITE_FIELD_TYPE(Vector2, glm::vec2);
-						WRITE_FIELD_TYPE(Vector3, glm::vec3);
-						WRITE_FIELD_TYPE(Vector4, glm::vec4);
-						WRITE_FIELD_TYPE(Entity,	UUID);
+					WRITE_FIELD_TYPE(Float, float);
+					WRITE_FIELD_TYPE(Double, double);
+					WRITE_FIELD_TYPE(Bool, bool);
+					WRITE_FIELD_TYPE(Char, char);
+					WRITE_FIELD_TYPE(Byte, int8_t);
+					WRITE_FIELD_TYPE(Short, int16_t);
+					WRITE_FIELD_TYPE(Int, int32_t);
+					WRITE_FIELD_TYPE(Long, int64_t);
+					WRITE_FIELD_TYPE(UByte, uint8_t);
+					WRITE_FIELD_TYPE(UShort, uint16_t);
+					WRITE_FIELD_TYPE(UInt, uint32_t);
+					WRITE_FIELD_TYPE(ULong, uint64_t);
+					WRITE_FIELD_TYPE(Vector2, glm::vec2);
+					WRITE_FIELD_TYPE(Vector3, glm::vec3);
+					WRITE_FIELD_TYPE(Vector4, glm::vec4);
+					WRITE_FIELD_TYPE(Entity, UUID);
 					}
 
 					out << YAML::EndMap; // !Fields
@@ -539,7 +537,7 @@ namespace origin {
 
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
-			const Entity entity = { entityID, m_Scene.get() };
+			const Entity entity = {entityID, m_Scene.get()};
 			if (!entity)
 				return;
 
@@ -563,7 +561,7 @@ namespace origin {
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene.get() };
+			Entity entity = {entityID, m_Scene.get()};
 			if (!entity)
 				return;
 
@@ -593,7 +591,7 @@ namespace origin {
 		if (!data["Scene"])
 			return false;
 
-		std::string sceneName = data["Scene"].as<std::string>();
+		auto sceneName = data["Scene"].as<std::string>();
 		OGN_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
 		if (YAML::Node entities = data["Entities"])
@@ -656,7 +654,8 @@ namespace origin {
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
 					auto& cameraProps = cameraComponent["Camera"];
-					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
+					cc.Camera.SetProjectionType(
+						static_cast<SceneCamera::ProjectionType>(cameraProps["ProjectionType"].as<int>()));
 
 					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
@@ -699,7 +698,7 @@ namespace origin {
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
 					if (spriteRenderer2DComponent["TexturePath"])
 					{
-						std::string texturePath = spriteRenderer2DComponent["TexturePath"].as<std::string>();
+						auto texturePath = spriteRenderer2DComponent["TexturePath"].as<std::string>();
 						auto path = Project::GetAssetFileSystemPath(texturePath);
 						src.Texture = Texture2D::Create(path.string());
 					}
@@ -726,7 +725,7 @@ namespace origin {
 					fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
 					fbSpec.ReadBuffer = false;
 
-					fbSpec.Attachments = { FramebufferTextureFormat::DEPTH };
+					fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
 					lc.ShadowFb = Framebuffer::Create(fbSpec);
 				}
 
@@ -765,8 +764,8 @@ namespace origin {
 				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
 				{
 					auto& sMesh = deserializedEntity.AddComponent<StaticMeshComponent>();
-					std::string modelFilepath = staticMeshComponent["ModelPath"].as<std::string>();
-					std::string shaderFilepath = staticMeshComponent["ShaderPath"].as<std::string>();
+					auto modelFilepath = staticMeshComponent["ModelPath"].as<std::string>();
+					auto shaderFilepath = staticMeshComponent["ShaderPath"].as<std::string>();
 
 					if (!modelFilepath.empty() && !shaderFilepath.empty())
 					{
@@ -801,17 +800,17 @@ namespace origin {
 				if (YAML::Node textComponent = entity["TextComponent"])
 				{
 					auto& text = deserializedEntity.AddComponent<TextComponent>();
-					std::string filepath = textComponent["FontFilepath"].as<std::string>();
-					
-					if(filepath.empty() || filepath == Font::GetDefault()->GetFilepath())
+					auto filepath = textComponent["FontFilepath"].as<std::string>();
+
+					if (filepath.empty() || filepath == Font::GetDefault()->GetFilepath())
 						text.FontAsset = Font::GetDefault();
-					
-					else if(!filepath.empty() && !text.FontAsset)
+
+					else if (!filepath.empty() && !text.FontAsset)
 					{
 						auto path = Project::GetAssetFileSystemPath(filepath);
 						text.FontAsset = std::make_shared<Font>(path);
 					}
-					
+
 					text.TextString = textComponent["TextString"].as<std::string>();
 					text.Color = textComponent["Color"].as<glm::vec4>();
 					text.Kerning = textComponent["Kerning"].as<float>();
@@ -845,7 +844,7 @@ namespace origin {
 					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
 					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 
-					if(auto scriptFields = scriptComponent["ScriptFields"])
+					if (auto scriptFields = scriptComponent["ScriptFields"])
 					{
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
 						OGN_CORE_ASSERT(deserializedEntity, "Entity is invalid");
@@ -853,7 +852,7 @@ namespace origin {
 						const auto& fields = entityClass->GetFields();
 						auto& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
 
-						for(auto scriptField : scriptFields)
+						for (auto scriptField : scriptFields)
 						{
 							auto name = scriptField["Name"].as<std::string>();
 							auto typeString = scriptField["Type"].as<std::string>();
@@ -868,24 +867,24 @@ namespace origin {
 
 							fieldInstance.Field = fields.at(name);
 
-							switch(type)
+							switch (type)
 							{
-								READ_FIELD_TYPE(Float, float);
-								READ_FIELD_TYPE(Double, double);
-								READ_FIELD_TYPE(Bool, bool);
-								READ_FIELD_TYPE(Char, char);
-								READ_FIELD_TYPE(Byte, int8_t);
-								READ_FIELD_TYPE(Short, int16_t);
-								READ_FIELD_TYPE(Int, int32_t);
-								READ_FIELD_TYPE(Long, int64_t);
-								READ_FIELD_TYPE(UByte, uint8_t);
-								READ_FIELD_TYPE(UShort, uint16_t);
-								READ_FIELD_TYPE(UInt, uint32_t);
-								READ_FIELD_TYPE(ULong, uint64_t);
-								READ_FIELD_TYPE(Vector2, glm::vec2);
-								READ_FIELD_TYPE(Vector3, glm::vec3);
-								READ_FIELD_TYPE(Vector4, glm::vec4);
-								READ_FIELD_TYPE(Entity, UUID);
+							READ_FIELD_TYPE(Float, float);
+							READ_FIELD_TYPE(Double, double);
+							READ_FIELD_TYPE(Bool, bool);
+							READ_FIELD_TYPE(Char, char);
+							READ_FIELD_TYPE(Byte, int8_t);
+							READ_FIELD_TYPE(Short, int16_t);
+							READ_FIELD_TYPE(Int, int32_t);
+							READ_FIELD_TYPE(Long, int64_t);
+							READ_FIELD_TYPE(UByte, uint8_t);
+							READ_FIELD_TYPE(UShort, uint16_t);
+							READ_FIELD_TYPE(UInt, uint32_t);
+							READ_FIELD_TYPE(ULong, uint64_t);
+							READ_FIELD_TYPE(Vector2, glm::vec2);
+							READ_FIELD_TYPE(Vector3, glm::vec3);
+							READ_FIELD_TYPE(Vector4, glm::vec4);
+							READ_FIELD_TYPE(Entity, UUID);
 							}
 						}
 					}
@@ -901,5 +900,4 @@ namespace origin {
 		OGN_CORE_TRACE(false);
 		return false;
 	}
-
 }

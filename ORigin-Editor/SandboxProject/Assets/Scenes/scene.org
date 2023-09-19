@@ -204,20 +204,20 @@ Entities:
     TagComponent:
       Tag: Particle
     TransformComponent:
-      Translation: [-1.98387015, 0.566958547, 15.2565947]
-      Rotation: [-3.14159226, 0.959931433, -3.14159226]
+      Translation: [-14.4358568, 0.566958547, 6.21812344]
+      Rotation: [0, 0, 0]
       Scale: [0.999999881, 1, 0.999999881]
-    Particle2DComponent:
-      Velocity: [0, 0, -5.42000008]
-      VelocityVariation: [1, 1, 1]
-      Rotation: [1, 1, 1]
-      ColorBegin: [1, 0, 0, 1]
-      ColorEnd: [0.996078432, 0.427450985, 0.160784319, 1]
-      SizeBegin: 1
+    ParticleComponent:
+      Velocity: [5, 0, 0]
+      VelocityVariation: [2.98000002, 2.5, 1.73000002]
+      Rotation: [0.349999994, 0.330000013, 1.04999995]
+      ColorBegin: [0, 0.430379629, 1, 1]
+      ColorEnd: [0.996078432, 0.160784289, 0.160784289, 1]
+      SizeBegin: 0
       SizeEnd: 0.600000024
       SizeVariation: 0.300000012
       ZAxis: 0
-      LifeTime: 20
+      LifeTime: 1
     ScriptComponent:
       ClassName: Game.Light
       StoredFields:
