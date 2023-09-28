@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 using System;
 using ORiginEngine;
@@ -7,6 +7,7 @@ namespace Game
 {
     public class Player : Entity
     {
+        private AudioComponent JumpSound;
         private TransformComponent transform;
         private Rigidbody2DComponent rb2d;
         private AnimationComponent anim;
@@ -15,6 +16,9 @@ namespace Game
         public float FallSpeed = 10.0f;
         public float Speed;
         public float Increment;
+
+        public float MaxJumpTime = 0.2f;
+        private float JumpCoolDown;
 
         private Vector2 velocity;
 
@@ -29,6 +33,10 @@ namespace Game
             transform = GetComponent<TransformComponent>();
             rb2d = GetComponent<Rigidbody2DComponent>();
             anim = GetComponent<AnimationComponent>();
+
+            JumpCoolDown = MaxJumpTime;
+
+            JumpSound = FindEntityByName("Jump Sound").GetComponent<AudioComponent>();
         }
 
         void OnUpdate(float deltaTime)
@@ -36,9 +44,21 @@ namespace Game
             velocity = Vector2.Zero;
 
             if (Input.IsKeyPressed(KeyCode.Space))
-                velocity.Y += JumpHeight * deltaTime;
+            {
+                JumpCoolDown -= deltaTime;
+                
+                if (JumpCoolDown > 0)
+                {
+                    JumpSound.Play();
+                    velocity.Y += JumpHeight * deltaTime;
+                }
+            }
             else
+            {
+                JumpCoolDown = MaxJumpTime;
+                anim.ActiveState = "Idle";
                 velocity.Y -= Increment * FallSpeed * deltaTime;
+            }
 
             if (Input.IsKeyPressed(KeyCode.D))
             {
@@ -51,10 +71,10 @@ namespace Game
                 transform.Rotation = new Vector3(0.0f, Deg2Rad(-180.0f), 0.0f);
             }
 
-            if (Input.IsKeyPressed(KeyCode.B))
-                anim.ActiveState = "Fireball";
-            else
-                anim.ActiveState = "Mario";
+            if (velocity.X > 0 || velocity.X < 0)
+                anim.ActiveState = "Walk";
+            else if (velocity.Y > 0)
+                anim.ActiveState = "Jump";
 
             rb2d.ApplyLinearImpulse(velocity, new Vector2(0.0f, 0.0f), true);
         }

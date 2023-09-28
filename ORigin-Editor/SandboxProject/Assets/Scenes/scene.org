@@ -1,19 +1,216 @@
 Scene: scene.org
 Entities:
-  - Entity: 10171653832388955620
+  - Entity: 8127174878979592824
+    TagComponent:
+      Tag: Mario Main Theme
+    AudioComponent:
+      Name: Mario Main Theme
+      Filepath: Audio/SuperMarioBros.mp3
+      Volume: 0.779999971
+      Pitch: 1
+      MinDistance: 1
+      MaxDistance: 100
+      Looping: false
+      Spatial: false
+      PlayAtStart: true
+    TransformComponent:
+      Translation: [-3.98509479, -3.03885508, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 932444591641538823
     TagComponent:
       Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
     TransformComponent:
-      Translation: [0, 0, -1.70563459]
+      Translation: [15.4883738, -1.36313236, 0.0118896663]
       Rotation: [0, 0, 0]
-      Scale: [162.356018, 32.2058334, 32.2058334]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
     SpriteRenderer2DComponent:
-      Color: [0.451476812, 0.451476812, 0.451476812, 1]
-      TexturePath: Textures/checkerboard.jpg
-      TillingFactor: [7.9749999, 3.3499999]
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 324649827328019106
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [12.6457796, -1.36313236, 0.0118896663]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 4318300976653635950
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [9.70493126, -1.36313236, 0.0118896663]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 12924265375491028953
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [5.13795137, -1.23291099, 0.0118896719]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 13689133133767084821
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [-5.24640799, -1.43925774, 0.00932508707]
+      Rotation: [0, 0, 0]
+      Scale: [0.327036709, 0.429817587, 0.28283152]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 15130532820235076593
+    TagComponent:
+      Tag: Jump Sound
+    AudioComponent:
+      Name: Jump Sound
+      Filepath: Audio/Mario Bros Jump - QuickSounds.mp3
+      Volume: 0.300000012
+      Pitch: 1
+      MinDistance: 1
+      MaxDistance: 100
+      Looping: false
+      Spatial: false
+      PlayAtStart: false
+    TransformComponent:
+      Translation: [-1.74119747, -3.10245419, -3.7252903e-09]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 10478625270300540935
+    TagComponent:
+      Tag: Player
+    AnimationComponent:
+      DefaultState: Idle
+      States:
+        - Name: Idle
+          Frames:
+            - Path: Sprites/marioA.png
+          Looping: true
+        - Name: Walk
+          Frames:
+            - Path: Sprites/marioA.png
+            - Path: Sprites/marioB.png
+            - Path: Sprites/marioC.png
+          Looping: true
+        - Name: Jump
+          Frames:
+            - Path: Sprites/marioE.png
+            - Path: Sprites/marioD.png
+          Looping: true
+    ScriptComponent:
+      ClassName: Game.Player
+      ScriptFields:
+        - Name: JumpHeight
+          Type: Float
+          Data: 30
+        - Name: FallSpeed
+          Type: Float
+          Data: 5
+        - Name: Speed
+          Type: Float
+          Data: 5
+        - Name: MaxJumpTime
+          Type: Float
+          Data: 0.200000003
+        - Name: Increment
+          Type: Float
+          Data: 5
+    TransformComponent:
+      Translation: [0, -0.275472641, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Sprites/marioA.png
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.0900000036
+      Restitution: 0.100000001
+      RestitutionThreshold: 0
+  - Entity: 11440873550682870080
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [0.00114440918, -1.95486915, 0]
+      Rotation: [0, 0, 0]
+      Scale: [95.0926895, 0.773197889, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.841852248, 0.405063272, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
   - Entity: 6804643416914691417
     TagComponent:
       Tag: Main Camera
+    ScriptComponent:
+      ClassName: Game.Camera
     TransformComponent:
       Translation: [0, 0, 8]
       Rotation: [0, 0, 0]
@@ -31,81 +228,69 @@ Entities:
       FixedAspectRatio: false
     AudioListenerComponent:
       Enable: true
-  - Entity: 11440873550682870080
+  - Entity: 10171653832388955620
     TagComponent:
-      Tag: Wall
+      Tag: Sprite
     TransformComponent:
-      Translation: [0, -1.58432317, 0]
+      Translation: [0, 1.97742712, -1.70563459]
       Rotation: [0, 0, 0]
-      Scale: [95.0926895, 0.773197889, 1]
+      Scale: [128, 8.32877064, 8.32877064]
     SpriteRenderer2DComponent:
-      Color: [1, 0.841852248, 0.405063272, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 10478625270300540935
+      Color: [0.848101258, 1, 0.990386128, 1]
+      TexturePath: Textures/bg.jpg
+      TillingFactor: [12, 1]
+  - Entity: 12251072846069520212
     TagComponent:
-      Tag: Player
-    AnimationComponent:
-      DefaultState: Mario
-      States:
-        - Name: Mario
-          Frames:
-            - Path: Sprites/marioA.png
-            - Path: Sprites/marioB.png
-            - Path: Sprites/marioC.png
-            - Path: Sprites/marioD.png
-            - Path: Sprites/marioE.png
-          Looping: true
-        - Name: Fireball
-          Frames:
-            - Path: Sprites/fireballA.png
-            - Path: Sprites/fireballB.png
-            - Path: Sprites/fireballC.png
-            - Path: Sprites/fireballD.png
-            - Path: Sprites/fireballE.png
-            - Path: Sprites/fireballF.png
-            - Path: Sprites/fireballG.png
-            - Path: Sprites/fireballH.png
-          Looping: true
-    ScriptComponent:
-      ClassName: Game.Player
-      ScriptFields:
-        - Name: JumpHeight
-          Type: Float
-          Data: 50
-        - Name: FallSpeed
-          Type: Float
-          Data: 10
-        - Name: Speed
-          Type: Float
-          Data: 10
-        - Name: Increment
-          Type: Float
-          Data: 5
+      Tag: Welcome Sound
+    AudioComponent:
+      Name: Welcome Sound
+      Filepath: Audio/SuperMarioBros.mp3
+      Volume: 0.720000029
+      Pitch: 1
+      MinDistance: 1
+      MaxDistance: 100
+      Looping: false
+      Spatial: false
+      PlayAtStart: false
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [-2.87948704, -3.06282234, 7.4505806e-09]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+  - Entity: 10795526739307144443
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [4.36757898, -1.36313164, 0.0118896719]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
     SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Sprites/marioA.png
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
       TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: true
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.0900000036
-      Restitution: 0.100000001
-      RestitutionThreshold: 0
+  - Entity: 8370497964054240066
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [-4.63266516, -1.36313236, 0.0118896663]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
