@@ -335,7 +335,6 @@ namespace origin
 					const auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
 					const auto& position = body->GetPosition();
-
 					transform.Translation.x = position.x;
 					transform.Translation.y = position.y;
 					transform.Rotation.z = body->GetAngle();
@@ -367,6 +366,15 @@ namespace origin
 		{
 			pc.Particle.OnUpdate(deltaTime);
 		});
+
+		// Animation
+		const auto& animView = m_Registry.view<AnimationComponent>();
+		for (const auto entity : animView)
+		{
+			auto& ac = animView.get<AnimationComponent>(entity);
+			if (ac.State.GetAnimation())
+				ac.State.GetAnimation()->Update(deltaTime);
+		}
 
 		// Audio Update
 		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
@@ -422,8 +430,13 @@ namespace origin
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.Animation)
-				ac.Animation->Update(deltaTime);
+			if (ac.State.HasAnimation())
+			{
+				if (ac.State.Preview)
+					ac.State.Update(deltaTime);
+				else
+					ac.State.GetAnimation()->Reset();
+			}
 		}
 
 		// Audio Update
@@ -508,6 +521,15 @@ namespace origin
 			{
 				pc.Particle.OnUpdate(deltaTime);
 			});
+		}
+
+		// Animation
+		const auto& animView = m_Registry.view<AnimationComponent>();
+		for (const auto entity : animView)
+		{
+			auto& ac = animView.get<AnimationComponent>(entity);
+			if (ac.State.GetAnimation())
+				ac.State.GetAnimation()->Update(deltaTime);
 		}
 
 		// Audio Update
@@ -630,6 +652,25 @@ namespace origin
 			{
 				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
+			}
+
+			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
+			for (auto& entity : animView)
+			{
+				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
+				if (!anim.State.HasAnimation())
+					continue;
+
+				if (anim.State.GetAnimation()->HasFrame())
+					sprite.Texture = anim.State.GetAnimation()->GetCurrentSprite();
+				else
+				{
+					if (sprite.Texture)
+					{
+						sprite.Texture->Delete();
+						sprite.Texture.reset();
+					}
+				}
 			}
 
 			Renderer::EndScene();
@@ -779,12 +820,23 @@ namespace origin
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
 			}
 
-			auto& view2 = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
-			for (auto& entity : view2)
+			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
+			for (auto& entity : animView)
 			{
-				auto& [sprite, anim] = view2.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (anim.State.HasAnimation())
+				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
+				if (!anim.State.HasAnimation())
+					continue;
+
+				if (anim.State.GetAnimation()->HasFrame())
 					sprite.Texture = anim.State.GetAnimation()->GetCurrentSprite();
+				else
+				{
+					if(sprite.Texture)
+					{
+						sprite.Texture->Delete();
+						sprite.Texture.reset();
+					}
+				}
 			}
 		}
 
@@ -1081,11 +1133,32 @@ namespace origin
 
 			b2BodyDef bodyDef;
 			bodyDef.type = Box2DBodyType(rb2d.Type);
-			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+
+			// POSITION SETTINGS
+			float xPos = transform.Translation.x;
+			float yPos = transform.Translation.y;
+
+			if (rb2d.FreezePositionX)
+				xPos = bodyDef.position.x;
+			if (rb2d.FreezePositionY)
+				yPos = bodyDef.position.y;
+
+			bodyDef.position.Set(xPos, yPos);
+
+			// ROTATION SETTINGS
 			bodyDef.angle = transform.Rotation.z;
+
+			bodyDef.gravityScale = rb2d.GravityScale;
 
 			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
 			body->SetFixedRotation(rb2d.FixedRotation);
+
+			b2MassData massData;
+			massData.center = b2Vec2(rb2d.MassCenter.x, rb2d.MassCenter.y);
+			massData.I = rb2d.RotationalInertia;
+			massData.mass = rb2d.Mass;
+			body->SetMassData(&massData);
+
 			rb2d.RuntimeBody = body;
 
 			if (entity.HasComponent<BoxCollider2DComponent>())
@@ -1139,7 +1212,7 @@ namespace origin
 			* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
 			* scale(glm::mat4(1.0f), glm::vec3(1.0f));
 
-		Renderer2D::DrawQuad(transform, texture, 1.0f, glm::vec4(1.0f), entity);
+		Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f), entity);
 	}
 
 	void Scene::Step(int frames)

@@ -1,6 +1,7 @@
 #include "Editor.h"
 
 #include "Origin\Audio\Audio.h"
+#include "Origin\Utils\Utils.h"
 
 namespace origin {
 
@@ -31,98 +32,151 @@ namespace origin {
 			ImGui::Begin("Animator", &guiAnimationWindow);
 			if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
 			{
-				ImGui::Text("This is %s Animator", entity.GetName().c_str());
+				ImGui::Text("%s Animator", entity.GetName().c_str());
 				if (entity.HasComponent<AnimationComponent>())
 				{
-					auto& animComponent = entity.GetComponent<AnimationComponent>();
-					auto& animation = animComponent.Animation;
-					auto& state = animComponent.State;
+					auto& ac = entity.GetComponent<AnimationComponent>();
+					auto& state = ac.State;
 
 					// Insert State name
 					static std::string stateName = state.GetCurrentStateString();
+
 					ImGui::Text("State Name: "); ImGui::SameLine();
+
 					char buffer[256];
 					strcpy_s(buffer, sizeof(buffer), stateName.c_str());
+
 					if (ImGui::InputText("##stateName", buffer, sizeof(buffer)))
 						stateName = std::string(buffer);
 
 					ImGui::SameLine();
-					if (ImGui::Button("+"))
+					if (ImGui::Button("+", ImVec2(30.0f, 20.0f)))
 					{
 						if (!stateName.empty())
-						{
 							state.AddState(stateName);
-							OGN_CORE_TRACE("Animation State {} added", stateName);
-						}
-						else
-						{
-							OGN_CORE_ERROR("Animation State failed to created");
-						}
 					}
 
 					if (entity.HasComponent<SpriteRenderer2DComponent>() && state.HasState())
 					{
-						ImVec2 buttonSize = ImVec2(80.0f, 30.0f);
-						ImGui::Button("Drop Texture", buttonSize);
+						ImGui::Text("Animation State");
 
+						ImGui::SameLine();
+
+						// drop-down
+						auto& stateStorage = state.GetStateStorage();
+						std::string currentState = state.GetCurrentStateString();
+
+						if (ImGui::BeginCombo("##AnimationState", currentState.c_str()))
+						{
+							bool isSelected = false;
+							for (const auto& st : stateStorage)
+							{
+								isSelected = currentState == st;
+								if (ImGui::Selectable(st.c_str(), isSelected))
+								{
+									currentState = st;
+									state.SetActiveState(st);
+								}
+								if (isSelected)
+									ImGui::SetItemDefaultFocus();
+							}
+							ImGui::EndCombo();
+						} // !drop-down
+						
+
+						ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
+
+						static std::shared_ptr<Animation> animation;
+
+						if (animation == nullptr)
+							animation = Animation::Create();
+
+						// Drag and Drop
 						if (ImGui::BeginDragDropTarget())
 						{
 							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
-								std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+								const auto* path = static_cast<const wchar_t*>(payload->Data);
+								const std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
 
 								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 								{
-									auto texture = Texture2D::Create(texturePath.string());
+									const std::shared_ptr<Texture2D> texture = Texture2D::Create(texturePath.string());
 									animation->AddFrame(texture, 0.23f);
 								}
 							}
 						}
+
 						ImGui::SameLine();
-						if (ImGui::Button("Add Animation", buttonSize))
+						if (ImGui::Button("Add Animation", { 90.0f, 30.0f }) && animation->HasFrame())
 						{
 							state.AddAnim(animation);
+							animation.reset();
+
 							OGN_CORE_TRACE("Animation added to {}", stateName);
 						}
 
-						// drop-down
-						bool isSelected = false;
-						auto& stateMap = state.GetAnimationState();
-						auto& stateStorage = state.GetStateStorage();
+						ImGui::SameLine();
+						if (ImGui::Button("Set As Default State", ImVec2(80.0f, 30.f)))
+							state.SetDefaultState(state.GetCurrentStateString());
 
-						std::string currentState = state.GetCurrentStateString();
+						// Display what texture has been dropped
+						const float padding = 10.0f;
+						const float imageSize = 42.0f;
+						const float cellSize = imageSize + padding;
 
-						if (ImGui::BeginCombo("ANIMATION STATE", currentState.c_str()))
+						const float panelWidth = ImGui::GetContentRegionAvail().x;
+						int columnCount = static_cast<int>(panelWidth / cellSize);
+
+						if (columnCount < 1)
+							columnCount = 1;
+
+						ImGui::Columns(columnCount, nullptr, false);
+
+						if (animation && animation->HasFrame())
 						{
-							for (int i = 0; i < stateStorage.size(); i++)
+							for (int i = 0; i < animation->GetTotalFrames(); i++)
 							{
-								isSelected = currentState == stateStorage[i];
-								if (ImGui::Selectable(stateStorage[i].c_str(), isSelected))
-								{
-									currentState = stateStorage[i];
-									state.SetActiveState(stateStorage[i]);
-								}
-								if (isSelected) ImGui::SetItemDefaultFocus();
+								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(animation->GetSprites(i)->GetRendererID());
+								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
+
+								ImGui::TextWrapped("Frame %d", i + 1);
+
+								ImGui::NextColumn();
 							}
-							ImGui::EndCombo();
-						} // !drow-down
+							ImGui::Columns();
+						}
 
 						if (state.HasAnimation())
 						{
-							for (int i = 0; i < state.GetAnimation()->GetFrameTotal(); i++)
+							for (int i = 0; i < state.GetAnimation()->GetTotalFrames(); i++)
 							{
-								ImTextureID animTexture = (ImTextureID)state.GetAnimation()->GetCurrentSprite()->GetRendererID();
-								ImGui::Image(animTexture, ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
-								ImGui::SameLine();
+								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(state.GetAnimation()->GetSprites(i)->GetRendererID());
+								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
+
+								const int currentIndex = state.GetAnimation()->GetFrameIndex();
+
+								if (currentIndex == i)
+									ImGui::TextWrapped("  -----");
+
+								ImGui::NextColumn();
 							}
+							ImGui::Columns();
 
 							bool looping = state.IsLooping();
-							if (ImGui::Checkbox("Loop", &looping)) state.SetLooping(looping);
-							if (ImGui::Button("Delete State")) state.RemoveState(currentState);
+							if (ImGui::Checkbox("Loop", &looping))
+								state.SetLooping(looping);
+							ImGui::SameLine();
+							if (ImGui::Button("Preview"))
+								state.Preview = !state.Preview;
+							ImGui::SameLine();
+							if (ImGui::Button("Delete State"))
+								state.RemoveState(currentState);
 						}
 					}
+
 				}
+
 			}
 			ImGui::End();
 		}
@@ -132,7 +186,7 @@ namespace origin {
 			ImGui::Begin("Render Status", &guiRenderStatusWindow);
 
 			const char* CMSTypeString[] = { "PIVOT", "FREE MOVE" };
-			const char* currentCMSTypeString = CMSTypeString[(int)m_EditorCamera.GetStyle()];
+			const char* currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
 			ImGui::Text("Distance %.5f", m_EditorCamera.GetDistance());
 
 			if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString)) {
@@ -140,7 +194,7 @@ namespace origin {
 					const bool isSelected = currentCMSTypeString == CMSTypeString[i];
 					if (ImGui::Selectable(CMSTypeString[i], isSelected)) {
 						currentCMSTypeString = CMSTypeString[i];
-						m_EditorCamera.SetStyle((CameraStyle)i);
+						m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
 
 					} if (isSelected) ImGui::SetItemDefaultFocus();
 				} ImGui::EndCombo();

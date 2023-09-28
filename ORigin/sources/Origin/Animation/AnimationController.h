@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Animation.h"
@@ -16,7 +16,7 @@ namespace origin {
 	public:
 		AnimationController(std::shared_ptr<AnimationState>& state);
 
-		void AddAnimationState(std::shared_ptr<Animation>& anim, const std::string& state);
+		void AddAnimationState(std::shared_ptr<Animation>& anim, const std::string& state) const;
 
 		void AddTransitionCondition(const std::string& name, bool condition);
 		void SetSpeed(float speed) { m_Speed = speed; }

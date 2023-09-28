@@ -190,6 +190,108 @@ namespace origin
 			out << YAML::EndMap; // TagComponent
 		}
 
+		if (entity.HasComponent<AnimationComponent>())
+		{
+			auto& ac = entity.GetComponent<AnimationComponent>();
+
+			out << YAML::Key << "AnimationComponent";
+			out << YAML::BeginMap; // AnimationComponent
+			out << YAML::Key << "DefaultState" << YAML::Value << ac.State.GetDefaultState();
+
+			out << YAML::Key << "States";
+			out << YAML::BeginSeq; // States
+
+			// Find States
+			for (int stateIndex = 0; stateIndex < ac.State.GetStateStorage().size(); stateIndex++)
+			{
+				const std::string currentState = ac.State.GetStateStorage().at(stateIndex);
+
+				out << YAML::BeginMap; // Name
+				out << YAML::Key << "Name" << currentState;
+
+				if (ac.State.HasAnimation())
+				{
+					auto animations = ac.State.GetAnimationState().at(currentState);
+					{
+						out << YAML::Key << "Frames" << YAML::Value;
+						out << YAML::BeginSeq; // Frames
+						for (int frameIndex = 0; frameIndex < animations->GetTotalFrames(); frameIndex++)
+						{
+							out << YAML::BeginMap; // Path
+							std::filesystem::path& framePath = relative(animations->GetSprites(frameIndex)->GetFilepath(), Project::GetAssetDirectory());
+							out << YAML::Key << "Path" << YAML::Value << framePath.generic_string(); // Add the frame path directly to the sequence
+							out << YAML::EndMap; //!Path
+						}
+						out << YAML::EndSeq; //!Frames
+					}
+					out << YAML::Key << "Looping" << YAML::Value << ac.State.IsLooping();
+				}
+				out << YAML::EndMap; // !Name
+			}
+			out << YAML::EndSeq; // !States
+
+			out << YAML::EndMap; // !AnimationComponent
+		}
+
+
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap; // ScriptComponent;
+
+			auto& sc = entity.GetComponent<ScriptComponent>();
+			out << YAML::Key << "ClassName" << YAML::Value << sc.ClassName;
+
+			// Fields
+			const std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
+			const auto& fields = entityClass->GetFields();
+
+			if (!fields.empty())
+			{
+				out << YAML::Key << "ScriptFields" << YAML::Value;
+				auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+
+				out << YAML::BeginSeq;
+				for (const auto& [name, field] : fields)
+				{
+					if (entityFields.find(name) == entityFields.end())
+						continue;
+
+					out << YAML::BeginMap; // Fields
+					out << YAML::Key << "Name" << YAML::Value << name;
+					out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
+					out << YAML::Key << "Data" << YAML::Value;
+
+					ScriptFieldInstance& scriptField = entityFields.at(name);
+					switch (field.Type)
+					{
+						WRITE_FIELD_TYPE(Float, float);
+						WRITE_FIELD_TYPE(Double, double);
+						WRITE_FIELD_TYPE(Bool, bool);
+						WRITE_FIELD_TYPE(Char, char);
+						WRITE_FIELD_TYPE(Byte, int8_t);
+						WRITE_FIELD_TYPE(Short, int16_t);
+						WRITE_FIELD_TYPE(Int, int32_t);
+						WRITE_FIELD_TYPE(Long, int64_t);
+						WRITE_FIELD_TYPE(UByte, uint8_t);
+						WRITE_FIELD_TYPE(UShort, uint16_t);
+						WRITE_FIELD_TYPE(UInt, uint32_t);
+						WRITE_FIELD_TYPE(ULong, uint64_t);
+						WRITE_FIELD_TYPE(Vector2, glm::vec2);
+						WRITE_FIELD_TYPE(Vector3, glm::vec3);
+						WRITE_FIELD_TYPE(Vector4, glm::vec4);
+						WRITE_FIELD_TYPE(Entity, UUID);
+					}
+
+					out << YAML::EndMap; // !Fields
+				}
+				out << YAML::EndSeq;
+			}
+
+			out << YAML::EndMap; // !ScriptComponent;
+		}
+
+
 		if (entity.HasComponent<AudioComponent>())
 		{
 			out << YAML::Key << "AudioComponent";
@@ -467,64 +569,6 @@ namespace origin
 		{
 			auto& nsc = entity.GetComponent<NativeScriptComponent>();
 		}
-
-		if (entity.HasComponent<ScriptComponent>())
-		{
-			out << YAML::Key << "ScriptComponent";
-			out << YAML::BeginMap; // ScriptComponent;
-
-			auto& sc = entity.GetComponent<ScriptComponent>();
-			out << YAML::Key << "ClassName" << YAML::Value << sc.ClassName;
-
-			// Fields
-			const std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
-			const auto& fields = entityClass->GetFields();
-
-			if (!fields.empty())
-			{
-				out << YAML::Key << "StoredFields" << YAML::Value;
-				auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
-
-				out << YAML::BeginSeq;
-				for (const auto& [name, field] : fields)
-				{
-					if (entityFields.find(name) == entityFields.end())
-						continue;
-
-					out << YAML::BeginMap; // Fields
-					out << YAML::Key << "Name" << YAML::Value << name;
-					out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
-					out << YAML::Key << "Data" << YAML::Value;
-
-					ScriptFieldInstance& scriptField = entityFields.at(name);
-					switch (field.Type)
-					{
-					WRITE_FIELD_TYPE(Float, float);
-					WRITE_FIELD_TYPE(Double, double);
-					WRITE_FIELD_TYPE(Bool, bool);
-					WRITE_FIELD_TYPE(Char, char);
-					WRITE_FIELD_TYPE(Byte, int8_t);
-					WRITE_FIELD_TYPE(Short, int16_t);
-					WRITE_FIELD_TYPE(Int, int32_t);
-					WRITE_FIELD_TYPE(Long, int64_t);
-					WRITE_FIELD_TYPE(UByte, uint8_t);
-					WRITE_FIELD_TYPE(UShort, uint16_t);
-					WRITE_FIELD_TYPE(UInt, uint32_t);
-					WRITE_FIELD_TYPE(ULong, uint64_t);
-					WRITE_FIELD_TYPE(Vector2, glm::vec2);
-					WRITE_FIELD_TYPE(Vector3, glm::vec3);
-					WRITE_FIELD_TYPE(Vector4, glm::vec4);
-					WRITE_FIELD_TYPE(Entity, UUID);
-					}
-
-					out << YAML::EndMap; // !Fields
-				}
-				out << YAML::EndSeq;
-			}
-
-			out << YAML::EndMap; // !ScriptComponent;
-		}
-
 		out << YAML::EndMap; // !Entity
 	}
 
@@ -620,6 +664,41 @@ namespace origin
 					al.Enable = audioListnerComponent["Enable"].as<bool>();
 				}
 
+				if (YAML::Node animationComponent = entity["AnimationComponent"])
+				{
+					auto& ac = deserializedEntity.AddComponent<AnimationComponent>();
+
+					if (auto states = animationComponent["States"])
+					{
+						// Get all states
+						for (auto state : states)
+						{
+							std::shared_ptr<Animation> animation;
+
+							if (animation == nullptr)
+								animation = Animation::Create();
+
+							ac.State.AddState(state["Name"].as<std::string>());
+							
+							// Retrieve all frames from the state
+							for (auto frames : state["Frames"])
+							{
+								// Get the frames's filepath
+								std::string framePath = Project::GetAssetFileSystemPath(frames["Path"].as<std::string>()).generic_string();
+								const std::shared_ptr<Texture2D> texture = Texture2D::Create(framePath);
+								animation->AddFrame(texture, 0.23f);
+							}
+
+							// Add the animation after frames added
+							ac.State.AddAnim(animation);
+							ac.State.SetLooping(state["Looping"].as<bool>());
+							animation.reset();
+						}
+					}
+
+					ac.State.SetActiveState(animationComponent["DefaultState"].as<std::string>());
+				}
+
 				if (YAML::Node audioComponent = entity["AudioComponent"])
 				{
 					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
@@ -703,7 +782,7 @@ namespace origin
 						src.Texture = Texture2D::Create(path.string());
 					}
 
-					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<float>();
+					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 				}
 
 				if (YAML::Node directionalLightComponent = entity["DirectionalLightComponent"])
@@ -842,12 +921,14 @@ namespace origin
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])
 				{
 					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+					OGN_CORE_ASSERT(deserializedEntity, "Entity is invalid");
+
 					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 
 					if (auto scriptFields = scriptComponent["ScriptFields"])
 					{
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
-						OGN_CORE_ASSERT(deserializedEntity, "Entity is invalid");
+						OGN_CORE_ASSERT(entityClass, "Entity Class is Invalid");
 
 						const auto& fields = entityClass->GetFields();
 						auto& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);

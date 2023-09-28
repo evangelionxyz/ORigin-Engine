@@ -115,7 +115,7 @@ void Sandbox::OnGuiRender()
 	ImGui::PushID("mario");
 	ImGui::Text("Mario");
 	ImGui::Text("Anim SpriteIndex: %i", marioAnim->GetFrameIndex());
-	ImGui::Text("Anim FrameCount : %i", marioAnim->GetFrameTotal());
+	ImGui::Text("Anim FrameCount : %i", marioAnim->GetTotalFrames());
 
 	if (ImGui::Button("Reset")) marioAnim->Reset(); ImGui::SameLine();
 	if (ImGui::Checkbox("Loop", &looping)) marioAnim->SetLooping(looping);
@@ -128,7 +128,7 @@ void Sandbox::OnGuiRender()
 	ImGui::PushID("fireball");
 	ImGui::Text("Fireball");
 	ImGui::Text("Anim SpriteIndex: %i", fireballAnim->GetFrameIndex());
-	ImGui::Text("Anim FrameCount : %i", fireballAnim->GetFrameTotal());
+	ImGui::Text("Anim FrameCount : %i", fireballAnim->GetTotalFrames());
 
 	if (ImGui::Button("Reset")) fireballAnim->Reset(); ImGui::SameLine();
 	if (ImGui::Checkbox("Loop", &fireballLooping)) fireballAnim->SetLooping(fireballLooping);

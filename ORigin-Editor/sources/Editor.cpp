@@ -194,9 +194,6 @@ namespace origin {
       m_Dockspace.Begin();
       MenuBar();
       SceneViewport();
-
-      
-
       m_SceneHierarchy.OnImGuiRender();
       m_ContentBrowser->OnImGuiRender();
       GUIRender();
@@ -375,9 +372,10 @@ namespace origin {
     {
       const auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetConfig().StartScene);
 
+      ScriptEngine::Init();
+
       OpenScene(startScenePath);
       m_ProjectPath = Project::GetProjectDirectory();
-      ScriptEngine::Init();
 
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
     }

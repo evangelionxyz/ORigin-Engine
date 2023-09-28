@@ -7,6 +7,22 @@ namespace ORiginEngine
         public Entity Entity { get; internal set; }
     }
 
+    public class AnimationComponent : Component
+    {
+        public string ActiveState
+        {
+            get
+            {
+                InternalCalls.AnimationComponent_GetActiveState(Entity.ID, out string result);
+                return result;
+            }
+            set
+            {
+                InternalCalls.AnimationComponent_SetActiveState(Entity.ID, value);
+            }
+        }
+    }
+
     public class TransformComponent : Component
     {
         public Vector3 Translation
@@ -57,7 +73,7 @@ namespace ORiginEngine
             InternalCalls.Rigidbody2DComponent_ApplyLinearImpulse(Entity.ID, ref impulse, ref worldPosition, wake);
         }
 
-        public void ApplyLinearImpulse(Vector2 impulse, bool wake)
+        public void ApplyLinearImpulseToCenter(Vector2 impulse, bool wake)
         {
             InternalCalls.Rigidbody2DComponent_ApplyLinearImpulseToCenter(Entity.ID, ref impulse, wake);
         }
@@ -369,11 +385,11 @@ namespace ORiginEngine
 
         }
 
-        public float TilingFactor
+        public Vector2 TilingFactor
         {
             get
             {
-                InternalCalls.SpriteRenderer2DComponent_GetTilingFactor(Entity.ID, out float tilingfactor);
+                InternalCalls.SpriteRenderer2DComponent_GetTilingFactor(Entity.ID, out Vector2 tilingfactor);
                 return tilingfactor;
             }
             set

@@ -53,7 +53,6 @@ namespace origin
 	{
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent&) = default;
-		std::shared_ptr<Animation> Animation;
 		AnimationState State;
 	};
 
@@ -140,7 +139,6 @@ namespace origin
 		{
 		}
 
-
 		glm::mat4 GetTransform() const
 		{
 			glm::mat4 rotation = toMat4(glm::quat(Rotation));
@@ -191,7 +189,10 @@ namespace origin
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
 		std::shared_ptr<Texture2D> Texture;
-		float TillingFactor = 1.0f;
+		glm::vec2 TillingFactor = glm::vec2(1.0f);
+
+		bool FlipX = false;
+		bool FlipY = false;
 
 		SpriteRenderer2DComponent() = default;
 		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&) = default;
@@ -298,12 +299,19 @@ namespace origin
 
 	struct Rigidbody2DComponent
 	{
-		enum class BodyType { Static = 0, Dynamic, Kinematic };
-
-		BodyType Type = BodyType::Static;
-		bool FixedRotation = false;
-
 		void* RuntimeBody = nullptr;
+
+		enum class BodyType { Static = 0, Dynamic, Kinematic };
+		BodyType Type = BodyType::Static;
+
+		float Mass = 1.0f;
+		float RotationalInertia = 0.0f;
+		glm::vec2 MassCenter = glm::vec2(0.0f);
+		float GravityScale = 1.0f;
+
+		bool FreezePositionX = false;
+		bool FreezePositionY = false;
+		bool FixedRotation = false;
 
 		Rigidbody2DComponent() = default;
 		Rigidbody2DComponent(const Rigidbody2DComponent&) = default;

@@ -1,43 +1,14 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "ContentBrowserPanel.h"
 #include "Origin\Project\Project.h"
+#include "Origin\Utils/Utils.h"
 #include "..\Editor.h"
+
 #include <imgui.h>
 
 namespace origin
 {
-	namespace Utils
-	{
-		static void CenteredText(const std::string& text)
-		{
-			const auto windowWidth = ImGui::GetWindowSize().x;
-			const auto textWidth = ImGui::CalcTextSize(text.c_str()).x;
-			ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
-			ImGui::Text(text.c_str());
-		}
-
-		static std::string CapitalizeText(std::string& text)
-		{
-			for (int i = 0; i < text.length(); i++)
-			{
-				if (i == 0) text[i] = (int)std::toupper(text[i]);
-				else if (text[i - 1] == ' ')
-					text[i] = std::toupper(text[i]);
-			}
-
-			return text;
-		}
-
-		static std::string CapitalizeWholeText(std::string text)
-		{
-			for (int i = 0; i < (int)text.length(); i++)
-				text[i] = std::toupper(text[i]);
-
-			return text;
-		}
-	}
-
 	ContentBrowserPanel::ContentBrowserPanel()
 	{
 		m_NavigationIconMap["backward_button"] = Texture2D::Create("Resources/UITextures/backward_icon.png");
@@ -86,15 +57,14 @@ namespace origin
 		ImGui::Begin("Content Browser");
 		NavigationButton();
 
-		auto windowSize = ImGui::GetWindowSize();
-
 		// Directory Button
-		static float padding = 10.0f;
-		static float thumbnailSize = 72.0f;
-		float cellSize = thumbnailSize + padding;
+		const float padding = 10.0f;
+		const float thumbnailSize = 72.0f;
+		const float cellSize = thumbnailSize + padding;
 
-		float panelWidth = ImGui::GetContentRegionAvail().x;
-		int columnCount = (int)(panelWidth / cellSize);
+		const float panelWidth = ImGui::GetContentRegionAvail().x;
+		int columnCount = static_cast<int>(panelWidth / cellSize);
+
 		if (columnCount < 1)
 			columnCount = 1;
 
@@ -114,7 +84,7 @@ namespace origin
 			// Folder Icon
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
-			ImGui::ImageButton((ImTextureID)DirectoryIcon(m_DirectoryEntry)->GetRendererID(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+			ImGui::ImageButton(reinterpret_cast<ImTextureID>(DirectoryIcon(m_DirectoryEntry)->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 			ImGui::PopStyleColor(2);
 
 			if (ImGui::BeginDragDropSource())
@@ -139,7 +109,7 @@ namespace origin
 
 			if (ImGui::BeginPopupContextItem())
 			{
-				Utils::CenteredText(Utils::CapitalizeWholeText(filenameString));
+				Utils::CenteredText(Utils::CapitalizeWholeText(filenameString).c_str());
 				ImGui::Separator();
 
 				if (ImGui::MenuItem("Delete"))
@@ -244,7 +214,8 @@ namespace origin
 
 		if (ImGui::Begin("##delete_argument", nullptr, window_flags))
 		{
-			Utils::CenteredText("Delete \"" + m_DeletePathTarget.filename().string() + "\"");
+			const std::string arguments = std::string("Delete \"" + m_DeletePathTarget.filename().string() + "\"");
+			Utils::CenteredText(arguments.c_str());
 			ImGui::Separator();
 
 			Utils::CenteredText("Are you sure ?");

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 
@@ -523,6 +523,16 @@ namespace origin
 		*outColor = entity.GetComponent<SpriteRenderer2DComponent>().Color;
 	}
 
+	static void SpriteRenderer2DComponent_FlipX(UUID entityID, bool* flip)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		
+		entity.GetComponent<SpriteRenderer2DComponent>().FlipX = *flip;
+	}
+
 	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4* color)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -532,7 +542,7 @@ namespace origin
 		entity.GetComponent<SpriteRenderer2DComponent>().Color = *color;
 	}
 
-	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, float* tilingfactor)
+	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, glm::vec2* tilingfactor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -541,7 +551,7 @@ namespace origin
 		*tilingfactor = entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor;
 	}
 
-	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, float* tilingfactor)
+	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, glm::vec2* tilingfactor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -766,6 +776,38 @@ namespace origin
 		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
 	}
 
+	static void AnimationComponent_GetActiveState(UUID entityID, MonoString* state)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		OGN_CORE_ASSERT(entity.HasComponent<AnimationComponent>())
+
+		auto& ac = entity.GetComponent<AnimationComponent>();
+		if (ac.State.HasAnimation())
+		{
+			state = ScriptEngine::CreateString(ac.State.GetCurrentStateString().c_str());
+		}
+	}
+
+	static void AnimationComponent_SetActiveState(UUID entityID, MonoString* state)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		OGN_CORE_ASSERT(entity.HasComponent<AnimationComponent>())
+
+		auto& ac = entity.GetComponent<AnimationComponent>();
+		if (ac.State.HasAnimation())
+		{
+			ac.State.SetActiveState(Utils::MonoStringToString(state));
+		}
+	}
+
 	static bool Input_IsKeyPressed(KeyCode keycode)
 	{
 		return Input::IsKeyPressed(keycode);
@@ -866,6 +908,7 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetColor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetTilingFactor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetTilingFactor);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_FlipX);
 
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetOffset);
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetOffset);
@@ -892,6 +935,9 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitution);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitutionThreshold);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitutionThreshold);
+
+		OGN_ADD_INTERNAL_CALLS(AnimationComponent_SetActiveState);
+		OGN_ADD_INTERNAL_CALLS(AnimationComponent_GetActiveState);
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);

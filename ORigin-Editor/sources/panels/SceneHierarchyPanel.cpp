@@ -5,12 +5,10 @@
 #include "..\Editor.h"
 
 #include "Origin\Project\Project.h"
-#include "Origin\IO\Input.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Component.h"
 #include "Origin\Audio\Audio.h"
-#include "Origin\Utils\PlatformUtils.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
 
@@ -224,11 +222,7 @@ namespace origin {
 
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
 
-			if (DisplayAddComponentEntry<AnimationComponent>("ANIMATION"))
-			{
-				m_SelectedEntity.GetComponent<AnimationComponent>().Animation = Animation::Create();
-			};
-
+			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
@@ -262,7 +256,7 @@ namespace origin {
 		{
 			auto& camera = component.Camera;
 			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-			const char* currentProjectionTypeString = projectionTypeString[(int)component.Camera.GetProjectionType()];
+			const char* currentProjectionTypeString = projectionTypeString[static_cast<int>(component.Camera.GetProjectionType())];
 			ImGui::Checkbox("Primary", &component.Primary);
 
 		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
@@ -273,7 +267,7 @@ namespace origin {
 				if (ImGui::Selectable(projectionTypeString[i], isSelected))
 				{
 					currentProjectionTypeString = projectionTypeString[i];
-					component.Camera.SetProjectionType((SceneCamera::ProjectionType)i);
+					component.Camera.SetProjectionType(static_cast<SceneCamera::ProjectionType>(i));
 				}
 
 				if (isSelected)
@@ -346,7 +340,7 @@ namespace origin {
 					{
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
+							const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 							std::filesystem::path audioPath = Project::GetAssetFileSystemPath(path);
 							if (audioPath.extension() == ".wav" || audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
 							{
@@ -701,7 +695,7 @@ namespace origin {
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
+						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 
 						// Get the actual Location from Project Assets Directory
 						std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
@@ -748,13 +742,13 @@ namespace origin {
 					{
 						if (!component.Material->Texture)
 							ImGui::Button("DROP TEXTURE", ImVec2(80.0f, 30.0f));
-						else ImGui::ImageButton((ImTextureID)component.Material->Texture->GetRendererID(), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+						else ImGui::ImageButton(reinterpret_cast<ImTextureID>(component.Material->Texture->GetRendererID()), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
 
 						if (ImGui::BeginDragDropTarget())
 						{
 							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 							{
-								const wchar_t* path = (const wchar_t*)payload->Data;
+								const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 								std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
 								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 									component.Material->LoadTextureFromFile(texturePath.generic_string());
@@ -792,7 +786,7 @@ namespace origin {
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
+						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 						std::filesystem::path fontPath = Project::GetAssetFileSystemPath(path);
 						if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
 						{
@@ -832,13 +826,13 @@ namespace origin {
 
 				if (!component.Texture)
 					ImGui::Button("DROP TEXTURE", ImVec2(80.0f, 30.0f));
-				else ImGui::ImageButton((ImTextureID)component.Texture->GetRendererID(), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+				else ImGui::ImageButton(reinterpret_cast<ImTextureID>(component.Texture->GetRendererID()), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
 
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
+						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
@@ -864,13 +858,13 @@ namespace origin {
 
 				if (!component.Texture)
 					ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
-				else ImGui::ImageButton((ImTextureID)component.Texture->GetRendererID(), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+				else ImGui::ImageButton(reinterpret_cast<ImTextureID>(component.Texture->GetRendererID()), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
 
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
+						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
 
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
@@ -891,7 +885,13 @@ namespace origin {
 					auto& path = std::filesystem::relative(component.Texture->GetFilepath(), Project::GetAssetDirectory());
 
 					ImGui::Text("Path: %s", path.string().c_str());
-					ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
+					DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
+
+					ImGui::Text("Flip");
+					ImGui::SameLine();
+					ImGui::Checkbox("X", &component.FlipX);
+					ImGui::SameLine();
+					ImGui::Checkbox("Y", &component.FlipY);
 				}
 			});
 
@@ -942,10 +942,10 @@ namespace origin {
 				ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
 			});
 
-		DrawComponent<Rigidbody2DComponent>("RIGIDBODY 2D", entity, [](auto& component)
+		DrawComponent<Rigidbody2DComponent>("RIGID BODY 2D", entity, [](auto& component)
 		{
 			const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic" };
-			const char* currentBodyTypeString = bodyTypeString[(int)component.Type];
+			const char* currentBodyTypeString = bodyTypeString[static_cast<int>(component.Type)];
 
 			if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
 			{
@@ -955,12 +955,23 @@ namespace origin {
 					if (ImGui::Selectable(bodyTypeString[i], isSelected))
 					{
 						currentBodyTypeString = bodyTypeString[i];
-						component.Type = (Rigidbody2DComponent::BodyType)i;
+						component.Type = static_cast<Rigidbody2DComponent::BodyType>(i);
 					}
 					if (isSelected) ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
 			}
+
+			DrawVecControl("Mass", &component.Mass, 0.01f);
+			DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
+			DrawVecControl("Gravity Scale", &component.GravityScale, 0.01f);
+			DrawVecControl("Rotational Inertia", &component.RotationalInertia, 0.01f);
+
+			ImGui::Text("Freeze Position");
+			ImGui::SameLine();
+			ImGui::Checkbox("X", &component.FreezePositionX);
+			ImGui::SameLine();
+			ImGui::Checkbox("Y", &component.FreezePositionY);
 			ImGui::Checkbox("Fixed Rotation", &component.FixedRotation);
 
 			});
@@ -971,10 +982,10 @@ namespace origin {
 				DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
 				float width = 118.0f;
-				DrawVecControl("Density", &component.Density, 0.01f, 1.0f, width);
-				DrawVecControl("Friction", &component.Friction, 0.01f, 0.5f, width);
-				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, width);
-				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 0.01f, 1.0f, width);
+				DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 1000.0f, 1.0f, width);
+				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, 1000.0f, 0.5f, width);
+				DrawVecControl("Restitution", &component.Restitution, 0.01f, 1000.0f, 0.5f, width);
+				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 1000.0f, 0.5f, width);
 			});
 
 		DrawComponent<CircleCollider2DComponent>("CIRCLE COLLIDER 2D", entity, [](auto& component)
@@ -983,10 +994,10 @@ namespace origin {
 				DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
 
 				float width = 118.0f;
-				DrawVecControl("Density", &component.Density, 0.01f, 0.5f, width);
-				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, width);
-				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, width);
-				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 0.5f, width);
+				DrawVecControl("Density", &component.Density, 0.01f, 1000.0f, 0.5f, width);
+				DrawVecControl("Friction", &component.Friction, 0.01f, 1000.0f, 0.0f, width);
+				DrawVecControl("Restitution", &component.Restitution, 0.01f, 1000.0f, 0.5f, width);
+				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 1000.0f, 0.5f, width);
 			});
 
 		DrawComponent<AudioListenerComponent>("AUDIO LISTENER", entity, [](auto& component)

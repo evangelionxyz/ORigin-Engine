@@ -7,64 +7,56 @@ namespace Game
 {
     public class Player : Entity
     {
-        public Entity entity;
-        public Entity textEntity;
-        private AudioComponent jumpAudio;
         private TransformComponent transform;
-        private BoxCollider2DComponent bc2D;
+        private Rigidbody2DComponent rb2d;
+        private AnimationComponent anim;
 
-        public float Speed = 2.0f;
-        public float Increment = 10.0f;
-
-        private float time;
-        private int keyPressedCount = 0;
+        public float JumpHeight = 0.5f;
+        public float FallSpeed = 10.0f;
+        public float Speed;
+        public float Increment;
 
         private Vector2 velocity;
-        private Vector2 translation;
+
+        float Deg2Rad(float x)
+        {
+            // 180 / 3,141592653589793238462643
+            return x * 0.01745329f;
+        }
 
         void OnCreate()
         {
-            velocity = Vector2.Zero;
-            translation = Vector2.Zero;
-
             transform = GetComponent<TransformComponent>();
-            bc2D = GetComponent<BoxCollider2DComponent>();
-
-            textEntity = FindEntityByName("TimeStep");
-            jumpAudio = FindEntityByName("JumpAudio").GetComponent<AudioComponent>();
+            rb2d = GetComponent<Rigidbody2DComponent>();
+            anim = GetComponent<AnimationComponent>();
         }
 
         void OnUpdate(float deltaTime)
         {
-            time += deltaTime;
-
-            if(textEntity != null)
-            {
-                TextComponent text = textEntity.GetComponent<TextComponent>();
-                text.Text = "Time: " + time.ToString();
-            }
+            velocity = Vector2.Zero;
 
             if (Input.IsKeyPressed(KeyCode.Space))
-            {
-                if(keyPressedCount < 1)
-                    jumpAudio.Play();
-
-                velocity.Y += Increment;
-
-                keyPressedCount++;
-            }
+                velocity.Y += JumpHeight * deltaTime;
             else
+                velocity.Y -= Increment * FallSpeed * deltaTime;
+
+            if (Input.IsKeyPressed(KeyCode.D))
             {
-                velocity.Y -= Increment;
-                keyPressedCount = 0;
+                velocity.X += Increment * Increment * deltaTime;
+                transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
+            }
+            else if (Input.IsKeyPressed(KeyCode.A))
+            {
+                velocity.X -= Increment * Increment * deltaTime;
+                transform.Rotation = new Vector3(0.0f, Deg2Rad(-180.0f), 0.0f);
             }
 
-            velocity.X += Increment;
+            if (Input.IsKeyPressed(KeyCode.B))
+                anim.ActiveState = "Fireball";
+            else
+                anim.ActiveState = "Mario";
 
-            velocity *= Speed * deltaTime;
-            translation += velocity;
-
-            transform.Translation = new Vector3(translation, 0.0f);
+            rb2d.ApplyLinearImpulse(velocity, new Vector2(0.0f, 0.0f), true);
         }
     }
 }

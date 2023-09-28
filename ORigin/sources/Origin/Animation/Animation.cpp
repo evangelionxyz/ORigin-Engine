@@ -9,7 +9,7 @@ namespace origin {
 
 	void Animation::AddFrame(const std::shared_ptr<Texture2D>& sprite, float frameTime)
 	{
-		AnimationFrame frame(sprite, frameTime);
+		const AnimationFrame frame(sprite, frameTime);
 		m_AnimationFrames.push_back(frame);
 	}
 
@@ -39,6 +39,7 @@ namespace origin {
 			// Reset the ElapsedFrameTime
 			m_ElapsedFrameTime = 0.0f;
 		}
+		
 	}
 
 	void Animation::Render(const glm::mat4& transform)
@@ -49,6 +50,7 @@ namespace origin {
 
 	void Animation::Delete()
 	{
+		m_CurrentFrameIndex = 0;
 		m_AnimationFrames.clear();
 	}
 
@@ -57,9 +59,14 @@ namespace origin {
 		m_Looping = looping;
 	}
 
-	std::shared_ptr<Texture2D>& Animation::GetCurrentSprite()
+	std::shared_ptr<Texture2D> Animation::GetCurrentSprite()
 	{
 		return m_AnimationFrames.at(m_CurrentFrameIndex).Texture;
+	}
+
+	std::shared_ptr<Texture2D> Animation::GetSprites(int frame)
+	{
+		return m_AnimationFrames.at(frame).Texture;
 	}
 
 	void Animation::SetFrameTime(float frameTime)

@@ -441,7 +441,7 @@ namespace origin
 							if (component.Texture)
 							{
 								ImGui::Text("Texture");
-								ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
+								ImGui::DragFloat2("Tilling Factor", glm::value_ptr(component.TillingFactor), 0.1f, 0.0f, 10.0f);
 								if (ImGui::Button("Delete", ImVec2(64.0f, 24.0f)))
 								{
 									component.Texture->Delete();

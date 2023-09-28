@@ -2,7 +2,7 @@
 
 -- Set Dependencies Folder
 
-VULKAN_SDK = os.getenv("VULKAN_SDK")
+VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
 ASSIMP_SDK = os.getenv("ASSIMP_SDK")
 
 IncludeDir = {}
