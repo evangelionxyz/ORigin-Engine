@@ -11,14 +11,16 @@ namespace Game
         private TransformComponent transform;
         private Rigidbody2DComponent rb2d;
         private AnimationComponent anim;
+        private TextComponent text;
 
-        public float JumpHeight = 0.5f;
-        public float FallSpeed = 10.0f;
-        public float Speed;
-        public float Increment;
-
-        public float MaxJumpTime = 0.2f;
+        public float JumpHeight;
+        public float MoveSpeed;
+        public float JumpCoolDownTime;
         private float JumpCoolDown;
+        private int jumpsRemaining;
+        float RotationY = 0.0f;
+
+        private float time = 0.0f;
 
         private Vector2 velocity;
 
@@ -33,50 +35,63 @@ namespace Game
             transform = GetComponent<TransformComponent>();
             rb2d = GetComponent<Rigidbody2DComponent>();
             anim = GetComponent<AnimationComponent>();
-
-            JumpCoolDown = MaxJumpTime;
-
             JumpSound = FindEntityByName("Jump Sound").GetComponent<AudioComponent>();
+            text = FindEntityByName("Text").GetComponent<TextComponent>();
+
+            JumpCoolDown = JumpCoolDownTime;
+
+            jumpsRemaining = 2;
         }
 
         void OnUpdate(float deltaTime)
         {
+            time += deltaTime;
+            text.Text = "Time: " + time.ToString();
+
             velocity = Vector2.Zero;
 
             if (Input.IsKeyPressed(KeyCode.Space))
             {
-                JumpCoolDown -= deltaTime;
-                
-                if (JumpCoolDown > 0)
+                if(jumpsRemaining > 1)
                 {
-                    JumpSound.Play();
-                    velocity.Y += JumpHeight * deltaTime;
+                    if (JumpCoolDown <= 0.0f)
+                    {
+                        velocity.Y = JumpHeight;
+                        JumpCoolDown = JumpCoolDownTime;
+                        jumpsRemaining--;
+                    }
                 }
+                
+            }
+
+            JumpCoolDown -= deltaTime;
+
+            if (velocity.Y > 0)
+            {
+                JumpSound.Play();
+                anim.ActiveState = "Jump";
             }
             else
             {
-                JumpCoolDown = MaxJumpTime;
                 anim.ActiveState = "Idle";
-                velocity.Y -= Increment * FallSpeed * deltaTime;
             }
 
             if (Input.IsKeyPressed(KeyCode.D))
-            {
-                velocity.X += Increment * Increment * deltaTime;
-                transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
-            }
+                velocity.X += MoveSpeed * deltaTime;
             else if (Input.IsKeyPressed(KeyCode.A))
+                velocity.X -= MoveSpeed * deltaTime;
+
+            if (velocity.X != 0)
             {
-                velocity.X -= Increment * Increment * deltaTime;
-                transform.Rotation = new Vector3(0.0f, Deg2Rad(-180.0f), 0.0f);
+                anim.ActiveState = "Walk";
+                RotationY = velocity.X > 0 ? 0.0f : Deg2Rad(-180.0f);
             }
 
-            if (velocity.X > 0 || velocity.X < 0)
-                anim.ActiveState = "Walk";
-            else if (velocity.Y > 0)
-                anim.ActiveState = "Jump";
+            transform.Rotation = new Vector3(0.0f, RotationY, 0.0f);
+            rb2d.ApplyLinearImpulseToCenter(velocity, true);
 
-            rb2d.ApplyLinearImpulse(velocity, new Vector2(0.0f, 0.0f), true);
+            if (Translation.Y < -1.05f)
+                jumpsRemaining = 2;
         }
     }
 }

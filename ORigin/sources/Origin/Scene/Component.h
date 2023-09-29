@@ -305,6 +305,8 @@ namespace origin
 		BodyType Type = BodyType::Static;
 
 		float Mass = 1.0f;
+		float LinearDamping = 0.0f;
+		float AngularDamping = 0.01f;
 		float RotationalInertia = 0.0f;
 		glm::vec2 MassCenter = glm::vec2(0.0f);
 		float GravityScale = 1.0f;
@@ -312,6 +314,10 @@ namespace origin
 		bool FreezePositionX = false;
 		bool FreezePositionY = false;
 		bool FixedRotation = false;
+		bool AllowSleeping = true;
+		bool Awake = true;
+		bool Bullet = true;
+		bool Enabled = true;
 
 		Rigidbody2DComponent() = default;
 		Rigidbody2DComponent(const Rigidbody2DComponent&) = default;
@@ -319,6 +325,10 @@ namespace origin
 
 	struct BoxCollider2DComponent
 	{
+		// All fixtures with the same group index always collide(positive index)
+		// or never collide(negative index)
+		int Group = 1;
+
 		glm::vec2 Offset = {0.0f, 0.0f};
 		glm::vec2 Size = {0.5f, 0.5f};
 
@@ -328,6 +338,7 @@ namespace origin
 		float RestitutionThreshold = 0.5f;
 
 		void* RuntimeFixture = nullptr;
+		void* RuntimeBoxShape = nullptr;
 
 		BoxCollider2DComponent() = default;
 		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
@@ -335,6 +346,10 @@ namespace origin
 
 	struct CircleCollider2DComponent
 	{
+		// All fixtures with the same group index always collide(positive index)
+		// or never collide(negative index)
+		int Group = 1;
+
 		glm::vec2 Offset = {0.0f, 0.0f};
 		float Radius = 0.5f;
 
@@ -344,6 +359,7 @@ namespace origin
 		float RestitutionThreshold = 0.5f;
 
 		void* RuntimeFixture = nullptr;
+		void* RuntimeCircleShape = nullptr;
 
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;

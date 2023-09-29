@@ -1,5 +1,18 @@
 Scene: scene.org
 Entities:
+  - Entity: 15390158619090473268
+    TagComponent:
+      Tag: Text
+    TransformComponent:
+      Translation: [-7.97850037, 0.535971165, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    TextComponent:
+      TextString: Hello World
+      FontFilepath: ../../Resources/Fonts/segoeui.ttf
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
   - Entity: 8127174878979592824
     TagComponent:
       Tag: Mario Main Theme
@@ -155,21 +168,9 @@ Entities:
       ScriptFields:
         - Name: JumpHeight
           Type: Float
-          Data: 30
-        - Name: FallSpeed
-          Type: Float
-          Data: 5
-        - Name: Speed
-          Type: Float
-          Data: 5
-        - Name: MaxJumpTime
-          Type: Float
-          Data: 0.200000003
-        - Name: Increment
-          Type: Float
-          Data: 5
+          Data: 10
     TransformComponent:
-      Translation: [0, -0.275472641, 0]
+      Translation: [-6.17131591e-05, -0.27544114, -2.29105353e-07]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer2DComponent:
@@ -178,17 +179,30 @@ Entities:
       TillingFactor: [1, 1]
     Rigidbody2DComponent:
       BodyType: Dynamic
+      Mass: 1
+      LinearDamping: 4
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
       FixedRotation: true
     BoxCollider2DComponent:
+      Group: 1
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [0.280000001, 0.5]
       Density: 1
       Friction: 0.0900000036
       Restitution: 0.100000001
       RestitutionThreshold: 0
   - Entity: 11440873550682870080
     TagComponent:
-      Tag: Wall
+      Tag: Ground
     TransformComponent:
       Translation: [0.00114440918, -1.95486915, 0]
       Rotation: [0, 0, 0]
@@ -198,8 +212,21 @@ Entities:
       TillingFactor: [1, 1]
     Rigidbody2DComponent:
       BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
       FixedRotation: false
     BoxCollider2DComponent:
+      Group: 1
       Offset: [0, 0]
       Size: [0.5, 0.5]
       Density: 1
@@ -234,7 +261,7 @@ Entities:
     TransformComponent:
       Translation: [0, 1.97742712, -1.70563459]
       Rotation: [0, 0, 0]
-      Scale: [128, 8.32877064, 8.32877064]
+      Scale: [128, 8.31000042, 8.32877064]
     SpriteRenderer2DComponent:
       Color: [0.848101258, 1, 0.990386128, 1]
       TexturePath: Textures/bg.jpg
@@ -294,3 +321,170 @@ Entities:
       Color: [1, 0.852320671, 0.852320671, 1]
       TexturePath: Textures/grassA.png
       TillingFactor: [1, 1]
+  - Entity: 8108942666149627290
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [2.0025475, -0.566681564, -0.26699999]
+      Rotation: [0, 0, 0]
+      Scale: [1, 2.49379754, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.725738406, 0.725738406, 0.725738406, 1]
+      TexturePath: Textures/wood_floor.jpg
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 17017982456376318738
+    TagComponent:
+      Tag: Wall 2
+    TransformComponent:
+      Translation: [-3.49358082, -1.02614927, -0.266938597]
+      Rotation: [0, 0, 0]
+      Scale: [0.992900729, 1.25464106, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.725738406, 0.725738406, 0.725738406, 1]
+      TexturePath: Textures/wood_floor.jpg
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 11027160879880635538
+    TagComponent:
+      Tag: Red
+    TransformComponent:
+      Translation: [5.44261026, 1.17640531, -0.00860593654]
+      Rotation: [0, 0, 0]
+      Scale: [0.699999988, 0.699999988, 0.501599967]
+    SpriteRenderer2DComponent:
+      Color: [1, 0, 0.0759496689, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3559037790332093065
+    TagComponent:
+      Tag: Blue
+    TransformComponent:
+      Translation: [6.44264078, 0.67641294, -0.00860594213]
+      Rotation: [0, 0, 0]
+      Scale: [0.699999988, 0.699999988, 0.501599967]
+    SpriteRenderer2DComponent:
+      Color: [0, 0.860759497, 1, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 14502348526263550333
+    TagComponent:
+      Tag: Yellow
+    TransformComponent:
+      Translation: [7.44266987, 0.17642045, -0.0087279072]
+      Rotation: [0, 0, 0]
+      Scale: [0.699999988, 0.699999988, 0.501599967]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.886075974, 0, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5

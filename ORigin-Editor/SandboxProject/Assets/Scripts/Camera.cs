@@ -27,7 +27,13 @@ namespace Game
                     position.X += 3.0f * (player.Translation.X - maxBounding.X) * deltaTime;
 
                 if (player.Translation.Y > maxBounding.Y)
-                    position.Y += 2.0f * deltaTime;
+                    position.Y += 3.0f * deltaTime;
+                else if(player.Translation.Y < Translation.Y)
+                    position.Y -= 3.0f * deltaTime;
+
+                if (position.Y <= 0.0f)
+                    position.Y = 0.0f;
+
 
                 Translation = new Vector3(position, Translation.Z);
             }

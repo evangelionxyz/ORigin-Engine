@@ -6,6 +6,8 @@
 #include "Scene.h"
 #include "entt\entt.hpp"
 
+#include "box2d/b2_contact.h"
+
 namespace origin {
 
 	class Entity

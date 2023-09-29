@@ -22,13 +22,14 @@
 #include "box2d/b2_fixture.h"
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_circle_shape.h"
-#include "box2d/b2_collision.h"
-#include "box2d/b2_contact.h"
+
+#include "Box2D/ContactListener.h"
 
 #include <glm/glm.hpp>
 
 namespace origin
 {
+
 	static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
 	{
 		switch (type)
@@ -296,7 +297,6 @@ namespace origin
 		m_Registry.destroy(entity);
 	}
 
-
 	void Scene::OnUpdateRuntime(Timestep deltaTime)
 	{
 		if (!m_Paused || m_StepFrames-- > 0)
@@ -323,6 +323,7 @@ namespace origin
 			// Physics
 			constexpr int32_t velocityIterations = 6;
 			constexpr int32_t positionIterations = 2;
+
 			m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
 
 			// Retrieve transform from Box2D
@@ -335,10 +336,13 @@ namespace origin
 
 				const auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
-				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Rotation.z = body->GetAngle();
+				if (body)
+				{
+					const auto& position = body->GetPosition();
+					transform.Translation.x = position.x;
+					transform.Translation.y = position.y;
+					transform.Rotation.z = body->GetAngle();
+				}
 			}
 		}
 
@@ -488,28 +492,25 @@ namespace origin
 				});
 			}
 
-			// Physics
+			//Physics
+			constexpr int32_t velocityIterations = 6;
+			constexpr int32_t positionIterations = 2;
+
+			m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
+
+			// Retrieve transform from Box2D
+			const auto& view = m_Registry.view<Rigidbody2DComponent>();
+			for (auto e : view)
 			{
-				constexpr int32_t velocityIterations = 6;
-				constexpr int32_t positionIterations = 2;
-				m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
+				Entity entity = { e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 
-				// Retrieve transform from Box2D
-				const auto& view = m_Registry.view<Rigidbody2DComponent>();
-				for (auto e : view)
-				{
-					Entity entity = {e, this};
-					auto& transform = entity.GetComponent<TransformComponent>();
-					const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-					const auto& body = static_cast<b2Body*>(rb2d.RuntimeBody);
-
-					const auto& position = body->GetPosition();
-
-					transform.Translation.x = position.x;
-					transform.Translation.y = position.y;
-					transform.Rotation.z = body->GetAngle();
-				}
+				const auto& body = static_cast<b2Body*>(rb2d.RuntimeBody);
+				const auto& position = body->GetPosition();
+				transform.Translation.x = position.x;
+				transform.Translation.y = position.y;
+				transform.Rotation.z = body->GetAngle();
 			}
 		}
 
@@ -1124,17 +1125,21 @@ namespace origin
 		m_Running = true;
 		m_Box2DWorld = new b2World({0.0f, -9.8f});
 
-		//b2ContactListener* contactListener;
-		//m_Box2DWorld->SetContactListener(contactListener);
+		m_Box2DContactListener = new ContactListener(this);
+		m_Box2DWorld->SetContactListener(m_Box2DContactListener);
 
 		auto view = m_Registry.view<Rigidbody2DComponent>();
-		for (auto e : view)
+		for (entt::entity e : view)
 		{
 			Entity entity = {e, this};
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 
 			b2BodyDef bodyDef;
+
+			// set user data based on the entity
+			bodyDef.userData.pointer = static_cast<uintptr_t>(e);
+
 			bodyDef.type = Box2DBodyType(rb2d.Type);
 			bodyDef.linearDamping = rb2d.LinearDamping;
 			bodyDef.angularDamping = rb2d.AngularDamping;
@@ -1223,6 +1228,12 @@ namespace origin
 	void Scene::OnPhysics2DStop()
 	{
 		m_Running = false;
+
+		delete m_Box2DContactListener;
+		m_Box2DContactListener = nullptr;
+
+		m_Box2DWorld->SetContactListener(nullptr);
+
 		delete m_Box2DWorld;
 		m_Box2DWorld = nullptr;
 	}

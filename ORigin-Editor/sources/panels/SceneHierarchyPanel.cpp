@@ -944,6 +944,7 @@ namespace origin {
 
 		DrawComponent<Rigidbody2DComponent>("RIGID BODY 2D", entity, [](auto& component)
 		{
+			ImGui::Checkbox("Enabled", &component.Enabled);
 			const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic" };
 			const char* currentBodyTypeString = bodyTypeString[static_cast<int>(component.Type)];
 
@@ -962,42 +963,53 @@ namespace origin {
 				ImGui::EndCombo();
 			}
 
-			DrawVecControl("Mass", &component.Mass, 0.01f);
-			DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
 			DrawVecControl("Gravity Scale", &component.GravityScale, 0.01f);
 			DrawVecControl("Rotational Inertia", &component.RotationalInertia, 0.01f);
+			DrawVecControl("Linear Damping", &component.LinearDamping, 0.025f, 0.0f, 1000.0f);
+			DrawVecControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
+			DrawVecControl("Mass", &component.Mass, 0.01f);
+			DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
 
 			ImGui::Text("Freeze Position");
 			ImGui::SameLine();
 			ImGui::Checkbox("X", &component.FreezePositionX);
 			ImGui::SameLine();
 			ImGui::Checkbox("Y", &component.FreezePositionY);
+
 			ImGui::Checkbox("Fixed Rotation", &component.FixedRotation);
+			ImGui::Checkbox("Awake", &component.Awake);
+			ImGui::SameLine();
+			ImGui::Checkbox("Allow Sleeping", &component.AllowSleeping);
+			ImGui::Checkbox("Bullet", &component.Bullet);
 
 			});
 
 		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto& component)
 			{
+				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1.0f, 16.0f, "Group Index %d");
+
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.5f);
 				DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
 				float width = 118.0f;
-				DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 1000.0f, 1.0f, width);
-				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, 1000.0f, 0.5f, width);
-				DrawVecControl("Restitution", &component.Restitution, 0.01f, 1000.0f, 0.5f, width);
-				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 1000.0f, 0.5f, width);
+				DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width);
+				DrawVecControl("Friction", &component.Friction, 0.02, 0.0f, 100.0f, 0.5f, width);
+				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width);
+				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width);
 			});
 
 		DrawComponent<CircleCollider2DComponent>("CIRCLE COLLIDER 2D", entity, [](auto& component)
 			{
+				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1.0f, 16.0f, "Group Index %d");
+
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 				DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
 
 				float width = 118.0f;
-				DrawVecControl("Density", &component.Density, 0.01f, 1000.0f, 0.5f, width);
-				DrawVecControl("Friction", &component.Friction, 0.01f, 1000.0f, 0.0f, width);
-				DrawVecControl("Restitution", &component.Restitution, 0.01f, 1000.0f, 0.5f, width);
-				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 1000.0f, 0.5f, width);
+				DrawVecControl("Density", &component.Density, 0.01f, 0.01f, 100.0f, 1.0f, width);
+				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, 100.0f, 0.0f, width);
+				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width);
+				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.0f, width);
 			});
 
 		DrawComponent<AudioListenerComponent>("AUDIO LISTENER", entity, [](auto& component)

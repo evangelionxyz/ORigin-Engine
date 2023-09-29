@@ -146,11 +146,13 @@ namespace origin {
     case SceneState::Edit:
         m_EditorCamera.OnUpdate(time);
         m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
+        OnOverlayRenderer();
         break;
 
     case SceneState::Simulate:
         m_EditorCamera.OnUpdate(time);
         m_ActiveScene->OnUpdateSimulation(time, m_EditorCamera);
+        OnOverlayRenderer();
         break;
     }
 
@@ -173,7 +175,7 @@ namespace origin {
     else
         m_EditorCamera.SetEntityObject({});
 
-    OnOverlayRenderer();
+    
     m_Framebuffer->Unbind();
   }
 
