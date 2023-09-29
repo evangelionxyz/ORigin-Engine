@@ -31,14 +31,14 @@ namespace origin {
 
 		void Delete();
 
-		bool HasFrame() const { return GetTotalFrames() > 0; }
+		bool HasFrame() const { return m_AnimationFrames.empty() == false; }
 		bool IsLooping() const { return m_Looping; }
 
 		std::shared_ptr<Texture2D> GetCurrentSprite();
 		std::shared_ptr<Texture2D> GetSprites(int frame);
 
 		int GetFrameIndex() const { return m_CurrentFrameIndex; }
-		int GetTotalFrames() const { return m_AnimationFrames.size(); }
+		size_t GetTotalFrames() const { return m_AnimationFrames.size(); }
 		void SetFrameTime(float frameTime);
 
 		static std::shared_ptr<Animation> Create();
@@ -49,6 +49,6 @@ namespace origin {
 
 		int m_CurrentFrameIndex = 0;
 		float m_ElapsedFrameTime = 0.0f;
-		bool m_Looping;
+		bool m_Looping = false;
 	};
 }

@@ -45,7 +45,7 @@ namespace origin {
 
 		if (!playing)
 		{
-			OGN_CORE_WARN("AudioSource: Playing {}", m_Config.Name);
+			//OGN_CORE_WARN("AudioSource: Playing {}", m_Config.Name);
 
 			s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &m_Channel);
 			FMOD_CHECK(s_Data.Result);

@@ -12,18 +12,18 @@ namespace origin {
 		AnimationState() = default;
 
 		void AddState(std::string state);
-		void AddAnim(std::shared_ptr<Animation> anim);
+		void AddAnimation(Animation anim);
 
 		void SetDefaultState(std::string state);
 		void SetActiveState(std::string state);
 
 		void RemoveState(std::string state);
-		void Stop() const;
+		void Stop();
 
-		void Update(float deltaTime) const;
+		void Update(float deltaTime);
 
-		void SetLooping(bool looping) const;
-		bool IsLooping() const;
+		void SetLooping(bool looping);
+		bool IsLooping();
 		bool Preview = false;
 		bool HasState() const { return m_StateStorage.size() > 0; }
 		bool HasAnimation();
@@ -31,17 +31,19 @@ namespace origin {
 		bool AnimationExists(std::string state);
 		bool StateExists(std::string stateName);
 
-		const std::shared_ptr<Animation>& GetAnimation();
-		std::string GetCurrentStateString() const { return m_CurrentState; }
+		std::string GetCurrentState() const { return m_CurrentState; }
 		std::string GetDefaultState() const { return m_DefaultState; }
-		std::unordered_map<std::string, std::shared_ptr<Animation>> GetAnimationState() { return m_Animations; }
-		const std::vector<std::string>& GetStateStorage() { return m_StateStorage; }
+
+		Animation& GetAnimation();
+
+		std::unordered_map<std::string, Animation> GetAnimationState() const { return m_Animations; }
+		const std::vector<std::string>& GetStateStorage() const { return m_StateStorage; }
 
 	private:
 		std::string m_CurrentState;
 		std::string m_DefaultState;
 
-		std::unordered_map<std::string, std::shared_ptr<Animation>> m_Animations;
+		std::unordered_map<std::string, Animation> m_Animations;
 		std::vector<std::string> m_StateStorage;
 	};
 }

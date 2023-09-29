@@ -22,6 +22,8 @@
 #include "box2d/b2_fixture.h"
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_circle_shape.h"
+#include "box2d/b2_collision.h"
+#include "box2d/b2_contact.h"
 
 #include <glm/glm.hpp>
 
@@ -319,26 +321,24 @@ namespace origin
 			});
 
 			// Physics
+			constexpr int32_t velocityIterations = 6;
+			constexpr int32_t positionIterations = 2;
+			m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
+
+			// Retrieve transform from Box2D
+			auto& view = m_Registry.view<Rigidbody2DComponent>();
+			for (auto& e : view)
 			{
-				constexpr int32_t velocityIterations = 6;
-				constexpr int32_t positionIterations = 2;
-				m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
+				Entity entity = { e, this };
+				auto& transform = entity.GetComponent<TransformComponent>();
+				const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 
-				// Retrieve transform from Box2D
-				auto& view = m_Registry.view<Rigidbody2DComponent>();
-				for (auto& e : view)
-				{
-					Entity entity = {e, this};
-					auto& transform = entity.GetComponent<TransformComponent>();
-					const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+				const auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
-					const auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
-
-					const auto& position = body->GetPosition();
-					transform.Translation.x = position.x;
-					transform.Translation.y = position.y;
-					transform.Rotation.z = body->GetAngle();
-				}
+				const auto& position = body->GetPosition();
+				transform.Translation.x = position.x;
+				transform.Translation.y = position.y;
+				transform.Rotation.z = body->GetAngle();
 			}
 		}
 
@@ -372,8 +372,8 @@ namespace origin
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.GetAnimation())
-				ac.State.GetAnimation()->Update(deltaTime);
+			if (ac.State.HasAnimation())
+				ac.State.GetAnimation().Update(deltaTime);
 		}
 
 		// Audio Update
@@ -435,7 +435,7 @@ namespace origin
 				if (ac.State.Preview)
 					ac.State.Update(deltaTime);
 				else
-					ac.State.GetAnimation()->Reset();
+					ac.State.GetAnimation().Reset();
 			}
 		}
 
@@ -528,8 +528,8 @@ namespace origin
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.GetAnimation())
-				ac.State.GetAnimation()->Update(deltaTime);
+			if (ac.State.HasAnimation())
+				ac.State.GetAnimation().Update(deltaTime);
 		}
 
 		// Audio Update
@@ -658,11 +658,11 @@ namespace origin
 			for (auto& entity : animView)
 			{
 				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (!anim.State.HasAnimation())
+				if (anim.State.HasAnimation() == false)
 					continue;
 
-				if (anim.State.GetAnimation()->HasFrame())
-					sprite.Texture = anim.State.GetAnimation()->GetCurrentSprite();
+				if (anim.State.GetAnimation().HasFrame())
+					sprite.Texture = anim.State.GetAnimation().GetCurrentSprite();
 				else
 				{
 					if (sprite.Texture)
@@ -827,8 +827,8 @@ namespace origin
 				if (!anim.State.HasAnimation())
 					continue;
 
-				if (anim.State.GetAnimation()->HasFrame())
-					sprite.Texture = anim.State.GetAnimation()->GetCurrentSprite();
+				if (anim.State.GetAnimation().HasFrame())
+					sprite.Texture = anim.State.GetAnimation().GetCurrentSprite();
 				else
 				{
 					if(sprite.Texture)
@@ -1124,6 +1124,9 @@ namespace origin
 		m_Running = true;
 		m_Box2DWorld = new b2World({0.0f, -9.8f});
 
+		//b2ContactListener* contactListener;
+		//m_Box2DWorld->SetContactListener(contactListener);
+
 		auto view = m_Registry.view<Rigidbody2DComponent>();
 		for (auto e : view)
 		{
@@ -1133,6 +1136,12 @@ namespace origin
 
 			b2BodyDef bodyDef;
 			bodyDef.type = Box2DBodyType(rb2d.Type);
+			bodyDef.linearDamping = rb2d.LinearDamping;
+			bodyDef.angularDamping = rb2d.AngularDamping;
+			bodyDef.allowSleep = rb2d.AllowSleeping;
+			bodyDef.awake = rb2d.Awake;
+			bodyDef.bullet = rb2d.Bullet;
+			bodyDef.enabled = rb2d.Enabled;
 
 			// POSITION SETTINGS
 			float xPos = transform.Translation.x;
@@ -1166,32 +1175,46 @@ namespace origin
 				auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
 
 				b2PolygonShape boxShape;
-				boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y,
-				                  b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
+				boxShape.SetAsBox(
+					bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y,
+				  b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f
+				);
+
+				bc2d.RuntimeBoxShape = &boxShape;
 
 				b2FixtureDef fixtureDef;
+				fixtureDef.filter.groupIndex = bc2d.Group;
 				fixtureDef.shape = &boxShape;
 				fixtureDef.density = bc2d.Density;
 				fixtureDef.friction = bc2d.Friction;
 				fixtureDef.restitution = bc2d.Restitution;
 				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
+
+				bc2d.RuntimeFixture = &fixtureDef;
+
 				body->CreateFixture(&fixtureDef);
 			}
 
 			if (entity.HasComponent<CircleCollider2DComponent>())
 			{
-				const auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
 
 				b2CircleShape circleShape;
 				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
 				circleShape.m_radius = transform.Scale.x * cc2d.Radius;
 
+				cc2d.RuntimeCircleShape = &circleShape;
+
 				b2FixtureDef fixtureDef;
+				fixtureDef.filter.groupIndex = cc2d.Group;
 				fixtureDef.shape = &circleShape;
 				fixtureDef.density = cc2d.Density;
 				fixtureDef.friction = cc2d.Friction;
 				fixtureDef.restitution = cc2d.Restitution;
 				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+
+				cc2d.RuntimeFixture = &fixtureDef;
+
 				body->CreateFixture(&fixtureDef);
 			}
 		}

@@ -158,7 +158,7 @@ namespace origin
 		return {};
 	}
 
-	static Rigidbody2DComponent::BodyType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
+	static Rigidbody2DComponent::BodyType Rigidbody2DBodyTypeFromString(const std::string& bodyTypeString)
 	{
 		if (bodyTypeString == "Static") return Rigidbody2DComponent::BodyType::Static;
 		if (bodyTypeString == "Dynamic") return Rigidbody2DComponent::BodyType::Dynamic;
@@ -215,10 +215,10 @@ namespace origin
 					{
 						out << YAML::Key << "Frames" << YAML::Value;
 						out << YAML::BeginSeq; // Frames
-						for (int frameIndex = 0; frameIndex < animations->GetTotalFrames(); frameIndex++)
+						for (int frameIndex = 0; frameIndex < animations.GetTotalFrames(); frameIndex++)
 						{
 							out << YAML::BeginMap; // Path
-							std::filesystem::path& framePath = relative(animations->GetSprites(frameIndex)->GetFilepath(), Project::GetAssetDirectory());
+							std::filesystem::path& framePath = relative(animations.GetSprites(frameIndex)->GetFilepath(), Project::GetAssetDirectory());
 							out << YAML::Key << "Path" << YAML::Value << framePath.generic_string(); // Add the frame path directly to the sequence
 							out << YAML::EndMap; //!Path
 						}
@@ -526,7 +526,20 @@ namespace origin
 
 			const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << RigidBody2DBodyTypeToString(rb2d.Type);
+			out << YAML::Key << "Mass" << YAML::Value << rb2d.Mass;
+			out << YAML::Key << "LinearDamping" << YAML::Value << rb2d.LinearDamping;
+			out << YAML::Key << "AngularDamping" << YAML::Value << rb2d.AngularDamping;
+			out << YAML::Key << "RotationalInertia" << YAML::Value << rb2d.RotationalInertia;
+			out << YAML::Key << "GravityScale" << YAML::Value << rb2d.GravityScale;
+			out << YAML::Key << "MassCenter" << YAML::Value << rb2d.MassCenter;
+			out << YAML::Key << "FreezePositionX" << YAML::Value << rb2d.FreezePositionX;
+			out << YAML::Key << "FreezePositionY" << YAML::Value << rb2d.FreezePositionY;
+			out << YAML::Key << "AllowSleeping" << YAML::Value << rb2d.AllowSleeping;
+			out << YAML::Key << "Awake" << YAML::Value << rb2d.Awake;
+			out << YAML::Key << "Bullet" << YAML::Value << rb2d.Bullet;
+			out << YAML::Key << "Enabled" << YAML::Value << rb2d.Enabled;
 			out << YAML::Key << "FixedRotation" << YAML::Value << rb2d.FixedRotation;
+
 
 			out << YAML::EndMap; // !Rigidbody2DComponent
 		}
@@ -537,6 +550,7 @@ namespace origin
 			out << YAML::BeginMap; // BoxCollider2DComponent;
 
 			const auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+			out << YAML::Key << "Group" << YAML::Value << bc2d.Group;
 			out << YAML::Key << "Offset" << YAML::Value << bc2d.Offset;
 			out << YAML::Key << "Size" << YAML::Value << bc2d.Size;
 
@@ -553,14 +567,15 @@ namespace origin
 			out << YAML::Key << "CircleCollider2DComponent";
 			out << YAML::BeginMap; // CircleCollider2DComponent;
 
-			const auto& bc2d = entity.GetComponent<CircleCollider2DComponent>();
-			out << YAML::Key << "Offset" << YAML::Value << bc2d.Offset;
-			out << YAML::Key << "Radius" << YAML::Value << bc2d.Radius;
+			const auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+			out << YAML::Key << "Group" << YAML::Value << cc2d.Group;
+			out << YAML::Key << "Offset" << YAML::Value << cc2d.Offset;
+			out << YAML::Key << "Radius" << YAML::Value << cc2d.Radius;
 
-			out << YAML::Key << "Density" << YAML::Value << bc2d.Density;
-			out << YAML::Key << "Friction" << YAML::Value << bc2d.Friction;
-			out << YAML::Key << "Restitution" << YAML::Value << bc2d.Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << bc2d.RestitutionThreshold;
+			out << YAML::Key << "Density" << YAML::Value << cc2d.Density;
+			out << YAML::Key << "Friction" << YAML::Value << cc2d.Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << cc2d.Restitution;
+			out << YAML::Key << "RestitutionThreshold" << YAML::Value << cc2d.RestitutionThreshold;
 
 			out << YAML::EndMap; // !CircleCollider2DComponent
 		}
@@ -673,10 +688,7 @@ namespace origin
 						// Get all states
 						for (auto state : states)
 						{
-							std::shared_ptr<Animation> animation;
-
-							if (animation == nullptr)
-								animation = Animation::Create();
+							Animation animation;
 
 							ac.State.AddState(state["Name"].as<std::string>());
 							
@@ -686,13 +698,12 @@ namespace origin
 								// Get the frames's filepath
 								std::string framePath = Project::GetAssetFileSystemPath(frames["Path"].as<std::string>()).generic_string();
 								const std::shared_ptr<Texture2D> texture = Texture2D::Create(framePath);
-								animation->AddFrame(texture, 0.23f);
+								animation.AddFrame(texture, 0.23f);
 							}
 
 							// Add the animation after frames added
-							ac.State.AddAnim(animation);
+							ac.State.AddAnimation(animation);
 							ac.State.SetLooping(state["Looping"].as<bool>());
-							animation.reset();
 						}
 					}
 
@@ -836,8 +847,44 @@ namespace origin
 				if (YAML::Node rigidbody2DComponent = entity["Rigidbody2DComponent"])
 				{
 					auto& rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
-					rb2d.Type = RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
+					rb2d.Type = Rigidbody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
+					rb2d.Mass = rigidbody2DComponent["Mass"].as<float>();
+					rb2d.LinearDamping = rigidbody2DComponent["LinearDamping"].as<float>();
+					rb2d.AngularDamping = rigidbody2DComponent["AngularDamping"].as<float>();
+					rb2d.RotationalInertia = rigidbody2DComponent["RotationalInertia"].as<float>();
+					rb2d.GravityScale = rigidbody2DComponent["GravityScale"].as<float>();
+					rb2d.MassCenter = rigidbody2DComponent["MassCenter"].as<glm::vec2>();
+					rb2d.FreezePositionX = rigidbody2DComponent["FreezePositionX"].as<bool>();
+					rb2d.FreezePositionY = rigidbody2DComponent["FreezePositionY"].as<bool>();
+					rb2d.AllowSleeping = rigidbody2DComponent["AllowSleeping"].as<bool>();
+					rb2d.Awake = rigidbody2DComponent["Awake"].as<bool>();
+					rb2d.Bullet = rigidbody2DComponent["Bullet"].as<bool>();
+					rb2d.Enabled = rigidbody2DComponent["Enabled"].as<bool>();
 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
+				}
+
+				if (YAML::Node boxCollider2DComponent = entity["BoxCollider2DComponent"])
+				{
+					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
+					bc2d.Group = boxCollider2DComponent["Group"].as<int>();
+					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
+					bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
+					bc2d.Density = boxCollider2DComponent["Density"].as<float>();
+					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
+					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
+					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
+				}
+
+				if (YAML::Node circleCollider2DComponent = entity["CircleCollider2DComponent"])
+				{
+					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
+					cc2d.Group = circleCollider2DComponent["Group"].as<int>();
+					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
+					cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
+					cc2d.Density = circleCollider2DComponent["Density"].as<float>();
+					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
+					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
+					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
 				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
@@ -894,28 +941,6 @@ namespace origin
 					text.Color = textComponent["Color"].as<glm::vec4>();
 					text.Kerning = textComponent["Kerning"].as<float>();
 					text.LineSpacing = textComponent["LineSpacing"].as<float>();
-				}
-
-				if (YAML::Node boxCollider2DComponent = entity["BoxCollider2DComponent"])
-				{
-					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
-					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
-					bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
-					bc2d.Density = boxCollider2DComponent["Density"].as<float>();
-					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
-					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
-					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
-				}
-
-				if (YAML::Node circleCollider2DComponent = entity["CircleCollider2DComponent"])
-				{
-					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
-					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
-					cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
-					cc2d.Density = circleCollider2DComponent["Density"].as<float>();
-					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
-					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
-					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])

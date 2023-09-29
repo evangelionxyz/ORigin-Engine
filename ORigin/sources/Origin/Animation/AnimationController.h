@@ -16,7 +16,7 @@ namespace origin {
 	public:
 		AnimationController(std::shared_ptr<AnimationState>& state);
 
-		void AddAnimationState(std::shared_ptr<Animation>& anim, const std::string& state) const;
+		void AddAnimationState(Animation anim, const std::string& state) const;
 
 		void AddTransitionCondition(const std::string& name, bool condition);
 		void SetSpeed(float speed) { m_Speed = speed; }

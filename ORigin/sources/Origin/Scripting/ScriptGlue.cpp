@@ -17,6 +17,11 @@
 #include "mono/metadata/reflection.h"
 
 #include "box2d/b2_body.h"
+#include "box2d/b2_body.h"
+#include "box2d/b2_fixture.h"
+#include "box2d/b2_polygon_shape.h"
+#include "box2d/b2_circle_shape.h"
+
 #include "Origin/Audio/Audio.h"
 
 namespace origin
@@ -163,6 +168,28 @@ namespace origin
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+
+	static void Rigidbody2DComponent_ApplyForce(UUID entityID, glm::vec2* force, glm::vec2* point, bool wake)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		body->ApplyForce(b2Vec2(force->x, force->y), b2Vec2(point->x, point->y), wake);
+	}
+
+	static void Rigidbody2DComponent_ApplyForceToCenter(UUID entityID, glm::vec2* force, bool wake)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
 	}
 
 	static MonoString* AudioComponent_GetName(UUID entityID)
@@ -788,7 +815,7 @@ namespace origin
 		auto& ac = entity.GetComponent<AnimationComponent>();
 		if (ac.State.HasAnimation())
 		{
-			state = ScriptEngine::CreateString(ac.State.GetCurrentStateString().c_str());
+			state = ScriptEngine::CreateString(ac.State.GetCurrentState().c_str());
 		}
 	}
 
@@ -868,6 +895,8 @@ namespace origin
 
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyForce);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyForceToCenter);
 
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Play);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Stop);

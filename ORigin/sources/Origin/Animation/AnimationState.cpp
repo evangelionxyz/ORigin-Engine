@@ -14,12 +14,14 @@ namespace origin {
 
 			m_CurrentState = state;
 			m_StateStorage.emplace_back(m_CurrentState);
+
+			return;
 		}
 
-		OGN_CORE_ERROR("Animation State {} already Exists", state);
+		OGN_CORE_ERROR("Animation State '{}' already Exists", state);
 	}
 
-	void AnimationState::AddAnim(std::shared_ptr<Animation> anim)
+	void AnimationState::AddAnimation(Animation anim)
 	{
 		OGN_CORE_ASSERT(!AnimationExists(m_CurrentState), "Animation already exist");
 		m_Animations[m_CurrentState] = std::move(anim);
@@ -29,7 +31,7 @@ namespace origin {
 	{
 		OGN_CORE_ASSERT(AnimationExists(state), "Animation doesn't exist");
 
-		m_Animations.at(state)->Delete();
+		m_Animations.at(state).Delete();
 		m_Animations.erase(state);
 
 		auto it = std::find(m_StateStorage.begin(), m_StateStorage.end(), state);
@@ -46,31 +48,31 @@ namespace origin {
 		m_CurrentState = state;
 	}
 
-	void AnimationState::Stop() const
+	void AnimationState::Stop()
 	{
 		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState)->Reset();
+		m_Animations.at(m_CurrentState).Reset();
 	}
 
-	void AnimationState::Update(float deltaTime) const
+	void AnimationState::Update(float deltaTime)
 	{
 		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState)->Update(deltaTime);
+		m_Animations.at(m_CurrentState).Update(deltaTime);
 	}
 
-	void AnimationState::SetLooping(bool looping) const
+	void AnimationState::SetLooping(bool looping)
 	{
 		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState)->SetLooping(looping);
+		m_Animations.at(m_CurrentState).SetLooping(looping);
 	}
 
-	bool AnimationState::IsLooping() const
+	bool AnimationState::IsLooping()
 	{
 		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		return m_Animations.at(m_CurrentState)->IsLooping();
+		return m_Animations.at(m_CurrentState).IsLooping();
 	}
 
-	const std::shared_ptr<Animation>& AnimationState::GetAnimation()
+	Animation& AnimationState::GetAnimation()
 	{
 		return m_Animations.at(m_CurrentState);
 	}
@@ -82,7 +84,7 @@ namespace origin {
 		else if (!AnimationExists(m_CurrentState))
 			return false;
 		else
-			return m_Animations.at(m_CurrentState) != nullptr;
+			return m_Animations.at(m_CurrentState).HasFrame();
 	}
 
 	bool AnimationState::AnimationExists(std::string state)

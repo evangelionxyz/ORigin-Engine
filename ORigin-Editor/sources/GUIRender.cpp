@@ -39,7 +39,7 @@ namespace origin {
 					auto& state = ac.State;
 
 					// Insert State name
-					static std::string stateName = state.GetCurrentStateString();
+					static std::string stateName = state.GetCurrentState();
 
 					ImGui::Text("State Name: "); ImGui::SameLine();
 
@@ -64,7 +64,7 @@ namespace origin {
 
 						// drop-down
 						auto& stateStorage = state.GetStateStorage();
-						std::string currentState = state.GetCurrentStateString();
+						std::string currentState = state.GetCurrentState();
 
 						if (ImGui::BeginCombo("##AnimationState", currentState.c_str()))
 						{
@@ -83,15 +83,10 @@ namespace origin {
 							ImGui::EndCombo();
 						} // !drop-down
 						
-
-						ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
-
-						static std::shared_ptr<Animation> animation;
-
-						if (animation == nullptr)
-							animation = Animation::Create();
+						Animation animation;
 
 						// Drag and Drop
+						ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
 						if (ImGui::BeginDragDropTarget())
 						{
 							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -102,23 +97,21 @@ namespace origin {
 								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 								{
 									const std::shared_ptr<Texture2D> texture = Texture2D::Create(texturePath.string());
-									animation->AddFrame(texture, 0.23f);
+									animation.AddFrame(texture, 0.23f);
 								}
 							}
 						}
 
 						ImGui::SameLine();
-						if (ImGui::Button("Add Animation", { 90.0f, 30.0f }) && animation->HasFrame())
+						if (ImGui::Button("Add Animation", { 90.0f, 30.0f }) && animation.HasFrame())
 						{
-							state.AddAnim(animation);
-							animation.reset();
-
+							state.AddAnimation(animation);
 							OGN_CORE_TRACE("Animation added to {}", stateName);
 						}
 
 						ImGui::SameLine();
 						if (ImGui::Button("Set As Default State", ImVec2(80.0f, 30.f)))
-							state.SetDefaultState(state.GetCurrentStateString());
+							state.SetDefaultState(state.GetCurrentState());
 
 						// Display what texture has been dropped
 						const float padding = 10.0f;
@@ -133,11 +126,11 @@ namespace origin {
 
 						ImGui::Columns(columnCount, nullptr, false);
 
-						if (animation && animation->HasFrame())
+						if (animation.HasFrame())
 						{
-							for (int i = 0; i < animation->GetTotalFrames(); i++)
+							for (int i = 0; i < animation.GetTotalFrames(); i++)
 							{
-								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(animation->GetSprites(i)->GetRendererID());
+								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(animation.GetSprites(i)->GetRendererID());
 								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
 
 								ImGui::TextWrapped("Frame %d", i + 1);
@@ -149,12 +142,12 @@ namespace origin {
 
 						if (state.HasAnimation())
 						{
-							for (int i = 0; i < state.GetAnimation()->GetTotalFrames(); i++)
+							for (int i = 0; i < state.GetAnimation().GetTotalFrames(); i++)
 							{
-								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(state.GetAnimation()->GetSprites(i)->GetRendererID());
+								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(state.GetAnimation().GetSprites(i)->GetRendererID());
 								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
 
-								const int currentIndex = state.GetAnimation()->GetFrameIndex();
+								const int currentIndex = state.GetAnimation().GetFrameIndex();
 
 								if (currentIndex == i)
 									ImGui::TextWrapped("  -----");
