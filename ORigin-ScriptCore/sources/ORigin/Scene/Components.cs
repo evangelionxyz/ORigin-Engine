@@ -87,6 +87,16 @@ namespace ORiginEngine
         {
             InternalCalls.Rigidbody2DComponent_ApplyForceToCenter(Entity.ID, ref force, wake);
         }
+
+        public bool IsContactWithTag(string objectTag)
+        {
+            return InternalCalls.Rigidbody2DComponent_IsContactWithTag(Entity.ID, objectTag);
+        }
+
+        public string GetContactWithTag()
+        {
+            return InternalCalls.Rigidbody2DComponent_GetContactWithTag(Entity.ID);
+        }
     }
 
     public class AudioComponent : Component

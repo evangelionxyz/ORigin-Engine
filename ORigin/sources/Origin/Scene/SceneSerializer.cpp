@@ -255,7 +255,10 @@ namespace origin
 				for (const auto& [name, field] : fields)
 				{
 					if (entityFields.find(name) == entityFields.end())
+					{
+						OGN_CORE_ERROR("SceneSerializer: {} SCRIPT FIELDS NOT FOUND", name);
 						continue;
+					}
 
 					out << YAML::BeginMap; // Fields
 					out << YAML::Key << "Name" << YAML::Value << name;

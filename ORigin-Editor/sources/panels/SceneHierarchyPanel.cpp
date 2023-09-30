@@ -486,7 +486,6 @@ namespace origin {
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 				bool isSelected = false;
-				
 
 				if (!scriptClassExist)
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
@@ -543,6 +542,14 @@ namespace origin {
 								if (ImGui::DragInt(name.c_str(), &data, 1))
 								{
 									scriptInstance->SetFieldValue<int>(name, data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector2)
+							{
+								glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
+								if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
+								{
+									scriptInstance->SetFieldValue<glm::vec2>(name, data);
 								}
 							}
 							if (field.Type == ScriptFieldType::Vector3)

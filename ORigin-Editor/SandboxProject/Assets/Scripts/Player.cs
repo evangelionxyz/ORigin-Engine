@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-using System;
 using ORiginEngine;
 
 namespace Game
@@ -13,28 +12,21 @@ namespace Game
         private AnimationComponent anim;
         private TextComponent text;
 
-        public float JumpHeight;
-        public float MoveSpeed;
-        public float JumpCoolDownTime;
+        public float JumpHeight = 10.0f;
+        public float MoveSpeed = 15.0f;
+        public float JumpCoolDownTime = 0.3f;
         private float JumpCoolDown;
-        private int jumpsRemaining;
+        private int jumpsRemaining = 2;
         float RotationY = 0.0f;
 
-        private float time = 0.0f;
-
         private Vector2 velocity;
-
-        float Deg2Rad(float x)
-        {
-            // 180 / 3,141592653589793238462643
-            return x * 0.01745329f;
-        }
 
         void OnCreate()
         {
             transform = GetComponent<TransformComponent>();
             rb2d = GetComponent<Rigidbody2DComponent>();
             anim = GetComponent<AnimationComponent>();
+
             JumpSound = FindEntityByName("Jump Sound").GetComponent<AudioComponent>();
             text = FindEntityByName("Text").GetComponent<TextComponent>();
 
@@ -43,13 +35,14 @@ namespace Game
             jumpsRemaining = 2;
         }
 
+        private bool IsGrounded()
+        {
+            return rb2d.IsContactWithTag("Ground");
+        }
+
         void OnUpdate(float deltaTime)
         {
-            time += deltaTime;
-            text.Text = "Time: " + time.ToString();
-
             velocity = Vector2.Zero;
-
             if (Input.IsKeyPressed(KeyCode.Space))
             {
                 if(jumpsRemaining > 1)
@@ -61,7 +54,6 @@ namespace Game
                         jumpsRemaining--;
                     }
                 }
-                
             }
 
             JumpCoolDown -= deltaTime;
@@ -84,14 +76,19 @@ namespace Game
             if (velocity.X != 0)
             {
                 anim.ActiveState = "Walk";
-                RotationY = velocity.X > 0 ? 0.0f : Deg2Rad(-180.0f);
+                RotationY = velocity.X > 0 ? 0.0f : Math.Deg2Rad(-180.0f);
             }
 
             transform.Rotation = new Vector3(0.0f, RotationY, 0.0f);
             rb2d.ApplyLinearImpulseToCenter(velocity, true);
 
-            if (Translation.Y < -1.05f)
+            if (IsGrounded())
+            {
                 jumpsRemaining = 2;
+                
+            }
+
+            text.Text = "\nIs Contact With: " + rb2d.GetContactWithTag();
         }
     }
 }

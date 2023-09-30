@@ -1,186 +1,19 @@
 Scene: scene.org
 Entities:
-  - Entity: 15390158619090473268
+  - Entity: 1989182912290676858
     TagComponent:
-      Tag: Text
+      Tag: Ground
     TransformComponent:
-      Translation: [-7.97850037, 0.535971165, 0]
+      Translation: [14.9142952, 1.46580172, -0.0087279072]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    TextComponent:
-      TextString: Hello World
-      FontFilepath: ../../Resources/Fonts/segoeui.ttf
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 0
-  - Entity: 8127174878979592824
-    TagComponent:
-      Tag: Mario Main Theme
-    AudioComponent:
-      Name: Mario Main Theme
-      Filepath: Audio/SuperMarioBros.mp3
-      Volume: 0.779999971
-      Pitch: 1
-      MinDistance: 1
-      MaxDistance: 100
-      Looping: false
-      Spatial: false
-      PlayAtStart: true
-    TransformComponent:
-      Translation: [-3.98509479, -3.03885508, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 932444591641538823
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [15.4883738, -1.36313236, 0.0118896663]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
+      Scale: [0.545999885, 0.545999885, 0.391247958]
     SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 324649827328019106
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [12.6457796, -1.36313236, 0.0118896663]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 4318300976653635950
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [9.70493126, -1.36313236, 0.0118896663]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 12924265375491028953
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [5.13795137, -1.23291099, 0.0118896719]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 13689133133767084821
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [-5.24640799, -1.43925774, 0.00932508707]
-      Rotation: [0, 0, 0]
-      Scale: [0.327036709, 0.429817587, 0.28283152]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 15130532820235076593
-    TagComponent:
-      Tag: Jump Sound
-    AudioComponent:
-      Name: Jump Sound
-      Filepath: Audio/Mario Bros Jump - QuickSounds.mp3
-      Volume: 0.300000012
-      Pitch: 1
-      MinDistance: 1
-      MaxDistance: 100
-      Looping: false
-      Spatial: false
-      PlayAtStart: false
-    TransformComponent:
-      Translation: [-1.74119747, -3.10245419, -3.7252903e-09]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 10478625270300540935
-    TagComponent:
-      Tag: Player
-    AnimationComponent:
-      DefaultState: Idle
-      States:
-        - Name: Idle
-          Frames:
-            - Path: Sprites/marioA.png
-          Looping: true
-        - Name: Walk
-          Frames:
-            - Path: Sprites/marioA.png
-            - Path: Sprites/marioB.png
-            - Path: Sprites/marioC.png
-          Looping: true
-        - Name: Jump
-          Frames:
-            - Path: Sprites/marioE.png
-            - Path: Sprites/marioD.png
-          Looping: true
-    ScriptComponent:
-      ClassName: Game.Player
-      ScriptFields:
-        - Name: JumpHeight
-          Type: Float
-          Data: 10
-    TransformComponent:
-      Translation: [-6.17131591e-05, -0.27544114, -2.29105353e-07]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-      TexturePath: Sprites/marioA.png
+      Color: [1, 0.886075974, 0, 1]
       TillingFactor: [1, 1]
     Rigidbody2DComponent:
-      BodyType: Dynamic
+      BodyType: Static
       Mass: 1
-      LinearDamping: 4
+      LinearDamping: 0
       AngularDamping: 0.00999999978
       RotationalInertia: 0
       GravityScale: 1
@@ -191,15 +24,480 @@ Entities:
       Awake: true
       Bullet: true
       Enabled: true
-      FixedRotation: true
+      FixedRotation: false
     BoxCollider2DComponent:
       Group: 1
       Offset: [0, 0]
-      Size: [0.280000001, 0.5]
+      Size: [0.5, 0.5]
       Density: 1
-      Friction: 0.0900000036
-      Restitution: 0.100000001
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2973845589240507418
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [13.4789076, 1.46580172, -0.00872790813]
+      Rotation: [0, 0, 0]
+      Scale: [0.545999885, 0.545999885, 0.391247958]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.886075974, 0, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 13385596593903334270
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [12.1573343, 1.46580172, -0.0087279072]
+      Rotation: [0, 0, 0]
+      Scale: [0.545999885, 0.545999885, 0.391247958]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.886075974, 0, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2599346978976052785
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [18.1006584, -0.566773415, -0.266999841]
+      Rotation: [0, 0, 0]
+      Scale: [1, 2.49379754, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.725738406, 0.725738406, 0.725738406, 1]
+      TexturePath: Textures/wood_floor.jpg
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 14773473307773939286
+    TagComponent:
+      Tag: Gumba
+    AnimationComponent:
+      DefaultState: Idle
+      States:
+        - Name: Idle
+          Frames:
+            - Path: Sprites/Gumba/gumba 1.png
+            - Path: Sprites/Gumba/gumba 2.png
+          Looping: false
+        - Name: Gepeng
+          Frames:
+            - Path: Sprites/Gumba/gumba died.png
+          Looping: false
+    ScriptComponent:
+      ClassName: Game.Gumba
+      ScriptFields:
+        - Name: speed
+          Type: Float
+          Data: 100
+        - Name: Distance
+          Type: Float
+          Data: 2
+    TransformComponent:
+      Translation: [-10.6306868, -1.29889011, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.532999992, 0.532999992, 0.532999992]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Sprites/Gumba/gumba died.png
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 2
+      LinearDamping: 1
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, -0.129999995]
+      Size: [0.5, 0.25]
+      Density: 1
+      Friction: 0
+      Restitution: 0
       RestitutionThreshold: 0
+  - Entity: 9306210126631987682
+    TagComponent:
+      Tag: Gumba
+    AnimationComponent:
+      DefaultState: Idle
+      States:
+        - Name: Idle
+          Frames:
+            - Path: Sprites/Gumba/gumba 1.png
+            - Path: Sprites/Gumba/gumba 2.png
+          Looping: false
+        - Name: Gepeng
+          Frames:
+            - Path: Sprites/Gumba/gumba died.png
+          Looping: false
+    ScriptComponent:
+      ClassName: Game.Gumba
+      ScriptFields:
+        - Name: speed
+          Type: Float
+          Data: 100
+        - Name: Distance
+          Type: Float
+          Data: 2
+    TransformComponent:
+      Translation: [14.6346264, -1.29889011, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.532999992, 0.532999992, 0.532999992]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Sprites/Gumba/gumba died.png
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 2
+      LinearDamping: 1
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, -0.129999995]
+      Size: [0.5, 0.25]
+      Density: 1
+      Friction: 0
+      Restitution: 0
+      RestitutionThreshold: 0
+  - Entity: 14502348526263550333
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [7.44266987, 0.17642045, -0.0087279072]
+      Rotation: [0, 0, 0]
+      Scale: [0.699999988, 0.699999988, 0.501599967]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.886075974, 0, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 3559037790332093065
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [6.44264078, 0.67641294, -0.00860594213]
+      Rotation: [0, 0, 0]
+      Scale: [0.699999988, 0.699999988, 0.501599967]
+    SpriteRenderer2DComponent:
+      Color: [0, 0.860759497, 1, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 11027160879880635538
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [5.44261026, 1.17640531, -0.00860593654]
+      Rotation: [0, 0, 0]
+      Scale: [0.699999988, 0.699999988, 0.501599967]
+    SpriteRenderer2DComponent:
+      Color: [1, 0, 0.0759496689, 1]
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 17017982456376318738
+    TagComponent:
+      Tag: Obstacle
+    TransformComponent:
+      Translation: [-3.49358082, -1.02614927, -0.266938597]
+      Rotation: [0, 0, 0]
+      Scale: [0.992900729, 1.25464106, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.725738406, 0.725738406, 0.725738406, 1]
+      TexturePath: Textures/wood_floor.jpg
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 8108942666149627290
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [2.0023036, -0.566773415, -0.266999841]
+      Rotation: [0, 0, 0]
+      Scale: [1, 2.49379754, 1]
+    SpriteRenderer2DComponent:
+      Color: [0.725738406, 0.725738406, 0.725738406, 1]
+      TexturePath: Textures/wood_floor.jpg
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 8370497964054240066
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [-4.63266516, -1.36313236, 0.0118896663]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 10795526739307144443
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [4.36757898, -1.36313164, 0.0118896719]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 12251072846069520212
+    TagComponent:
+      Tag: Welcome Sound
+    AudioComponent:
+      Name: Welcome Sound
+      Filepath: Audio/SuperMarioBros.mp3
+      Volume: 0.720000029
+      Pitch: 1
+      MinDistance: 1
+      MaxDistance: 100
+      Looping: false
+      Spatial: false
+      PlayAtStart: false
+    TransformComponent:
+      Translation: [-2.87948704, -3.06282234, 7.4505806e-09]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 10171653832388955620
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 1.97742712, -1.70563459]
+      Rotation: [0, 0, 0]
+      Scale: [128, 8.31000042, 8.32877064]
+    SpriteRenderer2DComponent:
+      Color: [0.848101258, 1, 0.990386128, 1]
+      TexturePath: Textures/bg.jpg
+      TillingFactor: [12, 1]
+  - Entity: 6804643416914691417
+    TagComponent:
+      Tag: Main Camera
+    ScriptComponent:
+      ClassName: Game.Camera
+    TransformComponent:
+      Translation: [0, 0, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 5
+        OrthographicNear: -1
+        OrthographicFar: 10
+      Primary: true
+      FixedAspectRatio: false
+    AudioListenerComponent:
+      Enable: true
   - Entity: 11440873550682870080
     TagComponent:
       Tag: Ground
@@ -233,46 +531,77 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 6804643416914691417
+  - Entity: 10478625270300540935
     TagComponent:
-      Tag: Main Camera
+      Tag: Player
+    AnimationComponent:
+      DefaultState: Idle
+      States:
+        - Name: Idle
+          Frames:
+            - Path: Sprites/marioA.png
+          Looping: true
+        - Name: Walk
+          Frames:
+            - Path: Sprites/marioA.png
+            - Path: Sprites/marioB.png
+            - Path: Sprites/marioC.png
+          Looping: true
+        - Name: Jump
+          Frames:
+            - Path: Sprites/marioE.png
+            - Path: Sprites/marioD.png
+          Looping: true
     ScriptComponent:
-      ClassName: Game.Camera
+      ClassName: Game.Player
+      ScriptFields:
+        - Name: JumpHeight
+          Type: Float
+          Data: 10
+        - Name: MoveSpeed
+          Type: Float
+          Data: 10
+        - Name: JumpCoolDownTime
+          Type: Float
+          Data: 0.5
     TransformComponent:
-      Translation: [0, 0, 8]
+      Translation: [-6.40749931e-07, -0.27544114, -0.100000001]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 1
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 5
-        OrthographicNear: -1
-        OrthographicFar: 10
-      Primary: true
-      FixedAspectRatio: false
-    AudioListenerComponent:
-      Enable: true
-  - Entity: 10171653832388955620
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [0, 1.97742712, -1.70563459]
-      Rotation: [0, 0, 0]
-      Scale: [128, 8.31000042, 8.32877064]
     SpriteRenderer2DComponent:
-      Color: [0.848101258, 1, 0.990386128, 1]
-      TexturePath: Textures/bg.jpg
-      TillingFactor: [12, 1]
-  - Entity: 12251072846069520212
+      Color: [1, 1, 1, 1]
+      TexturePath: Sprites/marioA.png
+      TillingFactor: [1, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 1
+      LinearDamping: 4
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 2
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Group: -8
+      Offset: [0, 0]
+      Size: [0.280000001, 0.5]
+      Density: 1
+      Friction: 0.0900000036
+      Restitution: 0.100000001
+      RestitutionThreshold: 0
+  - Entity: 15130532820235076593
     TagComponent:
-      Tag: Welcome Sound
+      Tag: Jump Sound
     AudioComponent:
-      Name: Welcome Sound
-      Filepath: Audio/SuperMarioBros.mp3
-      Volume: 0.720000029
+      Name: Jump Sound
+      Filepath: Audio/Mario Bros Jump - QuickSounds.mp3
+      Volume: 0.300000012
       Pitch: 1
       MinDistance: 1
       MaxDistance: 100
@@ -280,10 +609,10 @@ Entities:
       Spatial: false
       PlayAtStart: false
     TransformComponent:
-      Translation: [-2.87948704, -3.06282234, 7.4505806e-09]
+      Translation: [-1.74119747, -3.10245419, -3.7252903e-09]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-  - Entity: 10795526739307144443
+  - Entity: 13689133133767084821
     TagComponent:
       Tag: Sprite
     AnimationComponent:
@@ -295,14 +624,14 @@ Entities:
             - Path: Textures/grassB.png
           Looping: true
     TransformComponent:
-      Translation: [4.36757898, -1.36313164, 0.0118896719]
+      Translation: [-5.24640799, -1.43925774, 0.00932508707]
       Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
+      Scale: [0.327036709, 0.429817587, 0.28283152]
     SpriteRenderer2DComponent:
       Color: [1, 0.852320671, 0.852320671, 1]
       TexturePath: Textures/grassA.png
       TillingFactor: [1, 1]
-  - Entity: 8370497964054240066
+  - Entity: 4318300976653635950
     TagComponent:
       Tag: Sprite
     AnimationComponent:
@@ -314,28 +643,123 @@ Entities:
             - Path: Textures/grassB.png
           Looping: true
     TransformComponent:
-      Translation: [-4.63266516, -1.36313236, 0.0118896663]
+      Translation: [9.70493126, -1.36313236, 0.0118896663]
       Rotation: [0, 0, 0]
       Scale: [0.408795893, 0.537271976, 0.353539377]
     SpriteRenderer2DComponent:
       Color: [1, 0.852320671, 0.852320671, 1]
       TexturePath: Textures/grassA.png
       TillingFactor: [1, 1]
-  - Entity: 8108942666149627290
+  - Entity: 324649827328019106
     TagComponent:
-      Tag: Wall
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
     TransformComponent:
-      Translation: [2.0025475, -0.566681564, -0.26699999]
+      Translation: [12.6457796, -1.36313236, 0.0118896663]
       Rotation: [0, 0, 0]
-      Scale: [1, 2.49379754, 1]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
     SpriteRenderer2DComponent:
-      Color: [0.725738406, 0.725738406, 0.725738406, 1]
-      TexturePath: Textures/wood_floor.jpg
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 932444591641538823
+    TagComponent:
+      Tag: Sprite
+    AnimationComponent:
+      DefaultState: Windy
+      States:
+        - Name: Windy
+          Frames:
+            - Path: Textures/grassA.png
+            - Path: Textures/grassB.png
+          Looping: true
+    TransformComponent:
+      Translation: [25.289238, -1.36316276, 0.0118285343]
+      Rotation: [0, 0, 0]
+      Scale: [0.408795893, 0.537271976, 0.353539377]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.852320671, 0.852320671, 1]
+      TexturePath: Textures/grassA.png
+      TillingFactor: [1, 1]
+  - Entity: 8127174878979592824
+    TagComponent:
+      Tag: Mario Main Theme
+    AudioComponent:
+      Name: Mario Main Theme
+      Filepath: Audio/SuperMarioBros.mp3
+      Volume: 0.779999971
+      Pitch: 1
+      MinDistance: 1
+      MaxDistance: 100
+      Looping: false
+      Spatial: false
+      PlayAtStart: true
+    TransformComponent:
+      Translation: [-3.98509479, -3.03885508, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 15390158619090473268
+    TagComponent:
+      Tag: Text
+    ScriptComponent:
+      ClassName: Game.DebugText
+      ScriptFields:
+        - Name: positionOffset
+          Type: Vec2
+          Data: [-4.5, -1.79999995]
+    TransformComponent:
+      Translation: [-3.61096954, 0.820270538, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.473999977, 0.473999977, 0.8373999]
+    TextComponent:
+      TextString: Hello World
+      FontFilepath: ../../Resources/Fonts/segoeui.ttf
+      Color: [0, 0, 0, 1]
+      Kerning: 0
+      LineSpacing: 0
+  - Entity: 10378034227309089558
+    TagComponent:
+      Tag: Gumba
+    AnimationComponent:
+      DefaultState: Idle
+      States:
+        - Name: Idle
+          Frames:
+            - Path: Sprites/Gumba/gumba 1.png
+            - Path: Sprites/Gumba/gumba 2.png
+          Looping: false
+        - Name: Gepeng
+          Frames:
+            - Path: Sprites/Gumba/gumba died.png
+          Looping: false
+    ScriptComponent:
+      ClassName: Game.Gumba
+      ScriptFields:
+        - Name: speed
+          Type: Float
+          Data: 100
+        - Name: Distance
+          Type: Float
+          Data: 2
+    TransformComponent:
+      Translation: [11.050209, -1.29889011, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.532999992, 0.532999992, 0.532999992]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: Sprites/Gumba/gumba died.png
       TillingFactor: [1, 1]
     Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
+      BodyType: Dynamic
+      Mass: 2
+      LinearDamping: 1
       AngularDamping: 0.00999999978
       RotationalInertia: 0
       GravityScale: 1
@@ -349,142 +773,9 @@ Entities:
       FixedRotation: false
     BoxCollider2DComponent:
       Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Offset: [0, -0.129999995]
+      Size: [0.5, 0.25]
       Density: 1
-      Friction: 0.5
+      Friction: 0
       Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 17017982456376318738
-    TagComponent:
-      Tag: Wall 2
-    TransformComponent:
-      Translation: [-3.49358082, -1.02614927, -0.266938597]
-      Rotation: [0, 0, 0]
-      Scale: [0.992900729, 1.25464106, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.725738406, 0.725738406, 0.725738406, 1]
-      TexturePath: Textures/wood_floor.jpg
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 11027160879880635538
-    TagComponent:
-      Tag: Red
-    TransformComponent:
-      Translation: [5.44261026, 1.17640531, -0.00860593654]
-      Rotation: [0, 0, 0]
-      Scale: [0.699999988, 0.699999988, 0.501599967]
-    SpriteRenderer2DComponent:
-      Color: [1, 0, 0.0759496689, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 3559037790332093065
-    TagComponent:
-      Tag: Blue
-    TransformComponent:
-      Translation: [6.44264078, 0.67641294, -0.00860594213]
-      Rotation: [0, 0, 0]
-      Scale: [0.699999988, 0.699999988, 0.501599967]
-    SpriteRenderer2DComponent:
-      Color: [0, 0.860759497, 1, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 14502348526263550333
-    TagComponent:
-      Tag: Yellow
-    TransformComponent:
-      Translation: [7.44266987, 0.17642045, -0.0087279072]
-      Rotation: [0, 0, 0]
-      Scale: [0.699999988, 0.699999988, 0.501599967]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.886075974, 0, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
+      RestitutionThreshold: 0

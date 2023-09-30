@@ -319,6 +319,8 @@ namespace origin
 		bool Bullet = true;
 		bool Enabled = true;
 
+		std::string ContactWith;
+
 		Rigidbody2DComponent() = default;
 		Rigidbody2DComponent(const Rigidbody2DComponent&) = default;
 	};

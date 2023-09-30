@@ -148,6 +148,28 @@ namespace origin
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	}
 
+	static bool Rigidbody2DComponent_IsContactWithTag(UUID entityID, MonoString* contactWith)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		std::string contactName = Utils::MonoStringToString(contactWith);
+
+		return rb2d.ContactWith == contactName;
+	}
+
+	static MonoString* Rigidbody2DComponent_GetContactWithTag(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		return ScriptEngine::CreateString(rb2d.ContactWith.c_str());
+	}
+
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* point, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -897,6 +919,8 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyForce);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyForceToCenter);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_IsContactWithTag);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_GetContactWithTag);
 
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Play);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Stop);

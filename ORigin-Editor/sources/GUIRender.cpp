@@ -32,14 +32,15 @@ namespace origin {
 			ImGui::Begin("Animator", &guiAnimationWindow);
 			if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
 			{
-				ImGui::Text("%s Animator", entity.GetName().c_str());
 				if (entity.HasComponent<AnimationComponent>())
 				{
+					ImGui::Text("%s Animator", entity.GetTag().c_str());
+
 					auto& ac = entity.GetComponent<AnimationComponent>();
 					auto& state = ac.State;
 
 					// Insert State name
-					static std::string stateName = state.GetCurrentState();
+					static std::string stateName;
 
 					ImGui::Text("State Name: "); ImGui::SameLine();
 
@@ -53,7 +54,10 @@ namespace origin {
 					if (ImGui::Button("+", ImVec2(30.0f, 20.0f)))
 					{
 						if (!stateName.empty())
+						{
 							state.AddState(stateName);
+							stateName.clear();
+						}
 					}
 
 					if (entity.HasComponent<SpriteRenderer2DComponent>() && state.HasState())
@@ -83,7 +87,7 @@ namespace origin {
 							ImGui::EndCombo();
 						} // !drop-down
 						
-						Animation animation;
+						static Animation animation;
 
 						// Drag and Drop
 						ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
@@ -107,6 +111,8 @@ namespace origin {
 						{
 							state.AddAnimation(animation);
 							OGN_CORE_TRACE("Animation added to {}", stateName);
+
+							animation.Delete();
 						}
 
 						ImGui::SameLine();

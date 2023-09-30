@@ -1057,7 +1057,7 @@ namespace origin
 
 	Entity Scene::DuplicateEntity(Entity entity)
 	{
-		std::string name = entity.GetName();
+		std::string name = entity.GetTag();
 		Entity newEntity = CreateEntity(name);
 
 		CopyComponentIfExists(AllComponents{}, newEntity, entity);
