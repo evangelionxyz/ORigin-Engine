@@ -35,7 +35,14 @@ namespace ORiginEngine
         internal extern static void Rigidbody2DComponent_ApplyLinearImpulse(ulong entityID, ref Vector2 impulse, ref Vector2 point, bool wake);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(ulong entityID, ref Vector2 impulse, bool wake);
-
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Rigidbody2DComponent_ApplyForce(ulong entityID, ref Vector2 force, ref Vector2 point, bool wake);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Rigidbody2DComponent_ApplyForceToCenter(ulong entityID, ref Vector2 force, bool wake);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Rigidbody2DComponent_IsContactWithTag(ulong entityID, string contactWith);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static string Rigidbody2DComponent_GetContactWithTag(ulong entityID);
         // Audio Component
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void AudioComponent_SetName(ulong entityID, string nameString);
@@ -164,9 +171,15 @@ namespace ORiginEngine
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void SpriteRenderer2DComponent_SetColor(ulong entityID, ref Vector4 value);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void SpriteRenderer2DComponent_GetTilingFactor(ulong entityID, out float result);
+        internal extern static void SpriteRenderer2DComponent_GetTilingFactor(ulong entityID, out Vector2 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void SpriteRenderer2DComponent_SetTilingFactor(ulong entityID, ref float value);
+        internal extern static void SpriteRenderer2DComponent_SetTilingFactor(ulong entityID, ref Vector2 value);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AnimationComponent_GetActiveState(ulong entityID, out string stateString);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AnimationComponent_SetActiveState(ulong entityID, string stateString);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Input_IsKeyPressed(KeyCode keycode);

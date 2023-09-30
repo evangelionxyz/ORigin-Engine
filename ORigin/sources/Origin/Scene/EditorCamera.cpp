@@ -25,6 +25,11 @@ namespace origin {
 		UpdateView();
 	}
 	
+	void EditorCamera::UpdateAudioListener()
+	{
+		m_AudioListener.Set(GetPosition(), glm::vec3(1.0f), GetForwardDirection(), GetUpDirection());
+	}
+
 	void EditorCamera::UpdateProjection()
 	{
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;

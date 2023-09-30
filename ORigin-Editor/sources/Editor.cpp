@@ -43,7 +43,7 @@ namespace origin {
     {
         FramebufferTextureFormat::RGBA8,
         FramebufferTextureFormat::RED_INTEGER,
-        FramebufferTextureFormat::Depth
+        FramebufferTextureFormat::DEPTH24STENCIL8
     };
 
     mainFramebufferSpec.Width = 1280;
@@ -57,7 +57,7 @@ namespace origin {
     gameFramebufferSpec.Attachments =
     {
         FramebufferTextureFormat::RGBA8,
-        FramebufferTextureFormat::Depth
+        FramebufferTextureFormat::DEPTH24STENCIL8
     };
 
     gameFramebufferSpec.Width = 1280;
@@ -96,81 +96,87 @@ namespace origin {
 
   void Editor::OnUpdate(Timestep time)
   {
-      m_Time += time.Seconds();
-      const ImGuiIO& io = ImGui::GetIO();
+    m_ActiveScene->OnShadowRender();
 
-      const bool enableCamera =
-          io.WantTextInput == false
-          || !ImGuizmo::IsUsing()
-          || Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
+    m_Time += time.Seconds();
+    const ImGuiIO& io = ImGui::GetIO();
 
-      m_EditorCamera.EnableMovement(enableCamera);
+    const bool enableCamera =
+        io.WantTextInput == false
+        || !ImGuizmo::IsUsing()
+        || Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
 
-      Renderer2D::ResetStats();
-      Renderer3D::ResetStats();
-      InputProcedure(time);
+    m_EditorCamera.EnableMovement(enableCamera);
 
-      // Resize
-      if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-          m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width ||
-              m_SceneViewportSize.y != spec.Height))
-      {
-          m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x),
-                                static_cast<uint32_t>(m_SceneViewportSize.y));
-          m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-          m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
-                                          static_cast<uint32_t>(m_SceneViewportSize.y));
-      }
+    Renderer2D::ResetStats();
+    Renderer3D::ResetStats();
+    InputProcedure(time);
 
-      m_Framebuffer->Bind();
-      RenderCommand::Clear();
-      RenderCommand::ClearColor(clearColor);
-      m_Framebuffer->ClearAttachment(1, -1);
+    // Resize
+    if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+        m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width ||
+            m_SceneViewportSize.y != spec.Height))
+    {
+        m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x),
+                              static_cast<uint32_t>(m_SceneViewportSize.y));
+        m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
+                                        static_cast<uint32_t>(m_SceneViewportSize.y));
+    }
 
-      if (enableSkybox)
-          skybox->Draw(m_EditorCamera);
+    m_Framebuffer->Bind();
 
-      switch (m_SceneState)
-      {
-      case SceneState::Play:
-          m_GizmosType = -1;
-          m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
-                                          static_cast<uint32_t>(m_SceneViewportSize.y));
-          m_ActiveScene->OnUpdateRuntime(time);
-          break;
+    RenderCommand::Clear();
+    RenderCommand::ClearColor(clearColor);
+      
+    m_Framebuffer->ClearAttachment(1, -1);
 
-      case SceneState::Edit:
-          m_EditorCamera.OnUpdate(time);
-          m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
-          break;
+    if (enableSkybox)
+        skybox->Draw(m_EditorCamera);
 
-      case SceneState::Simulate:
-          m_EditorCamera.OnUpdate(time);
-          m_ActiveScene->OnUpdateSimulation(time, m_EditorCamera);
-          break;
-      }
+    switch (m_SceneState)
+    {
+    case SceneState::Play:
+        m_GizmosType = -1;
+        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
+                                        static_cast<uint32_t>(m_SceneViewportSize.y));
+        m_ActiveScene->OnUpdateRuntime(time);
+        break;
 
-      auto [mx, my] = ImGui::GetMousePos();
-      glm::vec2 mousePos = {mx, my};
-      mousePos -= m_SceneViewportBounds[0];
-      const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
-      mousePos.y = viewportSize.y - mousePos.y;
-      mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
-      mouseX = static_cast<int>(mousePos.x);
-      mouseY = static_cast<int>(mousePos.y);
+    case SceneState::Edit:
+        m_EditorCamera.OnUpdate(time);
+        m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
+        OnOverlayRenderer();
+        break;
 
-      m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-      m_HoveredEntity = m_PixelData == -1
-                            ? Entity()
-                            : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+    case SceneState::Simulate:
+        m_EditorCamera.OnUpdate(time);
+        m_ActiveScene->OnUpdateSimulation(time, m_EditorCamera);
+        OnOverlayRenderer();
+        break;
+    }
 
-      if(Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
-          m_EditorCamera.SetEntityObject(selectedEntity);
-      else
-          m_EditorCamera.SetEntityObject({});
+    auto [mx, my] = ImGui::GetMousePos();
+    glm::vec2 mousePos = {mx, my};
+    mousePos -= m_SceneViewportBounds[0];
+    const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+    mousePos.y = viewportSize.y - mousePos.y;
+    mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
+    mouseX = static_cast<int>(mousePos.x);
+    mouseY = static_cast<int>(mousePos.y);
 
-      OnOverlayRenderer();
-      m_Framebuffer->Unbind();
+    m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+    m_HoveredEntity = m_PixelData == -1
+                          ? Entity()
+                          : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+
+    if(Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+        m_EditorCamera.SetEntityObject(selectedEntity);
+    else
+        m_EditorCamera.SetEntityObject({});
+
+    
+    m_Framebuffer->Unbind();
   }
 
   void Editor::OnDuplicateEntity()
@@ -180,7 +186,7 @@ namespace origin {
 
       if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
       {
-          auto entity = m_EditorScene->DuplicateEntity(selectedEntity);
+          Entity entity = m_EditorScene->DuplicateEntity(selectedEntity);
           m_SceneHierarchy.SetSelectedEntity(entity);
       }
   }
@@ -357,7 +363,7 @@ namespace origin {
 
       OpenScene(startScenePath);
       ScriptEngine::Init();
-            
+
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
     }
   }
@@ -368,10 +374,11 @@ namespace origin {
     {
       const auto startScenePath = Project::GetAssetFileSystemPath(Project::GetActive()->GetConfig().StartScene);
 
+      ScriptEngine::Init();
+
       OpenScene(startScenePath);
       m_ProjectPath = Project::GetProjectDirectory();
-      ScriptEngine::Init();
-            
+
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
     }
   }
@@ -387,6 +394,7 @@ namespace origin {
       OnSceneStop();
 
     m_EditorScene = std::make_shared<Scene>();
+
     m_SceneHierarchy.SetContext(m_EditorScene, true);
 
     m_ActiveScene = m_EditorScene;
@@ -424,6 +432,7 @@ namespace origin {
       OnSceneStop();
 
     auto newScene = std::make_shared<Scene>();
+
     SceneSerializer serializer(newScene);
     if (serializer.Deserialize(path.string()))
     {

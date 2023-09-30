@@ -31,22 +31,24 @@ namespace origin {
 
 		void Delete();
 
-		bool HasFrame() { return m_AnimationFrames.size() > 0; };
-		bool IsLooping() { return m_Looping; }
+		bool HasFrame() const { return m_AnimationFrames.empty() == false; }
+		bool IsLooping() const { return m_Looping; }
 
-		std::shared_ptr<Texture2D>& GetCurrentSprite();
-		int GetFrameIndex() { return m_CurrentFrameIndex; }
-		int GetFrameTotal() { return static_cast<int>(m_AnimationFrames.size()); }
+		std::shared_ptr<Texture2D> GetCurrentSprite();
+		std::shared_ptr<Texture2D> GetSprites(int frame);
+
+		int GetFrameIndex() const { return m_CurrentFrameIndex; }
+		size_t GetTotalFrames() const { return m_AnimationFrames.size(); }
 		void SetFrameTime(float frameTime);
 
 		static std::shared_ptr<Animation> Create();
-		const std::vector<AnimationFrame> GetAnimationFrames() { return m_AnimationFrames; }
+		std::vector<AnimationFrame> GetAnimationFrames() { return m_AnimationFrames; }
 
 	private:
 		std::vector<AnimationFrame> m_AnimationFrames;
 
 		int m_CurrentFrameIndex = 0;
 		float m_ElapsedFrameTime = 0.0f;
-		bool m_Looping;
+		bool m_Looping = false;
 	};
 }

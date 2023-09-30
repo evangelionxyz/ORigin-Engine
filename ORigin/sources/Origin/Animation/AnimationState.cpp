@@ -7,31 +7,40 @@ namespace origin {
 
 	void AnimationState::AddState(std::string state)
 	{
-		OGN_CORE_ASSERT(!Exists(state), "Animation already exist");
-		m_CurrentState = state;
+		if (!StateExists(state))
+		{
+			if (m_StateStorage.empty())
+				m_DefaultState = state;
 
-		m_StateStorage.emplace_back(m_CurrentState);
+			m_CurrentState = state;
+			m_StateStorage.emplace_back(m_CurrentState);
+
+			return;
+		}
+
+		OGN_CORE_ERROR("Animation State '{}' already Exists", state);
 	}
 
-	void AnimationState::AddAnim(const std::shared_ptr<Animation>& anim)
+	void AnimationState::AddAnimation(Animation anim)
 	{
-		OGN_CORE_ASSERT(!Exists(m_CurrentState), "Animation already exist");
-		m_Animations[m_CurrentState] = anim;
-
-		// storing state name into storage
-		for (auto& it : m_Animations)
-			m_StateStorage.emplace_back(it.first);
+		OGN_CORE_ASSERT(!AnimationExists(m_CurrentState), "Animation already exist");
+		m_Animations[m_CurrentState] = std::move(anim);
 	}
 
-	void AnimationState::RemoveState(const std::string& state)
+	void AnimationState::RemoveState(std::string state)
 	{
-		OGN_CORE_ASSERT(Exists(state), "Animation doesn't exist");
+		OGN_CORE_ASSERT(AnimationExists(state), "Animation doesn't exist");
 
-		m_Animations.at(state)->Delete();
+		m_Animations.at(state).Delete();
 		m_Animations.erase(state);
 
-		std::vector<std::string>::iterator it = std::find(m_StateStorage.begin(), m_StateStorage.end(), state);
+		auto it = std::find(m_StateStorage.begin(), m_StateStorage.end(), state);
 		m_StateStorage.erase(it);
+	}
+
+	void AnimationState::SetDefaultState(std::string state)
+	{
+		m_DefaultState = state;
 	}
 
 	void AnimationState::SetActiveState(std::string state)
@@ -41,42 +50,60 @@ namespace origin {
 
 	void AnimationState::Stop()
 	{
-		OGN_CORE_ASSERT(Exists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState)->Reset();
+		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
+		m_Animations.at(m_CurrentState).Reset();
 	}
 
 	void AnimationState::Update(float deltaTime)
 	{
-		OGN_CORE_ASSERT(Exists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState)->Update(deltaTime);
+		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
+		m_Animations.at(m_CurrentState).Update(deltaTime);
 	}
 
 	void AnimationState::SetLooping(bool looping)
 	{
-		OGN_CORE_ASSERT(Exists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState)->SetLooping(looping);
+		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
+		m_Animations.at(m_CurrentState).SetLooping(looping);
 	}
 
 	bool AnimationState::IsLooping()
 	{
-		OGN_CORE_ASSERT(Exists(m_CurrentState), "Animation doesn't exist");
-		return m_Animations.at(m_CurrentState)->IsLooping();
+		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
+		return m_Animations.at(m_CurrentState).IsLooping();
 	}
 
-	const std::shared_ptr<Animation>& AnimationState::GetAnimation()
+	Animation& AnimationState::GetAnimation()
 	{
-		if (m_Animations.at(m_CurrentState))
-			return m_Animations.at(m_CurrentState);
-		else
-			return nullptr;
+		return m_Animations.at(m_CurrentState);
 	}
 
-	bool AnimationState::Exists(const std::string& state)
+	bool AnimationState::HasAnimation()
+	{
+		if (m_Animations.empty())
+			return false;
+		else if (!AnimationExists(m_CurrentState))
+			return false;
+		else
+			return m_Animations.at(m_CurrentState).HasFrame();
+	}
+
+	bool AnimationState::AnimationExists(std::string state)
 	{
 		if (m_Animations.find(state) == m_Animations.end())
 		{
-			OGN_CORE_ERROR("Animation State '{}' not found", state);
-			OGN_CORE_ASSERT(false);
+			OGN_CORE_ERROR("Animation '{}' not found", state);
+			return false;
+		}
+
+		return true;
+	}
+
+	bool AnimationState::StateExists(std::string stateName)
+	{
+		auto it = std::find(m_StateStorage.begin(), m_StateStorage.end(), stateName);
+		if (it == m_StateStorage.end())
+		{
+			OGN_CORE_ERROR("Animation State '{}' not found", stateName);
 			return false;
 		}
 

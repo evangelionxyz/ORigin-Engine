@@ -1,10 +1,11 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "EditorCamera.h"
 #include "Origin/Utils/Time.h"
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Scene/Component.h"
+#include "Origin/Renderer/Framebuffer.h"
 
 #include "Origin\Renderer\ParticleSystem.h"
 
@@ -16,6 +17,7 @@ class b2World;
 namespace origin
 {
     class Entity;
+    class ContactListener;
 
     class Scene
     {
@@ -31,8 +33,9 @@ namespace origin
 
         Entity CreateCube(const std::string& name = std::string());
         Entity CreateCamera(const std::string& name = std::string());
-        Entity CreatePointlight(const std::string& name = std::string());
-        Entity CreateSpotLight(const std::string& name = std::string());
+        Entity CreatePointlight();
+        Entity CreateSpotLight();
+        Entity CreateDirectionalLight();
         Entity CreateMesh(const std::string& name = std::string());
 
         Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
@@ -65,28 +68,31 @@ namespace origin
             return m_Registry.view<Components...>();
         }
 
+        void OnShadowRender();
+
     private:
         // 2D Scene
         void OnPhysics2DStart();
         void OnPhysics2DStop();
 
+        ContactListener* m_Box2DContactListener;
+
         void RenderScene(const EditorCamera& camera);
         void RenderScene(Camera* camera, const TransformComponent& transform);
-
+        
         template <typename T>
         void OnComponentAdded(Entity entity, T& component);
-        int m_GridSize = 5;
-        glm::vec4 m_GridColor = glm::vec4(1.0f);
-        void DrawIcon(const EditorCamera& camera, int entity, std::shared_ptr<Texture2D>& texture,
-                      TransformComponent& tc, bool rotate = true);
-
+        
+        void DrawIcon(const EditorCamera& camera, int entity, const std::shared_ptr<Texture2D>& texture, const TransformComponent& tc, bool rotate = true);
         bool IsRunning() const { return m_Running; }
         bool IsPaused() const { return m_Paused; }
 
         void SetPaused(bool paused) { m_Paused = paused; }
         void Step(int frames);
 
-    private:
+        glm::vec4 m_GridColor = glm::vec4(1.0f);
+        int m_GridSize = 5;
+
         std::unordered_map<UUID, entt::entity> m_EntityMap;
         std::shared_ptr<Texture2D> m_CameraIcon, m_LightingIcon, m_AudioIcon;
 

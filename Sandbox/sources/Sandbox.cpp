@@ -18,12 +18,11 @@ Sandbox::Sandbox() : Layer("Sandbox")
 	mario4 = Texture2D::Create("Sandbox/marioD.png");
 	mario5 = Texture2D::Create("Sandbox/marioE.png");
 
-	marioAnim = Animation::Create();
-	marioAnim->AddFrame(mario1, marioFrameTime);
-	marioAnim->AddFrame(mario2, marioFrameTime);
-	marioAnim->AddFrame(mario3, marioFrameTime);
-	marioAnim->AddFrame(mario4, marioFrameTime);
-	marioAnim->AddFrame(mario5, marioFrameTime);
+	marioAnim.AddFrame(mario1, marioFrameTime);
+	marioAnim.AddFrame(mario2, marioFrameTime);
+	marioAnim.AddFrame(mario3, marioFrameTime);
+	marioAnim.AddFrame(mario4, marioFrameTime);
+	marioAnim.AddFrame(mario5, marioFrameTime);
 
 	fireball1 = Texture2D::Create("Sandbox/fireball/fireballA.png");
 	fireball2 = Texture2D::Create("Sandbox/fireball/fireballB.png");
@@ -34,21 +33,20 @@ Sandbox::Sandbox() : Layer("Sandbox")
 	fireball7 = Texture2D::Create("Sandbox/fireball/fireballG.png");
 	fireball8 = Texture2D::Create("Sandbox/fireball/fireballH.png");
 
-	fireballAnim = Animation::Create();
-	fireballAnim->AddFrame(fireball1, fireballFrameTime);
-	fireballAnim->AddFrame(fireball2, fireballFrameTime);
-	fireballAnim->AddFrame(fireball3, fireballFrameTime);
-	fireballAnim->AddFrame(fireball4, fireballFrameTime);
-	fireballAnim->AddFrame(fireball5, fireballFrameTime);
-	fireballAnim->AddFrame(fireball6, fireballFrameTime);
-	fireballAnim->AddFrame(fireball7, fireballFrameTime);
-	fireballAnim->AddFrame(fireball8, fireballFrameTime);
+	fireballAnim.AddFrame(fireball1, fireballFrameTime);
+	fireballAnim.AddFrame(fireball2, fireballFrameTime);
+	fireballAnim.AddFrame(fireball3, fireballFrameTime);
+	fireballAnim.AddFrame(fireball4, fireballFrameTime);
+	fireballAnim.AddFrame(fireball5, fireballFrameTime);
+	fireballAnim.AddFrame(fireball6, fireballFrameTime);
+	fireballAnim.AddFrame(fireball7, fireballFrameTime);
+	fireballAnim.AddFrame(fireball8, fireballFrameTime);
 
 	AnimState.AddState("Fireball");
-	AnimState.AddAnim(fireballAnim);
+	AnimState.AddAnimation(fireballAnim);
 
 	AnimState.AddState("Mario");
-	AnimState.AddAnim(marioAnim);
+	AnimState.AddAnimation(marioAnim);
 
 	AnimState.SetActiveState("Mario");
 
@@ -114,27 +112,27 @@ void Sandbox::OnGuiRender()
 	ImGui::Separator();
 	ImGui::PushID("mario");
 	ImGui::Text("Mario");
-	ImGui::Text("Anim SpriteIndex: %i", marioAnim->GetFrameIndex());
-	ImGui::Text("Anim FrameCount : %i", marioAnim->GetFrameTotal());
+	ImGui::Text("Anim SpriteIndex: %i", marioAnim.GetFrameIndex());
+	ImGui::Text("Anim FrameCount : %i", marioAnim.GetTotalFrames());
 
-	if (ImGui::Button("Reset")) marioAnim->Reset(); ImGui::SameLine();
-	if (ImGui::Checkbox("Loop", &looping)) marioAnim->SetLooping(looping);
+	if (ImGui::Button("Reset")) marioAnim.Reset(); ImGui::SameLine();
+	if (ImGui::Checkbox("Loop", &looping)) marioAnim.SetLooping(looping);
 	ImGui::DragFloat3("Position", glm::value_ptr(marioPosition), 0.5f);
 	if (ImGui::SliderFloat("Frame Time", &marioFrameTime, 0.0f, 1.0f))
-		marioAnim->SetFrameTime(marioFrameTime);
+		marioAnim.SetFrameTime(marioFrameTime);
 	ImGui::PopID();
 	ImGui::Separator();
 
 	ImGui::PushID("fireball");
 	ImGui::Text("Fireball");
-	ImGui::Text("Anim SpriteIndex: %i", fireballAnim->GetFrameIndex());
-	ImGui::Text("Anim FrameCount : %i", fireballAnim->GetFrameTotal());
+	ImGui::Text("Anim SpriteIndex: %i", fireballAnim.GetFrameIndex());
+	ImGui::Text("Anim FrameCount : %i", fireballAnim.GetTotalFrames());
 
-	if (ImGui::Button("Reset")) fireballAnim->Reset(); ImGui::SameLine();
-	if (ImGui::Checkbox("Loop", &fireballLooping)) fireballAnim->SetLooping(fireballLooping);
+	if (ImGui::Button("Reset")) fireballAnim.Reset(); ImGui::SameLine();
+	if (ImGui::Checkbox("Loop", &fireballLooping)) fireballAnim.SetLooping(fireballLooping);
 	ImGui::DragFloat3("Position", glm::value_ptr(fireballPosition), 0.5f);
 	if (ImGui::SliderFloat("Frame Time", &fireballFrameTime, 0.0f, 1.0f))
-		fireballAnim->SetFrameTime(fireballFrameTime);
+		fireballAnim.SetFrameTime(fireballFrameTime);
 	ImGui::PopID();
 
 	if (ImGui::Button("Mario/Fireball"))

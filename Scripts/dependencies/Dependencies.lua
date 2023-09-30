@@ -2,7 +2,7 @@
 
 -- Set Dependencies Folder
 
-VULKAN_SDK = os.getenv("VULKAN_SDK")
+VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
 ASSIMP_SDK = os.getenv("ASSIMP_SDK")
 
 IncludeDir = {}
@@ -36,7 +36,6 @@ Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
 Library["Assimp"] = "%{LibraryDir.AssimpSDK}/assimp-vc143-mt.lib"
 
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
-Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"
 
 Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
 Library["SPIRV_Cross_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"

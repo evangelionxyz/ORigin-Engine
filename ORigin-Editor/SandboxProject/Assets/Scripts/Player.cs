@@ -1,70 +1,94 @@
-﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-using System;
 using ORiginEngine;
 
 namespace Game
 {
     public class Player : Entity
     {
-        public Entity entity;
-        public Entity textEntity;
-        private AudioComponent jumpAudio;
+        private AudioComponent JumpSound;
         private TransformComponent transform;
-        private BoxCollider2DComponent bc2D;
+        private Rigidbody2DComponent rb2d;
+        private AnimationComponent anim;
+        private TextComponent text;
 
-        public float Speed = 2.0f;
-        public float Increment = 10.0f;
-
-        private float time;
-        private int keyPressedCount = 0;
+        public float JumpHeight = 10.0f;
+        public float MoveSpeed = 15.0f;
+        public float JumpCoolDownTime = 0.3f;
+        private float JumpCoolDown;
+        private int jumpsRemaining = 2;
+        float RotationY = 0.0f;
 
         private Vector2 velocity;
-        private Vector2 translation;
 
         void OnCreate()
         {
-            velocity = Vector2.Zero;
-            translation = Vector2.Zero;
-
             transform = GetComponent<TransformComponent>();
-            bc2D = GetComponent<BoxCollider2DComponent>();
+            rb2d = GetComponent<Rigidbody2DComponent>();
+            anim = GetComponent<AnimationComponent>();
 
-            textEntity = FindEntityByName("TimeStep");
-            jumpAudio = FindEntityByName("JumpAudio").GetComponent<AudioComponent>();
+            JumpSound = FindEntityByName("Jump Sound").GetComponent<AudioComponent>();
+            text = FindEntityByName("Text").GetComponent<TextComponent>();
+
+            JumpCoolDown = JumpCoolDownTime;
+
+            jumpsRemaining = 2;
+        }
+
+        private bool IsGrounded()
+        {
+            return rb2d.IsContactWithTag("Ground");
         }
 
         void OnUpdate(float deltaTime)
         {
-            time += deltaTime;
-
-            if(textEntity != null)
-            {
-                TextComponent text = textEntity.GetComponent<TextComponent>();
-                text.Text = "Time: " + time.ToString();
-            }
-
+            velocity = Vector2.Zero;
             if (Input.IsKeyPressed(KeyCode.Space))
             {
-                if(keyPressedCount < 1)
-                    jumpAudio.Play();
+                if(jumpsRemaining > 1)
+                {
+                    if (JumpCoolDown <= 0.0f)
+                    {
+                        velocity.Y = JumpHeight;
+                        JumpCoolDown = JumpCoolDownTime;
+                        jumpsRemaining--;
+                    }
+                }
+            }
 
-                velocity.Y += Increment;
+            JumpCoolDown -= deltaTime;
 
-                keyPressedCount++;
+            if (velocity.Y > 0)
+            {
+                JumpSound.Play();
+                anim.ActiveState = "Jump";
             }
             else
             {
-                velocity.Y -= Increment;
-                keyPressedCount = 0;
+                anim.ActiveState = "Idle";
             }
 
-            velocity.X += Increment;
+            if (Input.IsKeyPressed(KeyCode.D))
+                velocity.X += MoveSpeed * deltaTime;
+            else if (Input.IsKeyPressed(KeyCode.A))
+                velocity.X -= MoveSpeed * deltaTime;
 
-            velocity *= Speed * deltaTime;
-            translation += velocity;
+            if (velocity.X != 0)
+            {
+                anim.ActiveState = "Walk";
+                RotationY = velocity.X > 0 ? 0.0f : Math.Deg2Rad(-180.0f);
+            }
 
-            transform.Translation = new Vector3(translation, 0.0f);
+            transform.Rotation = new Vector3(0.0f, RotationY, 0.0f);
+            rb2d.ApplyLinearImpulseToCenter(velocity, true);
+
+            if (IsGrounded())
+            {
+                jumpsRemaining = 2;
+                
+            }
+
+            text.Text = "\nIs Contact With: " + rb2d.GetContactWithTag();
         }
     }
 }

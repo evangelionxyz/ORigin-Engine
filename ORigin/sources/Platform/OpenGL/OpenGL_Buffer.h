@@ -12,7 +12,7 @@ namespace origin
 	public:
 		OpenGLVertexBuffer(uint32_t size);
 		OpenGLVertexBuffer(float* vertices, uint32_t size);
-		OpenGLVertexBuffer(std::vector<Vertex> vertices);
+		OpenGLVertexBuffer(std::vector<MeshVertex> vertices);
 
 		virtual ~OpenGLVertexBuffer();
 

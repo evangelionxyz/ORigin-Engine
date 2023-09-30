@@ -329,6 +329,15 @@ namespace origin
 						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Empty");
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
+
+					if (ImGui::MenuItem("Main Camera"))
+					{
+						Entity entity = m_SceneHierarchy.GetContext()->CreateCamera("Main Camera");
+						entity.AddComponent<AudioListenerComponent>();
+
+						m_SceneHierarchy.SetSelectedEntity(entity);
+					}
+
 					if (ImGui::MenuItem("Camera"))
 					{
 						Entity entity = m_SceneHierarchy.GetContext()->CreateCamera("Camera");
@@ -352,17 +361,22 @@ namespace origin
 					ImGui::Text("3D"); ImGui::Separator();
 					if (ImGui::BeginMenu("Light"))
 					{
+						if (ImGui::MenuItem("Directional Light"))
+						{
+							Entity entity = m_SceneHierarchy.GetContext()->CreateDirectionalLight();
+							m_SceneHierarchy.SetSelectedEntity(entity);
+						}
 						if(ImGui::MenuItem("Point Light"))
 						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreatePointlight("Point Light");
+							Entity entity = m_SceneHierarchy.GetContext()->CreatePointlight();
 							m_SceneHierarchy.SetSelectedEntity(entity);
 						}
 						if (ImGui::MenuItem("Spot Light"))
 						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreateSpotLight("Spot Light");
+							Entity entity = m_SceneHierarchy.GetContext()->CreateSpotLight();
 							m_SceneHierarchy.SetSelectedEntity(entity);
 						}
-
+						
 						ImGui::EndMenu();
 					}
 					if (ImGui::BeginMenu("MESH"))
@@ -427,7 +441,7 @@ namespace origin
 							if (component.Texture)
 							{
 								ImGui::Text("Texture");
-								ImGui::DragFloat("Tilling Factor", &component.TillingFactor, 0.1f, 0.0f, 10.0f);
+								ImGui::DragFloat2("Tilling Factor", glm::value_ptr(component.TillingFactor), 0.1f, 0.0f, 10.0f);
 								if (ImGui::Button("Delete", ImVec2(64.0f, 24.0f)))
 								{
 									component.Texture->Delete();

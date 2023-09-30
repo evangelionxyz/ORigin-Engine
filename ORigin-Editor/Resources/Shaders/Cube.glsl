@@ -8,10 +8,13 @@ layout(location = 2) in vec2 a_TexCoord;
 layout(location = 3) in float a_TexIndex;
 layout(location = 4) in int a_EntityID;
 
-layout (std140, binding = 0) uniform Camera
+layout (std140, binding = 0) uniform UBO
 {
 	mat4 ViewProjection;
-} cameraBuffer;
+	mat4 LightSpaceMatrix;
+	vec3 CameraPosition;
+
+} uboData;
 
 struct Vertex
 {
@@ -32,7 +35,7 @@ void main()
 	v_TexIndex = a_TexIndex;
 	v_EntityID = a_EntityID;
 
-	gl_Position = cameraBuffer.ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = uboData.ViewProjection * vec4(a_Position, 1.0);
 }
 
 // type fragment

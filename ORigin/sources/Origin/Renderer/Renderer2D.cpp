@@ -15,12 +15,12 @@ namespace origin {
 
 		s_2Ddata.QuadVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(QuadVertex));
 		s_2Ddata.QuadVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position"     },
-			{ ShaderDataType::Float4, "a_Color"        },
-			{ ShaderDataType::Float2, "a_TexCoord"     },
-			{ ShaderDataType::Float,  "a_TexIndex"     },
-			{ ShaderDataType::Float,  "a_TilingFactor" },
-			{ ShaderDataType::Int,    "a_EntityID"     }
+			{ ShaderDataType::Float3, "aPosition"     },
+			{ ShaderDataType::Float4, "aColor"        },
+			{ ShaderDataType::Float2, "aTexCoord"     },
+			{ ShaderDataType::Float,  "aTexIndex"     },
+			{ ShaderDataType::Float2,  "aTilingFactor" },
+			{ ShaderDataType::Int,    "aEntityID"     }
 			});
 		s_2Ddata.QuadVertexArray->AddVertexBuffer(s_2Ddata.QuadVertexBuffer);
 		s_2Ddata.QuadVertexBufferBase = new QuadVertex[s_2Ddata.MaxVertices];
@@ -65,12 +65,12 @@ namespace origin {
 		s_2Ddata.CircleVertexArray = VertexArray::Create();
 		s_2Ddata.CircleVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(CircleVertex));
 		s_2Ddata.CircleVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_WorldPosition" },
-			{ ShaderDataType::Float3, "a_LocalPosition" },
-			{ ShaderDataType::Float4, "a_Color"					},
-			{ ShaderDataType::Float,  "a_Thickness"			},
-			{ ShaderDataType::Float,  "a_Fade"					},
-			{ ShaderDataType::Int,    "a_EntityID"			}
+			{ ShaderDataType::Float3, "aWorldPosition" },
+			{ ShaderDataType::Float3, "aLocalPosition" },
+			{ ShaderDataType::Float4, "aColor"					},
+			{ ShaderDataType::Float,  "aThickness"			},
+			{ ShaderDataType::Float,  "aFade"					},
+			{ ShaderDataType::Int,    "aEntityID"			}
 			});
 		s_2Ddata.CircleVertexArray->AddVertexBuffer(s_2Ddata.CircleVertexBuffer);
 		s_2Ddata.CircleVertexArray->SetIndexBuffer(quadIB);
@@ -80,9 +80,9 @@ namespace origin {
 		s_2Ddata.LineVertexArray = VertexArray::Create();
 		s_2Ddata.LineVertexBuffer = VertexBuffer::Create(s_2Ddata.MaxVertices * sizeof(LineVertex));
 		s_2Ddata.LineVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "a_Position"},
-			{ ShaderDataType::Float4, "a_Color"		},
-			{ ShaderDataType::Int,    "a_EntityID"}
+			{ ShaderDataType::Float3, "aPosition"},
+			{ ShaderDataType::Float4, "aColor"		},
+			{ ShaderDataType::Int,    "aEntityID"}
 			});
 		s_2Ddata.LineVertexArray->AddVertexBuffer(s_2Ddata.LineVertexBuffer);
 		s_2Ddata.LineVertexBufferBase = new LineVertex[s_2Ddata.MaxVertices];
@@ -155,7 +155,7 @@ namespace origin {
 			for (uint32_t i = 0; i < s_2Ddata.FontAtlasTextureIndex; i++)
 				s_2Ddata.FontAtlasTextureSlots[i]->Bind(i);
 
-			s_2Ddata.TextShader->Bind();
+			s_2Ddata.TextShader->Enable();
 
 			RenderCommand::DrawIndexed(s_2Ddata.TextVertexArray, s_2Ddata.TextIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
@@ -166,7 +166,7 @@ namespace origin {
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.LineVertexBufferPtr - (uint8_t*)s_2Ddata.LineVertexBufferBase);
 			s_2Ddata.LineVertexBuffer->SetData(s_2Ddata.LineVertexBufferBase, dataSize);
 
-			s_2Ddata.LineShader->Bind();
+			s_2Ddata.LineShader->Enable();
 
 			RenderCommand::DrawLines(s_2Ddata.LineVertexArray, s_2Ddata.LineVertexCount);
 			s_2Ddata.Stats.DrawCalls++;
@@ -177,7 +177,7 @@ namespace origin {
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.CircleVertexBufferPtr - (uint8_t*)s_2Ddata.CircleVertexBufferBase);
 			s_2Ddata.CircleVertexBuffer->SetData(s_2Ddata.CircleVertexBufferBase, dataSize);
 
-			s_2Ddata.CircleShader->Bind();
+			s_2Ddata.CircleShader->Enable();
 
 			RenderCommand::DrawIndexed(s_2Ddata.CircleVertexArray, s_2Ddata.CircleIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
@@ -192,7 +192,7 @@ namespace origin {
 			for (uint32_t i = 0; i < s_2Ddata.TextureSlotIndex; i++)
 				s_2Ddata.TextureSlots[i]->Bind(i);
 
-			s_2Ddata.QuadShader->Bind();
+			s_2Ddata.QuadShader->Enable();
 
 			RenderCommand::DrawIndexed(s_2Ddata.QuadVertexArray, s_2Ddata.QuadIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
@@ -218,12 +218,12 @@ namespace origin {
 		DrawQuad(transform, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tilingFactor, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
@@ -236,7 +236,7 @@ namespace origin {
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; // White Texture
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
-		const float tilingFactor = 1.0f;
+		const const glm::vec2& tilingFactor = glm::vec2(1.0f);
 
 		if (s_2Ddata.QuadIndexCount >= Renderer2DData::MaxIndices)
 			NextBatch();
@@ -256,7 +256,7 @@ namespace origin {
 		s_2Ddata.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor, int entityID)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor, int entityID)
 	{
 		constexpr size_t quadVertexCount = 4;
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -298,7 +298,7 @@ namespace origin {
 		s_2Ddata.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, float tilingFactor, const glm::vec4& tintColor, int entityID)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, const glm::vec2& tilingFactor, const glm::vec4& tintColor, int entityID)
 	{
 		constexpr int QuadVertexCount = 4;
 		const glm::vec2* textureCoords = subTexture->GetTexCoords();
@@ -354,12 +354,12 @@ namespace origin {
 		DrawQuad(transform, color);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })

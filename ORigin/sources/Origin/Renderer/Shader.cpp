@@ -105,7 +105,7 @@ namespace origin {
 	std::shared_ptr<Shader> ShaderLibrary::Get(const std::string& name)
 	{
 		OGN_CORE_ASSERT(Exist(name), "Shader not found at");
-		return m_ShaderMap[name];
+		return m_ShaderMap.at(name);
 	}
 
 	/*

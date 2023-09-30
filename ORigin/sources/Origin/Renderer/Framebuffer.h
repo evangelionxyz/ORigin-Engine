@@ -1,6 +1,9 @@
 ﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+
+#include "glad\glad.h"
+
 #include <vector>
 #include <memory>
 
@@ -14,11 +17,10 @@ namespace origin
 		RGBA8,
 		RED_INTEGER,
 
-		// depth/stencil
+		DEPTH,
 		DEPTH24STENCIL8,
 
-		// defaults
-		Depth = DEPTH24STENCIL8,
+		DEPTH_CUBE
 	};
 
 	struct FramebufferTextureSpecification
@@ -34,18 +36,21 @@ namespace origin
 	{
 		FramebufferAttachmentSpecification() = default;
 		FramebufferAttachmentSpecification(std::initializer_list<FramebufferTextureSpecification> attachments)
-			: Attachments(attachments) {}
+			: TextureAttachments(attachments) {}
 
-		std::vector<FramebufferTextureSpecification> Attachments;
+		std::vector<FramebufferTextureSpecification> TextureAttachments;
 	};
 
 	struct FramebufferSpecification
 	{
-		uint32_t Width = 0, Height = 0;
 		FramebufferAttachmentSpecification Attachments;
+		uint32_t Width = 0, Height = 0;
 		uint32_t Samples = 1;
-		bool ReadBuffer = true;
 
+		GLenum WrapMode = GL_CLAMP_TO_EDGE;
+		GLenum FilterMode = GL_NEAREST;
+
+		bool ReadBuffer = true;
 		bool SwapChainTarget = false;
 	};
 
@@ -61,6 +66,9 @@ namespace origin
 		virtual void ClearAttachment(uint32_t attachmentIndex, int value) = 0;
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+		virtual uint32_t GetDepthAttachmentRendererID() const = 0;
+		virtual uint32_t GetDepthCubeAttachmentRendererID() const = 0;
+
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 

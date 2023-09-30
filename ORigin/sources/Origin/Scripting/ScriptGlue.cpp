@@ -1,33 +1,39 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
 
-#include "Origin\Scene\Component.h"
+#include "Origin/Scene/Component.h"
 
-#include "Origin\Scene\Scene.h"
-#include "Origin\Scene\Entity.h"
+#include "Origin/Scene/Scene.h"
+#include "Origin/Scene/Entity.h"
 
-#include "Origin\IO\KeyCodes.h"
-#include "Origin\IO\Input.h"
+#include "Origin/IO/KeyCodes.h"
+#include "Origin/IO/Input.h"
 
-#include "mono\metadata\object.h"
-#include "mono\metadata\reflection.h"
+#include "mono/metadata/object.h"
+#include "mono/metadata/reflection.h"
 
-#include "box2d\b2_body.h"
+#include "box2d/b2_body.h"
+#include "box2d/b2_body.h"
+#include "box2d/b2_fixture.h"
+#include "box2d/b2_polygon_shape.h"
+#include "box2d/b2_circle_shape.h"
+
 #include "Origin/Audio/Audio.h"
 
 namespace origin
 {
 #define OGN_ADD_INTERNAL_CALLS(Name) mono_add_internal_call("ORiginEngine.InternalCalls::"#Name, Name)
 
-	namespace Utils {
+	namespace Utils
+	{
 		std::string MonoStringToString(MonoString* string)
 		{
 			char* cStr = mono_string_to_utf8(string);
-			std::string str = std::string(cStr);
+			auto str = std::string(cStr);
 			mono_free(cStr);
 
 			return str;
@@ -74,12 +80,12 @@ namespace origin
 
 	static void NativeLog_Vector(glm::vec3* parameter, glm::vec3* outResult)
 	{
-		*outResult = glm::normalize(*parameter);
+		*outResult = normalize(*parameter);
 	}
 
 	static float NativeLog_VectorDot(glm::vec3* parameter)
 	{
-		return glm::dot(*parameter, *parameter);
+		return dot(*parameter, *parameter);
 	}
 
 	// Component
@@ -142,6 +148,28 @@ namespace origin
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	}
 
+	static bool Rigidbody2DComponent_IsContactWithTag(UUID entityID, MonoString* contactWith)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		std::string contactName = Utils::MonoStringToString(contactWith);
+
+		return rb2d.ContactWith == contactName;
+	}
+
+	static MonoString* Rigidbody2DComponent_GetContactWithTag(UUID entityID)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		return ScriptEngine::CreateString(rb2d.ContactWith.c_str());
+	}
+
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* point, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -149,7 +177,7 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 		body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
 	}
 
@@ -160,8 +188,30 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		b2Body* body = (b2Body*)rb2d.RuntimeBody;
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+	}
+
+	static void Rigidbody2DComponent_ApplyForce(UUID entityID, glm::vec2* force, glm::vec2* point, bool wake)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		body->ApplyForce(b2Vec2(force->x, force->y), b2Vec2(point->x, point->y), wake);
+	}
+
+	static void Rigidbody2DComponent_ApplyForceToCenter(UUID entityID, glm::vec2* force, bool wake)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
 	}
 
 	static MonoString* AudioComponent_GetName(UUID entityID)
@@ -522,16 +572,26 @@ namespace origin
 		*outColor = entity.GetComponent<SpriteRenderer2DComponent>().Color;
 	}
 
+	static void SpriteRenderer2DComponent_FlipX(UUID entityID, bool* flip)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		
+		entity.GetComponent<SpriteRenderer2DComponent>().FlipX = *flip;
+	}
+
 	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4* color)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		entity.GetComponent<SpriteRenderer2DComponent>().Color= *color;
+		entity.GetComponent<SpriteRenderer2DComponent>().Color = *color;
 	}
 
-	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, float* tilingfactor)
+	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, glm::vec2* tilingfactor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -540,7 +600,7 @@ namespace origin
 		*tilingfactor = entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor;
 	}
 
-	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, float* tilingfactor)
+	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, glm::vec2* tilingfactor)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -765,12 +825,44 @@ namespace origin
 		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
 	}
 
+	static void AnimationComponent_GetActiveState(UUID entityID, MonoString* state)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		OGN_CORE_ASSERT(entity.HasComponent<AnimationComponent>())
+
+		auto& ac = entity.GetComponent<AnimationComponent>();
+		if (ac.State.HasAnimation())
+		{
+			state = ScriptEngine::CreateString(ac.State.GetCurrentState().c_str());
+		}
+	}
+
+	static void AnimationComponent_SetActiveState(UUID entityID, MonoString* state)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene)
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		OGN_CORE_ASSERT(entity)
+
+		OGN_CORE_ASSERT(entity.HasComponent<AnimationComponent>())
+
+		auto& ac = entity.GetComponent<AnimationComponent>();
+		if (ac.State.HasAnimation())
+		{
+			ac.State.SetActiveState(Utils::MonoStringToString(state));
+		}
+	}
+
 	static bool Input_IsKeyPressed(KeyCode keycode)
 	{
 		return Input::IsKeyPressed(keycode);
 	}
 
-	template<typename... Component>
+	template <typename... Component>
 	static void RegisterComponent()
 	{
 		([]()
@@ -781,19 +873,18 @@ namespace origin
 			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(),
-				ScriptEngine::GetCoreAssemblyImage());
+			                                                       ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
-				OGN_CORE_ERROR("Could not find component type {}", managedTypename);
+				OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
 				return;
 			}
 
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
-
 		}(), ...);
 	}
 
-	template<typename... Component>
+	template <typename... Component>
 	static void RegisterComponent(ComponentGroup<Component...>)
 	{
 		RegisterComponent<Component...>();
@@ -826,6 +917,10 @@ namespace origin
 
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyForce);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyForceToCenter);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_IsContactWithTag);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_GetContactWithTag);
 
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Play);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Stop);
@@ -845,7 +940,7 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsSpatial);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetPlayAtStart);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsPlayAtStart);
-		
+
 		OGN_ADD_INTERNAL_CALLS(TextComponent_GetText);
 		OGN_ADD_INTERNAL_CALLS(TextComponent_SetText);
 		OGN_ADD_INTERNAL_CALLS(TextComponent_GetColor);
@@ -866,6 +961,7 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetColor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetTilingFactor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetTilingFactor);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_FlipX);
 
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetOffset);
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetOffset);
@@ -892,6 +988,9 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitution);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitutionThreshold);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitutionThreshold);
+
+		OGN_ADD_INTERNAL_CALLS(AnimationComponent_SetActiveState);
+		OGN_ADD_INTERNAL_CALLS(AnimationComponent_GetActiveState);
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);

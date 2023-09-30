@@ -6,14 +6,14 @@
 
 namespace origin
 {
-	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding)
+	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t bufferSize, uint32_t bindingPoint)
+		: m_BindingPoint(bindingPoint)
 	{
 		glCreateBuffers(1, &m_RendererID);
-		glNamedBufferData(m_RendererID, size, nullptr, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
 
-		m_Binding = binding;
-		glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_RendererID);
+		glNamedBufferData(m_RendererID, bufferSize, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, m_RendererID);
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
@@ -23,7 +23,7 @@ namespace origin
 
 	void OpenGLUniformBuffer::Bind()
 	{
-		glBindBufferBase(GL_UNIFORM_BUFFER, m_Binding, m_RendererID);
+		glBindBufferBase(GL_UNIFORM_BUFFER, m_BindingPoint, m_RendererID);
 	}
 
 	void OpenGLUniformBuffer::Unbind()
@@ -33,7 +33,7 @@ namespace origin
 
 	void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		glBindBufferBase(GL_UNIFORM_BUFFER, m_Binding, m_RendererID);
+		glBindBufferBase(GL_UNIFORM_BUFFER, m_BindingPoint, m_RendererID);
 		glNamedBufferSubData(m_RendererID, offset, size, data);
 	}
 

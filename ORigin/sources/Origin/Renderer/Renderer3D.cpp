@@ -156,7 +156,7 @@ namespace origin {
 			for (uint32_t i = 0; i < s_3Ddata.TextureSlotIndex; i++)
 				s_3Ddata.TextureSlots[i]->Bind(i);
 
-			s_3Ddata.CubeShader->Bind();
+			s_3Ddata.CubeShader->Enable();
 			RenderCommand::DrawIndexed(s_3Ddata.CubeVertexArray, s_3Ddata.CubeIndexCount);
 			s_3Ddata.Stats.DrawCalls++;
 		}

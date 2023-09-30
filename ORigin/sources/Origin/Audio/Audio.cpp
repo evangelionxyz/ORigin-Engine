@@ -7,66 +7,21 @@
 namespace origin {
 
 #define FMOD_CHECK(result) if (result != FMOD_OK) {\
-	/*OGN_CORE_ERROR("FMOD AUDIO ERROR: {}", FMOD_ErrorString(result))*/;}
+	/*OGN_CORE_ERROR("FMOD AUDIO ERROR: {}", FMOD_ErrorString(result));*/}
 
 	struct AudioData
 	{
 		FMOD_RESULT Result;
 		FMOD::System* AudioSystem;
+
 		std::unordered_map<std::string, std::shared_ptr<Audio>> AudioStorage;
 		const int MAX_CHANNELS = 32;
 	};
 
 	static AudioData s_Data;
 
-	Audio::Audio(const AudioConfig& config)
-		: m_Spec(config)
+	Audio::Audio()
 	{
-		m_Sound = AudioEngine::CreateSound(config.Name, config.Filepath.c_str(), config.Spatial ? FMOD_3D : FMOD_2D);
-		FMOD_CHECK(s_Data.Result);
-
-		OGN_CORE_ASSERT(m_Sound);
-
-		s_Data.Result = m_Sound->setMode(config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-		FMOD_CHECK(s_Data.Result)
-
-		if (m_Spec.Spatial)
-		{
-			s_Data.Result = s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
-			FMOD_CHECK(s_Data.Result);
-
-			s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
-			FMOD_CHECK(s_Data.Result);
-
-			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
-			FMOD_CHECK(s_Data.Result);
-		}
-	}
-
-	Audio::Audio(const std::string& name, const std::filesystem::path& filepath, bool loop, bool spatial)
-	{
-		m_Spec.Name = name;
-		m_Spec.Filepath = filepath.string();
-		m_Spec.Looping = loop;
-		m_Spec.Spatial = spatial;
-
-		m_Sound = AudioEngine::CreateSound(name, m_Spec.Filepath.c_str(), FMOD_3D);
-		FMOD_CHECK(s_Data.Result);
-
-		s_Data.Result = m_Sound->setMode(m_Spec.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-		FMOD_CHECK(s_Data.Result)
-
-		if (m_Spec.Spatial)
-		{
-			s_Data.Result = s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
-			FMOD_CHECK(s_Data.Result);
-
-			s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
-			FMOD_CHECK(s_Data.Result);
-
-			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
-			FMOD_CHECK(s_Data.Result);
-		}
 	}
 
 	Audio::~Audio()
@@ -76,16 +31,22 @@ namespace origin {
 
 	void Audio::Play()
 	{
-		if (!AudioEngine::GetSystem() || !m_Sound)
+		if (m_Sound == nullptr)
+		{
+			OGN_CORE_WARN("AudioSource: NO SOUND CREATED OR INVALID!! Check the filepath");
 			return;
+		}
 
 		if (m_Channel)
-			s_Data.Result = m_Channel->stop();
+			Stop();
 
 		bool playing;
 		m_Channel->isPlaying(&playing);
+
 		if (!playing)
 		{
+			//OGN_CORE_WARN("AudioSource: Playing {}", m_Config.Name);
+
 			s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &m_Channel);
 			FMOD_CHECK(s_Data.Result);
 		}
@@ -118,31 +79,31 @@ namespace origin {
 
 	void Audio::SetMinDistance(float value)
 	{
-		m_Spec.MinDistance = value;
-		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
+		m_Config.MinDistance = value;
+		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
 		FMOD_CHECK(s_Data.Result);
 	}
 
 	void Audio::SetMaxDistance(float value)
 	{
-		m_Spec.MaxDistance = value;
-		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Spec.MinDistance, m_Spec.MaxDistance);
+		m_Config.MaxDistance = value;
+		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
 		FMOD_CHECK(s_Data.Result);
 	}
 
 	float Audio::GetMinDistance()
 	{
-		return m_Spec.MinDistance;
+		return m_Config.MinDistance;
 	}
 
 	float Audio::GetMaxDistance()
 	{
-		return m_Spec.MaxDistance;
+		return m_Config.MaxDistance;
 	}
 
 	void Audio::Release()
 	{
-		OGN_CORE_WARN("Audio Releasing: {}", m_Spec.Name);
+		OGN_CORE_WARN("AudioSource: Releasing {}", m_Config.Name);
 
 		s_Data.Result = m_Channel->stop();
 		FMOD_CHECK(s_Data.Result);
@@ -152,7 +113,7 @@ namespace origin {
 
 	void Audio::SetLoop(bool loop)
 	{
-		m_Spec.Looping = loop;
+		m_Config.Looping = loop;
 
 		s_Data.Result = m_Sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 		FMOD_CHECK(s_Data.Result);
@@ -160,26 +121,72 @@ namespace origin {
 
 	void Audio::SetName(const std::string& name)
 	{
-		m_Spec.Name = name;
+		m_Config.Name = name;
 	}
 
 	void Audio::SetPosition(const glm::vec3& position)
 	{
-		m_AudioPosition = { position.x, position.y, position.z };
+		// Inversing position by default
+		m_AudioPosition = { -position.x, -position.y, -position.z };
 
-		s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
+		FMOD_VECTOR velocity = { 1.0f, 1.0f, 1.0f };
+		s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, &velocity);
 		FMOD_CHECK(s_Data.Result);
 	}
 
-	std::shared_ptr<Audio> Audio::Create(const AudioConfig& spec)
+	void Audio::SetSpatial(bool enable)
 	{
-		return std::make_shared<Audio>(spec);
+		// Stop the audio to get the effect
+		Audio::Stop();
+
+		if (enable)
+			OGN_CORE_WARN("AudioSource {0}: SPATIALIZATION ON", m_Config.Name);
+		else
+			OGN_CORE_WARN("AudioSource {0}: SPATIALIZATION OFF", m_Config.Name);
+
+		m_Config.Spatial = enable;
+		s_Data.Result = m_Sound->setMode(enable ? FMOD_3D : FMOD_2D);
 	}
 
-	std::shared_ptr<Audio> Audio::Create(const std::string& name, const std::string& filepath, bool loop, bool spatial)
+	void Audio::LoadSource(const AudioConfig& config)
 	{
-		return std::make_shared<Audio>(name, filepath, loop, spatial);
+		LoadSource(config.Name, config.Filepath, config.Looping, config.Spatial);
 	}
+
+	void Audio::LoadSource(const std::string& name, const std::filesystem::path& filepath, bool loop, bool spatial)
+	{
+		m_Config.Name = name;
+		m_Config.Filepath = filepath.string();
+		m_Config.Looping = loop;
+		m_Config.Spatial = spatial;
+
+		m_Sound = AudioEngine::CreateSound(name, m_Config.Filepath.c_str(), spatial ? FMOD_3D : FMOD_2D);
+		FMOD_CHECK(s_Data.Result);
+
+		s_Data.Result = m_Sound->setMode(m_Config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+		FMOD_CHECK(s_Data.Result)
+
+		if (m_Config.Spatial)
+		{
+			s_Data.Result = s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
+			FMOD_CHECK(s_Data.Result);
+
+			s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
+			FMOD_CHECK(s_Data.Result);
+
+			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+			FMOD_CHECK(s_Data.Result);
+		}
+
+		m_IsLoaded = true;
+	}
+
+	std::shared_ptr<Audio> Audio::Create()
+	{
+		return std::make_shared<Audio>();
+	}
+
+
 
 	//////////////////////////////////////////////
 	//////////////// Audio Engine ////////////////
@@ -200,7 +207,7 @@ namespace origin {
 		s_Data.Result = s_Data.AudioSystem->close();
 		s_Data.Result = s_Data.AudioSystem->release();
 
-		OGN_CORE_WARN("Audio Engine Shutdown");
+		OGN_CORE_WARN("AudioEngine: Shutdown");
 	}
 
 	FMOD::System* AudioEngine::GetSystem()
@@ -219,20 +226,21 @@ namespace origin {
 		return sound;
 	}
 
+	void AudioEngine::SetMute(bool enable)
+	{
+		FMOD::ChannelGroup* channelControl;
+		s_Data.AudioSystem->getMasterChannelGroup(&channelControl);
+
+		if (enable)
+			OGN_CORE_ERROR("AudioEngine: MASTER CHANNEL MUTED!");
+
+		s_Data.Result = channelControl->setMute(enable);
+		FMOD_CHECK(s_Data.Result);
+	}
+
 	void AudioEngine::SystemUpdate()
 	{
 		s_Data.Result = s_Data.AudioSystem->update();
-	}
-
-	void AudioEngine::SetListener(const glm::vec3& position, const glm::vec3& forward, const glm::vec3& up)
-	{
-		// Set Global Listener
-		FMOD_VECTOR listenerPos = { -position.x, -position.y, -position.z };
-		FMOD_VECTOR listenerForward = { forward.x, forward.y, forward.z };
-		FMOD_VECTOR listenerUp = { up.x, up.y, up.z };
-
-		s_Data.Result = s_Data.AudioSystem->set3DListenerAttributes(0, &listenerPos, nullptr, &listenerForward, &listenerUp);
-		FMOD_CHECK(s_Data.Result);
 	}
 
 	bool AudioEngine::AudioStorageInsert(std::shared_ptr<Audio>& audio)
@@ -244,7 +252,7 @@ namespace origin {
 	{
 		if (AudioStorageExist(name))
 		{
-			OGN_CORE_ERROR("Audio '{}' Already Exist", name);
+			OGN_CORE_ERROR("AudioStorage: {} Already Exist", name);
 			return false;
 		}
 
@@ -257,7 +265,7 @@ namespace origin {
 		std::string name = audio->GetName();
 		if (!AudioStorageExist(name))
 		{
-			OGN_CORE_ERROR("Audio '{}' Doesn't Exist", name);
+			OGN_CORE_ERROR("AudioStorage: {} Doesn't Exist", name);
 			return false;
 		};
 
@@ -274,5 +282,4 @@ namespace origin {
 	{
 		return s_Data.AudioStorage;
 	}
-
 }

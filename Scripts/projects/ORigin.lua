@@ -65,7 +65,6 @@ links {
     "%{Library.Vulkan}",
     "%{Library.FMOD}",
     "%{Library.Assimp}",
-    "%{Library.VulkanUtils}",
     "%{Library.MONO}"
 }
 
@@ -118,8 +117,7 @@ filter "configurations:Dist"
     }
     runtime "Release"
     optimize "On"
-    links
-    {
+    links {
         "%{Library.ShaderC_Release}",
         "%{Library.SPIRV_Cross_Release}",
         "%{Library.SPIRV_Cross_GLSL_Release}",

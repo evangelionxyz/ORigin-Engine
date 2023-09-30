@@ -11,98 +11,70 @@
 
 namespace origin
 {
-	OpenGLModel::OpenGLModel(const std::string& filepath, std::shared_ptr<Shader>& shader)
-		: m_Shader(shader)
+	OpenGLModel::OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material)
+		: m_Filepath(filepath), m_Material(material)
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(filepath.c_str(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs);
 		OGN_CORE_INFO("MODEL: Trying to load \"{}\"", filepath);
 
-		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			OGN_CORE_ERROR("MESH:ASSIMP: {}", importer.GetErrorString());
+			OGN_CORE_ERROR("MESH: ASSIMP: {}", importer.GetErrorString());
 			return;
 		}
-
-		m_Texture = Texture2D::Create("SandboxProject/Assets/Textures/checkerboard.jpg");
-		m_Texture->Bind();
-
-		m_Shader->Bind();
 		ProcessNode(scene->mRootNode, scene);
-	}
-
-	OpenGLModel::OpenGLModel(std::shared_ptr<Shader>& shader)
-	{
 	}
 
 	OpenGLModel::~OpenGLModel()
 	{
-		m_Indices.clear();
-		m_Vertices.clear();
-
-		for (auto& mesh : m_Meshes)
-			mesh.reset();
-
-		m_Meshes.clear();
+		m_Material->m_Shader.reset();
+		m_Material.reset();
 	}
 
 	void OpenGLModel::Draw()
 	{
-		m_Texture->Bind();
-		for (auto& mesh : m_Meshes)
+		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
-			if(mesh->IsLoaded())
-				mesh->Draw();
+			if (mesh->IsLoaded())
+				mesh->Draw(m_Material->m_Shader);
+		}
+	}
+
+	void OpenGLModel::Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID)
+	{
+		// Applying Main Shader Uniforms
+		m_Material->EnableShader();
+
+		m_Material->SetBool("uHasOneTexture", m_Material->Texture != nullptr);
+		
+		if (m_Material->Texture)
+		{
+			m_Material->Texture->Bind(0);
+			m_Material->SetInt("material.Texture", m_Material->Texture->GetIndex());
+			m_Material->SetVector("material.TilingFactor", m_Material->TilingFactor);
 		}
 
-		m_Shader->Unbind();
-	}
+		m_Material->SetMatrix("uModel", modelTransform);
+		m_Material->SetMatrix("uView", camera.GetViewMatrix());
+		m_Material->SetMatrix("uProjection", camera.GetProjection());
+		m_Material->SetVector("uCameraPosition", camera.GetPosition());
 
-	void OpenGLModel::Draw(const EditorCamera& camera)
-	{
-		m_Shader->Bind();
-		glm::mat4 transform = camera.GetViewProjection() * transform;
+		m_Material->SetVector("uColor", m_Material->Color);
+		m_Material->SetBool("uHasTextures", m_Material->HasTexture);
+		m_Material->SetFloat("material.Shininess", m_Material->Shininess);
 
-		m_Shader->SetMatrix("uModel", transform);
-		m_Shader->SetMatrix("uView", camera.GetViewMatrix());
-		m_Shader->SetMatrix("uProjection", camera.GetProjection());
-		m_Shader->SetVector("uCameraPosition", camera.GetPosition());
+		m_Material->SetInt("uEntityID", entityID);
+
+		// Draw Mesh
 		Draw();
-	}
 
-	void OpenGLModel::Draw(const glm::mat4& transform, const EditorCamera& camera, int entityID)
-	{
-		m_EntityID = entityID;
+		if (m_Material->Texture)
+		{
+			m_Material->Texture->Unbind();
+		}
 
-		m_Shader->Bind();
-		m_Shader->SetMatrix("uModel", transform);
-		m_Shader->SetMatrix("uView", camera.GetViewMatrix());
-		m_Shader->SetMatrix("uProjection", camera.GetProjection());
-
-		m_Shader->SetInt("uEntityID", m_EntityID);
-
-		Draw();
-	}
-
-	void OpenGLModel::Draw(const glm::mat4& transform, const Camera* camera, int entityID)
-	{
-		m_EntityID = entityID;
-
-		m_Shader->Bind();
-		m_Shader->SetMatrix("uModel", transform);
-		m_Shader->SetMatrix("uView", camera->GetViewMatrix());
-		m_Shader->SetMatrix("uProjection", camera->GetProjection());
-
-		m_Shader->SetInt("uEntityID", m_EntityID);
-
-		Draw();
-	}
-
-	void OpenGLModel::LoadLighting(const glm::vec3& position, const glm::vec4& color, float ambient)
-	{
-		m_LightPosition = position;
-		m_LightColor = color;
-		m_Ambient = ambient;
+		m_Material->DisableShader();
 	}
 
 	void OpenGLModel::ProcessNode(aiNode* node, const aiScene* scene)
@@ -121,28 +93,64 @@ namespace origin
 
 	std::shared_ptr<Mesh> OpenGLModel::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	{
+		std::vector<MeshVertex> vertices;
+		std::vector<uint32_t> indices;
+		std::vector<std::shared_ptr<Texture2D>> textures;
+
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
 		{
-			Vertex vertex;
-			vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-			vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-			if (mesh->mTextureCoords[0])
-				vertex.TexCoord = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-			else vertex.TexCoord = glm::vec2(0.0f);
+			MeshVertex vertex;
 
-			m_Vertices.push_back(vertex);
+			vertex.Position = glm::vec3(
+				mesh->mVertices[i].x,
+				mesh->mVertices[i].y,
+				mesh->mVertices[i].z
+			);
+
+			if (mesh->HasNormals())
+			{
+				vertex.Normal = glm::vec3(
+					mesh->mNormals[i].x,
+					mesh->mNormals[i].y,
+					mesh->mNormals[i].z
+				);
+			}
+
+			if (mesh->mTextureCoords[0])
+			{
+				vertex.TexCoord = glm::vec2(
+					mesh->mTextureCoords[0][i].x,
+					mesh->mTextureCoords[0][i].y
+				);
+			}
+			else
+			{
+				vertex.TexCoord = glm::vec2(0.0f);
+			}
+
+			vertices.push_back(vertex);
 		}
 
 		for (uint32_t i = 0; i < mesh->mNumFaces; i++)
 		{
 			aiFace face = mesh->mFaces[i];
 			for (uint32_t j = 0; j < face.mNumIndices; j++)
-			{
-				m_Indices.push_back(face.mIndices[j]);
-			}
+				indices.push_back(face.mIndices[j]);
 		}
 
-		return std::make_shared<OpenGLMesh>(m_Vertices, m_Indices);
-	}
+		if (mesh->mMaterialIndex >= 0)
+		{
+			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
+			std::vector<std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE, "texture_diffuse");
+			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+
+			std::vector<std::shared_ptr<Texture2D>> specularMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_SPECULAR, "texture_specular");
+			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		}
+
+		OGN_CORE_TRACE("MODEL: HAS TEXTURE {}", m_Material->HasTexture);
+
+		return std::make_shared<OpenGLMesh>(vertices, indices, textures, m_Filepath);
+	}
 }

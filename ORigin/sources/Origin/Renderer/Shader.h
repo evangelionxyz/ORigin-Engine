@@ -14,8 +14,8 @@ namespace origin
 	public:
 		virtual ~Shader() {}
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		virtual void Enable() const = 0;
+		virtual void Disable() const = 0;
 
     virtual std::string ReadFile() const = 0;
     virtual std::string GetFilepath() const = 0;
@@ -34,8 +34,12 @@ namespace origin
     virtual void SetVector(const std::string& name, const glm::vec2& vector2) = 0;
     virtual void SetVector(const std::string& name, const glm::vec3& vector3) = 0;
     virtual void SetVector(const std::string& name, const glm::vec4& vector4) = 0;
-    virtual void SetMatrix(const std::string& name, const glm::mat3& matrix3) = 0;
-    virtual void SetMatrix(const std::string& name, const glm::mat4& matrix4) = 0;
+    virtual void SetMatrix(const std::string& name, const glm::mat2& matrices) = 0;
+    virtual void SetMatrix(const std::string& name, const glm::mat3& matrices) = 0;
+    virtual void SetMatrix(const std::string& name, const glm::mat4& matrices) = 0;
+
+    virtual bool IsSpirvEnabled() const = 0;
+    virtual bool IsRecompilerSpirv() const = 0;
 
     static std::shared_ptr<Shader> Create(const std::string& filepath, bool enableSpirv = false, bool recompileSpirv = false);
     static std::shared_ptr<Shader> Create(const std::string& name, const std::string& filepath);

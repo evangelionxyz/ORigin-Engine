@@ -1,7 +1,7 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 -- Solution's Settings
-workspace "ORigin"
+workspace "OR1"
 location "../"
 architecture "x64"
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "AnimationController.h"
@@ -10,10 +10,10 @@ namespace origin {
 	{
 	}
 
-	void AnimationController::AddAnimationState(std::shared_ptr<Animation>& anim, const std::string& state)
+	void AnimationController::AddAnimationState(Animation anim, const std::string& state) const
 	{
 		m_State->AddState(state);
-		m_State->AddAnim(anim);
+		m_State->AddAnimation(anim);
 	}
 
 	void AnimationController::AddTransitionCondition(const std::string& name, bool condition)

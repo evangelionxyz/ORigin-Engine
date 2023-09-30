@@ -17,7 +17,7 @@ namespace origin {
 
   private:
     EditorCamera camera;
-    std::shared_ptr<Animation> marioAnim, fireballAnim;
+    Animation marioAnim, fireballAnim;
     std::shared_ptr<Texture2D> mario1, mario2, mario3, mario4, mario5;
     std::shared_ptr<Texture2D> fireball1, fireball2, fireball3, fireball4, fireball5, fireball6, fireball7, fireball8;
 

@@ -6,6 +6,8 @@
 #include "Scene.h"
 #include "entt\entt.hpp"
 
+#include "box2d/b2_contact.h"
+
 namespace origin {
 
 	class Entity
@@ -54,19 +56,34 @@ namespace origin {
 
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
-		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
+		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
+		operator uintptr_t() const { return static_cast<uintptr_t>(m_EntityHandle); }
+		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
+		bool operator!=(const Entity& other) const { return !(*this == other); }
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
-		std::string& GetName() { return GetComponent<TagComponent>().Tag; }
+		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 
-		bool operator==(const Entity& other) const
+		bool IsContactWith(const std::string& objName)
 		{
-			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
+			if (!HasComponent<Rigidbody2DComponent>())
+				return false;
+
+			auto& rb2d = GetComponent<Rigidbody2DComponent>();
+			return rb2d.ContactWith == objName;
 		}
 
-		bool operator!=(const Entity& other) const
+		std::string& GetContactTag()
 		{
-			return !(*this == other);
+			std::string objName;
+
+			if (!HasComponent<Rigidbody2DComponent>())
+				objName = "";
+
+			auto& rb2d = GetComponent<Rigidbody2DComponent>();
+			objName = rb2d.ContactWith;
+
+			return objName;
 		}
 
 	private:
