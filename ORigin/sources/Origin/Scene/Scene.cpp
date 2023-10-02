@@ -23,7 +23,7 @@
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_circle_shape.h"
 
-#include "Box2D/ContactListener.h"
+#include "origin\Physics\Contact2DListener.h"
 
 #include <glm/glm.hpp>
 
@@ -1125,7 +1125,7 @@ namespace origin
 		m_Running = true;
 		m_Box2DWorld = new b2World({0.0f, -9.8f});
 
-		m_Box2DContactListener = new ContactListener(this);
+		m_Box2DContactListener = new Contact2DListener(this);
 		m_Box2DWorld->SetContactListener(m_Box2DContactListener);
 
 		auto view = m_Registry.view<Rigidbody2DComponent>();

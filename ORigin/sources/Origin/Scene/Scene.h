@@ -17,7 +17,7 @@ class b2World;
 namespace origin
 {
     class Entity;
-    class ContactListener;
+    class Contact2DListener;
 
     class Scene
     {
@@ -75,7 +75,7 @@ namespace origin
         void OnPhysics2DStart();
         void OnPhysics2DStop();
 
-        ContactListener* m_Box2DContactListener;
+        Contact2DListener* m_Box2DContactListener;
 
         void RenderScene(const EditorCamera& camera);
         void RenderScene(Camera* camera, const TransformComponent& transform);
