@@ -1,3 +1,5 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #pragma once
 
 #include "origin/Scene/Scene.h"

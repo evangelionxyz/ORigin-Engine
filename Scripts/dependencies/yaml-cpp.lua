@@ -1,4 +1,5 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 project "yaml-cpp"
    location (vendorProjectFiles)
 	kind "StaticLib"
@@ -7,7 +8,7 @@ project "yaml-cpp"
 	staticruntime "off"
 
 	targetdir (vendorOutputdir)
-   objdir (vendorIntOutputdir)
+	objdir (vendorIntOutputdir)
 
 	files {
         "%{wks.location}/ORigin/vendor/yaml-cpp/src/**.cpp",
