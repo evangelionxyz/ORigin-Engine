@@ -21,8 +21,7 @@
     <OutputPath>..\ORigin-Editor\Resources\ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\Resources\ScriptCore\Int\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -34,8 +33,7 @@
     <OutputPath>..\ORigin-Editor\Resources\ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\Resources\ScriptCore\Int\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -47,8 +45,7 @@
     <OutputPath>..\ORigin-Editor\Resources\ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\ORigin-Editor\Resources\ScriptCore\Int\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -63,12 +60,12 @@
     <Compile Include="sources\ORigin\InternalCalls.cs" />
     <Compile Include="sources\ORigin\KeyCodes.cs" />
     <Compile Include="sources\ORigin\Math\Math.cs" />
-    <Compile Include="sources\ORigin\Scene\AudioLibrary.cs" />
-    <Compile Include="sources\ORigin\Scene\Components.cs" />
-    <Compile Include="sources\ORigin\Scene\Entity.cs" />
     <Compile Include="sources\ORigin\Math\Vector2.cs" />
     <Compile Include="sources\ORigin\Math\Vector3.cs" />
     <Compile Include="sources\ORigin\Math\Vector4.cs" />
+    <Compile Include="sources\ORigin\Scene\AudioLibrary.cs" />
+    <Compile Include="sources\ORigin\Scene\Components.cs" />
+    <Compile Include="sources\ORigin\Scene\Entity.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

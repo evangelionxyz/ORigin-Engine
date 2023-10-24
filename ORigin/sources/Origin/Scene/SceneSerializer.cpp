@@ -11,6 +11,7 @@
 #include "Origin/Audio/Audio.h"
 
 #include "Entity.h"
+#include "Lighting.h"
 #include "Component.h"
 
 #include <fstream>
@@ -465,48 +466,44 @@ namespace origin
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
 		}
 
-		if (entity.HasComponent<DirectionalLightComponent>())
+		if (entity.HasComponent<LightComponent>())
 		{
-			out << YAML::Key << "DirectionalLightComponent";
-			out << YAML::BeginMap; // DirectionalLightComponent
+			out << YAML::Key << "LightComponent";
+			out << YAML::BeginMap;
+			const auto& light = entity.GetComponent<LightComponent>().Light;
+			out << YAML::Key << "Type" << YAML::Value << light->GetTypeString();
+			out << YAML::Key << "Color" << YAML::Value << light->Color;
 
-			const auto& lc = entity.GetComponent<DirectionalLightComponent>();
-			out << YAML::Key << "Color" << YAML::Value << lc.Color;
-			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
-			out << YAML::Key << "Diffuse" << YAML::Value << lc.Diffuse;
-			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
-			out << YAML::Key << "Near" << YAML::Value << lc.Near;
-			out << YAML::Key << "Far" << YAML::Value << lc.Far;
-			out << YAML::Key << "Size" << YAML::Value << lc.Size;
+			switch (light->Type)
+			{
+			case LightingType::Spot:
+			{
+				out << YAML::Key << "InnerConeAngle" << YAML::Value << light->InnerConeAngle;
+				out << YAML::Key << "OuterConeAngle" << YAML::Value << light->OuterConeAngle;
+				out << YAML::Key << "Exponent" << YAML::Value << light->Exponent;
+				break;
+			}
+			case LightingType::Point:
+			{
+				out << YAML::Key << "Ambient" << YAML::Value << light->Ambient;
+				out << YAML::Key << "Specular" << YAML::Value << light->Specular;
+				break;
+			}
+			case LightingType::Directional:
+			{
+				out << YAML::Key << "Ambient" << YAML::Value << light->Ambient;
+				out << YAML::Key << "Diffuse" << YAML::Value << light->Diffuse;
+				out << YAML::Key << "Specular" << YAML::Value << light->Specular;
+				out << YAML::Key << "Near" << YAML::Value << light->Near;
+				out << YAML::Key << "Far" << YAML::Value << light->Far;
+				out << YAML::Key << "Size" << YAML::Value << light->Size;
+				break;
+			}
+			default:
+				break;
+			}
 
-			out << YAML::EndMap; // !DirectionalLightComponent
-		}
-
-		if (entity.HasComponent<SpotLightComponent>())
-		{
-			out << YAML::Key << "SpotLightComponent";
-			out << YAML::BeginMap; // SpotLightComponent
-
-			const auto& lc = entity.GetComponent<SpotLightComponent>();
-			out << YAML::Key << "Color" << YAML::Value << lc.Color;
-			out << YAML::Key << "InnerConeAngle" << YAML::Value << lc.InnerConeAngle;
-			out << YAML::Key << "OuterConeAngle" << YAML::Value << lc.OuterConeAngle;
-			out << YAML::Key << "Exponent" << YAML::Value << lc.Exponent;
-
-			out << YAML::EndMap; // !SpotLightComponent
-		}
-
-		if (entity.HasComponent<PointLightComponent>())
-		{
-			out << YAML::Key << "PointLightComponent";
-			out << YAML::BeginMap; // PointLightComponent
-
-			const auto& lc = entity.GetComponent<PointLightComponent>();
-			out << YAML::Key << "Color" << YAML::Value << lc.Color;
-			out << YAML::Key << "Ambient" << YAML::Value << lc.Ambient;
-			out << YAML::Key << "Specular" << YAML::Value << lc.Specular;
-
-			out << YAML::EndMap; // !PointLightComponent
+			out << YAML::EndMap;
 		}
 
 		if (entity.HasComponent<CircleRendererComponent>())
@@ -799,44 +796,43 @@ namespace origin
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 				}
 
-				if (YAML::Node directionalLightComponent = entity["DirectionalLightComponent"])
+				if (YAML::Node lightComponent = entity["LightComponent"])
 				{
-					auto& lc = deserializedEntity.AddComponent<DirectionalLightComponent>();
-					lc.Color = directionalLightComponent["Color"].as<glm::vec3>();
-					lc.Ambient = directionalLightComponent["Ambient"].as<float>();
-					lc.Diffuse = directionalLightComponent["Diffuse"].as<float>();
-					lc.Specular = directionalLightComponent["Specular"].as<float>();
-					lc.Near = directionalLightComponent["Near"].as<float>();
-					lc.Far = directionalLightComponent["Far"].as<float>();
-					lc.Size = directionalLightComponent["Size"].as<float>();
+					auto& light = deserializedEntity.AddComponent<LightComponent>().Light;
+					light = Lighting::Create(Utils::LightTypeStringToType(lightComponent["Type"].as<std::string>()));
 
-					FramebufferSpecification fbSpec;
-					// Resolution
-					fbSpec.Width = 1080;
-					fbSpec.Height = 1080;
+					light->Color = lightComponent["Color"].as<glm::vec3>();
 
-					fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
-					fbSpec.ReadBuffer = false;
+					switch (light->Type)
+					{
+					case LightingType::Spot:
+					{
+						light->InnerConeAngle = lightComponent["InnerConeAngle"].as<float>();
+						light->OuterConeAngle = lightComponent["OuterConeAngle"].as<float>();
+						light->Exponent = lightComponent["Exponent"].as<float>();
+						break;
+					}
+					case LightingType::Point:
+					{
+						light->Ambient = lightComponent["Ambient"].as<float>();
+						light->Specular = lightComponent["Specular"].as<float>();
+						break;
+					}
+					case LightingType::Directional:
+					{
+						light->Ambient = lightComponent["Ambient"].as<float>();
+						light->Diffuse = lightComponent["Diffuse"].as<float>();
+						light->Specular = lightComponent["Specular"].as<float>();
+						light->Near = lightComponent["Near"].as<float>();
+						light->Far = lightComponent["Far"].as<float>();
+						light->Size = lightComponent["Size"].as<float>();
 
-					fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
-					lc.ShadowFb = Framebuffer::Create(fbSpec);
-				}
+						break;
+					}
 
-				if (YAML::Node spotLightComponent = entity["SpotLightComponent"])
-				{
-					auto& lc = deserializedEntity.AddComponent<SpotLightComponent>();
-					lc.Color = spotLightComponent["Color"].as<glm::vec3>();
-					lc.InnerConeAngle = spotLightComponent["InnerConeAngle"].as<float>();
-					lc.OuterConeAngle = spotLightComponent["OuterConeAngle"].as<float>();
-					lc.Exponent = spotLightComponent["Exponent"].as<float>();
-				}
-
-				if (YAML::Node pointLightComponent = entity["PointLightComponent"])
-				{
-					auto& lc = deserializedEntity.AddComponent<PointLightComponent>();
-					lc.Color = pointLightComponent["Color"].as<glm::vec3>();
-					lc.Ambient = pointLightComponent["Ambient"].as<float>();
-					lc.Specular = pointLightComponent["Specular"].as<float>();
+					default:
+						break;
+					}
 				}
 
 				if (YAML::Node circleRendererComponent = entity["CircleRendererComponent"])

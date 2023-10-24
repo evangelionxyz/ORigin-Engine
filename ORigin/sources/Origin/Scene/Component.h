@@ -131,6 +131,9 @@ namespace origin
 		glm::vec3 Rotation = glm::vec3(0.0f);
 		glm::vec3 Scale = glm::vec3(1.0f);
 
+		glm::vec3 WorldPosition = glm::vec3(0.0f);
+		glm::quat WorldRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 
@@ -206,47 +209,13 @@ namespace origin
 		}
 	};
 
-	struct SpotLightComponent
+	class Lighting;
+	struct LightComponent
 	{
-		glm::vec3 Color = glm::vec3(1.0);
-		float InnerConeAngle = 1.0f;
-		float OuterConeAngle = 0.5f;
-		float Exponent = 0.5f;
-	};
+		std::shared_ptr<Lighting> Light;
 
-	struct DirectionalLightComponent
-	{
-		glm::vec3 Color = glm::vec3(1.0f);
-		float Ambient = 0.5f;
-		float Diffuse = 0.5f;
-		float Specular = 1.0f;
-
-		std::shared_ptr<Framebuffer> ShadowFb;
-		float Near = -1.0f;
-		float Far = 7.5f;
-		float Size = 25.0f;
-		glm::mat4 LightSpaceMatrix = glm::mat4(1.0f);
-
-		DirectionalLightComponent() = default;
-		DirectionalLightComponent(const DirectionalLightComponent&) = default;
-	};
-
-	struct PointLightComponent
-	{
-		glm::vec3 Color = glm::vec3(1.0f);
-		float Ambient = 0.1f;
-		float Specular = 1.0f;
-
-		PointLightComponent() = default;
-		PointLightComponent(const PointLightComponent&) = default;
-
-		PointLightComponent(const PointLightComponent&, glm::vec3 color) : Color(color)
-		{
-		}
-
-		PointLightComponent(float r, float g, float b) : Color(r, g, b)
-		{
-		}
+		LightComponent() = default;
+		LightComponent(const LightComponent&) = default;
 	};
 
 	struct CircleRendererComponent
@@ -374,8 +343,7 @@ namespace origin
 
 	using AllComponents =
 	ComponentGroup<TransformComponent, CameraComponent, AnimationComponent,
-	               AudioComponent, AudioListenerComponent,
-	               PointLightComponent, SpotLightComponent, DirectionalLightComponent,
+	               AudioComponent, AudioListenerComponent, LightComponent,
 	               SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 	               CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
 	               Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;

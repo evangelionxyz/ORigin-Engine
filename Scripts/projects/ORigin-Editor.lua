@@ -46,8 +46,9 @@ includedirs {
     "%{IncludeDir.GLM}",
     "%{IncludeDir.YAML_CPP}",
     "%{IncludeDir.ASSIMP}",
+    "%{IncludeDir.PhysX}",
     "%{IncludeDir.msdfgen}",
-    "%{IncludeDir.msdf_atlas_gen}"
+    "%{IncludeDir.msdf_atlas_gen}",
 }
 
 defines {

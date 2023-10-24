@@ -44,8 +44,9 @@ includedirs {
     "%{IncludeDir.YAML_CPP}",
     "%{IncludeDir.VulkanSDK}",
     "%{IncludeDir.ASSIMP}",
+    "%{IncludeDir.PhysX}",
     "%{IncludeDir.msdfgen}",
-    "%{IncludeDir.msdf_atlas_gen}"
+    "%{IncludeDir.msdf_atlas_gen}",
 }
 
 defines {
@@ -62,10 +63,18 @@ links {
     "msdfgen",
     "yaml-cpp",
     "opengl32.lib",
+    "PhysX",
+    "PhysXCommon",
+    "PhysXFoundation",
+    "PhysXPvdSDK",
+    "PhysXExtensions",
+    "PhysXCooking",
+    "PhysXCharacterKinematic",
+
     "%{Library.Vulkan}",
     "%{Library.FMOD}",
     "%{Library.Assimp}",
-    "%{Library.MONO}"
+    "%{Library.MONO}",
 }
 
 filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
