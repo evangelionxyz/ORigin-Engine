@@ -6,7 +6,8 @@
 
 namespace origin
 {
-	OpenGLSkybox::OpenGLSkybox(const std::string& filepath)
+	OpenGLSkybox::OpenGLSkybox(const std::string& filepath, const std::string& format)
+		: m_Filepath(filepath), m_ImageFormat(format)
 	{
 		float vertices[] = {
 
@@ -68,7 +69,7 @@ namespace origin
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 		delete[] indices;
 
-		LoadTexture(filepath);
+		LoadTexture();
 		m_Shader = Renderer::GetGShader("Skybox");
 		m_Shader->Enable();
 	}
@@ -102,16 +103,16 @@ namespace origin
 		m_BlurFactor = blur;
 	}
 
-	void OpenGLSkybox::LoadTexture(const std::string& filepath)
+	void OpenGLSkybox::LoadTexture()
 	{
 		std::vector<std::string> path
 		{
-			filepath + "/right.jpg",
-			filepath + "/left.jpg",
-			filepath + "/top.jpg",
-			filepath + "/bottom.jpg",
-			filepath + "/front.jpg",
-			filepath + "/back.jpg",
+			m_Filepath + "right" + m_ImageFormat,
+			m_Filepath + "left" + m_ImageFormat,
+			m_Filepath + "top" + m_ImageFormat,
+			m_Filepath + "bottom" + m_ImageFormat,
+			m_Filepath + "front" + m_ImageFormat,
+			m_Filepath + "back" + m_ImageFormat
 		};
 
 		int width, height, bpp;

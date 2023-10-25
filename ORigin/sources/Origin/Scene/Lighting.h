@@ -41,6 +41,7 @@ namespace origin {
 
 		Lighting(LightingType type);
 
+		void OnUpdate(const TransformComponent& tc);
 		void OnUpdate(const TransformComponent& tc, const std::shared_ptr<Material>& mat);
 		void SetupShadow(const TransformComponent& tc);
 		void SetType(LightingType type);

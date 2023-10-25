@@ -19,6 +19,7 @@ namespace origin {
     {
       if (type == "vertex") return GL_VERTEX_SHADER;
       if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
+      if (type == "geometry") return GL_GEOMETRY_SHADER;
 
       if (!filepath.empty())
         OGN_CORE_ERROR("Unkown Shader Type!: {}", filepath);
@@ -35,7 +36,9 @@ namespace origin {
       {
         case GL_VERTEX_SHADER: return shaderc_glsl_vertex_shader;
         case GL_FRAGMENT_SHADER: return shaderc_glsl_fragment_shader;
+        case GL_GEOMETRY_SHADER: return shaderc_glsl_geometry_shader;
       }
+
       OGN_CORE_ASSERT(false);
       return (shaderc_shader_kind)0;
     }
@@ -46,9 +49,10 @@ namespace origin {
       {
         case GL_VERTEX_SHADER:  return "GL_VERTEX_SHADER";
         case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
+        case GL_GEOMETRY_SHADER: return "GL_GEOMETRY_SHADER";
       }
-      OGN_CORE_ASSERT(false);
 
+      OGN_CORE_ASSERT(false);
       return nullptr;
     }
 
@@ -70,6 +74,7 @@ namespace origin {
       {
         case GL_VERTEX_SHADER: return ".cached_opengl.vert";
         case GL_FRAGMENT_SHADER: return ".cached_opengl.frag";
+        case GL_GEOMETRY_SHADER: return ".cached_opengl.geom";
       }
 
       OGN_CORE_ASSERT(false);
@@ -82,6 +87,7 @@ namespace origin {
       {
         case GL_VERTEX_SHADER: return ".cached_vulkan.vert";
         case GL_FRAGMENT_SHADER: return ".cached_vulkan.frag";
+        case GL_GEOMETRY_SHADER: return ".cached_vulkan.geom";
       }
 
       OGN_CORE_ASSERT(false);
@@ -92,8 +98,9 @@ namespace origin {
     {
       switch (type)
       {
-        case GL_VERTEX_SHADER: return "Vertex";
+        case GL_VERTEX_SHADER:    return "Vertex";
         case GL_FRAGMENT_SHADER:  return "Fragment";
+        case GL_GEOMETRY_SHADER:  return "Geometry";
       }
       return "";
     }
@@ -102,8 +109,9 @@ namespace origin {
     {
       switch (type)
       {
-        case ShaderType::VERTEX: return "VERTEX";
+        case ShaderType::VERTEX:    return "VERTEX";
         case ShaderType::FRAGMENT:  return "FRAGMENT";
+        case ShaderType::GEOMTERY:  return "GEOMETRY";
       }
       return "";
     }
@@ -114,6 +122,7 @@ namespace origin {
   {
     OGN_CORE_TRACE("Trying to load Shader : {}", m_Filepath);
 
+    // With SPIRV
     if (enableSpirv)
     {
       Utils::CreateCachedDirectoryIfNeeded();
@@ -128,10 +137,10 @@ namespace origin {
         OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
       }
     }
-    else
+    else // Without SPIRV
     {
       m_ShaderSource = ParseShader(filepath);
-      m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
+      m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
     }
 
     // extract shader file to string name
@@ -146,15 +155,27 @@ namespace origin {
     : m_Name(name), m_Filepath(filepath), m_RendererID(0)
   {
     m_ShaderSource = ParseShader(filepath);
-    m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources);
+    m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
   }
 
   OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
+  {
+    std::unordered_map<GLenum, std::string> sources;
+    sources[GL_VERTEX_SHADER] = vertexSrc;
+    sources[GL_FRAGMENT_SHADER] = fragmentSrc;
+
+    CompileOrGetVulkanBinaries(sources);
+    CompileOrGetOpenGLBinaries();
+    CreateSpirvProgram();
+  }
+
+  OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geomterySrc)
     : m_Name(name), m_RendererID(0)
   {
     std::unordered_map<GLenum, std::string> sources;
     sources[GL_VERTEX_SHADER] = vertexSrc;
     sources[GL_FRAGMENT_SHADER] = fragmentSrc;
+    sources[GL_GEOMETRY_SHADER] = geomterySrc;
 
     CompileOrGetVulkanBinaries(sources);
     CompileOrGetOpenGLBinaries();
@@ -397,7 +418,7 @@ namespace origin {
     std::ifstream stream(filepath);
 
     std::string line;
-    std::stringstream ss[2];
+    std::stringstream ss[3];
     ShaderType type = ShaderType::NONE;
 
     while (getline(stream, line))
@@ -407,28 +428,30 @@ namespace origin {
         || line.find("#type ") != std::string::npos
         || line.find("# type ") != std::string::npos)
       {
-        if (line.find("vertex") != std::string::npos
-          || line.find("Vertex") != std::string::npos)
+        if (line.find("vertex") != std::string::npos  || line.find("Vertex") != std::string::npos)
         {
           type = ShaderType::VERTEX;
           Utils::ShaderDataTypeToString(type);
         }
-        else if (line.find("fragment") != std::string::npos
-          || line.find("Fragment") != std::string::npos
-          || line.find("pixel") != std::string::npos
-          || line.find("Pixel") != std::string::npos)
+        else if (line.find("fragment") != std::string::npos || line.find("Fragment") != std::string::npos)
         {
           type = ShaderType::FRAGMENT;
           Utils::ShaderDataTypeToString(type);
         }
+        else if (line.find("geometry") != std::string::npos || line.find_last_of("Geometry") != std::string::npos)
+        {
+          type = ShaderType::GEOMTERY;
+          Utils::ShaderDataTypeToString(type);
+        }
       }
+
       else
       {
         ss[(int)type] << line << "\n";
       }
     }
 
-    return { ss[0].str(), ss[1].str() };
+    return { ss[0].str(), ss[1].str(), ss[2].str() };
   }
 
   GLuint OpenGLShader::CompileShader(GLuint type, const std::string& source)
@@ -444,25 +467,51 @@ namespace origin {
     if (!success)
     {
       glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
-      OGN_CORE_WARN("Failed to Compile \"{0}\" Shader Location: {1}",
-        type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT", m_Filepath);
+      switch (type)
+      {
+      case GL_VERTEX_SHADER:
+        OGN_CORE_WARN("Failed to Compile \"VERTEX\" Shader Location: {1}", m_Filepath);
+        break;
+      case GL_FRAGMENT_SHADER:
+        OGN_CORE_WARN("Failed to Compile \"FRAGMENT\" Shader Location: {1}", m_Filepath);
+        break;
+      case GL_GEOMETRY_SHADER:
+        OGN_CORE_WARN("Failed to Compile \"GEOMETRY\" Shader Location: {1}", m_Filepath);
+        break;
+      }
 
       glDeleteShader(shaderID);
-
       return 0;
     }
 
-    OGN_CORE_TRACE("{} {} Succesfully Compiled", m_Name,
-      type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT");
+    switch (type)
+    {
+    case GL_VERTEX_SHADER:
+      OGN_CORE_TRACE("{} \"VERTEX\" Succesfully Compiled", m_Name);
+      break;
+    case GL_FRAGMENT_SHADER:
+      OGN_CORE_TRACE("{} \"FRAGMENT\" Succesfully Compiled", m_Name);
+      break;
+    case GL_GEOMETRY_SHADER:
+      OGN_CORE_TRACE("{} \"GEOMETRY\" Succesfully Compiled", m_Name);
+      break;
+    }
+
     return shaderID;
   }
 
-  GLuint OpenGLShader::CreateProgram(const std::string& vertexShader, std::string& fragmentShader)
+  GLuint OpenGLShader::CreateProgram(const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc)
   {
     // Create Program
     GLuint shaderProgram = glCreateProgram();
-    GLuint vShader = CompileShader(GL_VERTEX_SHADER, vertexShader);
-    GLuint fShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    GLuint vShader = CompileShader(GL_VERTEX_SHADER, vertexSrc);
+    GLuint fShader = CompileShader(GL_FRAGMENT_SHADER, fragmentSrc);
+
+    if (!geometrySrc.empty())
+    {
+      GLuint gShader = CompileShader(GL_GEOMETRY_SHADER, geometrySrc);
+      glAttachShader(shaderProgram, gShader);
+    }
 
     // Attach and Link Shader->Program
     glAttachShader(shaderProgram, vShader);

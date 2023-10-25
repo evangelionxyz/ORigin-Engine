@@ -23,6 +23,11 @@ namespace origin
 
 		glm::mat4 LightProjection;
 		glm::mat4 LightSpaceMatrix;
+		glm::mat4 LightViewMatrix;
+
+		glm::mat4 ShadowProjection;
+
+		std::vector<glm::mat4> ShadowTransforms;
 
 	private:
 		LightingType m_LightingType;

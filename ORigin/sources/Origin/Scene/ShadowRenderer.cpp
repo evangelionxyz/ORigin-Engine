@@ -7,8 +7,8 @@
 
 #include "Lighting.h"
 
-namespace origin
-{
+namespace origin {
+
 	ShadowRenderer::ShadowRenderer(LightingType type)
 	{
 		Invalidate(type);
@@ -16,30 +16,30 @@ namespace origin
 
 	void ShadowRenderer::Invalidate(LightingType type)
 	{
+		m_LightingType = type;
+
 		if (m_Framebuffer)
 			m_Framebuffer.reset();
 
 		FramebufferSpecification fbSpec;
+		fbSpec.Width = 1080;
+		fbSpec.Height = 1080;
 		fbSpec.ReadBuffer = false;
-
+		
 		switch (type)
 		{
 			case origin::LightingType::Spot:
-			{
 				break;
-			}
+			
 			case origin::LightingType::Point:
-			{
+				fbSpec.WrapMode = GL_CLAMP_TO_EDGE;
+				fbSpec.Attachments = { FramebufferTextureFormat::DEPTH_CUBE };
 				break;
-			}
+			
 			case origin::LightingType::Directional:
-			{
-				fbSpec.Width = 1080;
-				fbSpec.Height = 1080;
 				fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
 				fbSpec.Attachments = { FramebufferTextureFormat::DEPTH };
 				break;
-			}
 		}
 
 		m_Framebuffer = Framebuffer::Create(fbSpec);
@@ -56,28 +56,28 @@ namespace origin
 
 	void ShadowRenderer::Setup(const TransformComponent& tc, float size, float n, float f)
 	{
-#if 0
 		switch (m_LightingType)
 		{
-			case origin::LightingType::Spot:
+			case LightingType::Spot:
 				break;
-			case origin::LightingType::Point:
+			
+			case LightingType::Point:
+				ShadowProjection = glm::perspective(glm::radians(90.0f), m_Framebuffer->GetWidth() / (float)m_Framebuffer->GetHeight(), n, f);
+				ShadowTransforms.push_back(ShadowProjection * glm::lookAt(tc.Translation, tc.Translation + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+				ShadowTransforms.push_back(ShadowProjection *	glm::lookAt(tc.Translation, tc.Translation + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+				ShadowTransforms.push_back(ShadowProjection * glm::lookAt(tc.Translation, tc.Translation + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+				ShadowTransforms.push_back(ShadowProjection * glm::lookAt(tc.Translation, tc.Translation + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+				ShadowTransforms.push_back(ShadowProjection * glm::lookAt(tc.Translation, tc.Translation + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+				ShadowTransforms.push_back(ShadowProjection * glm::lookAt(tc.Translation, tc.Translation + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 				break;
-			case origin::LightingType::Directional:
-			{
-				
+			
+			case LightingType::Directional:
+				LightProjection = glm::ortho(-size, size, -size, size, n, f);
+				LightViewMatrix = lookAt(radians(-tc.GetForward()), glm::vec3(0.0f), radians(-tc.GetUp())); // direction/eye, center, up
+				LightSpaceMatrix = LightProjection * LightViewMatrix;
+				Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uLightSpaceMatrix", LightSpaceMatrix);
 				break;
-			}
 		}
-#endif
-
-		glm::mat4 lightProjection = glm::ortho(-size, size, -size, size, n, f);
-
-		// direction/eye, center, up
-		glm::mat4 lightView = lookAt(radians(-tc.GetForward()), glm::vec3(0.0f), radians(-tc.GetUp()));
-		LightSpaceMatrix = lightProjection * lightView;
-
-		Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uLightSpaceMatrix", LightSpaceMatrix);
 
 		if (m_Framebuffer)
 		{

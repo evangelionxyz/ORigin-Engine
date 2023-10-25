@@ -22,11 +22,12 @@ struct VertexOutput
 	vec4 Color;
 	vec2 TexCoord;
 	vec2 TilingFactor;
+	vec4 LightSpacePosition;
 };
 
 layout (location = 0) out VertexOutput Output;
-layout (location = 3) out flat float v_TexIndex;
-layout (location = 4) out flat int v_EntityID;
+layout (location = 4) out flat float v_TexIndex;
+layout (location = 5) out flat int v_EntityID;
 
 void main()
 {
@@ -36,6 +37,8 @@ void main()
 	Output.TilingFactor = a_TilingFactor;
 	v_EntityID = a_EntityID;
 
+	Output.LightSpacePosition = uboData.LightSpaceMatrix * vec4(a_Position, 1.0);
+
 	gl_Position = uboData.ViewProjection * vec4(a_Position, 1.0);
 }
 
@@ -44,19 +47,19 @@ void main()
 #version 450 core
 
 layout(location = 0) out vec4 color;
-layout(location = 1) out int entColor;
+layout(location = 1) out int entityID;
 
 struct VertexOutput
 {
 	vec4 Color;
 	vec2 TexCoord;
 	vec2 TilingFactor;
+	vec4 LightSpacePosition;
 };
 
-
 layout (location = 0) in VertexOutput Input;
-layout (location = 3) in flat float v_TexIndex;
-layout (location = 4) in flat int v_EntityID;
+layout (location = 4) in flat float v_TexIndex;
+layout (location = 5) in flat int v_EntityID;
 
 layout (binding = 0) uniform sampler2D u_Textures[32];
 
@@ -100,5 +103,5 @@ void main()
 	}
 
 	color = texColor;
-	entColor = v_EntityID;
+	entityID = v_EntityID;
 }

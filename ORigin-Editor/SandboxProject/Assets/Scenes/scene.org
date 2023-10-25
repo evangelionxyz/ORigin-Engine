@@ -1,21 +1,83 @@
 Scene: scene.org
 Entities:
+  - Entity: 1063406332854536550
+    TagComponent:
+      Tag: Main Camera
+    TransformComponent:
+      Translation: [0, 4.56200504, 13.7682228]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+      FixedAspectRatio: false
+    AudioListenerComponent:
+      Enable: true
+  - Entity: 3622551962792716769
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 4, -5.80052614]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      TillingFactor: [1, 1]
+  - Entity: 17591947789842478913
+    TagComponent:
+      Tag: Tree
+    TransformComponent:
+      Translation: [-6.84180737, 0.5, 6.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    StaticMeshComponent:
+      ModelPath: Models/Standard/Spruce.obj
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 1, 1, 1]
+      Shininess: 81.6999969
+      Bias: 0.100000001
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 727487410853649074
+    TagComponent:
+      Tag: Tree
+    TransformComponent:
+      Translation: [-3.56169963, 0.498085737, -1.24219644]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    StaticMeshComponent:
+      ModelPath: Models/Standard/Spruce.obj
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 1, 1, 1]
+      Shininess: 1
+      Bias: 0.100000001
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
   - Entity: 8029754530859733505
     TagComponent:
       Tag: Directional Light
     TransformComponent:
-      Translation: [0, 5.875, 0]
-      Rotation: [-0.663225114, -1.04719758, 0]
-      Scale: [0.99999994, 0.99999845, 0.999997854]
+      Translation: [-1.68151615e-07, 5.87490797, -0.000122261175]
+      Rotation: [-0.663224995, -1.04719758, -3.57627869e-07]
+      Scale: [0.999999821, 0.999998391, 0.999997497]
     LightComponent:
       Type: DIRECTIONAL
       Color: [1, 1, 1]
       Ambient: 0.270000011
-      Diffuse: 0.629999995
+      Diffuse: 0.660000026
       Specular: 0.349999994
-      Near: -1
+      Near: -22.7000008
       Far: 25
-      Size: 14
+      Size: 9.80000019
   - Entity: 3826922741387140739
     TagComponent:
       Tag: Cube
@@ -36,15 +98,15 @@ Entities:
     TagComponent:
       Tag: Empty Mesh
     TransformComponent:
-      Translation: [6.51809502, 4.03680563, -0.0331097841]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [3.78260827, 1.5, -0.0331402719]
+      Rotation: [7.15256363e-07, -0.000345349312, -5.68434256e-14]
+      Scale: [0.999999881, 1, 28.6252346]
     StaticMeshComponent:
       ModelPath: Models/cube.gltf
       ShaderPath: Resources/Shaders/Mesh.glsl
       MaterialName: MeshMaterial
       Color: [1, 0, 0, 1]
-      Shininess: 32
+      Shininess: 31.5
       Bias: 0.00499999989
       TextureFilepath: ""
       TilingFactor: [1, 1]

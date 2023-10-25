@@ -78,7 +78,7 @@ namespace origin
         Contact2DListener* m_Box2DContactListener;
 
         void RenderScene(const EditorCamera& camera);
-        void RenderScene(Camera* camera, const TransformComponent& transform);
+        void RenderScene(const Camera& camera, const TransformComponent& cameraTransform);
         
         template <typename T>
         void OnComponentAdded(Entity entity, T& component);

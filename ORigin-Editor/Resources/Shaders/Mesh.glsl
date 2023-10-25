@@ -14,19 +14,18 @@ struct Vertex
 
 out Vertex vertex;
 
-uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProjection;
+uniform mat4 uViewProjection;
+uniform mat4 uModelTransform;
 uniform mat4 uLightSpaceMatrix;
 
 void main()
 {
-	vertex.Position = vec3(uModel * vec4(aPos, 1.0));
-    vertex.Normal = mat3(transpose(inverse(uModel))) * aNormal;
+    vertex.Position = vec3(uModelTransform * vec4(aPos, 1.0));
+    vertex.Normal = mat3(transpose(inverse(uModelTransform))) * aNormal;
 	vertex.TexCoord = aTexCoord;
 
     vertex.LightSpacePosition = uLightSpaceMatrix * vec4(vertex.Position, 1.0);
-	gl_Position = uProjection * uView * vec4(vertex.Position, 1.0);
+	gl_Position = uViewProjection * vec4(vertex.Position, 1.0);
 }
 
 // type fragment

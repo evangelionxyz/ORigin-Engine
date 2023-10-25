@@ -19,8 +19,6 @@ namespace origin {
 
 		const glm::vec2& GetViewportSize() { return m_ViewportSize; }
 
-		const glm::vec3& GetPosition() { return m_Position; }
-
 		// Perspective
 		void SetPerspective(float verticalFov, float nearClip, float farClip);
 

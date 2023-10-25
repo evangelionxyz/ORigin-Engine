@@ -1,8 +1,18 @@
 // type vertex
 #version 450 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoord;
+layout (location = 0) in vec3 a_Position;
+layout (location = 1) in vec3 a_Color;
+layout (location = 2) in vec2 a_TexCoord;
+layout (location = 3) in vec3 a_Normal;
+layout (location = 4) in vec3 a_TilingFactor;
+layout (location = 5) in int a_EntityID;
+
+layout (std140, binding = 0) uniform UBO
+{
+    mat4 ViewProjection;
+    mat4 LightSpaceMatrix;
+    vec3 CameraPosition;
+};
 
 struct Vertex
 {
@@ -14,29 +24,19 @@ struct Vertex
 
 out Vertex vertex;
 
-layout (std140, binding = 0) uniform UBO
-{
-	mat4 ViewProjection;
-	mat4 LightSpaceMatrix;
-	vec3 CameraPosition;
-
-} uboData;
-
-layout (std140, binding = 1) uniform MeshUBO
-{
-    uniform mat4 Model;
-    uniform mat4 View;
-    uniform mat4 Projection;
-} meshUboData;
+uniform mat4 uModel;
+uniform mat4 uView;
+uniform mat4 uProjection;
+uniform mat4 uLightSpaceMatrix;
 
 void main()
 {
-	vertex.Position = vec3(meshUboData.Model * vec4(aPos, 1.0));
-    vertex.Normal = mat3(transpose(inverse(meshUboData.Model))) * aNormal;
+	vertex.Position = vec3(uModel * vec4(aPos, 1.0));
+    vertex.Normal = mat3(transpose(inverse(uModel))) * aNormal;
 	vertex.TexCoord = aTexCoord;
 
-    vertex.LightSpacePosition = uboData.LightSpaceMatrix * vec4(vertex.Position, 1.0);
-	gl_Position = meshUboData.Projection * meshUboData.View * vec4(vertex.Position, 1.0);
+    vertex.LightSpacePosition = uLightSpaceMatrix * vec4(vertex.Position, 1.0);
+	gl_Position = uProjection * uView * vec4(vertex.Position, 1.0);
 }
 
 // type fragment

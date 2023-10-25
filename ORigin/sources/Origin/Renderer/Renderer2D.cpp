@@ -19,7 +19,7 @@ namespace origin {
 			{ ShaderDataType::Float4, "aColor"        },
 			{ ShaderDataType::Float2, "aTexCoord"     },
 			{ ShaderDataType::Float,  "aTexIndex"     },
-			{ ShaderDataType::Float2,  "aTilingFactor" },
+			{ ShaderDataType::Float2, "aTilingFactor" },
 			{ ShaderDataType::Int,    "aEntityID"     }
 			});
 		s_2Ddata.QuadVertexArray->AddVertexBuffer(s_2Ddata.QuadVertexBuffer);

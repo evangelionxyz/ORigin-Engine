@@ -31,3 +31,6 @@
 [submodule "ORigin/vendor/PhysX"]
 	path = ORigin/vendor/PhysX
 	url = https://github.com/NVIDIA-Omniverse/PhysX.git
+[submodule "ORigin/vendor/JoltPhysics"]
+	path = ORigin/vendor/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics.git

@@ -66,10 +66,10 @@ namespace origin {
     m_GameFramebuffer = Framebuffer::Create(gameFramebufferSpec);
 
     m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
-    m_EditorCamera.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+    m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
     // Load Skybox
-    skybox = Skybox::Create("Resources/Skybox");
+    skybox = Skybox::Create("Resources/Skybox/yellow_", ".png");
 
     m_ActiveScene = std::make_shared<Scene>();
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -131,8 +131,8 @@ namespace origin {
       
     m_Framebuffer->ClearAttachment(1, -1);
 
-    if (enableSkybox)
-        skybox->Draw(m_EditorCamera);
+    //if (enableSkybox)
+    skybox->Draw(m_EditorCamera);
 
     switch (m_SceneState)
     {
@@ -207,10 +207,7 @@ namespace origin {
       if (m_SceneState == SceneState::Play)
       {
           if (Entity camera = m_ActiveScene->GetPrimaryCameraEntity())
-          {
-              const glm::mat4& transform = camera.GetComponent<TransformComponent>().GetTransform();
-              Renderer::BeginScene(camera.GetComponent<CameraComponent>().Camera, transform);
-          }
+              Renderer::BeginScene(camera.GetComponent<CameraComponent>().Camera, camera.GetComponent<TransformComponent>());
       }
       else Renderer::BeginScene(m_EditorCamera);
   }
