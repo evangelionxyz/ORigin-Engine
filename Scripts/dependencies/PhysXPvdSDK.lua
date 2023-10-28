@@ -1,7 +1,7 @@
 project "PhysXPvdSDK"
 kind "StaticLib"
 language "C++"
-staticruntime "on"
+staticruntime "off"
 location (vendorProjectFiles)
 targetdir (vendorOutputdir)
 objdir (vendorIntOutputdir)

@@ -2,11 +2,11 @@
 
 -- ORigin Editor Project
 project "ORigin-Editor"
+location "%{wks.location}/ORigin-Editor"
 kind "ConsoleApp"
 language "C++"
 cppdialect "C++17"
 staticruntime "off"
-location "%{wks.location}/ORigin-Editor"
 
 links "ORigin"
 
@@ -47,13 +47,15 @@ includedirs {
     "%{IncludeDir.YAML_CPP}",
     "%{IncludeDir.ASSIMP}",
     "%{IncludeDir.PhysX}",
+    "%{IncludeDir.JoltPhysics}",
     "%{IncludeDir.msdfgen}",
     "%{IncludeDir.msdf_atlas_gen}",
 }
 
 defines {
+    "NV_USE_STATIC_WINCRT",
     "GLFW_INCLUDE_NONE",
-    "_CRT_SECURE_NO_WARNINGS"
+    "_CRT_SECURE_NO_WARNINGS",
 }
 
 filter "system:windows"
@@ -67,6 +69,7 @@ filter "system:windows"
 
 filter "configurations:Debug"
     defines {
+        "PHYSX_CXX_FLAGS_DEBUG",
         "OGN_DEBUG",
         "_DEBUG"
     }

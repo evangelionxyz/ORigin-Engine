@@ -24,6 +24,7 @@ IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["msdf_atlas_gen"] = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen"
 IncludeDir["msdfgen"] = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["PhysX"] = "%{wks.location}/ORigin/vendor/PhysX/physx/include"
+IncludeDir["JoltPhysics"] = "%{wks.location}/ORigin/vendor/JoltPhysics"
 
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
@@ -61,6 +62,7 @@ include "imgui.lua"
 include "yaml-cpp.lua"
 include "box2d.lua"
 include "msdf-atlas-gen.lua"
+include "JoltPhysics.lua"
 group ""
 
 group "PhysX"

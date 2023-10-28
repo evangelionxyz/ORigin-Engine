@@ -1,7 +1,8 @@
 project "PhysXCommon"
 kind "StaticLib"
 language "C++"
-staticruntime "on"
+cppdialect "C++17"
+staticruntime "off"
 location (vendorProjectFiles)
 targetdir (vendorOutputdir)
 objdir (vendorIntOutputdir)

@@ -1,14 +1,13 @@
 project "PhysXFoundation"
 kind "StaticLib"
 language "C++"
-staticruntime "on"
+staticruntime "off"
 location (vendorProjectFiles)
 targetdir (vendorOutputdir)
 objdir (vendorIntOutputdir)
 
 	includedirs {
-		"%{physxDir}/physx/include",
-		"%{physxDir}/physx/source/foundation/include",
+		"%{physxDir}/physx/include"
 	}
 	files { 
 		"%{physxDir}/physx/source/foundation/FdAllocator.cpp",
@@ -33,12 +32,23 @@ objdir (vendorIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		files {"%{physxDir}/physx/source/foundation/src/unix/**.cpp"}
+		files {"%{physxDir}/physx/source/foundation/src/source/**.cpp"}
 		includedirs { "%{physxDir}/physx/source/foundation/include/unix" }
 		
 	filter "system:Windows"
 		systemversion "latest"
-		files {"%{physxDir}/physx/source/foundation/src/windows/**.cpp"}
+		files {
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsAtomic.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsFPU.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsMutex.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsPrintString.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsSList.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsSocket.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsSync.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsThread.cpp",
+			"%{physxDir}/physx/source/foundation/windows/FdWindowsTime.cpp",
+		}
+
 		includedirs { "%{physxDir}/physx/source/foundation/include/windows" }
 
 
