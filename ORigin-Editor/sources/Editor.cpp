@@ -94,11 +94,11 @@ namespace origin {
       dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(Editor::OnMouseButtonPressed));
   }
 
-  void Editor::OnUpdate(Timestep time)
+  void Editor::OnUpdate(Timestep deltaTime)
   {
     m_ActiveScene->OnShadowRender();
 
-    m_Time += time.Seconds();
+    m_Time += deltaTime.Seconds();
     const ImGuiIO& io = ImGui::GetIO();
 
     const bool enableCamera =
@@ -110,7 +110,7 @@ namespace origin {
 
     Renderer2D::ResetStats();
     Renderer3D::ResetStats();
-    InputProcedure(time);
+    InputProcedure(deltaTime);
 
     // Resize
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
@@ -140,18 +140,18 @@ namespace origin {
         m_GizmosType = -1;
         m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
                                         static_cast<uint32_t>(m_SceneViewportSize.y));
-        m_ActiveScene->OnUpdateRuntime(time);
+        m_ActiveScene->OnUpdateRuntime(deltaTime);
         break;
 
     case SceneState::Edit:
-        m_EditorCamera.OnUpdate(time);
-        m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
+        m_EditorCamera.OnUpdate(deltaTime);
+        m_ActiveScene->OnUpdateEditor(deltaTime, m_EditorCamera);
         OnOverlayRenderer();
         break;
 
     case SceneState::Simulate:
-        m_EditorCamera.OnUpdate(time);
-        m_ActiveScene->OnUpdateSimulation(time, m_EditorCamera);
+        m_EditorCamera.OnUpdate(deltaTime);
+        m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
         OnOverlayRenderer();
         break;
     }
@@ -391,10 +391,10 @@ namespace origin {
       OnSceneStop();
 
     m_EditorScene = std::make_shared<Scene>();
-
     m_SceneHierarchy.SetContext(m_EditorScene, true);
 
     m_ActiveScene = m_EditorScene;
+
     m_ScenePath = std::filesystem::path();
   }
 
@@ -438,6 +438,7 @@ namespace origin {
       m_SceneHierarchy.SetContext(m_EditorScene, true);
 
       m_ActiveScene = m_EditorScene;
+
       m_ScenePath = path;
     }
   }

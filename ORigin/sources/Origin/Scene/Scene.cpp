@@ -30,6 +30,8 @@
 
 namespace origin
 {
+	class BoxColliderComponent;
+	class RigidbodyComponent;
 
 	static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
 	{
@@ -328,6 +330,8 @@ namespace origin
 			});
 
 			// Physics
+			m_PhysicsScene->Simulate(deltaTime);
+
 			constexpr int32_t velocityIterations = 6;
 			constexpr int32_t positionIterations = 2;
 
@@ -496,6 +500,9 @@ namespace origin
 			}
 
 			//Physics
+			m_PhysicsScene->Simulate(deltaTime);
+
+
 			constexpr int32_t velocityIterations = 6;
 			constexpr int32_t positionIterations = 2;
 
@@ -577,6 +584,11 @@ namespace origin
 
 	void Scene::OnSimulationStart()
 	{
+		if(!m_PhysicsScene)
+			m_PhysicsScene = PhysicsScene::Create(this);
+
+		m_PhysicsScene->OnSimulationStart();
+
 		OnPhysics2DStart();
 
 		// Scripting
@@ -601,6 +613,7 @@ namespace origin
 	void Scene::OnSimulationStop()
 	{
 		OnPhysics2DStop();
+		m_PhysicsScene->OnSimulationStop();
 		ScriptEngine::OnRuntimeStop();
 
 		// Audio
@@ -950,6 +963,10 @@ namespace origin
 
 	void Scene::OnRuntimeStart()
 	{
+		if(!m_PhysicsScene)
+			m_PhysicsScene = PhysicsScene::Create(this);
+		m_PhysicsScene->OnSimulationStart();
+
 		OnPhysics2DStart();
 
 		// Scripting
@@ -977,6 +994,8 @@ namespace origin
 	void Scene::OnRuntimeStop()
 	{
 		OnPhysics2DStop();
+		m_PhysicsScene->OnSimulationStop();
+
 		ScriptEngine::OnRuntimeStop();
 
 		// Audio
@@ -1074,7 +1093,7 @@ namespace origin
 	void Scene::OnPhysics2DStart()
 	{
 		m_Running = true;
-		m_Box2DWorld = new b2World({0.0f, -9.8f});
+		m_Box2DWorld = new b2World({0.0f, -9.81f});
 
 		m_Box2DContactListener = new Contact2DListener(this);
 		m_Box2DWorld->SetContactListener(m_Box2DContactListener);
@@ -1232,6 +1251,8 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(BoxCollider2DComponent)
 	OGN_REG_COMPONENT(CircleCollider2DComponent)
 	OGN_REG_COMPONENT(ParticleComponent)
+	OGN_REG_COMPONENT(RigidbodyComponent)
+	OGN_REG_COMPONENT(BoxColliderComponent)
 
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)

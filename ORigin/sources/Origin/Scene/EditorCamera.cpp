@@ -107,7 +107,8 @@ namespace origin {
 			// Pivot Camera (rotate based on object)
 			if (m_CameraStyle == Pivot)
 			{
-				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
+
+				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) || Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				{
 					if (mouse.x > wWidth - 2.0f)
 					{
@@ -116,7 +117,7 @@ namespace origin {
 					}
 					else if (mouse.x < 2.0f)
 					{
-						m_InitialMousePosition.x = wWidth-2.0f;
+						m_InitialMousePosition.x = wWidth - 2.0f;
 						Input::SetMousePosition(wWidth - 2.0f, mouse.y);
 					}
 
@@ -130,9 +131,10 @@ namespace origin {
 						m_InitialMousePosition.y = wHeight - 2.0f;
 						Input::SetMousePosition(mouse.x, wHeight - 2.0f);
 					}
-
-					MouseRotate(delta);
 				}
+				
+				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
+					MouseRotate(delta);
 					
 				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);

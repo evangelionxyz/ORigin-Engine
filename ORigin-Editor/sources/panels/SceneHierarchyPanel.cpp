@@ -229,6 +229,8 @@ namespace origin {
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
 			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
 			DisplayAddComponentEntry<LightComponent>("LIGHTING");
+			DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
+			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
 			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
@@ -315,8 +317,30 @@ namespace origin {
 		{
 		});
 
-		
+		DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto& component)
+		{
+				ImGui::Text("Use Gravity"); ImGui::SameLine();
+				ImGui::Checkbox("##UseGravity", &component.UseGravity);
 
+				ImGui::Text("Rotate   "); ImGui::SameLine();
+				ImGui::Checkbox("X", &component.RotateX); ImGui::SameLine();
+				ImGui::Checkbox("Y", &component.RotateY); ImGui::SameLine();
+				ImGui::Checkbox("Z", &component.RotateZ);
+
+				ImGui::Text("Kinematic"); ImGui::SameLine();
+				ImGui::Checkbox("##Kinematic", &component.Kinematic);
+
+				DrawVecControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
+				DrawVec3Control("Center Mass", component.CenterMassPosition);
+
+		});
+
+		DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto& component)
+		{
+				DrawVec3Control("Offset", component.Offset);
+				DrawVec3Control("Size", component.Size);
+		});
+		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
 				static bool creationWindow = false;

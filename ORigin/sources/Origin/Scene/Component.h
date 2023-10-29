@@ -341,10 +341,15 @@ namespace origin
 	{
 	};
 
-	using AllComponents =
-	ComponentGroup<TransformComponent, CameraComponent, AnimationComponent,
-	               AudioComponent, AudioListenerComponent, LightComponent,
-	               SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
-	               CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
-	               Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent>;
+	class RigidbodyComponent;
+	class BoxColliderComponent;
+
+	using AllComponents = ComponentGroup<
+		TransformComponent, CameraComponent, AnimationComponent,
+		AudioComponent, AudioListenerComponent, LightComponent,
+		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
+		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
+		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+		RigidbodyComponent, BoxColliderComponent
+	>;
 }
