@@ -3,6 +3,8 @@
 #include "pch.h"
 #include "EditorCamera.h"
 
+#include "Origin\Core\Application.h"
+
 #include "Origin/IO/Input.h"
 #include "Origin/IO/KeyCodes.h"
 #include "Origin/IO/MouseCodes.h"
@@ -92,10 +94,13 @@ namespace origin {
 	void EditorCamera::OnUpdate(float deltaTime)
 	{
 		m_DeltaTime = deltaTime;
-		
+
 		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 		const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 		m_InitialMousePosition = mouse;
+
+		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
+		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
 
 		if (m_EnableMovement)
 		{
@@ -103,19 +108,45 @@ namespace origin {
 			if (m_CameraStyle == Pivot)
 			{
 				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
+				{
+					if (mouse.x > wWidth - 2.0f)
+					{
+						m_InitialMousePosition.x = 2.0f;
+						Input::SetMousePosition(2.0f, mouse.y);
+					}
+					else if (mouse.x < 2.0f)
+					{
+						m_InitialMousePosition.x = wWidth-2.0f;
+						Input::SetMousePosition(wWidth - 2.0f, mouse.y);
+					}
+
+					if (mouse.y > wHeight - 2.0f)
+					{
+						m_InitialMousePosition.y = 2.0f;
+						Input::SetMousePosition(mouse.x, 2.0f);
+					}
+					else if (mouse.y < 2.0f)
+					{
+						m_InitialMousePosition.y = wHeight - 2.0f;
+						Input::SetMousePosition(mouse.x, wHeight - 2.0f);
+					}
+
 					MouseRotate(delta);
+				}
+					
 				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);
 				
-				float moveSpeed = 10.0f;
-				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection()
-					* m_Distance, deltaTime * moveSpeed);
+				float moveSpeed = 6.0f;
+
+				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance,
+					deltaTime * moveSpeed);
 			}
 			
 			// AWSD Keyboard
 			else if (m_CameraStyle == FreeMove)
 			{
-				auto velocity = glm::vec3(0.0f);
+				glm::vec3 velocity(0.0f);
 				auto movement = m_Position;
 				
 				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
@@ -136,7 +167,12 @@ namespace origin {
 				m_Position = glm::lerp(glm::vec3(0.0f), movement, deltaTime * m_MoveSpeed);
 			}
 		}
+
+
 		UpdateView();
+
+		
+
 	}
 
 	void EditorCamera::OnEvent(Event& e)

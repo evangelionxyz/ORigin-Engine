@@ -17,5 +17,6 @@ namespace origin
 		static glm::vec2 GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();
+		static void SetMousePosition(float x, float y);
 	};
 }

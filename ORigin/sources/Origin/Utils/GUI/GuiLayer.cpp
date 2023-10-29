@@ -87,7 +87,7 @@ namespace origin {
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		float fontSize = 16.0f;
+		float fontSize = 13.0f;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 
 		ImGuiStyle& style = ImGui::GetStyle();

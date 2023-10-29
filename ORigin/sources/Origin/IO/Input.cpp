@@ -38,4 +38,10 @@ namespace origin
 	{
 		return GetMousePosition().y;
 	}
+
+	void Input::SetMousePosition(float x, float y)
+	{
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		glfwSetCursorPos(window, (double)x, (double)y);
+	}
 }
