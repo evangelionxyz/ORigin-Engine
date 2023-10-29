@@ -69,7 +69,7 @@ namespace origin {
     m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
     // Load Skybox
-    skybox = Skybox::Create("Resources/Skybox/yellow_", ".png");
+    skybox = Skybox::Create("Resources/Skybox/", ".jpg");
 
     m_ActiveScene = std::make_shared<Scene>();
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
