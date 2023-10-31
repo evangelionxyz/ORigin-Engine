@@ -32,6 +32,7 @@ namespace origin
 {
 	class BoxColliderComponent;
 	class RigidbodyComponent;
+	class SphereColliderComponent;
 
 	static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
 	{
@@ -48,6 +49,9 @@ namespace origin
 
 	Scene::Scene()
 	{
+		if (!m_PhysicsScene)
+			m_PhysicsScene = PhysicsScene::Create(this);
+
 		m_CameraIcon = Renderer::GetGTexture("CameraIcon");
 		m_LightingIcon = Renderer::GetGTexture("LightingIcon");
 		m_AudioIcon = Renderer::GetGTexture("AudioIcon");
@@ -584,11 +588,7 @@ namespace origin
 
 	void Scene::OnSimulationStart()
 	{
-		if(!m_PhysicsScene)
-			m_PhysicsScene = PhysicsScene::Create(this);
-
 		m_PhysicsScene->OnSimulationStart();
-
 		OnPhysics2DStart();
 
 		// Scripting
@@ -963,10 +963,7 @@ namespace origin
 
 	void Scene::OnRuntimeStart()
 	{
-		if(!m_PhysicsScene)
-			m_PhysicsScene = PhysicsScene::Create(this);
 		m_PhysicsScene->OnSimulationStart();
-
 		OnPhysics2DStart();
 
 		// Scripting
@@ -1253,6 +1250,7 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(ParticleComponent)
 	OGN_REG_COMPONENT(RigidbodyComponent)
 	OGN_REG_COMPONENT(BoxColliderComponent)
+	OGN_REG_COMPONENT(SphereColliderComponent)
 
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)

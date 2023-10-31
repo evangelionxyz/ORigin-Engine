@@ -23,6 +23,8 @@ namespace origin {
 
 	PhysXScene::~PhysXScene()
 	{
+		m_PhysXScene->release();
+		m_PhysXScene = nullptr;
 	}
 
 	void PhysXScene::OnSimulationStart()
@@ -30,10 +32,15 @@ namespace origin {
 		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
 		{
 			Entity entity = { id, m_Context };
-			if (entity.GetComponent<BoxColliderComponent>().Rigidbody == nullptr)
-			{
+			if (!entity.GetComponent<BoxColliderComponent>().Rigidbody)
 				entity.GetComponent<BoxColliderComponent>().Create(entity, this);
-			}
+		}
+
+		for (auto& id : m_Context->m_Registry.view<SphereColliderComponent>())
+		{
+			Entity entity = { id, m_Context };
+			if (!entity.GetComponent<SphereColliderComponent>().Rigidbody)
+				entity.GetComponent<SphereColliderComponent>().Create(entity, this);
 		}
 	}
 
@@ -45,14 +52,23 @@ namespace origin {
 			entity.GetComponent<BoxColliderComponent>().Destroy();
 		}
 
+		for (auto& id : m_Context->m_Registry.view<SphereColliderComponent>())
+		{
+			Entity entity = { id, m_Context };
+			entity.GetComponent<SphereColliderComponent>().Destroy();
+		}
+
 		for (auto& id : m_Context->m_Registry.view<RigidbodyComponent>())
 		{
 			Entity entity = { id, m_Context };
 			auto& body = entity.GetComponent<RigidbodyComponent>().Body;
 
-			m_PhysXScene->removeActor(*((physx::PxActor*)body), false);
-			((physx::PxActor*)body)->isReleasable() ? ((physx::PxActor*)body)->release() : 0;
-			body = nullptr;
+			if (body)
+			{
+				m_PhysXScene->removeActor(*((physx::PxActor*)body), false);
+				((physx::PxActor*)body)->isReleasable() ? ((physx::PxActor*)body)->release() : 0;
+				body = nullptr;
+			}
 		}
 	}
 
@@ -86,7 +102,7 @@ namespace origin {
 	{
 		physx::PxPhysics* physics = PhysXAPI::GetPhysics();
 
-		physx::PxTransform transform = physx::PxTransform(Utils::ToPhysXVec3(position));
+		physx::PxTransform transform = physx::PxTransform(Utils::ToPhysXVec3(position), Utils::ToPhysXQuat(rot));
 
 		physx::PxRigidActor* actor;
 		actor = physics->createRigidDynamic(transform);

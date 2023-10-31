@@ -67,7 +67,7 @@ namespace origin {
     float m_Time = 0.0f;
 
     bool drawLineMode = false;
-    bool m_VisualizeCollider = false;
+    bool m_VisualizeCollider = true;
     bool m_SceneViewportHovered;
     bool m_SceneViewportFocused;
 
@@ -106,9 +106,8 @@ namespace origin {
     static Editor* s_Instance;
 
     std::shared_ptr<Skybox> skybox;
-    float skyBlur = 0.005f;
-    bool enableSkybox = false;
-    glm::vec4 modelColor = glm::vec4(1.0f);
+    float skyBlur = 0.0f;
+    bool enableSkybox = true;
     float m_CameraFov = 45.0f;
 
     // Scene Viewport

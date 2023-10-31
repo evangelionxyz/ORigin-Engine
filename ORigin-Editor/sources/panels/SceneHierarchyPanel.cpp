@@ -225,17 +225,18 @@ namespace origin {
 
 			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");
-			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
+			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER 2D");
+			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
+			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
 			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
 			DisplayAddComponentEntry<LightComponent>("LIGHTING");
 			DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
 			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
-			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
-			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
-			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
-			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
-			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRCLE COLLIDER 2D");
+			DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
+			DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
+			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
 
 			ImGui::EndPopup();
 		}
@@ -337,9 +338,21 @@ namespace origin {
 
 		DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto& component)
 		{
-				DrawVec3Control("Offset", component.Offset);
-				DrawVec3Control("Size", component.Size);
+				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
+				DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
+				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 		});
+
+		DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto& component)
+			{
+				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
+				DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
+				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+			});
 		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
@@ -828,9 +841,9 @@ namespace origin {
 				
 				ImGui::InputTextMultiline("Text String", &component.TextString);
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-
-				DrawVecControl("Kerning", &component.Kerning, 0.5f);
-				DrawVecControl("Line Spacing", &component.LineSpacing, 1.0f);
+				
+				DrawVecControl("Kerning", &component.Kerning, 0.01f);
+				DrawVecControl("Line Spacing", &component.LineSpacing, 0.01f);
 			});
 
 		DrawComponent<ParticleComponent>("PARTICLE", entity, [](auto& component)
@@ -1048,7 +1061,7 @@ namespace origin {
 			{
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1.0f, 16.0f, "Group Index %d");
 
-				DrawVec2Control("Offset", component.Offset, 0.01f, 0.5f);
+				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 				DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
 				float width = 118.0f;

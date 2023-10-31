@@ -399,6 +399,56 @@ namespace origin
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
 
+		if (entity.HasComponent<BoxColliderComponent>())
+		{
+			out << YAML::Key << "BoxColliderComponent";
+			out << YAML::BeginMap; // BoxColliderComponent
+			const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			out << YAML::Key << "Size" << YAML::Value << boxCollider.Size;
+			out << YAML::Key << "Offset" << YAML::Value << boxCollider.Offset;
+			out << YAML::Key << "Restitution" << YAML::Value << boxCollider.Restitution;
+			out << YAML::Key << "StaticFriction" << YAML::Value << boxCollider.StaticFriction;
+			out << YAML::Key << "DynamicFriction" << YAML::Value << boxCollider.DynamicFriction;
+
+			out << YAML::EndMap; // !BoxColliderComponent
+		}
+
+		if (entity.HasComponent<SphereColliderComponent>())
+		{
+			out << YAML::Key << "SphereColliderComponent";
+			out << YAML::BeginMap; // SphereColliderComponent
+			const auto& circlerCollider = entity.GetComponent<SphereColliderComponent>();
+			out << YAML::Key << "Radius" << YAML::Value << circlerCollider.Radius;
+			out << YAML::Key << "Offset" << YAML::Value << circlerCollider.Offset;
+			out << YAML::Key << "Restitution" << YAML::Value << circlerCollider.Restitution;
+			out << YAML::Key << "StaticFriction" << YAML::Value << circlerCollider.StaticFriction;
+			out << YAML::Key << "DynamicFriction" << YAML::Value << circlerCollider.DynamicFriction;
+
+			out << YAML::EndMap; // !SphereColliderComponent
+		}
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			out << YAML::Key << "RigidbodyComponent";
+			out << YAML::BeginMap; // RigidbodyComponent
+			const auto& rigidbody = entity.GetComponent<RigidbodyComponent>();
+
+			out << YAML::Key << "Mass" << YAML::Value << rigidbody.Mass;
+			out << YAML::Key << "CenterMassPosition" << YAML::Value << rigidbody.CenterMassPosition;
+
+			out << YAML::Key << "UseGravity" << YAML::Value << rigidbody.UseGravity;
+			out << YAML::Key << "RotateX" << YAML::Value << rigidbody.RotateX;
+			out << YAML::Key << "RotateY" << YAML::Value << rigidbody.RotateY;
+			out << YAML::Key << "RotateZ" << YAML::Value << rigidbody.RotateZ;
+			out << YAML::Key << "MoveX" << YAML::Value << rigidbody.MoveX;
+			out << YAML::Key << "MoveY" << YAML::Value << rigidbody.MoveY;
+			out << YAML::Key << "MoveZ" << YAML::Value << rigidbody.MoveZ;
+			out << YAML::Key << "Kinematic" << YAML::Value << rigidbody.Kinematic;
+			out << YAML::Key << "RetainAcceleration" << YAML::Value << rigidbody.RetainAcceleration;
+
+			out << YAML::EndMap; // !Rigidbody
+		}
+
 		if (entity.HasComponent<TextComponent>())
 		{
 			out << YAML::Key << "TextComponent";
@@ -920,6 +970,44 @@ namespace origin
 						// Create The Model After
 						sMesh.Model = Model::Create(modelPath.string(), sMesh.Material);
 					}
+				}
+
+				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
+				{
+					auto& boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
+					boxCollider.Size = boxColliderComponent["Size"].as<glm::vec3>();
+					boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
+					boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
+					boxCollider.StaticFriction = boxColliderComponent["StaticFriction"].as<float>();
+					boxCollider.DynamicFriction = boxColliderComponent["DynamicFriction"].as<float>();
+				}
+
+				if (YAML::Node sphereColliderComponent = entity["SpherColliderComponent"])
+				{
+					auto& boxCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
+					boxCollider.Radius = sphereColliderComponent["Radius"].as<float>();
+					boxCollider.Offset = sphereColliderComponent["Offset"].as<glm::vec3>();
+					boxCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
+					boxCollider.StaticFriction = sphereColliderComponent["StaticFriction"].as<float>();
+					boxCollider.DynamicFriction = sphereColliderComponent["DynamicFriction"].as<float>();
+				}
+
+				if (YAML::Node rigidbodyComponent = entity["RigidbodyComponent"])
+				{
+					auto& rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
+
+					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
+					rigidbody.CenterMassPosition = rigidbodyComponent["CenterMassPosition"].as<glm::vec3>();
+					rigidbody.UseGravity = rigidbodyComponent["UseGravity"].as<bool>();
+					rigidbody.RotateX = rigidbodyComponent["RotateX"].as<bool>();
+					rigidbody.RotateY = rigidbodyComponent["RotateY"].as<bool>();
+					rigidbody.RotateZ = rigidbodyComponent["RotateZ"].as<bool>();
+					rigidbody.MoveX = rigidbodyComponent["MoveX"].as<bool>();
+					rigidbody.MoveY = rigidbodyComponent["MoveY"].as<bool>();
+					rigidbody.MoveZ = rigidbodyComponent["MoveZ"].as<bool>();
+					rigidbody.Kinematic = rigidbodyComponent["Kinematic"].as<bool>();
+					rigidbody.RetainAcceleration = rigidbodyComponent["RetainAcceleration"].as<bool>();
+
 				}
 
 				if (YAML::Node textComponent = entity["TextComponent"])

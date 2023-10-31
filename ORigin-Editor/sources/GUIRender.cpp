@@ -201,7 +201,7 @@ namespace origin {
 			if (ImGui::SliderFloat("FOV", &m_CameraFov, 0.0f, 90.0f))
 				m_EditorCamera.SetFov(m_CameraFov);
 
-			ImGui::Checkbox("Visualize 2D Colliders", &m_VisualizeCollider);
+			ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
 
 			ImGui::Separator();
 			ImGui::Text("Skybox");

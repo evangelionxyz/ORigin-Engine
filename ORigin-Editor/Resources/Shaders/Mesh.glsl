@@ -81,7 +81,7 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
     vec3 lightDir = normalize(lightDirection - vertex.Position);
 
     // bias with max 0.05 and min 0.005
-    float bias = max(material.Bias * (1.0 - dot(normal, lightDir)), 0.0001);
+    float bias = max(material.Bias * (1.0 - dot(normal, lightDir)), 0.000001);
     vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
     float shadow = 0.0;
 

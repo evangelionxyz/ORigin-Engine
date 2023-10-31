@@ -29,15 +29,23 @@
 
 namespace origin
 {
-	struct IDComponent
+	class Component
 	{
+	public:
+		virtual void Destroy() = 0;
+	};
+
+	class IDComponent
+	{
+	public:
 		UUID ID;
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
 	};
 
-	struct TagComponent
+	class TagComponent
 	{
+	public:
 		std::string Tag;
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
@@ -49,15 +57,17 @@ namespace origin
 
 	class Animation;
 
-	struct AnimationComponent
+	class AnimationComponent
 	{
+	public:
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent&) = default;
 		AnimationState State;
 	};
 
-	struct AudioListenerComponent
+	class AudioListenerComponent
 	{
+	public:
 		AudioListener Listener;
 		bool Enable = true;
 		AudioListenerComponent() = default;
@@ -66,8 +76,9 @@ namespace origin
 
 	class Audio;
 
-	struct AudioComponent
+	class AudioComponent
 	{
+	public:
 		std::shared_ptr<Audio> Audio;
 		std::string Name = "Audio";
 
@@ -84,8 +95,9 @@ namespace origin
 		AudioComponent(const AudioComponent&) = default;
 	};
 
-	struct ParticleComponent
+	class ParticleComponent
 	{
+	public:
 		ParticleSystem Particle;
 
 		glm::vec3 Velocity = glm::vec3(0.0f);
@@ -106,8 +118,9 @@ namespace origin
 		ParticleComponent(const ParticleComponent&) = default;
 	};
 
-	struct StaticMeshComponent
+	class StaticMeshComponent
 	{
+	public:
 		std::shared_ptr<Material> Material;
 		std::shared_ptr<Model> Model;
 
@@ -115,8 +128,9 @@ namespace origin
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
 
-	struct TextComponent
+	class TextComponent
 	{
+	public:
 		std::string TextString;
 		std::shared_ptr<Font> FontAsset;
 
@@ -125,8 +139,9 @@ namespace origin
 		float LineSpacing = 0.0f;
 	};
 
-	struct TransformComponent
+	class TransformComponent
 	{
+	public:
 		glm::vec3 Translation = glm::vec3(0.0f);
 		glm::vec3 Rotation = glm::vec3(0.0f);
 		glm::vec3 Scale = glm::vec3(1.0f);
@@ -171,8 +186,9 @@ namespace origin
 		}
 	};
 
-	struct SpriteRendererComponent
+	class SpriteRendererComponent
 	{
+	public:
 		glm::vec4 Color = glm::vec4(1.0f);
 		std::shared_ptr<Texture2D> Texture;
 
@@ -188,8 +204,9 @@ namespace origin
 		}
 	};
 
-	struct SpriteRenderer2DComponent
+	class SpriteRenderer2DComponent
 	{
+	public:
 		glm::vec4 Color = glm::vec4(1.0f);
 		std::shared_ptr<Texture2D> Texture;
 		glm::vec2 TillingFactor = glm::vec2(1.0f);
@@ -210,16 +227,18 @@ namespace origin
 	};
 
 	class Lighting;
-	struct LightComponent
+	class LightComponent
 	{
+	public:
 		std::shared_ptr<Lighting> Light;
 
 		LightComponent() = default;
 		LightComponent(const LightComponent&) = default;
 	};
 
-	struct CircleRendererComponent
+	class CircleRendererComponent
 	{
+	public:
 		glm::vec4 Color = glm::vec4(1.0f);
 		float Thickness = 1.0f;
 		float Fade = 0.005f;
@@ -228,8 +247,9 @@ namespace origin
 		CircleRendererComponent(const CircleRendererComponent&) = default;
 	};
 
-	struct CameraComponent
+	class CameraComponent
 	{
+	public:
 		SceneCamera Camera;
 		bool Primary = true;
 		bool FixedAspectRatio = false;
@@ -238,17 +258,18 @@ namespace origin
 		CameraComponent(const CameraComponent&) = default;
 	};
 
-	struct ScriptComponent
+	class ScriptComponent
 	{
+	public:
 		std::string ClassName = "None";
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
 	};
 
 	class ScriptableEntity;
-
-	struct NativeScriptComponent
+	class NativeScriptComponent
 	{
+	public:
 		ScriptableEntity* Instance;
 		ScriptableEntity* (*InstantiateScript)();
 
@@ -259,15 +280,16 @@ namespace origin
 		{
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nsc)
-			{
-				delete nsc->Instance;
-				nsc->Instance = nullptr;
-			};
+				{
+					delete nsc->Instance;
+					nsc->Instance = nullptr;
+				};
 		}
 	};
 
-	struct Rigidbody2DComponent
+	class Rigidbody2DComponent
 	{
+	public:
 		void* RuntimeBody = nullptr;
 
 		enum class BodyType { Static = 0, Dynamic, Kinematic };
@@ -294,8 +316,9 @@ namespace origin
 		Rigidbody2DComponent(const Rigidbody2DComponent&) = default;
 	};
 
-	struct BoxCollider2DComponent
+	class BoxCollider2DComponent
 	{
+	public:
 		// All fixtures with the same group index always collide(positive index)
 		// or never collide(negative index)
 		int Group = 1;
@@ -315,8 +338,9 @@ namespace origin
 		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 	};
 
-	struct CircleCollider2DComponent
+	class CircleCollider2DComponent
 	{
+	public:
 		// All fixtures with the same group index always collide(positive index)
 		// or never collide(negative index)
 		int Group = 1;
@@ -343,6 +367,7 @@ namespace origin
 
 	class RigidbodyComponent;
 	class BoxColliderComponent;
+	class SphereColliderComponent;
 
 	using AllComponents = ComponentGroup<
 		TransformComponent, CameraComponent, AnimationComponent,
@@ -350,6 +375,6 @@ namespace origin
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
-		RigidbodyComponent, BoxColliderComponent
+		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent
 	>;
 }

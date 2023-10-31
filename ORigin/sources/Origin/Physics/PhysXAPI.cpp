@@ -16,7 +16,7 @@ namespace origin {
 
 		physx::PxQuat ToPhysXQuat(const glm::quat& quat)
 		{
-			return physx::PxQuat{ quat.x, quat.y, quat.z, quat.z };
+			return physx::PxQuat{ quat.x, quat.y, quat.z, quat.w };
 		}
 
 		glm::vec3 FromPhysXVec3(const physx::PxVec3& vec)
@@ -26,7 +26,7 @@ namespace origin {
 
 		glm::quat FromPhysXQuat(const physx::PxQuat quat)
 		{
-			return glm::quat{ quat.x, quat.y, quat.z, quat.w };
+			return glm::quat{ quat.w, quat.x, quat.y, quat.z };
 		}
 
 		glm::vec3 FromPhysXQuatToVec3(const physx::PxQuat& quat)
