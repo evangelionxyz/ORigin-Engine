@@ -23,7 +23,8 @@ namespace origin
 
 		virtual ~OpenGLModel() override;
 		void Draw() override;
-		void Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID) override;
+		void Draw(const glm::mat4& modelTransform, const Camera& camera, int entityID) override;
+		void Draw(const glm::mat4& modelTransform, const Camera& camera, const glm::mat4& cameraTransform, int entityID) override;
 		const std::string& GetFilepath() const override { return m_Filepath; }
 
 	private:

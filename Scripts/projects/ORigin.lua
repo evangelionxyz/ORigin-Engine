@@ -44,8 +44,10 @@ includedirs {
     "%{IncludeDir.YAML_CPP}",
     "%{IncludeDir.VulkanSDK}",
     "%{IncludeDir.ASSIMP}",
+    "%{IncludeDir.PhysX}",
+    "%{IncludeDir.JoltPhysics}",
     "%{IncludeDir.msdfgen}",
-    "%{IncludeDir.msdf_atlas_gen}"
+    "%{IncludeDir.msdf_atlas_gen}",
 }
 
 defines {
@@ -62,10 +64,18 @@ links {
     "msdfgen",
     "yaml-cpp",
     "opengl32.lib",
+    "PhysX",
+    "PhysXCommon",
+    "PhysXFoundation",
+    "PhysXPvdSDK",
+    "PhysXExtensions",
+    "PhysXCooking",
+    "PhysXCharacterKinematic",
+
     "%{Library.Vulkan}",
     "%{Library.FMOD}",
     "%{Library.Assimp}",
-    "%{Library.MONO}"
+    "%{Library.MONO}",
 }
 
 filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
@@ -85,6 +95,7 @@ links
 
 filter "configurations:Debug"
     defines {
+        "PX_PHYSX_STATIC_LIB",
         "OGN_DEBUG",
         "_DEBUG"
     }
@@ -100,6 +111,7 @@ filter "configurations:Debug"
 
 filter "configurations:Release"
     defines {
+        "PX_PHYSX_STATIC_LIB",
         "OGN_RELEASE"
     }
     runtime "Release"
@@ -113,6 +125,7 @@ filter "configurations:Release"
 
 filter "configurations:Dist"
     defines  {
+        "PX_PHYSX_STATIC_LIB",
         "OGN_DIST"
     }
     runtime "Release"

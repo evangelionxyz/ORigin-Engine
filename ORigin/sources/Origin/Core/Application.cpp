@@ -3,6 +3,9 @@
 #include "pch.h"
 #include "Application.h"
 #include "Origin\Audio\Audio.h"
+
+#include "Origin\Physics\Physics.h"
+
 #include "Origin\Scripting\ScriptEngine.h"
 #include "imgui.h"
 
@@ -71,6 +74,7 @@ namespace origin {
 		m_Window->OnUpdate();
 
 		Renderer::Init();
+		Physics::Init();
 		AudioEngine::Init();
 
 		RenderCommand::Clear();
@@ -85,7 +89,9 @@ namespace origin {
 	{
 		Window::GLFWShutdown();
 		AudioEngine::Shutdown();
+		Physics::Shutdown();
 		Renderer::Shutdown();
+
 		s_Instance = nullptr;
 	}
 

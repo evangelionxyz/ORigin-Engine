@@ -1,14 +1,14 @@
 -- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 project "Box2D"
-   location (vendorProjectFiles)
-   kind "StaticLib"
+  location (vendorProjectFiles)
+  kind "StaticLib"
 	language "C++"
 	cppdialect "C++11"
 	staticruntime "off"
 
-   targetdir (vendorOutputdir)
-   objdir (vendorIntOutputdir)
+	targetdir (vendorOutputdir)
+	objdir (vendorIntOutputdir)
 
    files
 	{

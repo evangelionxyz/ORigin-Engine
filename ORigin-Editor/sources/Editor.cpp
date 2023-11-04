@@ -13,6 +13,10 @@
 #include <imgui_internal.h>
 #include <filesystem>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
+
 namespace origin {
 
   Editor* Editor::s_Instance = nullptr;
@@ -66,10 +70,12 @@ namespace origin {
     m_GameFramebuffer = Framebuffer::Create(gameFramebufferSpec);
 
     m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
-    m_EditorCamera.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+    //m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
+    m_EditorCamera.SetPosition(glm::vec3(0.0f, 5.0f, 10.0f));
+    m_EditorCamera.SetYaw(-10.0f);
 
     // Load Skybox
-    skybox = Skybox::Create("Resources/Skybox");
+    skybox = Skybox::Create("Resources/Skybox/", ".jpg");
 
     m_ActiveScene = std::make_shared<Scene>();
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -94,11 +100,11 @@ namespace origin {
       dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(Editor::OnMouseButtonPressed));
   }
 
-  void Editor::OnUpdate(Timestep time)
+  void Editor::OnUpdate(Timestep deltaTime)
   {
     m_ActiveScene->OnShadowRender();
 
-    m_Time += time.Seconds();
+    m_Time += deltaTime.Seconds();
     const ImGuiIO& io = ImGui::GetIO();
 
     const bool enableCamera =
@@ -110,7 +116,7 @@ namespace origin {
 
     Renderer2D::ResetStats();
     Renderer3D::ResetStats();
-    InputProcedure(time);
+    InputProcedure(deltaTime);
 
     // Resize
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
@@ -132,7 +138,7 @@ namespace origin {
     m_Framebuffer->ClearAttachment(1, -1);
 
     if (enableSkybox)
-        skybox->Draw(m_EditorCamera);
+      skybox->Draw(m_EditorCamera);
 
     switch (m_SceneState)
     {
@@ -140,18 +146,18 @@ namespace origin {
         m_GizmosType = -1;
         m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
                                         static_cast<uint32_t>(m_SceneViewportSize.y));
-        m_ActiveScene->OnUpdateRuntime(time);
+        m_ActiveScene->OnUpdateRuntime(deltaTime);
         break;
 
     case SceneState::Edit:
-        m_EditorCamera.OnUpdate(time);
-        m_ActiveScene->OnUpdateEditor(time, m_EditorCamera);
+        m_EditorCamera.OnUpdate(deltaTime);
+        m_ActiveScene->OnUpdateEditor(deltaTime, m_EditorCamera);
         OnOverlayRenderer();
         break;
 
     case SceneState::Simulate:
-        m_EditorCamera.OnUpdate(time);
-        m_ActiveScene->OnUpdateSimulation(time, m_EditorCamera);
+        m_EditorCamera.OnUpdate(deltaTime);
+        m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
         OnOverlayRenderer();
         break;
     }
@@ -207,10 +213,7 @@ namespace origin {
       if (m_SceneState == SceneState::Play)
       {
           if (Entity camera = m_ActiveScene->GetPrimaryCameraEntity())
-          {
-              const glm::mat4& transform = camera.GetComponent<TransformComponent>().GetTransform();
-              Renderer::BeginScene(camera.GetComponent<CameraComponent>().Camera, transform);
-          }
+              Renderer::BeginScene(camera.GetComponent<CameraComponent>().Camera, camera.GetComponent<TransformComponent>());
       }
       else Renderer::BeginScene(m_EditorCamera);
   }
@@ -225,43 +228,81 @@ namespace origin {
 
       if (m_VisualizeCollider)
       {
-          // Circle Collider Visualizer
-          {
-              const auto& view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-              for (auto entity : view)
-              {
-                  const auto& [tc, cc2d] = view.get<TransformComponent, CircleCollider2DComponent>(entity);
+        // Circle Collider Visualizer
+				const auto& circle = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+				for (auto entity : circle)
+				{
+					const auto& [tc, cc2d] = circle.get<TransformComponent, CircleCollider2DComponent>(entity);
 
-                  glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, -projectionRender.z);
-                  glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
+					glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, -projectionRender.z);
+					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
 
-                  glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-                      * glm::scale(glm::mat4(1.0f), scale);
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+						* glm::scale(glm::mat4(1.0f), scale);
 
-                  Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f);
-              }
-          }
+          
+					Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f);
+				}
 
-          // Quad Collider Visualizer
-          {
-              const auto& view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-              for (auto entity : view)
-              {
-                  const auto& [tc, bc2d] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+        // Quad Collider Visualizer
+				const auto& quad = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+				for (auto entity : quad)
+				{
+					const auto& [tc, bc2d] = quad.get<TransformComponent, BoxCollider2DComponent>(entity);
 
-                  glm::vec3 scale = tc.Scale * glm::vec3(bc2d.Size * 2.0f, 1.0f);
+          glm::vec3 pos = glm::vec3(glm::vec2(tc.Translation) + bc2d.Offset, projectionRender.z);
+					glm::vec3 scale = tc.Scale * glm::vec3(bc2d.Size * 2.0f, 1.0f);
 
-                  glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.Translation)
-                      * glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
-                      * glm::translate(glm::mat4(1.0f), glm::vec3(bc2d.Offset, projectionRender.z))
-                      * glm::scale(glm::mat4(1.0f), scale);
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
+						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+						* glm::scale(glm::mat4(1.0f), scale);
 
-                  Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-              }
-          }
+					Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+				}
+
+        float lineWidth = 0;
+				const auto& box = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
+				for (auto entity : box)
+				{
+					const auto& [tc, bc] = box.get<TransformComponent, BoxColliderComponent>(entity);
+
+          glm::vec3 scale = tc.Scale * glm::vec3(bc.Size * 2.0f);
+
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + bc.Offset))
+						* glm::toMat4(glm::quat(tc.Rotation))
+						* glm::scale(glm::mat4(1.0f), scale * 2.0f);
+
+					lineWidth = glm::clamp(glm::length(tc.Translation + m_EditorCamera.GetPosition()), 2.5f, 3.0f);
+					Renderer3D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+				}
+        RenderCommand::SetLineWidth(lineWidth);
+        Renderer2D::EndScene();
+
+				const auto& sphere = m_ActiveScene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
+				for (auto entity : sphere)
+				{
+					const auto& [tc, cc] = sphere.get<TransformComponent, SphereColliderComponent>(entity);
+          glm::vec3 scale = tc.Scale * glm::vec3(cc.Radius * 2.0f);
+
+					lineWidth = glm::clamp(glm::length(tc.Translation + m_EditorCamera.GetPosition()), 0.005f, 0.05f);
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
+						* glm::rotate(glm::mat4(1.0f), tc.Rotation.x, glm::vec3(1, 0, 0))
+						* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0, 1, 0))
+						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0, 0, 1))
+						* glm::scale(glm::mat4(1.0f), glm::vec3(scale * 2.1f));
+					Renderer2D::DrawCircle(transform, glm::vec4(0.7f, 0.0f, 1.0f, 1.0f), lineWidth);
+
+					transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
+						* glm::rotate(glm::mat4(1.0f), tc.Rotation.x + glm::radians(90.0f), glm::vec3(1, 0, 0))
+						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0, 1, 0))
+						* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0, 0, 1))
+						* glm::scale(glm::mat4(1.0f), glm::vec3(scale * 2.1f));
+					Renderer2D::DrawCircle(transform, glm::vec4(0.7f, 0.0f, 1.0f, 1.0f), lineWidth);
+				}
+        RenderCommand::SetLineWidth(lineWidth);
+        Renderer2D::EndScene();
       }
-      RenderCommand::SetLineWidth(2.3f);
-      Renderer2D::EndScene();
+     
 
       // Visualizing Selecting Entity
       if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
@@ -394,10 +435,10 @@ namespace origin {
       OnSceneStop();
 
     m_EditorScene = std::make_shared<Scene>();
-
     m_SceneHierarchy.SetContext(m_EditorScene, true);
 
     m_ActiveScene = m_EditorScene;
+
     m_ScenePath = std::filesystem::path();
   }
 
@@ -441,6 +482,7 @@ namespace origin {
       m_SceneHierarchy.SetContext(m_EditorScene, true);
 
       m_ActiveScene = m_EditorScene;
+
       m_ScenePath = path;
     }
   }

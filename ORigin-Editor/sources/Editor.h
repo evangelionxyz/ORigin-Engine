@@ -6,6 +6,8 @@
 #include "panels\SceneHierarchyPanel.h"
 #include "panels\ContentBrowserPanel.h"
 
+#include "Origin\Physics\PhysicsScene.h"
+
 #include <ImGuizmo.h>
 #include <ImSequencer.h>
 
@@ -28,6 +30,7 @@ namespace origin {
     SceneState m_SceneState = SceneState::Edit;
     std::filesystem::path m_ScenePath, m_ProjectPath;
     std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
+
     glm::vec4 m_GridColor = glm::vec4(0.8f, 0.8f, 0.8f, 0.31f);
     int m_GridSize = 10;
 
@@ -64,7 +67,7 @@ namespace origin {
     float m_Time = 0.0f;
 
     bool drawLineMode = false;
-    bool m_VisualizeCollider = false;
+    bool m_VisualizeCollider = true;
     bool m_SceneViewportHovered;
     bool m_SceneViewportFocused;
 
@@ -103,9 +106,8 @@ namespace origin {
     static Editor* s_Instance;
 
     std::shared_ptr<Skybox> skybox;
-    float skyBlur = 0.005f;
-    bool enableSkybox = false;
-    glm::vec4 modelColor = glm::vec4(1.0f);
+    float skyBlur = 0.0f;
+    bool enableSkybox = true;
     float m_CameraFov = 45.0f;
 
     // Scene Viewport

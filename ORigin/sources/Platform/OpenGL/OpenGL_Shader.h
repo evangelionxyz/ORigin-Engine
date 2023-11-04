@@ -10,13 +10,15 @@ namespace origin
   {
     NONE = -1,
     VERTEX,
-    FRAGMENT
+    FRAGMENT,
+    GEOMTERY
   };
 
   struct ShaderProgramSources 
   {
     std::string VertexSources;
     std::string FragmentSources;
+    std::string GeometrySources;
   };
 
   class OpenGLShader : public Shader
@@ -24,6 +26,7 @@ namespace origin
   public:
     OpenGLShader(const std::string& name, const std::string& filepath);
     OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+    OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc);
     OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv = false);
 
     ~OpenGLShader();
@@ -125,7 +128,7 @@ namespace origin
 
     ShaderProgramSources ParseShader(const std::string& filePath);
     GLuint CompileShader(GLuint type, const std::string& source);
-    GLuint CreateProgram(const std::string& vertexShader, std::string& fragmentShader);
+    GLuint CreateProgram(const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc);
     int GetUniformLocation(const std::string& name);
   };
 }

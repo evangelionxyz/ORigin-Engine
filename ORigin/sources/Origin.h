@@ -32,6 +32,9 @@
 #include "Origin\Renderer\SubTexture2D.h"
 #include "Origin\Renderer\Framebuffer.h"
 
+#include "Origin\Physics\Collider.h"
+#include "Origin\Physics\RigidbodyComponent.h"
+
 #include "Origin\Scene\Entity.h"
 #include "Origin\Scene\ScriptableEntity.h"
 #include "Origin\Scene\Scene.h"

@@ -33,9 +33,22 @@ namespace origin {
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:			return nullptr;
-			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLShader>(name, vertexSrc, fragmentSrc);
+		case RendererAPI::API::None:			return nullptr;
+		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLShader>(name, vertexSrc, fragmentSrc);
 		}
+
+		OGN_CORE_ASSERT(false, "Unkown Shader RendererAPI");
+		return nullptr;
+	}
+
+	std::shared_ptr<Shader> Shader::Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case RendererAPI::API::None:			return nullptr;
+			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLShader>(name, vertexSrc, fragmentSrc, geometrySrc);
+		}
+
 		OGN_CORE_ASSERT(false, "Unkown Shader RendererAPI");
 		return nullptr;
 	}

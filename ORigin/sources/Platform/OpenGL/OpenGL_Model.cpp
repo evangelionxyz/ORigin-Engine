@@ -41,13 +41,13 @@ namespace origin
 		}
 	}
 
-	void OpenGLModel::Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID)
+	void OpenGLModel::Draw(const glm::mat4& modelTransform, const Camera& camera, int entityID)
 	{
 		// Applying Main Shader Uniforms
 		m_Material->EnableShader();
 
 		m_Material->SetBool("uHasOneTexture", m_Material->Texture != nullptr);
-		
+
 		if (m_Material->Texture)
 		{
 			m_Material->Texture->Bind(0);
@@ -55,9 +55,43 @@ namespace origin
 			m_Material->SetVector("material.TilingFactor", m_Material->TilingFactor);
 		}
 
-		m_Material->SetMatrix("uModel", modelTransform);
-		m_Material->SetMatrix("uView", camera.GetViewMatrix());
-		m_Material->SetMatrix("uProjection", camera.GetProjection());
+		m_Material->SetMatrix("uModelTransform", modelTransform);
+		m_Material->SetMatrix("uViewProjection", camera.GetViewProjection());
+		m_Material->SetVector("uCameraPosition", camera.GetPosition());
+
+		m_Material->SetVector("uColor", m_Material->Color);
+		m_Material->SetBool("uHasTextures", m_Material->HasTexture);
+		m_Material->SetFloat("material.Shininess", m_Material->Shininess);
+
+		m_Material->SetInt("uEntityID", entityID);
+
+		// Draw Mesh
+		Draw();
+
+		if (m_Material->Texture)
+		{
+			m_Material->Texture->Unbind();
+		}
+
+		m_Material->DisableShader();
+	}
+
+	void OpenGLModel::Draw(const glm::mat4& modelTransform, const Camera& camera, const glm::mat4& cameraTransform, int entityID)
+	{
+		// Applying Main Shader Uniforms
+		m_Material->EnableShader();
+
+		m_Material->SetBool("uHasOneTexture", m_Material->Texture != nullptr);
+
+		if (m_Material->Texture)
+		{
+			m_Material->Texture->Bind(0);
+			m_Material->SetInt("material.Texture", m_Material->Texture->GetIndex());
+			m_Material->SetVector("material.TilingFactor", m_Material->TilingFactor);
+		}
+
+		m_Material->SetMatrix("uModelTransform", modelTransform);
+		m_Material->SetMatrix("uViewProjection", camera.GetViewProjection() * glm::inverse(cameraTransform));
 		m_Material->SetVector("uCameraPosition", camera.GetPosition());
 
 		m_Material->SetVector("uColor", m_Material->Color);

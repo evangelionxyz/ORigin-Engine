@@ -28,3 +28,9 @@
 [submodule "ORigin/vendor/msdf-atlas-gen"]
 	path = ORigin/vendor/msdf-atlas-gen
 	url = https://github.com/kaks-ev/msdf-atlas-gen.git
+[submodule "ORigin/vendor/PhysX"]
+	path = ORigin/vendor/PhysX
+	url = https://github.com/NVIDIA-Omniverse/PhysX.git
+[submodule "ORigin/vendor/JoltPhysics"]
+	path = ORigin/vendor/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics.git

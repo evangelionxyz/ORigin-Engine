@@ -1,781 +1,3392 @@
 Scene: scene.org
 Entities:
-  - Entity: 1989182912290676858
+  - Entity: 11058356564610727929
     TagComponent:
-      Tag: Ground
+      Tag: Empty Mesh
     TransformComponent:
-      Translation: [14.9142952, 1.46580172, -0.0087279072]
+      Translation: [2.34587574, 5.20064497, 1.58161211]
       Rotation: [0, 0, 0]
-      Scale: [0.545999885, 0.545999885, 0.391247958]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.886075974, 0, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
       Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 2973845589240507418
-    TagComponent:
-      Tag: Ground
-    TransformComponent:
-      Translation: [13.4789076, 1.46580172, -0.00872790813]
-      Rotation: [0, 0, 0]
-      Scale: [0.545999885, 0.545999885, 0.391247958]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.886075974, 0, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
       Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 13385596593903334270
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 18187225916502025164
     TagComponent:
-      Tag: Ground
+      Tag: Empty Mesh
     TransformComponent:
-      Translation: [12.1573343, 1.46580172, -0.0087279072]
+      Translation: [2.34422779, 4.79715919, 2.40079689]
       Rotation: [0, 0, 0]
-      Scale: [0.545999885, 0.545999885, 0.391247958]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.886075974, 0, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
       Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 2599346978976052785
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 6911935143878901542
     TagComponent:
-      Tag: Ground
+      Tag: Empty Mesh
     TransformComponent:
-      Translation: [18.1006584, -0.566773415, -0.266999841]
+      Translation: [2.34422779, 4.09433174, 3.18636298]
       Rotation: [0, 0, 0]
-      Scale: [1, 2.49379754, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.725738406, 0.725738406, 0.725738406, 1]
-      TexturePath: Textures/wood_floor.jpg
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
+      Scale: [0.207900003, 0.207900003, 0.207900003]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0.349999994
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 1833040840711545878
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.33610892, 3.13427567, 3.19655538]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
       Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 14773473307773939286
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 3791896373268910458
     TagComponent:
-      Tag: Gumba
-    AnimationComponent:
-      DefaultState: Idle
-      States:
-        - Name: Idle
-          Frames:
-            - Path: Sprites/Gumba/gumba 1.png
-            - Path: Sprites/Gumba/gumba 2.png
-          Looping: false
-        - Name: Gepeng
-          Frames:
-            - Path: Sprites/Gumba/gumba died.png
-          Looping: false
-    ScriptComponent:
-      ClassName: Game.Gumba
-      ScriptFields:
-        - Name: speed
-          Type: Float
-          Data: 100
-        - Name: Distance
-          Type: Float
-          Data: 2
+      Tag: Empty Mesh
     TransformComponent:
-      Translation: [-10.6306868, -1.29889011, 0]
+      Translation: [2.34422779, 2.27877569, 2.40599155]
       Rotation: [0, 0, 0]
-      Scale: [0.532999992, 0.532999992, 0.532999992]
-    SpriteRenderer2DComponent:
+      Scale: [0.217799976, 0.217799976, 0.217799976]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 5321030110225514250
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34422779, 3.62927842, 1.58127642]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0.100000001
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 11177093679562899299
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 5.95892572, 1.58161211]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4147603278360080772
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34392285, 5.2102747, -0.908862472]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 17191316914477821616
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34535336, 2.92895103, -0.909152985]
+      Rotation: [0, 0, 0]
+      Scale: [0.204599991, 0.204599991, 0.204599991]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 17546703643592646828
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34422779, 1.37881625, -0.90849638]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4148069699879385716
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34422779, 1.37881625, 3.0887835]
+      Rotation: [0, 0, 0]
+      Scale: [0.20130001, 0.20130001, 0.20130001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 17838131378015125124
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.33533001, 1.37881625, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 14666449535412698013
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34422779, 1.37881625, 1.49271941]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 10377506717086798893
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34373689, 4.32714176, -0.00748233497]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 8620473448920730127
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34373689, 2.85832787, -0.00748233497]
+      Rotation: [0, 0, 0]
+      Scale: [0.204599991, 0.204599991, 0.204599991]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 15877753936142264852
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34422779, 6.03406382, 0.681997657]
+      Rotation: [0, 0, 0]
+      Scale: [0.184800014, 0.184800014, 0.184800014]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0.300000012
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 3684404259407443990
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34422779, 2.43176341, 0.681997657]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0.150000006
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 3561510100919242161
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34422779, 1.37881625, 0.681997657]
+      Rotation: [0, 0, 0]
+      Scale: [0.217799991, 0.217799991, 0.217799991]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0.574999988
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 15900437832892072118
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34373689, 1.37843144, -0.00748233497]
+      Rotation: [0, 0, 0]
+      Scale: [0.217799976, 0.217799976, 0.217799976]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4777995834298667458
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [19.4150162, 6.41542387, -7.26820612]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [2.43358731, 2.433635, 2.43358731]
+    TextComponent:
+      TextString: "Physics 3D Test Scene\nNVIDIA PhysX 5.3.0"
+      FontFilepath: ../../Resources/Fonts/segoeui.ttf
       Color: [1, 1, 1, 1]
-      TexturePath: Sprites/Gumba/gumba died.png
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      Mass: 2
-      LinearDamping: 1
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, -0.129999995]
-      Size: [0.5, 0.25]
-      Density: 1
-      Friction: 0
-      Restitution: 0
-      RestitutionThreshold: 0
-  - Entity: 9306210126631987682
+      Kerning: 0
+      LineSpacing: 0
+  - Entity: 6202223145893927922
     TagComponent:
-      Tag: Gumba
-    AnimationComponent:
-      DefaultState: Idle
-      States:
-        - Name: Idle
-          Frames:
-            - Path: Sprites/Gumba/gumba 1.png
-            - Path: Sprites/Gumba/gumba 2.png
-          Looping: false
-        - Name: Gepeng
-          Frames:
-            - Path: Sprites/Gumba/gumba died.png
-          Looping: false
-    ScriptComponent:
-      ClassName: Game.Gumba
-      ScriptFields:
-        - Name: speed
-          Type: Float
-          Data: 100
-        - Name: Distance
-          Type: Float
-          Data: 2
+      Tag: Empty Mesh
     TransformComponent:
-      Translation: [14.6346264, -1.29889011, 0]
+      Translation: [1.87708163, 7.03752565, -8.26420116]
       Rotation: [0, 0, 0]
-      Scale: [0.532999992, 0.532999992, 0.532999992]
-    SpriteRenderer2DComponent:
+      Scale: [0.262535304, 0.261820167, 0.261820167]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 0.882352948, 0, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 1
+      StaticFriction: 3.67499995
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4774379879394545843
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-1.08651471, 7.27368546, -8.89602566]
+      Rotation: [0, 0, 0]
+      Scale: [0.34800005, 0.34800005, 0.34800005]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 0, 0, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 7.75
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 16557332545946142424
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-1.70468247, 5.63028431, -8.24771118]
+      Rotation: [0, 0, -0.39216283]
+      Scale: [0.579999924, 0.579999924, 0.580000043]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.529411316, 0, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 1
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 3925990941936548712
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-2.1126821, 6.78459215, -8.25204182]
+      Rotation: [0, 0, 0]
+      Scale: [0.330600053, 0.330600053, 0.330600053]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.313725471, 0.313725471, 0.313725471, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 1.27499998
+      StaticFriction: 1.70000005
+      DynamicFriction: 1.22500002
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 17051589026925401141
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [0.330997229, 5.14609194, -7.3944993]
+      Rotation: [0, 0, 0.643274665]
+      Scale: [1.54745078, 0.205743045, 1.1737504]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.730392158, 0.873125732, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0.550000012
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0.150000006
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 11372807877021584691
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-1.96375537, 8.30575943, -7.84874773]
+      Rotation: [-0.722625315, 0.593790472, -0.45829767]
+      Scale: [0.440800071, 0.440799952, 0.440799832]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.705882311, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 2.07500005
+      StaticFriction: 5.19999981
+      DynamicFriction: 5.32499981
+    RigidbodyComponent:
+      Mass: 30.6000004
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4635292919443506922
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.37368727, 7.94649076, -6.55130911]
+      Rotation: [0, 0, 0]
+      Scale: [0.162400037, 0.162400037, 0.162400037]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.970588207, 0, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 2
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4238515680390235751
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [1.42077136, 8.26237679, -6.52953434]
+      Rotation: [0, 0, -1.22537732]
+      Scale: [0.278400093, 0.278400093, 0.278400034]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 0.617647171, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 1
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 15128261242424978115
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [8.34209824, 3.60754323, -1.26982784]
+      Rotation: [0.0232618451, 0.0740440041, 0.30471161]
+      Scale: [0.9799999, 0.980000317, 0.979999781]
+    StaticMeshComponent:
+      ModelPath: Models/monkey.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
       Color: [1, 1, 1, 1]
-      TexturePath: Sprites/Gumba/gumba died.png
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      Mass: 2
-      LinearDamping: 1
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, -0.129999995]
-      Size: [0.5, 0.25]
-      Density: 1
-      Friction: 0
-      Restitution: 0
-      RestitutionThreshold: 0
-  - Entity: 14502348526263550333
-    TagComponent:
-      Tag: Ground
-    TransformComponent:
-      Translation: [7.44266987, 0.17642045, -0.0087279072]
-      Rotation: [0, 0, 0]
-      Scale: [0.699999988, 0.699999988, 0.501599967]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.886075974, 0, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
+      Shininess: 3.9000001
+      Bias: 0.00499999989
+      TextureFilepath: Textures/checkerboard.jpg
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0.524999976
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
       Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 3559037790332093065
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4265238325702221233
     TagComponent:
-      Tag: Ground
+      Tag: Empty
     TransformComponent:
-      Translation: [6.44264078, 0.67641294, -0.00860594213]
+      Translation: [-4.55610704, 6.86634827, -19.4325161]
       Rotation: [0, 0, 0]
-      Scale: [0.699999988, 0.699999988, 0.501599967]
-    SpriteRenderer2DComponent:
-      Color: [0, 0.860759497, 1, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
+      Scale: [2.433635, 2.433635, 2.433635]
+    TextComponent:
+      TextString: "Physics 3D Test Scene\nNVIDIA PhysX 5.3.0"
+      FontFilepath: ../../Resources/Fonts/segoeui.ttf
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+  - Entity: 13347049704253227328
+    TagComponent:
+      Tag: Tree
+    TransformComponent:
+      Translation: [-14.8158474, 0.985793948, -1.74414396]
+      Rotation: [0, 0, 0]
+      Scale: [1.48999977, 1.48999977, 1.48999977]
+    StaticMeshComponent:
+      ModelPath: Models/Standard/Spruce.obj
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 1, 1, 1]
+      Shininess: 81.6999969
+      Bias: 0.100000001
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 4610146713375979838
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [-20.0014668, 5, 0.120495081]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [19.9961338, 5, 0.425622463]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.987341762, 1, 0, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
       Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 11027160879880635538
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: true
+      RetainAcceleration: false
+  - Entity: 2490307891936689361
     TagComponent:
-      Tag: Ground
+      Tag: Wall
     TransformComponent:
-      Translation: [5.44261026, 1.17640531, -0.00860593654]
-      Rotation: [0, 0, 0]
-      Scale: [0.699999988, 0.699999988, 0.501599967]
-    SpriteRenderer2DComponent:
-      Color: [1, 0, 0.0759496689, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
+      Translation: [19.9985332, 5, 0.120492697]
+      Rotation: [0, -1.57079637, 0]
+      Scale: [19.998106, 5, 0.425653279]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.987341762, 1, 0, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
       Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 17017982456376318738
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: true
+      RetainAcceleration: false
+  - Entity: 4396438489357376673
     TagComponent:
-      Tag: Obstacle
+      Tag: Tree
     TransformComponent:
-      Translation: [-3.49358082, -1.02614927, -0.266938597]
+      Translation: [-12.6674366, 0.500030637, -13.4277201]
       Rotation: [0, 0, 0]
-      Scale: [0.992900729, 1.25464106, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.725738406, 0.725738406, 0.725738406, 1]
-      TexturePath: Textures/wood_floor.jpg
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 8108942666149627290
-    TagComponent:
-      Tag: Ground
-    TransformComponent:
-      Translation: [2.0023036, -0.566773415, -0.266999841]
-      Rotation: [0, 0, 0]
-      Scale: [1, 2.49379754, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.725738406, 0.725738406, 0.725738406, 1]
-      TexturePath: Textures/wood_floor.jpg
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 8370497964054240066
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [-4.63266516, -1.36313236, 0.0118896663]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 10795526739307144443
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [4.36757898, -1.36313164, 0.0118896719]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 12251072846069520212
-    TagComponent:
-      Tag: Welcome Sound
-    AudioComponent:
-      Name: Welcome Sound
-      Filepath: Audio/SuperMarioBros.mp3
-      Volume: 0.720000029
-      Pitch: 1
-      MinDistance: 1
-      MaxDistance: 100
-      Looping: false
-      Spatial: false
-      PlayAtStart: false
-    TransformComponent:
-      Translation: [-2.87948704, -3.06282234, 7.4505806e-09]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 10171653832388955620
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [0, 1.97742712, -1.70563459]
-      Rotation: [0, 0, 0]
-      Scale: [128, 8.31000042, 8.32877064]
-    SpriteRenderer2DComponent:
-      Color: [0.848101258, 1, 0.990386128, 1]
-      TexturePath: Textures/bg.jpg
-      TillingFactor: [12, 1]
-  - Entity: 6804643416914691417
+      Scale: [1.81999981, 1.81999981, 1.81999981]
+    StaticMeshComponent:
+      ModelPath: Models/Standard/Spruce.obj
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 1, 1, 1]
+      Shininess: 81.6999969
+      Bias: 0.100000001
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 1063406332854536550
     TagComponent:
       Tag: Main Camera
-    ScriptComponent:
-      ClassName: Game.Camera
     TransformComponent:
-      Translation: [0, 0, 8]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [-8.56721497, 7.57035255, 17.9839573]
+      Rotation: [-0.226892799, -0.474474579, 8.37583425e-09]
+      Scale: [1.00000012, 0.999998927, 0.999999702]
     CameraComponent:
       Camera:
-        ProjectionType: 1
-        PerspectiveFOV: 0.785398185
+        ProjectionType: 0
+        PerspectiveFOV: 0.52359879
         PerspectiveNear: 0.00999999978
         PerspectiveFar: 100
-        OrthographicSize: 5
+        OrthographicSize: 18.3999996
         OrthographicNear: -1
-        OrthographicFar: 10
+        OrthographicFar: 100
       Primary: true
       FixedAspectRatio: false
     AudioListenerComponent:
       Enable: true
-  - Entity: 11440873550682870080
+  - Entity: 15214397871750501339
     TagComponent:
-      Tag: Ground
+      Tag: Empty Mesh
     TransformComponent:
-      Translation: [0.00114440918, -1.95486915, 0]
+      Translation: [5.92514372, 2.3502717, 3.22888899]
       Rotation: [0, 0, 0]
-      Scale: [95.0926895, 0.773197889, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.841852248, 0.405063272, 1]
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
       Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 10478625270300540935
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 17591947789842478913
     TagComponent:
-      Tag: Player
-    AnimationComponent:
-      DefaultState: Idle
-      States:
-        - Name: Idle
-          Frames:
-            - Path: Sprites/marioA.png
-          Looping: true
-        - Name: Walk
-          Frames:
-            - Path: Sprites/marioA.png
-            - Path: Sprites/marioB.png
-            - Path: Sprites/marioC.png
-          Looping: true
-        - Name: Jump
-          Frames:
-            - Path: Sprites/marioE.png
-            - Path: Sprites/marioD.png
-          Looping: true
-    ScriptComponent:
-      ClassName: Game.Player
-      ScriptFields:
-        - Name: JumpHeight
-          Type: Float
-          Data: 10
-        - Name: MoveSpeed
-          Type: Float
-          Data: 10
-        - Name: JumpCoolDownTime
-          Type: Float
-          Data: 0.5
+      Tag: Tree
     TransformComponent:
-      Translation: [-6.40749931e-07, -0.27544114, -0.100000001]
+      Translation: [10.603261, 0.499669075, -6.2710638]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
+      Scale: [1.13, 1.13, 1.13]
+    StaticMeshComponent:
+      ModelPath: Models/Standard/Spruce.obj
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
       Color: [1, 1, 1, 1]
-      TexturePath: Sprites/marioA.png
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      Mass: 1
-      LinearDamping: 4
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 2
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: true
-    BoxCollider2DComponent:
-      Group: -8
-      Offset: [0, 0]
-      Size: [0.280000001, 0.5]
-      Density: 1
-      Friction: 0.0900000036
-      Restitution: 0.100000001
-      RestitutionThreshold: 0
-  - Entity: 15130532820235076593
+      Shininess: 81.6999969
+      Bias: 0.100000001
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 727487410853649074
     TagComponent:
-      Tag: Jump Sound
-    AudioComponent:
-      Name: Jump Sound
-      Filepath: Audio/Mario Bros Jump - QuickSounds.mp3
-      Volume: 0.300000012
-      Pitch: 1
-      MinDistance: 1
-      MaxDistance: 100
-      Looping: false
-      Spatial: false
-      PlayAtStart: false
+      Tag: Tree
     TransformComponent:
-      Translation: [-1.74119747, -3.10245419, -3.7252903e-09]
+      Translation: [8.50618553, 0.498086423, -14.0429668]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 13689133133767084821
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [-5.24640799, -1.43925774, 0.00932508707]
-      Rotation: [0, 0, 0]
-      Scale: [0.327036709, 0.429817587, 0.28283152]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 4318300976653635950
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [9.70493126, -1.36313236, 0.0118896663]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 324649827328019106
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [12.6457796, -1.36313236, 0.0118896663]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 932444591641538823
-    TagComponent:
-      Tag: Sprite
-    AnimationComponent:
-      DefaultState: Windy
-      States:
-        - Name: Windy
-          Frames:
-            - Path: Textures/grassA.png
-            - Path: Textures/grassB.png
-          Looping: true
-    TransformComponent:
-      Translation: [25.289238, -1.36316276, 0.0118285343]
-      Rotation: [0, 0, 0]
-      Scale: [0.408795893, 0.537271976, 0.353539377]
-    SpriteRenderer2DComponent:
-      Color: [1, 0.852320671, 0.852320671, 1]
-      TexturePath: Textures/grassA.png
-      TillingFactor: [1, 1]
-  - Entity: 8127174878979592824
-    TagComponent:
-      Tag: Mario Main Theme
-    AudioComponent:
-      Name: Mario Main Theme
-      Filepath: Audio/SuperMarioBros.mp3
-      Volume: 0.779999971
-      Pitch: 1
-      MinDistance: 1
-      MaxDistance: 100
-      Looping: false
-      Spatial: false
-      PlayAtStart: true
-    TransformComponent:
-      Translation: [-3.98509479, -3.03885508, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 15390158619090473268
-    TagComponent:
-      Tag: Text
-    ScriptComponent:
-      ClassName: Game.DebugText
-      ScriptFields:
-        - Name: positionOffset
-          Type: Vec2
-          Data: [-4.5, -1.79999995]
-    TransformComponent:
-      Translation: [-3.61096954, 0.820270538, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.473999977, 0.473999977, 0.8373999]
-    TextComponent:
-      TextString: Hello World
-      FontFilepath: ../../Resources/Fonts/segoeui.ttf
-      Color: [0, 0, 0, 1]
-      Kerning: 0
-      LineSpacing: 0
-  - Entity: 10378034227309089558
-    TagComponent:
-      Tag: Gumba
-    AnimationComponent:
-      DefaultState: Idle
-      States:
-        - Name: Idle
-          Frames:
-            - Path: Sprites/Gumba/gumba 1.png
-            - Path: Sprites/Gumba/gumba 2.png
-          Looping: false
-        - Name: Gepeng
-          Frames:
-            - Path: Sprites/Gumba/gumba died.png
-          Looping: false
-    ScriptComponent:
-      ClassName: Game.Gumba
-      ScriptFields:
-        - Name: speed
-          Type: Float
-          Data: 100
-        - Name: Distance
-          Type: Float
-          Data: 2
-    TransformComponent:
-      Translation: [11.050209, -1.29889011, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.532999992, 0.532999992, 0.532999992]
-    SpriteRenderer2DComponent:
+      Scale: [1.29999995, 1.29999971, 1.29999995]
+    StaticMeshComponent:
+      ModelPath: Models/Standard/Spruce.obj
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
       Color: [1, 1, 1, 1]
-      TexturePath: Sprites/Gumba/gumba died.png
-      TillingFactor: [1, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      Mass: 2
-      LinearDamping: 1
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, -0.129999995]
-      Size: [0.5, 0.25]
-      Density: 1
-      Friction: 0
+      Shininess: 1
+      Bias: 0.100000001
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+  - Entity: 8029754530859733505
+    TagComponent:
+      Tag: Directional Light
+    TransformComponent:
+      Translation: [-1.68151615e-07, 7.8499999, -0.000122261175]
+      Rotation: [-1.95476878, -4.5378561, -0.942477763]
+      Scale: [0.999999881, 0.999999642, 0.999994993]
+    LightComponent:
+      Type: DIRECTIONAL
+      Color: [0.661764741, 0.661764741, 0.661764741]
+      Ambient: 0.469999999
+      Diffuse: 1
+      Specular: 0
+      Near: -19.2999992
+      Far: 33.5
+      Size: 23.7999992
+  - Entity: 3826922741387140739
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20, 1, 20]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [1, 1, 1, 1]
+      Shininess: 20.5
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
       Restitution: 0
-      RestitutionThreshold: 0
+      StaticFriction: 0
+      DynamicFriction: 0
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: true
+      RetainAcceleration: false
+  - Entity: 17646768855259726080
+    TagComponent:
+      Tag: Wall
+    TransformComponent:
+      Translation: [0, 5, -19.9615879]
+      Rotation: [0, 0, 0]
+      Scale: [22.0999985, 5.52499962, 0.470380038]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 0.759493828, 1, 1]
+      Shininess: 1
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: true
+      RetainAcceleration: false
+  - Entity: 8225823963280779985
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-4.87031507, 12.085104, -7.3944993]
+      Rotation: [0.612712324, -0.924819291, -0.721849978]
+      Scale: [0.664991379, 0.247731388, 1.41329169]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0.730392158, 0.873125732, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0.899999976
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 16830864648237164854
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [0.314592659, 7.86432362, -6.52953434]
+      Rotation: [0, 0, -1.22537732]
+      Scale: [0.278400093, 0.278400093, 0.278400034]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 0.617647171, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 1
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 6743263983085959919
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-0.543323517, 10.2484455, -6.52953434]
+      Rotation: [-1.14057104e-06, 0.989969552, -1.70731485]
+      Scale: [0.2784006, 0.278400689, 0.278399974]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 0.617647171, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 1
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 341518874451551828
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [1.68307722, 11.0496063, -6.52953434]
+      Rotation: [0, 0, -2.161834]
+      Scale: [0.278400242, 0.278400242, 0.278400034]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 0.617647171, 1, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 14833326735217112411
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34438014, 6.98666573, 1.57991505]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 13356842195849055916
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 6.98800802, 2.46853256]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 16499609161196666350
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 6.98800802, 0.711295485]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 14696879514807388606
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 6.98800802, -0.251800567]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 7838497812187194390
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 5.95210838, -0.251800567]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 8818304304491437584
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 5.95210838, 2.96984434]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 8537600940186064910
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 5.95210838, 3.74312592]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 5808156886999918739
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 5.95210838, 2.31972599]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 7484343694251133604
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 5.95210838, 2.31972599]
+      Rotation: [0, 0, 0]
+      Scale: [0.314226002, 0.314226002, 0.314226002]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 15385520351174264628
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 8.25262642, 2.46853256]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 12397711652873403107
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 8.25262642, 3.53944111]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 3433784308955925775
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 8.25262642, 0.435410917]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 15588496847405284341
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34547877, 7.88234949, 1.58194566]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 8097564613926964521
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34438014, 9.03378105, 1.57992101]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 2972235102434505740
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34438014, 9.82161522, 1.57992101]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 16220906652834299585
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34438014, 11.1781139, 1.57992101]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 17630079652955593751
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34438014, 11.7979488, 1.57992101]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 6600930026314674664
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34438014, 10.4843893, 1.57992101]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 7743118743352499452
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34438014, 12.4372444, 1.57992101]
+      Rotation: [0, 0, 0]
+      Scale: [0.22770001, 0.22770001, 0.22770001]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 8143632515940044762
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 9.39002705, 2.46853256]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 11017045932481877346
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 10.5280533, 2.46853256]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 1481606715421808948
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 11.396946, 2.46853256]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 6275600075707143801
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 12.4667215, 2.46853256]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 14411764695621442339
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [2.34587574, 13.4554424, 2.46853256]
+      Rotation: [0, 0, 0]
+      Scale: [0.307395011, 0.307395011, 0.307395011]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 12112369028591730308
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 1.37881625, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.399300039, 0.399300039, 0.399300039]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 12942574752820196925
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92514372, 1.37881625, 3.22888899]
+      Rotation: [0, 0, 0]
+      Scale: [0.465299994, 0.465299994, 0.465299994]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 15274288923487759848
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 1.37881625, 4.34519863]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 12299851985320268692
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 1.37881625, 5.34007645]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 5860942448288424355
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 1.50513601, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 7056161764685851869
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 1.37881625, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 8614487543053112859
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 2.32424331, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 4889168426705814691
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 3.38787508, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 5770780520938706366
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 4.3695879, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 6107119959772739967
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 5.24933386, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 6133900562827372310
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.91725206, 5.26489449, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 3184891162548092037
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92544889, 2.44499278, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 3230296792716981177
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 3.42571902, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 470786348601923549
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 4.22200537, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 7600620630916441719
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 5.04455948, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 5717398644284461942
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92508268, 5.84226847, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 9069990075068984886
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 6.67979479, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 14751711587783574674
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 7.42008924, 0.922580123]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 11070450585240497264
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.91725206, 6.16776657, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 2521035669931753506
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.91725206, 7.13250923, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 12400116142815562113
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.91725206, 7.93758678, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 18284693849980927735
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.91725206, 9.53821373, -0.407172859]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 1095846983416998158
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 2.36477017, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 11054854086714591527
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 3.31321907, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 5269028644855659094
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 4.26047373, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 16174431946167258056
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92520475, 5.16391134, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.231000021, 0.231000021, 0.231000021]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 1289914686843711188
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 6.17480898, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 9628845510085209730
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92526579, 7.02516365, 2.25704718]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 2536417900071691986
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92514372, 3.2094121, 3.22888899]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 11016730478669844766
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92514372, 4.08470249, 3.22888899]
+      Rotation: [0, 0, 0]
+      Scale: [0.257400006, 0.257400006, 0.257400006]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 10545282851571184888
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92514372, 5.1112628, 3.22888899]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 7146199501012514289
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92514372, 6.03925705, 3.22888899]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 14396489832103112902
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92514372, 6.97999573, 3.22888899]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 1008400523619907478
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [5.92514372, 6.98000431, 3.22888899]
+      Rotation: [0, 0, 0]
+      Scale: [0.330000013, 0.330000013, 0.330000013]
+    StaticMeshComponent:
+      ModelPath: Models/cube.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.823529243, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 0
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false
+  - Entity: 12068408532719202561
+    TagComponent:
+      Tag: Empty Mesh
+    TransformComponent:
+      Translation: [-1.76154578, 4.4499588, 1.58848619]
+      Rotation: [0, 0, 0]
+      Scale: [0.431637615, 0.421717077, 0.431637615]
+    StaticMeshComponent:
+      ModelPath: Models/sphere.gltf
+      ShaderPath: Resources/Shaders/Mesh.glsl
+      MaterialName: MeshMaterial
+      Color: [0, 1, 0.176470518, 1]
+      Shininess: 32
+      Bias: 0.00499999989
+      TextureFilepath: ""
+      TilingFactor: [1, 1]
+    SphereColliderComponent:
+      Radius: 0.5
+      Offset: [0, 0, 0]
+      Restitution: 0
+      StaticFriction: 0.600000024
+      DynamicFriction: 0.600000024
+    RigidbodyComponent:
+      Mass: 1
+      CenterMassPosition: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      Kinematic: false
+      RetainAcceleration: false

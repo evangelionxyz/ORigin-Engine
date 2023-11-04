@@ -30,7 +30,6 @@ namespace origin {
 
 		void SetEntityObject(Entity entity);
 
-		void SetPosition(const glm::vec3& position) { m_Position = position; }
 		void SetViewportSize(float width, float height);
 		inline void SetDistance(float distance) { m_Distance = distance; }
 		inline void SetPitch(float pitch) { m_Pitch = pitch; }
@@ -40,7 +39,6 @@ namespace origin {
 		const glm::mat4& GetViewMatrix() const { return m_View; }
 		const glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
 		inline float GetDistance() const { return m_Distance; }
-		const glm::vec3& GetPosition() const { return m_Position; }
 
 		glm::vec3 GetUpDirection() const;
 		glm::vec3 GetRightDirection() const;
@@ -87,7 +85,6 @@ namespace origin {
 		float m_MoveSpeed = 10.0f;
 
 		glm::vec3 m_TargetPosition = glm::vec3(0.0f);
-		glm::vec3 m_Position = glm::vec3(0.0f, 1.0f, 10.0f);
 		glm::vec3 m_FocalPoint = glm::vec3(0.0f);
 		glm::vec2 m_InitialMousePosition = glm::vec2(0.0f);
 	};

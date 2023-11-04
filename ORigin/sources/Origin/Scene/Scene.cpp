@@ -6,6 +6,7 @@
 #include "Origin/Audio/Audio.h"
 #include "ScriptableEntity.h"
 
+#include "Lighting.h"
 #include "Component.h"
 
 #include "Origin/Scripting/ScriptEngine.h"
@@ -23,12 +24,15 @@
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_circle_shape.h"
 
-#include "Box2D/ContactListener.h"
+#include "origin\Physics\Contact2DListener.h"
 
 #include <glm/glm.hpp>
 
 namespace origin
 {
+	class BoxColliderComponent;
+	class RigidbodyComponent;
+	class SphereColliderComponent;
 
 	static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
 	{
@@ -45,6 +49,9 @@ namespace origin
 
 	Scene::Scene()
 	{
+		if (!m_PhysicsScene)
+			m_PhysicsScene = PhysicsScene::Create(this);
+
 		m_CameraIcon = Renderer::GetGTexture("CameraIcon");
 		m_LightingIcon = Renderer::GetGTexture("LightingIcon");
 		m_AudioIcon = Renderer::GetGTexture("AudioIcon");
@@ -147,13 +154,15 @@ namespace origin
 		Entity entity = {m_Registry.create(), this};
 		entity.AddComponent<IDComponent>(UUID());
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<PointLightComponent>();
+		entity.AddComponent<LightComponent>();
 
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = "Point Light";
 
 		UUID& uuid = entity.GetComponent<IDComponent>().ID;
 		entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
+
+		entity.GetComponent<LightComponent>().Light = Lighting::Create(LightingType::Point);
 
 		m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -165,13 +174,15 @@ namespace origin
 		Entity entity = {m_Registry.create(), this};
 		entity.AddComponent<IDComponent>(UUID());
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<SpotLightComponent>();
+		entity.AddComponent<LightComponent>();
 
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = "Spot Light";
 
 		UUID& uuid = entity.GetComponent<IDComponent>().ID;
 		entity.GetComponent<TransformComponent>().Translation.y = 3.0f;
+
+		entity.GetComponent<LightComponent>().Light = Lighting::Create(LightingType::Spot);
 
 		m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -183,13 +194,15 @@ namespace origin
 		Entity entity = {m_Registry.create(), this};
 		entity.AddComponent<IDComponent>(UUID());
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<DirectionalLightComponent>();
+		entity.AddComponent<LightComponent>();
 
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = "Directional Light";
 
 		UUID& uuid = entity.GetComponent<IDComponent>().ID;
 		entity.GetComponent<TransformComponent>().Rotation.x = glm::radians(-90.0f);
+
+		entity.GetComponent<LightComponent>().Light = Lighting::Create(LightingType::Directional);
 
 		FramebufferSpecification fbSpec;
 		fbSpec.Width = 1080;
@@ -199,7 +212,7 @@ namespace origin
 		fbSpec.ReadBuffer = false;
 
 		fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
-		entity.GetComponent<DirectionalLightComponent>().ShadowFb = Framebuffer::Create(fbSpec);
+		//entity.GetComponent<LightComponent>().ShadowFb = Framebuffer::Create(fbSpec);
 
 		m_EntityMap.insert(std::make_pair(uuid, entity));
 
@@ -321,6 +334,8 @@ namespace origin
 			});
 
 			// Physics
+			m_PhysicsScene->Simulate(deltaTime);
+
 			constexpr int32_t velocityIterations = 6;
 			constexpr int32_t positionIterations = 2;
 
@@ -347,23 +362,19 @@ namespace origin
 		}
 
 		// Rendering
-		Camera* mainCamera = nullptr;
-		TransformComponent cameraTransform;
-		const auto& view = m_Registry.view<CameraComponent, TransformComponent>();
-		for (const auto entity : view)
+		const auto& cameraView = m_Registry.view<CameraComponent, TransformComponent>();
+		for (const auto entity : cameraView)
 		{
-			auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+			auto& [tc, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
 			if (camera.Primary)
 			{
-				mainCamera = &camera.Camera;
-				cameraTransform = transform;
+				Renderer::BeginScene(camera.Camera, tc);
+				RenderScene(camera.Camera, tc);
+				Renderer::EndScene();
 				break;
 			}
 		}
-
-		if (mainCamera)
-			RenderScene(mainCamera, cameraTransform);
 
 		// Particle Update
 		m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
@@ -493,6 +504,9 @@ namespace origin
 			}
 
 			//Physics
+			m_PhysicsScene->Simulate(deltaTime);
+
+
 			constexpr int32_t velocityIterations = 6;
 			constexpr int32_t positionIterations = 2;
 
@@ -574,6 +588,7 @@ namespace origin
 
 	void Scene::OnSimulationStart()
 	{
+		m_PhysicsScene->OnSimulationStart();
 		OnPhysics2DStart();
 
 		// Scripting
@@ -598,6 +613,7 @@ namespace origin
 	void Scene::OnSimulationStop()
 	{
 		OnPhysics2DStop();
+		m_PhysicsScene->OnSimulationStop();
 		ScriptEngine::OnRuntimeStop();
 
 		// Audio
@@ -610,11 +626,9 @@ namespace origin
 		}
 	}
 
-	void Scene::RenderScene(Camera* camera, const TransformComponent& cameraTransform)
+	void Scene::RenderScene(const Camera& camera, const TransformComponent& cameraTransform)
 	{
-		Renderer::BeginScene(*camera, cameraTransform.GetTransform());
-		// Get Camera Position
-		const glm::vec3& MainCameraPosition = cameraTransform.Translation;
+		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 
 		// Particle
 		{
@@ -638,18 +652,7 @@ namespace origin
 		// Sprites
 		{
 			const auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
-			std::vector<entt::entity> spriteEntities(view.begin(), view.end());
-
-			std::sort(spriteEntities.begin(), spriteEntities.end(),
-			          [=](const entt::entity& a, const entt::entity& b)
-			          {
-				          const auto& objA = m_Registry.get<TransformComponent>(a);
-				          const auto& objB = m_Registry.get<TransformComponent>(b);
-				          return glm::length(MainCameraPosition.z - objA.Translation.z) > glm::length(
-					          MainCameraPosition.z - objB.Translation.z);
-			          });
-
-			for (const entt::entity& entity : spriteEntities)
+			for (const entt::entity& entity : view)
 			{
 				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
@@ -673,8 +676,6 @@ namespace origin
 					}
 				}
 			}
-
-			Renderer::EndScene();
 		}
 
 		// Circles
@@ -696,6 +697,9 @@ namespace origin
 			Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
 		}
 
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
 		// 3D Scene
 		const auto& spriteView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
 		for (const auto entity : spriteView)
@@ -704,76 +708,40 @@ namespace origin
 			Renderer3D::DrawCube(transform.GetTransform(), sprite, static_cast<int>(entity));
 		}
 
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-
 		// Mesh
-		const auto& mehsView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		for (const auto entity : mehsView)
 		{
-			auto& [tc, mesh] = mehsView.get<TransformComponent, StaticMeshComponent>(entity);
-			if (mesh.Model)
-			{
-			}
-		}
-
-		glDisable(GL_CULL_FACE);
-
-		Renderer::EndScene();
-	}
-
-	void Scene::OnShadowRender()
-	{
-		// ==============================
-		// Directional Light Shadow
-		// ==============================
-		Renderer::GetGShader("DirLightDepthMap")->Enable();
-
-		const auto& dirLight = m_Registry.view<TransformComponent, DirectionalLightComponent>();
-		for (auto& light : dirLight)
-		{
-			auto& [tc, lc] = dirLight.get<TransformComponent, DirectionalLightComponent>(light);
-			glm::mat4 lightProjection = glm::ortho(-lc.Size, lc.Size, -lc.Size, lc.Size, lc.Near, lc.Far);
-
-			// direction/eye, center, up
-			glm::mat4 lightView = lookAt(radians(-tc.GetForward()), glm::vec3(0.0f), radians(-tc.GetUp()));
-			lc.LightSpaceMatrix = lightProjection * lightView;
-
-			Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uLightSpaceMatrix", lc.LightSpaceMatrix);
-
-			// Skip if the framebuffer is not available
-			if (lc.ShadowFb == nullptr)
-				continue;
-
-
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
-
-			lc.ShadowFb->Bind();
-			glClear(GL_DEPTH_BUFFER_BIT);
-
-			// Render
 			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto& entity : meshView)
 			{
 				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
+				Lighting::PointLightCount = 0;
+				Lighting::SpotLightCount = 0;
+
 				if (mesh.Model)
 				{
-					// Set Depth shader
-					Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uModel", tc.GetTransform());
-					mesh.Model->Draw();
+					mesh.Material->EnableShader();
+					mesh.Material->SetFloat("material.Bias", mesh.Material->Bias);
+
+					for (auto& light : lightView)
+					{
+						auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
+						lc.Light->OnUpdate(tc, mesh.Material);
+					}
+
+					mesh.Model->Draw(tc.GetTransform(), camera, cameraTransform.GetTransform(), static_cast<int>(entity));
+					mesh.Material->DisableShader();
+
+					if (mesh.Material->m_PointLightCount != Lighting::PointLightCount ||
+						mesh.Material->m_SpotLightCount != Lighting::SpotLightCount)
+						mesh.Material->RefreshShader();
+
+					mesh.Material->m_PointLightCount = Lighting::PointLightCount;
+					mesh.Material->m_SpotLightCount = Lighting::SpotLightCount;
 				}
 			}
-
-			lc.ShadowFb->Unbind();
 		}
-
-		Renderer::GetGShader("DirLightDepthMap")->Disable();
-
-		// ==============================
-		// Point Light Shadow
-		// ==============================
+		
 
 		glDisable(GL_CULL_FACE);
 	}
@@ -781,6 +749,13 @@ namespace origin
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
 		Renderer::BeginScene(camera);
+
+		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
+		for (auto& entity : lightView)
+		{
+			auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(entity);
+			DrawIcon(camera, static_cast<int>(entity), m_LightingIcon, tc, true);
+		}
 
 		// Particle
 		{
@@ -818,6 +793,13 @@ namespace origin
 			for (const entt::entity& entity : spriteEntities)
 			{
 				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
+
+				for (auto& light : lightView)
+				{
+					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					lc.Light->OnUpdate(tc);
+				}
+
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
 			}
 
@@ -847,6 +829,11 @@ namespace origin
 			for (auto& entity : view)
 			{
 				auto& [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
+				for (auto& light : lightView)
+				{
+					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					lc.Light->OnUpdate(tc);
+				}
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
 				                       static_cast<int>(entity));
 			}
@@ -858,6 +845,11 @@ namespace origin
 			for (auto entity : view)
 			{
 				auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
+				for (auto& light : lightView)
+				{
+					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					lc.Light->OnUpdate(tc);
+				}
 				Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
 			}
 		}
@@ -891,104 +883,37 @@ namespace origin
 			DrawIcon(camera, static_cast<int>(entity), m_CameraIcon, tc, true);
 		}
 
-		// Lighting
-		const auto& pointLightView = m_Registry.view<TransformComponent, PointLightComponent>();
-		for (auto& pointLight : pointLightView)
-		{
-			auto& [tc, lc] = pointLightView.get<TransformComponent, PointLightComponent>(pointLight);
-			DrawIcon(camera, static_cast<int>(pointLight), m_LightingIcon, tc, true);
-		}
-
-		const auto& spotLightView = m_Registry.view<TransformComponent, SpotLightComponent>();
-		for (auto& spotLight : spotLightView)
-		{
-			auto& [tc, lc] = spotLightView.get<TransformComponent, SpotLightComponent>(spotLight);
-			DrawIcon(camera, static_cast<int>(spotLight), m_LightingIcon, tc, true);
-		}
-
-		const auto& dirLightView = m_Registry.view<TransformComponent, DirectionalLightComponent>();
-		for (auto& dirLight : dirLightView)
-		{
-			auto& [tc, lc] = dirLightView.get<TransformComponent, DirectionalLightComponent>(dirLight);
-			DrawIcon(camera, static_cast<int>(dirLight), m_LightingIcon, tc, true);
-		}
+		
 
 		// Mesh
 		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 		for (auto& entity : meshView)
 		{
 			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
-
-			int pointLightCount = 0;
-			int spotLightCount = 0;
+			
+			Lighting::PointLightCount = 0;
+			Lighting::SpotLightCount = 0;
 
 			if (mesh.Model)
 			{
-				std::string lightUniformName;
 				mesh.Material->EnableShader();
-
 				mesh.Material->SetFloat("material.Bias", mesh.Material->Bias);
 
-				mesh.Material->SetMatrix("uLightSpaceMatrix", glm::mat4(1.0f));
-
-				for (auto& pointLight : pointLightView)
+				for (auto& light : lightView)
 				{
-					auto& [tc, lc] = pointLightView.get<TransformComponent, PointLightComponent>(pointLight);
-
-					lightUniformName = std::string("pointLights[" + std::to_string(pointLightCount) + "].");
-					mesh.Material->SetInt("pointLightCount", pointLightCount);
-					mesh.Material->SetVector(lightUniformName + "Position", tc.Translation);
-					mesh.Material->SetVector(lightUniformName + "Color", lc.Color);
-					mesh.Material->SetFloat(lightUniformName + "Ambient", lc.Ambient);
-					mesh.Material->SetFloat(lightUniformName + "Specular", lc.Specular);
-
-					pointLightCount++;
-				}
-
-				for (auto& spotLight : spotLightView)
-				{
-					auto& [tc, lc] = spotLightView.get<TransformComponent, SpotLightComponent>(spotLight);
-
-					lightUniformName = std::string("spotLights[" + std::to_string(spotLightCount) + "].");
-
-					mesh.Material->SetInt("spotLightCount", spotLightCount);
-					mesh.Material->SetVector(lightUniformName + "Position", tc.Translation);
-					mesh.Material->SetVector(lightUniformName + "Direction", -tc.GetForward());
-					mesh.Material->SetVector(lightUniformName + "Color", lc.Color);
-					mesh.Material->SetFloat(lightUniformName + "InnerConeAngle", lc.InnerConeAngle);
-					mesh.Material->SetFloat(lightUniformName + "OuterConeAngle", lc.OuterConeAngle);
-					mesh.Material->SetFloat(lightUniformName + "Exponent", lc.Exponent);
-
-					spotLightCount++;
-				}
-
-				for (auto& dirLight : dirLightView)
-				{
-					auto& [tc, lc] = dirLightView.get<TransformComponent, DirectionalLightComponent>(dirLight);
-
-					mesh.Material->SetMatrix("uLightSpaceMatrix", lc.LightSpaceMatrix);
-					mesh.Material->SetVector("dirLight.Direction", -tc.GetForward());
-					mesh.Material->SetVector("dirLight.Color", lc.Color);
-					mesh.Material->SetFloat("dirLight.Ambient", lc.Ambient);
-					mesh.Material->SetFloat("dirLight.Diffuse", lc.Diffuse);
-					mesh.Material->SetFloat("dirLight.Specular", lc.Specular);
-
-					if (lc.ShadowFb)
-					{
-						glActiveTexture(lc.ShadowFb->GetDepthAttachmentRendererID());
-						glBindTexture(GL_TEXTURE_2D, lc.ShadowFb->GetDepthAttachmentRendererID());
-						mesh.Material->SetInt("uShadowMap", 0);
-					}
+					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					lc.Light->OnUpdate(tc, mesh.Material);
 				}
 
 				mesh.Model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
 				mesh.Material->DisableShader();
 
-				if (mesh.Material->m_PointLightCount != pointLightCount || mesh.Material->m_SpotLightCount != spotLightCount)
+				if (mesh.Material->m_PointLightCount != Lighting::PointLightCount || 
+					mesh.Material->m_SpotLightCount != Lighting::SpotLightCount)
 					mesh.Material->RefreshShader();
 
-				mesh.Material->m_PointLightCount = pointLightCount;
-				mesh.Material->m_SpotLightCount = spotLightCount;
+				mesh.Material->m_PointLightCount = Lighting::PointLightCount;
+				mesh.Material->m_SpotLightCount = Lighting::SpotLightCount;
 			}
 		}
 		glDisable(GL_CULL_FACE);
@@ -997,8 +922,48 @@ namespace origin
 		Renderer::EndScene();
 	}
 
+	void Scene::OnShadowRender()
+	{
+		// ==============================
+		// Directional Light Shadow
+		// ==============================
+		Renderer::GetGShader("DirLightDepthMap")->Enable();
+
+		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
+		for (auto& light : dirLight)
+		{
+			auto& [tc, lc] = dirLight.get<TransformComponent, LightComponent>(light);
+			lc.Light->SetupShadow(tc);
+
+			// Render
+			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+			for (auto& entity : meshView)
+			{
+				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+
+				if (mesh.Model)
+				{
+					// Set Depth shader
+					Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uModel", tc.GetTransform());
+					mesh.Model->Draw();
+				}
+			}
+
+			lc.Light->GetShadow()->GetFramebuffer()->Unbind();
+		}
+
+		Renderer::GetGShader("DirLightDepthMap")->Disable();
+
+		// ==============================
+		// Point Light Shadow
+		// ==============================
+
+		glDisable(GL_CULL_FACE);
+	}
+
 	void Scene::OnRuntimeStart()
 	{
+		m_PhysicsScene->OnSimulationStart();
 		OnPhysics2DStart();
 
 		// Scripting
@@ -1026,6 +991,8 @@ namespace origin
 	void Scene::OnRuntimeStop()
 	{
 		OnPhysics2DStop();
+		m_PhysicsScene->OnSimulationStop();
+
 		ScriptEngine::OnRuntimeStop();
 
 		// Audio
@@ -1123,9 +1090,9 @@ namespace origin
 	void Scene::OnPhysics2DStart()
 	{
 		m_Running = true;
-		m_Box2DWorld = new b2World({0.0f, -9.8f});
+		m_Box2DWorld = new b2World({0.0f, -9.81f});
 
-		m_Box2DContactListener = new ContactListener(this);
+		m_Box2DContactListener = new Contact2DListener(this);
 		m_Box2DWorld->SetContactListener(m_Box2DContactListener);
 
 		auto view = m_Registry.view<Rigidbody2DComponent>();
@@ -1270,9 +1237,7 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(AnimationComponent)
 	OGN_REG_COMPONENT(SpriteRendererComponent)
 	OGN_REG_COMPONENT(SpriteRenderer2DComponent)
-	OGN_REG_COMPONENT(PointLightComponent)
-	OGN_REG_COMPONENT(SpotLightComponent)
-	OGN_REG_COMPONENT(DirectionalLightComponent)
+	OGN_REG_COMPONENT(LightComponent)
 	OGN_REG_COMPONENT(StaticMeshComponent)
 	OGN_REG_COMPONENT(TextComponent)
 	OGN_REG_COMPONENT(CircleRendererComponent)
@@ -1283,6 +1248,9 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(BoxCollider2DComponent)
 	OGN_REG_COMPONENT(CircleCollider2DComponent)
 	OGN_REG_COMPONENT(ParticleComponent)
+	OGN_REG_COMPONENT(RigidbodyComponent)
+	OGN_REG_COMPONENT(BoxColliderComponent)
+	OGN_REG_COMPONENT(SphereColliderComponent)
 
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)

@@ -1,15 +1,14 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
-
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
+
 #include "Origin\Core\UUID.h"
 
 namespace origin {
 	
 	using AssetHandle = UUID;
-
-	enum class AssetType
+	enum class AssetType : uint16_t
 	{
-		None = -1,
+		None = 0,
 		Scene,
 		Texture2D,
 		TextureCube,
@@ -18,6 +17,9 @@ namespace origin {
 		Mesh,
 		Animation
 	};
+
+	std::string_view AssetTypeToString(AssetType type);
+	AssetType AssetTypeFromtString(std::string_view assetType);
 
 	class Asset
 	{

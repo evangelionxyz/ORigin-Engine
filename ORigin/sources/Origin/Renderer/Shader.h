@@ -44,6 +44,7 @@ namespace origin
     static std::shared_ptr<Shader> Create(const std::string& filepath, bool enableSpirv = false, bool recompileSpirv = false);
     static std::shared_ptr<Shader> Create(const std::string& name, const std::string& filepath);
     static std::shared_ptr<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+    static std::shared_ptr<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc);
 	};
 
   class ShaderLibrary

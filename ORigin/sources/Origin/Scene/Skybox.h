@@ -13,7 +13,7 @@ namespace origin
 		virtual void Draw(const glm::mat4& viewProjection) = 0;
 		virtual void Draw(const EditorCamera& camera) = 0;
 		virtual void SetBlur(float blur) = 0;
-		static std::shared_ptr<Skybox> Create(const std::string& filepath);
+		static std::shared_ptr<Skybox> Create(const std::string& filepath, const std::string& format);
 	};
 
 }

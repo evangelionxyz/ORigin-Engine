@@ -7,6 +7,7 @@ kind "ConsoleApp"
 language "C++"
 cppdialect "C++17"
 staticruntime "off"
+
 links "ORigin"
 
 targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/Sandbox")
@@ -39,10 +40,13 @@ includedirs {
     "%{IncludeDir.GLAD}",
     "%{IncludeDir.GLM}",
     "%{IncludeDir.ENTT}",
+    "%{IncludeDir.PhysX}",
+    "%{IncludeDir.JoltPhysics}",
     "%{IncludeDir.YAML_CPP}",
 }
 
 defines {
+    "NV_USE_STATIC_WINCRT",
     "GLFW_INCLUDE_NONE",
     "_CRT_SECURE_NO_WARNINGS"
 }
@@ -57,6 +61,7 @@ filter "system:windows"
 
 filter "configurations:Debug"
     defines {
+        "PHYSX_CXX_FLAGS_DEBUG",
         "OGN_DEBUG",
         "_DEBUG"
     }

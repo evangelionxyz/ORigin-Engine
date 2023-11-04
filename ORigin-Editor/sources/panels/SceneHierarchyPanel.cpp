@@ -11,6 +11,7 @@
 #include "Origin\Audio\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
+#include "Origin\Scene\Lighting.h"
 
 #include <glm\gtc\type_ptr.hpp>
 #include <misc\cpp\imgui_stdlib.h>
@@ -224,17 +225,18 @@ namespace origin {
 
 			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");
-			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
-			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
-			DisplayAddComponentEntry<PointLightComponent>("POINT LIGHT");
-			DisplayAddComponentEntry<SpotLightComponent>("SPOT LIGHT");
-			DisplayAddComponentEntry<DirectionalLightComponent>("DIRECTIONAL LIGHT");
-			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER");
-			DisplayAddComponentEntry<Rigidbody2DComponent>("RIGIDBODY 2D");
-			DisplayAddComponentEntry<BoxCollider2DComponent>("BOX COLLIDER 2D");
+			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER 2D");
+			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
-			DisplayAddComponentEntry<CircleCollider2DComponent>("CIRCLE COLLIDER 2D");
+			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
+			DisplayAddComponentEntry<LightComponent>("LIGHTING");
+			DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
+			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
+			DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
+			DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
+			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
 
 			ImGui::EndPopup();
 		}
@@ -316,8 +318,42 @@ namespace origin {
 		{
 		});
 
-		
+		DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto& component)
+		{
+				ImGui::Text("Use Gravity"); ImGui::SameLine();
+				ImGui::Checkbox("##UseGravity", &component.UseGravity);
 
+				ImGui::Text("Rotate   "); ImGui::SameLine();
+				ImGui::Checkbox("X", &component.RotateX); ImGui::SameLine();
+				ImGui::Checkbox("Y", &component.RotateY); ImGui::SameLine();
+				ImGui::Checkbox("Z", &component.RotateZ);
+
+				ImGui::Text("Kinematic"); ImGui::SameLine();
+				ImGui::Checkbox("##Kinematic", &component.Kinematic);
+
+				DrawVecControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
+				DrawVec3Control("Center Mass", component.CenterMassPosition);
+
+		});
+
+		DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto& component)
+		{
+				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
+				DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
+				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+		});
+
+		DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto& component)
+			{
+				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
+				DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
+				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+			});
+		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
 				static bool creationWindow = false;
@@ -805,9 +841,9 @@ namespace origin {
 				
 				ImGui::InputTextMultiline("Text String", &component.TextString);
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-
-				DrawVecControl("Kerning", &component.Kerning, 0.5f);
-				DrawVecControl("Line Spacing", &component.LineSpacing, 1.0f);
+				
+				DrawVecControl("Kerning", &component.Kerning, 0.01f);
+				DrawVecControl("Line Spacing", &component.LineSpacing, 0.01f);
 			});
 
 		DrawComponent<ParticleComponent>("PARTICLE", entity, [](auto& component)
@@ -902,44 +938,74 @@ namespace origin {
 				}
 			});
 
-		DrawComponent<DirectionalLightComponent>("DIRECTIONAL LIGHT", entity, [](auto& component)
+		DrawComponent<LightComponent>("LIGHTING", entity, [](auto& component)
 			{
-				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
-				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
-				DrawVecControl("Diffuse", &component.Diffuse, 0.01f, 0.0f);
-				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);
+				const char* lightTypeString[3] = { "Spot", "Point", "Direcional" };
+				const char* currentLightTypeString = lightTypeString[static_cast<int>(component.Light->Type)];
 
-				ImGui::DragFloat("Near", &component.Near, 0.1f);
-				ImGui::DragFloat("Far", &component.Far, 0.1f);
-				ImGui::DragFloat("Size", &component.Size, 0.1f);
-
-				if(component.ShadowFb)
+				if (ImGui::BeginCombo("Type", currentLightTypeString))
 				{
-					uint32_t texture = component.ShadowFb->GetDepthAttachmentRendererID();
-					ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(128.0f, 128.0f), ImVec2(0, 1), ImVec2(1, 0));
+					for (int i = 0; i < 3; i++)
+					{
+						bool isSelected = currentLightTypeString == lightTypeString[i];
+						if (ImGui::Selectable(lightTypeString[i], isSelected))
+						{
+							currentLightTypeString = lightTypeString[i];
+							component.Light->Type = static_cast<LightingType>(i);
+						}
+
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
 				}
-			});
 
-		DrawComponent<SpotLightComponent>("SPOT LIGHT", entity, [](auto& component)
-			{
-				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
+				switch (component.Light->Type)
+				{
+					case LightingType::Directional:
+					{
+						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->Color));
+						DrawVecControl("Ambient", &component.Light->Ambient, 0.01f, 0.0f);
+						DrawVecControl("Diffuse", &component.Light->Diffuse, 0.01f, 0.0f);
+						DrawVecControl("Specular", &component.Light->Specular, 0.01f, 0.0f);
 
-				float angle = glm::degrees(component.InnerConeAngle);
-				ImGui::DragFloat("Inner Cone", &angle);
-				component.InnerConeAngle = glm::radians(angle);
+						ImGui::DragFloat("Near", &component.Light->Near, 0.1f);
+						ImGui::DragFloat("Far", &component.Light->Far, 0.1f);
+						ImGui::DragFloat("Size", &component.Light->Size, 0.1f);
 
-				angle = glm::degrees(component.OuterConeAngle);
-				ImGui::DragFloat("Outer Cone", &angle);
-				component.OuterConeAngle = glm::radians(angle);
+						if (component.Light->GetShadow()->GetFramebuffer())
+						{
+							uint32_t texture = component.Light->GetShadow()->GetFramebuffer()->GetDepthAttachmentRendererID();
+							ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(128.0f, 128.0f), ImVec2(0, 1), ImVec2(1, 0));
+						}
+						break;
+					}
 
-				ImGui::DragFloat("Exponent", &component.Exponent, 0.01f, 0.0f, 1.0f);
-			});
+					case LightingType::Spot:
+					{
+						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->Color));
 
-		DrawComponent<PointLightComponent>("POINT LIGHT", entity, [](auto& component)
-			{
-				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
-				DrawVecControl("Ambient", &component.Ambient, 0.01f, 0.0f);
-				DrawVecControl("Specular", &component.Specular, 0.01f, 0.0f);
+						float angle = glm::degrees(component.Light->InnerConeAngle);
+						ImGui::DragFloat("Inner Cone", &angle);
+						component.Light->InnerConeAngle = glm::radians(angle);
+
+						angle = glm::degrees(component.Light->OuterConeAngle);
+						ImGui::DragFloat("Outer Cone", &angle);
+						component.Light->OuterConeAngle = glm::radians(angle);
+
+						ImGui::DragFloat("Exponent", &component.Light->Exponent, 0.01f, 0.0f, 1.0f);
+						break;
+					}
+
+					case LightingType::Point:
+					{
+						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->Color));
+						DrawVecControl("Ambient", &component.Light->Ambient, 0.01f, 0.0f);
+						DrawVecControl("Specular", &component.Light->Specular, 0.01f, 0.0f);
+						break;
+					}
+				}
+				
 			});
 
 		DrawComponent<CircleRendererComponent>("CIRCLE RENDERER", entity, [](auto& component)
@@ -995,7 +1061,7 @@ namespace origin {
 			{
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1.0f, 16.0f, "Group Index %d");
 
-				DrawVec2Control("Offset", component.Offset, 0.01f, 0.5f);
+				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 				DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
 				float width = 118.0f;

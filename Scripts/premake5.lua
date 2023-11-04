@@ -20,6 +20,7 @@ startproject "ORigin-Editor"
 vendorProjectFiles = "%{wks.location}/ORigin/vendor/projectFiles"
 vendorOutputdir = "%{prj.location}/Binaries/%{cfg.buildcfg}/%{prj.name}"
 vendorIntOutputdir = "%{prj.location}/Binaries/Intermediates/%{cfg.buildcfg}/%{prj.name}"
+physxDir = "%{wks.location}/ORigin/vendor/PhysX"
 
 include "projects/ProjectSwitcher.lua"
 include "projects/ProjectLicenseHeader.lua"

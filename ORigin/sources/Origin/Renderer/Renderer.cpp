@@ -54,15 +54,14 @@ namespace origin {
 		OGN_CORE_WARN("Renderer Shutdown");
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
+	void Renderer::BeginScene(const Camera& camera, const TransformComponent& cameraTransform)
 	{
 		uint32_t offsetViewProjection = 0;
 		uint32_t offsetLightSpaceMatrix = sizeof(glm::mat4);
 		uint32_t offsetCameraPosition = offsetLightSpaceMatrix + sizeof(glm::mat4);
 
-		s_Data.globalUboData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_Data.globalUboData.LightSpaceMatrix = glm::mat4(1.0f);
-		s_Data.globalUboData.CameraPosition = glm::vec3(1.0f);
+		s_Data.globalUboData.ViewProjection = camera.GetProjection() * glm::inverse(cameraTransform.GetTransform());
+		s_Data.globalUboData.CameraPosition = camera.GetPosition();
 
 		s_Data.globalUbo->Bind();
 		//s_Data.globalUbo->SetData(&s_Data.globalUboData.ViewProjection, sizeof(glm::mat4), offsetViewProjection);
@@ -84,7 +83,6 @@ namespace origin {
 		uint32_t offsetCameraPosition = offsetLightSpaceMatrix + sizeof(glm::mat4);
 
 		s_Data.globalUboData.ViewProjection = camera.GetViewProjection();
-		s_Data.globalUboData.LightSpaceMatrix = glm::mat4(1.0f);
 		s_Data.globalUboData.CameraPosition = camera.GetPosition();
 
 		s_Data.globalUbo->Bind();
@@ -134,6 +132,11 @@ namespace origin {
 		return GShaderLibrary.GetMap();
 	}
 
+	void Renderer::SetLightSpaceMatrix(const glm::mat4& lightSpaceMatrix)
+	{
+		s_Data.globalUboData.LightSpaceMatrix = lightSpaceMatrix;
+	}
+
 	void Renderer::DrawLineMode(bool enable)
 	{
 		RenderCommand::DrawLineMode(enable);
@@ -146,12 +149,11 @@ namespace origin {
 
 		GShaderLibrary.Load("Line2D", "Resources/Shaders/Line2D.glsl", true, recompileShader);
 		GShaderLibrary.Load("Circle2D", "Resources/Shaders/Circle2D.glsl", true, recompileShader);
-		GShaderLibrary.Load("Quad2D", "Resources/Shaders/Quad2D.glsl", true, recompileShader);
+		GShaderLibrary.Load("Quad2D", "Resources/Shaders/Quad2D.glsl", true, true);
 		GShaderLibrary.Load("Text", "Resources/Shaders/TextRenderer.glsl", true, recompileShader);
 
 		GShaderLibrary.Load("Cube", "Resources/Shaders/Cube.glsl", true, recompileShader);
 		GShaderLibrary.Load("Mesh", "Resources/Shaders/Mesh.glsl", false);
-		GShaderLibrary.Load("Mesh2", "Resources/Shaders/Mesh2.glsl", false);
 		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 		
 		GShaderLibrary.Load("DirLightDepthMap", "Resources/Shaders/DirLightDepthMap.glsl", false);

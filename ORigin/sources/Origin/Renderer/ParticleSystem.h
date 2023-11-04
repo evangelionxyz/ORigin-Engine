@@ -22,7 +22,7 @@ namespace origin {
 		float LifeTime;
 	};
 
-	struct ParticleComponent;
+	class ParticleComponent;
 	class ParticleSystem
 	{
 	public:

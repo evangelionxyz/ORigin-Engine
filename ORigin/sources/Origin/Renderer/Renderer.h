@@ -9,6 +9,8 @@
 
 #include "Origin\Renderer\Texture.h"
 
+#include "Origin\Scene\Component.h"
+
 namespace origin {
 
 	class Renderer
@@ -20,7 +22,7 @@ namespace origin {
 
 		static void Shutdown();
 
-		static void BeginScene(const Camera& camera, const glm::mat4& transform);
+		static void BeginScene(const Camera& camera, const TransformComponent& cameraTransform);
 		static void BeginScene(const EditorCamera& camera);
 
 		static void EndScene();
@@ -32,6 +34,7 @@ namespace origin {
 		static std::shared_ptr<Texture2D> GetGTexture(const std::string& name);
 
 		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetSaderLibrary();
+		static void SetLightSpaceMatrix(const glm::mat4& lightSpaceMatrix);
 
 		void DrawLineMode(bool enable);
 

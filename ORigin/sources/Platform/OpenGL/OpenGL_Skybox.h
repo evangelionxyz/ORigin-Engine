@@ -13,13 +13,15 @@ namespace origin
 	class OpenGLSkybox : public Skybox
 	{
 	public:
-		OpenGLSkybox(const std::string& filepath);
+		OpenGLSkybox(const std::string& filepath, const std::string& format);
 		void Draw(const glm::mat4& viewProjection) override;
 		void Draw(const EditorCamera& camera) override;
 		void SetBlur(float blur) override;
 
 	private:
-		void LoadTexture(const std::string& filepath);
+		void LoadTexture();
+		std::string m_Filepath;
+		std::string m_ImageFormat;
 
 		std::shared_ptr<VertexArray> m_VertexArray;
 		std::shared_ptr<VertexBuffer> m_VertexBuffer;

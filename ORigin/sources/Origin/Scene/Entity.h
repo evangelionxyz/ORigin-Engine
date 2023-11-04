@@ -1,6 +1,9 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+#include "Origin\Physics\RigidbodyComponent.h"
+#include "Origin\Physics\Collider.h"
+
 #include "Component.h"
 
 #include "Scene.h"

@@ -146,7 +146,7 @@ namespace origin
 			if (ImGuizmo::IsUsing())
 			{
 				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale);
+				Math::DecomposeTransformEuler(transform, translation, rotation, scale);
 
 				tc.Translation = translation;
 				glm::vec3 deltaRotation = rotation - tc.Rotation;

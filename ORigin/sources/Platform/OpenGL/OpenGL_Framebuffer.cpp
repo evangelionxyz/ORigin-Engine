@@ -75,6 +75,8 @@ namespace origin {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, Texture2DTarget(multisampled), textureID, NULL);
 		}
 
+		// ============ CUBE MAP ============
+
 		static void CreateTextureCubeMap(uint32_t* outTextureID, uint32_t count)
 		{
 			glCreateTextures(GL_TEXTURE_CUBE_MAP, count, outTextureID);
@@ -106,8 +108,9 @@ namespace origin {
 		{
 			switch (format)
 			{
-				case FramebufferTextureFormat::DEPTH: return true;
-				case FramebufferTextureFormat::DEPTH24STENCIL8: return true;
+				case FramebufferTextureFormat::DEPTH:
+				case FramebufferTextureFormat::DEPTH24STENCIL8:
+				case FramebufferTextureFormat::DEPTH_CUBE: return true;
 			}
 
 			return false;
