@@ -2,6 +2,7 @@
 
 #pragma once
 #include "Origin\Renderer\Texture.h"
+#include "ThumbnailCache.h"
 
 #include <string>
 #include <filesystem>
@@ -12,31 +13,42 @@ namespace origin
 	class ContentBrowserPanel
 	{
 	public:
-		ContentBrowserPanel();
-		~ContentBrowserPanel();
+		ContentBrowserPanel(std::shared_ptr<Project> project);
+
 		void OnImGuiRender();
-
 	private:
-		void FileButton();
-		void NavigationButton();
-		void FileArgument();
-		void DeleteFileArgument();
+		void RefreshAssetTree();
+	private:
+		std::shared_ptr<Project> m_Project;
+		std::shared_ptr<ThumbnailCache> m_ThumbnailCache;
 
-		std::shared_ptr<Texture2D> DirectoryIcon(const std::filesystem::directory_entry& dirEntry);
-
-		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_DirectoryIconMap;
-		std::unordered_map <std::string, std::shared_ptr<Texture2D>> m_NavigationIconMap;
-
+		std::filesystem::path m_BaseDirectory;
 		std::filesystem::path m_CurrentDirectory;
-		std::filesystem::path m_DeletePathTarget;
-		std::filesystem::path m_RootDirectory;
 
-		std::filesystem::directory_entry m_DirectoryEntry;
+		std::shared_ptr<Texture2D> m_DirectoryIcon;
+		std::shared_ptr<Texture2D> m_FileIcon;
 
-		std::unordered_map<uint8_t, std::filesystem::path> m_SubDirectoryMap;
+		struct TreeNode
+		{
+			std::filesystem::path Path;
+			AssetHandle Handle = 0;
 
-		uint8_t m_SubDirectoryCount = 0;
-		bool m_IsDirectory;
-		bool m_DeleteArgument = false;
+			uint32_t Parent = (uint32_t)-1;
+			std::map<std::filesystem::path, uint32_t> Children;
+
+			TreeNode(const std::filesystem::path& path, AssetHandle handle)
+				: Path(path), Handle(handle) {}
+		};
+
+		std::vector<TreeNode> m_TreeNodes;
+
+		std::map<std::filesystem::path, std::vector<std::filesystem::path>> m_AssetTree;
+
+		enum class Mode
+		{
+			Asset = 0, FileSystem = 1
+		};
+
+		Mode m_Mode = Mode::Asset;
 	};
 }

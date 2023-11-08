@@ -5,17 +5,14 @@
 #include "Scene.h"
 #include "Origin/Audio/Audio.h"
 #include "ScriptableEntity.h"
-
 #include "Lighting.h"
-#include "Component.h"
 
+#include "Origin/Animation/Animation.h"
 #include "Origin/Scripting/ScriptEngine.h"
-
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer3D.h"
-
-#include "Origin/Animation/Animation.h"
+#include "origin/Physics/Contact2DListener.h"
 
 // Box2D
 #include "box2d/b2_world.h"
@@ -24,9 +21,9 @@
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_circle_shape.h"
 
-#include "origin\Physics\Contact2DListener.h"
-
 #include <glm/glm.hpp>
+
+#include "Origin\Asset\AssetManager.h"
 
 namespace origin
 {
@@ -47,6 +44,8 @@ namespace origin
 		return b2_staticBody;
 	}
 
+	std::shared_ptr<Skybox>Scene::m_Skybox;
+
 	Scene::Scene()
 	{
 		if (!m_PhysicsScene)
@@ -55,6 +54,12 @@ namespace origin
 		m_CameraIcon = Renderer::GetGTexture("CameraIcon");
 		m_LightingIcon = Renderer::GetGTexture("LightingIcon");
 		m_AudioIcon = Renderer::GetGTexture("AudioIcon");
+
+		if (!m_Skybox)
+		{
+			m_Skybox = Skybox::Create("Resources/Skybox/", ".jpg");
+			m_Skybox->SetBlur(0.0f);
+		}
 	}
 
 	Scene::~Scene()
@@ -628,6 +633,8 @@ namespace origin
 
 	void Scene::RenderScene(const Camera& camera, const TransformComponent& cameraTransform)
 	{
+		m_Skybox->Draw(camera);
+
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 
 		// Particle
@@ -665,14 +672,18 @@ namespace origin
 				if (anim.State.HasAnimation() == false)
 					continue;
 
+				std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
+
 				if (anim.State.GetAnimation().HasFrame())
-					sprite.Texture = anim.State.GetAnimation().GetCurrentSprite();
+				{
+					texture = anim.State.GetAnimation().GetCurrentSprite();
+				}
 				else
 				{
-					if (sprite.Texture)
+					if (texture)
 					{
-						sprite.Texture->Delete();
-						sprite.Texture.reset();
+						texture->Delete();
+						texture.reset();
 					}
 				}
 			}
@@ -748,7 +759,10 @@ namespace origin
 
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
+
 		Renderer::BeginScene(camera);
+
+		m_Skybox->Draw(camera);
 
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& entity : lightView)
@@ -807,17 +821,21 @@ namespace origin
 			for (auto& entity : animView)
 			{
 				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (!anim.State.HasAnimation())
+				if (anim.State.HasAnimation() == false)
 					continue;
 
+				std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
+
 				if (anim.State.GetAnimation().HasFrame())
-					sprite.Texture = anim.State.GetAnimation().GetCurrentSprite();
+				{
+					texture = anim.State.GetAnimation().GetCurrentSprite();
+				}
 				else
 				{
-					if(sprite.Texture)
+					if (texture)
 					{
-						sprite.Texture->Delete();
-						sprite.Texture.reset();
+						texture->Delete();
+						texture.reset();
 					}
 				}
 			}
@@ -953,10 +971,6 @@ namespace origin
 		}
 
 		Renderer::GetGShader("DirLightDepthMap")->Disable();
-
-		// ==============================
-		// Point Light Shadow
-		// ==============================
 
 		glDisable(GL_CULL_FACE);
 	}

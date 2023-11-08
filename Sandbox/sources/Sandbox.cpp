@@ -10,48 +10,164 @@
 
 using namespace origin;
 
+float rectangleVertices[] =
+{
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	-1.0f,  1.0f,  0.0f, 1.0f,
+
+	 1.0f,  1.0f,  1.0f, 1.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	-1.0f,  1.0f,  0.0f, 1.0f
+};
+
+struct Vertex
+{
+	glm::vec3 Position;
+	glm::vec3 Normal;
+	glm::vec3 Color;
+	glm::vec2 TexUV;
+};
+
+// Vertices for plane with texture
+std::vector<Vertex> vertices =
+{
+	Vertex{glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+	Vertex{glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+	Vertex{glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+	Vertex{glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)}
+};
+
+// Indices for plane with texture
+std::vector<GLuint> indices =
+{
+	0, 1, 2,
+	0, 2, 3
+};
+
+struct RenderData
+{
+	uint32_t RectVAO, RectVBO;
+	uint32_t FBO, FbTexture, RBO;
+	uint32_t PPFBO, PPTexture, PPRBO;
+
+	std::shared_ptr<Shader> defShader;
+	std::shared_ptr<Shader> fboShader;
+	float Gamma = 2.2f;
+};
+static RenderData s;
+
+struct PlaneData
+{
+	std::shared_ptr<VertexArray> VAO;
+	std::shared_ptr<VertexBuffer> VBO;
+
+	std::shared_ptr<Texture> diffuseMap;
+	std::shared_ptr<Texture> normMap;
+	std::shared_ptr<Texture> displMap;
+};
+
+static PlaneData plane;
+
+uint32_t width, height;
+
 Sandbox::Sandbox() : Layer("Sandbox")
 {
-	mario1 = Texture2D::Create("Sandbox/marioA.png");
-	mario2 = Texture2D::Create("Sandbox/marioB.png");
-	mario3 = Texture2D::Create("Sandbox/marioC.png");
-	mario4 = Texture2D::Create("Sandbox/marioD.png");
-	mario5 = Texture2D::Create("Sandbox/marioE.png");
-
-	marioAnim.AddFrame(mario1, marioFrameTime);
-	marioAnim.AddFrame(mario2, marioFrameTime);
-	marioAnim.AddFrame(mario3, marioFrameTime);
-	marioAnim.AddFrame(mario4, marioFrameTime);
-	marioAnim.AddFrame(mario5, marioFrameTime);
-
-	fireball1 = Texture2D::Create("Sandbox/fireball/fireballA.png");
-	fireball2 = Texture2D::Create("Sandbox/fireball/fireballB.png");
-	fireball3 = Texture2D::Create("Sandbox/fireball/fireballC.png");
-	fireball4 = Texture2D::Create("Sandbox/fireball/fireballD.png");
-	fireball5 = Texture2D::Create("Sandbox/fireball/fireballE.png");
-	fireball6 = Texture2D::Create("Sandbox/fireball/fireballF.png");
-	fireball7 = Texture2D::Create("Sandbox/fireball/fireballG.png");
-	fireball8 = Texture2D::Create("Sandbox/fireball/fireballH.png");
-
-	fireballAnim.AddFrame(fireball1, fireballFrameTime);
-	fireballAnim.AddFrame(fireball2, fireballFrameTime);
-	fireballAnim.AddFrame(fireball3, fireballFrameTime);
-	fireballAnim.AddFrame(fireball4, fireballFrameTime);
-	fireballAnim.AddFrame(fireball5, fireballFrameTime);
-	fireballAnim.AddFrame(fireball6, fireballFrameTime);
-	fireballAnim.AddFrame(fireball7, fireballFrameTime);
-	fireballAnim.AddFrame(fireball8, fireballFrameTime);
-
-	AnimState.AddState("Fireball");
-	AnimState.AddAnimation(fireballAnim);
-
-	AnimState.AddState("Mario");
-	AnimState.AddAnimation(marioAnim);
-
-	AnimState.SetActiveState("Mario");
-
-	camera = EditorCamera(30.0f, 16.0f/9.0f, 0.1f, 1000.0f);
+	camera = EditorCamera(30.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
 	camera.EnableMovement(true);
+
+	width = Application::Get().GetWindow().GetWidth();
+	height = Application::Get().GetWindow().GetHeight();
+
+	s.defShader = Shader::Create("Resources/Shaders/sandbox/default.glsl", false);
+	s.fboShader = Shader::Create("Resources/Shaders/sandbox/framebuffer.glsl", false);
+
+	// Take care of all the light related things
+	glm::vec4 lightColor = glm::vec4(100.0f, 100.0f, 100.0f, 1.0f);
+	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
+
+	s.defShader->Enable();
+	s.defShader->SetVector("lightColor", lightColor);
+	s.defShader->SetVector("lightPos", lightColor);
+
+	s.fboShader->Enable();
+	s.fboShader->SetInt("screenTexture", 0);
+	s.fboShader->SetFloat("gamma", s.Gamma);
+
+	glGenVertexArrays(1, &s.RectVAO);
+	glGenBuffers(1, &s.RectVBO);
+	glBindVertexArray(s.RectVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, s.RectVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	glGenFramebuffers(1, &s.FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, s.FBO);
+
+	glGenTextures(1, &s.FbTexture);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, s.FbTexture);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 8, GL_RGB16F, width, height, GL_TRUE);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // Prevents edge bleeding
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Prevents edge bleeding
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, s.FbTexture, 0);
+
+	glGenRenderbuffers(1, &s.RBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, s.RBO);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_DEPTH24_STENCIL8, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, s.RBO);
+
+	auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer error: " << fboStatus << std::endl;
+
+	glGenFramebuffers(1, &s.PPFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, s.PPFBO);
+
+	glGenTextures(1, &s.PPTexture);
+	glBindTexture(GL_TEXTURE_2D, s.PPTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s.PPTexture, 0);
+
+	// Error checking framebuffer
+	fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Post-Processing Framebuffer error: " << fboStatus << std::endl;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	plane.VAO = VertexArray::Create();
+	plane.VBO = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
+
+	plane.VBO->SetLayout
+	({
+		{ ShaderDataType::Float3, "aPosition" },
+		{ ShaderDataType::Float3, "aNormal"		},
+		{	ShaderDataType::Float3,	"aColor"		},
+		{	ShaderDataType::Float2,	"aUVS"			}
+	});
+
+	plane.VAO->AddVertexBuffer(plane.VBO);
+
+	std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(indices);
+	plane.VAO->SetIndexBuffer(indexBuffer);
+
+	plane.diffuseMap = Texture2D::Create("Resources/Sandbox/diffuse.png");
+	plane.normMap = Texture2D::Create("Resources/Sandbox/normal.png");
+	plane.displMap = Texture2D::Create("Resources/Sandbox/displacement.png");
+
+	plane.diffuseMap->Bind(0);
+	s.defShader->Enable();
+	s.defShader->SetInt("diffuse0", 0);
 }
 
 Sandbox::~Sandbox()
@@ -60,32 +176,46 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnUpdate(Timestep ts)
 {
-	RenderCommand::Clear();
-	RenderCommand::ClearColor(glm::vec4(0.9f, 0.9f, 0.9f, 1.0f));
+	width = Application::Get().GetWindow().GetWidth();
+	height = Application::Get().GetWindow().GetHeight();
+	
+
+	// Bind the custom framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, s.FBO);
+	glClearColor(pow(0.07f, s.Gamma), pow(0.13f, s.Gamma), pow(0.17f, s.Gamma), 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 
 	camera.OnUpdate(ts);
-	uint32_t width = Application::Get().GetWindow().GetWidth();
-	uint32_t height = Application::Get().GetWindow().GetHeight();
 	camera.SetViewportSize((float)width, (float)height);
-
-	// Render Here
 
 	Renderer2D::ResetStats();
 	Renderer::BeginScene(camera);
 
-	AnimState.Update(ts);
+	s.defShader->Enable();
+	plane.normMap->Bind(1);
+	plane.displMap->Bind(2);
 
+	s.defShader->SetInt("normal0", 1);
+	s.defShader->SetInt("displacement0", 2);
 
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.7f, 0.0f))
-		* glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+	s.defShader->SetVector("camPos", camera.GetPosition());
+	s.defShader->SetMatrix("camMatrix", camera.GetViewMatrix());
 
-	TextComponent tc;
-	tc.FontAsset = Font::GetDefault();
-	tc.Color = glm::vec4(0.23f, 0.12f, 1.0f, 1.0f);
+	glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f));
+	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
 
-	Renderer2D::DrawString("It's Me Mario", transform, tc);
+	s.defShader->SetMatrix("translation", translation);
+	s.defShader->SetMatrix("rotation", rotation);
+	s.defShader->SetMatrix("scale", scale);
+	s.defShader->SetMatrix("model", glm::mat4(1.0f));
+
+	RenderCommand::DrawIndexed(plane.VAO);
 
 	Renderer::EndScene();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Sandbox::OnEvent(Event& e)
@@ -108,40 +238,6 @@ void Sandbox::OnGuiRender()
 
 	glm::vec3 pos = camera.GetPosition();
 	ImGui::Text("Camera Pos (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z);
-
-	ImGui::Separator();
-	ImGui::PushID("mario");
-	ImGui::Text("Mario");
-	ImGui::Text("Anim SpriteIndex: %i", marioAnim.GetFrameIndex());
-	ImGui::Text("Anim FrameCount : %i", marioAnim.GetTotalFrames());
-
-	if (ImGui::Button("Reset")) marioAnim.Reset(); ImGui::SameLine();
-	if (ImGui::Checkbox("Loop", &looping)) marioAnim.SetLooping(looping);
-	ImGui::DragFloat3("Position", glm::value_ptr(marioPosition), 0.5f);
-	if (ImGui::SliderFloat("Frame Time", &marioFrameTime, 0.0f, 1.0f))
-		marioAnim.SetFrameTime(marioFrameTime);
-	ImGui::PopID();
-	ImGui::Separator();
-
-	ImGui::PushID("fireball");
-	ImGui::Text("Fireball");
-	ImGui::Text("Anim SpriteIndex: %i", fireballAnim.GetFrameIndex());
-	ImGui::Text("Anim FrameCount : %i", fireballAnim.GetTotalFrames());
-
-	if (ImGui::Button("Reset")) fireballAnim.Reset(); ImGui::SameLine();
-	if (ImGui::Checkbox("Loop", &fireballLooping)) fireballAnim.SetLooping(fireballLooping);
-	ImGui::DragFloat3("Position", glm::value_ptr(fireballPosition), 0.5f);
-	if (ImGui::SliderFloat("Frame Time", &fireballFrameTime, 0.0f, 1.0f))
-		fireballAnim.SetFrameTime(fireballFrameTime);
-	ImGui::PopID();
-
-	if (ImGui::Button("Mario/Fireball"))
-		switching = switching == false ? true : false;
-
-	if (switching)
-		AnimState.SetActiveState("Mario");
-	else
-		AnimState.SetActiveState("Fireball");
 
 	ImGui::End();
 }

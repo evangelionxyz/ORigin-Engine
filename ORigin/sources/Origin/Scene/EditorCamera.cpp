@@ -8,7 +8,7 @@
 #include "Origin/IO/Input.h"
 #include "Origin/IO/KeyCodes.h"
 #include "Origin/IO/MouseCodes.h"
-#include "Origin/Scene/Component.h"
+#include "Origin/Scene/Components.h"
 #include "Origin/Scene/Entity.h"
 
 #include <glfw/glfw3.h>
@@ -104,58 +104,49 @@ namespace origin {
 
 		if (m_EnableMovement)
 		{
-			// Pivot Camera (rotate based on object)
-			if (m_CameraStyle == Pivot)
+			glm::vec3 lastPosition = m_LastPosition;
+			glm::vec3 velocity(0.0f);
+
+			if (Input::IsMouseButtonPressed(Mouse::ButtonRight) || Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 			{
-
-				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) || Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+				if (mouse.x > wWidth - 2.0f)
 				{
-					if (mouse.x > wWidth - 2.0f)
-					{
-						m_InitialMousePosition.x = 2.0f;
-						Input::SetMousePosition(2.0f, mouse.y);
-					}
-					else if (mouse.x < 2.0f)
-					{
-						m_InitialMousePosition.x = wWidth - 2.0f;
-						Input::SetMousePosition(wWidth - 2.0f, mouse.y);
-					}
-
-					if (mouse.y > wHeight - 2.0f)
-					{
-						m_InitialMousePosition.y = 2.0f;
-						Input::SetMousePosition(mouse.x, 2.0f);
-					}
-					else if (mouse.y < 2.0f)
-					{
-						m_InitialMousePosition.y = wHeight - 2.0f;
-						Input::SetMousePosition(mouse.x, wHeight - 2.0f);
-					}
+					m_InitialMousePosition.x = 2.0f;
+					Input::SetMousePosition(2.0f, mouse.y);
 				}
-				
+				else if (mouse.x < 2.0f)
+				{
+					m_InitialMousePosition.x = wWidth - 2.0f;
+					Input::SetMousePosition(wWidth - 2.0f, mouse.y);
+				}
+
+				if (mouse.y > wHeight - 2.0f)
+				{
+					m_InitialMousePosition.y = 2.0f;
+					Input::SetMousePosition(mouse.x, 2.0f);
+				}
+				else if (mouse.y < 2.0f)
+				{
+					m_InitialMousePosition.y = wHeight - 2.0f;
+					Input::SetMousePosition(mouse.x, wHeight - 2.0f);
+				}
+			}
+			switch (m_CameraStyle)
+			{
+			case origin::Pivot:
 				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
 					MouseRotate(delta);
-					
 				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);
-				
-				float moveSpeed = 6.0f;
-
-				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance,
-					deltaTime * moveSpeed);
-			}
-			
-			// AWSD Keyboard
-			else if (m_CameraStyle == FreeMove)
-			{
-				glm::vec3 velocity(0.0f);
-				auto movement = m_Position;
-				
-				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
+				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, deltaTime * 6.0f);
+				lastPosition = m_FocalPoint - GetForwardDirection() * m_Distance;
+				break;
+			case origin::FreeMove:
+				if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 					MouseRotate(delta);
-				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl))
+				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 					MousePan(delta);
-				
+
 				if (Input::IsKeyPressed(Key::A))
 					velocity -= GetRightDirection();
 				else if (Input::IsKeyPressed(Key::D))
@@ -165,16 +156,30 @@ namespace origin {
 				else if (Input::IsKeyPressed(Key::S))
 					velocity -= GetForwardDirection();
 
-				movement += velocity;
-				m_Position = glm::lerp(glm::vec3(0.0f), movement, deltaTime * m_MoveSpeed);
+				if (Input::IsKeyPressed(Key::A) || Input::IsKeyPressed(Key::S) || Input::IsKeyPressed(Key::D) || Input::IsKeyPressed(Key::W))
+					m_MoveSpeed += deltaTime * 2.0f;
+				else
+					m_MoveSpeed -= deltaTime * 2.0f;
+
+				if (m_MoveSpeed <= 2.0f)
+					m_MoveSpeed = 2.0f;
+				else if (m_MoveSpeed >= 20.0f)
+					m_MoveSpeed = 20.0f;
+
+				m_Position = glm::lerp(m_Position, m_Position + velocity, deltaTime * m_MoveSpeed);
+				lastPosition = m_Position;
+
+				m_Distance = 5.0f;
+				m_FocalPoint = lastPosition + GetForwardDirection() * m_Distance;
+				break;
+			default:
+				break;
 			}
+
+			m_LastPosition = lastPosition;
 		}
 
-
 		UpdateView();
-
-		
-
 	}
 
 	void EditorCamera::OnEvent(Event& e)
@@ -205,16 +210,18 @@ namespace origin {
 		float delta = e.GetYOffset();
 		if (m_EnableMovement)
 		{
-			if (m_CameraStyle == Pivot)
+			switch (m_CameraStyle)
 			{
+			case origin::Pivot:
 				MouseZoom(delta * 0.1f);
-			}
-			else if(m_CameraStyle == FreeMove)
-			{
+				UpdateView();
+				break;
+			case origin::FreeMove:
 				m_MoveSpeed += delta;
+				break;
+			default:
+				break;
 			}
-			
-			UpdateView();
 		}
 		return false;
 	}
@@ -222,9 +229,20 @@ namespace origin {
 	void EditorCamera::MousePan(const glm::vec2& delta)
 	{
 		auto [xSpeed, ySpeed] = PanSpeed();
+		switch (m_CameraStyle)
+		{
+		case origin::Pivot:
+			m_FocalPoint += -GetRightDirection() * delta.x * xSpeed;
+			m_FocalPoint += GetUpDirection() * delta.y * ySpeed;
+			break;
+		case origin::FreeMove:
+			m_Position += -GetRightDirection() * delta.x * xSpeed;
+			m_Position += GetUpDirection() * delta.y * ySpeed;
+			break;
+		default:
+			break;
+		}
 		
-		m_FocalPoint += -GetRightDirection() * delta.x * xSpeed;
-		m_FocalPoint += GetUpDirection() * delta.y * ySpeed;
 	}
 
 	void EditorCamera::MouseRotate(const glm::vec2& delta)
@@ -237,9 +255,7 @@ namespace origin {
 	void EditorCamera::MouseZoom(const float delta)
 	{
 		m_Distance -= delta * ZoomSpeed();
-
 		m_Distance = std::max(m_Distance, 5.0f);
-
 		m_FocalPoint += delta * GetForwardDirection() * ZoomSpeed();
 	}
 

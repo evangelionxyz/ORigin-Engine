@@ -1,14 +1,11 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Origin\Physics\RigidbodyComponent.h"
 #include "Origin\Physics\Collider.h"
-
-#include "Component.h"
-
+#include "Components.h"
 #include "Scene.h"
 #include "entt\entt.hpp"
-
 #include "box2d/b2_contact.h"
 
 namespace origin {

@@ -1,13 +1,14 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "SceneHierarchyPanel.h"
-
-#include "..\Editor.h"
-
+#include "../EditorLayer.h"
 #include "Origin\Project\Project.h"
+#include "Origin\Asset\AssetManager.h"
+#include "Origin\Asset\AssetMetaData.h"
+#include "Origin\Asset\TextureImporter.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
-#include "Origin\Scene\Component.h"
+#include "Origin\Scene\Components.h"
 #include "Origin\Audio\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
@@ -377,7 +378,7 @@ namespace origin {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
 							const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-							std::filesystem::path audioPath = Project::GetAssetFileSystemPath(path);
+							std::filesystem::path audioPath = Project::GetActiveAssetFileSystemPath(path);
 							if (audioPath.extension() == ".wav" || audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
 							{
 								filepath = audioPath.generic_string();
@@ -741,17 +742,15 @@ namespace origin {
 						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 
 						// Get the actual Location from Project Assets Directory
-						std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
+						std::filesystem::path modelPath = std::filesystem::path(path);
 
 						if (modelPath.extension() == ".gltf"
 							|| modelPath.extension() == ".fbx"
 							|| modelPath.extension() == ".obj")
 						{
 							std::shared_ptr<Shader> matShader = Renderer::GetGShader("Mesh");
-
 							component.Material = Material::Create("MeshMaterial");
 							component.Material->LoadShader(matShader);
-
 							component.Model = Model::Create(modelPath.generic_string(), component.Material);
 						}
 					}
@@ -779,8 +778,10 @@ namespace origin {
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
 					ImGui::DragFloat("Shininess", &component.Material->Shininess, 0.1f, 1.0f, 256.0f);
 					ImGui::SliderFloat("Bias", &component.Material->Bias, 0.005f, 0.1f);
+					DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f, 1.0f);
 
 					// Drop Texture
+#if 0
 					if (component.Material->HasTexture == false)
 					{
 						if (!component.Material->Texture)
@@ -792,7 +793,7 @@ namespace origin {
 							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 							{
 								const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-								std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+								std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
 								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 									component.Material->LoadTextureFromFile(texturePath.generic_string());
 							}
@@ -807,15 +808,11 @@ namespace origin {
 								component.Material->Texture = {};
 								return;
 							}
-
-							DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f, 1.0f);
-
 							ImGui::Text("Path: %s", component.Material->Texture->GetFilepath().c_str());
 						}
 					}
-					
+#endif
 				}
-
 			});
 
 		DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
@@ -830,7 +827,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path fontPath = Project::GetAssetFileSystemPath(path);
+						std::filesystem::path fontPath = Project::GetActiveAssetFileSystemPath(path);
 						if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
 						{
 							if(component.FontAsset) component.FontAsset.reset();
@@ -876,7 +873,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+						std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
@@ -899,48 +896,71 @@ namespace origin {
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
-				if (!component.Texture)
-					ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
-				else ImGui::ImageButton(reinterpret_cast<ImTextureID>(component.Texture->GetRendererID()), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+				std::string label = "None";
+				bool isTextureValid = false;
+				if (component.Texture != 0)
+				{
+					if (AssetManager::IsAssetHandleValid(component.Texture) && AssetManager::GetAssetType(component.Texture) == AssetType::Texture2D)
+					{
+						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Texture);
+						label = metadata.Filepath.filename().string();
+						isTextureValid = true;
+					}
+					else
+					{
+						label = "Invalid";
+					}
+				}
 
+				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
+				buttonLabelSize.x += 20.0f;
+				float buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+
+				ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+						AssetHandle handle = *(AssetHandle*)payload->Data;
+						if (AssetManager::GetAssetType(handle) == AssetType::Texture2D)
+						{
+							component.Texture = handle;
+						}
+						else
+						{
+							OGN_CORE_WARN("Wrong asset type!");
+						}
 
-						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-							component.Texture = Texture2D::Create(texturePath.string());
 					}
+					ImGui::EndDragDropTarget();
 				}
 
-				if (component.Texture)
+				if (isTextureValid)
 				{
 					ImGui::SameLine();
-					if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
+					ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+					float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
 					{
-						component.Texture->Delete();
-						component.Texture.reset();
-						return;
+						component.Texture = 0;
 					}
-
-					auto& path = std::filesystem::relative(component.Texture->GetFilepath(), Project::GetAssetDirectory());
-
-					ImGui::Text("Path: %s", path.string().c_str());
-					DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
-
-					ImGui::Text("Flip");
-					ImGui::SameLine();
-					ImGui::Checkbox("X", &component.FlipX);
-					ImGui::SameLine();
-					ImGui::Checkbox("Y", &component.FlipY);
 				}
+
+				ImGui::SameLine();
+				ImGui::Text("Texture");
+
+				DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
+
+				ImGui::Text("Flip");
+				ImGui::SameLine();
+				ImGui::Checkbox("X", &component.FlipX);
+				ImGui::SameLine();
+				ImGui::Checkbox("Y", &component.FlipY);
 			});
 
 		DrawComponent<LightComponent>("LIGHTING", entity, [](auto& component)
 			{
-				const char* lightTypeString[3] = { "Spot", "Point", "Direcional" };
+				const char* lightTypeString[3] = { "Spot", "Point", "Directional" };
 				const char* currentLightTypeString = lightTypeString[static_cast<int>(component.Light->Type)];
 
 				if (ImGui::BeginCombo("Type", currentLightTypeString))
@@ -1094,15 +1114,13 @@ namespace origin {
 	template<typename T>
 	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)
 	{
-		if (!m_SelectedEntity.HasComponent<T>())
+		if (ImGui::MenuItem(entryName.c_str()))
 		{
-			if (ImGui::MenuItem(entryName.c_str()))
-			{
-				m_SelectedEntity.AddComponent<T>();
-				ImGui::CloseCurrentPopup();
-				return true;
-			}
+			m_SelectedEntity.AddComponent<T>();
+			ImGui::CloseCurrentPopup();
+			return true;
 		}
+
 		return false;
 	}
 }

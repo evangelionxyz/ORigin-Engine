@@ -1,6 +1,6 @@
 #pragma once
 #include "ShadowRenderer.h"
-#include "Component.h"
+#include "Components.h"
 
 namespace origin {
 

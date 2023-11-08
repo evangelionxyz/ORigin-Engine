@@ -12,7 +12,7 @@
 
 #include "Entity.h"
 #include "Lighting.h"
-#include "Component.h"
+#include "Components.h"
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>
@@ -219,7 +219,7 @@ namespace origin
 						for (int frameIndex = 0; frameIndex < animations.GetTotalFrames(); frameIndex++)
 						{
 							out << YAML::BeginMap; // Path
-							std::filesystem::path& framePath = relative(animations.GetSprites(frameIndex)->GetFilepath(), Project::GetAssetDirectory());
+							std::filesystem::path& framePath = relative(animations.GetSprites(frameIndex)->GetFilepath(), Project::GetActiveAssetDirectory());
 							out << YAML::Key << "Path" << YAML::Value << framePath.generic_string(); // Add the frame path directly to the sequence
 							out << YAML::EndMap; //!Path
 						}
@@ -304,7 +304,7 @@ namespace origin
 			const auto& ac = entity.GetComponent<AudioComponent>();
 			out << YAML::Key << "Name" << YAML::Value << ac.Name;
 
-			auto& audioPath = relative(ac.Audio->GetFilepath(), Project::GetAssetDirectory());
+			auto& audioPath = relative(ac.Audio->GetFilepath(), Project::GetActiveAssetDirectory());
 			out << YAML::Key << "Filepath" << YAML::Value << audioPath.generic_string();
 			out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
 			out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
@@ -375,25 +375,14 @@ namespace origin
 
 			if (sMesh.Model)
 			{
-				std::filesystem::path modelFilepath = relative(sMesh.Model->GetFilepath(), Project::GetAssetDirectory());
+				std::filesystem::path modelFilepath = relative(sMesh.Model->GetFilepath(), Project::GetActiveAssetDirectory());
 				out << YAML::Key << "ModelPath" << YAML::Value << modelFilepath.generic_string();
 				out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.Material->GetShaderFilepath();
 				out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
 				out << YAML::Key << "Color" << YAML::Value << sMesh.Material->Color;
 				out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
 				out << YAML::Key << "Bias" << YAML::Value << sMesh.Material->Bias;
-
-				std::filesystem::path texturePath = "";
-				auto tilingFactor = glm::vec2(1.0f);
-
-				if (sMesh.Material->Texture)
-				{
-					texturePath = relative(sMesh.Material->Texture->GetFilepath(), Project::GetAssetDirectory());
-					tilingFactor = sMesh.Material->TilingFactor;
-				}
-
-				out << YAML::Key << "TextureFilepath" << YAML::Value << texturePath.generic_string();
-				out << YAML::Key << "TilingFactor" << YAML::Value << tilingFactor;
+				out << YAML::Key << "TilingFactor" << YAML::Value << sMesh.Material->TilingFactor;
 			}
 
 			out << YAML::EndMap; // !StaticMeshComponent
@@ -455,7 +444,7 @@ namespace origin
 			out << YAML::BeginMap; // TextComponent
 			const auto& textComponent = entity.GetComponent<TextComponent>();
 			out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
-			const auto& textAssetPath = relative(textComponent.FontAsset->GetFilepath(), Project::GetAssetDirectory());
+			const auto& textAssetPath = relative(textComponent.FontAsset->GetFilepath(), Project::GetActiveAssetDirectory());
 			out << YAML::Key << "FontFilepath" << YAML::Value << textAssetPath.generic_string();
 			out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
 			out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
@@ -492,7 +481,7 @@ namespace origin
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			if (src.Texture)
 			{
-				auto& texturePath = relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
+				auto& texturePath = relative(src.Texture->GetFilepath(), Project::GetActiveAssetDirectory());
 				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
 			}
 
@@ -506,12 +495,8 @@ namespace origin
 
 			const auto& src = entity.GetComponent<SpriteRenderer2DComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
-			if (src.Texture)
-			{
-				auto& texturePath = relative(src.Texture->GetFilepath(), Project::GetAssetDirectory());
-				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
-			}
 			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
+			out << YAML::Key << "TextureHandle" << YAML::Value << src.Texture;
 
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
 		}
@@ -637,36 +622,12 @@ namespace origin
 		out << YAML::EndMap; // !Entity
 	}
 
-	void SceneSerializer::Serialize(const std::string& filepath)
-	{
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
-		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-
-		m_Scene->m_Registry.each([&](auto entityID)
-		{
-			const Entity entity = {entityID, m_Scene.get()};
-			if (!entity)
-				return;
-
-			SerializeEntity(out, entity);
-		});
-
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
-
-		std::ofstream fout(filepath);
-		fout << out.c_str();
-
-		OGN_CORE_TRACE("Scene Serialized in {0}", filepath);
-	}
-
 	void SceneSerializer::Serialize(const std::filesystem::path& filepath)
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << filepath.filename().string();
+		out << YAML::Key << "ID" << YAML::Value << (uint64_t)m_Scene->m_AssetHandle;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
@@ -686,13 +647,13 @@ namespace origin
 		OGN_CORE_INFO("Scene Serialized in {0}", filepath.string());
 	}
 
-	void SceneSerializer::SerializeRuntime(const std::string& filepath)
+	void SceneSerializer::SerializeRuntime(const std::filesystem::path& filepath)
 	{
 	}
 
-	bool SceneSerializer::Deserialize(const std::string& filepath)
+	bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 	{
-		std::ifstream stream(filepath);
+		std::ifstream stream(filepath.string());
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 
@@ -746,7 +707,7 @@ namespace origin
 							for (auto frames : state["Frames"])
 							{
 								// Get the frames's filepath
-								std::string framePath = Project::GetAssetFileSystemPath(frames["Path"].as<std::string>()).generic_string();
+								std::string framePath = Project::GetActiveAssetFileSystemPath(frames["Path"].as<std::string>()).generic_string();
 								const std::shared_ptr<Texture2D> texture = Texture2D::Create(framePath);
 								animation.AddFrame(texture, 0.23f);
 							}
@@ -784,7 +745,7 @@ namespace origin
 						config.MinDistance = ac.MinDistance;
 						config.MaxDistance = ac.MaxDistance;
 						config.Spatial = ac.Spatial;
-						config.Filepath = Project::GetAssetFileSystemPath(filepath).generic_string();
+						config.Filepath = Project::GetActiveAssetFileSystemPath(filepath).generic_string();
 						ac.Audio->LoadSource(config);
 					}
 				}
@@ -836,12 +797,7 @@ namespace origin
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
-					if (spriteRenderer2DComponent["TexturePath"])
-					{
-						auto texturePath = spriteRenderer2DComponent["TexturePath"].as<std::string>();
-						auto path = Project::GetAssetFileSystemPath(texturePath);
-						src.Texture = Texture2D::Create(path.string());
-					}
+					src.Texture = spriteRenderer2DComponent["TextureHandle"].as<AssetHandle>();
 
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 				}
@@ -944,7 +900,7 @@ namespace origin
 
 					if (!modelFilepath.empty() && !shaderFilepath.empty())
 					{
-						auto& modelPath = Project::GetAssetFileSystemPath(modelFilepath);
+						auto& modelPath = Project::GetActiveAssetFileSystemPath(modelFilepath);
 
 						// Prepare The Materials
 						std::shared_ptr<Shader> shader = Shader::Create(shaderFilepath);
@@ -954,18 +910,7 @@ namespace origin
 						sMesh.Material->Color = staticMeshComponent["Color"].as<glm::vec4>();
 						sMesh.Material->Shininess = staticMeshComponent["Shininess"].as<float>();
 						sMesh.Material->Bias = staticMeshComponent["Bias"].as<float>();
-
-						std::string& textureFilepath = staticMeshComponent["TextureFilepath"].as<std::string>();
-						if (!textureFilepath.empty())
-						{
-							std::string& path = Project::GetAssetFileSystemPath(textureFilepath).generic_string();
-							sMesh.Material->LoadTextureFromFile(path);
-							sMesh.Material->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
-						}
-						else
-						{
-							sMesh.Material->TilingFactor = glm::vec2(1.0f);
-						}
+						sMesh.Material->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
 
 						// Create The Model After
 						sMesh.Model = Model::Create(modelPath.string(), sMesh.Material);
@@ -1020,7 +965,7 @@ namespace origin
 
 					else if (!filepath.empty() && !text.FontAsset)
 					{
-						auto path = Project::GetAssetFileSystemPath(filepath);
+						auto path = Project::GetActiveAssetFileSystemPath(filepath);
 						text.FontAsset = std::make_shared<Font>(path);
 					}
 
@@ -1088,9 +1033,8 @@ namespace origin
 		return true;
 	}
 
-	bool SceneSerializer::DeserializeRuntime(const std::string& filepath)
+	bool SceneSerializer::DeserializeRuntime(const std::filesystem::path& filepath)
 	{
-		OGN_CORE_TRACE(false);
 		return false;
 	}
 }

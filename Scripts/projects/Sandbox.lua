@@ -69,11 +69,19 @@ filter "configurations:Debug"
     symbols "On"
 
 filter "configurations:Release"
-    defines "OGN_RELEASE"
+    defines {
+        "PX_PHYSX_STATIC_LIB",
+        "OGN_RELEASE",
+        "NDEBUG"
+    }
     runtime "Release"
     optimize "On"
 
 filter "configurations:Dist"
-    defines "OGN_DIST"
+    defines {
+        "PX_PHYSX_STATIC_LIB",
+        "OGN_RELEASE",
+        "NDEBUG"
+    }
     runtime "Release"
     optimize "On"

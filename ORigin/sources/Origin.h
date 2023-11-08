@@ -40,7 +40,7 @@
 #include "Origin\Scene\Scene.h"
 #include "Origin\Scene\Skybox.h"
 #include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\Component.h"
+#include "Origin\Scene\Components.h"
 #include "Origin\Scene\Camera.h"
 
 #include "Origin\Utils\GUI\GuiLayer.h"

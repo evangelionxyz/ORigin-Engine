@@ -31,9 +31,13 @@ namespace origin
 
 		m_VertexBuffer->SetLayout
 		({
-			{ ShaderDataType::Float3, "aPosition" },
-			{ ShaderDataType::Float3, "aNormal"	},
-			{ShaderDataType::Float2,	"aTexCoord"	}
+			{ ShaderDataType::Float3, "aPosition"		},
+			{ ShaderDataType::Float3, "aNormal"			},
+			{	ShaderDataType::Float2,	"aTexCoord"		},
+			{	ShaderDataType::Float3,	"aTangents"		},
+			{	ShaderDataType::Float3,	"aBitangents"	},
+			{	ShaderDataType::Int4,		"aBones"			},
+			{	ShaderDataType::Float4,	"aWeights"		}
 		});
 
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
@@ -61,6 +65,8 @@ namespace origin
 
 		uint32_t diffuseNumber = 1;
 		uint32_t specularNumber = 1;
+		uint32_t normalNumber = 1;
+		uint32_t heightNumber = 1;
 
 		for (uint32_t i = 0; i < m_Textures.size(); i++)
 		{
@@ -71,6 +77,10 @@ namespace origin
 				number = std::to_string(diffuseNumber++);
 			else if (name == "texture_specular")
 				number = std::to_string(specularNumber++);
+			else if (name == "texture_normal")
+				number = std::to_string(normalNumber++);
+			else if (name == "texture_height")
+				number = std::to_string(heightNumber++);
 
 			shader->SetInt("material."+name+number, i);
 			m_Textures[i]->Bind(i);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PhysicsScene.h"
-
 #include "PxPhysicsAPI.h"
 
 namespace origin {

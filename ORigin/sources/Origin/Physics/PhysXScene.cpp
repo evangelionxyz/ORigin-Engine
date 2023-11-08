@@ -1,12 +1,9 @@
 #include "pch.h"
 #include "PhysXScene.h"
 #include "PhysXAPI.h"
-
 #include "PxActor.h"
 
 #include "Origin\Scene\Entity.h"
-
-#include <glm\gtc\quaternion.hpp>
 
 namespace origin {
 
@@ -25,6 +22,8 @@ namespace origin {
 	{
 		m_PhysXScene->release();
 		m_PhysXScene = nullptr;
+
+		m_Context = nullptr;
 	}
 
 	void PhysXScene::OnSimulationStart()

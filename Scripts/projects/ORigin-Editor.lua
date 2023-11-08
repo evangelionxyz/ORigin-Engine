@@ -3,7 +3,6 @@
 -- ORigin Editor Project
 project "ORigin-Editor"
 location "%{wks.location}/ORigin-Editor"
-kind "ConsoleApp"
 language "C++"
 cppdialect "C++17"
 staticruntime "off"
@@ -73,6 +72,7 @@ filter "configurations:Debug"
         "OGN_DEBUG",
         "_DEBUG"
     }
+    kind "ConsoleApp"
     runtime "Debug"
     symbols "On"
     links  {
@@ -89,7 +89,12 @@ filter "configurations:Debug"
     }
 
 filter "configurations:Release"
-    defines "OGN_RELEASE"
+   defines {
+        "PX_PHYSX_STATIC_LIB",
+        "OGN_RELEASE",
+        "NDEBUG"
+    }
+    kind "WindowedApp"
     runtime "Release"
     optimize "On"
     postbuildcommands {
@@ -99,7 +104,12 @@ filter "configurations:Release"
     }
 
 filter "configurations:Dist"
-    defines "OGN_DIST"
+    defines {
+        "PX_PHYSX_STATIC_LIB",
+        "OGN_RELEASE",
+        "NDEBUG"
+    }
+    kind "WindowedApp"
     runtime "Release"
     optimize "On"
     postbuildcommands {

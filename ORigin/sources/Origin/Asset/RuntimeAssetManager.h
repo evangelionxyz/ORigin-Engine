@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 
@@ -9,7 +9,6 @@ namespace origin {
 	class RuntimeAssetManager : public AssetManagerBase
 	{
 	public:
-
 	};
 
 }

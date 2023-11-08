@@ -2,6 +2,8 @@
 
 namespace origin {
 
+	class TransformComponent;
+
 	class RigidbodyComponent
 	{
 	public:
@@ -19,7 +21,7 @@ namespace origin {
 		void SetPosition(glm::vec3 position);
 		void SetTransform(glm::vec3 position, glm::quat rotation);
 
-		void UpdateFlags();
+		void UpdateFlags(const TransformComponent& transform);
 
 		void* GetRuntimeBody() { return Body; }
 

@@ -1,15 +1,13 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Application.h"
 #include "Origin\Audio\Audio.h"
-
 #include "Origin\Physics\Physics.h"
-
 #include "Origin\Scripting\ScriptEngine.h"
-#include "imgui.h"
 
-#include "stb_image.h"
+#include <imgui.h>
+#include <stb_image.h>
 
 namespace origin {
 
@@ -46,6 +44,7 @@ namespace origin {
 		splashImageSpec.MinFilter = ImageFilter::Linear;
 		splashImageSpec.Format = ImageFormat::RGB8;
 		std::shared_ptr<Texture2D> splashImage = Texture2D::Create("Resources/UITextures/splashscreen.png", splashImageSpec);
+
 		m_GuiLayer->Begin();
 		ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
 		ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
@@ -66,6 +65,7 @@ namespace origin {
 			ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 		}
+
 		ImGui::PopStyleVar();
 
 		m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());

@@ -2,7 +2,7 @@
 
 #pragma once
 #include "Origin\Renderer\Texture.h"
-#include "Origin\Scene\Component.h"
+#include "Origin\Scene\Components.h"
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
 

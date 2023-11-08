@@ -3,7 +3,7 @@
 #pragma once
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/SubTexture2D.h"
-#include "Origin/Scene/Component.h"
+#include "Origin/Scene/Components.h"
 #include "Origin\Renderer\Font.h"
 
 #include "Origin/Renderer/VertexArray.h"

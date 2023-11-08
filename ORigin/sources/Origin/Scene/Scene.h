@@ -4,13 +4,15 @@
 #include "EditorCamera.h"
 #include "Origin/Utils/Time.h"
 #include "Origin/Scene/Skybox.h"
-#include "Origin/Scene/Component.h"
+#include "Origin/Scene/Components.h"
 #include "Origin/Renderer/Framebuffer.h"
 
 #include "Origin\Renderer\ParticleSystem.h"
 
 #include "Origin/Renderer/Texture.h"
 #include "entt/entt.hpp"
+
+#include "Origin\Asset\Asset.h"
 
 class b2World;
 
@@ -20,13 +22,15 @@ namespace origin {
 		class PhysicsScene;
     class Contact2DListener;
 
-    class Scene
+    class Scene : public Asset
     {
     public:
       Scene();
       ~Scene();
 
       static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
+
+      virtual AssetType GetType() const override { return AssetType::Scene; }
 
       Entity CreateEntity(const std::string& name = std::string());
       Entity CreateCircle(const std::string& name = std::string());
@@ -72,7 +76,7 @@ namespace origin {
       void OnShadowRender();
 
     private:
-
+      AssetHandle m_AssetHandle;
       std::unique_ptr<PhysicsScene> m_PhysicsScene;
 
       // 2D Physics
@@ -105,12 +109,14 @@ namespace origin {
       uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
       uint32_t m_GameViewportWidth = 0, m_GameViewportHeight = 0;
 
+      static std::shared_ptr<Skybox> m_Skybox;
+
       bool m_Running = false;
       bool m_Paused = false;
       int m_StepFrames = 0;
 
       friend class Entity;
-      friend class Editor;
+      friend class EditorLayer;
       friend class SceneSerializer;
       friend class SceneHierarchyPanel;
 

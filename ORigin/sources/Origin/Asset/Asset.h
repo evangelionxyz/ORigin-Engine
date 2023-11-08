@@ -1,6 +1,5 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
-
 #include "Origin\Core\UUID.h"
 
 namespace origin {
@@ -11,6 +10,7 @@ namespace origin {
 		None = 0,
 		Scene,
 		Texture2D,
+		Font,
 		TextureCube,
 		Audio,
 		StaticMesh,
