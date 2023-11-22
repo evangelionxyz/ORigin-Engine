@@ -1,3 +1,5 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "ProjectSerializer.h"
 
@@ -42,16 +44,7 @@ namespace origin
 	{
 		auto& config = m_Project->GetConfig();
 
-		YAML::Node data;
-		try
-		{
-			data = YAML::LoadFile(filepath.string());
-		}
-		catch (const std::exception& e)
-		{
-			OGN_CORE_ERROR("Failed to load project file '{0}'\n			{1}", filepath, e.what());
-			return false;
-		}
+		YAML::Node data = YAML::LoadFile(filepath.string());
 
 		YAML::Node projectNode = data["Project"];
 		if (!projectNode)
@@ -64,11 +57,9 @@ namespace origin
 		config.ScriptModulePath = projectNode["ScriptModulePath"].as<std::string>();
 
 		OGN_CORE_INFO("ProjectSerializer::Deserializing {}", filepath.string());
-		OGN_CORE_INFO("\n	Name: {0}\n	Start Scene: {1}\n	AssetDirectory: {2}\n	Asset Registry: {3}\n	ScriptModulePath: {4}",
-			config.Name,
-			config.AssetDirectory.string(),
-			config.AssetRegistry,
-			config.ScriptModulePath.string());
+		OGN_CORE_INFO("Name				: {}", config.Name);
+		OGN_CORE_INFO("Start Scene: {}", config.StartScene);
+		OGN_CORE_INFO("Asset Reg	: {}", config.AssetRegistry.string());
 
 		return true;
 	}

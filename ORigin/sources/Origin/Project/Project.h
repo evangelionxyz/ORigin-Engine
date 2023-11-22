@@ -16,7 +16,7 @@ namespace origin
 	{
 		AssetHandle StartScene;
 		std::string Name = "Untitled";
-		std::filesystem::path AssetDirectory = "Assets/";
+		std::filesystem::path AssetDirectory = "Assets";
 		std::filesystem::path AssetRegistry = "AssetRegistry.oxr";
 		std::filesystem::path ScriptModulePath;
 	};

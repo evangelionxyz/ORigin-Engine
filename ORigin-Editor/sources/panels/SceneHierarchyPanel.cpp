@@ -914,14 +914,14 @@ namespace origin {
 
 				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
 				buttonLabelSize.x += 20.0f;
-				float buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
 
 				ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						AssetHandle handle = *(AssetHandle*)payload->Data;
+						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
 						if (AssetManager::GetAssetType(handle) == AssetType::Texture2D)
 						{
 							component.Texture = handle;
@@ -938,8 +938,8 @@ namespace origin {
 				if (isTextureValid)
 				{
 					ImGui::SameLine();
-					ImVec2 xLabelSize = ImGui::CalcTextSize("X");
-					float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
 					{
 						component.Texture = 0;

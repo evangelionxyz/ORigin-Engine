@@ -17,6 +17,9 @@
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Asset/TextureImporter.h"
+
 namespace YAML
 {
 	template <>
@@ -496,7 +499,9 @@ namespace origin
 			const auto& src = entity.GetComponent<SpriteRenderer2DComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
-			out << YAML::Key << "TextureHandle" << YAML::Value << src.Texture;
+
+			if(src.Texture != 0)
+				out << YAML::Key << "TextureHandle" << YAML::Value << src.Texture;
 
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
 		}
@@ -797,7 +802,16 @@ namespace origin
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
-					src.Texture = spriteRenderer2DComponent["TextureHandle"].as<AssetHandle>();
+
+					if (auto handle = spriteRenderer2DComponent["TextureHandle"].as<AssetHandle>())
+					{
+						if (AssetManager::GetAssetType(handle) == AssetType::Texture2D)
+						{
+							
+							src.Texture = handle;
+						}
+						
+					}
 
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 				}

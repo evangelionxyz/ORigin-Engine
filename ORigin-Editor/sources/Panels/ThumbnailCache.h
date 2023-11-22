@@ -1,26 +1,41 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #pragma once
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Texture.h"
 
-namespace origin {
+#include <queue>
 
-	struct ThumbnailImage
-	{
-		uint32_t Timestamp;
-		std::shared_ptr<Texture2D> Image;
-	};
+namespace origin {
 
 	class ThumbnailCache
 	{
 	public:
 		ThumbnailCache() = default;
-		ThumbnailCache(std::shared_ptr<Project> project);
+		ThumbnailCache(const std::shared_ptr<Project>& project);
+		std::shared_ptr<Texture2D> GetOrCreateThumbnail(const std::filesystem::path& path);
 
-		std::shared_ptr<Texture2D> GetOrCreateThumbnail(const std::filesystem::path path);
+		void OnUpdate();
 
 	private:
 		std::shared_ptr<Project> m_Project;
+
+		struct ThumbnailImage
+		{
+			uint64_t Timestamp;
+			std::shared_ptr<Texture2D> Image;
+		};
+
 		std::map<std::filesystem::path, ThumbnailImage> m_CachedImages;
+
+		struct ThumbnailInfo 
+		{
+			std::filesystem::path AbsolutePath;
+			std::filesystem::path AssetPath;
+			uint64_t Timestamp;
+		};
+
+		std::queue<ThumbnailInfo> m_Queue;
 		std::filesystem::path m_ThumbnailCachePath;
 	};
 }
