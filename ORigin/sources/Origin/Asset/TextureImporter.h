@@ -12,6 +12,7 @@ namespace origin {
 	public:
 		static std::shared_ptr<Texture2D> ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata);
 		static std::shared_ptr<Texture2D> LoadTexture2D(const std::filesystem::path& path);
+		static std::shared_ptr<Texture2D> GetWhiteTexture();
 	};
 }
 

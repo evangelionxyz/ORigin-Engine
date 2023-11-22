@@ -168,7 +168,7 @@ namespace origin {
 			AssetHandle handle = node["Handle"].as<uint64_t>();
 			auto& metadata = m_AssetRegistry[handle];
 			metadata.Filepath = node["Filepath"].as<std::string>();
-			metadata.Type = AssetTypeFromtString(node["Type"].as<std::string>());
+			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());
 		}
 
 		return true;

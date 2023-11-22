@@ -34,3 +34,6 @@
 [submodule "ORigin/vendor/JoltPhysics"]
 	path = ORigin/vendor/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "ORigin/vendor/Optick"]
+	path = ORigin/vendor/Optick
+	url = https://github.com/bombomby/optick.git

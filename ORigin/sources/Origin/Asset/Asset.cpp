@@ -23,7 +23,7 @@ namespace origin {
 		return "AssetType::Invalid";
 	}
 
-	AssetType AssetTypeFromtString(std::string_view assetType)
+	AssetType AssetTypeFromString(std::string_view assetType)
 	{
 		if (assetType == "AssetType::None") return AssetType::None;
 		if (assetType == "AssetType::Scene") return AssetType::Scene;

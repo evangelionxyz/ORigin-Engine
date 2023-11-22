@@ -51,4 +51,16 @@ namespace origin {
 		return texture;
 	}
 
+	std::shared_ptr<Texture2D> TextureImporter::GetWhiteTexture()
+	{
+		static std::shared_ptr<Texture2D> whiteTexture;
+		if(!whiteTexture)
+			whiteTexture= Texture2D::Create(TextureSpecification());
+
+		uint32_t whiteTextureData = 0xffffffff;
+		whiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
+
+		return whiteTexture;
+	}
+
 }

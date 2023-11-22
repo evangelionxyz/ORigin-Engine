@@ -19,7 +19,7 @@ namespace origin {
 	};
 
 	std::string_view AssetTypeToString(AssetType type);
-	AssetType AssetTypeFromtString(std::string_view assetType);
+	AssetType AssetTypeFromString(std::string_view assetType);
 
 	class Asset
 	{
