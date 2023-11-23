@@ -37,7 +37,9 @@ namespace origin
 	void ContentBrowserPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Content Browser");
+
 		NavigationButton();
+		ImGui::BeginChild("item_list", ImVec2(ImGui::GetContentRegionAvail()), false);
 
 		static float padding = 10.0f;
 		const float cellSize = m_ThumbnailSize + padding;
@@ -86,7 +88,7 @@ namespace origin
 					if (isDirectory)
 					{
 						m_CurrentDirectory /= item.filename();
-						m_HistoryList.insert({m_HistoryList.size() -1, m_CurrentDirectory});
+						m_HistoryList.insert({m_HistoryList.size(), m_CurrentDirectory});
 						m_ForwardCount++;
 					}
 				}
@@ -113,7 +115,6 @@ namespace origin
 		else
 		{
 			// ==== File Mode ====
-
 			uint32_t count = 0;
 			itemRenderCount = 0;
 			for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
@@ -149,7 +150,7 @@ namespace origin
 
 						ImGui::PushID(filenameStr.c_str());
 
-						const auto relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
+						const auto& relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 						ImGui::ImageButton(reinterpret_cast<ImTextureID>(DirectoryIcons(directoryEntry)->GetRendererID()), { m_ThumbnailSize, m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
 						ImGui::PopStyleColor();
@@ -195,49 +196,6 @@ namespace origin
 					first = false;
 				}
 			}
-
-#if 0
-			for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
-			{
-				const auto& path = directoryEntry.path();
-				const std::string filenameStr = path.filename().string();
-
-				ImGui::PushID(filenameStr.c_str());
-
-				const auto relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				ImGui::ImageButton(reinterpret_cast<ImTextureID>(DirectoryIcons(directoryEntry)->GetRendererID()), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
-				ImGui::PopStyleColor();
-
-				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-				{
-					if (directoryEntry.is_directory())
-					{
-						m_CurrentDirectory /= path.filename();
-						m_HistoryList.insert({m_HistoryList.size(), m_CurrentDirectory});
-					}
-				}
-
-				if (ImGui::BeginPopupContextItem())
-				{
-					Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
-					ImGui::Separator();
-
-					if (ImGui::MenuItem("Import"))
-					{
-						Project::GetActive()->GetEditorAssetManager()->ImportAsset(relativePath);
-						RefreshAssetTree();
-					}
-
-					ImGui::EndPopup();
-				}
-
-				ImGui::TextWrapped(filenameStr.c_str());
-				ImGui::NextColumn();
-
-				ImGui::PopID();
-			}
-#endif
 		}
 
 		ImGui::Columns(1);
@@ -250,19 +208,14 @@ namespace origin
 				if(ImGui::MenuItem("New Folder", nullptr))
 				{
 					std::string folderName = "New Folder";
-					char buffer[256];
-					strcpy_s(buffer, sizeof(buffer), folderName.c_str());
-					if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
-						folderName = std::string(buffer);
-
 					const auto newFolderPath = m_CurrentDirectory / folderName;
 					if(!std::filesystem::exists(newFolderPath))
-						std::filesystem::create_directory(m_CurrentDirectory / "New Folder");
+						std::filesystem::create_directory(newFolderPath);
 				}
 				
 				if(ImGui::MenuItem("Animation", nullptr))
 				{
-					// TODO: Not implemented
+					// TODO: Animation Creation
 				}
 				
 				ImGui::EndMenu();
@@ -270,9 +223,10 @@ namespace origin
 			ImGui::EndPopup();
 		}
 
+		ImGui::EndChild();
+
 		// TODO: status bar
 		ImGui::End();
-
 		m_ThumbnailCache->OnUpdate();
 	}
 	
@@ -303,6 +257,8 @@ namespace origin
 
 	void ContentBrowserPanel::NavigationButton()
 	{
+		ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 50.0f), false, ImGuiWindowFlags_NoScrollWithMouse);
+
 		// Navigation Button
 		ImVec4 navBtColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 		ImVec2 navBtSize = ImVec2(23.0f, 23.0f);
@@ -353,6 +309,8 @@ namespace origin
 		// Pop Button Colors
 		ImGui::PopStyleColor(3);
 		ImGui::Separator();
+
+		ImGui::EndChild();
 	}
 
 	std::shared_ptr<Texture2D> ContentBrowserPanel::DirectoryIcons(const std::filesystem::directory_entry& dirEntry)

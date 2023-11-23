@@ -807,10 +807,8 @@ namespace origin
 					{
 						if (AssetManager::GetAssetType(handle) == AssetType::Texture2D)
 						{
-							
 							src.Texture = handle;
 						}
-						
 					}
 
 					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
