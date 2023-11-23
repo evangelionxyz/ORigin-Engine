@@ -401,13 +401,27 @@ namespace origin
 		for (const auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (ac.Audio)
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (audio)
 			{
-				ac.Audio->SetMaxDistance(ac.MaxDistance);
-				ac.Audio->SetMinDistance(ac.MinDistance);
-				ac.Audio->SetLoop(ac.Looping);
-				ac.Audio->SetGain(ac.Volume);
-				ac.Audio->SetPosition(tc.Translation);
+				audio->SetPitch(ac.Pitch);
+				audio->SetDopplerLevel(ac.DopplerLevel);
+				audio->SetMaxDistance(ac.MaxDistance);
+				audio->SetMinDistance(ac.MinDistance);
+				audio->SetLoop(ac.Looping);
+				audio->SetGain(ac.Volume);
+				if (ac.Spatial)
+				{
+					static glm::vec3 prevPos = tc.Translation;
+
+					const glm::vec3& position = tc.Translation;
+					const glm::vec3 delta = position - prevPos;
+
+					prevPos = position;
+
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+					audio->Set3DAttributes(tc.Translation, velocity);
+				}
 			}
 		}
 
@@ -465,20 +479,35 @@ namespace origin
 		for (auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (ac.Audio)
+
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (audio)
 			{
-				ac.Audio->SetMaxDistance(ac.MaxDistance);
-				ac.Audio->SetMinDistance(ac.MinDistance);
-				ac.Audio->SetLoop(ac.Looping);
-				ac.Audio->SetGain(ac.Volume);
-				ac.Audio->SetPosition(tc.Translation);
+				audio->SetPitch(ac.Pitch);
+				audio->SetDopplerLevel(ac.DopplerLevel);
+				audio->SetMaxDistance(ac.MaxDistance);
+				audio->SetMinDistance(ac.MinDistance);
+				audio->SetLoop(ac.Looping);
+				audio->SetGain(ac.Volume);
+				if (ac.Spatial)
+				{
+					static glm::vec3 prevPos = tc.Translation;
+
+					const glm::vec3& position = tc.Translation;
+					const glm::vec3 delta = position - prevPos;
+
+					prevPos = position;
+
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+					audio->Set3DAttributes(tc.Translation, velocity);
+				}
 			}
 
 			DrawIcon(editorCamera, static_cast<int>(entity), m_AudioIcon, tc, true);
 		}
 		Renderer2D::EndScene();
 
-		editorCamera.UpdateAudioListener();
+		editorCamera.UpdateAudioListener(deltaTime);
 		AudioEngine::SetMute(false);
 		AudioEngine::SystemUpdate();
 	}
@@ -559,15 +588,29 @@ namespace origin
 		for (auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (ac.Audio)
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+
+			if (audio)
 			{
-				ac.Audio->SetMaxDistance(ac.MaxDistance);
-				ac.Audio->SetMinDistance(ac.MinDistance);
-				ac.Audio->SetLoop(ac.Looping);
-				ac.Audio->SetGain(ac.Volume);
+				audio->SetPitch(ac.Pitch);
+				audio->SetDopplerLevel(ac.DopplerLevel);
+				audio->SetMaxDistance(ac.MaxDistance);
+				audio->SetMinDistance(ac.MinDistance);
+				audio->SetLoop(ac.Looping);
+				audio->SetGain(ac.Volume);
 
 				if (ac.Spatial)
-					ac.Audio->SetPosition(tc.Translation);
+				{
+					static glm::vec3 prevPos = tc.Translation;
+
+					const glm::vec3& position = tc.Translation;
+					const glm::vec3 delta = position - prevPos;
+
+					prevPos = position;
+
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+					audio->Set3DAttributes(tc.Translation, velocity);
+				}
 			}
 
 			DrawIcon(editorCamera, static_cast<int>(entity), m_AudioIcon, tc, true);
@@ -580,13 +623,21 @@ namespace origin
 		{
 			auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
 			if (al.Enable)
-				al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
+			{
+				static glm::vec3 prevPos = tc.Translation;
+				const glm::vec3& position = tc.Translation;
+				const glm::vec3 delta = position - prevPos;
+				prevPos = position;
+				glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+
+				al.Listener.Set(tc.Translation, velocity, tc.GetForward(), tc.GetUp());
+			}
 
 			isMainCameraListening = al.Enable;
 		}
 
 		if (!isMainCameraListening)
-			editorCamera.UpdateAudioListener();
+			editorCamera.UpdateAudioListener(deltaTime);
 
 		AudioEngine::SystemUpdate();
 	}
@@ -610,8 +661,12 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			if (ac.Audio && ac.PlayAtStart)
-				ac.Audio->Play();
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (audio)
+			{
+				audio->Play();
+			}
+				
 		}
 	}
 
@@ -626,8 +681,11 @@ namespace origin
 		for (auto& e : view)
 		{
 			auto& ac = view.get<AudioComponent>(e);
-			if (ac.Audio)
-				ac.Audio->Stop();
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (audio)
+			{
+				audio->Stop();
+			}
 		}
 	}
 
@@ -994,10 +1052,11 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			if (ac.Audio && ac.PlayAtStart)
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (audio && ac.PlayAtStart)
 			{
-				ac.Audio->SetGain(ac.Volume);
-				ac.Audio->Play();
+				audio->SetGain(ac.Volume);
+				audio->Play();
 			}
 		}
 	}
@@ -1014,8 +1073,9 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			if (ac.Audio)
-				ac.Audio->Stop();
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (audio)
+				audio->Stop();
 		}
 	}
 

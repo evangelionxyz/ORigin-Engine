@@ -79,10 +79,11 @@ namespace origin
 	class AudioComponent
 	{
 	public:
-		std::shared_ptr<Audio> Audio;
+		AssetHandle Audio = 0;
 		std::string Name = "Audio";
 
 		float Volume = 1.0f;
+		float DopplerLevel = 1.0f;
 		float Pitch = 1.0f;
 		float MinDistance = 1.0f;
 		float MaxDistance = 100.0f;

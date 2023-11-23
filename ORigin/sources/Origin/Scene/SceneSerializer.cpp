@@ -301,22 +301,25 @@ namespace origin
 
 		if (entity.HasComponent<AudioComponent>())
 		{
+			const auto& ac = entity.GetComponent<AudioComponent>();
+
 			out << YAML::Key << "AudioComponent";
 			out << YAML::BeginMap; // AudioComponent
 
-			const auto& ac = entity.GetComponent<AudioComponent>();
-			out << YAML::Key << "Name" << YAML::Value << ac.Name;
-
-			auto& audioPath = relative(ac.Audio->GetFilepath(), Project::GetActiveAssetDirectory());
-			out << YAML::Key << "Filepath" << YAML::Value << audioPath.generic_string();
-			out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
-			out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
-			out << YAML::Key << "MinDistance" << YAML::Value << ac.MinDistance;
-			out << YAML::Key << "MaxDistance" << YAML::Value << ac.MaxDistance;
-			out << YAML::Key << "Looping" << YAML::Value << ac.Looping;
-			out << YAML::Key << "Spatial" << YAML::Value << ac.Spatial;
-			out << YAML::Key << "PlayAtStart" << YAML::Value << ac.PlayAtStart;
-
+			if (ac.Audio != 0)
+			{
+				out << YAML::Key << "AudioHandle" << YAML::Value << ac.Audio;
+				out << YAML::Key << "Name" << ac.Name;
+				out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
+				out << YAML::Key << "DopplerLevel" << YAML::Value << ac.DopplerLevel;
+				out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
+				out << YAML::Key << "MinDistance" << YAML::Value << ac.MinDistance;
+				out << YAML::Key << "MaxDistance" << YAML::Value << ac.MaxDistance;
+				out << YAML::Key << "Looping" << YAML::Value << ac.Looping;
+				out << YAML::Key << "Spatial" << YAML::Value << ac.Spatial;
+				out << YAML::Key << "PlayAtStart" << YAML::Value << ac.PlayAtStart;
+			}
+			
 			out << YAML::EndMap; // AudioComponent
 		}
 
@@ -498,10 +501,11 @@ namespace origin
 
 			const auto& src = entity.GetComponent<SpriteRenderer2DComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
-			out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
-
-			if(src.Texture != 0)
+			if (src.Texture != 0)
+			{
 				out << YAML::Key << "TextureHandle" << YAML::Value << src.Texture;
+				out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
+			}
 
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
 		}
@@ -705,7 +709,6 @@ namespace origin
 						for (auto state : states)
 						{
 							Animation animation;
-
 							ac.State.AddState(state["Name"].as<std::string>());
 							
 							// Retrieve all frames from the state
@@ -729,29 +732,30 @@ namespace origin
 				if (YAML::Node audioComponent = entity["AudioComponent"])
 				{
 					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
-					ac.Audio = Audio::Create();
 
-					ac.Name = audioComponent["Name"].as<std::string>();
-					ac.Volume = audioComponent["Volume"].as<float>();
-					ac.Pitch = audioComponent["Pitch"].as<float>();
-					ac.MinDistance = audioComponent["MinDistance"].as<float>();
-					ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
-					ac.Looping = audioComponent["Looping"].as<bool>();
-					ac.Spatial = audioComponent["Spatial"].as<bool>();
-					ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
-
-					std::string& filepath = audioComponent["Filepath"].as<std::string>();
-
-					if (!filepath.empty())
+					if (audioComponent["AudioHandle"])
 					{
-						AudioConfig config;
-						config.Name = ac.Name;
-						config.Looping = ac.Looping;
-						config.MinDistance = ac.MinDistance;
-						config.MaxDistance = ac.MaxDistance;
-						config.Spatial = ac.Spatial;
-						config.Filepath = Project::GetActiveAssetFileSystemPath(filepath).generic_string();
-						ac.Audio->LoadSource(config);
+						ac.Audio = (AssetHandle)std::stoull(audioComponent["AudioHandle"].as<std::string>());
+
+						ac.Name = audioComponent["Name"].as<std::string>();
+						ac.Volume = audioComponent["Volume"].as<float>();
+						ac.DopplerLevel = audioComponent["DopplerLevel"].as<float>();
+						ac.Pitch = audioComponent["Pitch"].as<float>();
+						ac.MinDistance = audioComponent["MinDistance"].as<float>();
+						ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
+						ac.Looping = audioComponent["Looping"].as<bool>();
+						ac.Spatial = audioComponent["Spatial"].as<bool>();
+						ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
+
+						auto& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+
+						audio->SetGain(ac.Volume);
+						audio->SetDopplerLevel(ac.DopplerLevel);
+						audio->SetLoop(ac.Looping);
+						audio->SetPitch(ac.Pitch);
+						audio->SetMinDistance(ac.MinDistance);
+						audio->SetMaxDistance(ac.MaxDistance);
+						audio->SetSpatial(ac.Spatial);
 					}
 				}
 
@@ -802,16 +806,11 @@ namespace origin
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
-
-					if (auto handle = spriteRenderer2DComponent["TextureHandle"].as<AssetHandle>())
+					if(spriteRenderer2DComponent["TextureHandle"])
 					{
-						if (AssetManager::GetAssetType(handle) == AssetType::Texture2D)
-						{
-							src.Texture = handle;
-						}
+						src.Texture = (AssetHandle)std::stoull(spriteRenderer2DComponent["TextureHandle"].as<std::string>());
+						src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 					}
-
-					src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 				}
 
 				if (YAML::Node lightComponent = entity["LightComponent"])

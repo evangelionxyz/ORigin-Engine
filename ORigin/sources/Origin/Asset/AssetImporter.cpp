@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "AssetImporter.h"
 
+#include "AudioImporter.h"
 #include "SceneImporter.h"
 #include "TextureImporter.h"
 
@@ -11,8 +12,9 @@ namespace origin {
 
 	using AssetImportFunction = std::function<std::shared_ptr<Asset>(AssetHandle, const AssetMetadata&)>;
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
+		{	AssetType::Audio, AudioImporter::ImportAudio },
 		{	AssetType::Texture2D, TextureImporter::ImportTexture2D },
-		{	AssetType::Scene, SceneImporter::ImportScene }
+		{	AssetType::Scene, SceneImporter::ImportScene },
 	};
 
 	std::shared_ptr<Asset> AssetImporter::ImportAsset(AssetHandle handle, const AssetMetadata& metadata)

@@ -217,13 +217,8 @@ namespace origin {
 
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
-			if (DisplayAddComponentEntry<AudioComponent>("AUDIO"))
-			{
-				m_SelectedEntity.GetComponent<AudioComponent>().Audio = Audio::Create();
-			}
-
+			(DisplayAddComponentEntry<AudioComponent>("AUDIO"));
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
-
 			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
@@ -357,164 +352,99 @@ namespace origin {
 		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
-				static bool creationWindow = false;
+				
+				std::string label = "None";
 
-				if (!component.Audio->IsLoaded())
+				bool isAudioValid = false;
+				ImGui::Text("Audio Source");
+				ImGui::SameLine();
+				if (component.Audio != 0)
 				{
-					if (ImGui::Button("Create Audio"))
-						creationWindow = true;
+					if (AssetManager::IsAssetHandleValid(component.Audio) && AssetManager::GetAssetType(component.Audio) == AssetType::Audio)
+					{
+						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Audio);
+						label = metadata.Filepath.filename().string();
+						isAudioValid = true;
+					}
+					else
+					{
+						label = "Invalid";
+					}
 				}
 
-				if(creationWindow)
+				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
+				buttonLabelSize.x += 20.0f;
+				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+
+				ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
+				if (ImGui::BeginDragDropTarget())
 				{
-					ImGuiWindowFlags winFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDocking;
-
-					ImGui::Begin("Audio Creation", &creationWindow, winFlags);
-					ImGui::Button("Drop Audio");
-					
-					static std::string filepath;
-					if (ImGui::BeginDragDropTarget())
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
+						if (AssetManager::GetAssetType(handle) == AssetType::Audio)
 						{
-							const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-							std::filesystem::path audioPath = Project::GetActiveAssetFileSystemPath(path);
-							if (audioPath.extension() == ".wav" || audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
-							{
-								filepath = audioPath.generic_string();
-								OGN_CORE_WARN("Audio Component: Drop Audio From {}", filepath);
-							}
-						}
-					}
-
-					ImGui::SameLine();
-					ImGui::Text("Path: %s", filepath.c_str());
-
-					std::string& name = component.Name;
-					ImGui::Text("Name: "); ImGui::SameLine();
-					char buffer[256];
-					strcpy_s(buffer, sizeof(buffer), name.c_str());
-
-					if (ImGui::InputText("##audioName", buffer, sizeof(buffer)))
-					{
-						name = std::string(buffer);
-						component.Name = name;
-					}
-
-					static bool spatial = false;
-					static bool looping = false;
-					static float minDistance = 1.0f;
-					static float maxDistance = 100.0f;
-
-					ImGui::Text("Spatial");
-					ImGui::SameLine();
-					ImGui::Checkbox("##Spatial", &spatial);
-					ImGui::Text("Looping");
-					ImGui::SameLine();
-					ImGui::Checkbox("##Looping", &looping);
-
-					if (spatial)
-					{
-						ImGui::Text("Min Distance");
-						ImGui::SameLine();
-						ImGui::DragFloat("##MinDistance", &minDistance, 0.1f, 0.0f, 10000.0f);
-						ImGui::Text("Max Distance");
-						ImGui::SameLine();
-						ImGui::DragFloat("##MaxDistance", &maxDistance, 0.1f, 0.0f, 10000.0f);
-					}
-
-					static bool valid = false;
-					if (ImGui::Button("Create"))
-					{
-						AudioConfig config;
-
-						config.Name = component.Name;
-						config.Spatial = spatial;
-						config.Filepath = filepath;
-						config.MinDistance = minDistance;
-						config.MaxDistance = maxDistance;
-						config.Looping = looping;
-
-						component.Spatial = spatial;
-						component.Looping = looping;
-
-						valid = (!name.empty() && !filepath.empty());
-						if (valid)
-						{
-							if (component.Audio->IsLoaded())
-							{
-								component.Audio->Stop();
-								component.Audio.reset();
-
-								component.Audio = Audio::Create();
-							}
-
-							component.Audio->LoadSource(config);
-							OGN_CORE_WARN("Audio Component: Creating {} Audio...", config.Name);
+							component.Audio = handle;
+							const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Audio);
+							component.Name = metadata.Filepath.filename().string();
 						}
 						else
 						{
-							OGN_CORE_ERROR("Audio Creation: Invalid Audio Creation. Check the Name or Filepath");
+							OGN_CORE_WARN("Wrong asset type!");
 						}
 					}
-					ImGui::End();
+					ImGui::EndDragDropTarget();
 				}
 
-				if (component.Audio->IsLoaded())
-				{
-					ImGui::Text("%s | Spatialize: %s", component.Name.c_str(), component.Spatial ? "On" : "Off");
-					ImGui::Separator();
+				if (isAudioValid == false)
+					return;
 
-#if 0
-					if (ImGui::Button("Insert To Library"))
-						AudioEngine::AudioStorageInsert(component.Audio);
+				std::shared_ptr<Audio> audio = AssetManager::GetAsset<Audio>(component.Audio);
+
+				if (audio->IsLoaded())
+				{
+					auto& name = component.Name;
+					char buffer[256];
+					ImGui::Text("Name");
 					ImGui::SameLine();
-					if (ImGui::Button("Delete From Library"))
-						AudioEngine::AudioStorageDelete(component.Audio);
+					strcpy_s(buffer, sizeof(buffer), name.c_str());
+					if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+					{
+						name = std::string(buffer);
+						audio->GetConfig().Name = name;
+					}
+
+					ImGui::Text("Spatialize: %s", component.Spatial ? "On" : "Off");
+					ImGui::Separator();
+					if (ImGui::Button("Play")) audio->Play();
 					ImGui::SameLine();
-					if (ImGui::Button("Open Audio Library"))
-						Editor::Get().guiAudioLibraryWindow = true;
-#endif
-					if (ImGui::Button("Play")) component.Audio->Play();
-					ImGui::SameLine();
-					if (ImGui::Button("Stop")) component.Audio->Stop();
+					if (ImGui::Button("Stop")) audio->Stop();
 					ImGui::SameLine();
 
 					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
 					ImGui::SameLine();
 					if (ImGui::Checkbox("Looping", &component.Looping))
-						component.Audio->SetLoop(component.Looping);
+						audio->SetLoop(component.Looping);
 
 					float columnWidth = 100.0f;
 
-					component.Volume = component.Audio->GetGain();
-					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f, columnWidth);
+					component.Volume = audio->GetGain();
+					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 1.0f, columnWidth);
+					DrawVecControl("Pitch", &component.Pitch, 0.01f, 0.0f, 10.0f, 1.0f, columnWidth);
 
-					if(ImGui::Checkbox("Spatialize", &component.Spatial))
-						component.Audio->SetSpatial(component.Spatial);
+					if (ImGui::Checkbox("Spatialize", &component.Spatial))
+						audio->SetSpatial(component.Spatial);
 
 					if (component.Spatial)
 					{
-						component.MinDistance = component.Audio->GetMinDistance();
+						component.DopplerLevel = audio->GetDopplerLevel();
+						DrawVecControl("Doppler Level", &component.DopplerLevel, 0.1f, 0.0f, 10000.0f, 1.0f, columnWidth);
+
+						component.MinDistance = audio->GetMinDistance();
 						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
 
-						component.MaxDistance = component.Audio->GetMaxDistance();
+						component.MaxDistance = audio->GetMaxDistance();
 						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
-					}
-
-					if (ImGui::Button("Delete"))
-					{
-						component.Audio->Stop();
-						component.Audio.reset();
-
-						component.Audio = Audio::Create();
-					}
-
-					ImGui::SameLine();
-					if (ImGui::Button("Re-Create"))
-					{
-						component.Audio->Stop();
-						creationWindow = true;
 					}
 				}
 			});
@@ -898,6 +828,8 @@ namespace origin {
 
 				std::string label = "None";
 				bool isTextureValid = false;
+				ImGui::Text("Texture");
+				ImGui::SameLine();
 				if (component.Texture != 0)
 				{
 					if (AssetManager::IsAssetHandleValid(component.Texture) && AssetManager::GetAssetType(component.Texture) == AssetType::Texture2D)
@@ -941,21 +873,14 @@ namespace origin {
 					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
 					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
-					{
 						component.Texture = 0;
-					}
+					DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
+					ImGui::Text("Flip");
+					ImGui::SameLine();
+					ImGui::Checkbox("X", &component.FlipX);
+					ImGui::SameLine();
+					ImGui::Checkbox("Y", &component.FlipY);
 				}
-
-				ImGui::SameLine();
-				ImGui::Text("Texture");
-
-				DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
-
-				ImGui::Text("Flip");
-				ImGui::SameLine();
-				ImGui::Checkbox("X", &component.FlipX);
-				ImGui::SameLine();
-				ImGui::Checkbox("Y", &component.FlipY);
 			});
 
 		DrawComponent<LightComponent>("LIGHTING", entity, [](auto& component)

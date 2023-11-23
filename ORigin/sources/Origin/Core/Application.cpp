@@ -70,7 +70,6 @@ namespace origin {
 
 		m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 		m_GuiLayer->End();
-
 		m_Window->OnUpdate();
 
 		Renderer::Init();
@@ -82,7 +81,7 @@ namespace origin {
 		m_Window->OnUpdate();
 
 		m_Window->Decorated(true);
-		m_Window->SetSize(1280, 640);
+		m_Window->SetSize(1080, 480);
 	}
 
 	Application::~Application()

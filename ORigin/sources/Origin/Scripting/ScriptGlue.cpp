@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include "Origin/Asset/AssetManager.h"
+
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
 
@@ -248,7 +250,8 @@ namespace origin
 
 		auto& ac = entity.GetComponent<AudioComponent>();
 		OGN_CORE_ASSERT(ac.Audio)
-		ac.Audio->Play();
+		const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+		audio->Play();
 	}
 
 	static void AudioComponent_Stop(UUID entityID)
@@ -261,7 +264,8 @@ namespace origin
 
 		auto& ac = entity.GetComponent<AudioComponent>();
 		OGN_CORE_ASSERT(ac.Audio)
-		ac.Audio->Stop();
+		const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+		audio->Stop();
 	}
 
 	static void AudioComponent_SetVolume(UUID entityID, float volume)

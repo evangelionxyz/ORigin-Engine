@@ -538,11 +538,22 @@ namespace origin {
 
   void EditorLayer::OpenScene()
   {
-      /*if (m_SceneState == SceneState::Play)
+      if (m_SceneState == SceneState::Play)
         OnSceneStop();
 
       std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
-      if (!filepath.empty()) OpenScene(filepath);*/
+			AssetHandle handle = SceneImporter::OpenScene(filepath);
+			if (handle == 0 || filepath.empty())
+				return;
+
+			std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+			std::shared_ptr<Scene> newScene = Scene::Copy(readOnlyScene);
+			m_HoveredEntity = {};
+
+			m_EditorScene = newScene;
+			m_SceneHierarchy.SetContext(m_EditorScene, true);
+			m_ActiveScene = m_EditorScene;
+			m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
   }
 
   void EditorLayer::SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath)
@@ -1247,7 +1258,6 @@ namespace origin {
 								state.RemoveState(currentState);
 						}
 					}
-
 				}
 
 			}

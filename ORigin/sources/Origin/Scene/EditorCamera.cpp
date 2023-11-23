@@ -27,9 +27,15 @@ namespace origin {
 		UpdateView();
 	}
 	
-	void EditorCamera::UpdateAudioListener()
+	void EditorCamera::UpdateAudioListener(float deltaTime)
 	{
-		m_AudioListener.Set(GetPosition(), glm::vec3(1.0f), GetForwardDirection(), GetUpDirection());
+		static glm::vec3 prevPos = GetPosition();
+		const glm::vec3& position = GetPosition();
+		const glm::vec3 delta = position - prevPos;
+		prevPos = position;
+		glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+
+		m_AudioListener.Set(GetPosition(), velocity, GetForwardDirection(), GetUpDirection());
 	}
 
 	void EditorCamera::UpdateProjection()

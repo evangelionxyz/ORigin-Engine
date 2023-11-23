@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "Audio.h"
+
 #include <glm\glm.hpp>
 
 namespace origin {
@@ -25,7 +26,13 @@ namespace origin {
 
 	Audio::~Audio()
 	{
-		Release();
+		if (m_Channel)
+		{
+			s_AudioEngineData.Result = m_Channel->stop();
+			m_Channel = nullptr;
+		}
+
+		m_Sound = nullptr;
 	}
 
 	void Audio::Play()
@@ -45,7 +52,6 @@ namespace origin {
 		if (!playing)
 		{
 			//OGN_CORE_WARN("AudioSource: Playing {}", m_Config.Name);
-
 			s_AudioEngineData.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &m_Channel);
 			FMOD_CHECK(s_AudioEngineData.Result);
 		}
@@ -71,9 +77,11 @@ namespace origin {
 		FMOD_CHECK(s_AudioEngineData.Result);
 	}
 
-	float Audio::GetGain()
+	void Audio::SetPitch(float pitch)
 	{
-		return m_Gain;
+		m_Pitch = pitch;
+		s_AudioEngineData.Result = m_Channel->setPitch(m_Pitch);
+		FMOD_CHECK(s_AudioEngineData.Result);
 	}
 
 	void Audio::SetMinDistance(float value)
@@ -100,20 +108,16 @@ namespace origin {
 		return m_Config.MaxDistance;
 	}
 
-	void Audio::Release()
+	void Audio::SetDopplerLevel(float doppler_level)
 	{
-		OGN_CORE_WARN("AudioSource: Releasing {}", m_Config.Name);
-
-		s_AudioEngineData.Result = m_Channel->stop();
+		m_DopplerLevel = doppler_level;
+		s_AudioEngineData.Result = m_Channel->set3DDopplerLevel(m_DopplerLevel);
 		FMOD_CHECK(s_AudioEngineData.Result);
-		m_Channel = nullptr;
-		m_Sound = nullptr;
 	}
 
 	void Audio::SetLoop(bool loop)
 	{
 		m_Config.Looping = loop;
-
 		s_AudioEngineData.Result = m_Sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 		FMOD_CHECK(s_AudioEngineData.Result);
 	}
@@ -123,13 +127,13 @@ namespace origin {
 		m_Config.Name = name;
 	}
 
-	void Audio::SetPosition(const glm::vec3& position)
+	void Audio::Set3DAttributes(const glm::vec3& position, const glm::vec3& velocity)
 	{
 		// Inversing position by default
 		m_AudioPosition = { -position.x, -position.y, -position.z };
+		m_AudioVelocity = { -velocity.x, -velocity.y, -velocity.z };
 
-		FMOD_VECTOR velocity = { 1.0f, 1.0f, 1.0f };
-		s_AudioEngineData.Result = m_Channel->set3DAttributes(&m_AudioPosition, &velocity);
+		s_AudioEngineData.Result = m_Channel->set3DAttributes(&m_AudioPosition, &m_AudioVelocity);
 		FMOD_CHECK(s_AudioEngineData.Result);
 	}
 
@@ -149,17 +153,23 @@ namespace origin {
 
 	void Audio::LoadSource(const AudioConfig& config)
 	{
-		LoadSource(config.Name, config.Filepath, config.Looping, config.Spatial);
+		LoadSource(config.Name, m_Filepath, config.Looping, config.Spatial);
+	}
+
+	void Audio::LoadSource(const std::filesystem::path& filepath, const AudioConfig& config)
+	{
+		LoadSource(config.Name, filepath, config.Looping, config.Spatial);
 	}
 
 	void Audio::LoadSource(const std::string& name, const std::filesystem::path& filepath, bool loop, bool spatial)
 	{
+		m_Filepath = filepath;
+
 		m_Config.Name = name;
-		m_Config.Filepath = filepath.string();
 		m_Config.Looping = loop;
 		m_Config.Spatial = spatial;
 
-		m_Sound = AudioEngine::CreateSound(name, m_Config.Filepath.c_str(), spatial ? FMOD_3D : FMOD_2D);
+		m_Sound = AudioEngine::CreateSound(name, m_Filepath.string().c_str(), spatial ? FMOD_3D : FMOD_2D);
 		FMOD_CHECK(s_AudioEngineData.Result);
 
 		s_AudioEngineData.Result = m_Sound->setMode(m_Config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
@@ -175,6 +185,9 @@ namespace origin {
 
 			s_AudioEngineData.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
 			FMOD_CHECK(s_AudioEngineData.Result);
+
+			s_AudioEngineData.Result = m_Channel->set3DDopplerLevel(m_DopplerLevel);
+			FMOD_CHECK(s_AudioEngineData.Result);
 		}
 
 		m_IsLoaded = true;
@@ -185,7 +198,24 @@ namespace origin {
 		return std::make_shared<Audio>();
 	}
 
+	void Audio::UpdateDopplerEffect(const glm::vec3& listenerPos, const glm::vec3& listenerVelocity)
+	{
+		glm::vec3 audioPosition = glm::vec3(m_AudioPosition.x, m_AudioPosition.y, m_AudioPosition.z);
+		glm::vec3 audioVelocity = glm::vec3(m_AudioVelocity.x, m_AudioVelocity.y, m_AudioVelocity.z);
 
+		glm::vec3 relativeVelocity = listenerVelocity - audioVelocity;
+		float distance = glm::length(listenerPos - audioPosition);
+		float dopplerPitch = 1.0f;
+
+		if (distance > 0.001f) {
+			float speedOfSound = 343.0f;
+
+			float dopplerShift = speedOfSound / (speedOfSound - glm::dot(relativeVelocity, glm::normalize(listenerPos - audioPosition)));
+			dopplerPitch = dopplerShift;
+		}
+
+		m_Channel->setPitch(dopplerPitch);
+	}
 
 	//////////////////////////////////////////////
 	//////////////// Audio Engine ////////////////

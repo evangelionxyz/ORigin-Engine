@@ -55,7 +55,7 @@ namespace origin {
 		float GetZoomSpeed() { return ZoomSpeed(); }
 		float GetFOV() { return m_FOV; }
 
-		void UpdateAudioListener();
+		void UpdateAudioListener(float deltaTime);
 
 	private:
 		AudioListener m_AudioListener;

@@ -11,7 +11,10 @@ namespace origin {
 	{
 	public:
 		static std::shared_ptr<Scene> ImportScene(AssetHandle handle, const AssetMetadata& metadata);
-		static std::shared_ptr<Scene> LoadScene(const std::filesystem::path& path);
+
+		static std::shared_ptr<Scene> LoadScene(const std::filesystem::path& filepath);
+		static AssetHandle OpenScene(const std::filesystem::path& filepath);
+
 		static void SaveScene(std::shared_ptr<Scene> scene, const std::filesystem::path& path);
 	};
 }
