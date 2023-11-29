@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "Application.h"
+#include "Origin\Asset\TextureImporter.h"
 #include "Origin\Audio\Audio.h"
 #include "Origin\Physics\Physics.h"
 #include "Origin\Scripting\ScriptEngine.h"
@@ -33,17 +34,13 @@ namespace origin {
 		m_Window = Window::Create(splashScreenWinConfig);
 		m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
 		m_GraphicContext->Init();
+		m_Window->SetIcon("Resources/UITextures/icon_origin.png");
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 
 		m_GuiLayer = new GuiLayer();
 		m_GuiLayer->SetContext(m_Window->GetNativeWindow());
 		PushOverlay(m_GuiLayer);
-
-		TextureSpecification splashImageSpec;
-		splashImageSpec.MagFilter = ImageFilter::Linear;
-		splashImageSpec.MinFilter = ImageFilter::Linear;
-		splashImageSpec.Format = ImageFormat::RGB8;
-		std::shared_ptr<Texture2D> splashImage = Texture2D::Create("Resources/UITextures/splashscreen.png", splashImageSpec);
+		std::shared_ptr<Texture2D> splashImage = TextureImporter::LoadTexture2D("Resources/UITextures/splashscreen.png");
 
 		m_GuiLayer->Begin();
 		ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);

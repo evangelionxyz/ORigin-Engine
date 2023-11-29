@@ -27,8 +27,7 @@ targetdir ("%{prj.location}/Binaries")
 objdir ("%{prj.location}/Intermediates")
 
 files {
-    "%{prj.location}/Assets/Scripts/**.cs",
-    "%{prj.location}/Assets/Properties/**.cs",
+    "%{prj.location}/Assets/**.cs",
 }
 
 links {

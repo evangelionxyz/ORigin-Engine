@@ -56,6 +56,7 @@ namespace origin {
 		float GetFOV() { return m_FOV; }
 
 		void UpdateAudioListener(float deltaTime);
+		AudioListener GetAudioListener() { return m_AudioListener; }
 
 	private:
 		AudioListener m_AudioListener;

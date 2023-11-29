@@ -36,10 +36,10 @@ namespace origin {
 				if (relativePath.generic_string() == a.second.Filepath)
 					return a.first;
 			}
-
-			OGN_CORE_ASSERT("SceneImporter: Scene shoule be imported");
-			return 0;
 		}
+
+		OGN_CORE_ASSERT("SceneImporter: Scene shoule be imported");
+		return 0;
 	}
 
 	void SceneImporter::SaveScene(std::shared_ptr<Scene> scene, const std::filesystem::path& path)

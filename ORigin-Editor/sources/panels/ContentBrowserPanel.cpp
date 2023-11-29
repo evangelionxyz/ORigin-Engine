@@ -260,13 +260,12 @@ namespace origin
 		ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 50.0f), false, ImGuiWindowFlags_NoScrollWithMouse);
 
 		// Navigation Button
-		ImVec4 navBtColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 		ImVec2 navBtSize = ImVec2(23.0f, 23.0f);
 		
 		// Push Button Colors
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, navBtColor);
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, navBtColor);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 		// Backward Button
 		std::shared_ptr<Texture2D> navButtonTexture = m_IconMap.at("backward_button_icon");
@@ -291,8 +290,15 @@ namespace origin
 				//m_ForwardCount++;
 			}
 		}
+		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
+		// Push Button Colors
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, m_Mode == Mode::Asset ? ImVec4(0.0f, 0.8f, 0.0f, 1.0f) : ImVec4(0.8f, 0.0f, 0.8f, 1.0f));
 		const char* label = m_Mode == Mode::Asset ? "Asset" : "File";
 		navButtonTexture = m_Mode == Mode::Asset ? m_IconMap.at("asset_mode_icon") : m_IconMap.at("file_mode_icon");
 		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0)))
@@ -300,14 +306,12 @@ namespace origin
 			m_Mode = m_Mode == Mode::Asset ? Mode::FileSystem : Mode::Asset;
 			RefreshAssetTree();
 		}
+		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
 		ImGui::SliderFloat("Thumbnail Size", &m_ThumbnailSize, 56.0f, 160.0f);
-		ImGui::SameLine();
-		ImGui::Text("Item Rendered Count: %d", itemRenderCount);
-
 		// Pop Button Colors
-		ImGui::PopStyleColor(3);
+		
 		ImGui::Separator();
 
 		ImGui::EndChild();

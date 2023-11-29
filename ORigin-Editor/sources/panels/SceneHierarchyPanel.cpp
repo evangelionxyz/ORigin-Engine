@@ -349,6 +349,8 @@ namespace origin {
 				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
 				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
+
+
 		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
@@ -428,22 +430,25 @@ namespace origin {
 
 					float columnWidth = 100.0f;
 
-					component.Volume = audio->GetGain();
-					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 1.0f, columnWidth);
-					DrawVecControl("Pitch", &component.Pitch, 0.01f, 0.0f, 10.0f, 1.0f, columnWidth);
+					ImGui::BeginChild("##volume", ImVec2(50.0f, 150.0f), true);
+					ImGui::VSliderFloat("Vol", ImVec2(30.0f, 150.0f), &component.Volume, 0.0f, 100.0f, "%.0f");
+					ImGui::EndChild();
 
+					ImGui::SameLine();
+					ImGui::BeginChild("##other_controls", ImVec2(ImGui::GetContentRegionAvail().x, 150.0f), true);
+					ImGui::DragFloat("Pitch", &component.Pitch, 0.01f, 0.0f, 2.0f);
+					
+					ImGui::DragFloat("LP Filter", &component.LowPass, 0.01f, 0.0f, 1.0f);
+					ImGui::EndChild();
+
+					ImGui::Separator();
 					if (ImGui::Checkbox("Spatialize", &component.Spatial))
 						audio->SetSpatial(component.Spatial);
 
 					if (component.Spatial)
 					{
-						component.DopplerLevel = audio->GetDopplerLevel();
 						DrawVecControl("Doppler Level", &component.DopplerLevel, 0.1f, 0.0f, 10000.0f, 1.0f, columnWidth);
-
-						component.MinDistance = audio->GetMinDistance();
 						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
-
-						component.MaxDistance = audio->GetMaxDistance();
 						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
 					}
 				}

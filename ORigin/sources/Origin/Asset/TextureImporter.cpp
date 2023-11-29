@@ -5,7 +5,8 @@
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Buffer.h"
 
-#include <stb_image.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace origin {
 
@@ -19,8 +20,8 @@ namespace origin {
 		int width, height, channels;
 
 		stbi_set_flip_vertically_on_load(1);
-		Buffer data;
 
+		Buffer data;
 		data.Data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
 
 		if (!data)

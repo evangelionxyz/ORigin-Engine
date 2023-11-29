@@ -82,8 +82,9 @@ namespace origin
 		AssetHandle Audio = 0;
 		std::string Name = "Audio";
 
-		float Volume = 1.0f;
+		float Volume = 100.0f;
 		float DopplerLevel = 1.0f;
+		float LowPass = 1.0f;
 		float Pitch = 1.0f;
 		float MinDistance = 1.0f;
 		float MaxDistance = 100.0f;

@@ -2,13 +2,14 @@
 
 #include "pch.h"
 #include "Win_Window.h"
-#include "origin\Renderer\Icon.h"
 
 #include "Origin\IO\KeyCodes.h"
 #include "Origin\IO\Events\KeyEvent.h"
 #include "Origin\IO\Events\MouseEvent.h"
 #include "Origin\IO\Events\AppEvent.h"
 #include "Origin\Core\Application.h"
+
+#include "stb_image.h"
 
 namespace origin {
 
@@ -270,6 +271,17 @@ namespace origin {
 
 	void WinWindow::SetIcon(const std::string& filepath)
 	{
-		Icon icon(m_Window, filepath);
+		stbi_set_flip_vertically_on_load(0);
+		int width, height, bpp;
+		stbi_uc* data = stbi_load(filepath.c_str(), &width, &height, &bpp, 0);
+
+		GLFWimage icon[1];
+		icon[0].width = width;
+		icon[0].height = height;
+		icon[0].pixels = data;
+
+		glfwSetWindowIcon(m_Window, 1, icon);
+
+		stbi_image_free(data);
 	}
 }
