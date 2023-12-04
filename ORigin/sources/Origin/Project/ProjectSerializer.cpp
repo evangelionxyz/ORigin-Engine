@@ -37,6 +37,9 @@ namespace origin
 		std::ofstream fout(filepath.string());
 		fout << out.c_str();
 
+		// Serialized the updated AssetRegistry
+		m_Project->GetEditorAssetManager()->SerializeAssetRegistry();
+
 		return true;
 	}
 

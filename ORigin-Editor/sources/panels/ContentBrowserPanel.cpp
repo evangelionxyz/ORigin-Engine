@@ -55,23 +55,25 @@ namespace origin
 		if (m_Mode == Mode::Asset)
 		{
 			TreeNode* node = m_TreeNodes.data();
-			const auto currentDir = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
-			for (const auto& p : currentDir)
+			const auto& currentDir = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
+			for (const auto& path : currentDir)
 			{
 				if (node->Path == currentDir)
 					break;
-				if (node->Children.find(p) != node->Children.end())
-					node = &m_TreeNodes[node->Children[p]];
+
+				if (node->Children.find(path) != node->Children.end())
+					node = &m_TreeNodes[node->Children[path]];
 			}
 
 			for (const auto& [item, treeNodeIndex] : node->Children)
 			{
-				const bool isDirectory = std::filesystem::is_directory(Project::GetActiveAssetDirectory() /node->Path/item);
+				bool shouldBreak = false;
+				const bool isDirectory = std::filesystem::is_directory(Project::GetActiveAssetDirectory() / item);
 				std::string filenameStr = item.generic_string();
 				
 				ImGui::PushID(filenameStr.c_str());
 				
-				const std::shared_ptr<Texture2D> thumbnail = DirectoryIcons(std::filesystem::directory_entry(Project::GetActiveAssetDirectory() /node->Path/item));
+				const std::shared_ptr<Texture2D> thumbnail = DirectoryIcons(std::filesystem::directory_entry(m_CurrentDirectory / item));
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetRendererID()), { m_ThumbnailSize, m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
 				
@@ -98,11 +100,36 @@ namespace origin
 					Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
 					ImGui::Separator();
 
-					if (ImGui::MenuItem("Delete"))
+					if (item.extension() == ".org")
 					{
-						RefreshAssetTree();
+						if (ImGui::MenuItem("Set As Start Scene"))
+						{
+							Project::GetActive()->SetStartScene(item);
+							RefreshAssetTree();
+						}
 					}
 					
+					if (ImGui::MenuItem("Remove From Project"))
+					{
+						AssetHandle handle = m_TreeNodes[treeNodeIndex].Handle;
+						Project::GetActive()->GetEditorAssetManager()->RemoveAsset(handle);
+
+						uint32_t index = treeNodeIndex;
+
+						node->Children.erase(item);
+						m_TreeNodes.erase(m_TreeNodes.begin() + index);
+
+						// reset the node
+						uint32_t count = 0;
+						for (auto n : m_TreeNodes)
+						{
+							if (node->Children.find(n.Path) != node->Children.end())
+								node->Children[n.Path] = count;
+							count++;
+						}
+
+						shouldBreak = true;
+					}
 					ImGui::EndPopup();
 				}
 
@@ -110,6 +137,9 @@ namespace origin
 				ImGui::NextColumn();
 
 				ImGui::PopID();
+
+				if (shouldBreak)
+					break;
 			}
 		}
 		else
@@ -171,7 +201,7 @@ namespace origin
 							Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
 							ImGui::Separator();
 
-							if (ImGui::MenuItem("Import"))
+							if (ImGui::MenuItem("Import To Project"))
 							{
 								Project::GetActive()->GetEditorAssetManager()->ImportAsset(relativePath);
 								RefreshAssetTree();
@@ -238,6 +268,7 @@ namespace origin
 			uint32_t currentNodeIndex = 0;
 			for (const auto& p : metadata.Filepath)
 			{
+				// if we found the path
 				auto it = m_TreeNodes[currentNodeIndex].Children.find(p.generic_string());
 				if (it != m_TreeNodes[currentNodeIndex].Children.end())
 				{
@@ -247,8 +278,10 @@ namespace origin
 				{
 					TreeNode newNode(p, handle);
 					newNode.Parent = currentNodeIndex;
+
 					m_TreeNodes.push_back(newNode);
 					m_TreeNodes[currentNodeIndex].Children[p] = m_TreeNodes.size() - 1;
+
 					currentNodeIndex = m_TreeNodes.size() - 1;
 				}
 			}

@@ -3,6 +3,8 @@
 #include "Origin\Utils\PlatformUtils.h"
 #include "ProjectSerializer.h"
 
+#include "yaml-cpp/yaml.h"
+
 namespace origin {
 
 	static std::string premakeSolutionFile = R"(architecture "x64"
@@ -57,6 +59,29 @@ group ""
 )";
 
 	static std::string winGenerateFile = "call %ORIGIN_ENGINE_PATH%\\Scripts\\premake\\premake5.exe vs2022";
+
+	bool Project::SetStartScene(const std::filesystem::path& path)
+	{
+		std::filesystem::path filepath = GetActiveAssetDirectory() / path;
+
+		std::ifstream stream(filepath.string());
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+
+		YAML::Node data = YAML::Load(strStream.str());
+		if (!data["Scene"])
+			return false;
+
+		m_Config.StartScene = (AssetHandle)std::stoull(data["ID"].as<std::string>());
+		OGN_CORE_TRACE("Project: '{0}' was set as Start Scene", data["Scene"].as<std::string>());
+
+		std::filesystem::path projectPath = m_ProjectDirectory / (m_Config.Name + ".oxproj");
+
+		ProjectSerializer serializer(s_ActiveProject);
+		serializer.Serialize(projectPath);
+
+		return true;
+	}
 
 	std::filesystem::path Project::GetAssetAbsolutePath(const std::filesystem::path& path)
 	{
@@ -149,9 +174,9 @@ group ""
 			s_ActiveProject = project;
 
 			std::shared_ptr<EditorAssetManager> editorAssetManager = std::make_shared<EditorAssetManager>();
-			s_ActiveProject->m_AssetManager = editorAssetManager;
 			editorAssetManager->DeserializeAssetRegistry();
-
+			s_ActiveProject->m_AssetManager = editorAssetManager;
+			
 			return s_ActiveProject;
 		}
 

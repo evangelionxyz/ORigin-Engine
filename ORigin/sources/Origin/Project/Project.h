@@ -14,8 +14,8 @@ namespace origin
 {
 	struct ProjectConfig
 	{
-		AssetHandle StartScene;
 		std::string Name = "Untitled";
+		AssetHandle StartScene = 0;
 		std::filesystem::path AssetDirectory = "Assets";
 		std::filesystem::path AssetRegistry = "AssetRegistry.oxr";
 		std::filesystem::path ScriptModulePath;
@@ -66,6 +66,7 @@ namespace origin
 		static std::shared_ptr<Project> Load(const std::filesystem::path& path);
 
 		static bool SaveActive(const std::filesystem::path& path);
+		bool SetStartScene(const std::filesystem::path& filepath);
 
 	private:
 		ProjectConfig m_Config;

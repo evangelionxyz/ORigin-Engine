@@ -456,11 +456,12 @@ namespace origin {
   {
     if (Project::Open())
     {
+      ScriptEngine::Init();
+
       AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
       if (handle)
 				OpenScene(handle);
       
-      ScriptEngine::Init();
       m_ProjectPath = Project::GetActiveProjectDirectory();
 
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
@@ -492,6 +493,10 @@ namespace origin {
     m_ActiveScene = m_EditorScene;
 
     m_ScenePath = std::filesystem::path();
+
+		// If there is no scene
+		if (Project::GetActive()->GetConfig().StartScene == 0)
+			Project::GetActive()->SetStartScene(m_ScenePath);
   }
 
   void EditorLayer::SaveScene()

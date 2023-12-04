@@ -4,8 +4,7 @@
 
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Buffer.h"
-
-#define STB_IMAGE_IMPLEMENTATION
+#include "AssetManager.h"
 #include "stb_image.h"
 
 namespace origin {
@@ -55,11 +54,13 @@ namespace origin {
 	std::shared_ptr<Texture2D> TextureImporter::GetWhiteTexture()
 	{
 		static std::shared_ptr<Texture2D> whiteTexture;
-		if(!whiteTexture)
-			whiteTexture= Texture2D::Create(TextureSpecification());
+		if (!whiteTexture)
+		{
+			uint32_t whiteTextureData = 0xffffffff;
+			Buffer data = Buffer(&whiteTextureData, sizeof(uint32_t));
 
-		uint32_t whiteTextureData = 0xffffffff;
-		whiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
+			whiteTexture= Texture2D::Create(TextureSpecification(), data);
+		}
 
 		return whiteTexture;
 	}

@@ -9,15 +9,15 @@ namespace origin {
 	{
 		switch (type)
 		{
-			case origin::AssetType::None: return "AssetType::None";
-			case origin::AssetType::Scene: return "AssetType::Scene";
-			case origin::AssetType::Texture2D: return "AssetType::Texture2D";
-			case origin::AssetType::Font: return "AssetType::Font";
-			case origin::AssetType::TextureCube: return "AssetType::TextureCube";
-			case origin::AssetType::Audio: return "AssetType::Audio";
-			case origin::AssetType::StaticMesh: return "AssetType::StaticMesh";
-			case origin::AssetType::Mesh: return "AssetType::Mesh";
-			case origin::AssetType::Animation: return "AssetType::Animation";
+			case AssetType::None: return "AssetType::None";
+			case AssetType::Scene: return "AssetType::Scene";
+			case AssetType::Texture2D: return "AssetType::Texture2D";
+			case AssetType::Font: return "AssetType::Font";
+			case AssetType::TextureCube: return "AssetType::TextureCube";
+			case AssetType::Audio: return "AssetType::Audio";
+			case AssetType::StaticMesh: return "AssetType::StaticMesh";
+			case AssetType::Mesh: return "AssetType::Mesh";
+			case AssetType::Animation: return "AssetType::Animation";
 		}
 		OGN_CORE_ASSERT(false, "AssetType: Unkown Asset Type");
 		return "AssetType::Invalid";

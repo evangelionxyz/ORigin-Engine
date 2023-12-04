@@ -54,9 +54,7 @@ namespace origin {
 			const AssetMetadata& metadata = GetMetadata(handle);
 			asset = AssetImporter::ImportAsset(handle, metadata);
 			if (!asset)
-			{
-				OGN_CORE_ERROR("EditroAssetManager::GetAsset - Asset Import Failed!");
-			}
+				OGN_CORE_ERROR("EditorAssetManager: - Asset Import Failed!");
 
 			m_LoadedAssets[handle] = asset;
 		}
@@ -66,7 +64,10 @@ namespace origin {
 
 	bool EditorAssetManager::IsAssetHandleValid(AssetHandle handle) const
 	{
-		return handle != 0 && m_AssetRegistry.find(handle) != m_AssetRegistry.end();
+		if (handle != 0 && m_AssetRegistry.find(handle) != m_AssetRegistry.end())
+			return true;
+
+		return false;
 	}
 
 	bool EditorAssetManager::IsAssetLoaded(AssetHandle handle) const
@@ -97,6 +98,15 @@ namespace origin {
 			asset->Handle = handle;
 			m_LoadedAssets[handle] = asset;
 			m_AssetRegistry[handle] = metadata;
+			SerializeAssetRegistry();
+		}
+	}
+
+	void EditorAssetManager::RemoveAsset(AssetHandle handle)
+	{
+		if (m_AssetRegistry.find(handle) != m_AssetRegistry.end())
+		{
+			m_AssetRegistry.erase(handle);
 			SerializeAssetRegistry();
 		}
 	}
@@ -148,13 +158,18 @@ namespace origin {
 	{
 		auto path = Project::GetActiveAssetRegistryPath();
 		if (!std::filesystem::exists(path))
+		{
+			OGN_CORE_ERROR("EditorAssetManager: Failed to deserialize AssetRegistry");
 			return false;
+		}
 
 		YAML::Node data;
-		try {
+		try 
+		{
 			data = YAML::LoadFile(path.generic_string());
 		}
-		catch (YAML::ParserException e) {
+		catch (YAML::ParserException e) 
+		{
 			OGN_CORE_ERROR("Failed to load project file: {0}\n\t{1}", path, e.what());
 			return false;
 		}

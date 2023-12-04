@@ -91,7 +91,7 @@ namespace origin {
 
 		s_2Ddata.WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
-		s_2Ddata.WhiteTexture->SetData(Buffer(& whiteTextureData, sizeof(uint32_t)));
+		s_2Ddata.WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 
 		int32_t samplers[s_2Ddata.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_2Ddata.MaxTextureSlots; i++)
@@ -436,16 +436,11 @@ namespace origin {
 
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID)
 	{
-		if (src.Texture)
-		{
-			std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Texture);
-			if(texture)
-				DrawQuad(transform, texture, src.TillingFactor, src.Color, entityID);
-		}
+		std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Texture);
+		if (texture)
+			DrawQuad(transform, texture, src.TillingFactor, src.Color, entityID);
 		else
-		{
 			DrawQuad(transform, src.Color, entityID);
-		}
 	}
 
 	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, int entityID)

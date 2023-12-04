@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "AudioImporter.h"
-
+#include "AssetManager.h"
 #include "Origin\Project\Project.h"
 
 namespace origin {

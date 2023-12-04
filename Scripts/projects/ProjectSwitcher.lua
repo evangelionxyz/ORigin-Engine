@@ -29,13 +29,13 @@ defaultArgument =
 }]]
 
 -- checking file available
-if(os.isfile("ORigin.sln.startup.json"))
+if(os.isfile("OR1.sln.startup.json"))
 then
-    if(io.readfile("ORigin.sln.startup.json") ~= defaultArgument)
+    if(io.readfile("OR1.sln.startup.json") ~= defaultArgument)
     then
-        print("\nCreating new project ORigin.sln.startup.json file...")
-        io.writefile("ORigin.sln.startup.json", defaultArgument)
+        print("\nCreating new project OR1.sln.startup.json file...")
+        io.writefile("OR1.sln.startup.json", defaultArgument)
     end
 else
-    io.writefile("ORigin.sln.startup.json", defaultArgument)
+    io.writefile("OR1.sln.startup.json", defaultArgument)
 end
