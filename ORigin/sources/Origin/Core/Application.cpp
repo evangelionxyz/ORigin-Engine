@@ -28,8 +28,8 @@ namespace origin {
 		WindowConfig splashScreenWinConfig;
 		splashScreenWinConfig.Title = spec.Name;
 		splashScreenWinConfig.Decorated = false;
-		splashScreenWinConfig.Width = 860;
-		splashScreenWinConfig.Height = 640;
+		splashScreenWinConfig.Width = 800;
+		splashScreenWinConfig.Height = 420;
 
 		m_Window = Window::Create(splashScreenWinConfig);
 		m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
