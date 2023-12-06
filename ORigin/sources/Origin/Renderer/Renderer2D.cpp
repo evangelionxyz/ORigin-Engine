@@ -1,10 +1,12 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\Renderer2D.h"
 
 #include "MSDFData.h"
+
+#include "Origin\Asset\AssetManager.h"
 
 namespace origin {
 
@@ -89,7 +91,7 @@ namespace origin {
 
 		s_2Ddata.WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
-		s_2Ddata.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		s_2Ddata.WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 
 		int32_t samplers[s_2Ddata.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_2Ddata.MaxTextureSlots; i++)
@@ -236,7 +238,7 @@ namespace origin {
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; // White Texture
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
-		const const glm::vec2& tilingFactor = glm::vec2(1.0f);
+		const glm::vec2& tilingFactor = glm::vec2(1.0f);
 
 		if (s_2Ddata.QuadIndexCount >= Renderer2DData::MaxIndices)
 			NextBatch();
@@ -258,6 +260,8 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor, int entityID)
 	{
+		OGN_CORE_VERIFY(texture);
+
 		constexpr size_t quadVertexCount = 4;
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
@@ -432,8 +436,9 @@ namespace origin {
 
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID)
 	{
-		if (src.Texture)
-			DrawQuad(transform, src.Texture, src.TillingFactor, src.Color, entityID);
+		std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Texture);
+		if (texture)
+			DrawQuad(transform, texture, src.TillingFactor, src.Color, entityID);
 		else
 			DrawQuad(transform, src.Color, entityID);
 	}

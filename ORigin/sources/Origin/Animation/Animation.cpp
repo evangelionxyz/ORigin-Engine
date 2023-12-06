@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Animation.h"
@@ -23,20 +23,15 @@ namespace origin {
 		if (!HasFrame())
 			return;
 
-		// Start from 0 second
 		m_ElapsedFrameTime += deltaTime;
 
-		// check each Frame's frameTime
 		if (m_ElapsedFrameTime >= m_AnimationFrames[m_CurrentFrameIndex].FrameTime)
 		{
-			// Increment the frame index
 			m_CurrentFrameIndex++;
 
-			// Decide to Looping (0) or not (size - 1)
 			if (m_CurrentFrameIndex >= m_AnimationFrames.size())
 				m_CurrentFrameIndex = m_Looping ? 0 : m_AnimationFrames.size() - 1;
 
-			// Reset the ElapsedFrameTime
 			m_ElapsedFrameTime = 0.0f;
 		}
 		

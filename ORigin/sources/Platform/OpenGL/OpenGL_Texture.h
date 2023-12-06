@@ -21,13 +21,13 @@ namespace origin {
 		bool m_IsLoaded = false;
 
   public:
-    OpenGLTexture2D(const TextureSpecification& specification);
+    OpenGLTexture2D(const TextureSpecification& specification, Buffer data);
     OpenGLTexture2D(const std::string& path, const TextureSpecification& specification);
     ~OpenGLTexture2D();
 
 		const TextureSpecification& GetSpecification() const override { return m_Spec; }
 
-		void SetData(void* data, uint32_t size) override;
+		void SetData(Buffer data) override;
 		std::string GetFilepath() override { return m_FilePath; }
 		void Bind(uint32_t slot = 0) override;
 		void Unbind() override;
@@ -69,7 +69,7 @@ namespace origin {
 		OpenGLTextureCube(const std::string& path);
 		~OpenGLTextureCube();
 
-		void SetData(void* data, uint32_t size) override;
+		void SetData(Buffer data) override;
 		std::string GetFilepath() override { return m_FilePath; }
 
 		void LoadFaces(std::string& filepath, Faces faces);

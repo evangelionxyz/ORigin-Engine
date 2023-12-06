@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
-#include "Origin\Scene\Component.h"
+#include "Origin\Scene\Components.h"
 #include "Origin\Project\Project.h"
 
 #include "Origin\Core\Application.h"
@@ -146,11 +146,10 @@ namespace origin
 		Scene* SceneContext = nullptr;
 		std::unordered_map<std::string, std::shared_ptr<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, std::shared_ptr<ScriptInstance>> EntityInstances;
-
 		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 	};
 
-	ScriptEngineData* s_Data = nullptr;
+	ScriptEngineData* s_ScriptEngineData = nullptr;
 
 	// Scrip Engine
 	void ScriptEngine::InitMono()
@@ -160,24 +159,32 @@ namespace origin
 		MonoDomain* rootDomain = mono_jit_init("ORiginJITRuntime");
 		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!")
 
-		s_Data->RootDomain = rootDomain;
+		s_ScriptEngineData->RootDomain = rootDomain;
+		OGN_CORE_INFO("MONO: Initialized");
 	}
 
 	void ScriptEngine::ShutdownMono()
 	{
-		mono_domain_set(mono_get_root_domain(), false);
+		if (s_ScriptEngineData)
+		{
+			mono_domain_set(mono_get_root_domain(), false);
+			if (s_ScriptEngineData->RootDomain)
+			{
+				mono_domain_unload(s_ScriptEngineData->AppDomain);
+				s_ScriptEngineData->AppDomain = nullptr;
+				s_ScriptEngineData->CoreAssembly = nullptr;
 
-		mono_domain_unload(s_Data->AppDomain);
-		s_Data->AppDomain = nullptr;
-		s_Data->CoreAssembly = nullptr;
+				mono_jit_cleanup(s_ScriptEngineData->RootDomain);
+				s_ScriptEngineData->RootDomain = nullptr;
+			}
 
-		mono_jit_cleanup(s_Data->RootDomain);
-		s_Data->RootDomain = nullptr;
+			OGN_CORE_INFO("MONO: Shutdown");
+		}
 	}
 
 	void ScriptEngine::Init()
 	{
-		s_Data = new ScriptEngineData();
+		s_ScriptEngineData = new ScriptEngineData();
 
 		InitMono();
 		ScriptGlue::RegisterFunctions();
@@ -185,54 +192,56 @@ namespace origin
 		// Script Core Assembly
 		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
 
-		auto appAssemblyPath = Project::GetProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
+		auto appAssemblyPath = Project::GetActiveProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
 		LoadAppAssembly(appAssemblyPath);
 
 		LoadAssemblyClasses();
 
 		// storing classes name into storage
-		for (auto& it : s_Data->EntityClasses)
-			s_Data->EntityScriptStorage.emplace_back(it.first);
+		for (auto& it : s_ScriptEngineData->EntityClasses)
+			s_ScriptEngineData->EntityScriptStorage.emplace_back(it.first);
 
-		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
+		s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 		ScriptGlue::RegisterComponents();
+
+		OGN_CORE_INFO("SCRIPT ENGINE: Initialized");
 	}
 
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
-		s_Data->EntityClasses.clear();
-		s_Data->EntityInstances.clear();
+		s_ScriptEngineData->EntityClasses.clear();
+		s_ScriptEngineData->EntityInstances.clear();
 
-		// Cleanup memory before shutdown
-		delete s_Data;
-		OGN_CORE_WARN("Script Engine Shutdown");
+		delete s_ScriptEngineData;
+
+		OGN_CORE_WARN("SCRIPT ENGINE: Shutdown");
 	}
 
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
-		s_Data->AppDomain = mono_domain_create_appdomain("ORiginScriptRuntime", nullptr);
-		mono_domain_set(s_Data->AppDomain, true);
+		s_ScriptEngineData->AppDomain = mono_domain_create_appdomain("ORiginScriptRuntime", nullptr);
+		mono_domain_set(s_ScriptEngineData->AppDomain, true);
 
-		s_Data->CoreAssemblyFilepath = filepath;
+		s_ScriptEngineData->CoreAssemblyFilepath = filepath;
 
-		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
-		if (s_Data->CoreAssembly == nullptr)
+		s_ScriptEngineData->CoreAssembly = Utils::LoadMonoAssembly(filepath);
+		if (s_ScriptEngineData->CoreAssembly == nullptr)
 			return false;
 
-		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+		s_ScriptEngineData->CoreAssemblyImage = mono_assembly_get_image(s_ScriptEngineData->CoreAssembly);
 		return true;
 	}
 
 	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event change_type)
 	{
-		if (!s_Data->AssemblyReloadingPending && change_type == filewatch::Event::modified)
+		if (!s_ScriptEngineData->AssemblyReloadingPending && change_type == filewatch::Event::modified)
 		{
-			s_Data->AssemblyReloadingPending = true;
+			s_ScriptEngineData->AssemblyReloadingPending = true;
 
 			Application::Get().SubmitToMainThread([]()
 			{
-				s_Data->AppAssemblyFilewatcher.reset();
+				s_ScriptEngineData->AppAssemblyFilewatcher.reset();
 				ScriptEngine::ReloadAssembly();
 			});
 		}
@@ -240,15 +249,15 @@ namespace origin
 
 	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
-		s_Data->AppAssemblyFilepath = filepath;
+		s_ScriptEngineData->AppAssemblyFilepath = filepath;
 
-		s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
-		if (s_Data->AppAssembly == nullptr)
+		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
+		if (s_ScriptEngineData->AppAssembly == nullptr)
 			return false;
 
-		s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
-		s_Data->AppAssemblyFilewatcher = std::make_unique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
-		s_Data->AssemblyReloadingPending = false;
+		s_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(s_ScriptEngineData->AppAssembly);
+		s_ScriptEngineData->AppAssemblyFilewatcher = std::make_unique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
+		s_ScriptEngineData->AssemblyReloadingPending = false;
 
 		return true;
 	}
@@ -257,38 +266,38 @@ namespace origin
 	{
 		mono_domain_set(mono_get_root_domain(), false);
 
-		mono_domain_unload(s_Data->AppDomain);
+		mono_domain_unload(s_ScriptEngineData->AppDomain);
 
-		LoadAssembly(s_Data->CoreAssemblyFilepath);
-		LoadAppAssembly(s_Data->AppAssemblyFilepath);
+		LoadAssembly(s_ScriptEngineData->CoreAssemblyFilepath);
+		LoadAppAssembly(s_ScriptEngineData->AppAssemblyFilepath);
 
 		LoadAssemblyClasses();
 
 		// storing classes name into storage
-		s_Data->EntityScriptStorage.clear();
+		s_ScriptEngineData->EntityScriptStorage.clear();
 
-		for (auto& it : s_Data->EntityClasses)
-			s_Data->EntityScriptStorage.emplace_back(it.first);
+		for (auto& it : s_ScriptEngineData->EntityClasses)
+			s_ScriptEngineData->EntityScriptStorage.emplace_back(it.first);
 
 		// retrieve entity class
-		s_Data->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
+		s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 		ScriptGlue::RegisterComponents();
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* scene)
 	{
-		s_Data->SceneContext = scene;
+		s_ScriptEngineData->SceneContext = scene;
 	}
 
 	void ScriptEngine::OnRuntimeStop()
 	{
-		s_Data->SceneContext = nullptr;
-		s_Data->EntityInstances.clear();
+		s_ScriptEngineData->SceneContext = nullptr;
+		s_ScriptEngineData->EntityInstances.clear();
 	}
 
 	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
 	{
-		return s_Data->EntityClasses.find(fullClassName) != s_Data->EntityClasses.end();
+		return s_ScriptEngineData->EntityClasses.find(fullClassName) != s_ScriptEngineData->EntityClasses.end();
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
@@ -298,13 +307,13 @@ namespace origin
 		{
 			UUID entityID = entity.GetUUID();
 
-			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_Data->EntityClasses[sc.ClassName], entity);
-			s_Data->EntityInstances[entityID] = instance;
+			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_ScriptEngineData->EntityClasses[sc.ClassName], entity);
+			s_ScriptEngineData->EntityInstances[entityID] = instance;
 
 			// Copy Fields Value from Editor to Runtime
-			if (s_Data->EntityScriptFields.find(entityID) != s_Data->EntityScriptFields.end())
+			if (s_ScriptEngineData->EntityScriptFields.find(entityID) != s_ScriptEngineData->EntityScriptFields.end())
 			{
-				const ScriptFieldMap& fieldMap = s_Data->EntityScriptFields.at(entityID);
+				const ScriptFieldMap& fieldMap = s_ScriptEngineData->EntityScriptFields.at(entityID);
 				for (const auto& [name, fieldInstance] : fieldMap)
 					instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
 			}
@@ -318,33 +327,33 @@ namespace origin
 	{
 		UUID& entityID = entity.GetUUID();
 
-		auto& it = s_Data->EntityInstances.find(entityID);
-		if (it == s_Data->EntityInstances.end())
+		auto& it = s_ScriptEngineData->EntityInstances.find(entityID);
+		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
 			OGN_CORE_WARN("Entity Script Instance not found!");
 			return;
 		}
 
-		std::shared_ptr<ScriptInstance> instance = s_Data->EntityInstances.at(entityID);
+		std::shared_ptr<ScriptInstance> instance = s_ScriptEngineData->EntityInstances.at(entityID);
 		instance->InvokeOnUpdate(time);
 	}
 
 	MonoString* ScriptEngine::CreateString(const char* string)
 	{
-		return mono_string_new(s_Data->AppDomain, string);
+		return mono_string_new(s_ScriptEngineData->AppDomain, string);
 	}
 
 	std::shared_ptr<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
 	{
-		if (s_Data->EntityClasses.find(name) == s_Data->EntityClasses.end())
+		if (s_ScriptEngineData->EntityClasses.find(name) == s_ScriptEngineData->EntityClasses.end())
 			return nullptr;
 
-		return s_Data->EntityClasses.at(name);
+		return s_ScriptEngineData->EntityClasses.at(name);
 	}
 
 	std::unordered_map<std::string, std::shared_ptr<ScriptClass>> ScriptEngine::GetEntityClasses()
 	{
-		return s_Data->EntityClasses;
+		return s_ScriptEngineData->EntityClasses;
 	}
 
 	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
@@ -352,18 +361,18 @@ namespace origin
 		OGN_CORE_ASSERT(entity, "ScriptEngine::GetScriptFieldMap: Failed to get entity");
 
 		UUID entityID = entity.GetUUID();
-		return s_Data->EntityScriptFields[entityID];
+		return s_ScriptEngineData->EntityScriptFields[entityID];
 	}
 
 	std::vector<std::string> ScriptEngine::GetScriptClassStorage()
 	{
-		return s_Data->EntityScriptStorage;
+		return s_ScriptEngineData->EntityScriptStorage;
 	}
 
 	std::shared_ptr<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
-		auto& it = s_Data->EntityInstances.find(uuid);
-		if (it == s_Data->EntityInstances.end())
+		auto& it = s_ScriptEngineData->EntityInstances.find(uuid);
+		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
 			OGN_CORE_ERROR("Script Instance: Failed to find {} ", uuid);
 			return nullptr;
@@ -374,45 +383,45 @@ namespace origin
 
 	Scene* ScriptEngine::GetSceneContext()
 	{
-		return s_Data->SceneContext;
+		return s_ScriptEngineData->SceneContext;
 	}
 
 	MonoImage* ScriptEngine::GetCoreAssemblyImage()
 	{
-		return s_Data->CoreAssemblyImage;
+		return s_ScriptEngineData->CoreAssemblyImage;
 	}
 
 	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
 	{
-		OGN_CORE_ASSERT(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end(),
+		OGN_CORE_ASSERT(s_ScriptEngineData->EntityInstances.find(uuid) != s_ScriptEngineData->EntityInstances.end(),
 			"Invalid Script Instance");
 
-		return s_Data->EntityInstances.at(uuid)->GetMonoObject();
+		return s_ScriptEngineData->EntityInstances.at(uuid)->GetMonoObject();
 	}
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
-		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
+		MonoObject* instance = mono_object_new(s_ScriptEngineData->AppDomain, monoClass);
 		mono_runtime_object_init(instance);
 		return instance;
 	}
 
 	void ScriptEngine::LoadAssemblyClasses()
 	{
-		s_Data->EntityClasses.clear();
+		s_ScriptEngineData->EntityClasses.clear();
 
-		const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(s_Data->AppAssemblyImage, MONO_TABLE_TYPEDEF);
+		const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(s_ScriptEngineData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionTable);
 
-		MonoClass* entityClass = mono_class_from_name(s_Data->CoreAssemblyImage, "ORiginEngine", "Entity");
+		MonoClass* entityClass = mono_class_from_name(s_ScriptEngineData->CoreAssemblyImage, "ORiginEngine", "Entity");
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
 			uint32_t cols[MONO_TYPEDEF_SIZE];
 			mono_metadata_decode_row(typeDefinitionTable, i, cols, MONO_TYPEDEF_SIZE);
 
-			const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
-			const char* className = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
+			const char* nameSpace = mono_metadata_string_heap(s_ScriptEngineData->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* className = mono_metadata_string_heap(s_ScriptEngineData->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
 
 			std::string fullName;
 			if (strlen(nameSpace) != 0)
@@ -420,7 +429,7 @@ namespace origin
 			else
 				fullName = className;
 
-			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
+			MonoClass* monoClass = mono_class_from_name(s_ScriptEngineData->AppAssemblyImage, nameSpace, className);
 
 			if(monoClass == entityClass)
 				continue;
@@ -431,7 +440,7 @@ namespace origin
 
 			std::shared_ptr<ScriptClass> scriptClass = std::make_shared<ScriptClass>(nameSpace, className);
 
-			s_Data->EntityClasses[fullName] = scriptClass;
+			s_ScriptEngineData->EntityClasses[fullName] = scriptClass;
 
 			int fieldCount = mono_class_num_fields(monoClass);
 
@@ -452,14 +461,14 @@ namespace origin
 			}
 		}
 
-		auto& entityClasses = s_Data->EntityClasses;
+		auto& entityClasses = s_ScriptEngineData->EntityClasses;
 	}
 
 	// Script Class
 	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool core)
 		: m_ClassNamespace(classNamespace), m_ClassName(className)
 	{
-		m_MonoClass = mono_class_from_name(core ? s_Data->CoreAssemblyImage : s_Data->AppAssemblyImage, classNamespace.c_str(), className.c_str());
+		m_MonoClass = mono_class_from_name(core ? s_ScriptEngineData->CoreAssemblyImage : s_ScriptEngineData->AppAssemblyImage, classNamespace.c_str(), className.c_str());
 	}
 
 	MonoObject* ScriptClass::Instantiate()
@@ -483,7 +492,7 @@ namespace origin
 	{
 		m_Instance = scriptClass->Instantiate();
 
-		m_OnConstructor = s_Data->EntityClass.GetMethod(".ctor", 1);
+		m_OnConstructor = s_ScriptEngineData->EntityClass.GetMethod(".ctor", 1);
 		m_OnCreateMethod = scriptClass->GetMethod("OnCreate");
 		m_OnUpdateMethod = scriptClass->GetMethod("OnUpdate", 1);
 

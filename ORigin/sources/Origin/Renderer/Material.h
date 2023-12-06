@@ -36,8 +36,6 @@ namespace origin {
 		void SetMatrix(const std::string& name, const glm::mat3& matrices);
 		void SetMatrix(const std::string& name, const glm::mat4& matrices);
 
-		void LoadTextureFromFile(const std::string& filepath);
-		std::shared_ptr<Texture2D> Texture;
 		glm::vec2 TilingFactor = glm::vec2(1.0f);
 
 		glm::vec4 Color = glm::vec4(1.0f);

@@ -1,6 +1,5 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
-
 #include "Origin\Core\UUID.h"
 
 namespace origin {
@@ -11,6 +10,7 @@ namespace origin {
 		None = 0,
 		Scene,
 		Texture2D,
+		Font,
 		TextureCube,
 		Audio,
 		StaticMesh,
@@ -19,7 +19,7 @@ namespace origin {
 	};
 
 	std::string_view AssetTypeToString(AssetType type);
-	AssetType AssetTypeFromtString(std::string_view assetType);
+	AssetType AssetTypeFromString(std::string_view assetType);
 
 	class Asset
 	{

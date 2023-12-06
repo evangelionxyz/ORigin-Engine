@@ -1,18 +1,21 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Audio.h"
-#include "glm\glm.hpp"
+
+#include <glm\glm.hpp>
 
 namespace origin {
 
 #define FMOD_CHECK(result) if (result != FMOD_OK) {\
-	/*OGN_CORE_ERROR("FMOD AUDIO ERROR: {}", FMOD_ErrorString(result));*/}
+OGN_CORE_ERROR("FMOD AUDIO ERROR: {}, {}", __LINE__, FMOD_ErrorString(result));}
 
 	struct AudioData
 	{
 		FMOD_RESULT Result;
 		FMOD::System* AudioSystem;
+		FMOD::Channel* Channel;
+		FMOD::ChannelControl* ChannelControl;
 
 		std::unordered_map<std::string, std::shared_ptr<Audio>> AudioStorage;
 		const int MAX_CHANNELS = 32;
@@ -26,7 +29,13 @@ namespace origin {
 
 	Audio::~Audio()
 	{
-		Release();
+		if (s_Data.Channel)
+		{
+			s_Data.Result = s_Data.Channel->stop();
+			s_Data.Channel = nullptr;
+		}
+
+		m_Sound = nullptr;
 	}
 
 	void Audio::Play()
@@ -37,17 +46,16 @@ namespace origin {
 			return;
 		}
 
-		if (m_Channel)
+		if (s_Data.Channel)
 			Stop();
 
 		bool playing;
-		m_Channel->isPlaying(&playing);
+		s_Data.Channel->isPlaying(&playing);
 
 		if (!playing)
 		{
 			//OGN_CORE_WARN("AudioSource: Playing {}", m_Config.Name);
-
-			s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &m_Channel);
+			s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &s_Data.Channel);
 			FMOD_CHECK(s_Data.Result);
 		}
 	}
@@ -55,39 +63,48 @@ namespace origin {
 	void Audio::Pause(bool paused)
 	{
 		m_Paused = paused;
-		s_Data.Result = m_Channel->setPaused(paused);
+		s_Data.Result = s_Data.Channel->setPaused(paused);
 		FMOD_CHECK(s_Data.Result);
 	}
 
 	void Audio::Stop()
 	{
-		s_Data.Result = m_Channel->stop();
+		s_Data.Result = s_Data.Channel->stop();
 		FMOD_CHECK(s_Data.Result);
 	}
 
 	void Audio::SetGain(float volume)
 	{
 		m_Gain = volume;
-		s_Data.Result = m_Channel->setVolume(m_Gain);
+		s_Data.Result = s_Data.Channel->setVolume(m_Gain * 0.01f);
 		FMOD_CHECK(s_Data.Result);
 	}
 
-	float Audio::GetGain()
+	void Audio::SetPitch(float pitch)
 	{
-		return m_Gain;
+		m_Pitch = pitch;
+		s_Data.Result = s_Data.Channel->setPitch(m_Pitch);
+		FMOD_CHECK(s_Data.Result);
+	}
+
+	void Audio::SetLowPassFilter(float value)
+	{
+		m_LPFilter = value;
+		s_Data.Result = s_Data.Channel->setLowPassGain(value);
+		FMOD_CHECK(s_Data.Result);
 	}
 
 	void Audio::SetMinDistance(float value)
 	{
 		m_Config.MinDistance = value;
-		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+		s_Data.Result = s_Data.Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
 		FMOD_CHECK(s_Data.Result);
 	}
 
 	void Audio::SetMaxDistance(float value)
 	{
 		m_Config.MaxDistance = value;
-		s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+		s_Data.Result = s_Data.Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
 		FMOD_CHECK(s_Data.Result);
 	}
 
@@ -101,20 +118,30 @@ namespace origin {
 		return m_Config.MaxDistance;
 	}
 
-	void Audio::Release()
+	void Audio::UpdateAudioComponent(const AudioComponent& ac)
 	{
-		OGN_CORE_WARN("AudioSource: Releasing {}", m_Config.Name);
+		if (s_Data.Channel)
+		{
+			SetPitch(ac.Pitch);
+			SetLowPassFilter(ac.LowPass);
+			SetDopplerLevel(ac.DopplerLevel);
+			SetMaxDistance(ac.MaxDistance);
+			SetMinDistance(ac.MinDistance);
+			SetLoop(ac.Looping);
+			SetGain(ac.Volume);
+		}
+	}
 
-		s_Data.Result = m_Channel->stop();
+	void Audio::SetDopplerLevel(float doppler_level)
+	{
+		m_DopplerLevel = doppler_level;
+		s_Data.Result = s_Data.Channel->set3DDopplerLevel(m_DopplerLevel);
 		FMOD_CHECK(s_Data.Result);
-		m_Channel = nullptr;
-		m_Sound = nullptr;
 	}
 
 	void Audio::SetLoop(bool loop)
 	{
 		m_Config.Looping = loop;
-
 		s_Data.Result = m_Sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 		FMOD_CHECK(s_Data.Result);
 	}
@@ -124,13 +151,13 @@ namespace origin {
 		m_Config.Name = name;
 	}
 
-	void Audio::SetPosition(const glm::vec3& position)
+	void Audio::Set3DAttributes(const glm::vec3& position, const glm::vec3& velocity)
 	{
 		// Inversing position by default
 		m_AudioPosition = { -position.x, -position.y, -position.z };
+		m_AudioVelocity = { -velocity.x, -velocity.y, -velocity.z };
 
-		FMOD_VECTOR velocity = { 1.0f, 1.0f, 1.0f };
-		s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, &velocity);
+		s_Data.Result = s_Data.Channel->set3DAttributes(&m_AudioPosition, &m_AudioVelocity);
 		FMOD_CHECK(s_Data.Result);
 	}
 
@@ -150,20 +177,27 @@ namespace origin {
 
 	void Audio::LoadSource(const AudioConfig& config)
 	{
-		LoadSource(config.Name, config.Filepath, config.Looping, config.Spatial);
+		LoadSource(config.Name, m_Filepath, config.Looping, config.Spatial);
+	}
+
+	void Audio::LoadSource(const std::filesystem::path& filepath, const AudioConfig& config)
+	{
+		LoadSource(config.Name, filepath, config.Looping, config.Spatial);
 	}
 
 	void Audio::LoadSource(const std::string& name, const std::filesystem::path& filepath, bool loop, bool spatial)
 	{
+		m_Filepath = filepath;
+
 		m_Config.Name = name;
-		m_Config.Filepath = filepath.string();
 		m_Config.Looping = loop;
 		m_Config.Spatial = spatial;
 
-		m_Sound = AudioEngine::CreateSound(name, m_Config.Filepath.c_str(), spatial ? FMOD_3D : FMOD_2D);
+		m_Sound = AudioEngine::CreateSound(name, m_Filepath.string().c_str(), spatial ? FMOD_3D : FMOD_2D);
 		FMOD_CHECK(s_Data.Result);
 
 		s_Data.Result = m_Sound->setMode(m_Config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+		
 		FMOD_CHECK(s_Data.Result)
 
 		if (m_Config.Spatial)
@@ -171,10 +205,13 @@ namespace origin {
 			s_Data.Result = s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
 			FMOD_CHECK(s_Data.Result);
 
-			s_Data.Result = m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
+			s_Data.Result = s_Data.Channel->set3DAttributes(&m_AudioPosition, nullptr);
 			FMOD_CHECK(s_Data.Result);
 
-			s_Data.Result = m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+			s_Data.Result = s_Data.Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+			FMOD_CHECK(s_Data.Result);
+
+			s_Data.Result = s_Data.Channel->set3DDopplerLevel(m_DopplerLevel);
 			FMOD_CHECK(s_Data.Result);
 		}
 
@@ -186,7 +223,24 @@ namespace origin {
 		return std::make_shared<Audio>();
 	}
 
+	void Audio::UpdateDopplerEffect(const glm::vec3& listenerPos, const glm::vec3& listenerVelocity)
+	{
+		glm::vec3 audioPosition = glm::vec3(m_AudioPosition.x, m_AudioPosition.y, m_AudioPosition.z);
+		glm::vec3 audioVelocity = glm::vec3(m_AudioVelocity.x, m_AudioVelocity.y, m_AudioVelocity.z);
 
+		glm::vec3 relativeVelocity = listenerVelocity - audioVelocity;
+		float distance = glm::length(listenerPos - audioPosition);
+		float dopplerPitch = 1.0f;
+
+		if (distance > 0.001f) {
+			float speedOfSound = 343.0f;
+
+			float dopplerShift = speedOfSound / (speedOfSound - glm::dot(relativeVelocity, glm::normalize(listenerPos - audioPosition)));
+			dopplerPitch = dopplerShift;
+		}
+
+		s_Data.Channel->setPitch(dopplerPitch);
+	}
 
 	//////////////////////////////////////////////
 	//////////////// Audio Engine ////////////////
@@ -196,7 +250,7 @@ namespace origin {
 	{
 		s_Data.Result = FMOD::System_Create(&s_Data.AudioSystem);
 		FMOD_CHECK(s_Data.Result);
-		s_Data.Result = s_Data.AudioSystem->init(s_Data.MAX_CHANNELS, FMOD_INIT_NORMAL, 0);
+		s_Data.Result = s_Data.AudioSystem->init(s_Data.MAX_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_CHANNEL_LOWPASS, 0);
 		FMOD_CHECK(s_Data.Result);
 
 		return true;

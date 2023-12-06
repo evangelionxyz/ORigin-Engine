@@ -12,6 +12,7 @@ namespace Game
         private float xCenter;
         private float maxDistance;
         private float minDistance;
+        private bool mati = false;
 
         private Rigidbody2DComponent rb2d;
         private AnimationComponent anim;
@@ -39,8 +40,6 @@ namespace Game
         {
             xMovement = 0.0f;
 
-            
-
             if (xCenter >= maxDistance)
             {
                 increment = -1.0f;
@@ -59,6 +58,7 @@ namespace Game
             {
                 xMovement = 0.0f;
                 anim.ActiveState = "Gepeng";
+                mati = true;
 
             }
             else

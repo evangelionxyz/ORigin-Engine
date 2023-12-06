@@ -5,17 +5,14 @@
 #include "Scene.h"
 #include "Origin/Audio/Audio.h"
 #include "ScriptableEntity.h"
-
 #include "Lighting.h"
-#include "Component.h"
 
+#include "Origin/Animation/Animation.h"
 #include "Origin/Scripting/ScriptEngine.h"
-
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer3D.h"
-
-#include "Origin/Animation/Animation.h"
+#include "origin/Physics/Contact2DListener.h"
 
 // Box2D
 #include "box2d/b2_world.h"
@@ -24,9 +21,9 @@
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_circle_shape.h"
 
-#include "origin\Physics\Contact2DListener.h"
-
 #include <glm/glm.hpp>
+
+#include "Origin\Asset\AssetManager.h"
 
 namespace origin
 {
@@ -47,6 +44,8 @@ namespace origin
 		return b2_staticBody;
 	}
 
+	std::shared_ptr<Skybox>Scene::m_Skybox;
+
 	Scene::Scene()
 	{
 		if (!m_PhysicsScene)
@@ -55,6 +54,12 @@ namespace origin
 		m_CameraIcon = Renderer::GetGTexture("CameraIcon");
 		m_LightingIcon = Renderer::GetGTexture("LightingIcon");
 		m_AudioIcon = Renderer::GetGTexture("AudioIcon");
+
+		if (!m_Skybox)
+		{
+			m_Skybox = Skybox::Create("Resources/Skybox/", ".jpg");
+			m_Skybox->SetBlur(0.0f);
+		}
 	}
 
 	Scene::~Scene()
@@ -391,18 +396,37 @@ namespace origin
 				ac.State.GetAnimation().Update(deltaTime);
 		}
 
+		glm::vec3 camVel(0.0f), camPos(0.0f);
+		const auto& camListenerView = m_Registry.view<CameraComponent, AudioListener>();
+		for(const auto entity : camListenerView)
+		{
+			auto& listener = camListenerView.get<AudioListener>(entity);
+			camPos = listener.GetPosition();
+			camPos = listener.GetVelocity();
+		}
+
 		// Audio Update
 		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
 		for (const auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (ac.Audio)
+			
+			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
 			{
-				ac.Audio->SetMaxDistance(ac.MaxDistance);
-				ac.Audio->SetMinDistance(ac.MinDistance);
-				ac.Audio->SetLoop(ac.Looping);
-				ac.Audio->SetGain(ac.Volume);
-				ac.Audio->SetPosition(tc.Translation);
+				audio->UpdateAudioComponent(ac);
+				if (ac.Spatial)
+				{
+					static glm::vec3 prevPos = tc.Translation;
+
+					const glm::vec3& position = tc.Translation;
+					const glm::vec3 delta = position - prevPos;
+
+					prevPos = position;
+
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+					audio->Set3DAttributes(tc.Translation, velocity);
+					audio->UpdateDopplerEffect(camPos, camVel);
+				}
 			}
 		}
 
@@ -460,20 +484,31 @@ namespace origin
 		for (auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (ac.Audio)
+
+			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
 			{
-				ac.Audio->SetMaxDistance(ac.MaxDistance);
-				ac.Audio->SetMinDistance(ac.MinDistance);
-				ac.Audio->SetLoop(ac.Looping);
-				ac.Audio->SetGain(ac.Volume);
-				ac.Audio->SetPosition(tc.Translation);
+				audio->UpdateAudioComponent(ac);
+				if (ac.Spatial)
+				{
+					static glm::vec3 prevPos = tc.Translation;
+
+					const glm::vec3& position = tc.Translation;
+					const glm::vec3 delta = position - prevPos;
+
+					prevPos = position;
+
+					glm::vec3 velocity = delta / glm::vec3(deltaTime);
+					audio->Set3DAttributes(tc.Translation, velocity);
+					audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
+					
+				}
 			}
 
 			DrawIcon(editorCamera, static_cast<int>(entity), m_AudioIcon, tc, true);
 		}
 		Renderer2D::EndScene();
 
-		editorCamera.UpdateAudioListener();
+		editorCamera.UpdateAudioListener(deltaTime);
 		AudioEngine::SetMute(false);
 		AudioEngine::SystemUpdate();
 	}
@@ -554,15 +589,25 @@ namespace origin
 		for (auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (ac.Audio)
+			
+			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
 			{
-				ac.Audio->SetMaxDistance(ac.MaxDistance);
-				ac.Audio->SetMinDistance(ac.MinDistance);
-				ac.Audio->SetLoop(ac.Looping);
-				ac.Audio->SetGain(ac.Volume);
+				audio->UpdateAudioComponent(ac);
 
 				if (ac.Spatial)
-					ac.Audio->SetPosition(tc.Translation);
+				{
+					static glm::vec3 prevPos = tc.Translation;
+
+					const glm::vec3& position = tc.Translation;
+					const glm::vec3 delta = position - prevPos;
+
+					prevPos = position;
+
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+					audio->Set3DAttributes(tc.Translation, velocity);
+					
+					audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
+				}
 			}
 
 			DrawIcon(editorCamera, static_cast<int>(entity), m_AudioIcon, tc, true);
@@ -575,13 +620,21 @@ namespace origin
 		{
 			auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
 			if (al.Enable)
-				al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
+			{
+				static glm::vec3 prevPos = tc.Translation;
+				const glm::vec3& position = tc.Translation;
+				const glm::vec3 delta = position - prevPos;
+				prevPos = position;
+				glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+
+				al.Listener.Set(tc.Translation, velocity, tc.GetForward(), tc.GetUp());
+			}
 
 			isMainCameraListening = al.Enable;
 		}
 
 		if (!isMainCameraListening)
-			editorCamera.UpdateAudioListener();
+			editorCamera.UpdateAudioListener(deltaTime);
 
 		AudioEngine::SystemUpdate();
 	}
@@ -605,8 +658,12 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			if (ac.Audio && ac.PlayAtStart)
-				ac.Audio->Play();
+			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (audio)
+			{
+				audio->Play();
+			}
+				
 		}
 	}
 
@@ -621,13 +678,16 @@ namespace origin
 		for (auto& e : view)
 		{
 			auto& ac = view.get<AudioComponent>(e);
-			if (ac.Audio)
-				ac.Audio->Stop();
+			
+			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+				audio->Stop();
 		}
 	}
 
 	void Scene::RenderScene(const Camera& camera, const TransformComponent& cameraTransform)
 	{
+		m_Skybox->Draw(camera);
+
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 
 		// Particle
@@ -665,14 +725,18 @@ namespace origin
 				if (anim.State.HasAnimation() == false)
 					continue;
 
+				std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
+
 				if (anim.State.GetAnimation().HasFrame())
-					sprite.Texture = anim.State.GetAnimation().GetCurrentSprite();
+				{
+					texture = anim.State.GetAnimation().GetCurrentSprite();
+				}
 				else
 				{
-					if (sprite.Texture)
+					if (texture)
 					{
-						sprite.Texture->Delete();
-						sprite.Texture.reset();
+						texture->Delete();
+						texture.reset();
 					}
 				}
 			}
@@ -748,7 +812,10 @@ namespace origin
 
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
+
 		Renderer::BeginScene(camera);
+
+		m_Skybox->Draw(camera);
 
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& entity : lightView)
@@ -807,17 +874,21 @@ namespace origin
 			for (auto& entity : animView)
 			{
 				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (!anim.State.HasAnimation())
+				if (anim.State.HasAnimation() == false)
 					continue;
 
+				std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
+
 				if (anim.State.GetAnimation().HasFrame())
-					sprite.Texture = anim.State.GetAnimation().GetCurrentSprite();
+				{
+					texture = anim.State.GetAnimation().GetCurrentSprite();
+				}
 				else
 				{
-					if(sprite.Texture)
+					if (texture)
 					{
-						sprite.Texture->Delete();
-						sprite.Texture.reset();
+						texture->Delete();
+						texture.reset();
 					}
 				}
 			}
@@ -954,10 +1025,6 @@ namespace origin
 
 		Renderer::GetGShader("DirLightDepthMap")->Disable();
 
-		// ==============================
-		// Point Light Shadow
-		// ==============================
-
 		glDisable(GL_CULL_FACE);
 	}
 
@@ -980,10 +1047,11 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			if (ac.Audio && ac.PlayAtStart)
+			
+			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
 			{
-				ac.Audio->SetGain(ac.Volume);
-				ac.Audio->Play();
+				audio->SetGain(ac.Volume);
+				audio->Play();
 			}
 		}
 	}
@@ -1000,8 +1068,8 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			if (ac.Audio)
-				ac.Audio->Stop();
+			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+				audio->Stop();
 		}
 	}
 

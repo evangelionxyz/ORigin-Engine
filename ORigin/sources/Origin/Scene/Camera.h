@@ -17,7 +17,7 @@ namespace origin {
 
 		const glm::mat4& GetProjection() const { return m_Projection; }
 		const glm::mat4& GetViewMatrix() const { return m_View; }
-		const glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
+		virtual const glm::mat4 GetViewProjection() const = 0;
 		const glm::vec3 GetPosition() const { return m_Position; }
 
 		void SetPosition(const glm::vec3& position) { m_Position = position; }

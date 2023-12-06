@@ -36,8 +36,7 @@ namespace origin {
 		inline void SetYaw(float yaw) { m_Yaw = yaw; }
 		inline void SetFov(float fov) { m_FOV = fov; UpdateProjection(); }
 
-		const glm::mat4& GetViewMatrix() const { return m_View; }
-		const glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
+		virtual const glm::mat4 GetViewProjection() const override { return m_Projection * m_View; }
 		inline float GetDistance() const { return m_Distance; }
 
 		glm::vec3 GetUpDirection() const;
@@ -56,7 +55,8 @@ namespace origin {
 		float GetZoomSpeed() { return ZoomSpeed(); }
 		float GetFOV() { return m_FOV; }
 
-		void UpdateAudioListener();
+		void UpdateAudioListener(float deltaTime);
+		AudioListener GetAudioListener() { return m_AudioListener; }
 
 	private:
 		AudioListener m_AudioListener;
@@ -82,8 +82,9 @@ namespace origin {
 		float m_Distance = 8.0f;
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
-		float m_MoveSpeed = 10.0f;
+		float m_MoveSpeed = 2.0f;
 
+		glm::vec3 m_LastPosition = glm::vec3(0.0f);
 		glm::vec3 m_TargetPosition = glm::vec3(0.0f);
 		glm::vec3 m_FocalPoint = glm::vec3(0.0f);
 		glm::vec2 m_InitialMousePosition = glm::vec2(0.0f);

@@ -9,7 +9,7 @@
 
 #include "Origin\Renderer\Texture.h"
 
-#include "Origin\Scene\Component.h"
+#include "Origin\Scene\Components.h"
 
 namespace origin {
 

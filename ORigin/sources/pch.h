@@ -13,14 +13,18 @@
 #include <sstream>
 #include <array>
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <initializer_list>
 #include <cstdio>
 #include <chrono>
 #include <filesystem>
 
 #include "Origin\Core\Base.h"
 #include "Origin\Core\Assert.h"
+#include "Origin\Core\Buffer.h"
+#include "Origin\Core\Log.h"
 
 #include <glm\glm.hpp>
 

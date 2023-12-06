@@ -9,7 +9,7 @@ namespace Game
         private AudioComponent JumpSound;
         private TransformComponent transform;
         private Rigidbody2DComponent rb2d;
-        private AnimationComponent anim;
+        //private AnimationComponent anim;
         private TextComponent text;
 
         public float JumpHeight = 10.0f;
@@ -25,7 +25,7 @@ namespace Game
         {
             transform = GetComponent<TransformComponent>();
             rb2d = GetComponent<Rigidbody2DComponent>();
-            anim = GetComponent<AnimationComponent>();
+            //anim = GetComponent<AnimationComponent>();
 
             JumpSound = FindEntityByName("Jump Sound").GetComponent<AudioComponent>();
             text = FindEntityByName("Text").GetComponent<TextComponent>();
@@ -61,11 +61,11 @@ namespace Game
             if (velocity.Y > 0)
             {
                 JumpSound.Play();
-                anim.ActiveState = "Jump";
+                //anim.ActiveState = "Jump";
             }
             else
             {
-                anim.ActiveState = "Idle";
+                //anim.ActiveState = "Idle";
             }
 
             if (Input.IsKeyPressed(KeyCode.D))
@@ -75,7 +75,7 @@ namespace Game
 
             if (velocity.X != 0)
             {
-                anim.ActiveState = "Walk";
+                //anim.ActiveState = "Walk";
                 RotationY = velocity.X > 0 ? 0.0f : Math.Deg2Rad(-180.0f);
             }
 

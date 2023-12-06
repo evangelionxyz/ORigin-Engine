@@ -30,7 +30,10 @@
 	url = https://github.com/kaks-ev/msdf-atlas-gen.git
 [submodule "ORigin/vendor/PhysX"]
 	path = ORigin/vendor/PhysX
-	url = https://github.com/NVIDIA-Omniverse/PhysX.git
+	url = https://github.com/kaks-ev/NVIDIA-PhysX.git
 [submodule "ORigin/vendor/JoltPhysics"]
 	path = ORigin/vendor/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "ORigin/vendor/Optick"]
+	path = ORigin/vendor/Optick
+	url = https://github.com/bombomby/optick.git

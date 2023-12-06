@@ -16,7 +16,6 @@ namespace origin {
 		glm::quat FromPhysXQuat(const physx::PxQuat quat);
 		glm::vec3 FromPhysXQuatToVec3(const physx::PxQuat& quat);
 		physx::PxTransform PhysicsTransformfromTransformComponent(const glm::mat4& transform);
-
 	}
 	
 	class PhysXAPI : public PhysicsAPI

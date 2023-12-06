@@ -1,3 +1,3 @@
 @echo off
-msbuild ORigin.sln
+msbuild OR1.sln
 pause

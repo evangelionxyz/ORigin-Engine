@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "Components.h"
 #include "Origin\Renderer\Framebuffer.h"
 
 namespace origin 

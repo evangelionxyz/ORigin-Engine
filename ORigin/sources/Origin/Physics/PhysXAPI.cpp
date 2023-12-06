@@ -57,14 +57,17 @@ namespace origin {
 			Row[2] = detail::scale(Row[2], static_cast<T>(1));
 
 			rotation.y = asin(-Row[0][2]);
-			if (cos(rotation.y) != 0) {
+			if (cos(rotation.y) != 0) 
+			{
 				rotation.x = atan2(Row[1][2], Row[2][2]);
 				rotation.z = atan2(Row[0][1], Row[0][0]);
 			}
-			else {
+			else 
+			{
 				rotation.x = atan2(-Row[2][0], Row[1][1]);
 				rotation.z = 0;
 			}
+
 			return rotation;
 		}
 
@@ -152,7 +155,10 @@ namespace origin {
 		s_PhysXData->PhysxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
 
 		s_PhysXData->PhysXPvd = PxCreatePvd(*PhysXAPI::GetFoundation());
-		physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate("localhost", 5425, 10);
+
+		int port = 5425;
+		int timeoutMS = 10;
+		physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate("localhost", port, timeoutMS);
 		s_PhysXData->PhysXPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
 
 		s_PhysXData->PhysxPhysics = PxCreatePhysics(
@@ -171,7 +177,7 @@ namespace origin {
 		s_PhysXData->PhysxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(workerThreads);
 		OGN_CORE_ASSERT(s_PhysXData->PhysxCPUDispatcher);
 
-		OGN_CORE_INFO("PhysX API : Initialized");
+		OGN_CORE_INFO("PhysX API: Initialized");
 	}
 
 	void PhysXAPI::Shutdown()

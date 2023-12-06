@@ -21,6 +21,8 @@ namespace origin {
 		static std::shared_ptr<Font> GetDefault();
 		
 	private:
+		// TODO: Add loaded fonts for an optimization
+
 		MSDFData* m_Data;
 		std::shared_ptr<Texture2D> m_AtlasTexture;
 		bool m_Loaded = false;

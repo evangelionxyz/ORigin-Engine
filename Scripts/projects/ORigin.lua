@@ -112,7 +112,8 @@ filter "configurations:Debug"
 filter "configurations:Release"
     defines {
         "PX_PHYSX_STATIC_LIB",
-        "OGN_RELEASE"
+        "OGN_RELEASE",
+        "NDEBUG"
     }
     runtime "Release"
     optimize "On"
@@ -124,9 +125,10 @@ filter "configurations:Release"
     }
 
 filter "configurations:Dist"
-    defines  {
+    defines {
         "PX_PHYSX_STATIC_LIB",
-        "OGN_DIST"
+        "OGN_RELEASE",
+        "NDEBUG"
     }
     runtime "Release"
     optimize "On"

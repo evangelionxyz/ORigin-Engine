@@ -38,7 +38,7 @@ namespace origin {
 		spec.GenerateMips = false;
 
 		std::shared_ptr<Texture2D> texture = Texture2D::Create(spec);
-		texture->SetData((void*)bitmap.pixels, bitmap.width * bitmap.height * 3);
+		texture->SetData(Buffer((void*)bitmap.pixels, bitmap.width * bitmap.height * 3));
 
 		return texture;
 	};

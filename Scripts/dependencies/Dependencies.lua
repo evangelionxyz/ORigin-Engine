@@ -29,7 +29,7 @@ IncludeDir["JoltPhysics"] = "%{wks.location}/ORigin/vendor/JoltPhysics"
 LibraryDir = {}
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
 LibraryDir["FMOD"] = "%{wks.location}/ORigin/vendor/FMOD/lib"
-LibraryDir["MONO"]      = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
+LibraryDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
 LibraryDir["AssimpSDK"] = "%{wks.location}/ORigin/vendor/Assimp/lib/x64"
 
 Library = {}

@@ -18,6 +18,7 @@ namespace origin {
 		void SetViewportSize(uint32_t width, uint32_t height);
 
 		const glm::vec2& GetViewportSize() { return m_ViewportSize; }
+		virtual const glm::mat4 GetViewProjection() const override { return (m_Projection * m_View) * glm::inverse(m_View); }
 
 		// Perspective
 		void SetPerspective(float verticalFov, float nearClip, float farClip);

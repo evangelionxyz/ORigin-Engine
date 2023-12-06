@@ -1,15 +1,14 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Application.h"
+#include "Origin\Asset\TextureImporter.h"
 #include "Origin\Audio\Audio.h"
-
 #include "Origin\Physics\Physics.h"
-
 #include "Origin\Scripting\ScriptEngine.h"
-#include "imgui.h"
 
-#include "stb_image.h"
+#include <imgui.h>
+#include <stb_image.h>
 
 namespace origin {
 
@@ -35,17 +34,14 @@ namespace origin {
 		m_Window = Window::Create(splashScreenWinConfig);
 		m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
 		m_GraphicContext->Init();
+		m_Window->SetIcon("Resources/UITextures/icon_origin.png");
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 
 		m_GuiLayer = new GuiLayer();
 		m_GuiLayer->SetContext(m_Window->GetNativeWindow());
 		PushOverlay(m_GuiLayer);
+		std::shared_ptr<Texture2D> splashImage = TextureImporter::LoadTexture2D("Resources/UITextures/splashscreen.png");
 
-		TextureSpecification splashImageSpec;
-		splashImageSpec.MagFilter = ImageFilter::Linear;
-		splashImageSpec.MinFilter = ImageFilter::Linear;
-		splashImageSpec.Format = ImageFormat::RGB8;
-		std::shared_ptr<Texture2D> splashImage = Texture2D::Create("Resources/UITextures/splashscreen.png", splashImageSpec);
 		m_GuiLayer->Begin();
 		ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
 		ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
@@ -66,11 +62,11 @@ namespace origin {
 			ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 		}
+
 		ImGui::PopStyleVar();
 
 		m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 		m_GuiLayer->End();
-
 		m_Window->OnUpdate();
 
 		Renderer::Init();
@@ -82,7 +78,7 @@ namespace origin {
 		m_Window->OnUpdate();
 
 		m_Window->Decorated(true);
-		m_Window->SetSize(1280, 640);
+		m_Window->SetSize(1080, 480);
 	}
 
 	Application::~Application()

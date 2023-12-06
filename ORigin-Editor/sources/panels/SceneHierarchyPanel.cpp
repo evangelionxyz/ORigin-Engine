@@ -1,13 +1,14 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "SceneHierarchyPanel.h"
-
-#include "..\Editor.h"
-
+#include "../EditorLayer.h"
 #include "Origin\Project\Project.h"
+#include "Origin\Asset\AssetManager.h"
+#include "Origin\Asset\AssetMetaData.h"
+#include "Origin\Asset\TextureImporter.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
-#include "Origin\Scene\Component.h"
+#include "Origin\Scene\Components.h"
 #include "Origin\Audio\Audio.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
@@ -216,13 +217,8 @@ namespace origin {
 
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
-			if (DisplayAddComponentEntry<AudioComponent>("AUDIO"))
-			{
-				m_SelectedEntity.GetComponent<AudioComponent>().Audio = Audio::Create();
-			}
-
+			(DisplayAddComponentEntry<AudioComponent>("AUDIO"));
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
-
 			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
@@ -353,167 +349,107 @@ namespace origin {
 				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
 				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
+
+
 		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
-				static bool creationWindow = false;
+				
+				std::string label = "None";
 
-				if (!component.Audio->IsLoaded())
+				bool isAudioValid = false;
+				ImGui::Text("Audio Source");
+				ImGui::SameLine();
+				if (component.Audio != 0)
 				{
-					if (ImGui::Button("Create Audio"))
-						creationWindow = true;
+					if (AssetManager::IsAssetHandleValid(component.Audio) && AssetManager::GetAssetType(component.Audio) == AssetType::Audio)
+					{
+						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Audio);
+						label = metadata.Filepath.filename().string();
+						isAudioValid = true;
+					}
+					else
+					{
+						label = "Invalid";
+					}
 				}
 
-				if(creationWindow)
+				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
+				buttonLabelSize.x += 20.0f;
+				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+
+				ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
+				if (ImGui::BeginDragDropTarget())
 				{
-					ImGuiWindowFlags winFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDocking;
-
-					ImGui::Begin("Audio Creation", &creationWindow, winFlags);
-					ImGui::Button("Drop Audio");
-					
-					static std::string filepath;
-					if (ImGui::BeginDragDropTarget())
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
+						if (AssetManager::GetAssetType(handle) == AssetType::Audio)
 						{
-							const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-							std::filesystem::path audioPath = Project::GetAssetFileSystemPath(path);
-							if (audioPath.extension() == ".wav" || audioPath.extension() == ".mp3" || audioPath.extension() == ".ogg")
-							{
-								filepath = audioPath.generic_string();
-								OGN_CORE_WARN("Audio Component: Drop Audio From {}", filepath);
-							}
-						}
-					}
-
-					ImGui::SameLine();
-					ImGui::Text("Path: %s", filepath.c_str());
-
-					std::string& name = component.Name;
-					ImGui::Text("Name: "); ImGui::SameLine();
-					char buffer[256];
-					strcpy_s(buffer, sizeof(buffer), name.c_str());
-
-					if (ImGui::InputText("##audioName", buffer, sizeof(buffer)))
-					{
-						name = std::string(buffer);
-						component.Name = name;
-					}
-
-					static bool spatial = false;
-					static bool looping = false;
-					static float minDistance = 1.0f;
-					static float maxDistance = 100.0f;
-
-					ImGui::Text("Spatial");
-					ImGui::SameLine();
-					ImGui::Checkbox("##Spatial", &spatial);
-					ImGui::Text("Looping");
-					ImGui::SameLine();
-					ImGui::Checkbox("##Looping", &looping);
-
-					if (spatial)
-					{
-						ImGui::Text("Min Distance");
-						ImGui::SameLine();
-						ImGui::DragFloat("##MinDistance", &minDistance, 0.1f, 0.0f, 10000.0f);
-						ImGui::Text("Max Distance");
-						ImGui::SameLine();
-						ImGui::DragFloat("##MaxDistance", &maxDistance, 0.1f, 0.0f, 10000.0f);
-					}
-
-					static bool valid = false;
-					if (ImGui::Button("Create"))
-					{
-						AudioConfig config;
-
-						config.Name = component.Name;
-						config.Spatial = spatial;
-						config.Filepath = filepath;
-						config.MinDistance = minDistance;
-						config.MaxDistance = maxDistance;
-						config.Looping = looping;
-
-						component.Spatial = spatial;
-						component.Looping = looping;
-
-						valid = (!name.empty() && !filepath.empty());
-						if (valid)
-						{
-							if (component.Audio->IsLoaded())
-							{
-								component.Audio->Stop();
-								component.Audio.reset();
-
-								component.Audio = Audio::Create();
-							}
-
-							component.Audio->LoadSource(config);
-							OGN_CORE_WARN("Audio Component: Creating {} Audio...", config.Name);
+							component.Audio = handle;
+							const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Audio);
+							component.Name = metadata.Filepath.filename().string();
 						}
 						else
 						{
-							OGN_CORE_ERROR("Audio Creation: Invalid Audio Creation. Check the Name or Filepath");
+							OGN_CORE_WARN("Wrong asset type!");
 						}
 					}
-					ImGui::End();
+					ImGui::EndDragDropTarget();
 				}
 
-				if (component.Audio->IsLoaded())
-				{
-					ImGui::Text("%s | Spatialize: %s", component.Name.c_str(), component.Spatial ? "On" : "Off");
-					ImGui::Separator();
+				if (isAudioValid == false)
+					return;
 
-#if 0
-					if (ImGui::Button("Insert To Library"))
-						AudioEngine::AudioStorageInsert(component.Audio);
+				std::shared_ptr<Audio> audio = AssetManager::GetAsset<Audio>(component.Audio);
+
+				if (audio->IsLoaded())
+				{
+					auto& name = component.Name;
+					char buffer[256];
+					ImGui::Text("Name");
 					ImGui::SameLine();
-					if (ImGui::Button("Delete From Library"))
-						AudioEngine::AudioStorageDelete(component.Audio);
+					strcpy_s(buffer, sizeof(buffer), name.c_str());
+					if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+					{
+						name = std::string(buffer);
+						audio->GetConfig().Name = name;
+					}
+
+					ImGui::Text("Spatialize: %s", component.Spatial ? "On" : "Off");
+					ImGui::Separator();
+					if (ImGui::Button("Play")) audio->Play();
 					ImGui::SameLine();
-					if (ImGui::Button("Open Audio Library"))
-						Editor::Get().guiAudioLibraryWindow = true;
-#endif
-					if (ImGui::Button("Play")) component.Audio->Play();
-					ImGui::SameLine();
-					if (ImGui::Button("Stop")) component.Audio->Stop();
+					if (ImGui::Button("Stop")) audio->Stop();
 					ImGui::SameLine();
 
 					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
 					ImGui::SameLine();
 					if (ImGui::Checkbox("Looping", &component.Looping))
-						component.Audio->SetLoop(component.Looping);
+						audio->SetLoop(component.Looping);
 
 					float columnWidth = 100.0f;
 
-					component.Volume = component.Audio->GetGain();
-					DrawVecControl("Volume", &component.Volume, 0.01f, 0.0f, 1.0f, 0.0f, columnWidth);
+					ImGui::BeginChild("##volume", ImVec2(50.0f, 150.0f), true);
+					ImGui::VSliderFloat("Vol", ImVec2(30.0f, 150.0f), &component.Volume, 0.0f, 100.0f, "%.0f");
+					ImGui::EndChild();
 
-					if(ImGui::Checkbox("Spatialize", &component.Spatial))
-						component.Audio->SetSpatial(component.Spatial);
+					ImGui::SameLine();
+					ImGui::BeginChild("##other_controls", ImVec2(ImGui::GetContentRegionAvail().x, 150.0f), true);
+					ImGui::DragFloat("Pitch", &component.Pitch, 0.01f, 0.0f, 2.0f);
+					
+					ImGui::DragFloat("LP Filter", &component.LowPass, 0.01f, 0.0f, 1.0f);
+					ImGui::EndChild();
+
+					ImGui::Separator();
+					if (ImGui::Checkbox("Spatialize", &component.Spatial))
+						audio->SetSpatial(component.Spatial);
 
 					if (component.Spatial)
 					{
-						component.MinDistance = component.Audio->GetMinDistance();
+						DrawVecControl("Doppler Level", &component.DopplerLevel, 0.1f, 0.0f, 10000.0f, 1.0f, columnWidth);
 						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
-
-						component.MaxDistance = component.Audio->GetMaxDistance();
 						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
-					}
-
-					if (ImGui::Button("Delete"))
-					{
-						component.Audio->Stop();
-						component.Audio.reset();
-
-						component.Audio = Audio::Create();
-					}
-
-					ImGui::SameLine();
-					if (ImGui::Button("Re-Create"))
-					{
-						component.Audio->Stop();
-						creationWindow = true;
 					}
 				}
 			});
@@ -741,17 +677,15 @@ namespace origin {
 						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 
 						// Get the actual Location from Project Assets Directory
-						std::filesystem::path modelPath = Project::GetAssetFileSystemPath(path);
+						std::filesystem::path modelPath = std::filesystem::path(path);
 
 						if (modelPath.extension() == ".gltf"
 							|| modelPath.extension() == ".fbx"
 							|| modelPath.extension() == ".obj")
 						{
 							std::shared_ptr<Shader> matShader = Renderer::GetGShader("Mesh");
-
 							component.Material = Material::Create("MeshMaterial");
 							component.Material->LoadShader(matShader);
-
 							component.Model = Model::Create(modelPath.generic_string(), component.Material);
 						}
 					}
@@ -779,8 +713,10 @@ namespace origin {
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
 					ImGui::DragFloat("Shininess", &component.Material->Shininess, 0.1f, 1.0f, 256.0f);
 					ImGui::SliderFloat("Bias", &component.Material->Bias, 0.005f, 0.1f);
+					DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f, 1.0f);
 
 					// Drop Texture
+#if 0
 					if (component.Material->HasTexture == false)
 					{
 						if (!component.Material->Texture)
@@ -792,7 +728,7 @@ namespace origin {
 							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 							{
 								const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-								std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+								std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
 								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 									component.Material->LoadTextureFromFile(texturePath.generic_string());
 							}
@@ -807,15 +743,11 @@ namespace origin {
 								component.Material->Texture = {};
 								return;
 							}
-
-							DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f, 1.0f);
-
 							ImGui::Text("Path: %s", component.Material->Texture->GetFilepath().c_str());
 						}
 					}
-					
+#endif
 				}
-
 			});
 
 		DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
@@ -830,7 +762,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path fontPath = Project::GetAssetFileSystemPath(path);
+						std::filesystem::path fontPath = Project::GetActiveAssetFileSystemPath(path);
 						if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
 						{
 							if(component.FontAsset) component.FontAsset.reset();
@@ -876,7 +808,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+						std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 							component.Texture = Texture2D::Create(texturePath.string());
 					}
@@ -899,37 +831,55 @@ namespace origin {
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
-				if (!component.Texture)
-					ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
-				else ImGui::ImageButton(reinterpret_cast<ImTextureID>(component.Texture->GetRendererID()), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
+				std::string label = "None";
+				bool isTextureValid = false;
+				ImGui::Text("Texture");
+				ImGui::SameLine();
+				if (component.Texture != 0)
+				{
+					if (AssetManager::IsAssetHandleValid(component.Texture) && AssetManager::GetAssetType(component.Texture) == AssetType::Texture2D)
+					{
+						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Texture);
+						label = metadata.Filepath.filename().string();
+						isTextureValid = true;
+					}
+					else
+					{
+						label = "Invalid";
+					}
+				}
 
+				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
+				buttonLabelSize.x += 20.0f;
+				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+
+				ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path texturePath = Project::GetAssetFileSystemPath(path);
+						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
+						if (AssetManager::GetAssetType(handle) == AssetType::Texture2D)
+						{
+							component.Texture = handle;
+						}
+						else
+						{
+							OGN_CORE_WARN("Wrong asset type!");
+						}
 
-						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-							component.Texture = Texture2D::Create(texturePath.string());
 					}
+					ImGui::EndDragDropTarget();
 				}
 
-				if (component.Texture)
+				if (isTextureValid)
 				{
 					ImGui::SameLine();
-					if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
-					{
-						component.Texture->Delete();
-						component.Texture.reset();
-						return;
-					}
-
-					auto& path = std::filesystem::relative(component.Texture->GetFilepath(), Project::GetAssetDirectory());
-
-					ImGui::Text("Path: %s", path.string().c_str());
+					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+						component.Texture = 0;
 					DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
-
 					ImGui::Text("Flip");
 					ImGui::SameLine();
 					ImGui::Checkbox("X", &component.FlipX);
@@ -940,7 +890,7 @@ namespace origin {
 
 		DrawComponent<LightComponent>("LIGHTING", entity, [](auto& component)
 			{
-				const char* lightTypeString[3] = { "Spot", "Point", "Direcional" };
+				const char* lightTypeString[3] = { "Spot", "Point", "Directional" };
 				const char* currentLightTypeString = lightTypeString[static_cast<int>(component.Light->Type)];
 
 				if (ImGui::BeginCombo("Type", currentLightTypeString))
@@ -1094,15 +1044,13 @@ namespace origin {
 	template<typename T>
 	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)
 	{
-		if (!m_SelectedEntity.HasComponent<T>())
+		if (ImGui::MenuItem(entryName.c_str()))
 		{
-			if (ImGui::MenuItem(entryName.c_str()))
-			{
-				m_SelectedEntity.AddComponent<T>();
-				ImGui::CloseCurrentPopup();
-				return true;
-			}
+			m_SelectedEntity.AddComponent<T>();
+			ImGui::CloseCurrentPopup();
+			return true;
 		}
+
 		return false;
 	}
 }

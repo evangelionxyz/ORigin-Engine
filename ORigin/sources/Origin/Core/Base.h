@@ -1,11 +1,16 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include <filesystem>
+#include <memory>
+
+#define OGN_DEBUGBREAK() __debugbreak();
 
 #ifdef OGN_DEBUG
-	#define OGN_DEBUGBREAK __debugbreak();
-	#define OGN_ENABLE_ASSERT
+	#define OGN_ENABLE_ASSERTS
+#endif
+
+#ifndef OGN_RELEASE
+	#define OGN_ENABLE_VERIFY
 #endif
 
 #define EXPAND_MACRO(x)

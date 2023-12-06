@@ -61,7 +61,7 @@ namespace origin {
 			actor->is<physx::PxRigidDynamic>()->setGlobalPose(physx::PxTransform(Utils::ToPhysXVec3(position), Utils::ToPhysXQuat(rotation)));
 	}
 
-	void RigidbodyComponent::UpdateFlags()
+	void RigidbodyComponent::UpdateFlags(const TransformComponent& transform)
 	{
 		if (!Body)
 			return;
@@ -84,13 +84,12 @@ namespace origin {
 		dActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, !MoveY);
 		dActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, !MoveZ);
 
-		glm::vec3 WorldPosition = glm::vec3(0.0f);
-		glm::quat WorldRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::quat quatRotation = glm::quat(transform.Rotation);
 
 		physx::PxRigidBodyExt::updateMassAndInertia(*dActor, Mass, &Utils::ToPhysXVec3(CenterMassPosition));
 		actor->is<physx::PxRigidDynamic>()->setGlobalPose(physx::PxTransform(
-			Utils::ToPhysXVec3(WorldPosition), 
-			Utils::ToPhysXQuat(WorldRotation))
+			Utils::ToPhysXVec3(transform.Translation), 
+			Utils::ToPhysXQuat(quatRotation))
 		);
 	}
 

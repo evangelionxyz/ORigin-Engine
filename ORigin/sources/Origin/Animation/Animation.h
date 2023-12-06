@@ -1,5 +1,4 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
-
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
 
 #include "Origin\Renderer\Texture.h"

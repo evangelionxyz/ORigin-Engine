@@ -6,6 +6,8 @@
 #include "Renderer2D.h"
 #include "UniformBuffer.h"
 
+#include "Origin\Asset\AssetManager.h"
+
 namespace origin {
 
 	struct CubeVertex
@@ -81,7 +83,7 @@ namespace origin {
 		// Data Settings
 		s_3Ddata.WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
-		s_3Ddata.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		s_3Ddata.WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 
 		int32_t samplers[s_3Ddata.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_3Ddata.MaxTextureSlots; i++)

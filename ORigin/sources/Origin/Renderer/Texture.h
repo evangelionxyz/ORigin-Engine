@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "Origin\Asset\Asset.h"
+#include "Origin\Core\Buffer.h"
 
 namespace origin {
 
@@ -33,11 +34,11 @@ namespace origin {
 		TextureSpecification() = default;
 	};
 
-	class Texture
+	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
-		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual void SetData(Buffer data) = 0;
 
 		virtual const TextureSpecification& GetSpecification() const = 0;
 
@@ -61,11 +62,11 @@ namespace origin {
 	class Texture2D : public Texture
 	{
 	public:
-		static std::shared_ptr<Texture2D> Create(const TextureSpecification& specification);
+		static std::shared_ptr<Texture2D> Create(const TextureSpecification& specification, Buffer data = Buffer());
 		static std::shared_ptr<Texture2D> Create(const std::string& filepath, const TextureSpecification& specification = TextureSpecification());
 
 		static AssetType GetStaticType() { return AssetType::Texture2D; }
-		virtual AssetType GetType() { return GetStaticType(); }
+		virtual AssetType GetType() const { return GetStaticType(); }
 	};
 
 	class TextureCube : public Texture
@@ -78,8 +79,10 @@ namespace origin {
 			BACK, FRONT
 		};
 
-		void LoadFaces(std::string& filepath, Faces faces);
 		static std::shared_ptr<TextureCube> Create(uint32_t width, uint32_t height);
 		static std::shared_ptr<TextureCube> Create(const std::string& filepath);
+
+		static AssetType GetStaticType() { return AssetType::Texture2D; }
+		virtual AssetType GetType() const { return GetStaticType(); }
 	};
 }

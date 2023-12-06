@@ -35,11 +35,11 @@ links
 }
 
 filter "system:windows"
-    systemversion "latest"
-    postbuildcommands
-    {
-        "{COPYDIR} %{prj.location}Binaries ../../../Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Binaries",
-    }
+systemversion "latest"
+postbuildcommands
+{
+    "{COPYDIR} %{prj.location}Binaries ../../../Binaries/%{cfg.buildcfg}/ORigin/SandboxProject/Binaries",
+}
 
 filter "configurations:Debug"
 optimize "On"

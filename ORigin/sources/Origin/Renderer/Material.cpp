@@ -103,12 +103,6 @@ namespace origin {
 		m_Shader->SetMatrix(name, matrices);
 	}
 
-	void Material::LoadTextureFromFile(const std::string& filepath)
-	{
-		this->Texture = Texture2D::Create(filepath);
-		this->Texture->Bind(0);
-	}
-
 	std::vector<std::shared_ptr<Texture2D>> Material::LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type, std::string typeName)
 	{
 		std::vector<std::shared_ptr<Texture2D>> returnTextures;
