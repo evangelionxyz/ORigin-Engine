@@ -34,3 +34,6 @@
 [submodule "ORigin/vendor/Optick"]
 	path = ORigin/vendor/Optick
 	url = https://github.com/bombomby/optick.git
+[submodule "ORigin/vendor/PhysX"]
+	path = ORigin/vendor/PhysX
+	url = https://github.com/kaks-ev/NVIDIA-PhysX
