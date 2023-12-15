@@ -13,6 +13,7 @@ namespace origin
 	class ContentBrowserPanel
 	{
 	public:
+		ContentBrowserPanel();
 		ContentBrowserPanel(const std::shared_ptr<Project>& project);
 		void OnImGuiRender();
 		

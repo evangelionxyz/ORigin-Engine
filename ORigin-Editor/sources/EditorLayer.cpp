@@ -89,12 +89,9 @@ namespace origin {
     }
     else
     {
-			if (!OpenProject())
-			{
-				if (!NewProject())
-					Application::Get().Close();
-			}
+			//m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
     }
+
   }
 
   void EditorLayer::OnEvent(Event& e)
@@ -110,13 +107,8 @@ namespace origin {
   void EditorLayer::OnUpdate(Timestep deltaTime)
   {
     m_Time += deltaTime.Seconds();
-    const ImGuiIO& io = ImGui::GetIO();
 
-    const bool enableCamera =
-        io.WantTextInput == false
-        || !ImGuizmo::IsUsing()
-        || Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
-
+		const bool enableCamera = !ImGuizmo::IsUsing() && !ImGui::GetIO().WantTextInput && Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
     m_EditorCamera.EnableMovement(enableCamera);
 
     Renderer2D::ResetStats();
@@ -219,7 +211,10 @@ namespace origin {
       MenuBar();
       SceneViewport();
       m_SceneHierarchy.OnImGuiRender();
-      m_ContentBrowser->OnImGuiRender();
+
+			if(m_ContentBrowser)
+				m_ContentBrowser->OnImGuiRender();
+
       GUIRender();
       m_Dockspace.End();
   }
@@ -593,13 +588,14 @@ namespace origin {
 			{
 				if (ImGui::MenuItem("New Project")) NewProject();
 				if (ImGui::MenuItem("Open Project")) OpenProject();
-				if (ImGui::MenuItem("Save Project")) SaveProject();
+				if (ImGui::MenuItem("Save Project", "", nullptr, (bool)Project::GetActive())) SaveProject();
 				ImGui::Separator();
-				if (ImGui::MenuItem("New Scene", "Ctrl+N")) NewScene();
-				if (ImGui::MenuItem("Open Scene", "Ctrl+O"))  OpenScene();
-				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))  SaveScene();
-				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S"))  SaveSceneAs();
+				if (ImGui::MenuItem("New Scene", "Ctrl+N", nullptr, (bool)Project::GetActive())) NewScene();
+				if (ImGui::MenuItem("Open Scene", "Ctrl+O", nullptr, (bool)Project::GetActive()))  OpenScene();
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S", nullptr, (bool)Project::GetActive()))  SaveScene();
+				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S", nullptr, (bool)Project::GetActive()))  SaveSceneAs();
 				if (ImGui::MenuItem("Exit", "Alt+F4")) window.Close();
+
 				ImGui::EndMenu();
 			}
 
@@ -686,9 +682,16 @@ namespace origin {
 			ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
 			if (ImGui::Begin("##top_left_overlay", nullptr, window_flags))
 			{
-				if (!m_SceneHierarchy.GetContext())
-					ImGui::Text("Load a Scene or Create New Scene to begin!");
-
+				if (Project::GetActive())
+				{
+					if (!m_SceneHierarchy.GetContext())
+						ImGui::Text("Load a Scene or Create New Scene to begin!");
+				}
+				else
+				{
+					ImGui::Text("Create or Open a Project");
+				}
+				
 				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			}
 

@@ -29,11 +29,10 @@ namespace origin {
 
 	Audio::~Audio()
 	{
+		s_Data.Channel->stop();
+
 		if (s_Data.Channel)
-		{
-			s_Data.Result = s_Data.Channel->stop();
 			s_Data.Channel = nullptr;
-		}
 
 		m_Sound = nullptr;
 	}

@@ -35,9 +35,9 @@ namespace origin
 	{
 		switch (type)
 		{
-		case Rigidbody2DComponent::BodyType::Static: return b2_staticBody;
-		case Rigidbody2DComponent::BodyType::Dynamic: return b2_dynamicBody;
-		case Rigidbody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
+			case Rigidbody2DComponent::BodyType::Static: return b2_staticBody;
+			case Rigidbody2DComponent::BodyType::Dynamic: return b2_dynamicBody;
+			case Rigidbody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
 		}
 
 		OGN_ASSERT(false, "Unkown Body Type");
@@ -64,6 +64,13 @@ namespace origin
 
 	Scene::~Scene()
 	{
+		auto& audioView = m_Registry.view<AudioComponent>();
+		for (auto a : audioView)
+		{
+			auto ac = m_Registry.get<AudioComponent>(a);
+			if (std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+				audio->Stop();
+		}
 	}
 
 	template <typename... Component>

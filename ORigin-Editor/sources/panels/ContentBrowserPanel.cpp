@@ -34,8 +34,17 @@ namespace origin
 		m_Mode = Mode::FileSystem;
 	}
 	
+	ContentBrowserPanel::ContentBrowserPanel()
+	{
+		
+	}
+
 	void ContentBrowserPanel::OnImGuiRender()
 	{
+
+		if (!m_Project)
+			return;
+
 		ImGui::Begin("Content Browser");
 
 		NavigationButton();
