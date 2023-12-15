@@ -10,7 +10,7 @@ namespace origin {
 	public:
 		Camera() = default;
 		Camera(const glm::mat4& projection)
-			: m_Projection(projection), m_View(glm::mat4(1.0f))
+			: m_Projection(projection), m_View(glm::mat4(1.0f)), m_Position(glm::vec3(0.0f))
 		{
 		}
 		virtual ~Camera() = default;

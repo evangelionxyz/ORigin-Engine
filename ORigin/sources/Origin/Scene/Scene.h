@@ -76,7 +76,6 @@ namespace origin {
       void OnShadowRender();
 
     private:
-      AssetHandle m_AssetHandle;
       std::unique_ptr<PhysicsScene> m_PhysicsScene;
 
       // 2D Physics

@@ -104,7 +104,8 @@ namespace origin
 					{
 						if (ImGui::MenuItem("Set As Start Scene"))
 						{
-							Project::GetActive()->SetStartScene(item);
+							AssetHandle handle = m_TreeNodes[treeNodeIndex].Handle;
+							Project::GetActive()->SetStartScene(handle);
 							RefreshAssetTree();
 						}
 					}
@@ -129,6 +130,7 @@ namespace origin
 						}
 
 						shouldBreak = true;
+						RefreshAssetTree();
 					}
 					ImGui::EndPopup();
 				}
@@ -201,12 +203,27 @@ namespace origin
 							Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
 							ImGui::Separator();
 
-							if (ImGui::MenuItem("Import To Project"))
+							bool assetImported = false;
+							const auto& assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
+							for (const auto& [handle, metadata] : assetRegistry)
 							{
-								Project::GetActive()->GetEditorAssetManager()->ImportAsset(relativePath);
-								RefreshAssetTree();
+								if (relativePath.generic_string() == metadata.Filepath)
+								{
+									assetImported = true;
+									break;
+								}
+								assetImported = false;
 							}
 
+							if (!assetImported)
+							{
+								if (ImGui::MenuItem("Import To Project"))
+								{
+									Project::GetActive()->GetEditorAssetManager()->ImportAsset(relativePath);
+									RefreshAssetTree();
+								}
+							}
+							
 							ImGui::EndPopup();
 						}
 

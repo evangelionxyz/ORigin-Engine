@@ -83,8 +83,8 @@ namespace origin {
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
     if (commandLineArgs.Count > 1)
     {
-        m_ProjectPath = commandLineArgs[1];
-        if (!OpenProject(m_ProjectPath))
+        m_ProjectDirectoryPath = commandLineArgs[1];
+        if (!OpenProject(m_ProjectDirectoryPath))
           Application::Get().Close();
     }
     else
@@ -416,7 +416,7 @@ namespace origin {
 				OpenScene(handle);
 
 			ScriptEngine::Init();
-			m_ProjectPath = Project::GetActiveProjectDirectory();
+			m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
 			m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
 			if (!m_ContentBrowser)
@@ -433,11 +433,11 @@ namespace origin {
     if (Project::Load(path))
     {
       AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
-      if (handle)
+      if (handle != 0)
 				OpenScene(handle);
 
       ScriptEngine::Init();
-			m_ProjectPath = Project::GetActiveProjectDirectory();
+			m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
 			if (!m_ContentBrowser)
@@ -462,7 +462,7 @@ namespace origin {
       if (handle)
 				OpenScene(handle);
       
-      m_ProjectPath = Project::GetActiveProjectDirectory();
+      m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
 			if (!m_ContentBrowser)
@@ -479,7 +479,7 @@ namespace origin {
 
   void EditorLayer::SaveProject()
   {
-    Project::SaveActive(m_ProjectPath);
+    Project::SaveActive();
   }
 
   void EditorLayer::NewScene()
@@ -491,12 +491,7 @@ namespace origin {
     m_SceneHierarchy.SetContext(m_EditorScene, true);
 
     m_ActiveScene = m_EditorScene;
-
     m_ScenePath = std::filesystem::path();
-
-		// If there is no scene
-		if (Project::GetActive()->GetConfig().StartScene == 0)
-			Project::GetActive()->SetStartScene(m_ScenePath);
   }
 
   void EditorLayer::SaveScene()
@@ -504,10 +499,16 @@ namespace origin {
     if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
         OnSceneStop();
 
-    if (!m_ScenePath.empty())
+		if (!m_ScenePath.empty())
+		{
       SerializeScene(m_ActiveScene, m_ScenePath);
-    else
+		}
+		else
+		{
         SaveSceneAs();
+		}
+
+		Project::GetActive()->GetEditorAssetManager()->SerializeAssetRegistry();
   }
 
   void EditorLayer::SaveSceneAs()
@@ -532,10 +533,16 @@ namespace origin {
       OnSceneStop();
 
     std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
-    std::shared_ptr<Scene> newScene = Scene::Copy(readOnlyScene);
+
+		if (!readOnlyScene)
+		{
+			OGN_CORE_ERROR("EditorLayer: Invalid Scene");
+			return;
+		}
+
+		m_EditorScene = Scene::Copy(readOnlyScene);
 		m_HoveredEntity = {};
 
-		m_EditorScene = newScene;
 		m_SceneHierarchy.SetContext(m_EditorScene, true);
 		m_ActiveScene = m_EditorScene;
     m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
@@ -552,18 +559,22 @@ namespace origin {
 				return;
 
 			std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
-			std::shared_ptr<Scene> newScene = Scene::Copy(readOnlyScene);
-			m_HoveredEntity = {};
+			if (!readOnlyScene)
+			{
+				OGN_CORE_ERROR("EditorLayer: Invalid Scene");
+				return;
+			}
 
-			m_EditorScene = newScene;
+			m_HoveredEntity = {};
+			m_EditorScene = Scene::Copy(readOnlyScene);
 			m_SceneHierarchy.SetContext(m_EditorScene, true);
 			m_ActiveScene = m_EditorScene;
 			m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
   }
 
-  void EditorLayer::SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath)
+  void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath)
   {
-    SceneImporter::SaveScene(scene, scenePath);
+    SceneImporter::SaveScene(scene, filepath);
   }
 
 	void EditorLayer::MenuBar()
@@ -582,6 +593,7 @@ namespace origin {
 			{
 				if (ImGui::MenuItem("New Project")) NewProject();
 				if (ImGui::MenuItem("Open Project")) OpenProject();
+				if (ImGui::MenuItem("Save Project")) SaveProject();
 				ImGui::Separator();
 				if (ImGui::MenuItem("New Scene", "Ctrl+N")) NewScene();
 				if (ImGui::MenuItem("Open Scene", "Ctrl+O"))  OpenScene();
@@ -731,6 +743,7 @@ namespace origin {
 					}
 				}
 			}
+
 			ImGui::EndDragDropTarget();
 		}
 

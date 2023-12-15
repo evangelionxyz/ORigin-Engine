@@ -45,7 +45,7 @@ namespace origin {
 
 		std::shared_ptr<Asset> asset;
 
-		if (IsAssetLoaded(handle))
+		if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
 		{
 			asset = m_LoadedAssets.at(handle);
 		}
@@ -90,6 +90,7 @@ namespace origin {
 
 		metadata.Filepath = filepath;
 		metadata.Type = GetAssetTypeFromFileExtension(filepath.extension());
+
 		OGN_CORE_ASSERT(metadata.Type != AssetType::None);
 		std::shared_ptr<Asset> asset = AssetImporter::ImportAsset(handle, metadata);
 
@@ -98,6 +99,7 @@ namespace origin {
 			asset->Handle = handle;
 			m_LoadedAssets[handle] = asset;
 			m_AssetRegistry[handle] = metadata;
+
 			SerializeAssetRegistry();
 		}
 	}
@@ -105,10 +107,18 @@ namespace origin {
 	void EditorAssetManager::RemoveAsset(AssetHandle handle)
 	{
 		if (m_AssetRegistry.find(handle) != m_AssetRegistry.end())
-		{
 			m_AssetRegistry.erase(handle);
-			SerializeAssetRegistry();
-		}
+
+		if (m_LoadedAssets.find(handle) != m_LoadedAssets.end())
+			m_LoadedAssets.erase(handle);
+
+		SerializeAssetRegistry();
+	}
+
+	void EditorAssetManager::RemoveLoadedAsset(AssetHandle handle)
+	{
+		if (m_LoadedAssets.find(handle) != m_LoadedAssets.end())
+			m_LoadedAssets.erase(handle);
 	}
 
 	const origin::AssetMetadata& EditorAssetManager::GetMetadata(AssetHandle handle) const
@@ -140,8 +150,7 @@ namespace origin {
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "Handle" << YAML::Value << handle;
-				std::string filepathStr = metadata.Filepath.generic_string();
-				out << YAML::Key << "Filepath" << YAML::Value << filepathStr;
+				out << YAML::Key << "Filepath" << YAML::Value << metadata.Filepath.generic_string();
 				out << YAML::Key << "Type" << YAML::Value << AssetTypeToString(metadata.Type);
 				out << YAML::EndMap;
 			}
@@ -152,11 +161,14 @@ namespace origin {
 
 		std::ofstream fout(path);
 		fout << out.c_str();
+
+		fout.close();
 	}
 
 	bool EditorAssetManager::DeserializeAssetRegistry()
 	{
 		auto path = Project::GetActiveAssetRegistryPath();
+
 		if (!std::filesystem::exists(path))
 		{
 			OGN_CORE_ERROR("EditorAssetManager: Failed to deserialize AssetRegistry");
@@ -180,7 +192,7 @@ namespace origin {
 
 		for (const auto& node : rootNode)
 		{
-			AssetHandle handle = node["Handle"].as<uint64_t>();
+			AssetHandle handle = (AssetHandle)node["Handle"].as<uint64_t>();
 			auto& metadata = m_AssetRegistry[handle];
 			metadata.Filepath = node["Filepath"].as<std::string>();
 			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());

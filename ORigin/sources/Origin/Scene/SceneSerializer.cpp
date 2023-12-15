@@ -636,7 +636,6 @@ namespace origin
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << filepath.filename().string();
-		out << YAML::Key << "ID" << YAML::Value << (uint64_t)m_Scene->m_AssetHandle;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
@@ -652,6 +651,7 @@ namespace origin
 
 		std::ofstream fout(filepath.string());
 		fout << out.c_str();
+		fout.close();
 
 		OGN_CORE_INFO("Scene Serialized in {0}", filepath.string());
 	}
@@ -671,6 +671,7 @@ namespace origin
 			return false;
 
 		auto sceneName = data["Scene"].as<std::string>();
+
 		OGN_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
 		if (YAML::Node entities = data["Entities"])

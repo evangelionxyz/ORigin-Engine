@@ -26,7 +26,7 @@ namespace origin {
     };
 
     SceneState m_SceneState = SceneState::Edit;
-    std::filesystem::path m_ScenePath, m_ProjectPath;
+    std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
     std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
 
     glm::vec4 m_GridColor = glm::vec4(0.8f, 0.8f, 0.8f, 0.31f);
@@ -123,7 +123,7 @@ namespace origin {
     void OpenScene();
     void OpenScene(AssetHandle handle);
 
-    void SerializeScene(std::shared_ptr<Scene>& scene, const std::filesystem::path& scenePath);
+    void SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath);
 
     void OnDuplicateEntity();
     void OnOverlayRenderer();

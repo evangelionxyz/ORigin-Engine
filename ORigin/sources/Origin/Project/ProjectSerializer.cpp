@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "ProjectSerializer.h"
+#include "Origin/Asset/AssetManager.h"
 
 #include <stdint.h>
 #include <fstream>
@@ -25,7 +26,12 @@ namespace origin
 			out << YAML::BeginMap;
 			{
 				out << YAML::Key << "Name" << YAML::Value << config.Name;
-				out << YAML::Key << "StartScene" << YAML::Value << (uint64_t)config.StartScene;
+
+				AssetHandle handle = config.StartScene;
+				if (!AssetManager::IsAssetHandleValid(handle))
+					handle = 0;
+
+				out << YAML::Key << "StartScene" << YAML::Value << handle;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
 				out << YAML::Key << "AssetRegistry" << YAML::Value << config.AssetRegistry.string();
 				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();

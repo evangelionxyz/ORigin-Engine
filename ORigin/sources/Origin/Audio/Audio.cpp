@@ -8,7 +8,7 @@
 namespace origin {
 
 #define FMOD_CHECK(result) if (result != FMOD_OK) {\
-OGN_CORE_ERROR("FMOD AUDIO ERROR: {}, {}", __LINE__, FMOD_ErrorString(result));}
+/*OGN_CORE_ERROR("FMOD AUDIO ERROR: {}, {}", __LINE__, FMOD_ErrorString(result));*/}
 
 	struct AudioData
 	{

@@ -8,6 +8,7 @@
 namespace origin {
 
 	using AssetMap = std::map<AssetHandle, std::shared_ptr<Asset>>;
+
 	class AssetManagerBase
 	{
 	public:

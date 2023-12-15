@@ -60,27 +60,10 @@ group ""
 
 	static std::string winGenerateFile = "call %ORIGIN_ENGINE_PATH%\\Scripts\\premake\\premake5.exe vs2022";
 
-	bool Project::SetStartScene(const std::filesystem::path& path)
+	void Project::SetStartScene(AssetHandle handle)
 	{
-		std::filesystem::path filepath = GetActiveAssetDirectory() / path;
-
-		std::ifstream stream(filepath.string());
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-
-		YAML::Node data = YAML::Load(strStream.str());
-		if (!data["Scene"])
-			return false;
-
-		m_Config.StartScene = (AssetHandle)std::stoull(data["ID"].as<std::string>());
-		OGN_CORE_TRACE("Project: '{0}' was set as Start Scene", data["Scene"].as<std::string>());
-
-		std::filesystem::path projectPath = m_ProjectDirectory / (m_Config.Name + ".oxproj");
-
-		ProjectSerializer serializer(s_ActiveProject);
-		serializer.Serialize(projectPath);
-
-		return true;
+		if (GetEditorAssetManager()->IsAssetHandleValid(handle))
+			m_Config.StartScene = handle;
 	}
 
 	std::filesystem::path Project::GetAssetAbsolutePath(const std::filesystem::path& path)
@@ -91,6 +74,8 @@ group ""
 	std::shared_ptr<Project> Project::New()
 	{
 		std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Project (*.oxproj)\0*.oxproj\0");
+		if (filepath.empty())
+			return nullptr;
 
 		std::string projectName = filepath.stem().string();
 
@@ -183,6 +168,12 @@ group ""
 		return nullptr;
 	}
 
+	bool Project::SaveActive()
+	{
+		ProjectSerializer serializer(s_ActiveProject);
+		return serializer.Serialize(s_ActiveProject->GetProjectPath());
+	}
+
 	bool Project::SaveActive(const std::filesystem::path& path)
 	{
 		ProjectSerializer serializer(s_ActiveProject);
@@ -194,5 +185,7 @@ group ""
 
 		return false;
 	}
+
+	
 
 }

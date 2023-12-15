@@ -21,6 +21,8 @@ namespace origin {
 		void ImportAsset(const std::filesystem::path& filepath);
 		void RemoveAsset(AssetHandle handle);
 
+		void RemoveLoadedAsset(AssetHandle handle);
+
 		const AssetMetadata& GetMetadata(AssetHandle handle) const;
 		const std::filesystem::path& GetFilepath(AssetHandle handle);
 

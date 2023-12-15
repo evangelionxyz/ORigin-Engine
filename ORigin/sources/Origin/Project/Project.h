@@ -24,11 +24,18 @@ namespace origin
 	class Project
 	{
 	public:
+		const std::filesystem::path GetProjectPath() { return m_ProjectDirectory / (m_Config.Name + ".oxproj"); }
 		const std::filesystem::path& GetProjectDirectory() { return m_ProjectDirectory; }
 		std::filesystem::path GetAssetDirectory() { return GetProjectDirectory() / m_Config.AssetDirectory; }
 		std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path) { return GetAssetDirectory() / path; }
 		std::filesystem::path GetAssetRegistryPath() { return GetAssetDirectory() / m_Config.AssetRegistry; }
 		std::filesystem::path GetAssetAbsolutePath(const std::filesystem::path& path);
+
+		static const std::filesystem::path GetActiveProjectPath()
+		{
+			OGN_CORE_ASSERT(s_ActiveProject);
+			return s_ActiveProject->GetProjectPath();
+		}
 
 		static const std::filesystem::path& GetActiveProjectDirectory()
 		{
@@ -48,12 +55,12 @@ namespace origin
 			return s_ActiveProject->GetAssetFileSystemPath(path);
 		}
 
-		static std::filesystem::path GetActiveAssetRegistryPath() 
-		{ 
+		static std::filesystem::path GetActiveAssetRegistryPath()
+		{
 			OGN_CORE_ASSERT(s_ActiveProject);
 			return s_ActiveProject->GetAssetRegistryPath();
 		}
-		
+
 		static std::shared_ptr<Project> GetActive() { return s_ActiveProject; }
 
 		ProjectConfig& GetConfig() { return m_Config; }
@@ -65,8 +72,10 @@ namespace origin
 		static std::shared_ptr<Project> Open();
 		static std::shared_ptr<Project> Load(const std::filesystem::path& path);
 
+		static bool SaveActive();
 		static bool SaveActive(const std::filesystem::path& path);
-		bool SetStartScene(const std::filesystem::path& filepath);
+
+		void SetStartScene(AssetHandle handle);
 
 	private:
 		ProjectConfig m_Config;
@@ -76,3 +85,4 @@ namespace origin
 	};
 
 }
+
