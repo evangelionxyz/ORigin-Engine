@@ -11,8 +11,9 @@ namespace origin
 	void Main(int argc, char** argv)
 	{
 		Log::Init();
-		Application* app = origin::CreateApplication({ argc, argv });
+		Application* app = CreateApplication({ argc, argv });
 		app->Run();
+
 		delete app;
 	}
 }

@@ -165,21 +165,18 @@ namespace origin
 
 	void ScriptEngine::ShutdownMono()
 	{
-		if (s_ScriptEngineData)
+		mono_domain_set(mono_get_root_domain(), false);
+		if (s_ScriptEngineData->RootDomain)
 		{
-			mono_domain_set(mono_get_root_domain(), false);
-			if (s_ScriptEngineData->RootDomain)
-			{
-				mono_domain_unload(s_ScriptEngineData->AppDomain);
-				s_ScriptEngineData->AppDomain = nullptr;
-				s_ScriptEngineData->CoreAssembly = nullptr;
+			mono_domain_unload(s_ScriptEngineData->AppDomain);
+			s_ScriptEngineData->AppDomain = nullptr;
+			s_ScriptEngineData->CoreAssembly = nullptr;
 
-				mono_jit_cleanup(s_ScriptEngineData->RootDomain);
-				s_ScriptEngineData->RootDomain = nullptr;
-			}
-
-			OGN_CORE_INFO("MONO: Shutdown");
+			mono_jit_cleanup(s_ScriptEngineData->RootDomain);
+			s_ScriptEngineData->RootDomain = nullptr;
 		}
+
+		OGN_CORE_INFO("MONO: Shutdown");
 	}
 
 	void ScriptEngine::Init()
@@ -209,13 +206,18 @@ namespace origin
 
 	void ScriptEngine::Shutdown()
 	{
+		if (!s_ScriptEngineData)
+			return;
+
 		ShutdownMono();
+
 		s_ScriptEngineData->EntityClasses.clear();
 		s_ScriptEngineData->EntityInstances.clear();
 
 		delete s_ScriptEngineData;
 
 		OGN_CORE_WARN("SCRIPT ENGINE: Shutdown");
+		
 	}
 
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
