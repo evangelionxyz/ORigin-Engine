@@ -33,6 +33,7 @@ namespace origin {
 	{
 		std::string Name = "ORigin Application";
 		std::string WorkingDirectory;
+		bool Runtime = false;
 		ApplicationCommandLineArgs CommandLineArgs;
 	};
 

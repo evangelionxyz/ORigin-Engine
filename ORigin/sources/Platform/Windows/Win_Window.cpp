@@ -18,6 +18,7 @@ namespace origin {
 		m_Data.Title = config.Title;
 		m_Data.Width = config.Width;
 		m_Data.Height = config.Height;
+
 		Init();
 	}
 
@@ -25,8 +26,8 @@ namespace origin {
 	{
 		m_Data.Width = width;
 		m_Data.Height = height;
-
 		m_Data.Title = title;
+
 		Init();
 	}
 
@@ -74,22 +75,17 @@ namespace origin {
 	void WinWindow::OnUpdate()
 	{
 		glfwPollEvents();
+
 		if (m_Data.Fullscreen)
-			glfwSetWindowMonitor(m_Window, m_Monitor, monitorPos.x, monitorPos.y, monitorSize.x, monitorSize.y, 0);
+			glfwSetWindowMonitor(m_Window, m_Monitor, monitorPos.x, monitorPos.y, monitorSize.x, monitorSize.y, GLFW_DONT_CARE);
 
-		if(!m_Data.Fullscreen && !m_Data.Maximized)
+		if (!m_Data.Fullscreen && !m_Data.Maximized)
 		{
-			if ((int)m_Data.Width >= monitorSize.x)
-				m_Data.Width = windowSize.x;
-			if ((int)m_Data.Height >= monitorSize.y)
-				m_Data.Height = windowSize.y;
-
-			if ((int)m_Data.xPos == 0)
-				m_Data.xPos = windowPos.x;
-			if ((int)m_Data.yPos == 0)
-				m_Data.yPos = windowPos.y;
-
-			glfwSetWindowMonitor(m_Window, nullptr, (int)m_Data.xPos, (int)m_Data.yPos, (int)m_Data.Width, (int)m_Data.Height, 0);
+			if ((int)m_Data.Width >= monitorSize.x) m_Data.Width = windowSize.x;
+			if ((int)m_Data.Height >= monitorSize.y) m_Data.Height = windowSize.y;
+			if ((int)m_Data.xPos == 0) 	m_Data.xPos = windowPos.x;
+			if ((int)m_Data.yPos == 0) 	m_Data.yPos = windowPos.y;
+			glfwSetWindowMonitor(m_Window, nullptr, (int)m_Data.xPos, (int)m_Data.yPos, (int)m_Data.Width, (int)m_Data.Height, GLFW_DONT_CARE);
 		}
 
 		auto& app = Application::Get();
@@ -184,8 +180,6 @@ namespace origin {
 					}
 				}
 			});
-
-		
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
 			{

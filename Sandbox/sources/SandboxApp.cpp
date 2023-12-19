@@ -10,7 +10,6 @@ namespace origin
 		SandboxApp(const ApplicationSpecification spec)
 			: Application(spec)
 		{
-			Application::Get().GetWindow().SetIcon("Resources/UITextures/icon_origin.png");
 			PushLayer(new SandboxLayer());
 		}
 		~SandboxApp() { }

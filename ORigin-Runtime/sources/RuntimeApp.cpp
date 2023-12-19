@@ -24,8 +24,8 @@ namespace origin
 	{
 		ApplicationSpecification spec;
 		spec.Name = "Runtime";
-		spec.WorkingDirectory = "../ORigin-Editor";
 		spec.CommandLineArgs = args;
+		spec.Runtime = true;
 
 		OGN_CORE_INFO(spec.Name);
 		return new RuntimeApp(spec);

@@ -20,54 +20,63 @@ namespace origin {
 		OGN_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		// Set working directory here
 		if (!m_Spec.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Spec.WorkingDirectory);
 
 		Window::GLFWInit();
-		WindowConfig splashScreenWinConfig;
-		splashScreenWinConfig.Title = spec.Name;
-		splashScreenWinConfig.Decorated = false;
-		splashScreenWinConfig.Width = 800;
-		splashScreenWinConfig.Height = 420;
 
-		m_Window = Window::Create(splashScreenWinConfig);
-		m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
-		m_GraphicContext->Init();
-		m_Window->SetIcon("Resources/UITextures/icon_origin.png");
-		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
-
-		m_GuiLayer = new GuiLayer();
-		m_GuiLayer->SetContext(m_Window->GetNativeWindow());
-		PushOverlay(m_GuiLayer);
-		std::shared_ptr<Texture2D> splashImage = TextureImporter::LoadTexture2D("Resources/UITextures/splashscreen.png");
-
-		m_GuiLayer->Begin();
-		ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
-		ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		if (!spec.Runtime)
 		{
-			ImGuiWindowFlags imageWinFlags = ImGuiWindowFlags_NoTitleBar 
-				| ImGuiWindowFlags_NoResize
-				| ImGuiWindowFlags_NoMove 
-				| ImGuiWindowFlags_NoScrollbar 
-				| ImGuiWindowFlags_NoDocking 
-				| ImGuiWindowFlags_NoScrollWithMouse
-				| ImGuiWindowFlags_NoBackground;
+			WindowConfig windowConfig;
+			windowConfig.Title = spec.Name;
+			windowConfig.Decorated = false;
+			windowConfig.Width = 800;
+			windowConfig.Height = 420;
 
-			ImGui::SetNextWindowSize(windowSize);
-			ImGui::SetNextWindowPos(windowPos);
-			ImGui::Begin("Splash Screen", nullptr, imageWinFlags);
-			ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
-			ImGui::End();
+			m_Window = Window::Create(windowConfig);
+
+			m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
+			m_GraphicContext->Init();
+			m_Window->SetIcon("Resources/UITextures/icon_origin.png");
+			m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
+
+			m_GuiLayer = new GuiLayer();
+			m_GuiLayer->SetContext(m_Window->GetNativeWindow());
+			PushOverlay(m_GuiLayer);
+
+			std::shared_ptr<Texture2D> splashImage = TextureImporter::LoadTexture2D("Resources/UITextures/splashscreen.png");
+			m_GuiLayer->Begin();
+			ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
+			ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
+			{
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+				ImGuiWindowFlags imageWinFlags = ImGuiWindowFlags_NoTitleBar
+					| ImGuiWindowFlags_NoResize
+					| ImGuiWindowFlags_NoMove
+					| ImGuiWindowFlags_NoScrollbar
+					| ImGuiWindowFlags_NoDocking
+					| ImGuiWindowFlags_NoScrollWithMouse
+					| ImGuiWindowFlags_NoBackground;
+
+				ImGui::SetNextWindowSize(windowSize);
+				ImGui::SetNextWindowPos(windowPos);
+				ImGui::Begin("Splash Screen", nullptr, imageWinFlags);
+				ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+				ImGui::End();
+
+				ImGui::PopStyleVar();
+			}
+			m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
+			m_GuiLayer->End();
 		}
-
-		ImGui::PopStyleVar();
-
-		m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
-		m_GuiLayer->End();
-		m_Window->OnUpdate();
+		else
+		{
+			m_Window = Window::Create(m_Spec.Name, 1280, 640);
+			m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
+			m_GraphicContext->Init();
+			m_Window->SetIcon("Resources/UITextures/icon_origin.png");
+			m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
+		}
 
 		Renderer::Init();
 		Physics::Init();
@@ -76,9 +85,12 @@ namespace origin {
 		RenderCommand::Clear();
 		RenderCommand::ClearColor(glm::vec4(0.7f));
 		m_Window->OnUpdate();
-
-		m_Window->Decorated(true);
-		m_Window->SetSize(1080, 480);
+		
+		if (!m_Spec.Runtime)
+		{
+			m_Window->Decorated(true);
+			m_Window->SetSize(1280, 640);
+		}
 	}
 
 	Application::~Application()
@@ -104,16 +116,20 @@ namespace origin {
 
 			ExecuteMainThreadQueue();
 
-			if (!m_Minimized) {
+			if (!m_Minimized) 
+			{
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(timestep);
 			}
 
-			m_GuiLayer->Begin();
-			for (Layer* layer : m_LayerStack)
-				layer->OnGuiRender();
-			m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
-			m_GuiLayer->End();
+			if (!m_Spec.Runtime)
+			{
+				m_GuiLayer->Begin();
+				for (Layer* layer : m_LayerStack)
+					layer->OnGuiRender();
+				m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
+				m_GuiLayer->End();
+			}
 			
 			m_Window->OnUpdate();
 		}
