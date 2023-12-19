@@ -3,11 +3,11 @@
 
 namespace origin {
 
-  class Sandbox : public Layer
+  class SandboxLayer : public Layer
   {
   public:
-    Sandbox();
-    ~Sandbox();
+    SandboxLayer();
+    ~SandboxLayer();
 
     void OnUpdate(Timestep ts) override;
     void OnGuiRender() override;

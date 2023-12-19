@@ -1,19 +1,19 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 #include <Origin.h>
-#include "..\Sandbox.h"
+#include "SandboxLayer.h"
 
 namespace origin
 {
-	class SandboxBuild : public Application
+	class SandboxApp : public Application
 	{
 	public:
-		SandboxBuild(const ApplicationSpecification spec)
+		SandboxApp(const ApplicationSpecification spec)
 			: Application(spec)
 		{
 			Application::Get().GetWindow().SetIcon("Resources/UITextures/icon_origin.png");
-			PushLayer(new Sandbox());
+			PushLayer(new SandboxLayer());
 		}
-		~SandboxBuild() { }
+		~SandboxApp() { }
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)
@@ -24,6 +24,6 @@ namespace origin
 		spec.CommandLineArgs = args;
 
 		OGN_CORE_INFO(spec.Name);
-		return new SandboxBuild(spec);
+		return new SandboxApp(spec);
 	};
 }
