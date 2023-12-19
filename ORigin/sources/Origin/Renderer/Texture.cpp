@@ -8,7 +8,7 @@
 
 namespace origin {
 
-	std::shared_ptr<Texture2D> Texture2D::Create(const std::string& filepath, const TextureSpecification& specification)
+	std::shared_ptr<Texture2D> Texture2D::Create(const std::filesystem::path& filepath, const TextureSpecification& specification)
 	{
 		switch (Renderer::GetAPI())
 		{

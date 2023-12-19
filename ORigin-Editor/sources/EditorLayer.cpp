@@ -1201,14 +1201,8 @@ namespace origin {
 						{
 							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 							{
-								const auto* path = static_cast<const wchar_t*>(payload->Data);
-								const std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
-
-								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-								{
-									const std::shared_ptr<Texture2D> texture = Texture2D::Create(texturePath.string());
-									animation.AddFrame(texture, 0.23f);
-								}
+								AssetHandle handle = *(AssetHandle*)payload->Data;
+								animation.AddFrame(handle, 0.23f);
 							}
 						}
 
@@ -1242,7 +1236,8 @@ namespace origin {
 						{
 							for (int i = 0; i < animation.GetTotalFrames(); i++)
 							{
-								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(animation.GetSprites(i)->GetRendererID());
+								std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(animation.GetCurrentValue());
+								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
 								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
 
 								ImGui::TextWrapped("Frame %d", i + 1);
@@ -1252,11 +1247,14 @@ namespace origin {
 							ImGui::Columns();
 						}
 
+
+						// Show the STATE animation
 						if (state.HasAnimation())
 						{
 							for (int i = 0; i < state.GetAnimation().GetTotalFrames(); i++)
 							{
-								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(state.GetAnimation().GetSprites(i)->GetRendererID());
+								std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(state.GetAnimation().GetValue(i));
+								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
 								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
 
 								const int currentIndex = state.GetAnimation().GetFrameIndex();

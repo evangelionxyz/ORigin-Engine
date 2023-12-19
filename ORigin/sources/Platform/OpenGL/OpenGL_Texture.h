@@ -14,7 +14,7 @@ namespace origin {
 		std::string m_MaterialTypeName;
 
     uint32_t m_RendererID = 0;
-    std::string m_FilePath;
+    std::string m_Filepath;
     uint32_t m_Width = 0, m_Height = 0, m_BPP = 0;
     uint32_t m_Index = 0;
     GLenum m_InternalFormat, m_DataFormat, m_MinFilter, m_MagFilter;
@@ -22,20 +22,20 @@ namespace origin {
 
   public:
     OpenGLTexture2D(const TextureSpecification& specification, Buffer data);
-    OpenGLTexture2D(const std::string& path, const TextureSpecification& specification);
+    OpenGLTexture2D(const std::filesystem::path& filepath, const TextureSpecification& specification);
     ~OpenGLTexture2D();
 
 		const TextureSpecification& GetSpecification() const override { return m_Spec; }
 
 		void SetData(Buffer data) override;
-		std::string GetFilepath() override { return m_FilePath; }
+		std::string GetFilepath() override { return m_Filepath; }
 		void Bind(uint32_t slot = 0) override;
 		void Unbind() override;
 		void Delete() override;
 		uint32_t GetRendererID() const override { return m_RendererID; }
 		std::string GetName() const override
 		{
-			return m_FilePath.substr(m_FilePath.find_last_of('/') + 1, m_FilePath.size());
+			return m_Filepath.substr(m_Filepath.find_last_of('/') + 1, m_Filepath.size());
 		}
 		uint32_t GetIndex() const override { return m_Index; }
 		uint32_t GetWidth() const override { return m_Width; }
@@ -58,7 +58,7 @@ namespace origin {
 		std::string m_MaterialTypeName;
 
 		uint32_t m_RendererID;
-		std::string m_FilePath;
+		std::string m_Filepath;
 		uint32_t m_Width = 0, m_Height = 0, m_BPP = 0;
 		uint32_t m_Index = 0;
 		uint32_t m_LoadCount = 0;
@@ -70,7 +70,7 @@ namespace origin {
 		~OpenGLTextureCube();
 
 		void SetData(Buffer data) override;
-		std::string GetFilepath() override { return m_FilePath; }
+		std::string GetFilepath() override { return m_Filepath; }
 
 		void LoadFaces(std::string& filepath, Faces faces);
 
@@ -86,7 +86,7 @@ namespace origin {
 		uint32_t GetHeight() const override { return m_Height; }
 		std::string GetName() const override 
 		{
-			return m_FilePath.substr(m_FilePath.find_last_of('/') + 1, m_FilePath.size());
+			return m_Filepath.substr(m_Filepath.find_last_of('/') + 1, m_Filepath.size());
 		}
 
 		bool IsLoaded() const override { return false; }

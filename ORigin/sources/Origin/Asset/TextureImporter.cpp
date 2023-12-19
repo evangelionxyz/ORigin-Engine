@@ -14,18 +14,18 @@ namespace origin {
 		return LoadTexture2D(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-	std::shared_ptr<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path& path)
+	std::shared_ptr<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path& filepath)
 	{
 		int width, height, channels;
 
 		stbi_set_flip_vertically_on_load(1);
 
 		Buffer data;
-		data.Data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
+		data.Data = stbi_load(filepath.string().c_str(), &width, &height, &channels, 0);
 
 		if (!data)
 		{
-			OGN_CORE_ERROR("TextureImporter::ImpprtTexture2D - Could not load texture from filepath: {}", path.string());
+			OGN_CORE_ERROR("TextureImporter::ImpprtTexture2D - Could not load texture from filepath: {}", filepath.string());
 			return nullptr;
 		}
 

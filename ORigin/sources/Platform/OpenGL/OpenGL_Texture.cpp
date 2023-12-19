@@ -47,7 +47,6 @@ namespace origin {
       }
       return GL_NONE;
     }
-
   }
 
   OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& specification, Buffer data)
@@ -77,20 +76,20 @@ namespace origin {
     m_IsLoaded = true;
   }
 
-  OpenGLTexture2D::OpenGLTexture2D(const std::string& path, const TextureSpecification& specification)
-    : m_FilePath(path), m_Spec(specification)
+  OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath, const TextureSpecification& specification)
+    : m_Filepath(filepath.generic_string()), m_Spec(specification), m_InternalFormat(0), m_DataFormat(0)
   {
-    OGN_CORE_WARN("TEXTURE: Trying to load {}", path);
+    OGN_CORE_WARN("TEXTURE: Trying to load {}", filepath);
 
     int width, height, bpp;
     stbi_set_flip_vertically_on_load(1);
 
     Buffer data;
-    data.Data = stbi_load(path.c_str(), &width, &height, &bpp, 0);
+    data.Data = stbi_load(filepath.string().c_str(), &width, &height, &bpp, 0);
 
     if (!data)
     {
-      OGN_CORE_ERROR("Texture2D: Failed to load texture! {}", path);
+      OGN_CORE_ERROR("Texture2D: Failed to load texture! {}", filepath);
       data.Release();
       return;
     }
@@ -99,27 +98,23 @@ namespace origin {
     m_Height = height;
     m_BPP = bpp;
 
-    GLenum internalFormat = 0, dataFormat = 0;
     switch (bpp)
     {
     case 3:
-			internalFormat = GL_RGB8;
-			dataFormat = GL_RGB;
+			m_InternalFormat = GL_RGB8;
+			m_DataFormat = GL_RGB;
       break;
     case 4:
-			internalFormat = GL_RGBA8;
-			dataFormat = GL_RGBA;
+			m_InternalFormat = GL_RGBA8;
+			m_DataFormat = GL_RGBA;
       break;
 
     }
 
-    m_InternalFormat = internalFormat;
-    m_DataFormat = dataFormat;
-
     m_MinFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MinFilter);
     m_MagFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MagFilter);
 
-    OGN_CORE_ASSERT(internalFormat & dataFormat, "Format not supported!");
+    OGN_CORE_ASSERT(m_InternalFormat & m_DataFormat, "Format not supported!");
 
     glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
     glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
@@ -131,12 +126,15 @@ namespace origin {
     glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     if (data)
+    {
       SetData(data);
-
-    data.Release();
+      data.Release();
+    }
 
     m_IsLoaded = true;
   }
+
+	
 
 	OpenGLTexture2D::~OpenGLTexture2D()
   {
@@ -166,7 +164,7 @@ namespace origin {
   void OpenGLTexture2D::Delete()
   {
     glDeleteTextures(1, &m_RendererID);
-    OGN_CORE_WARN("TEXTURE: \"{}\" at index {} has been deleted", m_FilePath, m_Index);
+    OGN_CORE_WARN("TEXTURE: \"{}\" at index {} has been deleted", m_Filepath, m_Index);
   }
 
   OpenGLTextureCube::OpenGLTextureCube(uint32_t width, uint32_t height)
@@ -175,7 +173,7 @@ namespace origin {
   }
 
   OpenGLTextureCube::OpenGLTextureCube(const std::string& filepath)
-    : m_RendererID(0), m_FilePath(filepath), m_Index(0)
+    : m_RendererID(0), m_Filepath(filepath), m_Index(0)
   {
     std::string faces[6] =
     {
@@ -247,7 +245,7 @@ namespace origin {
 
   void OpenGLTextureCube::LoadFaces(std::string& filepath, Faces faces)
   {
-    m_FilePath = filepath;
+    m_Filepath = filepath;
 
     int width, height, bpp;
     stbi_uc* data = nullptr;

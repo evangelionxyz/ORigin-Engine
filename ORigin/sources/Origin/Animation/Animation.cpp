@@ -2,14 +2,15 @@
 
 #include "pch.h"
 #include "Animation.h"
+#include "Origin\Asset\AssetManager.h"
 
 #include "Origin\Renderer\Renderer2D.h"
 
 namespace origin {
 
-	void Animation::AddFrame(const std::shared_ptr<Texture2D>& sprite, float frameTime)
+	void Animation::AddFrame(AssetHandle handle, float frameTime)
 	{
-		const AnimationFrame frame(sprite, frameTime);
+		AnimationFrame frame(handle, frameTime);
 		m_AnimationFrames.push_back(frame);
 	}
 
@@ -39,8 +40,10 @@ namespace origin {
 
 	void Animation::Render(const glm::mat4& transform)
 	{
-		GetCurrentSprite()->Bind();
-		Renderer2D::DrawQuad(transform, GetCurrentSprite());
+		if (AssetManager::GetAssetType(GetCurrentValue()) == AssetType::Texture2D)
+		{
+			Renderer2D::DrawQuad(transform, AssetManager::GetAsset<Texture2D>(GetCurrentValue()));
+		}
 	}
 
 	void Animation::Delete()
@@ -54,14 +57,14 @@ namespace origin {
 		m_Looping = looping;
 	}
 
-	std::shared_ptr<Texture2D> Animation::GetCurrentSprite()
+	AssetHandle Animation::GetCurrentValue()
 	{
-		return m_AnimationFrames.at(m_CurrentFrameIndex).Texture;
+		return m_AnimationFrames.at(m_CurrentFrameIndex).Handle;
 	}
 
-	std::shared_ptr<Texture2D> Animation::GetSprites(int frame)
+	AssetHandle Animation::GetValue(int frame)
 	{
-		return m_AnimationFrames.at(frame).Texture;
+		return m_AnimationFrames.at(frame).Handle;
 	}
 
 	void Animation::SetFrameTime(float frameTime)

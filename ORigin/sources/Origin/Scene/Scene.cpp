@@ -64,13 +64,6 @@ namespace origin
 
 	Scene::~Scene()
 	{
-		auto& audioView = m_Registry.view<AudioComponent>();
-		for (auto a : audioView)
-		{
-			auto ac = m_Registry.get<AudioComponent>(a);
-			if (std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
-				audio->Stop();
-		}
 	}
 
 	template <typename... Component>
@@ -732,20 +725,8 @@ namespace origin
 				if (anim.State.HasAnimation() == false)
 					continue;
 
-				std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
-
 				if (anim.State.GetAnimation().HasFrame())
-				{
-					texture = anim.State.GetAnimation().GetCurrentSprite();
-				}
-				else
-				{
-					if (texture)
-					{
-						texture->Delete();
-						texture.reset();
-					}
-				}
+					sprite.Texture = anim.State.GetAnimation().GetCurrentValue();
 			}
 		}
 
@@ -884,20 +865,8 @@ namespace origin
 				if (anim.State.HasAnimation() == false)
 					continue;
 
-				std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(sprite.Texture);
-
 				if (anim.State.GetAnimation().HasFrame())
-				{
-					texture = anim.State.GetAnimation().GetCurrentSprite();
-				}
-				else
-				{
-					if (texture)
-					{
-						texture->Delete();
-						texture.reset();
-					}
-				}
+					sprite.Texture = anim.State.GetAnimation().GetCurrentValue();
 			}
 		}
 

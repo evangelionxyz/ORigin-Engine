@@ -810,7 +810,7 @@ namespace origin {
 						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
 						std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-							component.Texture = Texture2D::Create(texturePath.string());
+							component.Texture = Texture2D::Create(texturePath);
 					}
 				}
 

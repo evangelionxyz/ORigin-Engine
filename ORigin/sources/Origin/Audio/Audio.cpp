@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "Audio.h"
-
 #include <glm\glm.hpp>
 
 namespace origin {
@@ -29,10 +28,11 @@ namespace origin {
 
 	Audio::~Audio()
 	{
-		s_Data.Channel->stop();
-
 		if (s_Data.Channel)
+		{
+			s_Data.Channel->stop();
 			s_Data.Channel = nullptr;
+		}
 
 		m_Sound = nullptr;
 	}
@@ -53,7 +53,6 @@ namespace origin {
 
 		if (!playing)
 		{
-			//OGN_CORE_WARN("AudioSource: Playing {}", m_Config.Name);
 			s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &s_Data.Channel);
 			FMOD_CHECK(s_Data.Result);
 		}

@@ -221,10 +221,9 @@ namespace origin
 						out << YAML::BeginSeq; // Frames
 						for (int frameIndex = 0; frameIndex < animations.GetTotalFrames(); frameIndex++)
 						{
-							out << YAML::BeginMap; // Path
-							std::filesystem::path& framePath = relative(animations.GetSprites(frameIndex)->GetFilepath(), Project::GetActiveAssetDirectory());
-							out << YAML::Key << "Path" << YAML::Value << framePath.generic_string(); // Add the frame path directly to the sequence
-							out << YAML::EndMap; //!Path
+							out << YAML::BeginMap; // ID
+							out << YAML::Key << "ID" << YAML::Value << animations.GetValue(frameIndex); // Add frame path directly to the sequence
+							out << YAML::EndMap; //!ID
 						}
 						out << YAML::EndSeq; //!Frames
 					}
@@ -503,7 +502,7 @@ namespace origin
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
 			if (src.Texture != 0)
 			{
-				out << YAML::Key << "TextureHandle" << YAML::Value << src.Texture;
+				out << YAML::Key << "Handle" << YAML::Value << src.Texture;
 				out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
 			}
 
@@ -715,10 +714,8 @@ namespace origin
 							// Retrieve all frames from the state
 							for (auto frames : state["Frames"])
 							{
-								// Get the frames's filepath
-								std::string framePath = Project::GetActiveAssetFileSystemPath(frames["Path"].as<std::string>()).generic_string();
-								const std::shared_ptr<Texture2D> texture = Texture2D::Create(framePath);
-								animation.AddFrame(texture, 0.23f);
+								AssetHandle handle = frames["ID"].as<uint64_t>();
+								animation.AddFrame(handle, 0.23f);
 							}
 
 							// Add the animation after frames added
@@ -809,7 +806,7 @@ namespace origin
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
 					if(spriteRenderer2DComponent["TextureHandle"])
 					{
-						src.Texture = (AssetHandle)std::stoull(spriteRenderer2DComponent["TextureHandle"].as<std::string>());
+						src.Texture = spriteRenderer2DComponent["Handle"].as<uint64_t>();
 						src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 					}
 				}
@@ -844,7 +841,6 @@ namespace origin
 						light->Near = lightComponent["Near"].as<float>();
 						light->Far = lightComponent["Far"].as<float>();
 						light->Size = lightComponent["Size"].as<float>();
-
 						break;
 					}
 

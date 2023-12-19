@@ -8,12 +8,12 @@ namespace origin {
 
 	struct AnimationFrame
 	{
-		std::shared_ptr<Texture2D> Texture;
+		AssetHandle Handle;
 		float FrameTime;
 
 		AnimationFrame() = default;
-		AnimationFrame(const std::shared_ptr<Texture2D>& texture, float frameTime)
-			: Texture(texture), FrameTime(frameTime)
+		AnimationFrame(AssetHandle handle, float frameTime)
+			: Handle(handle), FrameTime(frameTime)
 		{}
 	};
 
@@ -21,7 +21,7 @@ namespace origin {
 	{
 	public:
 		Animation() = default;
-		void AddFrame(const std::shared_ptr<Texture2D>& sprite, float frameTime);
+		void AddFrame(AssetHandle handle, float frameTime);
 
 		void Reset();
 		void SetLooping(bool looping);
@@ -33,8 +33,8 @@ namespace origin {
 		bool HasFrame() const { return m_AnimationFrames.empty() == false; }
 		bool IsLooping() const { return m_Looping; }
 
-		std::shared_ptr<Texture2D> GetCurrentSprite();
-		std::shared_ptr<Texture2D> GetSprites(int frame);
+		AssetHandle GetCurrentValue();
+		AssetHandle GetValue(int frame);
 
 		int GetFrameIndex() const { return m_CurrentFrameIndex; }
 		size_t GetTotalFrames() const { return m_AnimationFrames.size(); }

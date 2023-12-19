@@ -8,6 +8,8 @@
 #include "Origin\Asset\Asset.h"
 #include "Origin\Core\Buffer.h"
 
+#include <filesystem>
+
 namespace origin {
 
 	enum class ImageFormat
@@ -39,13 +41,13 @@ namespace origin {
 	public:
 		virtual ~Texture() = default;
 		virtual void SetData(Buffer data) = 0;
-
 		virtual const TextureSpecification& GetSpecification() const = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetIndex() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
+
 		virtual std::string GetFilepath() = 0;
 		virtual std::string GetName() const = 0;
 		virtual void Bind(uint32_t slot = 0) = 0;
@@ -63,7 +65,7 @@ namespace origin {
 	{
 	public:
 		static std::shared_ptr<Texture2D> Create(const TextureSpecification& specification, Buffer data = Buffer());
-		static std::shared_ptr<Texture2D> Create(const std::string& filepath, const TextureSpecification& specification = TextureSpecification());
+		static std::shared_ptr<Texture2D> Create(const std::filesystem::path& filepath, const TextureSpecification& specification = TextureSpecification());
 
 		static AssetType GetStaticType() { return AssetType::Texture2D; }
 		virtual AssetType GetType() const { return GetStaticType(); }
