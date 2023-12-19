@@ -144,7 +144,7 @@ namespace origin {
 					MouseRotate(delta);
 				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);
-				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, deltaTime * 6.0f);
+				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, deltaTime * 2.0f);
 				lastPosition = m_FocalPoint - GetForwardDirection() * m_Distance;
 				break;
 			case origin::FreeMove:

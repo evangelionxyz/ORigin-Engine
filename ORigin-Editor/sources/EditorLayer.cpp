@@ -77,7 +77,7 @@ namespace origin {
 
     m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
     m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
-    m_EditorCamera.SetStyle(FreeMove);
+    m_EditorCamera.SetStyle(CameraStyle::Pivot);
 
     m_ActiveScene = std::make_shared<Scene>();
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -87,11 +87,6 @@ namespace origin {
         if (!OpenProject(m_ProjectDirectoryPath))
           Application::Get().Close();
     }
-    else
-    {
-			//m_ContentBrowser = std::make_unique<ContentBrowserPanel>();
-    }
-
   }
 
   void EditorLayer::OnEvent(Event& e)
@@ -117,14 +112,11 @@ namespace origin {
 
     // Resize
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-        m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width ||
-            m_SceneViewportSize.y != spec.Height))
+        m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
     {
-        m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x),
-                              static_cast<uint32_t>(m_SceneViewportSize.y));
+        m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
         m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
-                                        static_cast<uint32_t>(m_SceneViewportSize.y));
+        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
     }
 
     m_Framebuffer->Bind();
@@ -138,8 +130,7 @@ namespace origin {
     {
     case SceneState::Play:
         m_GizmosType = -1;
-        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x),
-                                        static_cast<uint32_t>(m_SceneViewportSize.y));
+        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
         m_ActiveScene->OnUpdateRuntime(deltaTime);
         break;
 
@@ -166,30 +157,12 @@ namespace origin {
     mouseY = static_cast<int>(mousePos.y);
 
     m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-    m_HoveredEntity = m_PixelData == -1
-                          ? Entity()
-                          : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+    m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
 
-    if(Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
-        m_EditorCamera.SetEntityObject(selectedEntity);
-    else
-        m_EditorCamera.SetEntityObject({});
+		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity()) m_EditorCamera.SetEntityObject(selectedEntity);
+		else m_EditorCamera.SetEntityObject({});
 
-    for (auto& id : m_ActiveScene->m_Registry.view<RigidbodyComponent>())
-    {
-      Entity entity = { id, m_ActiveScene.get() };
-      auto& rb = entity.GetComponent<RigidbodyComponent>();
-      glm::vec3 velocity = glm::vec3(0.0f);
-
-      if (Input::IsKeyPressed(Key::I))
-      {
-        velocity.y += deltaTime * 5.0f;
-      }
-
-      rb.AddForce(velocity, RigidbodyComponent::ForceMode::Impulse);
-    }
     m_Framebuffer->Unbind();
-
     m_ActiveScene->OnShadowRender();
   }
 
@@ -427,11 +400,11 @@ namespace origin {
   {
     if (Project::Load(path))
     {
-      AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
-      if (handle != 0)
-				OpenScene(handle);
-
       ScriptEngine::Init();
+
+      AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
+			OpenScene(handle);
+			
 			m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
       m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
@@ -454,8 +427,7 @@ namespace origin {
       ScriptEngine::Init();
 
       AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
-      if (handle)
-				OpenScene(handle);
+			OpenScene(handle);
       
       m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
@@ -522,7 +494,8 @@ namespace origin {
 
   void EditorLayer::OpenScene(AssetHandle handle)
   {
-    OGN_CORE_ASSERT(handle);
+		if (!AssetManager::IsAssetHandleValid(handle) || handle == 0)
+			return;
 
     if (m_SceneState != SceneState::Edit)
       OnSceneStop();
@@ -1129,159 +1102,163 @@ namespace origin {
 		if (guiAudioCreationWindow)
 		{
 			ImGui::Begin("Audio Creation", &guiAudioCreationWindow);
-
 			ImGui::End();
 		}
 
-		if (guiAnimationWindow)
+		if (m_SelectedEntity)
 		{
-			ImGui::Begin("Animator", &guiAnimationWindow);
-			if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
+			if (guiAnimationWindow && m_SelectedEntity.HasComponent<AnimationComponent>())
 			{
-				if (entity.HasComponent<AnimationComponent>())
+				ImGui::Begin("Animator", &guiAnimationWindow);
+				if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
 				{
-					ImGui::Text("%s Animator", entity.GetTag().c_str());
-
-					auto& ac = entity.GetComponent<AnimationComponent>();
-					auto& state = ac.State;
-
-					// Insert State name
-					static std::string stateName;
-
-					ImGui::Text("State Name: "); ImGui::SameLine();
-
-					char buffer[256];
-					strcpy_s(buffer, sizeof(buffer), stateName.c_str());
-
-					if (ImGui::InputText("##stateName", buffer, sizeof(buffer)))
-						stateName = std::string(buffer);
-
-					ImGui::SameLine();
-					if (ImGui::Button("+", ImVec2(30.0f, 20.0f)))
+					if (entity.HasComponent<AnimationComponent>())
 					{
-						if (!stateName.empty())
-						{
-							state.AddState(stateName);
-							stateName.clear();
-						}
-					}
+						ImGui::Text("%s Animator", entity.GetTag().c_str());
 
-					if (entity.HasComponent<SpriteRenderer2DComponent>() && state.HasState())
-					{
-						ImGui::Text("Animation State");
+						auto& ac = entity.GetComponent<AnimationComponent>();
+						auto& state = ac.State;
+
+						// Insert State name
+						static std::string stateName;
+
+						ImGui::Text("State Name: "); ImGui::SameLine();
+
+						char buffer[256];
+						strcpy_s(buffer, sizeof(buffer), stateName.c_str());
+
+						if (ImGui::InputText("##stateName", buffer, sizeof(buffer)))
+							stateName = std::string(buffer);
 
 						ImGui::SameLine();
-
-						// drop-down
-						auto& stateStorage = state.GetStateStorage();
-						std::string currentState = state.GetCurrentState();
-
-						if (ImGui::BeginCombo("##AnimationState", currentState.c_str()))
+						if (ImGui::Button("+", ImVec2(30.0f, 20.0f)))
 						{
-							bool isSelected = false;
-							for (const auto& st : stateStorage)
+							if (!stateName.empty())
 							{
-								isSelected = currentState == st;
-								if (ImGui::Selectable(st.c_str(), isSelected))
+								state.AddState(stateName);
+								stateName.clear();
+							}
+						}
+
+						if (entity.HasComponent<SpriteRenderer2DComponent>() && state.HasState())
+						{
+							ImGui::Text("Animation State");
+
+							ImGui::SameLine();
+
+							// drop-down
+							auto& stateStorage = state.GetStateStorage();
+							std::string currentState = state.GetCurrentState();
+
+							if (ImGui::BeginCombo("##AnimationState", currentState.c_str()))
+							{
+								bool isSelected = false;
+								for (const auto& st : stateStorage)
 								{
-									currentState = st;
-									state.SetActiveState(st);
+									isSelected = currentState == st;
+									if (ImGui::Selectable(st.c_str(), isSelected))
+									{
+										currentState = st;
+										state.SetActiveState(st);
+									}
+									if (isSelected)
+										ImGui::SetItemDefaultFocus();
 								}
-								if (isSelected)
-									ImGui::SetItemDefaultFocus();
-							}
-							ImGui::EndCombo();
-						} // !drop-down
+								ImGui::EndCombo();
+							} // !drop-down
 
-						static Animation animation;
+							static Animation animation;
 
-						// Drag and Drop
-						ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
-						if (ImGui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							// Drag and Drop
+							ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
+							if (ImGui::BeginDragDropTarget())
 							{
-								AssetHandle handle = *(AssetHandle*)payload->Data;
-								animation.AddFrame(handle, 0.23f);
+								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+								{
+									AssetHandle handle = *(AssetHandle*)payload->Data;
+									animation.AddFrame(handle, 0.23f);
+								}
 							}
-						}
 
-						ImGui::SameLine();
-						if (ImGui::Button("Add Animation", { 90.0f, 30.0f }) && animation.HasFrame())
-						{
-							state.AddAnimation(animation);
-							OGN_CORE_TRACE("Animation added to {}", stateName);
-
-							animation.Delete();
-						}
-
-						ImGui::SameLine();
-						if (ImGui::Button("Set As Default State", ImVec2(80.0f, 30.f)))
-							state.SetDefaultState(state.GetCurrentState());
-
-						// Display what texture has been dropped
-						const float padding = 10.0f;
-						const float imageSize = 42.0f;
-						const float cellSize = imageSize + padding;
-
-						const float panelWidth = ImGui::GetContentRegionAvail().x;
-						int columnCount = static_cast<int>(panelWidth / cellSize);
-
-						if (columnCount < 1)
-							columnCount = 1;
-
-						ImGui::Columns(columnCount, nullptr, false);
-
-						if (animation.HasFrame())
-						{
-							for (int i = 0; i < animation.GetTotalFrames(); i++)
-							{
-								std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(animation.GetCurrentValue());
-								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
-								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
-
-								ImGui::TextWrapped("Frame %d", i + 1);
-
-								ImGui::NextColumn();
-							}
-							ImGui::Columns();
-						}
-
-
-						// Show the STATE animation
-						if (state.HasAnimation())
-						{
-							for (int i = 0; i < state.GetAnimation().GetTotalFrames(); i++)
-							{
-								std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(state.GetAnimation().GetValue(i));
-								const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
-								ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
-
-								const int currentIndex = state.GetAnimation().GetFrameIndex();
-
-								if (currentIndex == i)
-									ImGui::TextWrapped("  -----");
-
-								ImGui::NextColumn();
-							}
-							ImGui::Columns();
-
-							bool looping = state.IsLooping();
-							if (ImGui::Checkbox("Loop", &looping))
-								state.SetLooping(looping);
 							ImGui::SameLine();
-							if (ImGui::Button("Preview"))
-								state.Preview = !state.Preview;
+							if (ImGui::Button("Add Animation", { 90.0f, 30.0f }) && animation.HasFrame())
+							{
+								state.AddAnimation(animation);
+								OGN_CORE_TRACE("Animation added to {}", stateName);
+
+								animation.Delete();
+							}
+
 							ImGui::SameLine();
-							if (ImGui::Button("Delete State"))
-								state.RemoveState(currentState);
+							if (ImGui::Button("Set As Default State", ImVec2(80.0f, 30.f)))
+								state.SetDefaultState(state.GetCurrentState());
+
+							// Display what texture has been dropped
+							const float padding = 10.0f;
+							const float imageSize = 42.0f;
+							const float cellSize = imageSize + padding;
+
+							const float panelWidth = ImGui::GetContentRegionAvail().x;
+							int columnCount = static_cast<int>(panelWidth / cellSize);
+
+							if (columnCount < 1)
+								columnCount = 1;
+
+							ImGui::Columns(columnCount, nullptr, false);
+
+							if (animation.HasFrame())
+							{
+								for (int i = 0; i < animation.GetTotalFrames(); i++)
+								{
+									std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(animation.GetCurrentValue());
+									const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
+									ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
+
+									ImGui::TextWrapped("Frame %d", i + 1);
+
+									ImGui::NextColumn();
+								}
+								ImGui::Columns();
+							}
+
+
+							// Show the STATE animation
+							if (state.HasAnimation())
+							{
+								for (int i = 0; i < state.GetAnimation().GetTotalFrames(); i++)
+								{
+									std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(state.GetAnimation().GetValue(i));
+									const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
+									ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
+
+									const int currentIndex = state.GetAnimation().GetFrameIndex();
+
+									if (currentIndex == i)
+										ImGui::TextWrapped("  -----");
+
+									ImGui::NextColumn();
+								}
+								ImGui::Columns();
+
+								bool looping = state.IsLooping();
+								if (ImGui::Checkbox("Loop", &looping))
+									state.SetLooping(looping);
+
+								ImGui::SameLine();
+								if (ImGui::Button("Preview"))
+									state.Preview = !state.Preview;
+
+								ImGui::SameLine();
+								if (ImGui::Button("Delete State"))
+									state.RemoveState(currentState);
+							}
 						}
 					}
 				}
-
+				ImGui::End();
 			}
-			ImGui::End();
 		}
+		
 
 		if (guiRenderStatusWindow)
 		{

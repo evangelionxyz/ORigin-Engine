@@ -76,6 +76,9 @@ namespace origin {
 		FMOD_VECTOR m_AudioVelocity = {0.0f, 0.0f, 0.0f};
 		FMOD::Sound* m_Sound = nullptr;
 
+		// Per sound channel
+		FMOD::Channel* m_Channel = nullptr;
+
 		float m_DopplerLevel = 1.0f;
 		float m_Gain = 100.0f;
 		float m_Pitch = 1.0f;

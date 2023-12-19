@@ -223,6 +223,7 @@ namespace origin
 						{
 							out << YAML::BeginMap; // ID
 							out << YAML::Key << "ID" << YAML::Value << animations.GetValue(frameIndex); // Add frame path directly to the sequence
+							out << YAML::Key << "FrameTime" << YAML::Value << animations.GetAnimationFrames().at(frameIndex).FrameTime;
 							out << YAML::EndMap; //!ID
 						}
 						out << YAML::EndSeq; //!Frames
@@ -715,7 +716,7 @@ namespace origin
 							for (auto frames : state["Frames"])
 							{
 								AssetHandle handle = frames["ID"].as<uint64_t>();
-								animation.AddFrame(handle, 0.23f);
+								animation.AddFrame(handle, frames["FrameTime"].as<float>());
 							}
 
 							// Add the animation after frames added

@@ -10,18 +10,27 @@ defaultArgument =
   "ListAllProjects": false,
 
   "MultiProjectConfigurations": {
-    "Sandbox": {
-    "Projects": {
-      "Sandbox": {
-         "StartProject": true
+    
+    "ORigin-Editor": {
+      "Projects": {
+        "ORigin-Editor": {
+          "StartProject": true
         }
       }
     },
 
-    "ORigin-Editor": {
+    "ORigin-Runtime": {
       "Projects": {
-        "ORigin-Editor": {
-            "StartProject": true
+        "ORigin-Runtime": {
+          "StartProject": true
+        }
+      }
+    },
+
+    "Sandbox": {
+      "Projects": {
+        "Sandbox": {
+         "StartProject": true
         }
       }
     }

@@ -1,6 +1,0 @@
-Project:
-  Name: Untitled
-  StartScene: 0
-  AssetDirectory: "Assets/"
-  AssetRegistry: "AssetRegistry.oxr"
-  ScriptModulePath: "Binaries/Sandbox.dll"

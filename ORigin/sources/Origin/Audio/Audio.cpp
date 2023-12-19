@@ -6,20 +6,12 @@
 
 namespace origin {
 
-#define FMOD_CHECK(result) if (result != FMOD_OK) {\
-/*OGN_CORE_ERROR("FMOD AUDIO ERROR: {}, {}", __LINE__, FMOD_ErrorString(result));*/}
-
 	struct AudioData
 	{
-		FMOD_RESULT Result;
 		FMOD::System* AudioSystem;
-		FMOD::Channel* Channel;
-		FMOD::ChannelControl* ChannelControl;
-
 		std::unordered_map<std::string, std::shared_ptr<Audio>> AudioStorage;
 		const int MAX_CHANNELS = 32;
 	};
-
 	static AudioData s_Data;
 
 	Audio::Audio()
@@ -28,10 +20,10 @@ namespace origin {
 
 	Audio::~Audio()
 	{
-		if (s_Data.Channel)
+		if (m_Channel)
 		{
-			s_Data.Channel->stop();
-			s_Data.Channel = nullptr;
+			m_Channel->stop();
+			m_Channel = nullptr;
 		}
 
 		m_Sound = nullptr;
@@ -39,71 +31,63 @@ namespace origin {
 
 	void Audio::Play()
 	{
-		if (m_Sound == nullptr)
+		if (!m_Sound)
 		{
 			OGN_CORE_WARN("AudioSource: NO SOUND CREATED OR INVALID!! Check the filepath");
 			return;
 		}
 
-		if (s_Data.Channel)
+		if (m_Channel)
 			Stop();
 
 		bool playing;
-		s_Data.Channel->isPlaying(&playing);
+		m_Channel->isPlaying(&playing);
 
 		if (!playing)
 		{
-			s_Data.Result = AudioEngine::GetSystem()->playSound(m_Sound, nullptr, m_Paused, &s_Data.Channel);
-			FMOD_CHECK(s_Data.Result);
+			s_Data.AudioSystem->playSound(m_Sound, nullptr, m_Paused, &m_Channel);
 		}
 	}
 
 	void Audio::Pause(bool paused)
 	{
 		m_Paused = paused;
-		s_Data.Result = s_Data.Channel->setPaused(paused);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->setPaused(paused);
 	}
 
 	void Audio::Stop()
 	{
-		s_Data.Result = s_Data.Channel->stop();
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->stop();
 	}
 
 	void Audio::SetGain(float volume)
 	{
 		m_Gain = volume;
-		s_Data.Result = s_Data.Channel->setVolume(m_Gain * 0.01f);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->setVolume(m_Gain * 0.01f);
 	}
 
 	void Audio::SetPitch(float pitch)
 	{
 		m_Pitch = pitch;
-		s_Data.Result = s_Data.Channel->setPitch(m_Pitch);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->setPitch(m_Pitch);
 	}
 
 	void Audio::SetLowPassFilter(float value)
 	{
 		m_LPFilter = value;
-		s_Data.Result = s_Data.Channel->setLowPassGain(value);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->setLowPassGain(value);
 	}
 
 	void Audio::SetMinDistance(float value)
 	{
 		m_Config.MinDistance = value;
-		s_Data.Result = s_Data.Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
 	}
 
 	void Audio::SetMaxDistance(float value)
 	{
 		m_Config.MaxDistance = value;
-		s_Data.Result = s_Data.Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
 	}
 
 	float Audio::GetMinDistance()
@@ -118,7 +102,7 @@ namespace origin {
 
 	void Audio::UpdateAudioComponent(const AudioComponent& ac)
 	{
-		if (s_Data.Channel)
+		if (m_Channel)
 		{
 			SetPitch(ac.Pitch);
 			SetLowPassFilter(ac.LowPass);
@@ -133,15 +117,13 @@ namespace origin {
 	void Audio::SetDopplerLevel(float doppler_level)
 	{
 		m_DopplerLevel = doppler_level;
-		s_Data.Result = s_Data.Channel->set3DDopplerLevel(m_DopplerLevel);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->set3DDopplerLevel(m_DopplerLevel);
 	}
 
 	void Audio::SetLoop(bool loop)
 	{
 		m_Config.Looping = loop;
-		s_Data.Result = m_Sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-		FMOD_CHECK(s_Data.Result);
+		m_Sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 	}
 
 	void Audio::SetName(const std::string& name)
@@ -155,8 +137,7 @@ namespace origin {
 		m_AudioPosition = { -position.x, -position.y, -position.z };
 		m_AudioVelocity = { -velocity.x, -velocity.y, -velocity.z };
 
-		s_Data.Result = s_Data.Channel->set3DAttributes(&m_AudioPosition, &m_AudioVelocity);
-		FMOD_CHECK(s_Data.Result);
+		m_Channel->set3DAttributes(&m_AudioPosition, &m_AudioVelocity);
 	}
 
 	void Audio::SetSpatial(bool enable)
@@ -170,7 +151,7 @@ namespace origin {
 			OGN_CORE_WARN("AudioSource {0}: SPATIALIZATION OFF", m_Config.Name);
 
 		m_Config.Spatial = enable;
-		s_Data.Result = m_Sound->setMode(enable ? FMOD_3D : FMOD_2D);
+		m_Sound->setMode(enable ? FMOD_3D : FMOD_2D);
 	}
 
 	void Audio::LoadSource(const AudioConfig& config)
@@ -192,25 +173,14 @@ namespace origin {
 		m_Config.Spatial = spatial;
 
 		m_Sound = AudioEngine::CreateSound(name, m_Filepath.string().c_str(), spatial ? FMOD_3D : FMOD_2D);
-		FMOD_CHECK(s_Data.Result);
-
-		s_Data.Result = m_Sound->setMode(m_Config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-		
-		FMOD_CHECK(s_Data.Result)
+		m_Sound->setMode(m_Config.Looping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 
 		if (m_Config.Spatial)
 		{
-			s_Data.Result = s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
-			FMOD_CHECK(s_Data.Result);
-
-			s_Data.Result = s_Data.Channel->set3DAttributes(&m_AudioPosition, nullptr);
-			FMOD_CHECK(s_Data.Result);
-
-			s_Data.Result = s_Data.Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
-			FMOD_CHECK(s_Data.Result);
-
-			s_Data.Result = s_Data.Channel->set3DDopplerLevel(m_DopplerLevel);
-			FMOD_CHECK(s_Data.Result);
+			s_Data.AudioSystem->set3DSettings(1.0, 1.0f, 1.0f);
+			m_Channel->set3DAttributes(&m_AudioPosition, nullptr);
+			m_Channel->set3DMinMaxDistance(m_Config.MinDistance, m_Config.MaxDistance);
+			m_Channel->set3DDopplerLevel(m_DopplerLevel);
 		}
 
 		m_IsLoaded = true;
@@ -237,7 +207,7 @@ namespace origin {
 			dopplerPitch = dopplerShift;
 		}
 
-		s_Data.Channel->setPitch(dopplerPitch);
+		m_Channel->setPitch(dopplerPitch);
 	}
 
 	//////////////////////////////////////////////
@@ -246,18 +216,16 @@ namespace origin {
 
 	bool AudioEngine::Init()
 	{
-		s_Data.Result = FMOD::System_Create(&s_Data.AudioSystem);
-		FMOD_CHECK(s_Data.Result);
-		s_Data.Result = s_Data.AudioSystem->init(s_Data.MAX_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_CHANNEL_LOWPASS, 0);
-		FMOD_CHECK(s_Data.Result);
+		FMOD::System_Create(&s_Data.AudioSystem);
+		s_Data.AudioSystem->init(s_Data.MAX_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_CHANNEL_LOWPASS, 0);
 
 		return true;
 	}
 
 	void AudioEngine::Shutdown()
 	{
-		s_Data.Result = s_Data.AudioSystem->close();
-		s_Data.Result = s_Data.AudioSystem->release();
+		s_Data.AudioSystem->close();
+		s_Data.AudioSystem->release();
 
 		OGN_CORE_WARN("AudioEngine: Shutdown");
 	}
@@ -270,10 +238,9 @@ namespace origin {
 	FMOD::Sound* AudioEngine::CreateSound(const std::string& name, const std::string& filepath, FMOD_MODE mode)
 	{
 		FMOD::Sound* sound;
-		s_Data.Result = s_Data.AudioSystem->createSound(filepath.c_str(),
+		s_Data.AudioSystem->createSound(filepath.c_str(),
 			mode, nullptr, &sound);
 
-		FMOD_CHECK(s_Data.Result);
 
 		return sound;
 	}
@@ -286,13 +253,12 @@ namespace origin {
 		if (enable)
 			OGN_CORE_ERROR("AudioEngine: MASTER CHANNEL MUTED!");
 
-		s_Data.Result = channelControl->setMute(enable);
-		FMOD_CHECK(s_Data.Result);
+		channelControl->setMute(enable);
 	}
 
 	void AudioEngine::SystemUpdate()
 	{
-		s_Data.Result = s_Data.AudioSystem->update();
+		s_Data.AudioSystem->update();
 	}
 
 	bool AudioEngine::AudioStorageInsert(std::shared_ptr<Audio>& audio)

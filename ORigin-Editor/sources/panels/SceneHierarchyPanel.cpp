@@ -217,7 +217,7 @@ namespace origin {
 
 			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
-			(DisplayAddComponentEntry<AudioComponent>("AUDIO"));
+			DisplayAddComponentEntry<AudioComponent>("AUDIO");
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
 			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
 			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");

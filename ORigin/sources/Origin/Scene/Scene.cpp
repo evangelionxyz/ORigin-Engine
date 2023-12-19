@@ -658,12 +658,12 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
-			if (audio)
+			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (ac.PlayAtStart)
 			{
+				audio->SetGain(ac.Volume);
 				audio->Play();
 			}
-				
 		}
 	}
 
@@ -1023,8 +1023,9 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			
-			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+
+			if (ac.PlayAtStart)
 			{
 				audio->SetGain(ac.Volume);
 				audio->Play();
