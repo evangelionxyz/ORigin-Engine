@@ -747,13 +747,14 @@ namespace origin {
 			m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
 		);
 
-		if (m_SelectedEntity && m_GizmosType != -1) {
+		Entity entity = m_SceneHierarchy.GetSelectedEntity();
+		if (entity && m_GizmosType != -1) {
 			// Editor Camera
 
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
-			auto& tc = m_SelectedEntity.GetComponent<TransformComponent>();
+			auto& tc = entity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
 			glm::vec3 originalRotation = tc.Rotation;
 
@@ -767,25 +768,55 @@ namespace origin {
 
 			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
 
-			ImGuizmo::Manipulate(
-				glm::value_ptr(cameraView),
-				glm::value_ptr(cameraProjection),
-				static_cast<ImGuizmo::OPERATION>(m_GizmosType),
-				static_cast<ImGuizmo::MODE>(m_GizmosMode),
-				glm::value_ptr(transform),
-				nullptr,
-				snap ? snapValues : nullptr
-			);
-
-			if (ImGuizmo::IsUsing())
+			if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
 			{
-				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransformEuler(transform, translation, rotation, scale);
+				ImGuizmo::Manipulate(
+					glm::value_ptr(cameraView),
+					glm::value_ptr(cameraProjection),
+					static_cast<ImGuizmo::OPERATION>(m_GizmosType),
+					static_cast<ImGuizmo::MODE>(m_GizmosMode),
+					glm::value_ptr(transform),
+					nullptr,
+					snap ? snapValues : nullptr
+				);
 
-				tc.Translation = translation;
-				glm::vec3 deltaRotation = rotation - tc.Rotation;
-				tc.Rotation += deltaRotation;
-				tc.Scale = scale;
+				glm::vec2 velocity = glm::vec2(0.0f);
+				if (ImGuizmo::IsUsing())
+				{
+					auto rb2d = entity.GetComponent<Rigidbody2DComponent>();
+					auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+
+					glm::vec3 translation, rotation, scale;
+					Math::DecomposeTransformEuler(transform, translation, rotation, scale);
+
+					glm::vec2 deltaTranslation = glm::vec2(translation) - glm::vec2(tc.Translation);
+
+					velocity += glm::vec2(deltaTranslation) * Timestep::DeltaTime();
+					body->ApplyForceToCenter(b2Vec2(velocity.x, velocity.y), rb2d.Awake);
+				}
+			}
+			else
+			{
+				ImGuizmo::Manipulate(
+					glm::value_ptr(cameraView),
+					glm::value_ptr(cameraProjection),
+					static_cast<ImGuizmo::OPERATION>(m_GizmosType),
+					static_cast<ImGuizmo::MODE>(m_GizmosMode),
+					glm::value_ptr(transform),
+					nullptr,
+					snap ? snapValues : nullptr
+				);
+
+				if (ImGuizmo::IsUsing())
+				{
+					glm::vec3 translation, rotation, scale;
+					Math::DecomposeTransformEuler(transform, translation, rotation, scale);
+
+					tc.Translation = translation;
+					glm::vec3 deltaRotation = rotation - tc.Rotation;
+					tc.Rotation += deltaRotation;
+					tc.Scale = scale;
+				}
 			}
 		}
 
@@ -1426,41 +1457,61 @@ namespace origin {
 		const glm::vec2 delta = (mouse - m_InitialMousePosition);
 		m_InitialMousePosition = mouse;
 
-		float orthoSize = m_EditorCamera.GetOrthoSize();
+
+		Entity entity = m_SceneHierarchy.GetSelectedEntity();
 
 		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
-			if (m_SelectedEntity && m_SceneViewportHovered)
+			float orthoSize = m_EditorCamera.GetOrthoSize();
+			float orthoScale = orthoSize / m_SceneViewportSize.y;
+
+			if (entity && m_SceneViewportHovered)
 			{
 				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
 				{
-					auto& tc = m_SelectedEntity.GetComponent<TransformComponent>();
-
-					float snapSize = 0.5f;
-					
-					float orthoScale = orthoSize / m_SceneViewportSize.y;
-					
+					auto& tc = entity.GetComponent<TransformComponent>();
 					static glm::vec2 translate = glm::vec2(tc.Translation);
+					glm::vec2 velocity = glm::vec2(0.0f);
 
-					if (Input::IsKeyPressed(Key::LeftShift))
+					if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
 					{
-						translate.x += delta.x * orthoScale;
-						translate.y -= delta.y * orthoScale;
+						auto rb2d = entity.GetComponent<Rigidbody2DComponent>();
+						auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
-						if (Input::IsKeyPressed(Key::LeftControl))
-							snapSize = 0.1f;
+						translate = glm::vec2(tc.Translation);
 
-						tc.Translation.x = round(translate.x / snapSize) * snapSize;
-						tc.Translation.y = round(translate.y / snapSize) * snapSize;
+						translate.x += delta.x;
+						translate.y += -delta.y;
+
+						glm::vec2 deltaTranslate = translate - glm::vec2(tc.Translation);
+
+						velocity += glm::vec2(deltaTranslate) * Timestep::DeltaTime() * 0.5f;
+
+						body->ApplyForceToCenter(b2Vec2(velocity.x, velocity.y), rb2d.Awake);
 					}
 					else
 					{
-						translate = glm::vec2(tc.Translation);
+						float snapSize = 0.5f;
+						if (Input::IsKeyPressed(Key::LeftShift))
+						{
+							translate.x += delta.x * orthoScale;
+							translate.y -= delta.y * orthoScale;
 
-						translate.x += delta.x * orthoScale;
-						translate.y -= delta.y * orthoScale;
+							if (Input::IsKeyPressed(Key::LeftControl))
+								snapSize = 0.1f;
 
-						tc.Translation = glm::vec3(translate, tc.Translation.z);
+							tc.Translation.x = round(translate.x / snapSize) * snapSize;
+							tc.Translation.y = round(translate.y / snapSize) * snapSize;
+						}
+						else
+						{
+							translate = glm::vec2(tc.Translation);
+
+							translate.x += delta.x * orthoScale;
+							translate.y -= delta.y * orthoScale;
+
+							tc.Translation = glm::vec3(translate, tc.Translation.z);
+						}
 					}
 				}
 			}
@@ -1475,9 +1526,9 @@ namespace origin {
 
 			if (lastMouseX == mouseX && lastMouseY == mouseY)
 			{
-				if (m_HoveredEntity == m_SelectedEntity && m_HoveredEntity)
+				if (m_HoveredEntity == entity && m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::EntityProperties;
-				if (m_HoveredEntity != m_SelectedEntity || !m_HoveredEntity)
+				if (m_HoveredEntity != entity || !m_HoveredEntity)
 					m_VpMenuContext = ViewportMenuContext::CreateMenu;
 			}
 		}

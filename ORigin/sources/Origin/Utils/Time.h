@@ -10,19 +10,23 @@ namespace origin
 	public:
 		Timestep(float time = 0.0f) : m_Time(time), m_DeltaTime(0.0f)
 		{
+			s_Instance = this;
 		}
 
 		operator float() const { return m_Time; }
-		inline float Seconds() const { return m_Time; }
-		inline float MilliSeconds() const { return m_Time * 1000.0f; }
-		inline float DeltaTime() const { return m_DeltaTime; }
+		static float Seconds() { return s_Instance->m_Time; }
+		static float MilliSeconds() { return s_Instance->m_Time * 1000.0f; }
+		static float DeltaTime() { return s_Instance->m_DeltaTime; }
 
 		void SetDeltaTime(float deltaTime)
 		{
 			m_DeltaTime = deltaTime;
 		}
 
+		static Timestep& Get() { return *s_Instance; }
+
 	private:
+		static Timestep* s_Instance;
 		float m_Time;
 		float m_DeltaTime;
 	};

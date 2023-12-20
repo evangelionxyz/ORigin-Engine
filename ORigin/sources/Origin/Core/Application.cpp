@@ -50,24 +50,21 @@ namespace origin {
 			m_GuiLayer->Begin();
 			ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
 			ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
-			{
-				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-				ImGuiWindowFlags imageWinFlags = ImGuiWindowFlags_NoTitleBar
-					| ImGuiWindowFlags_NoResize
-					| ImGuiWindowFlags_NoMove
-					| ImGuiWindowFlags_NoScrollbar
-					| ImGuiWindowFlags_NoDocking
-					| ImGuiWindowFlags_NoScrollWithMouse
-					| ImGuiWindowFlags_NoBackground;
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+			ImGuiWindowFlags imageWinFlags = ImGuiWindowFlags_NoTitleBar
+				| ImGuiWindowFlags_NoResize
+				| ImGuiWindowFlags_NoMove
+				| ImGuiWindowFlags_NoScrollbar
+				| ImGuiWindowFlags_NoDocking;
 
-				ImGui::SetNextWindowSize(windowSize);
-				ImGui::SetNextWindowPos(windowPos);
-				ImGui::Begin("Splash Screen", nullptr, imageWinFlags);
-				ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
-				ImGui::End();
+			ImGui::SetNextWindowSize(windowSize);
+			ImGui::SetNextWindowPos(windowPos);
+			ImGui::SetNextWindowBgAlpha(0.0f);
+			ImGui::Begin("Splash Screen", nullptr, imageWinFlags);
+			ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::End();
 
-				ImGui::PopStyleVar();
-			}
+			ImGui::PopStyleVar();
 			m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 			m_GuiLayer->End();
 			m_Window->OnUpdate();
