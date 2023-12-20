@@ -686,7 +686,7 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		m_Skybox->Draw(camera);
+		//m_Skybox->Draw(camera);
 
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 
@@ -802,7 +802,7 @@ namespace origin
 	{
 		Renderer::BeginScene(camera);
 
-		m_Skybox->Draw(camera);
+		//m_Skybox->Draw(camera);
 
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& entity : lightView)
@@ -1262,7 +1262,7 @@ namespace origin
 				* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
 			break;
 		case ProjectionType::Orthographic:
-			transform = translate(glm::mat4(1.0f), tc.Translation);
+			transform = translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, 0.5f));
 			break;
 		}
 		

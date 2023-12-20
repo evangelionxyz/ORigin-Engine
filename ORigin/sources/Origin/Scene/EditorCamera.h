@@ -63,6 +63,8 @@ namespace origin {
 
 		float GetZoomSpeed() { return ZoomSpeed(); }
 		float GetFOV() { return m_FOV; }
+		float GetAspectRatio() { return m_AspectRatio; }
+		float GetOrthoSize() { return m_OrthoSize; }
 
 		void UpdateAudioListener(float deltaTime);
 		AudioListener GetAudioListener() { return m_AudioListener; }

@@ -232,6 +232,8 @@ namespace origin {
 			{
 				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);
+
+				lastPosition = m_Position;
 			}
 
 			m_LastPosition = lastPosition;

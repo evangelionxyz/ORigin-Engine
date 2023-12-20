@@ -53,6 +53,7 @@ namespace origin {
     glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
     glm::vec2 m_SceneViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
     glm::vec3 cameraPosition = {};
+    glm::vec2 m_InitialMousePosition = glm::vec2(0.0f);
 
     int lastMouseX = 0, mouseX = 0;
     int lastMouseY = 0, mouseY = 0;

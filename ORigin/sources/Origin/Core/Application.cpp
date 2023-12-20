@@ -70,6 +70,7 @@ namespace origin {
 			}
 			m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 			m_GuiLayer->End();
+			m_Window->OnUpdate();
 		}
 		else
 		{

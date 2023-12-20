@@ -169,8 +169,8 @@ namespace origin {
 		{
 			if (ImGui::MenuItem("Delete Entity"))
 			{
-				m_Context->DestroyEntity(entity);
 				m_SelectedEntity = {};
+				m_Context->DestroyEntity(entity);
 			}
 			ImGui::EndPopup();
 		}
