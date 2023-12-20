@@ -170,9 +170,12 @@ namespace origin {
 		else m_EditorCamera.SetEntityObject({});
 
 
-		Renderer::BeginScene(m_EditorCamera);
-		Grid::DrawVertical(m_EditorCamera);
-		Renderer::EndScene();
+		if (m_SceneState != SceneState::Play)
+		{
+			Renderer::BeginScene(m_EditorCamera);
+			Grid::DrawVertical(m_EditorCamera);
+			Renderer::EndScene();
+		}
 
     m_Framebuffer->Unbind();
     m_ActiveScene->OnShadowRender();

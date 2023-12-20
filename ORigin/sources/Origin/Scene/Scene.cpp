@@ -687,6 +687,7 @@ namespace origin
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
 		//m_Skybox->Draw(camera);
+		
 
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 
@@ -711,8 +712,16 @@ namespace origin
 
 		// Sprites
 		{
-			const auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
-			for (const entt::entity& entity : view)
+			auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
+			std::vector<entt::entity> entities(view.begin(), view.end());
+
+			std::sort(entities.begin(), entities.end(),
+				[=](const entt::entity& a, const entt::entity& b) {
+					const auto& objA = m_Registry.get<TransformComponent>(a);
+					const auto& objB = m_Registry.get<TransformComponent>(b);
+					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
+				});
+			for (const entt::entity& entity : entities)
 			{
 				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
@@ -733,7 +742,15 @@ namespace origin
 		// Circles
 		{
 			auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			for (auto& entity : view)
+			std::vector<entt::entity> entities(view.begin(), view.end());
+
+			std::sort(entities.begin(), entities.end(),
+				[=](const entt::entity& a, const entt::entity& b) {
+					const auto& objA = m_Registry.get<TransformComponent>(a);
+					const auto& objB = m_Registry.get<TransformComponent>(b);
+					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
+				});
+			for (auto& entity : entities)
 			{
 				auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
@@ -808,7 +825,9 @@ namespace origin
 		for (auto& entity : lightView)
 		{
 			auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(entity);
-			DrawIcon(camera, static_cast<int>(entity), m_LightingIcon, tc, true);
+
+			if(camera.GetProjectionType() == ProjectionType::Perspective)
+				DrawIcon(camera, static_cast<int>(entity), m_LightingIcon, tc, true);
 		}
 
 		// Particle
@@ -833,18 +852,16 @@ namespace origin
 		// Sprites
 		{
 			auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
-			std::vector<entt::entity> spriteEntities(view.begin(), view.end());
+			std::vector<entt::entity> entities(view.begin(), view.end());
 
-			std::sort(spriteEntities.begin(), spriteEntities.end(),
-			          [=](const entt::entity& a, const entt::entity& b)
-			          {
-				          const auto& objA = m_Registry.get<TransformComponent>(a);
-				          const auto& objB = m_Registry.get<TransformComponent>(b);
-				          return length(camera.GetPosition() - objA.Translation) > length(
-					          camera.GetPosition() - objB.Translation);
-			          });
+			std::sort(entities.begin(), entities.end(), [=](const entt::entity& a, const entt::entity& b)
+				{
+					const auto& objA = m_Registry.get<TransformComponent>(a);
+					const auto& objB = m_Registry.get<TransformComponent>(b);
+					return length(camera.GetPosition() - objA.Translation) > length(camera.GetPosition() - objB.Translation);
+				});
 
-			for (const entt::entity& entity : spriteEntities)
+			for (const entt::entity& entity : entities)
 			{
 				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
 
@@ -871,8 +888,17 @@ namespace origin
 
 		// Circles
 		{
-			const auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			for (auto& entity : view)
+			auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
+			std::vector<entt::entity> entities(view.begin(), view.end());
+
+			std::sort(entities.begin(), entities.end(), [=](const entt::entity& a, const entt::entity& b)
+				{
+					const auto& objA = m_Registry.get<TransformComponent>(a);
+					const auto& objB = m_Registry.get<TransformComponent>(b);
+					return length(camera.GetPosition() - objA.Translation) > length(camera.GetPosition() - objB.Translation);
+				});
+
+			for (auto& entity : entities)
 			{
 				auto& [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
 				for (auto& light : lightView)
@@ -926,7 +952,8 @@ namespace origin
 		for (auto& entity : cameraView)
 		{
 			auto& [tc, cc] = cameraView.get<TransformComponent, CameraComponent>(entity);
-			DrawIcon(camera, static_cast<int>(entity), m_CameraIcon, tc, true);
+			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
+				DrawIcon(camera, static_cast<int>(entity), m_CameraIcon, tc, true);
 		}
 
 		
