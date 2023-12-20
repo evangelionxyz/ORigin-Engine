@@ -15,7 +15,8 @@ namespace origin
 	public:
 		OpenGLSkybox(const std::string& filepath, const std::string& format);
 		void Draw(const glm::mat4& viewProjection) override;
-		void Draw(const Camera& camera) override;
+		void Draw(const SceneCamera& camera) override;
+		void Draw(const EditorCamera& camera) override;
 		void SetBlur(float blur) override;
 
 	private:

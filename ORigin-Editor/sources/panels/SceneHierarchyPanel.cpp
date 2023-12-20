@@ -265,7 +265,7 @@ namespace origin {
 				if (ImGui::Selectable(projectionTypeString[i], isSelected))
 				{
 					currentProjectionTypeString = projectionTypeString[i];
-					component.Camera.SetProjectionType(static_cast<SceneCamera::ProjectionType>(i));
+					component.Camera.SetProjectionType(static_cast<ProjectionType>(i));
 				}
 
 				if (isSelected)
@@ -274,7 +274,7 @@ namespace origin {
 			ImGui::EndCombo();
 		}
 
-		if (component.Camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+		if (component.Camera.GetProjectionType() == ProjectionType::Perspective)
 		{
 			float perspectiveFov = glm::degrees(camera.GetPerspectiveFov());
 			camera.SetPerspectiveFov(glm::radians(perspectiveFov));
@@ -291,7 +291,7 @@ namespace origin {
 				camera.SetPerspectiveFarClip(perspectiveFarClip);
 		}
 
-		if (component.Camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+		if (component.Camera.GetProjectionType() == ProjectionType::Orthographic)
 		{
 			float orthoSize = camera.GetOrthographicSize();
 			camera.SetOrthographicSize(orthoSize);

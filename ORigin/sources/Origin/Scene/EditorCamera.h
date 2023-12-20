@@ -1,8 +1,7 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-
-#include "Origin\Scene\Camera.h"
+#include "ProjectionType.h"
 #include "Origin\IO\Events\Event.h"
 #include "Origin\IO\Events\MouseEvent.h"
 
@@ -16,39 +15,49 @@ namespace origin {
 	enum CameraStyle
 	{
 		Pivot = 0,
-		FreeMove = 1
+		FreeMove,
 	};
-	
-	class EditorCamera : public Camera
+
+	class EditorCamera
 	{
 	public:
 		EditorCamera() = default;
-		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip);
+
+		void InitPerspective(float fovy, float aspectRatio, float nearClip, float farClip);
+		void InitOrthographic(float size, float nearClip, float farClip);
 
 		void OnUpdate(float ts);
 		void OnEvent(Event& e);
 
 		void SetEntityObject(Entity entity);
-
 		void SetViewportSize(float width, float height);
+
+		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; }
+		void SetPosition(const glm::vec3& position) { m_Position = position; }
+
 		inline void SetDistance(float distance) { m_Distance = distance; }
 		inline void SetPitch(float pitch) { m_Pitch = pitch; }
 		inline void SetYaw(float yaw) { m_Yaw = yaw; }
 		inline void SetFov(float fov) { m_FOV = fov; UpdateProjection(); }
 
-		virtual const glm::mat4 GetViewProjection() const override { return m_Projection * m_View; }
 		inline float GetDistance() const { return m_Distance; }
 
+		const glm::vec3& GetPosition() const { return m_Position; }
 		glm::vec3 GetUpDirection() const;
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;
 		glm::quat GetOrientation() const;
 
+		const glm::mat4& GetProjection() const;
+		const glm::mat4& GetViewMatrix() const;
+		virtual const glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
+
 		void SetStyle(CameraStyle style) { m_CameraStyle = style; }
-		CameraStyle& GetStyle() { return m_CameraStyle; }
+		const CameraStyle GetStyle() { return m_CameraStyle; }
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
+		const ProjectionType GetProjectionType() const { return m_ProjectionType; }
 		void EnableMovement(bool enable) { m_EnableMovement = enable; }
 		bool IsActive() { return m_EnableMovement; }
 
@@ -61,6 +70,7 @@ namespace origin {
 	private:
 		AudioListener m_AudioListener;
 		CameraStyle m_CameraStyle = Pivot;
+		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 
 		void UpdateProjection();
 		void UpdateView();
@@ -75,7 +85,7 @@ namespace origin {
 		float RotationSpeed() const;
 		std::pair<float, float> PanSpeed() const;
 		
-		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
+		
 		float m_DeltaTime;
 		bool m_EnableMovement;
 
@@ -84,9 +94,21 @@ namespace origin {
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 		float m_MoveSpeed = 2.0f;
 
+		glm::vec3 m_Position = glm::vec3(0.0f);
 		glm::vec3 m_LastPosition = glm::vec3(0.0f);
 		glm::vec3 m_TargetPosition = glm::vec3(0.0f);
 		glm::vec3 m_FocalPoint = glm::vec3(0.0f);
 		glm::vec2 m_InitialMousePosition = glm::vec2(0.0f);
+
+		glm::mat4 m_Projection = glm::mat4(1.0f);
+		glm::mat4 m_View = glm::mat4(1.0f);
+		float m_FOV = 45.0f;
+		float m_AspectRatio = 1.778f;
+		float m_NearClip = 0.1f;
+		float m_FarClip = 1000.0f;
+
+		float m_OrthoNearClip = -1.0f;
+		float m_OrthoFarClip = 100.0f;
+		float m_OrthoSize = 10.0f;
 	};
 }

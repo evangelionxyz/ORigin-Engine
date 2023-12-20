@@ -93,7 +93,12 @@ namespace origin
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	void OpenGLSkybox::Draw(const Camera& camera)
+	void OpenGLSkybox::Draw(const SceneCamera& camera)
+	{
+		Draw(camera.GetViewProjection());
+	}
+
+	void OpenGLSkybox::Draw(const EditorCamera& camera)
 	{
 		Draw(camera.GetViewProjection());
 	}

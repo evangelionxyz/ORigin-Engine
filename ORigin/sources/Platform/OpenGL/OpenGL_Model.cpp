@@ -42,7 +42,7 @@ namespace origin
 		}
 	}
 
-	void OpenGLModel::Draw(const glm::mat4& modelTransform, const Camera& camera, int entityID)
+	void OpenGLModel::Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID)
 	{
 		// Applying Main Shader Uniforms
 		m_Material->EnableShader();
@@ -63,7 +63,7 @@ namespace origin
 		m_Material->DisableShader();
 	}
 
-	void OpenGLModel::Draw(const glm::mat4& modelTransform, const Camera& camera, const glm::mat4& cameraTransform, int entityID)
+	void OpenGLModel::Draw(const glm::mat4& modelTransform, const SceneCamera& camera, const glm::mat4& cameraTransform, int entityID)
 	{
 		// Applying Main Shader Uniforms
 		m_Material->EnableShader();

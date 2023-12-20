@@ -35,7 +35,7 @@ namespace origin {
     // panels
     Dockspace m_Dockspace;
     SceneHierarchyPanel m_SceneHierarchy;
-    std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton, m_PauseButton, m_SteppingButton;
+    std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton, m_PauseButton, m_SteppingButton, m_Projection2DButton, m_Projection3DButton;
     EditorCamera m_EditorCamera;
     ShaderLibrary m_ShaderLibrary;
     std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;

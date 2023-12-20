@@ -1,24 +1,24 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Camera.h"
+
+#include "ProjectionType.h"
 
 namespace origin {
 
-	class SceneCamera : public Camera
+	class SceneCamera
 	{
 	public:
-		enum class ProjectionType
-		{
-			Perspective = 0, Orthographic = 1
-		};
-
 		SceneCamera();
 		virtual ~SceneCamera() = default;
 		void SetViewportSize(uint32_t width, uint32_t height);
+		void SetPosition(const glm::vec3& position) { m_Position = position; }
 
 		const glm::vec2& GetViewportSize() { return m_ViewportSize; }
-		virtual const glm::mat4 GetViewProjection() const override { return (m_Projection * m_View) * glm::inverse(m_View); }
+		const glm::mat4 GetViewProjection() const { return (m_Projection * m_View) * glm::inverse(m_View); }
+		const glm::mat4& GetProjection() const;
+		const glm::mat4& GetViewMatrix() const;
+		const glm::vec3& GetPosition() const { return m_Position; }
 
 		// Perspective
 		void SetPerspective(float verticalFov, float nearClip, float farClip);
@@ -31,17 +31,16 @@ namespace origin {
 		float GetPerspectiveNearClip() const { return m_PerspectiveNear; }
 		float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
 
-
 		// Orthographic
 		void SetOrthographic(float size, float nearClip, float farClip);
 
-		void SetOrthographicSize(float size) { m_OrthographicSize = size; RecalculateProjection(); }
-		void SetOrthographicNearClip(float nearClip) { m_OrthographicNear = nearClip; RecalculateProjection(); }
-		void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; RecalculateProjection(); }
+		void SetOrthographicSize(float size) { m_OrthoSize = size; RecalculateProjection(); }
+		void SetOrthographicNearClip(float nearClip) { m_OrthoNear = nearClip; RecalculateProjection(); }
+		void SetOrthographicFarClip(float farClip) { m_OrthoFar = farClip; RecalculateProjection(); }
 
-		float GetOrthographicSize() const { return m_OrthographicSize; }
-		float GetOrthographicNearClip() const { return m_OrthographicNear; }
-		float GetOrthographicFarClip() const { return m_OrthographicFar; }
+		float GetOrthographicSize() const { return m_OrthoSize; }
+		float GetOrthographicNearClip() const { return m_OrthoNear; }
+		float GetOrthographicFarClip() const { return m_OrthoFar; }
 
 		// Projection Type
 		ProjectionType GetProjectionType() const { return m_ProjectionType;  }
@@ -51,10 +50,12 @@ namespace origin {
 		void RecalculateProjection();
 
 	private:
-		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 		float m_AspectRatio = 1.778f;
-		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
+		glm::mat4 m_Projection = glm::mat4(1.0f);
+		glm::mat4 m_View = glm::mat4(1.0f);
 
+		ProjectionType m_ProjectionType = ProjectionType::Perspective;
+		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 		glm::vec3 m_Position = glm::vec3(1.0f);
 
 		// Persepective
@@ -62,8 +63,8 @@ namespace origin {
 		float m_PerspectiveNear = 0.01f, m_PerspectiveFar = 100.0f;
 
 		// Orthographic
-		float m_OrthographicSize = 10.0f;
-		float m_OrthographicNear = -1.0f, m_OrthographicFar = 100.0f;
+		float m_OrthoSize = 10.0f;
+		float m_OrthoNear = -1.0f, m_OrthoFar = 100.0f;
 	};
 
 }

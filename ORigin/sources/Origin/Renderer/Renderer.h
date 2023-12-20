@@ -5,7 +5,7 @@
 #include "UniformBuffer.h"
 
 #include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\Camera.h"
+#include "Origin\Scene\SceneCamera.h"
 
 #include "Origin\Renderer\Texture.h"
 
@@ -22,7 +22,7 @@ namespace origin {
 
 		static void Shutdown();
 
-		static void BeginScene(const Camera& camera, const TransformComponent& cameraTransform);
+		static void BeginScene(const SceneCamera& camera, const TransformComponent& cameraTransform);
 		static void BeginScene(const EditorCamera& camera);
 
 		static void EndScene();

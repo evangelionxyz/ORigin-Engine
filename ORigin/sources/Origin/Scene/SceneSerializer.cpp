@@ -763,8 +763,7 @@ namespace origin
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
 					auto& cameraProps = cameraComponent["Camera"];
-					cc.Camera.SetProjectionType(
-						static_cast<SceneCamera::ProjectionType>(cameraProps["ProjectionType"].as<int>()));
+					cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
 
 					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());

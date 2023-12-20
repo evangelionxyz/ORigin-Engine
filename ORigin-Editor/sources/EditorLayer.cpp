@@ -44,6 +44,8 @@ namespace origin {
 		m_StopButton = TextureImporter::LoadTexture2D("Resources/UITextures/stopbutton.png");
 		m_PauseButton = TextureImporter::LoadTexture2D("Resources/UITextures/pausebutton.png");
 		m_SteppingButton = TextureImporter::LoadTexture2D("Resources/UITextures/steppingframebutton.png");
+		m_Projection2DButton = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
+		m_Projection3DButton = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
 
     // ==============================
     // Main Framebuffer Specification
@@ -75,9 +77,11 @@ namespace origin {
     gameFramebufferSpec.ReadBuffer = false;
     m_GameFramebuffer = Framebuffer::Create(gameFramebufferSpec);
 
-    m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
+		m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 100.0f);
+		m_EditorCamera.InitOrthographic(10.0f, -1.0f, 100.0f);
     m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
-    m_EditorCamera.SetStyle(CameraStyle::Pivot);
+
+		m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
 
     m_ActiveScene = std::make_shared<Scene>();
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -889,11 +893,26 @@ namespace origin {
 			ImGui::End(); // !viewport_toolbar
 		}
 
-		// Guizmo MODE
-		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + wndWidth - 120.0f, wndYpos }, ImGuiCond_Always);
+		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + wndWidth - 145.0f, wndYpos }, ImGuiCond_Always);
 		ImGui::SetNextWindowBgAlpha(0.0f);
-		if (ImGui::Begin("##gizmo_mode", nullptr, window_flags))
+		if (ImGui::Begin("##tool_bar", nullptr, window_flags))
 		{
+			// Camera Projection Mode Button
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+			auto mode = m_EditorCamera.GetProjectionType();
+			std::shared_ptr<Texture2D> cameraPrjModeButton = mode == ProjectionType::Orthographic ? m_Projection2DButton : m_Projection3DButton;
+			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(cameraPrjModeButton->GetRendererID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
+			{
+				if(mode == ProjectionType::Perspective)
+					m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
+				else if(mode == ProjectionType::Orthographic)
+					m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
+			}
+			ImGui::SameLine(0.0f, 5.0f);
+			
+			// Gizmo MODE
 			const ImVec4 btActive = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
 			ImVec4 btLOCAL, btGLOBAL;
 			if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
@@ -913,7 +932,6 @@ namespace origin {
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, btActive);
 			if (ImGui::Button("LOCAL", { 50.0f, 25.0f }))
 				m_GizmosMode = ImGuizmo::MODE::LOCAL;
-			ImGui::PopStyleColor(3);
 			ImGui::SameLine(0.0f, 5.0f);
 
 			ImGui::PushStyleColor(ImGuiCol_Button, btGLOBAL);
@@ -921,7 +939,7 @@ namespace origin {
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, btActive);
 			if (ImGui::Button("GLOBAL", { 50.0f, 25.0f }))
 				m_GizmosMode = ImGuizmo::MODE::WORLD;
-			ImGui::PopStyleColor(3);
+			ImGui::PopStyleColor(8);
 
 			ImGui::End(); // !gizmo_mode
 		}

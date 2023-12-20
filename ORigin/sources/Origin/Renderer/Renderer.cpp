@@ -56,7 +56,7 @@ namespace origin {
 		OGN_CORE_WARN("Renderer Shutdown");
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const TransformComponent& cameraTransform)
+	void Renderer::BeginScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
 		uint32_t offsetViewProjection = 0;
 		uint32_t offsetLightSpaceMatrix = sizeof(glm::mat4);
