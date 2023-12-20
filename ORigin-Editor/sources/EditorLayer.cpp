@@ -1437,17 +1437,31 @@ namespace origin {
 					auto& tc = m_SelectedEntity.GetComponent<TransformComponent>();
 
 					float snapSize = 0.5f;
+					
 					float orthoScale = orthoSize / m_SceneViewportSize.y;
-
-					tc.Translation.x += delta.x * orthoScale;
-					tc.Translation.y -= delta.y * orthoScale;
+					
+					static glm::vec2 translate = glm::vec2(tc.Translation);
 
 					if (Input::IsKeyPressed(Key::LeftShift))
 					{
-						tc.Translation.x = round(tc.Translation.x / snapSize) * snapSize;
-						tc.Translation.y = round(tc.Translation.y / snapSize) * snapSize;
-					}
+						translate.x += delta.x * orthoScale;
+						translate.y -= delta.y * orthoScale;
 
+						if (Input::IsKeyPressed(Key::LeftControl))
+							snapSize = 0.1f;
+
+						tc.Translation.x = round(translate.x / snapSize) * snapSize;
+						tc.Translation.y = round(translate.y / snapSize) * snapSize;
+					}
+					else
+					{
+						translate = glm::vec2(tc.Translation);
+
+						translate.x += delta.x * orthoScale;
+						translate.y -= delta.y * orthoScale;
+
+						tc.Translation = glm::vec3(translate, tc.Translation.z);
+					}
 				}
 			}
 		}
