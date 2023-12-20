@@ -33,31 +33,31 @@ namespace origin
 
 		static const std::filesystem::path GetActiveProjectPath()
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject, "Invalid Active Project");
 			return s_ActiveProject->GetProjectPath();
 		}
 
 		static const std::filesystem::path& GetActiveProjectDirectory()
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject, "Invalid Active Project");
 			return s_ActiveProject->m_ProjectDirectory;
 		}
 
 		static std::filesystem::path GetActiveAssetDirectory()
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject, "Invalid Active Project");
 			return s_ActiveProject->GetAssetDirectory();
 		}
 
 		static std::filesystem::path GetActiveAssetFileSystemPath(const std::filesystem::path& path)
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject, "Invalid Active Project");
 			return s_ActiveProject->GetAssetFileSystemPath(path);
 		}
 
 		static std::filesystem::path GetActiveAssetRegistryPath()
 		{
-			OGN_CORE_ASSERT(s_ActiveProject);
+			OGN_CORE_ASSERT(s_ActiveProject, "Invalid Active Project");
 			return s_ActiveProject->GetAssetRegistryPath();
 		}
 

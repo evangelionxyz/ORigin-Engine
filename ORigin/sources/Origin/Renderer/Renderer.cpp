@@ -4,6 +4,8 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 
+#include "Origin\Asset\TextureImporter.h"
+
 #include "Origin\Scene\Skybox.h"
 #include "Platform\OpenGL\OpenGL_Shader.h"
 
@@ -161,8 +163,8 @@ namespace origin {
 		GShaderLibrary.Load("PointLightDepthMap", "Resources/Shaders/PointLightDepthMap.glsl", false);
 
 		// Load UI Texture
-		GUITextures.insert(std::make_pair("CameraIcon", Texture2D::Create("Resources/UITextures/camera.png")));
-		GUITextures.insert(std::make_pair("LightingIcon", Texture2D::Create("Resources/UITextures/lighting.png")));
-		GUITextures.insert(std::make_pair("AudioIcon", Texture2D::Create("Resources/UITextures/audio.png")));
+		GUITextures.insert(std::make_pair("CameraIcon", TextureImporter::LoadTexture2D("Resources/UITextures/camera.png")));
+		GUITextures.insert(std::make_pair("LightingIcon", TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png")));
+		GUITextures.insert(std::make_pair("AudioIcon", TextureImporter::LoadTexture2D("Resources/UITextures/audio.png")));
 	}
 }

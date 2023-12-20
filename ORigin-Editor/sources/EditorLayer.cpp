@@ -1140,10 +1140,9 @@ namespace origin {
 							}
 						}
 
-						if (entity.HasComponent<SpriteRenderer2DComponent>() && state.HasState())
+						if (entity.HasComponent<SpriteRenderer2DComponent>() && state.HasStates())
 						{
 							ImGui::Text("Animation State");
-
 							ImGui::SameLine();
 
 							// drop-down
@@ -1223,7 +1222,7 @@ namespace origin {
 
 
 							// Show the STATE animation
-							if (state.HasAnimation())
+							if (state.HasAnimations())
 							{
 								for (int i = 0; i < state.GetAnimation().GetTotalFrames(); i++)
 								{
@@ -1240,9 +1239,9 @@ namespace origin {
 								}
 								ImGui::Columns();
 
-								bool looping = state.IsLooping();
+								bool looping = state.IsLooping(currentState);
 								if (ImGui::Checkbox("Loop", &looping))
-									state.SetLooping(looping);
+									state.SetLooping(currentState, looping);
 
 								ImGui::SameLine();
 								if (ImGui::Button("Preview"))

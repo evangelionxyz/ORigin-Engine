@@ -22,11 +22,11 @@ namespace origin {
 
 		void Update(float deltaTime);
 
-		void SetLooping(bool looping);
-		bool IsLooping();
+		void SetLooping(std::string state, bool looping);
+		bool IsLooping(std::string state);
+		bool HasAnimations() const { return !m_Animations.empty(); }
+		bool HasStates() const { return m_StateStorage.size() > 0; }
 		bool Preview = false;
-		bool HasState() const { return m_StateStorage.size() > 0; }
-		bool HasAnimation();
 
 		bool AnimationExists(std::string state);
 		bool StateExists(std::string stateName);

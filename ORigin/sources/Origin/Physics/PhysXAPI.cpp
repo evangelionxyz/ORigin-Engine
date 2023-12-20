@@ -171,11 +171,11 @@ namespace origin {
 		OGN_CORE_ASSERT(s_PhysXData->PhysxPhysics, "PhysXAPI: Failed To Create Physics");
 
 		bool pxExtensionInitialized = PxInitExtensions(*s_PhysXData->PhysxPhysics, s_PhysXData->PhysXPvd);
-		OGN_CORE_ASSERT(pxExtensionInitialized);
+		OGN_CORE_ASSERT(pxExtensionInitialized, "PhysX Extension is failed to initilized");
 
 		int workerThreads = 4;
 		s_PhysXData->PhysxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(workerThreads);
-		OGN_CORE_ASSERT(s_PhysXData->PhysxCPUDispatcher);
+		OGN_CORE_ASSERT(s_PhysXData->PhysxCPUDispatcher, "PhysX CPU Dispatch is failed to created");
 
 		OGN_CORE_INFO("PhysX API: Initialized");
 	}

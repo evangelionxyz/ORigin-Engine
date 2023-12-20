@@ -40,7 +40,7 @@ namespace origin
 			case Rigidbody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
 		}
 
-		OGN_ASSERT(false, "Unkown Body Type");
+		OGN_CORE_ASSERT(false, "Unkown Body Type");
 		return b2_staticBody;
 	}
 
@@ -392,7 +392,7 @@ namespace origin
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.HasAnimation())
+			if (ac.State.HasAnimations())
 				ac.State.GetAnimation().Update(deltaTime);
 		}
 
@@ -469,7 +469,7 @@ namespace origin
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.HasAnimation())
+			if (ac.State.HasAnimations())
 			{
 				if (ac.State.Preview)
 					ac.State.Update(deltaTime);
@@ -578,7 +578,7 @@ namespace origin
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.HasAnimation())
+			if (ac.State.HasAnimations())
 				ac.State.GetAnimation().Update(deltaTime);
 		}
 
@@ -722,7 +722,7 @@ namespace origin
 			for (auto& entity : animView)
 			{
 				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (anim.State.HasAnimation() == false)
+				if (anim.State.HasAnimations() == false)
 					continue;
 
 				if (anim.State.GetAnimation().HasFrame())
@@ -862,7 +862,7 @@ namespace origin
 			for (auto& entity : animView)
 			{
 				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (anim.State.HasAnimation() == false)
+				if (anim.State.HasAnimations() == false)
 					continue;
 
 				if (anim.State.GetAnimation().HasFrame())

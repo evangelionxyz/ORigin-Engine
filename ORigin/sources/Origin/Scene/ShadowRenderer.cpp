@@ -47,7 +47,7 @@ namespace origin {
 
 	void ShadowRenderer::OnAttachTexture(const std::shared_ptr<Material>& mat)
 	{
-		OGN_CORE_ASSERT(m_Framebuffer);
+		OGN_CORE_ASSERT(m_Framebuffer, "ShadowRenderer: Invalid Framebuffer");
 
 		glActiveTexture(m_Framebuffer->GetDepthAttachmentRendererID());
 		glBindTexture(GL_TEXTURE_2D, m_Framebuffer->GetDepthAttachmentRendererID());

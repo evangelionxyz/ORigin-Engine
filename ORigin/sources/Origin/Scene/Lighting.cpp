@@ -37,7 +37,8 @@ namespace origin {
 		}
 		}
 
-		OGN_CORE_ASSERT(m_ShadowRenderer->GetFramebuffer());
+		OGN_CORE_ASSERT(m_ShadowRenderer->GetFramebuffer(), "Lighting: Invalid Shadow's Framebuffer");
+
 		glActiveTexture(m_ShadowRenderer->GetFramebuffer()->GetDepthAttachmentRendererID());
 		glBindTexture(GL_TEXTURE_2D, m_ShadowRenderer->GetFramebuffer()->GetDepthAttachmentRendererID());
 		//mat->SetInt("uShadowMap", 0);

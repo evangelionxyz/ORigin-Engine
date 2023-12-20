@@ -139,15 +139,17 @@ namespace origin {
 			}
 			switch (m_CameraStyle)
 			{
-			case origin::Pivot:
+			case CameraStyle::Pivot:
 				if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
 					MouseRotate(delta);
 				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);
-				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, deltaTime * 2.0f);
+
+				m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, deltaTime * 8.0f);
 				lastPosition = m_FocalPoint - GetForwardDirection() * m_Distance;
 				break;
-			case origin::FreeMove:
+
+			case CameraStyle::FreeMove:
 				if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 					MouseRotate(delta);
 				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
@@ -178,6 +180,7 @@ namespace origin {
 				m_Distance = 5.0f;
 				m_FocalPoint = lastPosition + GetForwardDirection() * m_Distance;
 				break;
+
 			default:
 				break;
 			}

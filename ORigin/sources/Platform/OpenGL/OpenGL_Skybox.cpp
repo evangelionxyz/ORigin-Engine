@@ -148,8 +148,7 @@ namespace origin
 			else
 			{
 				stbi_image_free(data);
-				OGN_CORE_ERROR("Failed to load Texture: {0}", path[i]);
-				OGN_CORE_ASSERT(false);
+				OGN_CORE_ASSERT(false, "Failed to load Texture: {0}", path[i]);
 			}
 		}
 

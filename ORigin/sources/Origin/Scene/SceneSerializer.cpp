@@ -213,7 +213,7 @@ namespace origin
 				out << YAML::BeginMap; // Name
 				out << YAML::Key << "Name" << currentState;
 
-				if (ac.State.HasAnimation())
+				if (ac.State.HasAnimations())
 				{
 					auto animations = ac.State.GetAnimationState().at(currentState);
 					{
@@ -228,7 +228,7 @@ namespace origin
 						}
 						out << YAML::EndSeq; //!Frames
 					}
-					out << YAML::Key << "Looping" << YAML::Value << ac.State.IsLooping();
+					out << YAML::Key << "Looping" << YAML::Value << animations.IsLooping();
 				}
 				out << YAML::EndMap; // !Name
 			}
@@ -721,7 +721,7 @@ namespace origin
 
 							// Add the animation after frames added
 							ac.State.AddAnimation(animation);
-							ac.State.SetLooping(state["Looping"].as<bool>());
+							ac.State.SetLooping(state["Name"].as<std::string>(), state["Looping"].as<bool>());
 						}
 					}
 
@@ -805,7 +805,7 @@ namespace origin
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
-					if(spriteRenderer2DComponent["TextureHandle"])
+					if(spriteRenderer2DComponent["Handle"])
 					{
 						src.Texture = spriteRenderer2DComponent["Handle"].as<uint64_t>();
 						src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();

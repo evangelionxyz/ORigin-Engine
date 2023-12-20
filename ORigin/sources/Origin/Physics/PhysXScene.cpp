@@ -106,11 +106,11 @@ namespace origin {
 		physx::PxRigidActor* actor;
 		actor = physics->createRigidDynamic(transform);
 
-		OGN_CORE_ASSERT(actor);
+		OGN_CORE_ASSERT(actor, "PhysX Invalid RigidActor");
 		actor->setActorFlag(physx::PxActorFlag::Enum::eDISABLE_GRAVITY, !rb.UseGravity);
 
 		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
-		OGN_CORE_ASSERT(dActor);
+		OGN_CORE_ASSERT(dActor, "PhysX Invalid RigidDynamicActor");
 
 		dActor->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, rb.Kinematic);
 

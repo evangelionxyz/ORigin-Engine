@@ -38,7 +38,7 @@ namespace origin {
 			}
 		}
 
-		OGN_CORE_ASSERT("SceneImporter: Scene shoule be imported");
+		OGN_CORE_ASSERT(false, "SceneImporter: Scene shoule be imported");
 		return 0;
 	}
 

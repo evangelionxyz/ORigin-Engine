@@ -20,7 +20,7 @@ namespace origin {
 			default: return (physx::PxForceMode::Enum)-1;
 			}
 
-			OGN_CORE_ASSERT(false)
+			OGN_CORE_ASSERT(false, "")
 			return (physx::PxForceMode::Enum)-1;
 		}
 	}

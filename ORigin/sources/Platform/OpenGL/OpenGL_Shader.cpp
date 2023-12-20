@@ -39,7 +39,7 @@ namespace origin {
         case GL_GEOMETRY_SHADER: return shaderc_glsl_geometry_shader;
       }
 
-      OGN_CORE_ASSERT(false);
+      OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
       return (shaderc_shader_kind)0;
     }
 
@@ -52,7 +52,7 @@ namespace origin {
         case GL_GEOMETRY_SHADER: return "GL_GEOMETRY_SHADER";
       }
 
-      OGN_CORE_ASSERT(false);
+      OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
       return nullptr;
     }
 
@@ -77,7 +77,7 @@ namespace origin {
         case GL_GEOMETRY_SHADER: return ".cached_opengl.geom";
       }
 
-      OGN_CORE_ASSERT(false);
+      OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
       return nullptr;
     }
 
@@ -90,7 +90,7 @@ namespace origin {
         case GL_GEOMETRY_SHADER: return ".cached_vulkan.geom";
       }
 
-      OGN_CORE_ASSERT(false);
+      OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
       return nullptr;
     }
 

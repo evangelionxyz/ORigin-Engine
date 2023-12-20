@@ -46,3 +46,4 @@
 #include "Origin\Utils\GUI\GuiLayer.h"
 //#include "Origin\Utils\GUI\Sequencer.h"
 #include "Origin\Utils\Time.h"
+#include "Origin\Core\Assert.h"

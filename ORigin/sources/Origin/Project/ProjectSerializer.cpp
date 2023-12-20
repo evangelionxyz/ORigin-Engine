@@ -64,10 +64,10 @@ namespace origin
 		config.AssetRegistry = projectNode["AssetRegistry"].as<std::string>();
 		config.ScriptModulePath = projectNode["ScriptModulePath"].as<std::string>();
 
-		OGN_CORE_INFO("ProjectSerializer::Deserializing {}", filepath.string());
-		OGN_CORE_INFO("Name				: {}", config.Name);
-		OGN_CORE_INFO("Start Scene: {}", config.StartScene);
-		OGN_CORE_INFO("Asset Reg	: {}", config.AssetRegistry.string());
+		OGN_CORE_INFO("ProjectSerializer::Deserialize {0}", filepath.string());
+		OGN_CORE_INFO("	Name: {0}", config.Name);
+		OGN_CORE_INFO("	Start Scene: {0}", config.StartScene);
+		OGN_CORE_INFO("	Asset Reg: {0}", config.AssetRegistry.string());
 
 		return true;
 	}

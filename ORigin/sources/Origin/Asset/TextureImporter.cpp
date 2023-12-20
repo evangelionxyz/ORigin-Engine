@@ -30,6 +30,7 @@ namespace origin {
 		}
 
 		data.Size = width * height * channels;
+
 		TextureSpecification spec;
 		spec.Width = width;
 		spec.Height = height;

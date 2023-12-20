@@ -10,6 +10,8 @@
 #include <imgui.h>
 #include <stb_image.h>
 
+#define dbg_brk(x) if(!x) __debugbreak()
+
 namespace origin {
 
 	Application* Application::s_Instance = nullptr;

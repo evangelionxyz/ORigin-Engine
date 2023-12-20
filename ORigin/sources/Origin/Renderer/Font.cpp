@@ -90,7 +90,7 @@ namespace origin {
 		atlasPacker.setScale(emSize);
 
 		int remaining = atlasPacker.pack(m_Data->Glyphs.data(), static_cast<int>(m_Data->Glyphs.size()));
-		OGN_CORE_ASSERT(remaining == 0);
+		OGN_CORE_ASSERT(remaining == 0, "");
 
 		int widht, height;
 		atlasPacker.getDimensions(widht, height);

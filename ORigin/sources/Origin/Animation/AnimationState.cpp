@@ -7,18 +7,17 @@ namespace origin {
 
 	void AnimationState::AddState(std::string state)
 	{
-		if (!StateExists(state))
+		if (StateExists(state))
 		{
-			if (m_StateStorage.empty())
-				m_DefaultState = state;
-
-			m_CurrentState = state;
-			m_StateStorage.emplace_back(m_CurrentState);
-
+			OGN_CORE_ERROR("Animation State '{}' already Exists", state);
 			return;
 		}
 
-		OGN_CORE_ERROR("Animation State '{}' already Exists", state);
+		if (m_StateStorage.empty())
+			m_DefaultState = state;
+
+		m_CurrentState = state;
+		m_StateStorage.emplace_back(m_CurrentState);
 	}
 
 	void AnimationState::AddAnimation(Animation anim)
@@ -60,16 +59,16 @@ namespace origin {
 		m_Animations.at(m_CurrentState).Update(deltaTime);
 	}
 
-	void AnimationState::SetLooping(bool looping)
+	void AnimationState::SetLooping(std::string state, bool looping)
 	{
-		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState).SetLooping(looping);
+		OGN_CORE_ASSERT(AnimationExists(state), "Animation doesn't exist");
+		m_Animations.at(state).SetLooping(looping);
 	}
 
-	bool AnimationState::IsLooping()
+	bool AnimationState::IsLooping(std::string state)
 	{
-		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		return m_Animations.at(m_CurrentState).IsLooping();
+		OGN_CORE_ASSERT(AnimationExists(state), "Animation doesn't exist");
+		return m_Animations.at(state).IsLooping();
 	}
 
 	Animation& AnimationState::GetAnimation()
@@ -77,36 +76,14 @@ namespace origin {
 		return m_Animations.at(m_CurrentState);
 	}
 
-	bool AnimationState::HasAnimation()
-	{
-		if (m_Animations.empty())
-			return false;
-		else if (!AnimationExists(m_CurrentState))
-			return false;
-		else
-			return m_Animations.at(m_CurrentState).HasFrame();
-	}
-
 	bool AnimationState::AnimationExists(std::string state)
 	{
-		if (m_Animations.find(state) == m_Animations.end())
-		{
-			OGN_CORE_ERROR("Animation '{}' not found", state);
-			return false;
-		}
-
-		return true;
+		return m_Animations.find(state) != m_Animations.end();
 	}
 
 	bool AnimationState::StateExists(std::string stateName)
 	{
 		auto it = std::find(m_StateStorage.begin(), m_StateStorage.end(), stateName);
-		if (it == m_StateStorage.end())
-		{
-			OGN_CORE_ERROR("Animation State '{}' not found", stateName);
-			return false;
-		}
-
-		return true;
+		return it != m_StateStorage.end();
 	}
 }

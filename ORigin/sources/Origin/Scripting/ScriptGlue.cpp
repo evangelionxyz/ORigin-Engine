@@ -219,10 +219,9 @@ namespace origin
 	static MonoString* AudioComponent_GetName(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& ac = entity.GetComponent<AudioComponent>();
 		return ScriptEngine::CreateString(ac.Name.c_str());
@@ -231,10 +230,9 @@ namespace origin
 	static void AudioComponent_SetName(UUID entityID, MonoString* name)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& ac = entity.GetComponent<AudioComponent>();
 		ac.Name = Utils::MonoStringToString(name);
@@ -243,13 +241,13 @@ namespace origin
 	static void AudioComponent_Play(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& ac = entity.GetComponent<AudioComponent>();
-		OGN_CORE_ASSERT(ac.Audio)
+		OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
+
 		const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
 		audio->Play();
 	}
@@ -257,13 +255,13 @@ namespace origin
 	static void AudioComponent_Stop(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& ac = entity.GetComponent<AudioComponent>();
-		OGN_CORE_ASSERT(ac.Audio)
+		OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
+
 		const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
 		audio->Stop();
 	}
@@ -271,10 +269,9 @@ namespace origin
 	static void AudioComponent_SetVolume(UUID entityID, float volume)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		entity.GetComponent<AudioComponent>().Volume = volume;
 	}
@@ -282,10 +279,9 @@ namespace origin
 	static float AudioComponent_GetVolume(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		return entity.GetComponent<AudioComponent>().Volume;
 	}
@@ -293,10 +289,9 @@ namespace origin
 	static void AudioComponent_SetMinDistance(UUID entityID, float minDistance)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		entity.GetComponent<AudioComponent>().MinDistance = minDistance;
 	}
@@ -304,10 +299,9 @@ namespace origin
 	static float AudioComponent_GetMinDistance(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		return entity.GetComponent<AudioComponent>().MinDistance;
 	}
@@ -315,10 +309,9 @@ namespace origin
 	static void AudioComponent_SetMaxDistance(UUID entityID, float maxDistance)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		entity.GetComponent<AudioComponent>().MaxDistance = maxDistance;
 	}
@@ -326,10 +319,9 @@ namespace origin
 	static float AudioComponent_GetMaxDistance(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		return entity.GetComponent<AudioComponent>().MinDistance;
 	}
@@ -337,10 +329,9 @@ namespace origin
 	static void AudioComponent_SetPitch(UUID entityID, float pitch)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		entity.GetComponent<AudioComponent>().Pitch = pitch;
 	}
@@ -348,10 +339,9 @@ namespace origin
 	static float AudioComponent_GetPitch(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		return entity.GetComponent<AudioComponent>().Pitch;
 	}
@@ -359,10 +349,9 @@ namespace origin
 	static void AudioComponent_SetLooping(UUID entityID, bool looping)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		entity.GetComponent<AudioComponent>().Looping = looping;
 	}
@@ -370,10 +359,9 @@ namespace origin
 	static bool AudioComponent_IsLooping(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		return entity.GetComponent<AudioComponent>().Looping;
 	}
@@ -381,10 +369,9 @@ namespace origin
 	static void AudioComponent_SetSpatial(UUID entityID, bool spatial)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		entity.GetComponent<AudioComponent>().Spatial = spatial;
 	}
@@ -392,10 +379,9 @@ namespace origin
 	static bool AudioComponent_IsSpatial(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		return entity.GetComponent<AudioComponent>().Spatial;
 	}
@@ -403,10 +389,9 @@ namespace origin
 	static void AudioComponent_SetPlayAtStart(UUID entityID, bool playAtStart)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		entity.GetComponent<AudioComponent>().PlayAtStart = playAtStart;
 	}
@@ -414,10 +399,9 @@ namespace origin
 	static bool AudioComponent_IsPlayAtStart(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<AudioComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		return entity.GetComponent<AudioComponent>().PlayAtStart;
 	}
@@ -425,10 +409,9 @@ namespace origin
 	static MonoString* TextComponent_GetText(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		return ScriptEngine::CreateString(tc.TextString.c_str());
@@ -437,10 +420,9 @@ namespace origin
 	static void TextComponent_SetText(UUID entityID, MonoString* textString)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		tc.TextString = Utils::MonoStringToString(textString);
@@ -449,10 +431,9 @@ namespace origin
 	static void TextComponent_GetColor(UUID entityID, glm::vec4* color)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-		OGN_CORE_ASSERT(entity.HasComponent<TextComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		*color = tc.Color;
@@ -461,9 +442,9 @@ namespace origin
 	static void TextComponent_SetColor(UUID entityID, glm::vec4* color)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		tc.Color = *color;
@@ -472,9 +453,9 @@ namespace origin
 	static float TextComponent_GetKerning(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		return tc.Kerning;
@@ -483,9 +464,9 @@ namespace origin
 	static void TextComponent_SetKerning(UUID entityID, float kerning)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		tc.Kerning = kerning;
@@ -494,9 +475,9 @@ namespace origin
 	static float TextComponent_GetLineSpacing(UUID entityID)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		return tc.LineSpacing;
@@ -505,9 +486,9 @@ namespace origin
 	static void TextComponent_SetLineSpacing(UUID entityID, float lineSpacing)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& tc = entity.GetComponent<TextComponent>();
 		tc.LineSpacing = lineSpacing;
@@ -832,14 +813,12 @@ namespace origin
 	static void AnimationComponent_GetActiveState(UUID entityID, MonoString* state)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-
-		OGN_CORE_ASSERT(entity.HasComponent<AnimationComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& ac = entity.GetComponent<AnimationComponent>();
-		if (ac.State.HasAnimation())
+		if (ac.State.HasAnimations())
 		{
 			state = ScriptEngine::CreateString(ac.State.GetCurrentState().c_str());
 		}
@@ -848,14 +827,12 @@ namespace origin
 	static void AnimationComponent_SetActiveState(UUID entityID, MonoString* state)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene)
+		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		OGN_CORE_ASSERT(entity)
-
-		OGN_CORE_ASSERT(entity.HasComponent<AnimationComponent>())
+		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& ac = entity.GetComponent<AnimationComponent>();
-		if (ac.State.HasAnimation())
+		if (ac.State.HasAnimations())
 		{
 			ac.State.SetActiveState(Utils::MonoStringToString(state));
 		}

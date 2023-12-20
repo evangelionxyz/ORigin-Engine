@@ -16,7 +16,7 @@ namespace origin {
         case ImageFormat::RGBA8: return GL_RGBA;
       }
 
-      OGN_CORE_ASSERT(false);
+      OGN_CORE_ASSERT(false, "OpenGLTexture: Invalid DataFormat");
       return 0;
     }
 
@@ -28,7 +28,7 @@ namespace origin {
       case ImageFormat::RGBA8: return GL_RGBA8;
       }
 
-      OGN_CORE_ASSERT(false);
+      OGN_CORE_ASSERT(false, "OpenGLTexture: Invalid InternalFormat");
       return 0;
     }
 
@@ -52,8 +52,7 @@ namespace origin {
   OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& specification, Buffer data)
     : m_Spec(specification), m_Width(specification.Width), m_Height(specification.Height)
   {
-    OGN_CORE_ASSERT(m_Spec.Width == m_Width);
-    OGN_CORE_ASSERT(m_Spec.Height == m_Height);
+    OGN_CORE_ASSERT(m_Spec.Width == m_Width || m_Spec.Height == m_Height, "OpenGLTexture: Invalid Spec Size");
 
     m_DataFormat = Utils::ORiginImageFormatToGLDataFormat(m_Spec.Format);
     m_InternalFormat = Utils::ORiginImageFormatToGLInternalFormat(m_Spec.Format);
@@ -98,6 +97,7 @@ namespace origin {
     m_Height = height;
     m_BPP = bpp;
 
+    data.Size = m_Width * m_Height * m_BPP;
     switch (bpp)
     {
     case 3:
@@ -146,7 +146,7 @@ namespace origin {
   {
     // Verify the actual BPP
     uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-    OGN_CORE_ASSERT(size == m_Width * m_Height * bpp, "data must be entire texture!");
+    OGN_CORE_ASSERT(data.Size == m_Width * m_Height * bpp, "OpenGLTexture: Data must be entire texture!");
     glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data.Data);
   }
 

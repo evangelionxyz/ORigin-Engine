@@ -91,7 +91,7 @@ namespace origin {
 		metadata.Filepath = filepath;
 		metadata.Type = GetAssetTypeFromFileExtension(filepath.extension());
 
-		OGN_CORE_ASSERT(metadata.Type != AssetType::None);
+		OGN_CORE_ASSERT(metadata.Type != AssetType::None, "Invalid Asset Type");
 		std::shared_ptr<Asset> asset = AssetImporter::ImportAsset(handle, metadata);
 
 		if (asset)
