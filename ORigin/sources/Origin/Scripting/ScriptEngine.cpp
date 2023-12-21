@@ -165,16 +165,17 @@ namespace origin
 
 	void ScriptEngine::ShutdownMono()
 	{
-		mono_domain_set(mono_get_root_domain(), false);
-		if (s_ScriptEngineData->RootDomain)
-		{
-			mono_domain_unload(s_ScriptEngineData->AppDomain);
-			s_ScriptEngineData->AppDomain = nullptr;
-			s_ScriptEngineData->CoreAssembly = nullptr;
+		if (!s_ScriptEngineData)
+			return;
 
-			mono_jit_cleanup(s_ScriptEngineData->RootDomain);
-			s_ScriptEngineData->RootDomain = nullptr;
-		}
+		mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_ScriptEngineData->AppDomain);
+		s_ScriptEngineData->AppDomain = nullptr;
+		s_ScriptEngineData->CoreAssembly = nullptr;
+
+		mono_jit_cleanup(s_ScriptEngineData->RootDomain);
+		s_ScriptEngineData->RootDomain = nullptr;
 
 		OGN_CORE_INFO("MONO: Shutdown");
 	}

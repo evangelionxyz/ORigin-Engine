@@ -70,9 +70,6 @@ namespace origin {
     bool m_SceneViewportHovered;
     bool m_SceneViewportFocused;
 
-    float RMHoldTime = 0.0f;
-    float LMHoldTime = 0.0f;
-
   public:
     bool guiDockingSpaceOpen = true;
     bool guiMenuFullscreen = false;

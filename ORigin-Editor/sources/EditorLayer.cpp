@@ -345,8 +345,6 @@ namespace origin {
 
   void EditorLayer::OnScenePlay()
   {
-			ScriptEngine::SetSceneContext(m_EditorScene.get());
-
       if (m_SceneState == SceneState::Simulate)
           OnSceneStop();
 
@@ -354,7 +352,6 @@ namespace origin {
 
       m_ActiveScene = Scene::Copy(m_EditorScene);
       m_ActiveScene->OnRuntimeStart();
-
       m_SceneHierarchy.SetContext(m_ActiveScene);
   }
 
@@ -368,17 +365,15 @@ namespace origin {
 
   void EditorLayer::OnSceneSimulate()
   {
-			ScriptEngine::SetSceneContext(m_EditorScene.get());
+		if (m_SceneState == SceneState::Play)
+			OnSceneStop();
 
-      if (m_SceneState == SceneState::Play)
-          OnSceneStop();
+		m_SceneState = SceneState::Simulate;
 
-      m_SceneState = SceneState::Simulate;
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnSimulationStart();
 
-      m_ActiveScene = Scene::Copy(m_EditorScene);
-      m_ActiveScene->OnSimulationStart();
-
-      m_SceneHierarchy.SetContext(m_ActiveScene);
+		m_SceneHierarchy.SetContext(m_ActiveScene);
   }
 
   void EditorLayer::OnSceneStop()
@@ -1326,7 +1321,6 @@ namespace origin {
 			}
 		}
 		
-
 		if (guiRenderStatusWindow)
 		{
 			ImGui::Begin("Render Status", &guiRenderStatusWindow);
@@ -1432,9 +1426,7 @@ namespace origin {
 				if (!m_HoveredEntity || m_HoveredEntity == m_SelectedEntity)
 				{
 					m_GizmosType = -1;
-
-					if(m_EditorCamera.GetProjectionType() == ProjectionType::Perspective)
-						m_SceneHierarchy.SetSelectedEntity({});
+					m_SceneHierarchy.SetSelectedEntity({});
 				}
 			}
 
@@ -1459,10 +1451,10 @@ namespace origin {
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
+		
 		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY()};
 		const glm::vec2 delta = (mouse - m_InitialMousePosition);
 		m_InitialMousePosition = mouse;
-
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
 
@@ -1477,7 +1469,7 @@ namespace origin {
 				{
 					auto& tc = entity.GetComponent<TransformComponent>();
 
-					glm::vec2 translate = glm::vec2(0.0f);
+					static glm::vec2 translate = tc.Translation;
 					glm::vec2 velocity = glm::vec2(0.0f);
 
 					if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
@@ -1523,8 +1515,6 @@ namespace origin {
 
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
-			RMHoldTime += time.DeltaTime();
-
 			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
 			else if (lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;
 
@@ -1540,7 +1530,6 @@ namespace origin {
 		{
 			lastMouseX = mouseX;
 			lastMouseY = mouseY;
-			RMHoldTime = 0.0f;
 		}
 	}
 

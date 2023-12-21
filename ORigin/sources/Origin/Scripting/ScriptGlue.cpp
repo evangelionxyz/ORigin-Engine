@@ -162,6 +162,31 @@ namespace origin
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	}
 
+	static void Rigidbody2DComponent_SetVelocity(UUID entityID, glm::vec2 velocity)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+
+		body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
+	}
+
+	static void Rigidbody2DComponent_GetVelocity(UUID entityID, glm::vec2* velocity)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		auto v = body->GetLinearVelocity();
+
+		*velocity = glm::vec2(v.x, v.y);
+	}
+
 	static bool Rigidbody2DComponent_IsContactWithTag(UUID entityID, MonoString* contactWith)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -184,7 +209,7 @@ namespace origin
 		return ScriptEngine::CreateString(rb2d.ContactWith.c_str());
 	}
 
-	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2* impulse, glm::vec2* point, bool wake)
+	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2 impulse, glm::vec2 point, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -192,10 +217,10 @@ namespace origin
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
-		body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
+		body->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), b2Vec2(point.x, point.y), wake);
 	}
 
-	static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(UUID entityID, glm::vec2* impulse, bool wake)
+	static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(UUID entityID, glm::vec2 impulse, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -203,10 +228,10 @@ namespace origin
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
-		body->ApplyLinearImpulseToCenter(b2Vec2(impulse->x, impulse->y), wake);
+		body->ApplyLinearImpulseToCenter(b2Vec2(impulse.x, impulse.y), wake);
 	}
 
-	static void Rigidbody2DComponent_ApplyForce(UUID entityID, glm::vec2* force, glm::vec2* point, bool wake)
+	static void Rigidbody2DComponent_ApplyForce(UUID entityID, glm::vec2 force, glm::vec2 point, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -214,10 +239,10 @@ namespace origin
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
-		body->ApplyForce(b2Vec2(force->x, force->y), b2Vec2(point->x, point->y), wake);
+		body->ApplyForce(b2Vec2(force.x, force.y), b2Vec2(point.x, point.y), wake);
 	}
 
-	static void Rigidbody2DComponent_ApplyForceToCenter(UUID entityID, glm::vec2* force, bool wake)
+	static void Rigidbody2DComponent_ApplyForceToCenter(UUID entityID, glm::vec2 force, bool wake)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -225,7 +250,7 @@ namespace origin
 
 		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
-		body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
+		body->ApplyForceToCenter(b2Vec2(force.x, force.y), wake);
 	}
 
 	static MonoString* AudioComponent_GetName(UUID entityID)
@@ -910,6 +935,8 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetScale);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetScale);
 
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_GetVelocity);
+		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_SetVelocity);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulse);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyLinearImpulseToCenter);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_ApplyForce);

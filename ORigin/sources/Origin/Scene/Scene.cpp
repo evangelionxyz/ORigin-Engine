@@ -641,6 +641,7 @@ namespace origin
 
 	void Scene::OnSimulationStart()
 	{
+		ScriptEngine::SetSceneContext(this);
 		const auto& scriptView = m_Registry.view<ScriptComponent>();
 		for (const auto e : scriptView)
 		{
@@ -667,6 +668,8 @@ namespace origin
 
 	void Scene::OnSimulationStop()
 	{
+		ScriptEngine::ClearSceneContext();
+
 		OnPhysics2DStop();
 		m_PhysicsScene->OnSimulationStop();
 
@@ -855,7 +858,7 @@ namespace origin
 				{
 					const auto& objA = m_Registry.get<TransformComponent>(a);
 					const auto& objB = m_Registry.get<TransformComponent>(b);
-					return length(camera.GetPosition() - objA.Translation) > length(camera.GetPosition() - objB.Translation);
+					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
 				});
 
 			for (const entt::entity& entity : entities)
@@ -892,7 +895,7 @@ namespace origin
 				{
 					const auto& objA = m_Registry.get<TransformComponent>(a);
 					const auto& objB = m_Registry.get<TransformComponent>(b);
-					return length(camera.GetPosition() - objA.Translation) > length(camera.GetPosition() - objB.Translation);
+					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
 				});
 
 			for (auto& entity : entities)
@@ -1029,7 +1032,7 @@ namespace origin
 
 	void Scene::OnRuntimeStart()
 	{
-		
+		ScriptEngine::SetSceneContext(this);
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		for (auto e : scriptView)
 		{
@@ -1057,6 +1060,8 @@ namespace origin
 
 	void Scene::OnRuntimeStop()
 	{
+		ScriptEngine::ClearSceneContext();
+
 		OnPhysics2DStop();
 		m_PhysicsScene->OnSimulationStop();
 
@@ -1157,6 +1162,8 @@ namespace origin
 			bodyDef.awake = rb2d.Awake;
 			bodyDef.bullet = rb2d.Bullet;
 			bodyDef.enabled = rb2d.Enabled;
+
+			bodyDef.linearVelocity.SetZero();
 
 			// POSITION SETTINGS
 			float xPos = transform.Translation.x;

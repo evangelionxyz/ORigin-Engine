@@ -68,6 +68,19 @@ namespace ORiginEngine
 
     public class Rigidbody2DComponent : Component
     {
+        public Vector2 Velocity
+        {
+            get
+            {
+                InternalCalls.Rigidbody2DComponent_GetVelocity(Entity.ID, out Vector2 result);
+                return result;
+            }
+            set
+            {
+                InternalCalls.Rigidbody2DComponent_SetVelocity(Entity.ID, value);
+            }
+        }
+
         public void ApplyLinearImpulse(Vector2 impulse, Vector2 worldPosition, bool wake)
         {
             InternalCalls.Rigidbody2DComponent_ApplyLinearImpulse(Entity.ID, ref impulse, ref worldPosition, wake);
