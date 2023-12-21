@@ -11,6 +11,9 @@ namespace ORiginEngine
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Entity_AddComponent(ulong entityID, Type componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static ulong Entity_FindEntityByName(string name);
 
         // Script Instance

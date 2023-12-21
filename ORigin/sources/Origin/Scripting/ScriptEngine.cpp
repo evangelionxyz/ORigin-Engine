@@ -157,7 +157,7 @@ namespace origin
 		mono_set_assemblies_path("lib");
 
 		MonoDomain* rootDomain = mono_jit_init("ORiginJITRuntime");
-		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!")
+		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!");
 
 		s_ScriptEngineData->RootDomain = rootDomain;
 		OGN_CORE_INFO("MONO: Initialized");
@@ -181,8 +181,15 @@ namespace origin
 
 	void ScriptEngine::Init()
 	{
+		std::filesystem::path appAssemblyPath = Project::GetActiveProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
+
 		if (s_ScriptEngineData)
+		{
+			s_ScriptEngineData->AppAssemblyFilepath = appAssemblyPath;
+
+			ReloadAssembly();
 			return;
+		}
 
 		s_ScriptEngineData = new ScriptEngineData();
 
@@ -191,10 +198,7 @@ namespace origin
 		
 		// Script Core Assembly
 		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
-
-		auto appAssemblyPath = Project::GetActiveProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
 		LoadAppAssembly(appAssemblyPath);
-
 		LoadAssemblyClasses();
 
 		// storing classes name into storage
@@ -209,9 +213,6 @@ namespace origin
 
 	void ScriptEngine::Shutdown()
 	{
-		if (!s_ScriptEngineData)
-			return;
-
 		ShutdownMono();
 
 		s_ScriptEngineData->EntityClasses.clear();
@@ -286,14 +287,16 @@ namespace origin
 		// retrieve entity class
 		s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 		ScriptGlue::RegisterComponents();
+
+		OGN_CORE_INFO("ScriptEngine: Assembly Reloaded");
 	}
 
-	void ScriptEngine::OnRuntimeStart(Scene* scene)
+	void ScriptEngine::SetSceneContext(Scene* scene)
 	{
 		s_ScriptEngineData->SceneContext = scene;
 	}
 
-	void ScriptEngine::OnRuntimeStop()
+	void ScriptEngine::ClearSceneContext()
 	{
 		s_ScriptEngineData->SceneContext = nullptr;
 		s_ScriptEngineData->EntityInstances.clear();

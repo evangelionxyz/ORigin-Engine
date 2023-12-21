@@ -64,9 +64,6 @@ namespace origin {
 
       void OnViewportResize(const uint32_t width, const uint32_t height);
 
-      void DrawGrid(int size = 5, glm::vec4 color = glm::vec4(1.0f));
-      void SetGrid(int size, glm::vec4 color);
-
       template <typename... Components>
       auto GetAllEntitiesWith()
       {

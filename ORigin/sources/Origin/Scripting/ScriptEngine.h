@@ -148,8 +148,8 @@ namespace origin {
 
 		static void ReloadAssembly();
 
-		static void OnRuntimeStart(Scene* scene);
-		static void OnRuntimeStop();
+		static void SetSceneContext(Scene* scene);
+		static void ClearSceneContext();
 
 		static bool EntityClassExists(const std::string& fullClassName);
 

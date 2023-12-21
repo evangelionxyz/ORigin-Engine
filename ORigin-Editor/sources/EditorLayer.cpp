@@ -83,8 +83,8 @@ namespace origin {
     m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
 		m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
-
-    m_ActiveScene = std::make_shared<Scene>();
+		
+		m_ActiveScene = std::make_shared<Scene>();
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
     if (commandLineArgs.Count > 1)
     {
@@ -345,6 +345,8 @@ namespace origin {
 
   void EditorLayer::OnScenePlay()
   {
+			ScriptEngine::SetSceneContext(m_EditorScene.get());
+
       if (m_SceneState == SceneState::Simulate)
           OnSceneStop();
 
@@ -366,6 +368,8 @@ namespace origin {
 
   void EditorLayer::OnSceneSimulate()
   {
+			ScriptEngine::SetSceneContext(m_EditorScene.get());
+
       if (m_SceneState == SceneState::Play)
           OnSceneStop();
 
@@ -379,6 +383,8 @@ namespace origin {
 
   void EditorLayer::OnSceneStop()
   {
+		ScriptEngine::ClearSceneContext();
+
     if (m_SceneState == SceneState::Play)
         m_ActiveScene->OnRuntimeStop();
     else if (m_SceneState == SceneState::Simulate)
@@ -1343,11 +1349,6 @@ namespace origin {
 				m_EditorCamera.SetFov(m_CameraFov);
 
 			ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
-
-			ImGui::Text("Grid");
-			ImGui::Text("Size "); ImGui::SameLine(0.0f, 1.5f); ImGui::DragInt("##grid_size", &m_GridSize);
-			ImGui::Text("Color"); ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("##grid_color", glm::value_ptr(m_GridColor));
-			m_ActiveScene->SetGrid(m_GridSize, m_GridColor);
 
 			ImGui::Separator();
 

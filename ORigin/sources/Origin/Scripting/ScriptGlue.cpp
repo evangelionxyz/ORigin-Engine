@@ -43,6 +43,7 @@ namespace origin
 	}
 
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
+	static std::unordered_map<MonoType*, std::function<void(Entity)>> s_EntityAddComponentFuncs;
 
 	// Entity
 	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType)
@@ -52,8 +53,19 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
-		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "")
+		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "ScriptGlue: Failed to process Entity_HasComponent")
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
+	}
+
+	static void Entity_AddComponent(UUID entityID, MonoReflectionType* componentType)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		OGN_CORE_ASSERT(s_EntityAddComponentFuncs.find(managedType) != s_EntityAddComponentFuncs.end(), "ScriptGlue: Failed to process AddComponent");
+		s_EntityAddComponentFuncs.at(managedType)(entity);
 	}
 
 	static uint64_t Entity_FindEntityByName(MonoString* stringName)
@@ -853,8 +865,7 @@ namespace origin
 			std::string_view structName = typeName.substr(pos + 1);
 			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 
-			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(),
-			                                                       ScriptEngine::GetCoreAssemblyImage());
+			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
 				OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
@@ -862,6 +873,8 @@ namespace origin
 			}
 
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
+			s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
+
 		}(), ...);
 	}
 
@@ -881,6 +894,7 @@ namespace origin
 	{
 		// Entity
 		OGN_ADD_INTERNAL_CALLS(Entity_FindEntityByName);
+		OGN_ADD_INTERNAL_CALLS(Entity_AddComponent);
 		OGN_ADD_INTERNAL_CALLS(Entity_HasComponent);
 
 		// Logging

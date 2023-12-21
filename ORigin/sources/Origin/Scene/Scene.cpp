@@ -641,17 +641,15 @@ namespace origin
 
 	void Scene::OnSimulationStart()
 	{
-		m_PhysicsScene->OnSimulationStart();
-		OnPhysics2DStart();
-
-		// Scripting
-		ScriptEngine::OnRuntimeStart(this);
 		const auto& scriptView = m_Registry.view<ScriptComponent>();
 		for (const auto e : scriptView)
 		{
-			Entity entity = {e, this};
+			Entity entity = { e, this };
 			ScriptEngine::OnCreateEntity(entity);
 		}
+
+		m_PhysicsScene->OnSimulationStart();
+		OnPhysics2DStart();
 
 		// Audio
 		const auto& audioView = m_Registry.view<AudioComponent>();
@@ -671,7 +669,6 @@ namespace origin
 	{
 		OnPhysics2DStop();
 		m_PhysicsScene->OnSimulationStop();
-		ScriptEngine::OnRuntimeStop();
 
 		// Audio
 		auto view = m_Registry.view<AudioComponent>();
@@ -1032,17 +1029,16 @@ namespace origin
 
 	void Scene::OnRuntimeStart()
 	{
-		m_PhysicsScene->OnSimulationStart();
-		OnPhysics2DStart();
-
-		// Scripting
-		ScriptEngine::OnRuntimeStart(this);
+		
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		for (auto e : scriptView)
 		{
-			Entity entity = {e, this};
+			Entity entity = { e, this };
 			ScriptEngine::OnCreateEntity(entity);
 		}
+
+		m_PhysicsScene->OnSimulationStart();
+		OnPhysics2DStart();
 
 		// Audio
 		auto audioView = m_Registry.view<AudioComponent>();
@@ -1063,8 +1059,6 @@ namespace origin
 	{
 		OnPhysics2DStop();
 		m_PhysicsScene->OnSimulationStop();
-
-		ScriptEngine::OnRuntimeStop();
 
 		// Audio
 		const auto& audioView = m_Registry.view<AudioComponent>();
@@ -1101,28 +1095,6 @@ namespace origin
 		CopyComponentIfExists(AllComponents{}, newEntity, entity);
 
 		return newEntity;
-	}
-
-	void Scene::DrawGrid(int size, glm::vec4 color)
-	{
-		// 3D XZ axis
-		Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f), glm::vec3(size, -1.0f, 0.0), glm::vec4(1, 0, 0, 1));
-		Renderer2D::DrawLine(glm::vec3(0.0f, -1.0f, -size), glm::vec3(0.0f, -1.0f, size), glm::vec4(0, 0, 1, 1));
-
-		// TODO: XY axis
-		for (float i = 1.0f; i <= size; i++)
-		{
-			Renderer2D::DrawLine(glm::vec3(0.0f + i, -1.0f, -size), glm::vec3(0.0f + i, -1.0f, size), color);
-			Renderer2D::DrawLine(glm::vec3(0.0f - i, -1.0f, -size), glm::vec3(0.0f - i, -1.0f, size), color);
-			Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f - i), glm::vec3(size, -1.0f, 0.0f - i), color);
-			Renderer2D::DrawLine(glm::vec3(-size, -1.0f, 0.0f + i), glm::vec3(size, -1.0f, 0.0f + i), color);
-		}
-	}
-
-	void Scene::SetGrid(int size, glm::vec4 color)
-	{
-		m_GridSize = size;
-		m_GridColor = color;
 	}
 
 	Entity Scene::GetEntityWithUUID(UUID uuid)
