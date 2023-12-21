@@ -55,16 +55,18 @@ namespace origin {
 		void SetStyle(CameraStyle style) { m_CameraStyle = style; }
 		const CameraStyle GetStyle() { return m_CameraStyle; }
 
-		float GetPitch() const { return m_Pitch; }
-		float GetYaw() const { return m_Yaw; }
-		const ProjectionType GetProjectionType() const { return m_ProjectionType; }
 		void EnableMovement(bool enable) { m_EnableMovement = enable; }
 		bool IsActive() { return m_EnableMovement; }
+		const ProjectionType GetProjectionType() const { return m_ProjectionType; }
 
+		float GetYaw() const { return m_Yaw; }
+		float GetPitch() const { return m_Pitch; }
 		float GetZoomSpeed() { return ZoomSpeed(); }
 		float GetFOV() { return m_FOV; }
 		float GetAspectRatio() { return m_AspectRatio; }
 		float GetOrthoSize() const { return m_OrthoSize; }
+		float GetWidth() const { return m_ViewportWidth; }
+		float GetHeight() const { return m_ViewportHeight; }
 
 		void UpdateAudioListener(float deltaTime);
 		AudioListener GetAudioListener() { return m_AudioListener; }

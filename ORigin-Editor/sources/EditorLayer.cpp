@@ -392,14 +392,10 @@ namespace origin {
 
   bool EditorLayer::NewProject()
   {
-		if (!Project::New())
-			return false;
-
-			AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
-			if (handle)
-				OpenScene(handle);
-
+		if (Project::New())
+		{
 			ScriptEngine::Init();
+
 			m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
 			m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
@@ -409,7 +405,10 @@ namespace origin {
 				return false;
 			}
 
-			return true;
+			EditorLayer::NewScene();
+		}
+
+		return true;
   }
 
   bool EditorLayer::OpenProject(const std::filesystem::path& path)
@@ -511,7 +510,10 @@ namespace origin {
   void EditorLayer::OpenScene(AssetHandle handle)
   {
 		if (!AssetManager::IsAssetHandleValid(handle) || handle == 0)
+		{
+			EditorLayer::NewScene();
 			return;
+		}
 
     if (m_SceneState != SceneState::Edit)
       OnSceneStop();
@@ -791,7 +793,10 @@ namespace origin {
 
 					glm::vec2 deltaTranslation = glm::vec2(translation) - glm::vec2(tc.Translation);
 
-					velocity += glm::vec2(deltaTranslation) * Timestep::DeltaTime();
+					velocity += glm::vec2(deltaTranslation);
+					velocity.x *= 2.0f;
+					velocity.y *= 5.0f;
+
 					body->ApplyForceToCenter(b2Vec2(velocity.x, velocity.y), rb2d.Awake);
 				}
 			}
@@ -1470,7 +1475,8 @@ namespace origin {
 				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
 				{
 					auto& tc = entity.GetComponent<TransformComponent>();
-					static glm::vec2 translate = glm::vec2(tc.Translation);
+
+					glm::vec2 translate = glm::vec2(0.0f);
 					glm::vec2 velocity = glm::vec2(0.0f);
 
 					if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
@@ -1478,14 +1484,11 @@ namespace origin {
 						auto rb2d = entity.GetComponent<Rigidbody2DComponent>();
 						auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
-						translate = glm::vec2(tc.Translation);
-
-						translate.x += delta.x;
-						translate.y += -delta.y;
+						translate.x += delta.x * 5.0f;
+						translate.y += -delta.y * 5.0f;
 
 						glm::vec2 deltaTranslate = translate - glm::vec2(tc.Translation);
-
-						velocity += glm::vec2(deltaTranslate) * Timestep::DeltaTime() * 0.5f;
+						velocity += glm::vec2(deltaTranslate);
 
 						body->ApplyForceToCenter(b2Vec2(velocity.x, velocity.y), rb2d.Awake);
 					}

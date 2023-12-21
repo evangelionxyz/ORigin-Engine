@@ -154,7 +154,7 @@ namespace origin
 	// Scrip Engine
 	void ScriptEngine::InitMono()
 	{
-		mono_set_assemblies_path("mono/lib");
+		mono_set_assemblies_path("lib");
 
 		MonoDomain* rootDomain = mono_jit_init("ORiginJITRuntime");
 		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!")
@@ -181,6 +181,9 @@ namespace origin
 
 	void ScriptEngine::Init()
 	{
+		if (s_ScriptEngineData)
+			return;
+
 		s_ScriptEngineData = new ScriptEngineData();
 
 		InitMono();
@@ -217,7 +220,6 @@ namespace origin
 		delete s_ScriptEngineData;
 
 		OGN_CORE_WARN("SCRIPT ENGINE: Shutdown");
-		
 	}
 
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)

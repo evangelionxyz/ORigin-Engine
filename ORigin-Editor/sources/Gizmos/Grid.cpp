@@ -11,18 +11,22 @@ namespace origin {
 
 		float lineSpacing = 1.0f;
 		if (orthoSize >= 20.0f)
-			lineSpacing = pow(10.0f, floor(log10(orthoSize)));
+			lineSpacing = pow(5.0f, floor(log10(orthoSize)));
 
 		float offset = -0.5f * lineSpacing;
 
-		float minX = cameraPosition.x - orthoSize;
-		float maxX = cameraPosition.x + orthoSize;
-		float minY = cameraPosition.y - orthoSize;
-		float maxY = cameraPosition.y + orthoSize;
+		float minX = cameraPosition.x - orthoSize - camera.GetWidth() / 10.0f;
+		float maxX = cameraPosition.x + orthoSize + camera.GetWidth() / 10.0f;
+		float minY = cameraPosition.y - orthoSize - camera.GetHeight() / 10.0f;
+		float maxY = cameraPosition.y + orthoSize + camera.GetHeight() / 10.0f;
 
-		for (float x = floor(minX / lineSpacing) * lineSpacing; x <= maxX; x += lineSpacing)
+		auto nx = floor(minX / lineSpacing) * lineSpacing;
+		auto ny = floor(minY / lineSpacing) * lineSpacing;
+
+		for (float x = nx; x <= maxX; x += lineSpacing)
 			Renderer2D::DrawLine(glm::vec3(x + offset, minY, 1.0f), glm::vec3(x + offset, maxY, 1.0f), color);
-		for (float y = floor(minY / lineSpacing) * lineSpacing; y <= maxY; y += lineSpacing)
+
+		for (float y = ny; y <= maxY; y += lineSpacing)
 			Renderer2D::DrawLine(glm::vec3(minX, y + offset, 1.0f), glm::vec3(maxX, y + offset, 1.0f), color);
 	}
 

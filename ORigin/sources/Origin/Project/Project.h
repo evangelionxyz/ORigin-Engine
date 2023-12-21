@@ -17,18 +17,18 @@ namespace origin
 		std::string Name = "Untitled";
 		AssetHandle StartScene = 0;
 		std::filesystem::path AssetDirectory = "Assets";
-		std::filesystem::path AssetRegistry = "AssetRegistry.oxr";
+		std::filesystem::path AssetRegistry = "AssetRegistry";
 		std::filesystem::path ScriptModulePath;
 	};
 
 	class Project
 	{
 	public:
-		const std::filesystem::path GetProjectPath() { return m_ProjectDirectory / (m_Config.Name + ".oxproj"); }
 		const std::filesystem::path& GetProjectDirectory() { return m_ProjectDirectory; }
+		const std::filesystem::path GetProjectPath() { return GetProjectDirectory() / (m_Config.Name + ".oxproj"); }
 		std::filesystem::path GetAssetDirectory() { return GetProjectDirectory() / m_Config.AssetDirectory; }
+		std::filesystem::path GetAssetRegistryPath() { return GetProjectDirectory() / m_Config.AssetRegistry; }
 		std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path) { return GetAssetDirectory() / path; }
-		std::filesystem::path GetAssetRegistryPath() { return GetAssetDirectory() / m_Config.AssetRegistry; }
 		std::filesystem::path GetAssetAbsolutePath(const std::filesystem::path& path);
 
 		static const std::filesystem::path GetActiveProjectPath()

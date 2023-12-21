@@ -43,7 +43,8 @@ namespace origin
 		fout << out.c_str();
 
 		// Serialized the updated AssetRegistry
-		m_Project->GetEditorAssetManager()->SerializeAssetRegistry();
+		if(m_Project->GetAssetManager() != nullptr)
+			m_Project->GetEditorAssetManager()->SerializeAssetRegistry();
 
 		return true;
 	}

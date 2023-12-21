@@ -171,7 +171,7 @@ namespace origin {
 
 		if (!std::filesystem::exists(path))
 		{
-			OGN_CORE_ERROR("EditorAssetManager: Failed to deserialize AssetRegistry");
+			OGN_CORE_ASSERT(false, "EditorAssetManager: Failed to deserialize AssetRegistry");
 			return false;
 		}
 
@@ -182,7 +182,7 @@ namespace origin {
 		}
 		catch (YAML::ParserException e) 
 		{
-			OGN_CORE_ERROR("Failed to load project file: {0}\n\t{1}", path, e.what());
+			OGN_CORE_ASSERT(false, "Failed to load project file: {0}\n\t{1}", path, e.what());
 			return false;
 		}
 

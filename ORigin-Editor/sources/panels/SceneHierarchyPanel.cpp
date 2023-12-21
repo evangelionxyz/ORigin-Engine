@@ -1012,7 +1012,10 @@ namespace origin {
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1.0f, 16.0f, "Group Index %d");
 
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
-				DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
+
+				glm::vec2 size = component.Size * glm::vec2(2.0f);
+				DrawVec2Control("Size", size, 0.01f, 0.5f);
+				component.Size = size / glm::vec2(2.0f);
 
 				float width = 118.0f;
 				DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width);

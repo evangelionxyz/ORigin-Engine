@@ -151,35 +151,35 @@ namespace origin {
 		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
 		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
 
+		if (Input::IsMouseButtonPressed(Mouse::ButtonRight) || Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		{
+			if (mouse.x > wWidth - 2.0f)
+			{
+				m_InitialMousePosition.x = 2.0f;
+				Input::SetMousePosition(2.0f, mouse.y);
+			}
+			else if (mouse.x < 2.0f)
+			{
+				m_InitialMousePosition.x = wWidth - 2.0f;
+				Input::SetMousePosition(wWidth - 2.0f, mouse.y);
+			}
+
+			if (mouse.y > wHeight - 2.0f)
+			{
+				m_InitialMousePosition.y = 2.0f;
+				Input::SetMousePosition(mouse.x, 2.0f);
+			}
+			else if (mouse.y < 2.0f)
+			{
+				m_InitialMousePosition.y = wHeight - 2.0f;
+				Input::SetMousePosition(mouse.x, wHeight - 2.0f);
+			}
+		}
+
 		if (m_EnableMovement)
 		{
 			glm::vec3 lastPosition = m_LastPosition;
 			glm::vec3 velocity(0.0f);
-
-			if (Input::IsMouseButtonPressed(Mouse::ButtonRight) || Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
-			{
-				if (mouse.x > wWidth - 2.0f)
-				{
-					m_InitialMousePosition.x = 2.0f;
-					Input::SetMousePosition(2.0f, mouse.y);
-				}
-				else if (mouse.x < 2.0f)
-				{
-					m_InitialMousePosition.x = wWidth - 2.0f;
-					Input::SetMousePosition(wWidth - 2.0f, mouse.y);
-				}
-
-				if (mouse.y > wHeight - 2.0f)
-				{
-					m_InitialMousePosition.y = 2.0f;
-					Input::SetMousePosition(mouse.x, 2.0f);
-				}
-				else if (mouse.y < 2.0f)
-				{
-					m_InitialMousePosition.y = wHeight - 2.0f;
-					Input::SetMousePosition(mouse.x, wHeight - 2.0f);
-				}
-			}
 
 			if (m_ProjectionType == ProjectionType::Perspective)
 			{
@@ -328,6 +328,7 @@ namespace origin {
 		case ProjectionType::Orthographic:
 			m_OrthoSize -= delta * ZoomSpeed();
 			m_OrthoSize = std::max(m_OrthoSize, 1.0f);
+			m_OrthoSize = std::min(m_OrthoSize, 100.0f);
 			break;
 		}
 	}
