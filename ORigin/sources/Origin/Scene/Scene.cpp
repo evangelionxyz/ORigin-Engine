@@ -7,23 +7,16 @@
 #include "ScriptableEntity.h"
 #include "Lighting.h"
 
+#include "Origin\Asset\AssetManager.h"
 #include "Origin/Animation/Animation.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer3D.h"
 #include "origin/Physics/Contact2DListener.h"
-
-// Box2D
-#include "box2d/b2_world.h"
-#include "box2d/b2_body.h"
-#include "box2d/b2_fixture.h"
-#include "box2d/b2_polygon_shape.h"
-#include "box2d/b2_circle_shape.h"
+#include "Origin/Physics/Physics2D.h"
 
 #include <glm/glm.hpp>
-
-#include "Origin\Asset\AssetManager.h"
 
 namespace origin
 {
@@ -31,39 +24,17 @@ namespace origin
 	class RigidbodyComponent;
 	class SphereColliderComponent;
 
-	static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
-	{
-		switch (type)
-		{
-			case Rigidbody2DComponent::BodyType::Static: return b2_staticBody;
-			case Rigidbody2DComponent::BodyType::Dynamic: return b2_dynamicBody;
-			case Rigidbody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
-		}
-
-		OGN_CORE_ASSERT(false, "Unkown Body Type");
-		return b2_staticBody;
-	}
-
-	std::shared_ptr<Skybox>Scene::m_Skybox;
-
 	Scene::Scene()
 	{
 		if (!m_PhysicsScene)
 			m_PhysicsScene = PhysicsScene::Create(this);
 
-		m_CameraIcon = Renderer::GetGTexture("CameraIcon");
-		m_LightingIcon = Renderer::GetGTexture("LightingIcon");
-		m_AudioIcon = Renderer::GetGTexture("AudioIcon");
-
-		if (!m_Skybox)
-		{
-			m_Skybox = Skybox::Create("Resources/Skybox/", ".jpg");
-			m_Skybox->SetBlur(0.0f);
-		}
+		m_Physics2D = new Physics2D(this);
 	}
 
 	Scene::~Scene()
 	{
+		delete m_Physics2D;
 	}
 
 	template <typename... Component>
@@ -340,30 +311,8 @@ namespace origin
 
 			// Physics
 			m_PhysicsScene->Simulate(deltaTime);
-
-			constexpr int32_t velocityIterations = 6;
-			constexpr int32_t positionIterations = 2;
-
-			m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
-
-			// Retrieve transform from Box2D
-			auto& view = m_Registry.view<Rigidbody2DComponent>();
-			for (auto& e : view)
-			{
-				Entity entity = { e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-				const auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
-
-				if (body)
-				{
-					const auto& position = body->GetPosition();
-					transform.Translation.x = position.x;
-					transform.Translation.y = position.y;
-					transform.Rotation.z = body->GetAngle();
-				}
-			}
+			m_Physics2D->Simulate(deltaTime);
+			
 		}
 
 		// Rendering
@@ -503,8 +452,6 @@ namespace origin
 					
 				}
 			}
-
-			DrawIcon(editorCamera, static_cast<int>(entity), m_AudioIcon, tc, true);
 		}
 		Renderer2D::EndScene();
 
@@ -540,27 +487,7 @@ namespace origin
 
 			//Physics
 			m_PhysicsScene->Simulate(deltaTime);
-
-
-			constexpr int32_t velocityIterations = 6;
-			constexpr int32_t positionIterations = 2;
-
-			m_Box2DWorld->Step(deltaTime, velocityIterations, positionIterations);
-
-			// Retrieve transform from Box2D
-			const auto& view = m_Registry.view<Rigidbody2DComponent>();
-			for (auto e : view)
-			{
-				Entity entity = { e, this };
-				auto& transform = entity.GetComponent<TransformComponent>();
-				const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-				const auto& body = static_cast<b2Body*>(rb2d.RuntimeBody);
-				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Rotation.z = body->GetAngle();
-			}
+			m_Physics2D->Simulate(deltaTime);
 		}
 
 		// Render
@@ -609,8 +536,6 @@ namespace origin
 					audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
 				}
 			}
-
-			DrawIcon(editorCamera, static_cast<int>(entity), m_AudioIcon, tc, true);
 		}
 		Renderer2D::EndScene();
 
@@ -641,6 +566,9 @@ namespace origin
 
 	void Scene::OnSimulationStart()
 	{
+		m_Running = true;
+
+
 		ScriptEngine::SetSceneContext(this);
 		const auto& scriptView = m_Registry.view<ScriptComponent>();
 		for (const auto e : scriptView)
@@ -650,7 +578,7 @@ namespace origin
 		}
 
 		m_PhysicsScene->OnSimulationStart();
-		OnPhysics2DStart();
+		m_Physics2D->OnSimulationStart();
 
 		// Audio
 		const auto& audioView = m_Registry.view<AudioComponent>();
@@ -668,10 +596,12 @@ namespace origin
 
 	void Scene::OnSimulationStop()
 	{
+		m_Running = false;
+
 		ScriptEngine::ClearSceneContext();
 
-		OnPhysics2DStop();
 		m_PhysicsScene->OnSimulationStop();
+		m_Physics2D->OnSimulationStop();
 
 		// Audio
 		auto view = m_Registry.view<AudioComponent>();
@@ -686,9 +616,6 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		//m_Skybox->Draw(camera);
-		
-
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 
 		// Particle
@@ -821,15 +748,8 @@ namespace origin
 
 		//m_Skybox->Draw(camera);
 
+		
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
-		for (auto& entity : lightView)
-		{
-			auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(entity);
-
-			if(camera.GetProjectionType() == ProjectionType::Perspective)
-				DrawIcon(camera, static_cast<int>(entity), m_LightingIcon, tc, true);
-		}
-
 		// Particle
 		{
 			auto& view = m_Registry.view<TransformComponent, ParticleComponent>();
@@ -861,6 +781,7 @@ namespace origin
 					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
 				});
 
+			
 			for (const entt::entity& entity : entities)
 			{
 				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
@@ -947,17 +868,6 @@ namespace origin
 			Renderer3D::DrawCube(transform.GetTransform(), sprite, static_cast<int>(cube));
 		}
 
-		// Camera
-		const auto& cameraView = m_Registry.view<TransformComponent, CameraComponent>();
-		for (auto& entity : cameraView)
-		{
-			auto& [tc, cc] = cameraView.get<TransformComponent, CameraComponent>(entity);
-			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
-				DrawIcon(camera, static_cast<int>(entity), m_CameraIcon, tc, true);
-		}
-
-		
-
 		// Mesh
 		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 		for (auto& entity : meshView)
@@ -1032,6 +942,9 @@ namespace origin
 
 	void Scene::OnRuntimeStart()
 	{
+		m_Running = true;
+
+
 		ScriptEngine::SetSceneContext(this);
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		for (auto e : scriptView)
@@ -1040,10 +953,6 @@ namespace origin
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		m_PhysicsScene->OnSimulationStart();
-		OnPhysics2DStart();
-
-		// Audio
 		auto audioView = m_Registry.view<AudioComponent>();
 		for (auto& e : audioView)
 		{
@@ -1056,16 +965,17 @@ namespace origin
 				audio->Play();
 			}
 		}
+
+		m_PhysicsScene->OnSimulationStart();
+		m_Physics2D->OnSimulationStart();
 	}
 
 	void Scene::OnRuntimeStop()
 	{
+		m_Running = false;
+
 		ScriptEngine::ClearSceneContext();
 
-		OnPhysics2DStop();
-		m_PhysicsScene->OnSimulationStop();
-
-		// Audio
 		const auto& audioView = m_Registry.view<AudioComponent>();
 		for (auto& e : audioView)
 		{
@@ -1073,6 +983,9 @@ namespace origin
 			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
 				audio->Stop();
 		}
+
+		m_PhysicsScene->OnSimulationStop();
+		m_Physics2D->OnSimulationStop();
 	}
 
 	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
@@ -1133,146 +1046,6 @@ namespace origin
 				return Entity{entity, this};
 		}
 		return {};
-	}
-
-	void Scene::OnPhysics2DStart()
-	{
-		m_Running = true;
-		m_Box2DWorld = new b2World({0.0f, -9.81f});
-
-		m_Box2DContactListener = new Contact2DListener(this);
-		m_Box2DWorld->SetContactListener(m_Box2DContactListener);
-
-		auto view = m_Registry.view<Rigidbody2DComponent>();
-		for (entt::entity e : view)
-		{
-			Entity entity = {e, this};
-			auto& transform = entity.GetComponent<TransformComponent>();
-			auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-			b2BodyDef bodyDef;
-
-			// set user data based on the entity
-			bodyDef.userData.pointer = static_cast<uintptr_t>(e);
-
-			bodyDef.type = Box2DBodyType(rb2d.Type);
-			bodyDef.linearDamping = rb2d.LinearDamping;
-			bodyDef.angularDamping = rb2d.AngularDamping;
-			bodyDef.allowSleep = rb2d.AllowSleeping;
-			bodyDef.awake = rb2d.Awake;
-			bodyDef.bullet = rb2d.Bullet;
-			bodyDef.enabled = rb2d.Enabled;
-
-			bodyDef.linearVelocity.SetZero();
-
-			// POSITION SETTINGS
-			float xPos = transform.Translation.x;
-			float yPos = transform.Translation.y;
-
-			if (rb2d.FreezePositionX)
-				xPos = bodyDef.position.x;
-			if (rb2d.FreezePositionY)
-				yPos = bodyDef.position.y;
-
-			bodyDef.position.Set(xPos, yPos);
-
-			// ROTATION SETTINGS
-			bodyDef.angle = transform.Rotation.z;
-
-			bodyDef.gravityScale = rb2d.GravityScale;
-
-			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
-			body->SetFixedRotation(rb2d.FixedRotation);
-
-			b2MassData massData;
-			massData.center = b2Vec2(rb2d.MassCenter.x, rb2d.MassCenter.y);
-			massData.I = rb2d.RotationalInertia;
-			massData.mass = rb2d.Mass;
-			body->SetMassData(&massData);
-
-			rb2d.RuntimeBody = body;
-
-			if (entity.HasComponent<BoxCollider2DComponent>())
-			{
-				auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
-
-				b2PolygonShape boxShape;
-				boxShape.SetAsBox(
-					bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y,
-				  b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f
-				);
-
-				bc2d.RuntimeBoxShape = &boxShape;
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.filter.groupIndex = bc2d.Group;
-				fixtureDef.shape = &boxShape;
-				fixtureDef.density = bc2d.Density;
-				fixtureDef.friction = bc2d.Friction;
-				fixtureDef.restitution = bc2d.Restitution;
-				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
-
-				bc2d.RuntimeFixture = &fixtureDef;
-
-				body->CreateFixture(&fixtureDef);
-			}
-
-			if (entity.HasComponent<CircleCollider2DComponent>())
-			{
-				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
-
-				b2CircleShape circleShape;
-				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-				circleShape.m_radius = transform.Scale.x * cc2d.Radius;
-
-				cc2d.RuntimeCircleShape = &circleShape;
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.filter.groupIndex = cc2d.Group;
-				fixtureDef.shape = &circleShape;
-				fixtureDef.density = cc2d.Density;
-				fixtureDef.friction = cc2d.Friction;
-				fixtureDef.restitution = cc2d.Restitution;
-				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
-
-				cc2d.RuntimeFixture = &fixtureDef;
-
-				body->CreateFixture(&fixtureDef);
-			}
-		}
-	}
-
-	void Scene::OnPhysics2DStop()
-	{
-		m_Running = false;
-
-		delete m_Box2DContactListener;
-		m_Box2DContactListener = nullptr;
-
-		m_Box2DWorld->SetContactListener(nullptr);
-
-		delete m_Box2DWorld;
-		m_Box2DWorld = nullptr;
-	}
-
-	void Scene::DrawIcon(const EditorCamera& camera, int entity, const std::shared_ptr<Texture2D>& texture,
-	                     const TransformComponent& tc, bool rotate)
-	{
-		glm::mat4 transform = glm::mat4(1.0f);
-		switch (camera.GetProjectionType())
-		{
-		case ProjectionType::Perspective:
-			transform = translate(glm::mat4(1.0f), tc.Translation)
-				* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-				* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-				* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-			break;
-		case ProjectionType::Orthographic:
-			transform = translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, 0.5f));
-			break;
-		}
-		
-		Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f), entity);
 	}
 
 	void Scene::Step(int frames)

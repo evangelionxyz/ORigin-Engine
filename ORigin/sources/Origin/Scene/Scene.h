@@ -2,17 +2,16 @@
 
 #pragma once
 #include "EditorCamera.h"
-#include "Origin/Utils/Time.h"
-#include "Origin/Scene/Skybox.h"
-#include "Origin/Scene/Components.h"
-#include "Origin/Renderer/Framebuffer.h"
-
+#include "Origin\Asset\Asset.h"
+#include "Origin\Scene\Skybox.h"
+#include "Origin\Scene\Components.h"
+#include "Origin\Renderer\Framebuffer.h"
 #include "Origin\Renderer\ParticleSystem.h"
 
-#include "Origin/Renderer/Texture.h"
-#include "entt/entt.hpp"
+#include "Origin\Renderer\Texture.h"
+#include "entt\entt.hpp"
 
-#include "Origin\Asset\Asset.h"
+#include "Origin\Utils\Time.h"
 
 class b2World;
 
@@ -20,7 +19,7 @@ namespace origin {
 
     class Entity;
 		class PhysicsScene;
-    class Contact2DListener;
+    class Physics2D;
 
     class Scene : public Asset
     {
@@ -74,13 +73,7 @@ namespace origin {
 
     private:
       std::unique_ptr<PhysicsScene> m_PhysicsScene;
-
-      // 2D Physics
-      b2World* m_Box2DWorld;
-      void OnPhysics2DStart();
-      void OnPhysics2DStop();
-
-      Contact2DListener* m_Box2DContactListener;
+      Physics2D* m_Physics2D;
 
       void RenderScene(const EditorCamera& camera);
       void RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform);
@@ -88,7 +81,6 @@ namespace origin {
       template <typename T>
       void OnComponentAdded(Entity entity, T& component);
         
-      void DrawIcon(const EditorCamera& camera, int entity, const std::shared_ptr<Texture2D>& texture, const TransformComponent& tc, bool rotate = true);
       bool IsRunning() const { return m_Running; }
       bool IsPaused() const { return m_Paused; }
 
@@ -99,13 +91,10 @@ namespace origin {
       int m_GridSize = 5;
 
       std::unordered_map<UUID, entt::entity> m_EntityMap;
-      std::shared_ptr<Texture2D> m_CameraIcon, m_LightingIcon, m_AudioIcon;
 
       entt::registry m_Registry;
       uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
       uint32_t m_GameViewportWidth = 0, m_GameViewportHeight = 0;
-
-      static std::shared_ptr<Skybox> m_Skybox;
 
       bool m_Running = false;
       bool m_Paused = false;
@@ -113,10 +102,11 @@ namespace origin {
 
       friend class Entity;
       friend class EditorLayer;
+      friend class Gizmos;
       friend class SceneSerializer;
       friend class SceneHierarchyPanel;
-
       friend class PhysXScene;
       friend class JoltScene;
+      friend class Physics2D;
     };
 }

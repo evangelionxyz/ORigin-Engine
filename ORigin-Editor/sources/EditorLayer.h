@@ -29,13 +29,8 @@ namespace origin {
     std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
     std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
 
-    glm::vec4 m_GridColor = glm::vec4(0.8f, 0.8f, 0.8f, 0.31f);
-    int m_GridSize = 10;
-
-    // panels
     Dockspace m_Dockspace;
     SceneHierarchyPanel m_SceneHierarchy;
-    std::shared_ptr<Texture2D> m_PlayButton, m_SimulateButton, m_StopButton, m_PauseButton, m_SteppingButton, m_Projection2DButton, m_Projection3DButton;
     EditorCamera m_EditorCamera;
     ShaderLibrary m_ShaderLibrary;
     std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
@@ -79,15 +74,10 @@ namespace origin {
     bool guiDebugInfo = true;
     bool guiImGuiDemoWindow = false;
     bool guiOverlay = true;
-
-    // Audio
     bool guiAudioLibraryWindow = false;
     bool guiAudioCreationWindow = false;
-
-    // Animation
     bool guiAnimationWindow = true;
 
-  public:
     EditorLayer();
     ~EditorLayer();
 
@@ -101,6 +91,9 @@ namespace origin {
   private:
     static EditorLayer* s_Instance;
     float m_CameraFov = 45.0f;
+
+    std::shared_ptr<Texture2D> GetGTexture(const std::string& name);
+    std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
 
     // Scene Viewport
   	void SceneViewport();
@@ -143,5 +136,7 @@ namespace origin {
     void OnSceneStop();
 
     void GUIRender();
+
+    friend class Gizmos;
   };
 }

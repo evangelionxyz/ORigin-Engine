@@ -30,9 +30,7 @@ namespace origin {
 	};
 
 	static RendererData s_ScriptEngineData;
-
 	static ShaderLibrary GShaderLibrary;
-	static std::unordered_map<std::string, std::shared_ptr<Texture2D>> GUITextures;
 
 	bool Renderer::Init()
 	{
@@ -120,15 +118,6 @@ namespace origin {
 		return GShaderLibrary.Get(name);
 	}
 
-	std::shared_ptr<Texture2D> Renderer::GetGTexture(const std::string& name)
-	{
-		auto& it = GUITextures.find(name);
-		if (it != GUITextures.end())
-			return it->second;
-
-		return nullptr;
-	}
-
 	const std::unordered_map<std::string, std::shared_ptr<Shader>> Renderer::GetSaderLibrary()
 	{
 		return GShaderLibrary.GetMap();
@@ -161,10 +150,5 @@ namespace origin {
 		
 		GShaderLibrary.Load("DirLightDepthMap", "Resources/Shaders/DirLightDepthMap.glsl", false);
 		GShaderLibrary.Load("PointLightDepthMap", "Resources/Shaders/PointLightDepthMap.glsl", false);
-
-		// Load UI Texture
-		GUITextures.insert(std::make_pair("CameraIcon", TextureImporter::LoadTexture2D("Resources/UITextures/camera.png")));
-		GUITextures.insert(std::make_pair("LightingIcon", TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png")));
-		GUITextures.insert(std::make_pair("AudioIcon", TextureImporter::LoadTexture2D("Resources/UITextures/audio.png")));
 	}
 }

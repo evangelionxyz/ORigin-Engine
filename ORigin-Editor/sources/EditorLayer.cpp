@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.h"
-#include "Gizmos/Grid.h"
+#include "Gizmos/Gizmos.h"
 #include "Origin/EntryPoint.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Scene/SceneSerializer.h"
@@ -28,7 +28,7 @@ namespace origin {
 
   EditorLayer* EditorLayer::s_Instance = nullptr;
 
-  EditorLayer::EditorLayer() : Layer("Editor")
+	EditorLayer::EditorLayer() : Layer("Editor")
   {
     s_Instance = this;
   }
@@ -40,13 +40,17 @@ namespace origin {
 
   void EditorLayer::OnAttach()
   {
-		m_PlayButton = TextureImporter::LoadTexture2D("Resources/UITextures/playbutton.png");
-		m_SimulateButton = TextureImporter::LoadTexture2D("Resources/UITextures/simulatebutton.png");
-		m_StopButton = TextureImporter::LoadTexture2D("Resources/UITextures/stopbutton.png");
-		m_PauseButton = TextureImporter::LoadTexture2D("Resources/UITextures/pausebutton.png");
-		m_SteppingButton = TextureImporter::LoadTexture2D("Resources/UITextures/steppingframebutton.png");
-		m_Projection2DButton = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
-		m_Projection3DButton = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
+		// Load UI Textures
+		m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/playbutton.png");
+		m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/simulatebutton.png");
+		m_UITextures["stop"] = TextureImporter::LoadTexture2D("Resources/UITextures/stopbutton.png");
+		m_UITextures["pause"] = TextureImporter::LoadTexture2D("Resources/UITextures/pausebutton.png");
+		m_UITextures["stepping"] = TextureImporter::LoadTexture2D("Resources/UITextures/steppingframebutton.png");
+		m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
+		m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
+		m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
+		m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png");
+		m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
 
     // ==============================
     // Main Framebuffer Specification
@@ -173,7 +177,8 @@ namespace origin {
 		if (m_SceneState != SceneState::Play)
 		{
 			Renderer::BeginScene(m_EditorCamera);
-			Grid::DrawVertical(m_EditorCamera);
+			Gizmos::DrawIcon(m_EditorCamera);
+			Gizmos::DrawVerticalGrid(m_EditorCamera);
 			Renderer::EndScene();
 		}
 
@@ -860,7 +865,7 @@ namespace origin {
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f, 0.0f));
 
 			{
-				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_PlayButton : m_StopButton;
+				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
 				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
@@ -884,7 +889,7 @@ namespace origin {
 
 			// Simulate Button
 			{
-				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_SimulateButton : m_StopButton;
+				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_UITextures.at("simulate") : m_UITextures.at("stop");
 				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
@@ -910,7 +915,7 @@ namespace origin {
 			if (m_SceneState != SceneState::Edit)
 			{
 				bool isPaused = m_ActiveScene->IsPaused();
-				std::shared_ptr<Texture2D> icon = m_PauseButton;
+				std::shared_ptr<Texture2D> icon = m_UITextures.at("pause");
 				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
@@ -925,7 +930,7 @@ namespace origin {
 
 				if (isPaused)
 				{
-					std::shared_ptr<Texture2D> icon = m_SteppingButton;
+					std::shared_ptr<Texture2D> icon = m_UITextures.at("stepping");
 					ImGui::SameLine();
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
@@ -953,7 +958,7 @@ namespace origin {
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 			auto mode = m_EditorCamera.GetProjectionType();
-			std::shared_ptr<Texture2D> cameraPrjModeButton = mode == ProjectionType::Orthographic ? m_Projection2DButton : m_Projection3DButton;
+			std::shared_ptr<Texture2D> cameraPrjModeButton = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
 			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(cameraPrjModeButton->GetRendererID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
 			{
 				if(mode == ProjectionType::Perspective)
@@ -963,7 +968,6 @@ namespace origin {
 			}
 			ImGui::SameLine(0.0f, 5.0f);
 			
-			// Gizmo MODE
 			const ImVec4 btActive = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
 			ImVec4 btLOCAL, btGLOBAL;
 			if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
