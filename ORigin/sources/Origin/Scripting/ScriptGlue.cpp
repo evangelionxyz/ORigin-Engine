@@ -117,13 +117,13 @@ namespace origin
 		*outTranslation = entity.GetComponent<TransformComponent>().Translation;
 	}
 
-	static void TransformComponent_SetTranslation(UUID entityID, glm::vec3* translation)
+	static void TransformComponent_SetTranslation(UUID entityID, glm::vec3 translation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		entity.GetComponent<TransformComponent>().Translation = *translation;
+		entity.GetComponent<TransformComponent>().Translation = translation;
 	}
 
 	static void TransformComponent_GetRotation(UUID entityID, glm::vec3* outRotation)
@@ -135,13 +135,13 @@ namespace origin
 		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
 	}
 
-	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation)
+	static void TransformComponent_SetRotation(UUID entityID, glm::vec3 rotation)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		entity.GetComponent<TransformComponent>().Rotation = *rotation;
+		entity.GetComponent<TransformComponent>().Rotation = rotation;
 	}
 
 	static void TransformComponent_GetScale(UUID entityID, glm::vec3* outScale)
@@ -153,13 +153,13 @@ namespace origin
 		*outScale = entity.GetComponent<TransformComponent>().Scale;
 	}
 
-	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale)
+	static void TransformComponent_SetScale(UUID entityID, glm::vec3 scale)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		entity.GetComponent<TransformComponent>().Scale = *scale;
+		entity.GetComponent<TransformComponent>().Scale = scale;
 	}
 
 	static void Rigidbody2DComponent_SetVelocity(UUID entityID, glm::vec2 velocity)

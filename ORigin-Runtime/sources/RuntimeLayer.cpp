@@ -8,19 +8,16 @@ using namespace origin;
 
 RuntimeLayer::RuntimeLayer()
 {
-	const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
-	if (commandLineArgs.Count > 1)
-	{
-		OpenProject(commandLineArgs[1]);
-	}
 }
 
 RuntimeLayer::~RuntimeLayer()
 {
+	m_ActiveScene->OnRuntimeStop();
 }
 
 void RuntimeLayer::OnAttach()
 {
+	OpenProject("D:/Dev/ORiginProjects/JojoJungle/JojoJungle.oxproj");
 }
 
 void RuntimeLayer::OnUpdate(Timestep ts)

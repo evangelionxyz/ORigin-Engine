@@ -25,16 +25,19 @@ namespace origin {
 
 		const char* operator[](int index) const {
 			if (index > Count) __debugbreak();
-			return Args[index];
+				return Args[index];
 		}
 	};
 
 	struct ApplicationSpecification
 	{
+		ApplicationCommandLineArgs CommandLineArgs;
+
 		std::string Name = "ORigin Application";
+		std::string IconPath = "Resources/UITextures/icon_origin.png";
 		std::string WorkingDirectory;
 		bool Runtime = false;
-		ApplicationCommandLineArgs CommandLineArgs;
+		bool fullScreen = false;
 	};
 
 	class Application

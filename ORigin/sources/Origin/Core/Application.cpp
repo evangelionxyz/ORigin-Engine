@@ -39,7 +39,7 @@ namespace origin {
 
 			m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
 			m_GraphicContext->Init();
-			m_Window->SetIcon("Resources/UITextures/icon_origin.png");
+			m_Window->SetIcon(spec.IconPath);
 			m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 
 			m_GuiLayer = new GuiLayer();
@@ -74,7 +74,7 @@ namespace origin {
 			m_Window = Window::Create(m_Spec.Name, 1280, 640);
 			m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
 			m_GraphicContext->Init();
-			m_Window->SetIcon("Resources/UITextures/icon_origin.png");
+			m_Window->SetIcon(spec.IconPath);
 			m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 		}
 

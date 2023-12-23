@@ -148,13 +148,13 @@ namespace origin {
     case SceneState::Edit:
         m_EditorCamera.OnUpdate(deltaTime);
         m_ActiveScene->OnUpdateEditor(deltaTime, m_EditorCamera);
-        OnOverlayRenderer();
+				Gizmos::OnUpdate(m_EditorCamera);
         break;
 
     case SceneState::Simulate:
         m_EditorCamera.OnUpdate(deltaTime);
         m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
-        OnOverlayRenderer();
+				Gizmos::OnUpdate(m_EditorCamera);
         break;
     }
 
@@ -172,15 +172,6 @@ namespace origin {
 
 		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity()) m_EditorCamera.SetEntityObject(selectedEntity);
 		else m_EditorCamera.SetEntityObject({});
-
-
-		if (m_SceneState != SceneState::Play)
-		{
-			Renderer::BeginScene(m_EditorCamera);
-			Gizmos::DrawIcon(m_EditorCamera);
-			Gizmos::DrawVerticalGrid(m_EditorCamera);
-			Renderer::EndScene();
-		}
 
     m_Framebuffer->Unbind();
     m_ActiveScene->OnShadowRender();
@@ -210,142 +201,6 @@ namespace origin {
 
       GUIRender();
       m_Dockspace.End();
-  }
-
-  void EditorLayer::OverlayBeginScene()
-  {
-      if (m_SceneState == SceneState::Play)
-      {
-          if (Entity camera = m_ActiveScene->GetPrimaryCameraEntity())
-              Renderer::BeginScene(camera.GetComponent<CameraComponent>().Camera, camera.GetComponent<TransformComponent>());
-      }
-      else Renderer::BeginScene(m_EditorCamera);
-  }
-
-  void EditorLayer::OnOverlayRenderer()
-  {
-      float zIndex = 0.001f;
-      glm::vec3 ccFWDir = m_EditorCamera.GetForwardDirection();
-      glm::vec3 projectionRender = ccFWDir * glm::vec3(zIndex);
-
-      OverlayBeginScene();
-
-      if (m_VisualizeCollider)
-      {
-        // Circle Collider Visualizer
-				const auto& circle = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-				for (auto entity : circle)
-				{
-					const auto& [tc, cc2d] = circle.get<TransformComponent, CircleCollider2DComponent>(entity);
-
-					glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, -projectionRender.z);
-					glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
-
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-						* glm::scale(glm::mat4(1.0f), scale);
-
-          
-					Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f);
-				}
-
-        // Quad Collider Visualizer
-				const auto& quad = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-				for (auto entity : quad)
-				{
-					const auto& [tc, bc2d] = quad.get<TransformComponent, BoxCollider2DComponent>(entity);
-
-          glm::vec3 pos = glm::vec3(glm::vec2(tc.Translation) + bc2d.Offset, projectionRender.z);
-					glm::vec3 scale = tc.Scale * glm::vec3(bc2d.Size * 2.0f, 1.0f);
-
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
-						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
-						* glm::scale(glm::mat4(1.0f), scale);
-
-					Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-				}
-
-        float lineWidth = 0;
-				const auto& box = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
-				for (auto entity : box)
-				{
-					const auto& [tc, bc] = box.get<TransformComponent, BoxColliderComponent>(entity);
-
-          glm::vec3 scale = tc.Scale * glm::vec3(bc.Size * 2.0f);
-
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + bc.Offset))
-						* glm::toMat4(glm::quat(tc.Rotation))
-						* glm::scale(glm::mat4(1.0f), scale * 2.0f);
-
-					lineWidth = glm::clamp(glm::length(tc.Translation + m_EditorCamera.GetPosition()), 2.5f, 3.0f);
-					Renderer3D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-				}
-        RenderCommand::SetLineWidth(lineWidth);
-        Renderer2D::EndScene();
-
-				const auto& sphere = m_ActiveScene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
-				for (auto entity : sphere)
-				{
-					const auto& [tc, cc] = sphere.get<TransformComponent, SphereColliderComponent>(entity);
-          glm::vec3 scale = tc.Scale * glm::vec3(cc.Radius * 2.0f);
-
-					lineWidth = glm::clamp(glm::length(tc.Translation + m_EditorCamera.GetPosition()), 0.005f, 0.05f);
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
-						* glm::rotate(glm::mat4(1.0f), tc.Rotation.x, glm::vec3(1, 0, 0))
-						* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0, 1, 0))
-						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0, 0, 1))
-						* glm::scale(glm::mat4(1.0f), glm::vec3(scale * 2.1f));
-					Renderer2D::DrawCircle(transform, glm::vec4(0.7f, 0.0f, 1.0f, 1.0f), lineWidth);
-
-					transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
-						* glm::rotate(glm::mat4(1.0f), tc.Rotation.x + glm::radians(90.0f), glm::vec3(1, 0, 0))
-						* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0, 1, 0))
-						* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0, 0, 1))
-						* glm::scale(glm::mat4(1.0f), glm::vec3(scale * 2.1f));
-					Renderer2D::DrawCircle(transform, glm::vec4(0.7f, 0.0f, 1.0f, 1.0f), lineWidth);
-				}
-        RenderCommand::SetLineWidth(lineWidth);
-        Renderer2D::EndScene();
-      }
-     
-
-      // Visualizing Selecting Entity
-      if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
-      {
-          const auto& tc = selectedEntity.GetComponent<TransformComponent>();
-          glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
-
-          if (selectedEntity.HasComponent<CircleRendererComponent>())
-          {
-              glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, -projectionRender.z);
-              glm::vec3 scale = tc.Scale * glm::vec3(1.0f);
-
-              glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-                  * rotation * glm::scale(glm::mat4(1.0f), scale);
-
-              Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
-          }
-
-          if (selectedEntity.HasComponent<SpriteRenderer2DComponent>())
-          {
-              glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, -projectionRender.z);
-              glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-                  * rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
-
-              Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-          }
-          if (selectedEntity.HasComponent<SpriteRendererComponent>())
-          {
-              glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, -projectionRender.z);
-              glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-                  * rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
-
-              Renderer3D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-          }
-      }
-      RenderCommand::SetLineWidth(3.0f);
-      Renderer2D::EndScene();
-
-      RenderCommand::SetLineWidth(1.0f);
   }
 
   void EditorLayer::OnScenePlay()
@@ -672,9 +527,7 @@ namespace origin {
 				| ImGuiWindowFlags_NoFocusOnAppearing
 				| ImGuiWindowFlags_NoNav;
 
-			ImGui::SetNextWindowPos(
-				{ (viewportMinRegion.x + viewportOffset.x) + 8.0f,
-				(viewportMinRegion.y + viewportOffset.y) + 8.0f }, ImGuiCond_Always);
+			ImGui::SetNextWindowPos( { (viewportMinRegion.x + viewportOffset.x) + 8.0f, (viewportMinRegion.y + viewportOffset.y) + 8.0f }, ImGuiCond_Always);
 
 			ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
 			if (ImGui::Begin("##top_left_overlay", nullptr, window_flags))
@@ -699,13 +552,53 @@ namespace origin {
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 		auto viewportID = (ImTextureID)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget);
-		ImGui::Image(viewportID, ImVec2(m_SceneViewportSize.x, m_SceneViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
+
+		float sizeX = 0.0f, sizeY = 0.0f;
+		if (m_SceneState != SceneState::Play)
+		{
+			sizeX = m_SceneViewportSize.x;
+			sizeY = m_SceneViewportSize.y;
+		}
+		else
+		{
+			auto& camView = m_ActiveScene->m_Registry.view<CameraComponent>();
+			for (auto& e : camView)
+			{
+				auto cc = camView.get<CameraComponent>(e);
+
+				if (cc.Primary)
+				{
+					if (cc.Camera.GetAspectRatioType() == SceneCamera::AspectRatioType::SixteenByNine)
+					{
+						// keep the width and adjust the height to maintain 16:9 aspect ratio
+						sizeX = m_SceneViewportSize.x;
+						sizeY = sizeX / 16.0f * 9.0f;
+
+						// if the calculated height is greater than the available height, adjust the width
+						if (sizeY > m_SceneViewportSize.y)
+						{
+							sizeY = m_SceneViewportSize.y;
+							sizeX = sizeY / 9.0f * 16.0f;
+						}
+					}
+					else
+					{
+						sizeX = m_SceneViewportSize.x;
+						sizeY = m_SceneViewportSize.y;
+					}
+				}
+			}
+		}
+		
+		// centered image position
+		float offsetX = (m_SceneViewportSize.x - sizeX) * 0.5f;
+		float offsetY = (m_SceneViewportSize.y - sizeY + 30.0f) * 0.5f;
+
+		ImGui::SetCursorPos({ offsetX, offsetY });
+
+		ImGui::Image(viewportID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
-
-			// =============================
-			// ==== Scene Drag and Drop ====
-			// =============================
 
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
@@ -1429,8 +1322,10 @@ namespace origin {
 
 				if (!m_HoveredEntity || m_HoveredEntity == m_SelectedEntity)
 				{
+					if(m_EditorCamera.GetProjectionType() == ProjectionType::Perspective)
+						m_SceneHierarchy.SetSelectedEntity({});
+
 					m_GizmosType = -1;
-					m_SceneHierarchy.SetSelectedEntity({});
 				}
 			}
 

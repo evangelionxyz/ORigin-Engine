@@ -85,21 +85,18 @@ namespace origin {
     void OnUpdate(Timestep ts) override;
 
     inline static EditorLayer& Get() { return *s_Instance; }
-    
     SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
 
   private:
     static EditorLayer* s_Instance;
     float m_CameraFov = 45.0f;
 
-    std::shared_ptr<Texture2D> GetGTexture(const std::string& name);
     std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
 
     // Scene Viewport
   	void SceneViewport();
     void SceneViewportToolbar();
     void SceneViewportMenu();
-    void OverlayBeginScene();
 
     bool NewProject();
     bool OpenProject();
@@ -117,7 +114,6 @@ namespace origin {
     void SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath);
 
     void OnDuplicateEntity();
-    void OnOverlayRenderer();
 
     bool OnWindowDrop(WindowDropEvent& e);
     bool OnWindowResize(WindowResizeEvent& e);

@@ -43,10 +43,23 @@ namespace origin
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		m_ViewportSize.x = static_cast<float>(width);
-		m_ViewportSize.y = static_cast<float>(height);
+		if (m_AspecRatioType == AspectRatioType::Free)
+		{
+			m_ViewportSize.x = static_cast<float>(width);
+			m_ViewportSize.y = static_cast<float>(height);
+		}
+
+		else if(m_AspecRatioType == AspectRatioType::SixteenByNine)
+		{
+			// width = 1280
+			// height = width / 16 * 9
+
+			m_ViewportSize.x = static_cast<float>(width);
+			m_ViewportSize.y = static_cast<float>(width / 16.0f * 9.0f);
+		}
 
 		m_AspectRatio = m_ViewportSize.x / m_ViewportSize.y;
+
 		RecalculateProjection();
 	}
 

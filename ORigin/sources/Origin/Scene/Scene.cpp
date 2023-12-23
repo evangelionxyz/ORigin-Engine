@@ -944,7 +944,6 @@ namespace origin
 	{
 		m_Running = true;
 
-
 		ScriptEngine::SetSceneContext(this);
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		for (auto e : scriptView)
@@ -997,11 +996,11 @@ namespace origin
 		m_ViewportHeight = height;
 
 		const auto& view = m_Registry.view<CameraComponent>();
-		for (auto& entity : view)
+		for (auto& e : view)
 		{
-			auto& cameraComponent = view.get<CameraComponent>(entity);
-			if (!cameraComponent.FixedAspectRatio)
-				cameraComponent.Camera.SetViewportSize(width, height);
+			auto& cc = view.get<CameraComponent>(e);
+			if (cc.Camera.GetAspectRatioType() == SceneCamera::AspectRatioType::Free)
+				cc.Camera.SetViewportSize(width, height);
 		}
 	}
 

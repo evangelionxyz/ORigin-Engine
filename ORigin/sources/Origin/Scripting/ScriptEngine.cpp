@@ -154,7 +154,7 @@ namespace origin
 	// Scrip Engine
 	void ScriptEngine::InitMono()
 	{
-		mono_set_assemblies_path("lib");
+		mono_set_assemblies_path("Lib");
 
 		MonoDomain* rootDomain = mono_jit_init("ORiginJITRuntime");
 		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!");

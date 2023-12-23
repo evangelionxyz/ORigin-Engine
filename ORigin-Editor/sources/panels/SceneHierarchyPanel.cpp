@@ -253,19 +253,41 @@ namespace origin {
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
 		{
 			auto& camera = component.Camera;
-			const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-			const char* currentProjectionTypeString = projectionTypeString[static_cast<int>(component.Camera.GetProjectionType())];
 			ImGui::Checkbox("Primary", &component.Primary);
 
-		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+			const char* projectionType[2] = { "Perspective", "Orthographic" };
+			const char* currentProjectionType = projectionType[static_cast<int>(camera.GetProjectionType())];
+
+			bool isSelected = false;
+		if (ImGui::BeginCombo("Projection", currentProjectionType))
 		{
 			for (int i = 0; i < 2; i++)
 			{
-				bool isSelected = currentProjectionTypeString == projectionTypeString[i];
-				if (ImGui::Selectable(projectionTypeString[i], isSelected))
+				isSelected = currentProjectionType == projectionType[i];
+				if (ImGui::Selectable(projectionType[i], isSelected))
 				{
-					currentProjectionTypeString = projectionTypeString[i];
+					currentProjectionType = projectionType[i];
 					component.Camera.SetProjectionType(static_cast<ProjectionType>(i));
+				}
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		const char* aspectRatioType[2] = { "Free", "16/9" };
+		const char* currentAspectRatioType = aspectRatioType[static_cast<int>(camera.GetAspectRatioType())];
+		
+		if (ImGui::BeginCombo("Aspect Ratio", currentAspectRatioType))
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				isSelected = currentAspectRatioType == aspectRatioType[i];
+				if (ImGui::Selectable(aspectRatioType[i], isSelected))
+				{
+					currentAspectRatioType = aspectRatioType[i];
+					camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(i));
 				}
 
 				if (isSelected)
@@ -306,8 +328,6 @@ namespace origin {
 			float orthoFarClip = camera.GetOrthographicFarClip();
 			if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
 				camera.SetOrthographicFarClip(orthoFarClip);
-
-			ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 		}});
 
 		DrawComponent<AnimationComponent>("ANIMATION", entity, [](auto& component)

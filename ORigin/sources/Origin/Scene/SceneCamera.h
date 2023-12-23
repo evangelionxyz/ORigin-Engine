@@ -11,6 +11,13 @@ namespace origin {
 	public:
 		SceneCamera();
 		virtual ~SceneCamera() = default;
+
+		enum class AspectRatioType
+		{
+			Free = 0,
+			SixteenByNine = 1
+		};
+
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetPosition(const glm::vec3& position) { m_Position = position; }
 
@@ -42,19 +49,25 @@ namespace origin {
 		float GetOrthographicNearClip() const { return m_OrthoNear; }
 		float GetOrthographicFarClip() const { return m_OrthoFar; }
 
-		// Projection Type
-		ProjectionType GetProjectionType() const { return m_ProjectionType;  }
+		float GetAspectRatioSize() const { return m_AspectRatio; }
+
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; }
+		ProjectionType GetProjectionType() const { return m_ProjectionType;  }
+		
+		void SetAspectRatioType(AspectRatioType type) { m_AspecRatioType = type; }
+		AspectRatioType GetAspectRatioType() const { return m_AspecRatioType; }
+
 
 	private:
+		AspectRatioType m_AspecRatioType = AspectRatioType::SixteenByNine;
+		ProjectionType m_ProjectionType = ProjectionType::Perspective;
+
 		void RecalculateProjection();
 
-	private:
 		float m_AspectRatio = 1.778f;
 		glm::mat4 m_Projection = glm::mat4(1.0f);
 		glm::mat4 m_View = glm::mat4(1.0f);
 
-		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 		glm::vec3 m_Position = glm::vec3(1.0f);
 
