@@ -2,7 +2,7 @@
 #include "ContentBrowserPanel.h"
 #include "../EditorLayer.h"
 
-#include "Origin/Asset/TextureImporter.h"
+#include "Origin/Asset/AssetImporter.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Utils/Utils.h"
 

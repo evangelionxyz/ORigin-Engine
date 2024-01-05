@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "Application.h"
-#include "Origin\Asset\TextureImporter.h"
+#include "Origin\Asset\AssetImporter.h"
 #include "Origin\Audio\Audio.h"
 #include "Origin\Physics\Physics.h"
 #include "Origin\Scripting\ScriptEngine.h"

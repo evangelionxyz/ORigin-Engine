@@ -63,7 +63,7 @@ namespace origin {
 	void Audio::SetGain(float volume)
 	{
 		m_Gain = volume;
-		m_Channel->setVolume(m_Gain * 0.01f);
+		m_Channel->setVolume(m_Gain);
 	}
 
 	void Audio::SetPitch(float pitch)

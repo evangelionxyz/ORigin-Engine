@@ -2,19 +2,19 @@
 
 #include "pch.h"
 #include "Entity.h"
-#include "Scene.h"
-#include "Origin/Audio/Audio.h"
-#include "ScriptableEntity.h"
 #include "Lighting.h"
+#include "Origin/Audio/Audio.h"
+#include "Scene.h"
+#include "ScriptableEntity.h"
 
-#include "Origin\Asset\AssetManager.h"
 #include "Origin/Animation/Animation.h"
-#include "Origin/Scripting/ScriptEngine.h"
+#include "origin/Physics/Contact2DListener.h"
+#include "Origin/Physics/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer3D.h"
-#include "origin/Physics/Contact2DListener.h"
-#include "Origin/Physics/Physics2D.h"
+#include "Origin/Scripting/ScriptEngine.h"
+#include "Origin\Asset\AssetManager.h"
 
 #include <glm/glm.hpp>
 
@@ -568,7 +568,6 @@ namespace origin
 	{
 		m_Running = true;
 
-
 		ScriptEngine::SetSceneContext(this);
 		const auto& scriptView = m_Registry.view<ScriptComponent>();
 		for (const auto e : scriptView)
@@ -586,11 +585,9 @@ namespace origin
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
 			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+
 			if (ac.PlayAtStart)
-			{
-				audio->SetGain(ac.Volume);
 				audio->Play();
-			}
 		}
 	}
 
@@ -714,26 +711,28 @@ namespace origin
 				Lighting::PointLightCount = 0;
 				Lighting::SpotLightCount = 0;
 
-				if (mesh.Model)
+				if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 				{
-					mesh.Material->EnableShader();
-					mesh.Material->SetFloat("material.Bias", mesh.Material->Bias);
+					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+
+					model->GetMaterial()->EnableShader();
+					model->GetMaterial()->SetFloat("material.Bias", model->GetMaterial()->Bias);
 
 					for (auto& light : lightView)
 					{
 						auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-						lc.Light->OnUpdate(tc, mesh.Material);
+						lc.Light->OnUpdate(tc, model->GetMaterial());
 					}
 
-					mesh.Model->Draw(tc.GetTransform(), camera, cameraTransform.GetTransform(), static_cast<int>(entity));
-					mesh.Material->DisableShader();
+					model->Draw(tc.GetTransform(), camera, cameraTransform.GetTransform(), static_cast<int>(entity));
+					model->GetMaterial()->DisableShader();
 
-					if (mesh.Material->m_PointLightCount != Lighting::PointLightCount ||
-						mesh.Material->m_SpotLightCount != Lighting::SpotLightCount)
-						mesh.Material->RefreshShader();
+					if (model->GetMaterial()->m_PointLightCount != Lighting::PointLightCount ||
+						model->GetMaterial()->m_SpotLightCount != Lighting::SpotLightCount)
+						model->GetMaterial()->RefreshShader();
 
-					mesh.Material->m_PointLightCount = Lighting::PointLightCount;
-					mesh.Material->m_SpotLightCount = Lighting::SpotLightCount;
+					model->GetMaterial()->m_PointLightCount = Lighting::PointLightCount;
+					model->GetMaterial()->m_SpotLightCount = Lighting::SpotLightCount;
 				}
 			}
 		}
@@ -877,26 +876,28 @@ namespace origin
 			Lighting::PointLightCount = 0;
 			Lighting::SpotLightCount = 0;
 
-			if (mesh.Model)
+			if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 			{
-				mesh.Material->EnableShader();
-				mesh.Material->SetFloat("material.Bias", mesh.Material->Bias);
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+
+				model->GetMaterial()->EnableShader();
+				model->GetMaterial()->SetFloat("material.Bias", model->GetMaterial()->Bias);
 
 				for (auto& light : lightView)
 				{
 					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnUpdate(tc, mesh.Material);
+					lc.Light->OnUpdate(tc, model->GetMaterial());
 				}
 
-				mesh.Model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
-				mesh.Material->DisableShader();
+				model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
+				model->GetMaterial()->DisableShader();
 
-				if (mesh.Material->m_PointLightCount != Lighting::PointLightCount || 
-					mesh.Material->m_SpotLightCount != Lighting::SpotLightCount)
-					mesh.Material->RefreshShader();
+				if (model->GetMaterial()->m_PointLightCount != Lighting::PointLightCount || 
+					model->GetMaterial()->m_SpotLightCount != Lighting::SpotLightCount)
+					model->GetMaterial()->RefreshShader();
 
-				mesh.Material->m_PointLightCount = Lighting::PointLightCount;
-				mesh.Material->m_SpotLightCount = Lighting::SpotLightCount;
+				model->GetMaterial()->m_PointLightCount = Lighting::PointLightCount;
+				model->GetMaterial()->m_SpotLightCount = Lighting::SpotLightCount;
 			}
 		}
 		glDisable(GL_CULL_FACE);
@@ -924,11 +925,12 @@ namespace origin
 			{
 				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
-				if (mesh.Model)
+				if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 				{
+					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
 					// Set Depth shader
 					Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uModel", tc.GetTransform());
-					mesh.Model->Draw();
+					model->Draw();
 				}
 			}
 
@@ -957,12 +959,8 @@ namespace origin
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
 			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
-
 			if (ac.PlayAtStart)
-			{
-				audio->SetGain(ac.Volume);
 				audio->Play();
-			}
 		}
 
 		m_PhysicsScene->OnSimulationStart();

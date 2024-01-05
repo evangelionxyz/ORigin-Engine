@@ -6,20 +6,23 @@
 namespace origin {
 
 #define GRID2D_ZOFFSET 0.9f
-#define SELECTED2D_ZOFFSET 1.0f
-#define ICON_ZOFFSET 1.1f
-#define COLLIDER2D_ZOFFSET 1.2f
+#define ICON_ZOFFSET 1.0f
+#define COLLIDER2D_ZOFFSET 1.05f
+#define SELECTED2D_ZOFFSET 1.1f
 
 	void Gizmos::OnUpdate(const EditorCamera& camera)
 	{
 		Renderer::BeginScene(camera);
 
-		DrawVerticalGrid(camera);
-		DrawOverlay(camera);
-
+		if (camera.GetProjectionType() == ProjectionType::Orthographic)
+		{
+			RenderCommand::SetLineWidth(1.1f);
+			Draw2DVerticalGrid(camera);
+			Draw2DOverlay(camera);
+			RenderCommand::SetLineWidth(1.0f);
+		}
 	}
-
-	void Gizmos::DrawVerticalGrid(const EditorCamera& camera)
+	void Gizmos::Draw2DVerticalGrid(const EditorCamera& camera)
 	{
 		float orthoSize = camera.GetOrthoSize();
 		glm::vec2 cameraPosition = glm::vec2(camera.GetPosition());
@@ -49,9 +52,8 @@ namespace origin {
 		Renderer2D::EndScene();
 	}
 
-	void Gizmos::DrawOverlay(const EditorCamera& camera)
+	void Gizmos::Draw2DOverlay(const EditorCamera& camera)
 	{
-		
 		auto textures = EditorLayer::Get().m_UITextures;
 		auto& reg = EditorLayer::Get().m_ActiveScene->m_Registry;
 
@@ -193,8 +195,6 @@ namespace origin {
 			{
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + SELECTED2D_ZOFFSET))
 					* rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
-
-				Renderer2D::DrawQuad(transform, glm::vec4(1.0f, 1.0f, 1.0f, 0.3f));
 				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 			}
 
@@ -220,4 +220,5 @@ namespace origin {
 		}
 		Renderer2D::EndScene();
 	}
+
 }

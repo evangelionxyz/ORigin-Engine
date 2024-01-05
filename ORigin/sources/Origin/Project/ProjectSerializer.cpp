@@ -27,8 +27,11 @@ namespace origin
 				out << YAML::Key << "Name" << YAML::Value << config.Name;
 
 				AssetHandle handle = config.StartScene;
-				if (!AssetManager::IsAssetHandleValid(handle))
-					handle = 0;
+				if (handle != 0)
+				{
+					if (!AssetManager::IsAssetHandleValid(handle))
+						handle = 0;
+				}
 
 				out << YAML::Key << "StartScene" << YAML::Value << handle;
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();

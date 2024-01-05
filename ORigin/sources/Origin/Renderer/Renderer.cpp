@@ -4,7 +4,7 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 
-#include "Origin\Asset\TextureImporter.h"
+#include "Origin\Asset\AssetImporter.h"
 
 #include "Origin\Scene\Skybox.h"
 #include "Platform\OpenGL\OpenGL_Shader.h"

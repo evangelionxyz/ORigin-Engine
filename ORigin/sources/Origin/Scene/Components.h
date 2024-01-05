@@ -123,8 +123,7 @@ namespace origin
 	class StaticMeshComponent
 	{
 	public:
-		std::shared_ptr<Material> Material;
-		std::shared_ptr<Model> Model;
+		AssetHandle Model;
 
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;

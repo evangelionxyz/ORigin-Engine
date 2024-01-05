@@ -3,13 +3,13 @@
 #pragma once
 #include "EditorCamera.h"
 #include "Origin\Asset\Asset.h"
-#include "Origin\Scene\Skybox.h"
-#include "Origin\Scene\Components.h"
 #include "Origin\Renderer\Framebuffer.h"
 #include "Origin\Renderer\ParticleSystem.h"
+#include "Origin\Scene\Components.h"
+#include "Origin\Scene\Skybox.h"
 
-#include "Origin\Renderer\Texture.h"
 #include "entt\entt.hpp"
+#include "Origin\Renderer\Texture.h"
 
 #include "Origin\Utils\Time.h"
 
@@ -31,18 +31,18 @@ namespace origin {
 
       virtual AssetType GetType() const override { return AssetType::Scene; }
 
-      Entity CreateEntity(const std::string& name = std::string());
-      Entity CreateCircle(const std::string& name = std::string());
-      Entity CreateSpriteEntity(const std::string& name = std::string());
+      Entity CreateEntity(const std::string& name);
+      Entity CreateCircle(const std::string& name);
+      Entity CreateSpriteEntity(const std::string& name);
 
-      Entity CreateCube(const std::string& name = std::string());
-      Entity CreateCamera(const std::string& name = std::string());
+      Entity CreateCube(const std::string& name);
+      Entity CreateCamera(const std::string& name);
       Entity CreatePointlight();
       Entity CreateSpotLight();
       Entity CreateDirectionalLight();
-      Entity CreateMesh(const std::string& name = std::string());
+      Entity CreateMesh(const std::string& name);
 
-      Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string());
+      Entity CreateEntityWithUUID(UUID uuid, const std::string& name);
       Entity GetPrimaryCameraEntity();
       Entity DuplicateEntity(Entity entity);
 

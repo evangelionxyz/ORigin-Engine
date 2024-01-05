@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "ThumbnailCache.h"
-#include "Origin\Asset\TextureImporter.h"
+#include "Origin\Asset\AssetImporter.h"
 
 namespace origin {
 

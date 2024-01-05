@@ -18,7 +18,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Origin/Asset/AssetManager.h"
-#include "Origin/Asset/TextureImporter.h"
+#include "Origin/Asset/AssetManager.h"
 
 namespace YAML
 {
@@ -380,7 +380,7 @@ namespace origin
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
 
-			if (sMesh.Model)
+			/*if (sMesh.Model)
 			{
 				std::filesystem::path modelFilepath = relative(sMesh.Model->GetFilepath(), Project::GetActiveAssetDirectory());
 				out << YAML::Key << "ModelPath" << YAML::Value << modelFilepath.generic_string();
@@ -390,7 +390,7 @@ namespace origin
 				out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
 				out << YAML::Key << "Bias" << YAML::Value << sMesh.Material->Bias;
 				out << YAML::Key << "TilingFactor" << YAML::Value << sMesh.Material->TilingFactor;
-			}
+			}*/
 
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
@@ -909,20 +909,20 @@ namespace origin
 
 					if (!modelFilepath.empty() && !shaderFilepath.empty())
 					{
-						auto& modelPath = Project::GetActiveAssetFileSystemPath(modelFilepath);
+						//auto& modelPath = Project::GetActiveAssetFileSystemPath(modelFilepath);
 
-						// Prepare The Materials
-						std::shared_ptr<Shader> shader = Shader::Create(shaderFilepath);
+						//// Prepare The Materials
+						//std::shared_ptr<Shader> shader = Shader::Create(shaderFilepath);
 
-						sMesh.Material = Material::Create(staticMeshComponent["MaterialName"].as<std::string>());
-						sMesh.Material->LoadShader(shader);
-						sMesh.Material->Color = staticMeshComponent["Color"].as<glm::vec4>();
-						sMesh.Material->Shininess = staticMeshComponent["Shininess"].as<float>();
-						sMesh.Material->Bias = staticMeshComponent["Bias"].as<float>();
-						sMesh.Material->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
+						//sMesh.Material = Material::Create(staticMeshComponent["MaterialName"].as<std::string>());
+						//sMesh.Material->LoadShader(shader);
+						//sMesh.Material->Color = staticMeshComponent["Color"].as<glm::vec4>();
+						//sMesh.Material->Shininess = staticMeshComponent["Shininess"].as<float>();
+						//sMesh.Material->Bias = staticMeshComponent["Bias"].as<float>();
+						//sMesh.Material->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
 
-						// Create The Model After
-						sMesh.Model = Model::Create(modelPath.string(), sMesh.Material);
+						//// Create The Model After
+						//sMesh.Model = Model::Create(modelPath.string(), sMesh.Material);
 					}
 				}
 

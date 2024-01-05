@@ -128,8 +128,8 @@ namespace origin {
 		}
 		else if (m_CameraStyle == FreeMove)
 		{
-			xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.5f * 10.0f;
-			yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.5f * 10.0f;
+			xFactor = ZoomSpeed();
+			yFactor = ZoomSpeed();
 		}
 
 		return { xFactor, yFactor };

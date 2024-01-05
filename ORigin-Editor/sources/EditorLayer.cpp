@@ -12,8 +12,7 @@
 #include "Origin/Audio/Audio.h"
 #include "Origin/Utils/Utils.h"
 
-#include "Origin/Asset/TextureImporter.h"
-#include "Origin/Asset/SceneImporter.h"
+#include "Origin/Asset/AssetImporter.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -86,7 +85,7 @@ namespace origin {
 		m_EditorCamera.InitOrthographic(10.0f, -1.0f, 100.0f);
     m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
-		m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
+		m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
 		
 		m_ActiveScene = std::make_shared<Scene>();
     const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -543,6 +542,7 @@ namespace origin {
 				}
 				
 				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+				ImGui::Text("Mouse Pos (%d, %d)", mouseX, mouseY);
 			}
 
 			ImGui::End();
@@ -599,7 +599,6 @@ namespace origin {
 		ImGui::Image(viewportID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
-
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				if (m_SceneState == SceneState::Edit)
@@ -669,6 +668,8 @@ namespace origin {
 
 			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
 
+			static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
+
 			if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
 			{
 				ImGuizmo::Manipulate(
@@ -677,8 +678,9 @@ namespace origin {
 					static_cast<ImGuizmo::OPERATION>(m_GizmosType),
 					static_cast<ImGuizmo::MODE>(m_GizmosMode),
 					glm::value_ptr(transform),
-					nullptr,
-					snap ? snapValues : nullptr
+					snap ? snapValues : nullptr,
+					m_BoundSizing ? bounds : nullptr,
+					nullptr
 				);
 
 				glm::vec2 velocity = glm::vec2(0.0f);
@@ -707,8 +709,9 @@ namespace origin {
 					static_cast<ImGuizmo::OPERATION>(m_GizmosType),
 					static_cast<ImGuizmo::MODE>(m_GizmosMode),
 					glm::value_ptr(transform),
-					nullptr,
-					snap ? snapValues : nullptr
+					snap ? snapValues : nullptr,
+					m_BoundSizing ? bounds : nullptr,
+					nullptr
 				);
 
 				if (ImGuizmo::IsUsing())
@@ -1442,38 +1445,6 @@ namespace origin {
 
 		switch (e.GetKeyCode())
 		{
-			// File Operation
-			case Key::S:
-			{
-				if (control)
-				{
-					if (shift)
-						SaveSceneAs();
-					else
-						SaveScene();
-				}
-				break;
-			}
-
-			case Key::O:
-			{
-				if (control) OpenScene();
-				break;
-			}
-
-			case Key::N:
-			{
-				if (control) NewScene();
-				break;
-			}
-
-			case Key::T:
-			{
-				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
-				break;
-			}
-
 			case Key::D:
 			{
 				if (control)
@@ -1498,10 +1469,49 @@ namespace origin {
 				break;
 			}
 
+			case Key::O:
+			{
+				if (control) OpenScene();
+				break;
+			}
+
+			case Key::N:
+			{
+				if (control) NewScene();
+				break;
+			}
+
 			case Key::R:
 			{
 				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
 					m_GizmosType = ImGuizmo::OPERATION::ROTATE;
+				break;
+			}
+
+			// File Operation
+			case Key::S:
+			{
+				if (control)
+				{
+					if (shift)
+						SaveSceneAs();
+					else
+						SaveScene();
+				}
+				break;
+			}
+
+			case Key::T:
+			{
+				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+					m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
+				break;
+			}
+
+			case Key::Y:
+			{
+				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+					m_BoundSizing = !m_BoundSizing;
 				break;
 			}
 

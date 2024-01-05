@@ -5,7 +5,7 @@
 #include "Origin\Project\Project.h"
 #include "Origin\Asset\AssetManager.h"
 #include "Origin\Asset\AssetMetaData.h"
-#include "Origin\Asset\TextureImporter.h"
+#include "Origin\Asset\AssetImporter.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Components.h"
@@ -105,7 +105,7 @@ namespace origin {
 						if (ImGui::BeginMenu("2D"))
 						{
 							if (ImGui::MenuItem("Sprite"))
-								m_Context->CreateSpriteEntity();
+								m_Context->CreateSpriteEntity("Sprite");
 							if (ImGui::MenuItem("Circle"))
 								m_Context->CreateCircle("Circle");
 
@@ -374,7 +374,6 @@ namespace origin {
 		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
-				
 				std::string label = "None";
 
 				bool isAudioValid = false;
@@ -448,18 +447,9 @@ namespace origin {
 					if (ImGui::Checkbox("Looping", &component.Looping))
 						audio->SetLoop(component.Looping);
 
-					float columnWidth = 100.0f;
-
-					ImGui::BeginChild("##volume", ImVec2(50.0f, 150.0f), true);
-					ImGui::VSliderFloat("Vol", ImVec2(30.0f, 150.0f), &component.Volume, 0.0f, 100.0f, "%.0f");
-					ImGui::EndChild();
-
-					ImGui::SameLine();
-					ImGui::BeginChild("##other_controls", ImVec2(ImGui::GetContentRegionAvail().x, 150.0f), true);
-					ImGui::DragFloat("Pitch", &component.Pitch, 0.01f, 0.0f, 2.0f);
-					
-					ImGui::DragFloat("LP Filter", &component.LowPass, 0.01f, 0.0f, 1.0f);
-					ImGui::EndChild();
+					DrawVecControl("Volume", &component.Volume, 0.0f, 1.0f, 0.1f, 1.0f);
+					DrawVecControl("Pitch", &component.Pitch, 0.0f, 1.0f, 0.1f, 1.0f);
+					DrawVecControl("Low Pass", &component.LowPass, 0.0f, 1.0f, 0.1f, 1.0f);
 
 					ImGui::Separator();
 					if (ImGui::Checkbox("Spatialize", &component.Spatial))
@@ -467,9 +457,9 @@ namespace origin {
 
 					if (component.Spatial)
 					{
-						DrawVecControl("Doppler Level", &component.DopplerLevel, 0.1f, 0.0f, 10000.0f, 1.0f, columnWidth);
-						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
-						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f, columnWidth);
+						DrawVecControl("Doppler Level", &component.DopplerLevel, 0.1f, 0.0f, 10000.0f, 1.0f);
+						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
 					}
 				}
 			});
@@ -685,88 +675,66 @@ namespace origin {
 
 		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
 			{
-				float buttonSize[2] = { 85.0f, 25.0f };
+				std::string label = "None";
+				bool isMeshValid = false;
+				ImGui::Text("Model");
+				ImGui::SameLine();
 
-				if (!component.Model)
-					ImGui::Button("DROP MODEL", ImVec2(buttonSize[0], buttonSize[1]));
+				if (component.Model != 0)
+				{
+					if (AssetManager::IsAssetHandleValid(component.Model) && AssetManager::GetAssetType(component.Model) == AssetType::StaticMesh)
+					{
+						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Model);
+						label = metadata.Filepath.filename().string();
+						isMeshValid = true;
+					}
+					else
+					{
+						label = "Invalid";
+					}
+				}
 
+				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
+				buttonLabelSize.x += 20.0f;
+				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-
-						// Get the actual Location from Project Assets Directory
-						std::filesystem::path modelPath = std::filesystem::path(path);
-
-						if (modelPath.extension() == ".gltf"
-							|| modelPath.extension() == ".fbx"
-							|| modelPath.extension() == ".obj")
+						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
+						if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
 						{
-							std::shared_ptr<Shader> matShader = Renderer::GetGShader("Mesh");
-							component.Material = Material::Create("MeshMaterial");
-							component.Material->LoadShader(matShader);
-							component.Model = Model::Create(modelPath.generic_string(), component.Material);
+							component.Model = handle;
+						}
+						else
+						{
+							OGN_CORE_WARN("Wrong asset type!");
 						}
 					}
+					ImGui::EndDragDropTarget();
 				}
 
-				if (component.Model)
-				{
-					if (ImGui::Button("REMOVE", ImVec2(buttonSize[0], buttonSize[1])))
-					{
-						component.Model.reset();
-						component.Material.reset();
-					}
-				}
 
-				ImGui::SameLine();
-
-				if (component.Model)
+				if (isMeshValid)
 				{
-					if (ImGui::Button("Refresh Shader", ImVec2(buttonSize[0] + 3.0f, buttonSize[1])))
-						component.Material->RefreshShader();
+					ImGui::SameLine();
+					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+						component.Model = 0;
+
+					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(component.Model);
+
+					if (ImGui::Button("Refresh Shader"))
+						model->GetMaterial()->RefreshShader();
 
 					ImGui::Separator();
 					ImGui::Text("Material");
 
-					ImGui::ColorEdit4("Color", glm::value_ptr(component.Material->Color));
-					ImGui::DragFloat("Shininess", &component.Material->Shininess, 0.1f, 1.0f, 256.0f);
-					ImGui::SliderFloat("Bias", &component.Material->Bias, 0.005f, 0.1f);
-					DrawVec2Control("Tiling Factor", component.Material->TilingFactor, 0.01f, 1.0f);
-
-					// Drop Texture
-#if 0
-					if (component.Material->HasTexture == false)
-					{
-						if (!component.Material->Texture)
-							ImGui::Button("DROP TEXTURE", ImVec2(80.0f, 30.0f));
-						else ImGui::ImageButton(reinterpret_cast<ImTextureID>(component.Material->Texture->GetRendererID()), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
-
-						if (ImGui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-								std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
-								if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-									component.Material->LoadTextureFromFile(texturePath.generic_string());
-							}
-						}
-
-						if (component.Material->Texture)
-						{
-							ImGui::SameLine();
-							if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
-							{
-								component.Material->Texture->Delete();
-								component.Material->Texture = {};
-								return;
-							}
-							ImGui::Text("Path: %s", component.Material->Texture->GetFilepath().c_str());
-						}
-					}
-#endif
+					ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->Color));
+					ImGui::DragFloat("Shininess", &model->GetMaterial()->Shininess, 0.1f, 1.0f, 256.0f);
+					ImGui::SliderFloat("Bias", &model->GetMaterial()->Bias, 0.005f, 0.1f);
+					DrawVec2Control("Tiling Factor", model->GetMaterial()->TilingFactor, 0.01f, 1.0f);
 				}
 			});
 

@@ -129,21 +129,11 @@ namespace origin
 					mesh->mTextureCoords[0][i].x,
 					mesh->mTextureCoords[0][i].y
 				);
-
-				/*vertex.Tangents = glm::vec3(
-					mesh->mTangents[i].x,
-					mesh->mTangents[i].y,
-					mesh->mTangents[i].z
-				);
-
-				vertex.Bitangents = glm::vec3(
-					mesh->mBitangents[i].x,
-					mesh->mBitangents[i].y,
-					mesh->mBitangents[i].z
-				);*/
 			}
 			else
+			{
 				vertex.TexCoord = glm::vec2(0.0f);
+			}
 
 			vertices.push_back(vertex);
 		}
@@ -164,12 +154,6 @@ namespace origin
 
 			std::vector<std::shared_ptr<Texture2D>> specularMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_SPECULAR, "texture_specular");
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-
-			//std::vector<std::shared_ptr<Texture2D>> normalMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_AMBIENT, "texture_normal");
-			//textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-			// 
-			//std::vector<std::shared_ptr<Texture2D>> heightMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_HEIGHT, "texture_height");
-			//textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 		}
 
 		return std::make_shared<OpenGLMesh>(vertices, indices, textures, m_Filepath);

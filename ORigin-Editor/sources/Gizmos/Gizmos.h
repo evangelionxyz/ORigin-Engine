@@ -9,9 +9,9 @@ namespace origin {
 	{
 	public:
 		static void OnUpdate(const EditorCamera& camera);
-		static void DrawVerticalGrid(const EditorCamera& camera);
 
-		static void DrawOverlay(const EditorCamera& camera);
+		static void Draw2DVerticalGrid(const EditorCamera& camera);
+		static void Draw2DOverlay(const EditorCamera& camera);
 	};
 
 }
