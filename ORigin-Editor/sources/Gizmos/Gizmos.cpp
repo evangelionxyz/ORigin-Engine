@@ -21,6 +21,11 @@ namespace origin {
 			Draw2DOverlay(camera);
 			RenderCommand::SetLineWidth(1.0f);
 		}
+
+		DrawOverlay(camera);
+		DrawIcons(camera);
+
+		Renderer::EndScene();
 	}
 	void Gizmos::Draw2DVerticalGrid(const EditorCamera& camera)
 	{
@@ -49,93 +54,16 @@ namespace origin {
 		for (float y = ny; y <= maxY; y += lineSpacing)
 			Renderer2D::DrawLine(glm::vec3(minX, y + offset, GRID2D_ZOFFSET), glm::vec3(maxX, y + offset, GRID2D_ZOFFSET), color);
 
-		Renderer2D::EndScene();
+		Renderer2D::End();
 	}
 
 	void Gizmos::Draw2DOverlay(const EditorCamera& camera)
 	{
-		auto textures = EditorLayer::Get().m_UITextures;
 		auto& reg = EditorLayer::Get().m_ActiveScene->m_Registry;
-
-		auto drawIcon = [&](TransformComponent tc, std::shared_ptr<Texture2D> texture, int entity)
-			{
-				glm::mat4 transform = glm::mat4(1.0f);
-				switch (camera.GetProjectionType())
-				{
-				case ProjectionType::Perspective:
-					transform = glm::translate(glm::mat4(1.0f), tc.Translation)
-						* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-						* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-						* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-					break;
-
-				case ProjectionType::Orthographic:
-					transform = translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, ICON_ZOFFSET));
-					break;
-
-				}
-
-				Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f), (int)entity);
-			};
-
-		auto& cam = reg.view<TransformComponent, CameraComponent>();
-		for (auto& entity : cam)
-		{
-			auto& [tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
-			auto& sceneCam= cc.Camera;
-
-			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
-			{
-				drawIcon(tc, textures.at("camera"), (int)entity);
-
-				float sizeX = 0.0f;
-				float sizeY = 0.0f;
-
-				if (cc.Camera.GetAspectRatioType() == SceneCamera::AspectRatioType::SixteenByNine)
-				{
-					sizeX = sceneCam.GetOrthographicSize() * sceneCam.GetAspectRatioSize();
-					sizeY = sizeX / 16.0f * 9.0f;
-
-					glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, 1.3f))
-						* glm::toMat4(glm::qua(tc.Rotation)) * scale;
-
-					Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-				}
-			}
-		}
-
-		auto& audio = reg.view<TransformComponent, AudioComponent>();
-		for (auto& entity : audio)
-		{
-			auto& tc = audio.get<TransformComponent>(entity);
-			drawIcon(tc, textures.at("audio"), (int)entity);
-		}
-
-		auto& lights = reg.view<TransformComponent, AudioComponent>();
-		for (auto& entity : lights)
-		{
-			auto& tc = lights.get<TransformComponent>(entity);
-			drawIcon(tc, textures.at("audio"), (int)entity);
-		}
-
-		Renderer2D::EndScene();
 
 		if (EditorLayer::Get().m_VisualizeCollider)
 		{
 			auto& scene = EditorLayer::Get().m_ActiveScene;
-
-			const auto& circle = scene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-			for (auto entity : circle)
-			{
-				const auto& [tc, cc2d] = circle.get<TransformComponent, CircleCollider2DComponent>(entity);
-
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Translation) + cc2d.Offset, tc.Translation.z + COLLIDER2D_ZOFFSET))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Scale * cc2d.Radius * 2.0f), 1.0f));
-
-				Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, (int)entity);
-			}
 
 			const auto& quad = scene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
 			for (auto entity : quad)
@@ -149,6 +77,50 @@ namespace origin {
 				Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), (int)entity);
 			}
 
+			const auto& circle = scene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+			for (auto entity : circle)
+			{
+				const auto& [tc, cc2d] = circle.get<TransformComponent, CircleCollider2DComponent>(entity);
+
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Translation) + cc2d.Offset, tc.Translation.z + COLLIDER2D_ZOFFSET))
+					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Scale * cc2d.Radius * 2.0f), 1.0f));
+
+				Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, (int)entity);
+			}
+		}
+
+		if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+		{
+			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
+			glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
+
+			if (selectedEntity.HasComponent<SpriteRenderer2DComponent>())
+			{
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + SELECTED2D_ZOFFSET))
+					* rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
+				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+			}
+
+			if (selectedEntity.HasComponent<CircleRendererComponent>())
+			{
+				glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, 0.5f);
+				glm::vec3 scale = tc.Scale * glm::vec3(1.0f);
+
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+					* rotation * glm::scale(glm::mat4(1.0f), scale);
+
+				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
+			}
+		}
+		Renderer2D::End();
+	}
+
+	void Gizmos::DrawOverlay(const EditorCamera& camera)
+	{
+		auto& scene = EditorLayer::Get().m_ActiveScene;
+
+		if (EditorLayer::Get().m_VisualizeCollider)
+		{
 			const auto& box = scene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
 			for (auto entity : box)
 			{
@@ -185,40 +157,75 @@ namespace origin {
 				Renderer2D::DrawCircle(transform, glm::vec4(0.7f, 0.0f, 1.0f, 1.0f), 1.0f, (int)entity);
 			}
 		}
+	}
 
-		if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+	void Gizmos::DrawIcons(const EditorCamera & camera)
+	{
+		auto textures = EditorLayer::Get().m_UITextures;
+		auto& reg = EditorLayer::Get().m_ActiveScene->m_Registry;
+
+		auto drawIcon = [&](TransformComponent tc, std::shared_ptr<Texture2D> texture, int entity)
+			{
+				glm::mat4 transform = glm::mat4(1.0f);
+				switch (camera.GetProjectionType())
+				{
+				case ProjectionType::Perspective:
+					transform = glm::translate(glm::mat4(1.0f), tc.Translation)
+						* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
+						* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
+						* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+					break;
+
+				case ProjectionType::Orthographic:
+					transform = translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, ICON_ZOFFSET));
+					break;
+
+				}
+
+				Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f), (int)entity);
+			};
+
+		auto& cam = reg.view<TransformComponent, CameraComponent>();
+		for (auto& entity : cam)
 		{
-			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
+			auto& [tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
+			auto& sceneCam = cc.Camera;
 
-			if (selectedEntity.HasComponent<SpriteRenderer2DComponent>())
+			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
 			{
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + SELECTED2D_ZOFFSET))
-					* rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
-				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-			}
+				drawIcon(tc, textures.at("camera"), (int)entity);
 
-			if (selectedEntity.HasComponent<CircleRendererComponent>())
-			{
-				glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, 0.5f);
-				glm::vec3 scale = tc.Scale * glm::vec3(1.0f);
+				float sizeX = 0.0f;
+				float sizeY = 0.0f;
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-					* rotation * glm::scale(glm::mat4(1.0f), scale);
+				if (cc.Camera.GetAspectRatioType() == SceneCamera::AspectRatioType::SixteenByNine)
+				{
+					sizeX = sceneCam.GetOrthographicSize() * sceneCam.GetAspectRatioSize();
+					sizeY = sizeX / 16.0f * 9.0f;
 
-				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
-			}
+					glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
 
-			if (selectedEntity.HasComponent<SpriteRendererComponent>())
-			{
-				glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, 0.0f);
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-					* rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, 1.3f))
+						* glm::toMat4(glm::qua(tc.Rotation)) * scale;
 
-				Renderer3D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+					Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+				}
 			}
 		}
-		Renderer2D::EndScene();
+
+		auto& audio = reg.view<TransformComponent, AudioComponent>();
+		for (auto& entity : audio)
+		{
+			auto& tc = audio.get<TransformComponent>(entity);
+			drawIcon(tc, textures.at("audio"), (int)entity);
+		}
+
+		auto& lighting = reg.view<TransformComponent, LightComponent>();
+		for (auto& entity : lighting)
+		{
+			auto& tc = lighting.get<TransformComponent>(entity);
+			drawIcon(tc, textures.at("lighting"), (int)entity);
+		}
 	}
 
 }

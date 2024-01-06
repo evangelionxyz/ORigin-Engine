@@ -15,10 +15,10 @@ namespace origin {
 		{
 			switch (type)
 			{
-			case LightingType::Spot: return "SPOT";
-			case LightingType::Point: return "POINT";
-			case LightingType::Directional: return "DIRECTIONAL";
-			default: return "";
+				case LightingType::Spot: return "SPOT";
+				case LightingType::Point: return "POINT";
+				case LightingType::Directional: return "DIRECTIONAL";
+				default: return "";
 			}
 
 			return "Invalid Type";
@@ -34,7 +34,6 @@ namespace origin {
 		}
 	}
 	
-
 	class Lighting
 	{
 	public:
@@ -54,16 +53,19 @@ namespace origin {
 		static std::shared_ptr<Lighting> Create(LightingType type);
 
 		glm::vec3 Color = glm::vec3(1.0f);
+
 		float Near = -1.0f;
 		float Far = 8.0f;
 		float Size = 25.0f;
+
 		float Ambient = 0.5f;
 		float Diffuse = 0.5f;
 		float Specular = 1.0f;
-
+		float Intensity = 1.0f;
+		float SpreadSize = 50.0f;
 		float InnerConeAngle = 0.5f;
 		float OuterConeAngle = 1.0f;
-		float Exponent = 1.5f;
+		float Exponent = 1.0f;
 
 		static int SpotLightCount;
 		static int PointLightCount;

@@ -38,14 +38,8 @@ namespace origin
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::DrawLineMode(bool enable)
-	{
-		m_DrawLineMode = enable;
-	}
-
 	void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount)
 	{
-		m_DrawLineMode ? glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) : glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if (vertexArray)
 		{
 			vertexArray->Bind();

@@ -73,6 +73,8 @@ namespace origin {
 				mat->SetVector(lightUniformName + "Color", Color);
 				mat->SetFloat(lightUniformName + "Ambient", Ambient);
 				mat->SetFloat(lightUniformName + "Specular", Specular);
+				mat->SetFloat(lightUniformName + "Intensity", Intensity);
+				mat->SetFloat(lightUniformName + "SpreadSize", SpreadSize);
 
 				PointLightCount++;
 				break;

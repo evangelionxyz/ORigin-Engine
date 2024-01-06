@@ -15,7 +15,8 @@
 
 namespace origin {
 
-	GuiLayer::GuiLayer() : Layer("Gui Layer"), m_WindowContext(nullptr)
+	GuiLayer::GuiLayer()
+		: Layer("Gui Layer"), m_WindowContext(nullptr)
 	{
 	}
 
@@ -86,22 +87,26 @@ namespace origin {
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		float fontSize = 13.0f;
+		ImGuiIO& io = ImGui::GetIO();
+		float fontSize = 16.0f;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 
 		ImGuiStyle& style = ImGui::GetStyle();
-		style.ScrollbarSize = 10.0f;
 		style.GrabMinSize = 12.0f;
+		style.TabBorderSize = 0;
+		style.ScrollbarSize = 10.0f;
 		style.GrabRounding = 4.0f;
 		style.PopupRounding = 4.0f;
-		style.ScrollbarRounding = 4.0f;
 		style.IndentSpacing = 12.0f;
-		style.TabBorderSize = 0;
-		style.WindowBorderSize = 0;
 		style.FrameRounding = 3.0f;
 		style.ChildRounding = 3.0f;
 		style.WindowRounding = 3.0f;
+		style.WindowBorderSize = 0;
+		style.ScrollbarRounding = 4.0f;
+
+		style.AntiAliasedFill = true;
+		style.AntiAliasedLines = true;
+		style.AntiAliasedLinesUseTex = true;
 
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;

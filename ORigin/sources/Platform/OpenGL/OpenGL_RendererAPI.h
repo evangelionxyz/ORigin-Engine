@@ -16,10 +16,7 @@ namespace origin
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 		virtual void ClearColor(glm::vec4 color) override;
 		virtual void ClearColor(float r, float g, float b, float a) override;
-
 		virtual void Clear() override;
-
-		virtual void DrawLineMode(bool enable = false) override;
 		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t IndexCount = 0) override;
 		virtual void DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount = 0) override;
 		virtual void DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount = 0) override;

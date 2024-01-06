@@ -130,7 +130,7 @@ namespace origin {
 		s_3Ddata.CubeShader = Renderer::GetGShader("Cube");
 	}
 
-	void Renderer3D::BeginScene()
+	void Renderer3D::Begin()
 	{
 		StartBatch();
 	}
@@ -143,7 +143,7 @@ namespace origin {
 		s_3Ddata.TextureSlotIndex = 1;
 	}
 
-	void Renderer3D::EndScene()
+	void Renderer3D::End()
 	{
 		Flush();
 	}

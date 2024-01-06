@@ -35,8 +35,6 @@ namespace origin {
 		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetSaderLibrary();
 		static void SetLightSpaceMatrix(const glm::mat4& lightSpaceMatrix);
 
-		void DrawLineMode(bool enable);
-
 	private:
 		static void LoadShader();
 	};

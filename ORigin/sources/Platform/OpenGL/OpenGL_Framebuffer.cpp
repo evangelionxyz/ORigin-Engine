@@ -235,7 +235,6 @@ namespace origin {
 		if (m_Spec.ReadBuffer == false);
 			glReadBuffer(GL_NONE);
 
-		OGN_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer incomplete");
 		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 	}
 
@@ -278,6 +277,7 @@ namespace origin {
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		int pixelData;
 		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+
 		return pixelData;
 	}
 

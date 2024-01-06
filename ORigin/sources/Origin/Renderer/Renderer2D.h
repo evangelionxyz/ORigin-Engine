@@ -18,8 +18,8 @@ namespace origin
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene();
-		static void EndScene();
+		static void Begin();
+		static void End();
 		static void Flush();
 
 		// Primitives

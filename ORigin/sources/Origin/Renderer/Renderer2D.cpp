@@ -117,12 +117,12 @@ namespace origin {
 		delete[] s_2Ddata.QuadVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene()
+	void Renderer2D::Begin()
 	{
 		StartBatch();
 	}
 
-	void Renderer2D::EndScene()
+	void Renderer2D::End()
 	{
 		Flush();
 	}

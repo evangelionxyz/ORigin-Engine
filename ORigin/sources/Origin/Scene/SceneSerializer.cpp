@@ -380,17 +380,12 @@ namespace origin
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
 
-			/*if (sMesh.Model)
-			{
-				std::filesystem::path modelFilepath = relative(sMesh.Model->GetFilepath(), Project::GetActiveAssetDirectory());
-				out << YAML::Key << "ModelPath" << YAML::Value << modelFilepath.generic_string();
-				out << YAML::Key << "ShaderPath" << YAML::Value << sMesh.Material->GetShaderFilepath();
-				out << YAML::Key << "MaterialName" << YAML::Value << sMesh.Material->GetMaterialName();
-				out << YAML::Key << "Color" << YAML::Value << sMesh.Material->Color;
-				out << YAML::Key << "Shininess" << YAML::Value << sMesh.Material->Shininess;
-				out << YAML::Key << "Bias" << YAML::Value << sMesh.Material->Bias;
-				out << YAML::Key << "TilingFactor" << YAML::Value << sMesh.Material->TilingFactor;
-			}*/
+			out << YAML::Key << "MeshHandle" << YAML::Value << sMesh.Model;
+			std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
+			out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->Color;
+			out << YAML::Key << "Shininess" << YAML::Value << model->GetMaterial()->Shininess;
+			out << YAML::Key << "Bias" << YAML::Value << model->GetMaterial()->Bias;
+			out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->TilingFactor;
 
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
@@ -735,8 +730,7 @@ namespace origin
 
 					if (audioComponent["AudioHandle"])
 					{
-						ac.Audio = (AssetHandle)std::stoull(audioComponent["AudioHandle"].as<std::string>());
-
+						ac.Audio = audioComponent["AudioHandle"].as<uint64_t>();
 						ac.Name = audioComponent["Name"].as<std::string>();
 						ac.Volume = audioComponent["Volume"].as<float>();
 						ac.DopplerLevel = audioComponent["DopplerLevel"].as<float>();
@@ -904,26 +898,13 @@ namespace origin
 				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
 				{
 					auto& sMesh = deserializedEntity.AddComponent<StaticMeshComponent>();
-					auto modelFilepath = staticMeshComponent["ModelPath"].as<std::string>();
-					auto shaderFilepath = staticMeshComponent["ShaderPath"].as<std::string>();
 
-					if (!modelFilepath.empty() && !shaderFilepath.empty())
-					{
-						//auto& modelPath = Project::GetActiveAssetFileSystemPath(modelFilepath);
-
-						//// Prepare The Materials
-						//std::shared_ptr<Shader> shader = Shader::Create(shaderFilepath);
-
-						//sMesh.Material = Material::Create(staticMeshComponent["MaterialName"].as<std::string>());
-						//sMesh.Material->LoadShader(shader);
-						//sMesh.Material->Color = staticMeshComponent["Color"].as<glm::vec4>();
-						//sMesh.Material->Shininess = staticMeshComponent["Shininess"].as<float>();
-						//sMesh.Material->Bias = staticMeshComponent["Bias"].as<float>();
-						//sMesh.Material->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
-
-						//// Create The Model After
-						//sMesh.Model = Model::Create(modelPath.string(), sMesh.Material);
-					}
+					sMesh.Model = staticMeshComponent["MeshHandle"].as<uint64_t>();
+					std::shared_ptr<Model>& model = AssetManager::GetAsset<Model>(sMesh.Model);
+					model->GetMaterial()->Color = staticMeshComponent["Color"].as<glm::vec4>();
+					model->GetMaterial()->Shininess = staticMeshComponent["Shininess"].as<float>();
+					model->GetMaterial()->Bias = staticMeshComponent["Bias"].as<float>();
+					model->GetMaterial()->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
 				}
 
 				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])

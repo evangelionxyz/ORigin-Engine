@@ -428,7 +428,7 @@ namespace origin
 		}
 
 		// Audio Update
-		Renderer2D::BeginScene();
+		Renderer2D::Begin();
 		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
 		for (auto entity : audioView)
 		{
@@ -453,7 +453,7 @@ namespace origin
 				}
 			}
 		}
-		Renderer2D::EndScene();
+		Renderer2D::End();
 
 		editorCamera.UpdateAudioListener(deltaTime);
 		AudioEngine::SetMute(false);
@@ -510,7 +510,7 @@ namespace origin
 		}
 
 		// Audio Update
-		Renderer2D::BeginScene();
+		Renderer2D::Begin();
 		AudioEngine::SetMute(false);
 		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
 		for (auto entity : audioView)
@@ -537,7 +537,7 @@ namespace origin
 				}
 			}
 		}
-		Renderer2D::EndScene();
+		Renderer2D::End();
 
 		bool isMainCameraListening = false;
 		const auto& audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
@@ -908,11 +908,7 @@ namespace origin
 
 	void Scene::OnShadowRender()
 	{
-		// ==============================
-		// Directional Light Shadow
-		// ==============================
 		Renderer::GetGShader("DirLightDepthMap")->Enable();
-
 		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& light : dirLight)
 		{

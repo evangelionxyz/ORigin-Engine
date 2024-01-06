@@ -721,10 +721,15 @@ namespace origin {
 					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
 					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+					{
 						component.Model = 0;
+						isMeshValid = false;
+					}
+				}
 
+				if(isMeshValid)
+				{
 					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(component.Model);
-
 					if (ImGui::Button("Refresh Shader"))
 						model->GetMaterial()->RefreshShader();
 
@@ -940,6 +945,8 @@ namespace origin {
 						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->Color));
 						DrawVecControl("Ambient", &component.Light->Ambient, 0.01f, 0.0f);
 						DrawVecControl("Specular", &component.Light->Specular, 0.01f, 0.0f);
+						DrawVecControl("Intensity", &component.Light->Intensity, 0.01f, 0.0f);
+						DrawVecControl("Size", &component.Light->SpreadSize, 0.1f, 0.1f, 10000.0f);
 						break;
 					}
 				}

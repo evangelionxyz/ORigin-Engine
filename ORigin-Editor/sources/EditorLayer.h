@@ -54,7 +54,6 @@ namespace origin {
     int lastMouseY = 0, mouseY = 0;
 
     int m_GizmosType = -1;
-    bool m_BoundSizing = false;
     int m_GizmosMode = 0;
     int m_PixelData = -1;
     int m_RenderTarget = 0;

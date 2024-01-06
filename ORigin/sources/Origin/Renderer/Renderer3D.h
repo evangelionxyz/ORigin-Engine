@@ -14,9 +14,8 @@ namespace origin
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene();
-
-		static void EndScene();
+		static void Begin();
+		static void End();
 		static void Flush();
 
 		static void DrawCube(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec4& tintColor, int entityID = -1);

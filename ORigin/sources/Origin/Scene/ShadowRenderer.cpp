@@ -49,9 +49,9 @@ namespace origin {
 	{
 		OGN_CORE_ASSERT(m_Framebuffer, "ShadowRenderer: Invalid Framebuffer");
 
-		glActiveTexture(m_Framebuffer->GetDepthAttachmentRendererID());
+		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, m_Framebuffer->GetDepthAttachmentRendererID());
-		mat->SetInt("uShadowMap", 0);
+		mat->SetInt("material.shadow_map", 4);
 	}
 
 	void ShadowRenderer::Setup(const TransformComponent& tc, float size, float n, float f)

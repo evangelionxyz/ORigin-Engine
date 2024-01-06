@@ -81,7 +81,7 @@ namespace origin {
     gameFramebufferSpec.ReadBuffer = false;
     m_GameFramebuffer = Framebuffer::Create(gameFramebufferSpec);
 
-		m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 300.0f);
+		m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 5000.0f);
 		m_EditorCamera.InitOrthographic(10.0f, -1.0f, 100.0f);
     m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
@@ -648,9 +648,8 @@ namespace origin {
 		);
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
-		if (entity && m_GizmosType != -1) {
-			// Editor Camera
-
+		if (entity && m_GizmosType != -1)
+		{
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
@@ -660,15 +659,11 @@ namespace origin {
 
 			bool snap = Input::IsKeyPressed(Key::LeftShift);
 			float snapValue = 0.5f;
-
 			if (snap && m_GizmosType == ImGuizmo::OPERATION::ROTATE)
 				snapValue = 45.0f;
-
-			float snapValues[3] = { snapValue, snapValue, snapValue };
+			static float snapValues[3] = { snapValue, snapValue, snapValue };
 
 			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
-
-			static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
 
 			if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
 			{
@@ -679,7 +674,6 @@ namespace origin {
 					static_cast<ImGuizmo::MODE>(m_GizmosMode),
 					glm::value_ptr(transform),
 					snap ? snapValues : nullptr,
-					m_BoundSizing ? bounds : nullptr,
 					nullptr
 				);
 
@@ -710,7 +704,6 @@ namespace origin {
 					static_cast<ImGuizmo::MODE>(m_GizmosMode),
 					glm::value_ptr(transform),
 					snap ? snapValues : nullptr,
-					m_BoundSizing ? bounds : nullptr,
 					nullptr
 				);
 
@@ -1239,7 +1232,7 @@ namespace origin {
 					} if (isSelected) ImGui::SetItemDefaultFocus();
 				} ImGui::EndCombo();
 			}
-			if (ImGui::SliderFloat("FOV", &m_CameraFov, 0.0f, 90.0f))
+			if (ImGui::DragFloat("FOV", &m_CameraFov, 1.0f, 0.0f, 90.0f))
 				m_EditorCamera.SetFov(m_CameraFov);
 
 			ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
@@ -1264,7 +1257,6 @@ namespace origin {
 			ImGui::Text("Indices: %d", Stats3D.GetTotalIndexCount());
 			ImGui::Separator();
 
-			if (ImGui::Checkbox("Line Mode", &drawLineMode)) RenderCommand::DrawLineMode(drawLineMode);
 			ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
 
 			const char* RTTypeString[] = { "Normal" };
@@ -1505,13 +1497,6 @@ namespace origin {
 			{
 				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
 					m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
-				break;
-			}
-
-			case Key::Y:
-			{
-				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_BoundSizing = !m_BoundSizing;
 				break;
 			}
 

@@ -36,7 +36,6 @@ uniform int uEntityID;
 uniform vec4 uColor;
 uniform vec3 uCameraPosition;
 uniform bool uHasTextures;
-uniform sampler2D uShadowMap;
 
 const int MAX_LIGHTS = 32;
 
@@ -56,6 +55,9 @@ struct Material
     sampler2D texture_diffuse2;
     sampler2D texture_specular1;
     sampler2D texture_specular2;
+
+    sampler2D shadow_map;
+
     float Shininess;
     float Bias;
     vec2 TilingFactor;
@@ -71,7 +73,7 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
     vec3 lightDir = normalize(lightDirection - vertex.Position);
 
     float bias = max(material.Bias * (1.0 - dot(normal, lightDir)), 0.000001);
-    vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
+    vec2 texelSize = 1.0 / textureSize(material.shadow_map, 0);
     float shadow = 0.0;
 
     float currentDepth = projectionCoords.z;
@@ -84,7 +86,7 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
             for (int y = -rep; y <= rep; y++)
             {
                 vec2 offset = vec2(x, y) * texelSize;
-                float pcfDepth = texture(uShadowMap, projectionCoords.xy + offset).r;
+                float pcfDepth = texture(material.shadow_map, projectionCoords.xy + offset).r;
                 shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
             }
         }
@@ -100,6 +102,8 @@ struct PointLight
     vec3 Color;
     float Ambient;
     float Specular;
+    float Intensity;
+    float SpreadSize;
 };
 uniform PointLight pointLights[MAX_LIGHTS];
 uniform int pointLightCount;
@@ -164,17 +168,30 @@ vec3 CalcPointLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
 
+    float totalIntensity = 0.0; // Accumulate total intensity for normalization
+
     for (int i = 0; i <= pointLightCount; i++)
     {
         ambient += pointLights[i].Ambient * pointLights[i].Color * diffuseTexture;
+
         vec3 lightDirection = normalize(pointLights[i].Position - vertex.Position);
+        float distanceToLight = length(pointLights[i].Position - vertex.Position);
+
+        float attenuation = (1.0 / (1.0 +pow(distanceToLight, 2.0))) * pointLights[i].SpreadSize;
+
         float diff = max(dot(normal, lightDirection), 0.0);
-        diffuse += diff * diffuseTexture * pointLights[i].Color;
+        diffuse += diff * attenuation * diffuseTexture * pointLights[i].Color;
+
         vec3 reflectionDirection = reflect(-lightDirection, normal);
         float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.Shininess);
-        specular += spec * pointLights[i].Specular * specularTexture * pointLights[i].Color;
+        specular += spec * attenuation * pointLights[i].Specular * specularTexture * pointLights[i].Color;
+
+        totalIntensity += pointLights[i].Intensity / dot((pointLights[i].Position - vertex.Position), (pointLights[i].Position - vertex.Position));
     }
-    return diffuse + ambient + specular;
+
+    vec3 finalColor = (diffuse + ambient + specular) / max(totalIntensity, 1.0);
+
+    return finalColor;
 }
 
 vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
@@ -186,10 +203,12 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
     {
         vec3 lightDirection = normalize(spotLights[i].Position - vertex.Position);
         float attenuation = 1.0 / length(spotLights[i].Position - vertex.Position);
+
         vec3 spotlightDirection = normalize(spotLights[i].Direction);
         float spotCosine = dot(-lightDirection, spotlightDirection);
         float innerCosine = cos(spotLights[i].InnerConeAngle * 0.5);
         float outerCosine = cos(spotLights[i].OuterConeAngle * 0.5);
+
         float falloff = smoothstep(outerCosine, innerCosine, spotCosine);
 
         if (spotCosine > outerCosine)

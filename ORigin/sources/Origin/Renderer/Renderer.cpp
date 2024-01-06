@@ -71,8 +71,8 @@ namespace origin {
 
 		s_ScriptEngineData.globalUbo->Unbind();
 
-		Renderer2D::BeginScene();
-		Renderer3D::BeginScene();
+		Renderer2D::Begin();
+		Renderer3D::Begin();
 	}
 
 	void Renderer::BeginScene(const EditorCamera& camera)
@@ -92,14 +92,14 @@ namespace origin {
 		s_ScriptEngineData.globalUbo->SetData(&s_ScriptEngineData.globalUboData, sizeof(GlobalUBO));
 		s_ScriptEngineData.globalUbo->Unbind();
 
-		Renderer2D::BeginScene();
-		Renderer3D::BeginScene();
+		Renderer2D::Begin();
+		Renderer3D::Begin();
 	}
 
 	void Renderer::EndScene()
 	{
-		Renderer2D::EndScene();
-		Renderer3D::EndScene();
+		Renderer2D::End();
+		Renderer3D::End();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -126,11 +126,6 @@ namespace origin {
 	void Renderer::SetLightSpaceMatrix(const glm::mat4& lightSpaceMatrix)
 	{
 		s_ScriptEngineData.globalUboData.LightSpaceMatrix = lightSpaceMatrix;
-	}
-
-	void Renderer::DrawLineMode(bool enable)
-	{
-		RenderCommand::DrawLineMode(enable);
 	}
 
 	void Renderer::LoadShader()

@@ -299,8 +299,17 @@ namespace origin {
 		switch (m_ProjectionType)
 		{
 		case ProjectionType::Perspective:
-			m_FocalPoint += -GetRightDirection() * delta.x * xSpeed;
-			m_FocalPoint += GetUpDirection() * delta.y * ySpeed;
+			if (m_CameraStyle == Pivot)
+			{
+				m_FocalPoint += -GetRightDirection() * delta.x * xSpeed;
+				m_FocalPoint += GetUpDirection() * delta.y * ySpeed;
+			}
+			else
+			{
+				m_Position -= GetRightDirection() * delta.x * m_MoveSpeed;
+				m_Position += GetUpDirection() * delta.y * m_MoveSpeed;
+			}
+			
 			break;
 		case ProjectionType::Orthographic:
 			m_Position.x -= delta.x * m_OrthoSize * 0.5f;
