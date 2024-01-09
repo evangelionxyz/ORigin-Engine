@@ -380,13 +380,16 @@ namespace origin
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
 
-			out << YAML::Key << "MeshHandle" << YAML::Value << sMesh.Model;
-			std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
-			out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->Color;
-			out << YAML::Key << "Shininess" << YAML::Value << model->GetMaterial()->Shininess;
-			out << YAML::Key << "Bias" << YAML::Value << model->GetMaterial()->Bias;
-			out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->TilingFactor;
-
+			if (sMesh.Model != 0)
+			{
+				out << YAML::Key << "MeshHandle" << YAML::Value << sMesh.Model;
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
+				out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->Color;
+				out << YAML::Key << "Shininess" << YAML::Value << model->GetMaterial()->Shininess;
+				out << YAML::Key << "Bias" << YAML::Value << model->GetMaterial()->Bias;
+				out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->TilingFactor;
+			}
+			
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
 
@@ -402,6 +405,19 @@ namespace origin
 			out << YAML::Key << "DynamicFriction" << YAML::Value << boxCollider.DynamicFriction;
 
 			out << YAML::EndMap; // !BoxColliderComponent
+		}
+
+		if (entity.HasComponent<SphereColliderComponent>())
+		{
+			out << YAML::Key << "SphereColliderComponent";
+			out << YAML::BeginMap;
+			const auto& sc = entity.GetComponent<SphereColliderComponent>();
+			out << YAML::Key << "Radius" << sc.Radius;
+			out << YAML::Key << "Offset" << sc.Offset;
+			out << YAML::Key << "Restitution" << sc.Restitution;
+			out << YAML::Key << "StaticFriction" << YAML::Value << sc.StaticFriction;
+			out << YAML::Key << "DynamicFriction" << YAML::Value << sc.DynamicFriction;
+			out << YAML::EndMap;
 		}
 
 		if (entity.HasComponent<SphereColliderComponent>())
@@ -899,12 +915,16 @@ namespace origin
 				{
 					auto& sMesh = deserializedEntity.AddComponent<StaticMeshComponent>();
 
-					sMesh.Model = staticMeshComponent["MeshHandle"].as<uint64_t>();
-					std::shared_ptr<Model>& model = AssetManager::GetAsset<Model>(sMesh.Model);
-					model->GetMaterial()->Color = staticMeshComponent["Color"].as<glm::vec4>();
-					model->GetMaterial()->Shininess = staticMeshComponent["Shininess"].as<float>();
-					model->GetMaterial()->Bias = staticMeshComponent["Bias"].as<float>();
-					model->GetMaterial()->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
+					if (staticMeshComponent["MeshHandle"])
+					{
+						sMesh.Model = staticMeshComponent["MeshHandle"].as<uint64_t>();
+						std::shared_ptr<Model>& model = AssetManager::GetAsset<Model>(sMesh.Model);
+						model->GetMaterial()->Color = staticMeshComponent["Color"].as<glm::vec4>();
+						model->GetMaterial()->Shininess = staticMeshComponent["Shininess"].as<float>();
+						model->GetMaterial()->Bias = staticMeshComponent["Bias"].as<float>();
+						model->GetMaterial()->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
+					}
+					
 				}
 
 				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
@@ -915,6 +935,16 @@ namespace origin
 					boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
 					boxCollider.StaticFriction = boxColliderComponent["StaticFriction"].as<float>();
 					boxCollider.DynamicFriction = boxColliderComponent["DynamicFriction"].as<float>();
+				}
+
+				if (YAML::Node sphereColliderComponent = entity["SphereColliderComponent"])
+				{
+					auto& sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
+					sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
+					sphereCollider.Offset = sphereColliderComponent["Offset"].as<glm::vec3>();
+					sphereCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
+					sphereCollider.StaticFriction = sphereColliderComponent["StaticFriction"].as<float>();
+					sphereCollider.DynamicFriction = sphereColliderComponent["DynamicFriction"].as<float>();
 				}
 
 				if (YAML::Node sphereColliderComponent = entity["SpherColliderComponent"])

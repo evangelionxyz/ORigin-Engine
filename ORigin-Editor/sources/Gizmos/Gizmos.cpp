@@ -22,10 +22,9 @@ namespace origin {
 			RenderCommand::SetLineWidth(1.0f);
 		}
 
-		DrawOverlay(camera);
 		DrawIcons(camera);
 
-		Renderer::EndScene();
+		DrawOverlay(camera);
 	}
 	void Gizmos::Draw2DVerticalGrid(const EditorCamera& camera)
 	{
@@ -121,6 +120,8 @@ namespace origin {
 
 		if (EditorLayer::Get().m_VisualizeCollider)
 		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 			const auto& box = scene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
 			for (auto entity : box)
 			{
@@ -131,32 +132,25 @@ namespace origin {
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + bc.Offset))
 					* glm::toMat4(glm::quat(tc.Rotation))
 					* glm::scale(glm::mat4(1.0f), scale * 2.0f);
-				Renderer3D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)entity);
+
+				Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)entity);
 			}
 
 			const auto& sphere = scene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
 			for (auto entity : sphere)
 			{
 				const auto& [tc, cc] = sphere.get<TransformComponent, SphereColliderComponent>(entity);
-				glm::vec3 scale = tc.Scale * glm::vec3(cc.Radius * 2.0f);
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
-					* glm::rotate(glm::mat4(1.0f), tc.Rotation.x, glm::vec3(1, 0, 0))
-					* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0, 1, 0))
-					* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0, 0, 1))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(scale * 2.1f));
-
-				Renderer2D::DrawCircle(transform, glm::vec4(0.7f, 0.0f, 1.0f, 1.0f), 1.0f);
-
-				transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
-					* glm::rotate(glm::mat4(1.0f), tc.Rotation.x + glm::radians(90.0f), glm::vec3(1, 0, 0))
-					* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0, 1, 0))
-					* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0, 0, 1))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(scale * 2.1f));
-
-				Renderer2D::DrawCircle(transform, glm::vec4(0.7f, 0.0f, 1.0f, 1.0f), 1.0f, (int)entity);
+				// TODO: Add Offset
+				Renderer3D::DrawSphere(tc.GetTransform(), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (cc.Radius + 0.1f)* 2.0f);
 			}
+
+		
+			Renderer3D::End();
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
+
 	}
 
 	void Gizmos::DrawIcons(const EditorCamera & camera)
@@ -226,6 +220,8 @@ namespace origin {
 			auto& tc = lighting.get<TransformComponent>(entity);
 			drawIcon(tc, textures.at("lighting"), (int)entity);
 		}
+
+		Renderer2D::End();
 	}
 
 }

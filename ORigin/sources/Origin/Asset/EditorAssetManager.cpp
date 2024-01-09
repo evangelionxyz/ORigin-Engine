@@ -16,6 +16,7 @@ namespace origin {
 		{ ".png", AssetType::Texture2D },
 		{ ".obj", AssetType::StaticMesh },
 		{ ".gltf", AssetType::StaticMesh },
+		{ ".fbx", AssetType::StaticMesh },
 		{ ".ogg", AssetType::Audio },
 		{ ".mp3", AssetType::Audio },
 		{ ".wav", AssetType::Audio },

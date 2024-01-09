@@ -15,8 +15,6 @@ namespace origin {
 
 	void Lighting::OnUpdate(const TransformComponent& tc)
 	{
-		Renderer::SetLightSpaceMatrix(m_ShadowRenderer->LightSpaceMatrix);
-
 		static std::string lightUniformName;
 
 		switch (Type)

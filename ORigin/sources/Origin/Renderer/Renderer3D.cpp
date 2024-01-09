@@ -332,6 +332,122 @@ namespace origin {
 		Renderer2D::DrawLine(lineVertices[23], lineVertices[20], color);
 	}
 
+	void Renderer3D::DrawQuad(const glm::mat4& transform, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec4& color, int entityID)
+	{
+		for (size_t i = 0; i < 6; ++i)
+		{
+			s_3Ddata.CubeVertexBufferPtr->Position = transform * glm::vec4((i % 2 == 0 ? p0 : p2), 1.0f);
+			s_3Ddata.CubeVertexBufferPtr->Color = color;
+			s_3Ddata.CubeVertexBufferPtr->TexCoord = glm::vec2(0.0f);
+			s_3Ddata.CubeVertexBufferPtr->TexIndex = 0.0f;
+			s_3Ddata.CubeVertexBufferPtr->EntityID = entityID;
+			s_3Ddata.CubeVertexBufferPtr++;
+
+			s_3Ddata.CubeVertexBufferPtr->Position = transform * glm::vec4((i % 2 == 0 ? p1 : p3), 1.0f);
+			s_3Ddata.CubeVertexBufferPtr->Color = color;
+			s_3Ddata.CubeVertexBufferPtr->TexCoord = glm::vec2(0.0f);
+			s_3Ddata.CubeVertexBufferPtr->TexIndex = 0.0f;
+			s_3Ddata.CubeVertexBufferPtr++;
+
+			s_3Ddata.CubeIndexCount += 6;
+		}
+	}
+
+	void Renderer3D::DrawSphere(const glm::mat4& transform, const glm::vec4& color, float radius, int entityID, uint8_t segments, uint8_t stacks)
+	{
+		if (s_3Ddata.CubeIndexCount + (segments * stacks * 6) >= Renderer3DData::MaxIndices)
+			NextBatch();
+
+		const float textureIndex = 0.0f; // White Texture
+		const float tilingFactor = 1.0f;
+		glm::vec2 textureCoords = glm::vec2(0.0f);
+
+		float phiIncrement = glm::pi<float>() / stacks;
+		float thetaIncrement = glm::two_pi<float>() / segments;
+
+		for (uint8_t i = 0; i < stacks; ++i)
+		{
+			float phi0 = i * phiIncrement;
+			float phi1 = (i + 1) * phiIncrement;
+
+			for (uint8_t j = 0; j < segments; ++j)
+			{
+				float theta0 = j * thetaIncrement;
+				float theta1 = (j + 1) * thetaIncrement;
+
+				// Vertices for the sphere
+				glm::vec3 p0(radius * sin(phi0) * cos(theta0), radius * cos(phi0), radius * sin(phi0) * sin(theta0));
+				glm::vec3 p1(radius * sin(phi0) * cos(theta1), radius * cos(phi0), radius * sin(phi0) * sin(theta1));
+				glm::vec3 p2(radius * sin(phi1) * cos(theta1), radius * cos(phi1), radius * sin(phi1) * sin(theta1));
+				glm::vec3 p3(radius * sin(phi1) * cos(theta0), radius * cos(phi1), radius * sin(phi1) * sin(theta0));
+
+				// Draw the faces of the sphere
+				DrawQuad(transform, p0, p1, p2, p3, color, entityID);
+			}
+		}
+	}
+
+	void Renderer3D::DrawCapsule(const glm::mat4& transform, const glm::vec4& color, float radius, float height, int entityID)
+	{
+		constexpr uint8_t segments = 20; // Number of segments in each circle
+		constexpr uint8_t stacks = 10;   // Number of stacks for the cylinder
+
+		if (s_3Ddata.CubeIndexCount + (segments * 6 * 2) >= Renderer3DData::MaxIndices)
+			NextBatch();
+
+		const float textureIndex = 0.0f; // White Texture
+		const float tilingFactor = 1.0f;
+		glm::vec2 textureCoords = glm::vec2(0.0f);
+
+		// Draw cylinder
+		float angleIncrement = glm::two_pi<float>() / static_cast<float>(segments);
+		for (uint8_t i = 0; i < segments; ++i)
+		{
+			float angle0 = angleIncrement * static_cast<float>(i);
+			float angle1 = angleIncrement * static_cast<float>(i + 1);
+
+			// Vertices for the cylinder
+			glm::vec3 p0(radius * cos(angle0), -height * 0.5f, radius * sin(angle0));
+			glm::vec3 p1(radius * cos(angle1), -height * 0.5f, radius * sin(angle1));
+			glm::vec3 p2(radius * cos(angle1), height * 0.5f, radius * sin(angle1));
+			glm::vec3 p3(radius * cos(angle0), height * 0.5f, radius * sin(angle0));
+
+			// Draw the faces of the cylinder
+			DrawQuad(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), p0, p1, p2, p3, color, entityID);
+		}
+
+		DrawHemisphere(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, height / 2.0f, 0.0f)), radius, segments, stacks, color, entityID);
+		DrawHemisphere(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -height / 2.0f, 0.0f))
+			* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f)), radius, segments, stacks, color, entityID);
+
+	}
+
+	void Renderer3D::DrawHemisphere(const glm::mat4& transform, float radius, uint8_t segments, uint8_t stacks, const glm::vec4& color, int entityID)
+	{
+		float stackIncrement = glm::half_pi<float>() / static_cast<float>(stacks);
+		float angleIncrement = glm::two_pi<float>() / static_cast<float>(segments);
+
+		for (uint8_t i = 0; i <= stacks; ++i)
+		{
+			float stackAngle = glm::half_pi<float>() - (static_cast<float>(i) * stackIncrement);
+
+			for (uint8_t j = 0; j < segments; ++j)
+			{
+				float angle0 = static_cast<float>(j) * angleIncrement;
+				float angle1 = angle0 + angleIncrement;
+
+				// Vertices for the hemisphere
+				glm::vec3 p0(radius * sin(stackAngle) * cos(angle0), radius * cos(stackAngle), radius * sin(stackAngle) * sin(angle0));
+				glm::vec3 p1(radius * sin(stackAngle) * cos(angle1), radius * cos(stackAngle), radius * sin(stackAngle) * sin(angle1));
+				glm::vec3 p2(radius * sin(stackAngle - stackIncrement) * cos(angle1), radius * cos(stackAngle - stackIncrement), radius * sin(stackAngle - stackIncrement) * sin(angle1));
+				glm::vec3 p3(radius * sin(stackAngle - stackIncrement) * cos(angle0), radius * cos(stackAngle - stackIncrement), radius * sin(stackAngle - stackIncrement) * sin(angle0));
+
+				// Draw the faces of the hemisphere
+				DrawQuad(transform, p0, p1, p2, p3, color, entityID);
+			}
+		}
+	}
+
 	void Renderer3D::ResetStats()
 	{
 		memset(&s_3Ddata.Stats, 0, sizeof(Renderer3D::Statistics));

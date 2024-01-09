@@ -48,13 +48,13 @@ namespace origin
 		}
 	}
 
-	void OpenGLRendererAPI::DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount)
 	{
 		m_DrawLineMode ? glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) : glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if (vertexArray)
 		{
 			vertexArray->Bind();
-			glDrawArrays(GL_TRIANGLES, 0, indexCount);
+			glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 		}
 	}
 

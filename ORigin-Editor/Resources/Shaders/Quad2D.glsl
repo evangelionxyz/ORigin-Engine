@@ -1,5 +1,3 @@
-// OpenGL-Shader
-
 // type vertex
 #version 450 core
 layout(location = 0) in vec3 a_Position;
@@ -9,41 +7,37 @@ layout(location = 3) in float a_TexIndex;
 layout(location = 4) in vec2 a_TilingFactor;
 layout(location = 5) in int a_EntityID;
 
-layout (std140, binding = 0) uniform UBO
+layout (std140, binding = 0) uniform Camera
 {
 	mat4 ViewProjection;
-	mat4 LightSpaceMatrix;
-	vec3 CameraPosition;
+	vec3 Position;
 
-} uboData;
+} CameraBuffer;
 
 struct VertexOutput
 {
 	vec4 Color;
 	vec2 TexCoord;
 	vec2 TilingFactor;
-	vec4 LightSpacePosition;
 };
 
 layout (location = 0) out VertexOutput Output;
-layout (location = 4) out flat float v_TexIndex;
-layout (location = 5) out flat int v_EntityID;
+layout (location = 3) out flat float v_TexIndex;
+layout (location = 4) out flat int v_EntityID;
 
 void main()
 {
 	Output.Color = a_Color;
 	Output.TexCoord = a_TexCoord;
-	v_TexIndex = a_TexIndex;
 	Output.TilingFactor = a_TilingFactor;
+
+	v_TexIndex = a_TexIndex;
 	v_EntityID = a_EntityID;
 
-	Output.LightSpacePosition = uboData.LightSpaceMatrix * vec4(a_Position, 1.0);
-
-	gl_Position = uboData.ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = CameraBuffer.ViewProjection * vec4(a_Position, 1.0);
 }
 
 // type fragment
-
 #version 450 core
 
 layout(location = 0) out vec4 color;
@@ -54,12 +48,11 @@ struct VertexOutput
 	vec4 Color;
 	vec2 TexCoord;
 	vec2 TilingFactor;
-	vec4 LightSpacePosition;
 };
 
 layout (location = 0) in VertexOutput Input;
-layout (location = 4) in flat float v_TexIndex;
-layout (location = 5) in flat int v_EntityID;
+layout (location = 3) in flat float v_TexIndex;
+layout (location = 4) in flat int v_EntityID;
 
 layout (binding = 0) uniform sampler2D u_Textures[32];
 

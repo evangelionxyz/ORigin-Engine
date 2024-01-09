@@ -11,9 +11,10 @@ namespace origin
 	{
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
-
-		glNamedBufferData(m_RendererID, bufferSize, nullptr, GL_DYNAMIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, bufferSize, NULL, GL_DYNAMIC_DRAW);
 		glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, m_RendererID);
+
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
@@ -33,8 +34,9 @@ namespace origin
 
 	void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		glBindBufferBase(GL_UNIFORM_BUFFER, m_BindingPoint, m_RendererID);
-		glNamedBufferSubData(m_RendererID, offset, size, data);
+		// If had any changes
+		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 	}
 
 	uint32_t OpenGLUniformBuffer::Get()

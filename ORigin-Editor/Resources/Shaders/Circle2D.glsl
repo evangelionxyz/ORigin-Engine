@@ -7,13 +7,12 @@ layout (location = 3) in float a_Thickness;
 layout (location = 4) in float a_Fade;
 layout (location = 5) in int a_EntityID;
 
-layout (std140, binding = 0) uniform UBO
+layout (std140, binding = 0) uniform Camera
 {
 	mat4 ViewProjection;
-	mat4 LightSpaceMatrix;
-	vec3 CameraPosition;
+	vec3 Position;
 
-} uboData;
+} CameraBuffer;
 
 struct Vertex
 {
@@ -34,7 +33,7 @@ void main()
 	outVertex.Fade = a_Fade;
 	v_EntityID = a_EntityID;
 
-	gl_Position = uboData.ViewProjection * vec4(a_WorldPosition, 1.0);
+	gl_Position = CameraBuffer.ViewProjection * vec4(a_WorldPosition, 1.0);
 }
 
 // type fragment

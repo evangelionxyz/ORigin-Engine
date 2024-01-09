@@ -62,7 +62,7 @@ namespace origin {
 		float GetYaw() const { return m_Yaw; }
 		float GetPitch() const { return m_Pitch; }
 		float GetZoomSpeed() { return ZoomSpeed(); }
-		float GetFOV() { return m_FOV; }
+		float GetFOV() const { return m_FOV; }
 		float GetAspectRatio() { return m_AspectRatio; }
 		float GetOrthoSize() const { return m_OrthoSize; }
 		float GetWidth() const { return m_ViewportWidth; }
@@ -109,7 +109,7 @@ namespace origin {
 		float m_FOV = 45.0f;
 		float m_AspectRatio = 1.778f;
 		float m_NearClip = 0.1f;
-		float m_FarClip = 1000.0f;
+		float m_FarClip = 5000.0f;
 
 		float m_OrthoNearClip = -1.0f;
 		float m_OrthoFarClip = 100.0f;

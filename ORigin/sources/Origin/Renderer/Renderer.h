@@ -13,9 +13,16 @@
 
 namespace origin {
 
+
 	class Renderer
 	{
 	public:
+		struct CameraBuffer
+		{
+			glm::mat4 ViewProjection;
+			glm::vec3 Position;
+		};
+
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static bool Init();
@@ -31,9 +38,9 @@ namespace origin {
 		static void OnUpdate();
 
 		static std::shared_ptr<Shader> GetGShader(const std::string& name);
-
 		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetSaderLibrary();
-		static void SetLightSpaceMatrix(const glm::mat4& lightSpaceMatrix);
+
+		static CameraBuffer GetCameraBuffer();
 
 	private:
 		static void LoadShader();

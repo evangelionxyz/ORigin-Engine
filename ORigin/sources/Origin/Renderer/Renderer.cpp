@@ -16,32 +16,21 @@
 
 namespace origin {
 
-	struct GlobalUBO
-	{
-		glm::mat4 ViewProjection;
-		glm::mat4 LightSpaceMatrix;
-		glm::vec3 CameraPosition;
-	};
+#define CAMERA_BINDING_POINT 0
 
-	struct RendererData
-	{
-		GlobalUBO globalUboData;
-		std::shared_ptr<UniformBuffer> globalUbo;
-	};
-
-	static RendererData s_ScriptEngineData;
 	static ShaderLibrary GShaderLibrary;
+	static Renderer::CameraBuffer s_CameraBuffer;
+	static std::shared_ptr<UniformBuffer> s_CameraUBO;
 
 	bool Renderer::Init()
 	{
 		RenderCommand::Init();
 
 		Renderer::LoadShader();
-
 		Renderer2D::Init();
 		Renderer3D::Init();
 
-		s_ScriptEngineData.globalUbo = UniformBuffer::Create(sizeof(GlobalUBO), 0);
+		s_CameraUBO = UniformBuffer::Create(sizeof(s_CameraBuffer), CAMERA_BINDING_POINT);
 
 		return true;
 	}
@@ -56,20 +45,10 @@ namespace origin {
 
 	void Renderer::BeginScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		uint32_t offsetViewProjection = 0;
-		uint32_t offsetLightSpaceMatrix = sizeof(glm::mat4);
-		uint32_t offsetCameraPosition = offsetLightSpaceMatrix + sizeof(glm::mat4);
+		s_CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(cameraTransform.GetTransform());
+		s_CameraBuffer.Position = camera.GetPosition();
 
-		s_ScriptEngineData.globalUboData.ViewProjection = camera.GetProjection() * glm::inverse(cameraTransform.GetTransform());
-		s_ScriptEngineData.globalUboData.CameraPosition = camera.GetPosition();
-
-		s_ScriptEngineData.globalUbo->Bind();
-		//s_Data.globalUbo->SetData(&s_Data.globalUboData.ViewProjection, sizeof(glm::mat4), offsetViewProjection);
-		//s_Data.globalUbo->SetData(&s_Data.globalUboData.LightSpaceMatrix, sizeof(glm::mat4), offsetLightSpaceMatrix);
-		//s_Data.globalUbo->SetData(&s_Data.globalUboData.CameraPosition, sizeof(glm::vec3), offsetCameraPosition);
-		s_ScriptEngineData.globalUbo->SetData(&s_ScriptEngineData.globalUboData, sizeof(GlobalUBO));
-
-		s_ScriptEngineData.globalUbo->Unbind();
+		s_CameraUBO->SetData(&s_CameraBuffer, sizeof(s_CameraBuffer));
 
 		Renderer2D::Begin();
 		Renderer3D::Begin();
@@ -77,20 +56,10 @@ namespace origin {
 
 	void Renderer::BeginScene(const EditorCamera& camera)
 	{
+		s_CameraBuffer.ViewProjection = camera.GetViewProjection();
+		s_CameraBuffer.Position = camera.GetPosition();
 
-		uint32_t offsetViewProjection = 0;
-		uint32_t offsetLightSpaceMatrix = sizeof(glm::mat4);
-		uint32_t offsetCameraPosition = offsetLightSpaceMatrix + sizeof(glm::mat4);
-
-		s_ScriptEngineData.globalUboData.ViewProjection = camera.GetViewProjection();
-		s_ScriptEngineData.globalUboData.CameraPosition = camera.GetPosition();
-
-		s_ScriptEngineData.globalUbo->Bind();
-		//s_Data.globalUbo->SetData(&s_Data.globalUboData.ViewProjection, sizeof(glm::mat4), offsetViewProjection);
-		//s_Data.globalUbo->SetData(&s_Data.globalUboData.LightSpaceMatrix, sizeof(glm::mat4), offsetLightSpaceMatrix);
-		//s_Data.globalUbo->SetData(&s_Data.globalUboData.CameraPosition, sizeof(glm::vec3), offsetCameraPosition);
-		s_ScriptEngineData.globalUbo->SetData(&s_ScriptEngineData.globalUboData, sizeof(GlobalUBO));
-		s_ScriptEngineData.globalUbo->Unbind();
+		s_CameraUBO->SetData(&s_CameraBuffer, sizeof(s_CameraBuffer));
 
 		Renderer2D::Begin();
 		Renderer3D::Begin();
@@ -100,6 +69,8 @@ namespace origin {
 	{
 		Renderer2D::End();
 		Renderer3D::End();
+
+		s_CameraUBO->Unbind();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -123,9 +94,9 @@ namespace origin {
 		return GShaderLibrary.GetMap();
 	}
 
-	void Renderer::SetLightSpaceMatrix(const glm::mat4& lightSpaceMatrix)
+	Renderer::CameraBuffer Renderer::GetCameraBuffer()
 	{
-		s_ScriptEngineData.globalUboData.LightSpaceMatrix = lightSpaceMatrix;
+		return s_CameraBuffer;
 	}
 
 	void Renderer::LoadShader()

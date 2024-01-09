@@ -30,11 +30,11 @@ namespace origin {
 	{
 		if (!Body)
 			return;
-		
+
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Body;
 		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
-		dActor->addForce(physx::PxVec3(force.x, force.y, force.z), Utils::ForceModeToPhysXForceMode(mode));
 
+		dActor->addForce(physx::PxVec3(force.x, force.y, force.z), Utils::ForceModeToPhysXForceMode(mode));
 	}
 
 	void RigidbodyComponent::SetPosition(glm::vec3 position)
