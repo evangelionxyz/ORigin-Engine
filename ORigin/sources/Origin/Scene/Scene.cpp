@@ -769,15 +769,8 @@ namespace origin
 		for (auto& entity : circleEntities)
 		{
 			auto& [transform, circle] = circles.get<TransformComponent, CircleRendererComponent>(entity);
-			for (auto& light : lightView)
-			{
-				auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-				lc.Light->OnUpdate(tc);
-			}
-			Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
-				static_cast<int>(entity));
+			Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,static_cast<int>(entity));
 		}
-
 
 		// Text
 		const auto& textView = m_Registry.view<TransformComponent, TextComponent>();
