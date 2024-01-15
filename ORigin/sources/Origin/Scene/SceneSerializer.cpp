@@ -384,10 +384,10 @@ namespace origin
 			{
 				out << YAML::Key << "MeshHandle" << YAML::Value << sMesh.Model;
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
-				out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->Color;
-				out << YAML::Key << "Shininess" << YAML::Value << model->GetMaterial()->Shininess;
-				out << YAML::Key << "Bias" << YAML::Value << model->GetMaterial()->Bias;
-				out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->TilingFactor;
+				//out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->Color;
+				//out << YAML::Key << "Shininess" << YAML::Value << model->GetMaterial()->Shininess;
+				//out << YAML::Key << "Bias" << YAML::Value << model->GetMaterial()->Bias;
+				//out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->TilingFactor;
 			}
 			
 			out << YAML::EndMap; // !StaticMeshComponent
@@ -919,10 +919,10 @@ namespace origin
 					{
 						sMesh.Model = staticMeshComponent["MeshHandle"].as<uint64_t>();
 						std::shared_ptr<Model>& model = AssetManager::GetAsset<Model>(sMesh.Model);
-						model->GetMaterial()->Color = staticMeshComponent["Color"].as<glm::vec4>();
-						model->GetMaterial()->Shininess = staticMeshComponent["Shininess"].as<float>();
-						model->GetMaterial()->Bias = staticMeshComponent["Bias"].as<float>();
-						model->GetMaterial()->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
+						//model->GetMaterial()->Color = staticMeshComponent["Color"].as<glm::vec4>();
+						//model->GetMaterial()->Shininess = staticMeshComponent["Shininess"].as<float>();
+						//model->GetMaterial()->Bias = staticMeshComponent["Bias"].as<float>();
+						//model->GetMaterial()->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
 					}
 					
 				}

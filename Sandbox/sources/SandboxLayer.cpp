@@ -11,69 +11,73 @@ std::shared_ptr<Shader> shader;
 std::shared_ptr<VertexArray> va;
 std::shared_ptr<VertexBuffer> vb;
 
-struct MyBuffer
+struct ModelData
 {
-	glm::mat4 projection;
-	glm::mat4 view;
-	glm::vec3 color;
+	std::shared_ptr<Model> Model;
+	std::shared_ptr<Material> Material;
+
+	glm::vec3 Position = glm::vec3(0.0f);
+	glm::vec3 Rotation = glm::vec3(0.0f);
+	glm::vec3 Scale = glm::vec4(1.0f);
+	glm::mat4 Transform = glm::mat4(1.0f);
+
+	void Update(float dt)
+	{
+		glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+		Transform = glm::translate(glm::mat4(1.0f), Position)
+			* rotation * glm::scale(glm::mat4(1.0f), Scale);
+	}
 };
 
-MyBuffer buffer;
-uint32_t ubo;
+ModelData cylinder;
+ModelData plane;
+
+std::shared_ptr<Texture2D> texture;
+
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
-	shader = Shader::Create("Resources/Sandbox/shader.glsl", true, true);
+	camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+	camera.SetProjectionType(ProjectionType::Perspective);
+	camera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
+
+	shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true, true);
 	shader->Enable();
 
-	float v[] = {
-		-0.5f,-0.5f, 1.0f, 1.0f, 1.0f,
-		 0.0f, 0.5f, 1.0f, 1.0f, 1.0f,
-		 0.5f,-0.5f, 1.0f, 1.0f, 1.0f
-	};
+	cylinder.Material = Material::Create("cylinder", shader);
+	cylinder.Model = Model::Create("D:/Dev/ORiginProjects/TestGame/Assets/Models/cylinder_brick.obj", cylinder.Material);
+	cylinder.Position.x = 2.0f;
+	cylinder.Transform = glm::translate(glm::mat4(1.0f), cylinder.Position) * glm::scale(glm::mat4(1.0f), cylinder.Scale);
 
-	va = VertexArray::Create();
-	vb = VertexBuffer::Create(v, sizeof(v));
-	vb->SetLayout({
-		{ShaderDataType::Float2, "aPos"},
-		{ShaderDataType::Float3, "aColor"}
-		});
-	va->AddVertexBuffer(vb);
+	plane.Material = Material::Create("plane", shader);
+	plane.Model = Model::Create("D:/Dev/ORiginProjects/TestGame/Assets/Models/checker_plane.obj", plane.Material);
+	plane.Position.x - 2.0f;
+	plane.Transform = glm::translate(glm::mat4(1.0f), plane.Position) * glm::scale(glm::mat4(1.0f), plane.Scale);
 
-	auto w = Application::Get().GetWindow().GetWidth();
-	auto h = Application::Get().GetWindow().GetHeight();
-
-	float aspectRatio = w / h;
-	buffer.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
-	buffer.view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 4.0f));
-	buffer.view = glm::inverse(buffer.view);
-
-	buffer.color = glm::vec3(1.0f, 0.0f, 0.0f);
-
-	glCreateBuffers(1, &ubo);
-	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(MyBuffer), NULL, GL_DYNAMIC_DRAW);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo);
-
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	texture = Texture2D::Create("D:/Dev/ORiginProjects/TestGame/Assets/Models/brick.jpg");
+	texture->Bind();
 }
 
 SandboxLayer::~SandboxLayer()
 {
-	glDeleteBuffers(1, &ubo);
 }
 
-void SandboxLayer::OnUpdate(Timestep ts)
+void SandboxLayer::OnUpdate(Timestep deltaTime)
 {
 	RenderCommand::Clear();
 
-	shader->Enable();
-	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(MyBuffer), &buffer);
+	Renderer::BeginScene(camera);
+	camera.OnUpdate(deltaTime);
 
-	RenderCommand::DrawArrays(va, 3);
+	Renderer2D::DrawQuad(glm::mat4(1.0f), texture);
 
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	cylinder.Update(deltaTime);
+	cylinder.Model->Draw(cylinder.Transform);
+
+	plane.Update(deltaTime);
+	plane.Model->Draw(plane.Transform);
+
+	Renderer::EndScene();
 }
 
 void SandboxLayer::OnEvent(Event& e)
@@ -86,13 +90,7 @@ void SandboxLayer::OnEvent(Event& e)
 
 bool SandboxLayer::OnWindowResize(WindowResizeEvent& e)
 {
-	RenderCommand::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
-
-	float aspectRatio = static_cast<float>(e.GetWidth()) / static_cast<float>(e.GetHeight());
-	buffer.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
-	buffer.view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 4.0f));
-	buffer.view = glm::inverse(buffer.view);
-
+	camera.SetViewportSize(e.GetWidth(), e.GetHeight());
 	return false;
 }
 
@@ -103,7 +101,24 @@ void SandboxLayer::OnGuiRender()
 
 	glm::vec3 pos = camera.GetPosition();
 	ImGui::Text("Camera Pos (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z);
-	ImGui::ColorEdit4("Color", glm::value_ptr(buffer.color));
+
+	ImGui::Separator();
+
+	ImGui::PushID("cylinder");
+	ImGui::Text("Cylinder");
+	ImGui::DragFloat3("Position", glm::value_ptr(cylinder.Position), 0.1f);
+	ImGui::DragFloat3("Rotation", glm::value_ptr(cylinder.Rotation), 0.1f);
+	ImGui::DragFloat3("Scale", glm::value_ptr(cylinder.Scale), 0.1f);
+	ImGui::PopID();
+
+	ImGui::Separator();
+
+	ImGui::PushID("plane");
+	ImGui::Text("Plane");
+	ImGui::DragFloat3("Position", glm::value_ptr(plane.Position), 0.1f);
+	ImGui::DragFloat3("Rotation", glm::value_ptr(plane.Rotation), 0.1f);
+	ImGui::DragFloat3("Scale", glm::value_ptr(plane.Scale), 0.1f);
+	ImGui::PopID();
 
 	ImGui::End();
 }

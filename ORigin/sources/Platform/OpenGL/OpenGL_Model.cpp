@@ -25,63 +25,31 @@ namespace origin
 		}
 
 		ProcessNode(scene->mRootNode, scene);
+
+		ModelUbo = UniformBuffer::Create(sizeof(ModelBuffer), 1);
 	}
 
 	OpenGLModel::~OpenGLModel()
 	{
-		m_Material->m_Shader.reset();
-		m_Material.reset();
 	}
 
-	void OpenGLModel::Draw()
+	void OpenGLModel::Draw(const glm::mat4& transform, int entityID)
 	{
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
 			if (mesh->IsLoaded())
+			{
+				m_Material->m_Shader->Enable();
+				m_ModelBuffer.Transform = transform;
+				m_ModelBuffer.EntityID = entityID;
+
+				ModelUbo->Bind();
+				ModelUbo->SetData(&m_ModelBuffer, sizeof(ModelBuffer));
 				mesh->Draw(m_Material->m_Shader);
+				ModelUbo->Unbind();
+				m_Material->m_Shader->Disable();
+			}
 		}
-	}
-
-	void OpenGLModel::Draw(const glm::mat4& modelTransform, const EditorCamera& camera, int entityID)
-	{
-		// Applying Main Shader Uniforms
-		m_Material->EnableShader();
-
-		m_Material->SetMatrix("uModelTransform", modelTransform);
-		m_Material->SetMatrix("uViewProjection", camera.GetViewProjection());
-		m_Material->SetVector("uCameraPosition", camera.GetPosition());
-
-		m_Material->SetVector("uColor", m_Material->Color);
-		m_Material->SetBool("uHasTextures", m_Material->HasTexture);
-		m_Material->SetVector("material.TilingFactor", m_Material->TilingFactor);
-		m_Material->SetFloat("material.Shininess", m_Material->Shininess);
-
-		m_Material->SetInt("uEntityID", entityID);
-
-		// Draw Mesh
-		Draw();
-		m_Material->DisableShader();
-	}
-
-	void OpenGLModel::Draw(const glm::mat4& modelTransform, const SceneCamera& camera, const glm::mat4& cameraTransform, int entityID)
-	{
-		// Applying Main Shader Uniforms
-		m_Material->EnableShader();
-		m_Material->SetMatrix("uModelTransform", modelTransform);
-		m_Material->SetMatrix("uViewProjection", camera.GetViewProjection() * glm::inverse(cameraTransform));
-		m_Material->SetVector("uCameraPosition", camera.GetPosition());
-
-		m_Material->SetVector("uColor", m_Material->Color);
-		m_Material->SetBool("uHasTextures", m_Material->HasTexture);
-		m_Material->SetVector("material.TilingFactor", m_Material->TilingFactor);
-		m_Material->SetFloat("material.Shininess", m_Material->Shininess);
-
-		m_Material->SetInt("uEntityID", entityID);
-
-		// Draw Mesh
-		Draw();
-
-		m_Material->DisableShader();
 	}
 
 	void OpenGLModel::ProcessNode(aiNode* node, const aiScene* scene)
@@ -149,11 +117,8 @@ namespace origin
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-			std::vector<std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE, "texture_diffuse");
+			std::vector<std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE);
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-
-			std::vector<std::shared_ptr<Texture2D>> specularMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_SPECULAR, "texture_specular");
-			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		}
 
 		return std::make_shared<OpenGLMesh>(vertices, indices, textures, m_Filepath);

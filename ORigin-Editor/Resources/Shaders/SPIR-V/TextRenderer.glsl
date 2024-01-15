@@ -1,5 +1,3 @@
-// MSDF text shader
-
 // type vertex
 #version 450 core
 

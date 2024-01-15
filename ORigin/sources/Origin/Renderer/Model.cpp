@@ -6,7 +6,6 @@
 
 namespace origin
 {
-
 	std::shared_ptr<Model> Model::Create(const std::string& filepath, std::shared_ptr<Material> material)
 	{
 		switch (RendererAPI::GetAPI())

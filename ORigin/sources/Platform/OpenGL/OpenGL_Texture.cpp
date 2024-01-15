@@ -158,7 +158,7 @@ namespace origin {
 
   void OpenGLTexture2D::Unbind()
   {
-    glBindTextureUnit(m_Index, NULL);
+    glBindTextureUnit(m_Index, 0);
   }
 
   void OpenGLTexture2D::Delete()

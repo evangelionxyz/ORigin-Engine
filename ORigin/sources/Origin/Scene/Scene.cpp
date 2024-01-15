@@ -616,22 +616,20 @@ namespace origin
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 
 		// Particle
+		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
+		for (auto entity : particles)
 		{
-			auto& view = m_Registry.view<TransformComponent, ParticleComponent>();
-			for (auto entity : view)
-			{
-				auto& [tc, pc] = view.get<TransformComponent, ParticleComponent>(entity);
+			auto& [tc, pc] = particles.get<TransformComponent, ParticleComponent>(entity);
 
-				for (int i = 0; i < 5; i++)
-				{
-					pc.Particle.Emit(
-						pc,
-						glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-						tc.Scale, tc.Rotation, static_cast<int>(entity)
-					);
-				}
-				pc.Particle.OnRender();
+			for (int i = 0; i < 5; i++)
+			{
+				pc.Particle.Emit(
+					pc,
+					glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
+					tc.Scale, tc.Rotation, static_cast<int>(entity)
+				);
 			}
+			pc.Particle.OnRender();
 		}
 
 		// Sprites
@@ -693,51 +691,19 @@ namespace origin
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		// 3D Scene
-		const auto& spriteView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-		for (const auto entity : spriteView)
-		{
-			auto& [transform, sprite] = spriteView.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer3D::DrawCube(transform.GetTransform(), sprite, static_cast<int>(entity));
-		}
-
 		// Mesh
+		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+		for (auto& entity : meshView)
 		{
-			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-			for (auto& entity : meshView)
+			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+
+			if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 			{
-				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
-
-				Lighting::PointLightCount = 0;
-				Lighting::SpotLightCount = 0;
-
-				if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
-				{
-					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
-
-					model->GetMaterial()->EnableShader();
-					model->GetMaterial()->SetFloat("material.Bias", model->GetMaterial()->Bias);
-
-					for (auto& light : lightView)
-					{
-						auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-						lc.Light->OnUpdate(tc, model->GetMaterial());
-					}
-
-					model->Draw(tc.GetTransform(), camera, cameraTransform.GetTransform(), static_cast<int>(entity));
-					model->GetMaterial()->DisableShader();
-
-					if (model->GetMaterial()->m_PointLightCount != Lighting::PointLightCount ||
-						model->GetMaterial()->m_SpotLightCount != Lighting::SpotLightCount)
-						model->GetMaterial()->RefreshShader();
-
-					model->GetMaterial()->m_PointLightCount = Lighting::PointLightCount;
-					model->GetMaterial()->m_SpotLightCount = Lighting::SpotLightCount;
-				}
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+				model->Draw(tc.GetTransform(), (int)entity);
 			}
 		}
 		
-
 		glDisable(GL_CULL_FACE);
 	}
 
@@ -745,166 +711,103 @@ namespace origin
 	{
 		Renderer::BeginScene(camera);
 
-		//m_Skybox->Draw(camera);
-
-		
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 		// Particle
+		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
+		for (auto entity : particles)
 		{
-			auto& view = m_Registry.view<TransformComponent, ParticleComponent>();
-			for (auto entity : view)
+			auto& [tc, pc] = particles.get<TransformComponent, ParticleComponent>(entity);
+
+			for (int i = 0; i < 5; i++)
 			{
-				auto& [tc, pc] = view.get<TransformComponent, ParticleComponent>(entity);
-
-				for (int i = 0; i < 5; i++)
-				{
-					pc.Particle.Emit(pc,
-					                 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-					                 tc.Scale, pc.Rotation, static_cast<int>(entity)
-					);
-				}
-
-				pc.Particle.OnRender();
+				pc.Particle.Emit(pc,
+					glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
+					tc.Scale, pc.Rotation, static_cast<int>(entity)
+				);
 			}
+
+			pc.Particle.OnRender();
 		}
 
-		// Sprites
+		auto& quads = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
+		std::vector<entt::entity> quadEntitties(quads.begin(), quads.end());
+
+		std::sort(quadEntitties.begin(), quadEntitties.end(), [=](const entt::entity& a, const entt::entity& b)
+			{
+				const auto& objA = m_Registry.get<TransformComponent>(a);
+				const auto& objB = m_Registry.get<TransformComponent>(b);
+				return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
+			});
+
+		for (const entt::entity& entity : quadEntitties)
 		{
-			auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
-			std::vector<entt::entity> entities(view.begin(), view.end());
-
-			std::sort(entities.begin(), entities.end(), [=](const entt::entity& a, const entt::entity& b)
-				{
-					const auto& objA = m_Registry.get<TransformComponent>(a);
-					const auto& objB = m_Registry.get<TransformComponent>(b);
-					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
-				});
-
-			
-			for (const entt::entity& entity : entities)
-			{
-				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
-
-				for (auto& light : lightView)
-				{
-					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnUpdate(tc);
-				}
-
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
-			}
-
-			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
-			for (auto& entity : animView)
-			{
-				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (anim.State.HasAnimations() == false)
-					continue;
-
-				if (anim.State.GetAnimation().HasFrame())
-					sprite.Texture = anim.State.GetAnimation().GetCurrentValue();
-			}
+			auto& [tc, sprite] = quads.get<TransformComponent, SpriteRenderer2DComponent>(entity);
+			Renderer2D::DrawSprite(tc.GetTransform(), sprite, static_cast<int>(entity));
 		}
 
-		// Circles
+		const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
+		for (auto& entity : animView)
 		{
-			auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			std::vector<entt::entity> entities(view.begin(), view.end());
+			auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
+			if (anim.State.HasAnimations() == false)
+				continue;
 
-			std::sort(entities.begin(), entities.end(), [=](const entt::entity& a, const entt::entity& b)
-				{
-					const auto& objA = m_Registry.get<TransformComponent>(a);
-					const auto& objB = m_Registry.get<TransformComponent>(b);
-					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
-				});
-
-			for (auto& entity : entities)
-			{
-				auto& [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
-				for (auto& light : lightView)
-				{
-					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnUpdate(tc);
-				}
-				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
-				                       static_cast<int>(entity));
-			}
+			if (anim.State.GetAnimation().HasFrame())
+				sprite.Texture = anim.State.GetAnimation().GetCurrentValue();
 		}
+
+		auto& circles = m_Registry.view<TransformComponent, CircleRendererComponent>();
+		std::vector<entt::entity> circleEntities(circles.begin(), circles.end());
+
+		std::sort(circleEntities.begin(), circleEntities.end(), [=](const entt::entity& a, const entt::entity& b)
+			{
+				const auto& objA = m_Registry.get<TransformComponent>(a);
+				const auto& objB = m_Registry.get<TransformComponent>(b);
+				return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
+			});
+
+		for (auto& entity : circleEntities)
+		{
+			auto& [transform, circle] = circles.get<TransformComponent, CircleRendererComponent>(entity);
+			for (auto& light : lightView)
+			{
+				auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
+				lc.Light->OnUpdate(tc);
+			}
+			Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
+				static_cast<int>(entity));
+		}
+
 
 		// Text
+		const auto& textView = m_Registry.view<TransformComponent, TextComponent>();
+		for (auto entity : textView)
 		{
-			const auto& view = m_Registry.view<TransformComponent, TextComponent>();
-			for (auto entity : view)
+			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
+			for (auto& light : lightView)
 			{
-				auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
-				for (auto& light : lightView)
-				{
-					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnUpdate(tc);
-				}
-				Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
+				auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
+				lc.Light->OnUpdate(tc);
 			}
+			Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
 		}
 
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		// 3D Scene
-		// Cube
-		const auto& cubeView = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-		std::vector<entt::entity> cubeEntities(cubeView.begin(), cubeView.end());
-		std::sort(cubeEntities.begin(), cubeEntities.end(),
-		          [=](const entt::entity& a, const entt::entity& b)
-		          {
-			          const auto& objA = m_Registry.get<TransformComponent>(a);
-			          const auto& objB = m_Registry.get<TransformComponent>(b);
-			          return length(camera.GetPosition() - objA.Translation) > length(
-				          camera.GetPosition() - objB.Translation);
-		          });
-
-		for (const entt::entity cube : cubeEntities)
-		{
-			auto& [transform, sprite] = cubeView.get<TransformComponent, SpriteRendererComponent>(cube);
-			Renderer3D::DrawCube(transform.GetTransform(), sprite, static_cast<int>(cube));
-		}
-
-		// Mesh
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
 		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 		for (auto& entity : meshView)
 		{
 			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
-			
-			Lighting::PointLightCount = 0;
-			Lighting::SpotLightCount = 0;
-
 			if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 			{
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
-
-				model->GetMaterial()->EnableShader();
-				model->GetMaterial()->SetFloat("material.Bias", model->GetMaterial()->Bias);
-
-				for (auto& light : lightView)
-				{
-					auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnUpdate(tc, model->GetMaterial());
-				}
-
-				model->Draw(tc.GetTransform(), camera, static_cast<int>(entity));
-				model->GetMaterial()->DisableShader();
-
-				if (model->GetMaterial()->m_PointLightCount != Lighting::PointLightCount || 
-					model->GetMaterial()->m_SpotLightCount != Lighting::SpotLightCount)
-					model->GetMaterial()->RefreshShader();
-
-				model->GetMaterial()->m_PointLightCount = Lighting::PointLightCount;
-				model->GetMaterial()->m_SpotLightCount = Lighting::SpotLightCount;
+				model->Draw(tc.GetTransform(), (int)entity);
 			}
 		}
-		glDisable(GL_CULL_FACE);
-
-		//DrawGrid(m_GridSize, m_GridColor);
+		//glDisable(GL_CULL_FACE);
 		Renderer::EndScene();
 	}
+	
 
 	void Scene::OnShadowRender()
 	{
@@ -926,7 +829,7 @@ namespace origin
 					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
 					// Set Depth shader
 					Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uModel", tc.GetTransform());
-					model->Draw();
+					model->Draw(tc.GetTransform(), (int)entity);
 				}
 			}
 

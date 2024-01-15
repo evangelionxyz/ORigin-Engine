@@ -35,6 +35,7 @@ includedirs {
     "%{IncludeDir.STBI}",
     "%{IncludeDir.GLFW}",
     "%{IncludeDir.IMGUI}",
+    "%{IncludeDir.FMOD}",
     "%{IncludeDir.IMGUIZMO}",
     "%{IncludeDir.BOX2D}",
     "%{IncludeDir.GLAD}",

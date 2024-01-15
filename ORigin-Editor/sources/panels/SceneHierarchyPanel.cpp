@@ -736,10 +736,10 @@ namespace origin {
 					ImGui::Separator();
 					ImGui::Text("Material");
 
-					ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->Color));
-					ImGui::DragFloat("Shininess", &model->GetMaterial()->Shininess, 0.1f, 1.0f, 256.0f);
-					ImGui::SliderFloat("Bias", &model->GetMaterial()->Bias, 0.005f, 0.1f);
-					DrawVec2Control("Tiling Factor", model->GetMaterial()->TilingFactor, 0.01f, 1.0f);
+					//ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->Color));
+					//ImGui::DragFloat("Shininess", &model->GetMaterial()->Shininess, 0.1f, 1.0f, 256.0f);
+					//ImGui::SliderFloat("Bias", &model->GetMaterial()->Bias, 0.005f, 0.1f);
+					//DrawVec2Control("Tiling Factor", model->GetMaterial()->TilingFactor, 0.01f, 1.0f);
 				}
 			});
 

@@ -215,7 +215,8 @@ namespace origin
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
-
+		if (!s_ScriptEngineData)
+			return;
 		s_ScriptEngineData->EntityClasses.clear();
 		s_ScriptEngineData->EntityInstances.clear();
 

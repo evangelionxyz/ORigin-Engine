@@ -173,7 +173,7 @@ namespace origin {
 		else m_EditorCamera.SetEntityObject({});
 
     m_Framebuffer->Unbind();
-    m_ActiveScene->OnShadowRender();
+    //m_ActiveScene->OnShadowRender();
   }
 
   void EditorLayer::OnDuplicateEntity()

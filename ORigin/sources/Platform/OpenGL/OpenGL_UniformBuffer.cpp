@@ -13,8 +13,6 @@ namespace origin
 		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
 		glBufferData(GL_UNIFORM_BUFFER, bufferSize, NULL, GL_DYNAMIC_DRAW);
 		glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, m_RendererID);
-
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()

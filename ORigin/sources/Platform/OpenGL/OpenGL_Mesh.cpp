@@ -26,18 +26,13 @@ namespace origin
 		OGN_CORE_TRACE("	Size : {} bytes", indices.size() * sizeof(uint32_t));
 
 		m_VertexArray = VertexArray::Create();
-		//m_VertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(MeshVertex));
-		m_VertexBuffer = VertexBuffer::Create(vertices);
+		m_VertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(MeshVertex));
 
 		m_VertexBuffer->SetLayout
 		({
 			{ ShaderDataType::Float3, "aPosition"		},
 			{ ShaderDataType::Float3, "aNormal"			},
-			{	ShaderDataType::Float2,	"aTexCoord"		},
-			{	ShaderDataType::Float3,	"aTangents"		},
-			{	ShaderDataType::Float3,	"aBitangents"	},
-			{	ShaderDataType::Int4,		"aBones"			},
-			{	ShaderDataType::Float4,	"aWeights"		}
+			{	ShaderDataType::Float2,	"aTexCoord"		}
 		});
 
 		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
@@ -63,33 +58,17 @@ namespace origin
 			return;
 		}
 
-		uint32_t diffuseNumber = 1;
-		uint32_t specularNumber = 1;
-		uint32_t normalNumber = 1;
-		uint32_t heightNumber = 1;
-
 		for (uint32_t i = 0; i < m_Textures.size(); i++)
 		{
-			std::string number;
-			std::string name = m_Textures[i]->GetMaterialTypeName();
-
-			if (name == "texture_diffuse")
-				number = std::to_string(diffuseNumber++);
-			else if (name == "texture_specular")
-				number = std::to_string(specularNumber++);
-			else if (name == "texture_normal")
-				number = std::to_string(normalNumber++);
-			else if (name == "texture_height")
-				number = std::to_string(heightNumber++);
-
-			shader->SetInt("material."+name+number, i);
+			shader->SetInt("u_Texture", i);
 			m_Textures[i]->Bind(i);
 		}
 
-		// Draw
 		RenderCommand::DrawIndexed(m_VertexArray);
 
 		for (auto& tex : m_Textures)
+		{
 			tex->Unbind();
+		}
 	}
 }

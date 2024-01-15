@@ -99,7 +99,6 @@ namespace origin {
 
 		// Set first texture slot to 0
 		s_2Ddata.TextureSlots[0] = s_2Ddata.WhiteTexture;
-		//s_2Ddata.FontAtlasTextureSlots[0] = Font::GetDefault()->GetAtlasTexture();
 
 		s_2Ddata.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
 		s_2Ddata.QuadVertexPositions[1] = {	 0.5f, -0.5f, 0.0f, 1.0f };

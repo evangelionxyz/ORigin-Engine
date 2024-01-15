@@ -20,23 +20,12 @@ namespace origin
 		return nullptr;
 	}
 
-	std::shared_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
+	std::shared_ptr<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:			return nullptr;
 		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLVertexBuffer>(vertices, size);
-		}
-
-		return nullptr;
-	}
-
-	std::shared_ptr<origin::VertexBuffer> VertexBuffer::Create(std::vector<MeshVertex> vertices)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case RendererAPI::API::None:			return nullptr;
-			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLVertexBuffer>(vertices);
 		}
 
 		return nullptr;

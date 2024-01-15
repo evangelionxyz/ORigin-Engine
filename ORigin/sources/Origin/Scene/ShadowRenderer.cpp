@@ -51,7 +51,7 @@ namespace origin {
 
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, m_Framebuffer->GetDepthAttachmentRendererID());
-		mat->SetInt("material.shadow_map", 4);
+		//mat->SetInt("material.shadow_map", 4);
 	}
 
 	void ShadowRenderer::Setup(const TransformComponent& tc, float size, float n, float f)
