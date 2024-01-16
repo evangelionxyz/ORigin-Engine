@@ -133,7 +133,7 @@ namespace origin
 		}
 
 		std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>> textures;
-		if (mesh->mMaterialIndex >= 0)
+		if (mesh->mMaterialIndex > 0)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 			std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE);

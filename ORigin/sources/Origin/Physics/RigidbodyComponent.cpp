@@ -7,34 +7,54 @@
 
 namespace origin {
 
-	namespace Utils {
-
-		static physx::PxForceMode::Enum ForceModeToPhysXForceMode(RigidbodyComponent::ForceMode mode)
-		{
-			switch (mode)
-			{
-			case RigidbodyComponent::ForceMode::Force: return physx::PxForceMode::Enum::eFORCE;
-			case RigidbodyComponent::ForceMode::Impulse: return physx::PxForceMode::Enum::eIMPULSE;
-			case RigidbodyComponent::ForceMode::Velocity: return physx::PxForceMode::Enum::eVELOCITY_CHANGE;
-			case RigidbodyComponent::ForceMode::Acceleration: return physx::PxForceMode::Enum::eACCELERATION;
-			default: return (physx::PxForceMode::Enum)-1;
-			}
-
-			OGN_CORE_ASSERT(false, "")
-			return (physx::PxForceMode::Enum)-1;
-		}
-	}
-	
-
-	void RigidbodyComponent::AddForce(glm::vec3 force, ForceMode mode)
+	void RigidbodyComponent::ApplyForce(glm::vec3 force)
 	{
 		if (!Body)
 			return;
 
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Body;
 		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
+		dActor->addForce(physx::PxVec3(force.x, force.y, force.z), physx::PxForceMode::eFORCE);
+	}
 
-		dActor->addForce(physx::PxVec3(force.x, force.y, force.z), Utils::ForceModeToPhysXForceMode(mode));
+	void RigidbodyComponent::ApplyVelocityForce(glm::vec3 force)
+	{
+		if (!Body)
+			return;
+
+		physx::PxRigidActor* actor = (physx::PxRigidActor*)Body;
+		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
+		dActor->addForce(physx::PxVec3(force.x, force.y, force.z), physx::PxForceMode::eVELOCITY_CHANGE);
+	}
+
+	void RigidbodyComponent::ApplyAccelerationForce(glm::vec3 force)
+	{
+		if (!Body)
+			return;
+
+		physx::PxRigidActor* actor = (physx::PxRigidActor*)Body;
+		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
+		dActor->addForce(physx::PxVec3(force.x, force.y, force.z), physx::PxForceMode::eACCELERATION);
+	}
+
+	void RigidbodyComponent::ApplyImpulseForce(glm::vec3 force)
+	{
+		if (!Body)
+			return;
+
+		physx::PxRigidActor* actor = (physx::PxRigidActor*)Body;
+		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
+		dActor->addForce(physx::PxVec3(force.x, force.y, force.z), physx::PxForceMode::eIMPULSE);
+	}
+
+	void RigidbodyComponent::ApplyLinearVelocity(glm::vec3 velocity, bool autoWake)
+	{
+		if (!Body)
+			return;
+
+		physx::PxRigidActor* actor = (physx::PxRigidActor*)Body;
+		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
+		dActor->setLinearVelocity(physx::PxVec3(velocity.x, velocity.y, velocity.z), autoWake);
 	}
 
 	void RigidbodyComponent::SetPosition(glm::vec3 position)
@@ -97,5 +117,4 @@ namespace origin {
 	{
 		this->Body = body;
 	}
-
 }

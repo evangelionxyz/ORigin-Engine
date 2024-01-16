@@ -7,23 +7,23 @@ namespace origin {
 	class RigidbodyComponent
 	{
 	public:
-		enum class ForceMode {
-			Force,
-			Impulse,
-			Velocity,
-			Acceleration
-		};
 
 		RigidbodyComponent() = default;
 		RigidbodyComponent(const RigidbodyComponent&) = default;
 
-		void AddForce(glm::vec3 force, ForceMode);
+		void ApplyForce(glm::vec3 force);
+		void ApplyVelocityForce(glm::vec3 force);
+		void ApplyAccelerationForce(glm::vec3 force);
+		void ApplyImpulseForce(glm::vec3 force);
+
+		void ApplyLinearVelocity(glm::vec3 velocity, bool autoWake = false);
+
 		void SetPosition(glm::vec3 position);
 		void SetTransform(glm::vec3 position, glm::quat rotation);
 
 		void UpdateFlags(const TransformComponent& transform);
 
-		void* GetRuntimeBody() { return Body; }
+		void* Body = nullptr;
 
 		bool UseGravity = true;
 		bool RotateX = true, RotateY = true, RotateZ = true;
@@ -34,7 +34,6 @@ namespace origin {
 		glm::vec3 CenterMassPosition = glm::vec3(0.0f);
 
 	private:
-		void* Body = nullptr;
 		RigidbodyComponent(void* body);
 
 		friend class PhysXScene;

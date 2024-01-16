@@ -66,6 +66,35 @@ namespace ORiginEngine
 
     }
 
+    public class RigidbodyComponent : Component
+    {
+        public void ApplyLinearVelocity(Vector3 velocity, bool autoWake = false)
+        {
+            InternalCalls.RigidbodyComponent_SetVelocity(Entity.ID, velocity, autoWake);
+        }
+
+        public Vector3 GetLinearVelocity()
+        {
+            InternalCalls.RigidbodyComponent_GetVelocity(Entity.ID, out Vector3 result);
+            return result;
+        }
+
+        public void ApplyForce(Vector3 force)
+        {
+            InternalCalls.RigidbodyComponent_SetForce(Entity.ID, force);
+        }
+
+        public void ApplyVelocityForce(Vector3 force)
+        {
+            InternalCalls.RigidbodyComponent_SetVelocityForce(Entity.ID, force);
+        }
+
+        public void ApplyImpulseForce(Vector3 force)
+        {
+            InternalCalls.RigidbodyComponent_SetImpulseForce(Entity.ID, force);
+        }
+    }
+
     public class Rigidbody2DComponent : Component
     {
         public Vector2 Velocity

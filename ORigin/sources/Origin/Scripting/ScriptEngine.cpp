@@ -118,7 +118,6 @@ namespace origin
 				OGN_CORE_ERROR("Unkown Field Type : {}", typeName);
 				return ScriptFieldType::None;
 			}
-
 			return it->second;
 		}
 	}
@@ -186,7 +185,7 @@ namespace origin
 
 		if (s_ScriptEngineData)
 		{
-			s_ScriptEngineData->AppAssemblyFilepath = appAssemblyPath;
+			s_ScriptEngineData->AppAssemblyFilepath = appAssemblyPath.generic_string();
 
 			ReloadAssembly();
 			return;
@@ -339,7 +338,7 @@ namespace origin
 		auto& it = s_ScriptEngineData->EntityInstances.find(entityID);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_WARN("Entity Script Instance not found!");
+			OGN_CORE_ERROR("ScriptEngine: Entity Script Instance not found!");
 			return;
 		}
 

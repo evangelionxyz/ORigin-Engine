@@ -70,8 +70,16 @@ namespace origin
 			if (t.find(aiTextureType_SPECULAR) != t.end())
 			{
 				t.at(aiTextureType_SPECULAR)->Bind(1);
-				shader->SetInt("u_SpecTexture", 1);
+				shader->SetInt("m_SpecTexture", 1);
 			}
+		}
+
+		if (m_Textures.empty())
+		{
+			Renderer::WhiteTexture->Bind(0);
+			shader->SetInt("u_DiffTexture", 0);
+			Renderer::WhiteTexture->Bind(1);
+			shader->SetInt("m_SpecTexture", 1);
 		}
 
 		RenderCommand::DrawIndexed(m_VertexArray);

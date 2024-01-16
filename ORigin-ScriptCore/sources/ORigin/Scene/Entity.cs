@@ -94,7 +94,6 @@ namespace ORiginEngine
             object instance = InternalCalls.GetScriptInstance(ID);
             return instance as T;
         }
-
     }
 
 }

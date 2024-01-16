@@ -325,7 +325,6 @@ namespace origin
 			{
 				Renderer::BeginScene(camera.Camera, tc);
 				RenderScene(camera.Camera, tc);
-				Renderer::EndScene();
 				break;
 			}
 		}
@@ -685,6 +684,8 @@ namespace origin
 			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
 			Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
 		}
+
+		Renderer::EndScene();
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);

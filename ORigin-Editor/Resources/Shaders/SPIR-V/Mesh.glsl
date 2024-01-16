@@ -90,6 +90,9 @@ void main()
 
 	vec3 diffTexture = texture(u_DiffTexture, vec2(vTexCoord * Material.TilingFactor)).rgb;
 	vec3 specTexture = texture(u_SpecTexture, vec2(vTexCoord * Material.TilingFactor)).rgb;
+    diffTexture = vec3(1.0);
+    specTexture = vec3(1.0);
+
 	vec3 lights = vec3(0.0);
 
 	lights += AddDirectionalLight(diffTexture, specTexture, norm, viewDirection);

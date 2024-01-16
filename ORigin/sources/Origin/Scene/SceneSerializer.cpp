@@ -248,53 +248,55 @@ namespace origin
 
 			// Fields
 			const std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
-			const auto& fields = entityClass->GetFields();
 
-			if (!fields.empty())
+			if (entityClass)
 			{
-				out << YAML::Key << "ScriptFields" << YAML::Value;
-				auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
-
-				out << YAML::BeginSeq;
-				for (const auto& [name, field] : fields)
+				const auto& fields = entityClass->GetFields();
+				if (!fields.empty())
 				{
-					if (entityFields.find(name) == entityFields.end())
+					out << YAML::Key << "ScriptFields" << YAML::Value;
+					auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+
+					out << YAML::BeginSeq;
+					for (const auto& [name, field] : fields)
 					{
-						OGN_CORE_ERROR("SceneSerializer: {} SCRIPT FIELDS NOT FOUND", name);
-						continue;
+						if (entityFields.find(name) == entityFields.end())
+						{
+							OGN_CORE_ERROR("SceneSerializer: {} SCRIPT FIELDS NOT FOUND", name);
+							continue;
+						}
+
+						out << YAML::BeginMap; // Fields
+						out << YAML::Key << "Name" << YAML::Value << name;
+						out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
+						out << YAML::Key << "Data" << YAML::Value;
+
+						ScriptFieldInstance& scriptField = entityFields.at(name);
+						switch (field.Type)
+						{
+							WRITE_FIELD_TYPE(Float, float);
+							WRITE_FIELD_TYPE(Double, double);
+							WRITE_FIELD_TYPE(Bool, bool);
+							WRITE_FIELD_TYPE(Char, char);
+							WRITE_FIELD_TYPE(Byte, int8_t);
+							WRITE_FIELD_TYPE(Short, int16_t);
+							WRITE_FIELD_TYPE(Int, int32_t);
+							WRITE_FIELD_TYPE(Long, int64_t);
+							WRITE_FIELD_TYPE(UByte, uint8_t);
+							WRITE_FIELD_TYPE(UShort, uint16_t);
+							WRITE_FIELD_TYPE(UInt, uint32_t);
+							WRITE_FIELD_TYPE(ULong, uint64_t);
+							WRITE_FIELD_TYPE(Vector2, glm::vec2);
+							WRITE_FIELD_TYPE(Vector3, glm::vec3);
+							WRITE_FIELD_TYPE(Vector4, glm::vec4);
+							WRITE_FIELD_TYPE(Entity, UUID);
+						}
+
+						out << YAML::EndMap; // !Fields
 					}
-
-					out << YAML::BeginMap; // Fields
-					out << YAML::Key << "Name" << YAML::Value << name;
-					out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
-					out << YAML::Key << "Data" << YAML::Value;
-
-					ScriptFieldInstance& scriptField = entityFields.at(name);
-					switch (field.Type)
-					{
-						WRITE_FIELD_TYPE(Float, float);
-						WRITE_FIELD_TYPE(Double, double);
-						WRITE_FIELD_TYPE(Bool, bool);
-						WRITE_FIELD_TYPE(Char, char);
-						WRITE_FIELD_TYPE(Byte, int8_t);
-						WRITE_FIELD_TYPE(Short, int16_t);
-						WRITE_FIELD_TYPE(Int, int32_t);
-						WRITE_FIELD_TYPE(Long, int64_t);
-						WRITE_FIELD_TYPE(UByte, uint8_t);
-						WRITE_FIELD_TYPE(UShort, uint16_t);
-						WRITE_FIELD_TYPE(UInt, uint32_t);
-						WRITE_FIELD_TYPE(ULong, uint64_t);
-						WRITE_FIELD_TYPE(Vector2, glm::vec2);
-						WRITE_FIELD_TYPE(Vector3, glm::vec3);
-						WRITE_FIELD_TYPE(Vector4, glm::vec4);
-						WRITE_FIELD_TYPE(Entity, UUID);
-					}
-
-					out << YAML::EndMap; // !Fields
+					out << YAML::EndSeq;
 				}
-				out << YAML::EndSeq;
 			}
-
 			out << YAML::EndMap; // !ScriptComponent;
 		}
 

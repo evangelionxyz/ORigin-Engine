@@ -162,6 +162,59 @@ namespace origin
 		entity.GetComponent<TransformComponent>().Scale = scale;
 	}
 
+	static void RigidbodyComponent_SetVelocity(UUID entityID, glm::vec3 velocity, bool autoWake)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		rb.ApplyLinearVelocity(velocity, autoWake);
+	}
+
+	static void RigidbodyComponent_GetVelocity(UUID entityID, glm::vec3* velocity)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb = entity.GetComponent<RigidbodyComponent>();
+
+		physx::PxRigidActor* actor = (physx::PxRigidActor*)rb.Body;
+		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
+		*velocity = glm::vec3(dActor->getLinearVelocity().x, dActor->getLinearVelocity().y, dActor->getLinearVelocity().z);
+	}
+
+	static void RigidbodyComponent_SetVelocityForce(UUID entityID, glm::vec3 force)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		rb.ApplyVelocityForce(force);
+	}
+
+	static void RigidbodyComponent_SetForce(UUID entityID, glm::vec3 force)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		rb.ApplyForce(force);
+	}
+
+	static void RigidbodyComponent_SetImpulseForce(UUID entityID, glm::vec3 force)
+	{
+		Scene* scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		rb.ApplyImpulseForce(force);
+	}
+
 	static void Rigidbody2DComponent_SetVelocity(UUID entityID, glm::vec2 velocity)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
@@ -934,6 +987,12 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRotation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetScale);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetScale);
+
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetVelocity);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetForce);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetVelocityForce);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetImpulseForce);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetVelocity);
 
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_GetVelocity);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_SetVelocity);

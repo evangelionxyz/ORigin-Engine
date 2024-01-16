@@ -34,6 +34,22 @@ namespace ORiginEngine
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 value);
 
+        #region
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetVelocity(ulong entityID, Vector3 value, bool autoWake);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static Vector2 RigidbodyComponent_GetVelocity(ulong entityID, out Vector3 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetForce(ulong entityID, Vector3 value);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetVelocityForce(ulong entityID, Vector3 value);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetImpulseForce(ulong entityID, Vector3 value);
+
+        #endregion
+
+        // Rigidbody 2D
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static Vector2 Rigidbody2DComponent_GetVelocity(ulong entityID, out Vector2 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -51,6 +67,7 @@ namespace ORiginEngine
         internal extern static bool Rigidbody2DComponent_IsContactWithTag(ulong entityID, string contactWith);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static string Rigidbody2DComponent_GetContactWithTag(ulong entityID);
+
         // Audio Component
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void AudioComponent_SetName(ulong entityID, string nameString);
