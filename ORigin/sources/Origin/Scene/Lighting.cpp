@@ -7,92 +7,44 @@ namespace origin {
 	int Lighting::SpotLightCount = 0;
 	int Lighting::PointLightCount = 0;
 
+	
+
 	Lighting::Lighting(LightingType type)
 		: Type(type)
 	{
-		m_ShadowRenderer = ShadowRenderer::Create(type);
+		m_UniformBuffer = UniformBuffer::Create(sizeof(LightBufferData), 2);
+
+		// TODO: Apply shader for each lighting type
+		std::shared_ptr<Shader> dirLightDepthShader = Shader::Create("Resources/Shaders/SPIR-V/DirectionalLightDepthMap.glsl", true);
+		m_ShadowRenderer = ShadowRenderer::Create(dirLightDepthShader, type);
+		m_DirectionalUniformBuffer = UniformBuffer::Create(sizeof(DirectionalLightBufferData), 3);
 	}
 
-	void Lighting::OnUpdate(const TransformComponent& tc)
+	Lighting::~Lighting()
 	{
-		static std::string lightUniformName;
+	}
+
+	void Lighting::OnRender(const glm::vec3& lightDirection)
+	{
+		m_UniformBuffer->Bind();
+		m_UniformBuffer->SetData(&m_ShadowRenderer->m_DepthBufferData.LightViewProjection, sizeof(glm::mat4));
 
 		switch (Type)
 		{
 		case LightingType::Spot:
-		{
 			SpotLightCount++;
 			break;
-		}
+
 		case LightingType::Point:
-		{
 			PointLightCount++;
 			break;
-		}
+
 		case LightingType::Directional:
-		{
+			m_DirLightData.Direction = glm::vec4(lightDirection, 1.0f);
+			m_DirectionalUniformBuffer->Bind();
+			m_DirectionalUniformBuffer->SetData(&m_DirLightData, sizeof(m_DirLightData));
 			break;
 		}
-		}
-
-		OGN_CORE_ASSERT(m_ShadowRenderer->GetFramebuffer(), "Lighting: Invalid Shadow's Framebuffer");
-
-		glActiveTexture(m_ShadowRenderer->GetFramebuffer()->GetDepthAttachmentRendererID());
-		glBindTexture(GL_TEXTURE_2D, m_ShadowRenderer->GetFramebuffer()->GetDepthAttachmentRendererID());
-		//mat->SetInt("uShadowMap", 0);
-
-	}
-
-	void Lighting::OnUpdate(const TransformComponent& tc, const std::shared_ptr<Material>& mat)
-	{
-		//mat->SetMatrix("uLightSpaceMatrix", m_ShadowRenderer->LightSpaceMatrix);
-
-		static std::string lightUniformName;
-
-		switch (Type)
-		{
-			case LightingType::Spot:
-				lightUniformName = std::string("spotLights[" + std::to_string(SpotLightCount) + "].");
-				//mat->SetInt("spotLightCount", SpotLightCount);
-				//mat->SetVector(lightUniformName + "Position", tc.Translation);
-				//mat->SetVector(lightUniformName + "Direction", -tc.GetForward());
-				//mat->SetVector(lightUniformName + "Color", Color);
-				//mat->SetFloat(lightUniformName + "InnerConeAngle", InnerConeAngle);
-				//mat->SetFloat(lightUniformName + "OuterConeAngle", OuterConeAngle);
-				//mat->SetFloat(lightUniformName + "Exponent", Exponent);
-
-				SpotLightCount++;
-				break;
-			
-			case LightingType::Point:
-				lightUniformName = std::string("pointLights[" + std::to_string(PointLightCount) + "].");
-				//mat->SetInt("pointLightCount", PointLightCount);
-				//mat->SetVector(lightUniformName + "Position", tc.Translation);
-				//mat->SetVector(lightUniformName + "Color", Color);
-				//mat->SetFloat(lightUniformName + "Ambient", Ambient);
-				//mat->SetFloat(lightUniformName + "Specular", Specular);
-				//mat->SetFloat(lightUniformName + "Intensity", Intensity);
-				//mat->SetFloat(lightUniformName + "SpreadSize", SpreadSize);
-
-				PointLightCount++;
-				break;
-			
-			case LightingType::Directional:
-				//mat->SetVector("dirLight.Direction", -tc.GetForward());
-				//mat->SetVector("dirLight.Color", Color);
-				//mat->SetFloat("dirLight.Ambient", Ambient);
-				//mat->SetFloat("dirLight.Diffuse", Diffuse);
-				//mat->SetFloat("dirLight.Specular", Specular);
-				break;
-			
-		}
-
-		m_ShadowRenderer->OnAttachTexture(mat);
-	}
-
-	void Lighting::SetupShadow(const TransformComponent& tc)
-	{
-		m_ShadowRenderer->Setup(tc, Size, Near, Far);
 	}
 
 	void Lighting::SetType(LightingType type)

@@ -151,8 +151,6 @@ namespace origin {
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.TextVertexBufferPtr - (uint8_t*)s_2Ddata.TextVertexBufferBase);
 			s_2Ddata.TextVertexBuffer->SetData(s_2Ddata.TextVertexBufferBase, dataSize);
 
-			auto buf = s_2Ddata.TextVertexBufferBase;
-			// Bind textures
 			for (uint32_t i = 0; i < s_2Ddata.FontAtlasTextureIndex; i++)
 				s_2Ddata.FontAtlasTextureSlots[i]->Bind(i);
 
@@ -160,6 +158,9 @@ namespace origin {
 
 			RenderCommand::DrawIndexed(s_2Ddata.TextVertexArray, s_2Ddata.TextIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
+
+			for (uint32_t i = 0; i < s_2Ddata.FontAtlasTextureIndex; i++)
+				s_2Ddata.FontAtlasTextureSlots[i]->Unbind();
 		}
 
 		if (s_2Ddata.LineVertexCount)
@@ -189,7 +190,6 @@ namespace origin {
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_2Ddata.QuadVertexBufferPtr - (uint8_t*)s_2Ddata.QuadVertexBufferBase);
 			s_2Ddata.QuadVertexBuffer->SetData(s_2Ddata.QuadVertexBufferBase, dataSize);
 
-			// Bind textures
 			for (uint32_t i = 0; i < s_2Ddata.TextureSlotIndex; i++)
 				s_2Ddata.TextureSlots[i]->Bind(i);
 
@@ -197,6 +197,9 @@ namespace origin {
 
 			RenderCommand::DrawIndexed(s_2Ddata.QuadVertexArray, s_2Ddata.QuadIndexCount);
 			s_2Ddata.Stats.DrawCalls++;
+
+			for (uint32_t i = 0; i < s_2Ddata.TextureSlotIndex; i++)
+				s_2Ddata.TextureSlots[i]->Unbind();
 		}
 	}
 

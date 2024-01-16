@@ -169,21 +169,21 @@ namespace origin
 		{
 			glm::mat4 rotation = toMat4(glm::quat(Rotation));
 			glm::vec4 forward = rotation * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
-			return normalize(glm::vec3(forward));
+			return glm::vec3(forward);
 		}
 
 		glm::vec3 GetUp() const
 		{
 			glm::mat4 rotation = toMat4(glm::quat(Rotation));
 			glm::vec4 up = rotation * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-			return normalize(glm::vec3(up));
+			return glm::vec3(up);
 		}
 
 		glm::vec3 GetRight() const
 		{
 			glm::mat4 rotation = toMat4(glm::quat(Rotation));
 			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-			return normalize(glm::vec3(right));
+			return glm::vec3(right);
 		}
 	};
 

@@ -736,10 +736,8 @@ namespace origin {
 					ImGui::Separator();
 					ImGui::Text("Material");
 
-					//ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->Color));
-					//ImGui::DragFloat("Shininess", &model->GetMaterial()->Shininess, 0.1f, 1.0f, 256.0f);
-					//ImGui::SliderFloat("Bias", &model->GetMaterial()->Bias, 0.005f, 0.1f);
-					//DrawVec2Control("Tiling Factor", model->GetMaterial()->TilingFactor, 0.01f, 1.0f);
+					ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->BufferData.Color));
+					DrawVec2Control("Tiling Factor", model->GetMaterial()->BufferData.TilingFactor, 0.01f, 1.0f);
 				}
 			});
 
@@ -907,23 +905,20 @@ namespace origin {
 				{
 					case LightingType::Directional:
 					{
-						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->Color));
-						DrawVecControl("Ambient", &component.Light->Ambient, 0.01f, 0.0f);
-						DrawVecControl("Diffuse", &component.Light->Diffuse, 0.01f, 0.0f);
-						DrawVecControl("Specular", &component.Light->Specular, 0.01f, 0.0f);
-
-						ImGui::DragFloat("Near", &component.Light->Near, 0.1f);
-						ImGui::DragFloat("Far", &component.Light->Far, 0.1f);
-						ImGui::DragFloat("Size", &component.Light->Size, 0.1f);
+						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->m_DirLightData.Color));
+						DrawVecControl("Ambient", &component.Light->m_DirLightData.Ambient, 0.01f, 0.0f);
+						DrawVecControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f);
+						DrawVecControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f);
 
 						if (component.Light->GetShadow()->GetFramebuffer())
 						{
 							uint32_t texture = component.Light->GetShadow()->GetFramebuffer()->GetDepthAttachmentRendererID();
-							ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(128.0f, 128.0f), ImVec2(0, 1), ImVec2(1, 0));
+							float size = ImGui::GetContentRegionAvail().x;
+							ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(size, size), ImVec2(0, 1), ImVec2(1, 0));
 						}
-						break;
+						break;	
 					}
-
+#if 0
 					case LightingType::Spot:
 					{
 						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->Color));
@@ -949,6 +944,7 @@ namespace origin {
 						DrawVecControl("Size", &component.Light->SpreadSize, 0.1f, 0.1f, 10000.0f);
 						break;
 					}
+#endif
 				}
 				
 			});

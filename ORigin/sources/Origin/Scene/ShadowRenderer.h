@@ -2,6 +2,7 @@
 
 #include "Components.h"
 #include "Origin\Renderer\Framebuffer.h"
+#include "Origin\Renderer\UniformBuffer.h"
 
 namespace origin 
 {
@@ -10,29 +11,42 @@ namespace origin
 	class ShadowRenderer
 	{
 	public:
-		ShadowRenderer(LightingType type);
+		ShadowRenderer(const std::shared_ptr<Shader>& depthShader, LightingType type);
 
 		void Invalidate(LightingType type);
+		void OnAttachTexture(const std::shared_ptr<Shader>& objectShader);
 
-		void OnAttachTexture(const std::shared_ptr<Material>& mat);
-		void Setup(const TransformComponent& tc, float size, float n, float f);
+		void BindFramebuffer();
+		void UnbindFramebuffer();
 
-		static std::shared_ptr<ShadowRenderer> Create(LightingType type);
+		void OnRenderBegin(const TransformComponent& tc);
+		void OnRenderEnd();
+
+		static std::shared_ptr<ShadowRenderer> Create(const std::shared_ptr<Shader>& depthShader, LightingType type);
 
 		std::shared_ptr<Framebuffer>& GetFramebuffer() { return m_Framebuffer; }
 
-		glm::mat4 LightProjection;
-		glm::mat4 LightSpaceMatrix;
-		glm::mat4 LightViewMatrix;
+		struct DepthBufferData
+		{
+			glm::mat4 LightViewProjection;
+			glm::mat4 ModelTransform;
+		};
+
+		DepthBufferData m_DepthBufferData;
 
 		glm::mat4 ShadowProjection;
 
 		std::vector<glm::mat4> ShadowTransforms;
 
+		float Size = 10.0f;
+		float Near = 0.1f;
+		float Far = 1000.5f;
+
 	private:
 		LightingType m_LightingType;
 		std::shared_ptr<Framebuffer> m_Framebuffer;
-
+		std::shared_ptr<UniformBuffer> m_DepthUniformBuffer;
+		std::shared_ptr<Shader> m_DepthShader;
 	};
 
 

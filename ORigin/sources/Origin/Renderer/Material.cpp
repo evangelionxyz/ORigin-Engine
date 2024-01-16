@@ -6,7 +6,14 @@ namespace origin {
 	Material::Material(std::string name, const std::shared_ptr<Shader>& shader)
 		: m_Name(name), m_Shader(shader)
 	{
+		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), 4);
 		OGN_CORE_INFO("MATERIAL: Material {} Created", name);
+	}
+
+	void Material::OnRender()
+	{
+		m_UniformBuffer->Bind();
+		m_UniformBuffer->SetData(&BufferData, sizeof(MaterialBufferData));
 	}
 
 	bool Material::RefreshShader()
@@ -23,9 +30,9 @@ namespace origin {
 		return true;
 	}
 
-	std::vector<std::shared_ptr<Texture2D>> Material::LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type)
+	std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Material::LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type)
 	{
-		std::vector<std::shared_ptr<Texture2D>> textures;
+		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> textures;
 
 		for (uint32_t i = 0; i < mat->GetTextureCount(type); i++)
 		{
@@ -37,7 +44,7 @@ namespace origin {
 			{
 				if (std::strcmp(m_LoadedTextures[j]->GetName().c_str(), str.C_Str()) == 0)
 				{
-					textures.push_back(m_LoadedTextures[j]);
+					textures[type] = m_LoadedTextures[j];
 					skip = true;
 					break;
 				}
@@ -49,7 +56,7 @@ namespace origin {
 				std::string textureName = std::string(str.C_Str());
 
 				std::shared_ptr<Texture2D> newTexture = Texture2D::Create(textureDirectory + "/" + textureName);
-				textures.push_back(newTexture);
+				textures[type] = newTexture;
 				m_LoadedTextures.push_back(newTexture);
 			}
 		}

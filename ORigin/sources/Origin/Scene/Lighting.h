@@ -1,5 +1,6 @@
 #pragma once
 #include "ShadowRenderer.h"
+#include "Origin\Renderer\UniformBuffer.h"
 #include "Components.h"
 
 namespace origin {
@@ -33,45 +34,48 @@ namespace origin {
 			return LightingType::None;
 		}
 	}
+
+	struct LightBufferData
+	{
+		glm::mat4 Transform;
+	};
+
+	struct DirectionalLightBufferData
+	{
+		glm::vec4 Direction = glm::vec4(0.0f);
+		glm::vec4 Color = glm::vec4(1.0f);
+		float Ambient = 0.1f;
+		float Diffuse = 0.1f;
+		float Specular = 0.1f;
+	};
+	
 	
 	class Lighting
 	{
 	public:
-
 		Lighting(LightingType type);
+		~Lighting();
 
-		void OnUpdate(const TransformComponent& tc);
-		void OnUpdate(const TransformComponent& tc, const std::shared_ptr<Material>& mat);
-		void SetupShadow(const TransformComponent& tc);
+		void OnRender(const glm::vec3& lightDirection);
 		void SetType(LightingType type);
 
-		std::shared_ptr<ShadowRenderer>& GetShadow() { return m_ShadowRenderer; }
+		LightBufferData m_LightData;
+		DirectionalLightBufferData m_DirLightData;
+
+		const std::shared_ptr<ShadowRenderer>& GetShadow() const { return m_ShadowRenderer; }
 
 		LightingType Type = LightingType::Directional;
 		std::string GetTypeString() { return Utils::LightingTypeToString(Type); }
 
-		static std::shared_ptr<Lighting> Create(LightingType type);
-
-		glm::vec3 Color = glm::vec3(1.0f);
-
-		float Near = -1.0f;
-		float Far = 8.0f;
-		float Size = 25.0f;
-
-		float Ambient = 0.5f;
-		float Diffuse = 0.5f;
-		float Specular = 1.0f;
-		float Intensity = 1.0f;
-		float SpreadSize = 50.0f;
-		float InnerConeAngle = 0.5f;
-		float OuterConeAngle = 1.0f;
-		float Exponent = 1.0f;
-
 		static int SpotLightCount;
 		static int PointLightCount;
 
+		static std::shared_ptr<Lighting> Create(LightingType type);
+
 	private:
 		std::shared_ptr<ShadowRenderer> m_ShadowRenderer;
+		std::shared_ptr<UniformBuffer> m_UniformBuffer;
+		std::shared_ptr<UniformBuffer> m_DirectionalUniformBuffer;
 	};
 }
 

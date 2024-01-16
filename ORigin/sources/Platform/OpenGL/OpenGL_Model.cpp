@@ -11,12 +11,20 @@
 
 namespace origin
 {
+	
+
 	OpenGLModel::OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material)
 		: m_Filepath(filepath), m_Material(material)
 	{
 		Assimp::Importer importer;
-		//const aiScene* scene = importer.ReadFile(filepath.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-		const aiScene* scene = importer.ReadFile(filepath.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+
+		const aiScene* scene = importer.ReadFile(filepath.c_str(),
+			aiProcess_Triangulate
+			| aiProcess_GenSmoothNormals
+			| aiProcess_FlipUVs
+			| aiProcess_JoinIdenticalVertices
+		);
+
 		OGN_CORE_INFO("MODEL: Trying to load \"{}\"", filepath);
 		if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -39,6 +47,7 @@ namespace origin
 		{
 			if (mesh->IsLoaded())
 			{
+				m_Material->OnRender();
 				m_Material->m_Shader->Enable();
 				m_ModelBuffer.Transform = transform;
 				m_ModelBuffer.EntityID = entityID;
@@ -48,6 +57,17 @@ namespace origin
 				mesh->Draw(m_Material->m_Shader);
 				ModelUbo->Unbind();
 				m_Material->m_Shader->Disable();
+			}
+		}
+	}
+
+	void OpenGLModel::Draw()
+	{
+		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
+		{
+			if (mesh->IsLoaded())
+			{
+				mesh->Draw();
 			}
 		}
 	}
@@ -70,7 +90,6 @@ namespace origin
 	{
 		std::vector<MeshVertex> vertices;
 		std::vector<uint32_t> indices;
-		std::vector<std::shared_ptr<Texture2D>> textures;
 
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
 		{
@@ -113,12 +132,14 @@ namespace origin
 				indices.push_back(face.mIndices[in]);
 		}
 
+		std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>> textures;
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-			std::vector<std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE);
-			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+			std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE);
+			textures.push_back(diffuseMaps);
+			std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> specMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_SPECULAR);
+			textures.push_back(specMaps);
 		}
 
 		return std::make_shared<OpenGLMesh>(vertices, indices, textures, m_Filepath);

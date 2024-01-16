@@ -32,7 +32,11 @@ namespace origin
 
 	void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		// If had any changes
+		// call this had any changes
+		
+		// try to use glBindBufferBase (Bind function) also
+		// if the uniform does not retrieve any changes
+		
 		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 	}

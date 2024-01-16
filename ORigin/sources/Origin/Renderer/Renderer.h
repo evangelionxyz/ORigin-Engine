@@ -13,7 +13,6 @@
 
 namespace origin {
 
-
 	class Renderer
 	{
 	public:
@@ -41,6 +40,8 @@ namespace origin {
 		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetSaderLibrary();
 
 		static CameraBuffer GetCameraBuffer();
+
+		static std::shared_ptr<Texture2D> WhiteTexture;
 
 	private:
 		static void LoadShader();

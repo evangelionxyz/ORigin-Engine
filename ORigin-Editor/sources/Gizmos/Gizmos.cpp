@@ -161,13 +161,15 @@ namespace origin {
 		auto drawIcon = [&](TransformComponent tc, std::shared_ptr<Texture2D> texture, int entity)
 			{
 				glm::mat4 transform = glm::mat4(1.0f);
+				float scale = glm::clamp(glm::length(camera.GetPosition() - tc.Translation) * 0.05f, 1.0f, 10.0f);
+
 				switch (camera.GetProjectionType())
 				{
 				case ProjectionType::Perspective:
 					transform = glm::translate(glm::mat4(1.0f), tc.Translation)
 						* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
 						* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-						* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+						* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
 					break;
 
 				case ProjectionType::Orthographic:
@@ -199,8 +201,14 @@ namespace origin {
 
 					glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
 
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, 1.3f))
-						* glm::toMat4(glm::qua(tc.Rotation)) * scale;
+					glm::vec3 pos = camera.GetProjectionType() == ProjectionType::Perspective ?
+						glm::vec3(tc.Translation) : glm::vec3(tc.Translation.x, tc.Translation.y, 1.3f);
+
+					glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ?
+						glm::vec3(tc.Rotation) : glm::vec3(0.0f, 0.0f, tc.Rotation.z);
+
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
+						* glm::toMat4(glm::qua(rotation)) * scale;
 
 					Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 				}

@@ -613,8 +613,6 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
-
 		// Particle
 		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
 		for (auto entity : particles)
@@ -691,7 +689,8 @@ namespace origin
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		// Mesh
+		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
+
 		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 		for (auto& entity : meshView)
 		{
@@ -700,10 +699,18 @@ namespace origin
 			if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 			{
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+
+				for (auto& light : lightView)
+				{
+					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					lc.Light->OnRender(-lightTransform.GetForward());
+					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
+				}
+
 				model->Draw(tc.GetTransform(), (int)entity);
 			}
 		}
-		
+
 		glDisable(GL_CULL_FACE);
 	}
 
@@ -711,7 +718,6 @@ namespace origin
 	{
 		Renderer::BeginScene(camera);
 
-		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
 		// Particle
 		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
 		for (auto entity : particles)
@@ -776,62 +782,66 @@ namespace origin
 		const auto& textView = m_Registry.view<TransformComponent, TextComponent>();
 		for (auto entity : textView)
 		{
-			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
-			for (auto& light : lightView)
-			{
-				auto& [tc, lc] = lightView.get<TransformComponent, LightComponent>(light);
-				lc.Light->OnUpdate(tc);
-			}
-			Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
+			auto [tc, text] = textView.get<TransformComponent, TextComponent>(entity);
+			Renderer2D::DrawString(text.TextString, tc.GetTransform(), text, static_cast<int>(entity));
 		}
 
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		Renderer::EndScene();
+
+
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
+		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
+		
 		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 		for (auto& entity : meshView)
 		{
 			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+
 			if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 			{
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+
+				for (auto& light : lightView)
+				{
+					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					lc.Light->OnRender(-lightTransform.GetForward());
+					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
+				}
+
 				model->Draw(tc.GetTransform(), (int)entity);
 			}
 		}
-		//glDisable(GL_CULL_FACE);
-		Renderer::EndScene();
+
+		glDisable(GL_CULL_FACE);
 	}
 	
-
 	void Scene::OnShadowRender()
 	{
-		Renderer::GetGShader("DirLightDepthMap")->Enable();
 		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& light : dirLight)
 		{
-			auto& [tc, lc] = dirLight.get<TransformComponent, LightComponent>(light);
-			lc.Light->SetupShadow(tc);
+			auto& [lightTransform, lc] = dirLight.get<TransformComponent, LightComponent>(light);
+			lc.Light->GetShadow()->BindFramebuffer();
 
-			// Render
 			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto& entity : meshView)
 			{
-				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+				auto& [modelTransform, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
 				if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 				{
 					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
-					// Set Depth shader
-					Renderer::GetGShader("DirLightDepthMap")->SetMatrix("uModel", tc.GetTransform());
-					model->Draw(tc.GetTransform(), (int)entity);
+					lc.Light->GetShadow()->m_DepthBufferData.ModelTransform = modelTransform.GetTransform();
+					lc.Light->GetShadow()->OnRenderBegin(lightTransform);
+					model->Draw();
+					lc.Light->GetShadow()->OnRenderEnd();
 				}
 			}
 
-			lc.Light->GetShadow()->GetFramebuffer()->Unbind();
+			lc.Light->GetShadow()->UnbindFramebuffer();
 		}
-
-		Renderer::GetGShader("DirLightDepthMap")->Disable();
-
-		glDisable(GL_CULL_FACE);
 	}
 
 	void Scene::OnRuntimeStart()

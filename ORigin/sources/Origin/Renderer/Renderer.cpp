@@ -22,6 +22,8 @@ namespace origin {
 	static Renderer::CameraBuffer s_CameraBuffer;
 	static std::shared_ptr<UniformBuffer> s_CameraUBO;
 
+	std::shared_ptr<Texture2D> Renderer::WhiteTexture;
+
 	bool Renderer::Init()
 	{
 		RenderCommand::Init();
@@ -29,6 +31,10 @@ namespace origin {
 		Renderer::LoadShader();
 		Renderer2D::Init();
 		Renderer3D::Init();
+
+		WhiteTexture = Texture2D::Create(TextureSpecification());
+		uint32_t whiteTextureData = 0xffffffff;
+		WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 
 		s_CameraUBO = UniformBuffer::Create(sizeof(s_CameraBuffer), CAMERA_BINDING_POINT);
 
@@ -108,9 +114,6 @@ namespace origin {
 		GShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true, recompileShader);
 		GShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true, recompileShader);
 		GShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true, recompileShader);
-
 		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
-		GShaderLibrary.Load("DirLightDepthMap", "Resources/Shaders/DirLightDepthMap.glsl", false);
-		GShaderLibrary.Load("PointLightDepthMap", "Resources/Shaders/PointLightDepthMap.glsl", false);
 	}
 }

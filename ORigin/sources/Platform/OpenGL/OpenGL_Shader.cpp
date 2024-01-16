@@ -247,9 +247,15 @@ namespace origin {
         in.seekg(0, std::ios::beg);
         in.read(&result[0], size);
       }
-      else OGN_CORE_ERROR("Could not read from file '{0}'", filepath);
+      else
+      {
+        OGN_CORE_ERROR("Shader: Could not read from file '{0}'", filepath);
+      }
     }
-    else OGN_CORE_ERROR("Could not open file");
+    else
+    {
+      OGN_CORE_ERROR("Shader: Could not open file");
+    }
     return result;
   }
 

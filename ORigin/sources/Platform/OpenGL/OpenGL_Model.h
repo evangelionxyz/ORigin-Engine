@@ -23,6 +23,7 @@ namespace origin
 		OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material);
 
 		virtual ~OpenGLModel() override;
+		void Draw() override;
 		void Draw(const glm::mat4& transform, int entityID) override;
 
 		std::shared_ptr<Material>& GetMaterial() override { return m_Material; }

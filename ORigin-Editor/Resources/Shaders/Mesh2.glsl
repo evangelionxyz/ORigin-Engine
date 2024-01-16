@@ -39,8 +39,7 @@ uniform bool uHasTextures;
 
 const int MAX_LIGHTS = 32;
 
-struct Vertex
-{
+struct Vertex {
     vec3 Position;
     vec3 Normal;
     vec2 TexCoord;
@@ -49,8 +48,7 @@ struct Vertex
 };
 in Vertex vertex;
 
-struct Material
-{
+struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_diffuse2;
     sampler2D texture_specular1;
@@ -64,8 +62,7 @@ struct Material
 };
 uniform Material material;
 
-float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
-{
+float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection) {
     vec3 projectionCoords = lightSpacePosition.xyz / lightSpacePosition.w;
     projectionCoords = projectionCoords * 0.5 + 0.5;
 
@@ -96,8 +93,7 @@ float ShadowCalculation(vec4 lightSpacePosition, vec3 lightDirection)
     return shadow;
 }
 
-struct PointLight
-{
+struct PointLight {
     vec3 Position;
     vec3 Color;
     float Ambient;
@@ -108,8 +104,7 @@ struct PointLight
 uniform PointLight pointLights[MAX_LIGHTS];
 uniform int pointLightCount;
 
-struct SpotLight
-{
+struct SpotLight {
     vec3 Position;
     vec3 Direction;
     vec3 Color;
@@ -120,8 +115,7 @@ struct SpotLight
 uniform SpotLight spotLights[MAX_LIGHTS];
 uniform int spotLightCount;
 
-struct DirLight
-{
+struct DirLight {
     vec3 Direction;
     vec3 Color;
     float Ambient;

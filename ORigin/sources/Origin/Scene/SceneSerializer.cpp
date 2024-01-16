@@ -384,10 +384,8 @@ namespace origin
 			{
 				out << YAML::Key << "MeshHandle" << YAML::Value << sMesh.Model;
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
-				//out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->Color;
-				//out << YAML::Key << "Shininess" << YAML::Value << model->GetMaterial()->Shininess;
-				//out << YAML::Key << "Bias" << YAML::Value << model->GetMaterial()->Bias;
-				//out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->TilingFactor;
+				out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->BufferData.Color;
+				out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
 			}
 			
 			out << YAML::EndMap; // !StaticMeshComponent
@@ -528,10 +526,10 @@ namespace origin
 			out << YAML::BeginMap;
 			const auto& light = entity.GetComponent<LightComponent>().Light;
 			out << YAML::Key << "Type" << YAML::Value << light->GetTypeString();
-			out << YAML::Key << "Color" << YAML::Value << light->Color;
 
 			switch (light->Type)
 			{
+#if 0
 			case LightingType::Spot:
 			{
 				out << YAML::Key << "InnerConeAngle" << YAML::Value << light->InnerConeAngle;
@@ -545,14 +543,13 @@ namespace origin
 				out << YAML::Key << "Specular" << YAML::Value << light->Specular;
 				break;
 			}
+#endif
 			case LightingType::Directional:
 			{
-				out << YAML::Key << "Ambient" << YAML::Value << light->Ambient;
-				out << YAML::Key << "Diffuse" << YAML::Value << light->Diffuse;
-				out << YAML::Key << "Specular" << YAML::Value << light->Specular;
-				out << YAML::Key << "Near" << YAML::Value << light->Near;
-				out << YAML::Key << "Far" << YAML::Value << light->Far;
-				out << YAML::Key << "Size" << YAML::Value << light->Size;
+				out << YAML::Key << "Color" << YAML::Value << light->m_DirLightData.Color;
+				out << YAML::Key << "Ambient" << YAML::Value << light->m_DirLightData.Ambient;
+				out << YAML::Key << "Diffuse" << YAML::Value << light->m_DirLightData.Diffuse;
+				out << YAML::Key << "Specular" << YAML::Value << light->m_DirLightData.Specular;
 				break;
 			}
 			default:
@@ -826,11 +823,10 @@ namespace origin
 				{
 					auto& light = deserializedEntity.AddComponent<LightComponent>().Light;
 					light = Lighting::Create(Utils::LightTypeStringToType(lightComponent["Type"].as<std::string>()));
-
-					light->Color = lightComponent["Color"].as<glm::vec3>();
-
+					
 					switch (light->Type)
 					{
+#if 0
 					case LightingType::Spot:
 					{
 						light->InnerConeAngle = lightComponent["InnerConeAngle"].as<float>();
@@ -844,19 +840,15 @@ namespace origin
 						light->Specular = lightComponent["Specular"].as<float>();
 						break;
 					}
+#endif
 					case LightingType::Directional:
 					{
-						light->Ambient = lightComponent["Ambient"].as<float>();
-						light->Diffuse = lightComponent["Diffuse"].as<float>();
-						light->Specular = lightComponent["Specular"].as<float>();
-						light->Near = lightComponent["Near"].as<float>();
-						light->Far = lightComponent["Far"].as<float>();
-						light->Size = lightComponent["Size"].as<float>();
+						light->m_DirLightData.Color = lightComponent["Color"].as<glm::vec4>();
+						light->m_DirLightData.Ambient = lightComponent["Ambient"].as<float>();
+						light->m_DirLightData.Diffuse = lightComponent["Diffuse"].as<float>();
+						light->m_DirLightData.Specular = lightComponent["Specular"].as<float>();
 						break;
 					}
-
-					default:
-						break;
 					}
 				}
 
@@ -919,10 +911,8 @@ namespace origin
 					{
 						sMesh.Model = staticMeshComponent["MeshHandle"].as<uint64_t>();
 						std::shared_ptr<Model>& model = AssetManager::GetAsset<Model>(sMesh.Model);
-						//model->GetMaterial()->Color = staticMeshComponent["Color"].as<glm::vec4>();
-						//model->GetMaterial()->Shininess = staticMeshComponent["Shininess"].as<float>();
-						//model->GetMaterial()->Bias = staticMeshComponent["Bias"].as<float>();
-						//model->GetMaterial()->TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
+						model->GetMaterial()->BufferData.Color = staticMeshComponent["Color"].as<glm::vec4>();
+						model->GetMaterial()->BufferData.TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
 					}
 					
 				}

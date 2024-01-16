@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "OpenGL_Mesh.h"
+#include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\RenderCommand.h"
 
@@ -10,7 +11,7 @@ namespace origin
 	OpenGLMesh::OpenGLMesh(
 		const std::vector<MeshVertex>& vertices, 
 		const std::vector<uint32_t>& indices, 
-		const std::vector<std::shared_ptr<Texture2D>>& textures,
+		const std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>>& textures,
 		const std::string& modelFilepath)
 	{
 		OGN_CORE_WARN("MESH INFO: \"{}\"", modelFilepath);
@@ -58,17 +59,33 @@ namespace origin
 			return;
 		}
 
-		for (uint32_t i = 0; i < m_Textures.size(); i++)
+		for (auto& t : m_Textures)
 		{
-			shader->SetInt("u_Texture", i);
-			m_Textures[i]->Bind(i);
+			if (t.find(aiTextureType_DIFFUSE) != t.end())
+			{
+				t.at(aiTextureType_DIFFUSE)->Bind(0);
+				shader->SetInt("u_DiffTexture", 0);
+			}
+
+			if (t.find(aiTextureType_SPECULAR) != t.end())
+			{
+				t.at(aiTextureType_SPECULAR)->Bind(1);
+				shader->SetInt("u_SpecTexture", 1);
+			}
 		}
 
 		RenderCommand::DrawIndexed(m_VertexArray);
 
-		for (auto& tex : m_Textures)
+		for (auto& t : m_Textures)
 		{
-			tex->Unbind();
+			for (auto r : t)
+				r.second->Unbind();
 		}
 	}
+
+	void OpenGLMesh::Draw()
+	{
+		RenderCommand::DrawIndexed(m_VertexArray);
+	}
+
 }
