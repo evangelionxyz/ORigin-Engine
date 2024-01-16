@@ -167,7 +167,40 @@ namespace origin {
     OGN_CORE_WARN("TEXTURE: \"{}\" at index {} has been deleted", m_Filepath, m_Index);
   }
 
-  OpenGLTextureCube::OpenGLTextureCube(uint32_t width, uint32_t height)
+	void OpenGLTexture2D::ChangeSize(uint64_t newWidth, uint64_t newHeight)
+	{
+    uint32_t newTextureID;
+		glCreateTextures(GL_TEXTURE_2D, 1, &newTextureID);
+		glTextureStorage2D(newTextureID, 1, m_InternalFormat, newWidth, newHeight);
+
+		glTexParameteri(newTextureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(newTextureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(newTextureID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(newTextureID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    uint32_t fboIDs[2] = { 0 };
+    glCreateFramebuffers(2, fboIDs);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fboIDs[0]);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RendererID, 0);
+
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboIDs[1]);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, newTextureID, 0);
+
+    glBlitFramebuffer(0, 0, m_Width, m_Height,
+      0, 0, newWidth, newHeight,
+      GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    glDeleteTextures(1, &m_RendererID);
+    glDeleteFramebuffers(2, fboIDs);
+
+    m_RendererID = newTextureID;
+    m_Width = newWidth;
+    m_Height = newHeight;
+	}
+
+	OpenGLTextureCube::OpenGLTextureCube(uint32_t width, uint32_t height)
     : m_Width(width), m_Height(height)
   {
   }
@@ -233,7 +266,12 @@ namespace origin {
     glBindTexture(m_Index, 0);
   }
 
-  OpenGLTextureCube::~OpenGLTextureCube()
+	void OpenGLTextureCube::ChangeSize(uint64_t width, uint64_t height)
+	{
+
+	}
+
+	OpenGLTextureCube::~OpenGLTextureCube()
   {
 
 	}

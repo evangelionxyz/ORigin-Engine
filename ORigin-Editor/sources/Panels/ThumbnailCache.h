@@ -19,6 +19,7 @@ namespace origin {
 
 	private:
 		std::shared_ptr<Project> m_Project;
+		uint64_t m_ThumbnailSize = 128.0f;
 
 		struct ThumbnailImage
 		{

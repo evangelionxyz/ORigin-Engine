@@ -55,6 +55,9 @@ namespace origin {
 		virtual void Delete() = 0;
 		virtual bool IsLoaded() const = 0;
 
+		virtual uint64_t GetEstimatedSize() const = 0;
+		virtual void ChangeSize(uint64_t width, uint64_t height) = 0;
+
 		virtual void SetMaterialTypeName(const std::string& typeName) = 0;
 		virtual const std::string& GetMaterialTypeName() const = 0;
 
@@ -66,7 +69,6 @@ namespace origin {
 	public:
 		static std::shared_ptr<Texture2D> Create(const TextureSpecification& specification, Buffer data = Buffer());
 		static std::shared_ptr<Texture2D> Create(const std::filesystem::path& filepath, const TextureSpecification& specification = TextureSpecification());
-
 		static AssetType GetStaticType() { return AssetType::Texture2D; }
 		virtual AssetType GetType() const { return GetStaticType(); }
 	};

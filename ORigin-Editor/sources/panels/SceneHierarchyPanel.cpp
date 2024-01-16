@@ -447,9 +447,9 @@ namespace origin {
 					if (ImGui::Checkbox("Looping", &component.Looping))
 						audio->SetLoop(component.Looping);
 
-					DrawVecControl("Volume", &component.Volume, 0.0f, 1.0f, 0.1f, 1.0f);
-					DrawVecControl("Pitch", &component.Pitch, 0.0f, 1.0f, 0.1f, 1.0f);
-					DrawVecControl("Low Pass", &component.LowPass, 0.0f, 1.0f, 0.1f, 1.0f);
+					DrawVecControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
+					DrawVecControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
+					DrawVecControl("Low Pass", &component.LowPass, 0.025f, 0.0f, 1.0f, 1.0f);
 
 					ImGui::Separator();
 					if (ImGui::Checkbox("Spatialize", &component.Spatial))

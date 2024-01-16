@@ -80,7 +80,7 @@ namespace origin {
 		FMOD::Channel* m_Channel = nullptr;
 
 		float m_DopplerLevel = 1.0f;
-		float m_Gain = 100.0f;
+		float m_Gain = 1.0f;
 		float m_Pitch = 1.0f;
 		float m_LPFilter = 1.0f;
 		bool m_Paused = false;

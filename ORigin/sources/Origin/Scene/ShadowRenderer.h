@@ -38,8 +38,8 @@ namespace origin
 
 		std::vector<glm::mat4> ShadowTransforms;
 
-		float Size = 10.0f;
-		float Near = 0.1f;
+		float Size = 30.0f;
+		float Near = 0.00001f;
 		float Far = 1000.5f;
 
 	private:

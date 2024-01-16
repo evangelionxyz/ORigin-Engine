@@ -5,6 +5,7 @@
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Utils/Utils.h"
+#include "Origin\Utils\StringUtils.h"
 
 #include <imgui.h>
 
@@ -157,7 +158,6 @@ namespace origin
 		{
 			// ==== File Mode ====
 			uint32_t count = 0;
-			itemRenderCount = 0;
 			for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 			{
 				count++;
@@ -193,10 +193,21 @@ namespace origin
 
 						const auto& relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-						ImGui::ImageButton(reinterpret_cast<ImTextureID>(DirectoryIcons(directoryEntry)->GetRendererID()), { m_ThumbnailSize, m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+						auto& thumbnail = DirectoryIcons(directoryEntry);
+						float thumbnailHeight = m_ThumbnailSize * ((float)thumbnail->GetHeight() / (float)thumbnail->GetWidth());
+						float diff = m_ThumbnailSize - thumbnailHeight;
+						ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
+
+						ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetRendererID()), { m_ThumbnailSize, thumbnailHeight }, { 0, 1 }, { 1, 0 });
 						ImGui::PopStyleColor();
 
-						itemRenderCount++;
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::BeginTooltip();
+							std::string sizeString = Utils::BytesToString(thumbnail->GetEstimatedSize());
+							ImGui::Text("Mem : %s", sizeString.c_str());
+							ImGui::EndTooltip();
+						}
 
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
@@ -385,24 +396,17 @@ namespace origin
 
 		if (!dirEntry.is_directory())
 		{
-			if (fileExtension == ".png")
+			if (fileExtension == ".png" || fileExtension == ".jpg")
 			{
 				texture = m_ThumbnailCache->GetOrCreateThumbnail(relativePath);
 				if (!texture)
-				{
 					texture = m_IconMap.at("unknown");
-				}
-
 				return texture;
 			}
 			else if (m_IconMap.find(fileExtension) == m_IconMap.end())
-			{
 				texture = m_IconMap.at("unknown");
-			}
 			else
-			{
 				texture = m_IconMap.at(fileExtension);
-			}
 
 			return texture;
 		}

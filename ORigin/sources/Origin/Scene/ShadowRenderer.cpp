@@ -23,8 +23,8 @@ namespace origin {
 			m_Framebuffer.reset();
 
 		FramebufferSpecification fbSpec;
-		fbSpec.Width = 1024;
-		fbSpec.Height = 1024;
+		fbSpec.Width = 2048;
+		fbSpec.Height = 2048;
 		fbSpec.ReadBuffer = false;
 		
 		switch (type)

@@ -33,6 +33,10 @@ namespace origin {
 		void Unbind() override;
 		void Delete() override;
 		uint32_t GetRendererID() const override { return m_RendererID; }
+
+		uint64_t GetEstimatedSize() const override { return m_Width * m_Height * 4; }
+		void ChangeSize(uint64_t width, uint64_t height) override;
+
 		std::string GetName() const override
 		{
 			return m_Filepath.substr(m_Filepath.find_last_of('/') + 1, m_Filepath.size());
@@ -84,6 +88,10 @@ namespace origin {
 		uint32_t GetIndex() const override { return m_Index; }
 		uint32_t GetWidth() const override { return m_Width; }
 		uint32_t GetHeight() const override { return m_Height; }
+
+		uint64_t GetEstimatedSize() const override { return m_Width * m_Height * 4; }
+		void ChangeSize(uint64_t width, uint64_t height) override;
+
 		std::string GetName() const override 
 		{
 			return m_Filepath.substr(m_Filepath.find_last_of('/') + 1, m_Filepath.size());

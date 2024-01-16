@@ -63,6 +63,9 @@ namespace origin {
 		float GetPitch() const { return m_Pitch; }
 		float GetZoomSpeed() { return ZoomSpeed(); }
 		float GetFOV() const { return m_FOV; }
+		float GetNear() const { return m_NearClip; }
+		float GetFar() const { return m_FarClip; }
+
 		float GetAspectRatio() { return m_AspectRatio; }
 		float GetOrthoSize() const { return m_OrthoSize; }
 		float GetWidth() const { return m_ViewportWidth; }
