@@ -4,8 +4,30 @@ import winreg
 import requests
 import time
 import urllib
+import subprocess
+import json
 
 from zipfile import ZipFile
+
+def FindVisualStudioPath(vswhere_path):
+    try:
+        result = subprocess.run([vswhere_path, '-products', '*', '-latest', '-format', 'json'], capture_output=True, text=True)
+        if result.returncode == 0:
+            
+            installations = json.loads(result.stdout)
+            if installations:
+                return installations[0]['installationPath']
+            else:
+                print("No Visual Studio installations found.")
+        else:
+            print(f"Error: {result.stderr}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def SetSystemEnvironmentVariable(variable_name, directory_path):
+    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment", 0, winreg.KEY_SET_VALUE)
+    winreg.SetValueEx(key, variable_name, 0, winreg.REG_EXPAND_SZ, directory_path)
+    winreg.CloseKey(key)
 
 def GetSystemEnvironmentVariable(name):
     key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, r"System\CurrentControlSet\Control\Session Manage\Environment")
@@ -20,6 +42,15 @@ def GetUserEnvironmentVariable(name):
         return winreg.QueryValueEx(key, name)[0]
     except:
         return None
+    
+def AddNewSystemPathEnvironment(new_path):
+    current_path = current_path = os.environ.get('PATH', '')
+    if new_path not in current_path:
+        new_path = f'{current_path}{new_path}'
+        SetSystemEnvironmentVariable("Path", new_path)
+        
+    return new_path not in current_path
+
 
 def DownloadFile(url, filepath):
     path = filepath

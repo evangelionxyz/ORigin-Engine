@@ -51,14 +51,14 @@ filter "configurations:Dist"
 optimize "Full"
 symbols "Off"
 
-ORIGIN_ENGINE = os.getenv("ORIGIN_ENGINE_PATH")
-ScriptCoreLib = path.join(ORIGIN_ENGINE, "Scripts/projects/ORigin-ScriptCore.lua")
+engine_path = os.getenv("ORiginEngine")
+ScriptCoreLib = path.join(engine_path, "Scripts/projects/ORigin-ScriptCore.lua")
 group "ORiginEngine"
     include(ScriptCoreLib)
 group ""
 )";
 
-	static std::string winGenerateFile = "call %ORIGIN_ENGINE_PATH%\\Scripts\\premake\\premake5.exe vs2022";
+	static std::string winGenerateFile = "call %ORiginEngine%\\Scripts\\premake\\premake5.exe vs2022";
 
 	void Project::SetStartScene(AssetHandle handle)
 	{
