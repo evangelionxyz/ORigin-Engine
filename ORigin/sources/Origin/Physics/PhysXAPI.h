@@ -22,13 +22,20 @@ namespace origin {
 	{
 	public:
 		virtual void Init() override;
+		void OnSimulationStart();
+		void OnSimulationStop();
 		virtual void Shutdown() override;
 		virtual std::shared_ptr<PhysicsScene> CreateScene(const std::shared_ptr<Scene>& scene) const override;
 		virtual const std::string& GetLastErrorMessage() const override;
 
+		static PhysXAPI Get() { return *s_Instance; }
+
 		static physx::PxPhysics* GetPhysics();
 		static physx::PxFoundation* GetFoundation();
 		static physx::PxDefaultCpuDispatcher* GetCPUDispatcher();
+
+	private:
+		static PhysXAPI* s_Instance;
 	};
 }
 

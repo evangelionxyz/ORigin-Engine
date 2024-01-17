@@ -14,7 +14,7 @@
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer3D.h"
 #include "Origin/Scripting/ScriptEngine.h"
-#include "Origin\Asset\AssetManager.h"
+#include "Origin/Asset/AssetManager.h"
 
 #include <glm/glm.hpp>
 
@@ -23,6 +23,7 @@ namespace origin
 	class BoxColliderComponent;
 	class RigidbodyComponent;
 	class SphereColliderComponent;
+	class CapsuleColliderComponent;
 
 	Scene::Scene()
 	{
@@ -179,17 +180,6 @@ namespace origin
 		entity.GetComponent<TransformComponent>().Rotation.x = glm::radians(-90.0f);
 
 		entity.GetComponent<LightComponent>().Light = Lighting::Create(LightingType::Directional);
-
-		FramebufferSpecification fbSpec;
-		fbSpec.Width = 1080;
-		fbSpec.Height = 1080;
-
-		fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
-		fbSpec.ReadBuffer = false;
-
-		fbSpec.Attachments = {FramebufferTextureFormat::DEPTH};
-		//entity.GetComponent<LightComponent>().ShadowFb = Framebuffer::Create(fbSpec);
-
 		m_EntityMap.insert(std::make_pair(uuid, entity));
 
 		return entity;
@@ -983,6 +973,7 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(RigidbodyComponent)
 	OGN_REG_COMPONENT(BoxColliderComponent)
 	OGN_REG_COMPONENT(SphereColliderComponent)
+	OGN_REG_COMPONENT(CapsuleColliderComponent)
 
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)

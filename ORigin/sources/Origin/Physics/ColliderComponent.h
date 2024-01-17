@@ -64,11 +64,9 @@ namespace origin {
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 
 		glm::vec3 Offset = glm::vec3(0.0f);
-		float Radius = 1.0f;
-		float Height = 2.0f;
-
-		// if True = height * scale.y, else = height * scale.x
 		bool Horizontal = false;
+		float Radius = 0.5f;
+		float Height = 1.0f;
 
 		void Create(Entity entity, PhysicsScene* physxScene) override;
 		void Destroy() override;

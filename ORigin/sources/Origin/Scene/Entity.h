@@ -2,7 +2,7 @@
 
 #pragma once
 #include "Origin\Physics\RigidbodyComponent.h"
-#include "Origin\Physics\Collider.h"
+#include "Origin\Physics\ColliderComponent.h"
 #include "Components.h"
 #include "Scene.h"
 #include "entt\entt.hpp"

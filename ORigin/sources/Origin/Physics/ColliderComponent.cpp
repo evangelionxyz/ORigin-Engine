@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Collider.h"
+#include "ColliderComponent.h"
 
 #include "PhysXAPI.h"
 
@@ -16,7 +16,7 @@ namespace origin {
 	void BoxColliderComponent::Create(Entity entity, PhysicsScene* physxScene)
 	{
 		auto& tc = entity.GetComponent<TransformComponent>();
-		auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+		auto& bc = entity.GetComponent<BoxColliderComponent>();
 
 		physx::PxRigidActor* actor;
 		if (entity.HasComponent<RigidbodyComponent>())
@@ -37,14 +37,14 @@ namespace origin {
 		}
 
 		RigidbodyComponent& rb = entity.GetComponent<RigidbodyComponent>();
-		physx::PxTransform relativePos(Utils::ToPhysXVec3(boxCollider.Offset));
-		physx::PxMaterial* pxMaterial = PhysXAPI::GetPhysics()->createMaterial(boxCollider.StaticFriction, boxCollider.DynamicFriction, boxCollider.Restitution);
+		physx::PxTransform relativePos(Utils::ToPhysXVec3(bc.Offset));
+		physx::PxMaterial* pxMaterial = PhysXAPI::GetPhysics()->createMaterial(bc.StaticFriction, bc.DynamicFriction, bc.Restitution);
 
-		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxBoxGeometry(Utils::ToPhysXVec3(tc.Scale * (boxCollider.Size * 2.0f))), *pxMaterial);
+		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxBoxGeometry(Utils::ToPhysXVec3(tc.Scale * (bc.Size * 2.0f))), *pxMaterial);
 
 		shape->setLocalPose(relativePos);
-		boxCollider.Shape = (void*)shape;
-		boxCollider.Rigidbody = (void*)actor;
+		bc.Shape = (void*)shape;
+		bc.Rigidbody = (void*)actor;
 
 		rb.Body = actor;
 
@@ -64,7 +64,7 @@ namespace origin {
 	void SphereColliderComponent::Create(Entity entity, PhysicsScene* physxScene)
 	{
 		auto& tc = entity.GetComponent<TransformComponent>();
-		auto& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+		auto& sc = entity.GetComponent<SphereColliderComponent>();
 
 		physx::PxRigidActor* actor;
 		if (entity.HasComponent<RigidbodyComponent>())
@@ -75,7 +75,6 @@ namespace origin {
 			else
 				actor = physxScene->CreateActor(rb, tc.Translation, glm::quat(tc.Rotation));
 		}
-
 		else
 		{
 			RigidbodyComponent& rb = entity.AddComponent<RigidbodyComponent>();
@@ -85,14 +84,14 @@ namespace origin {
 		}
 
 		RigidbodyComponent& rb = entity.GetComponent<RigidbodyComponent>();
-		physx::PxTransform relativePos(Utils::ToPhysXVec3(sphereCollider.Offset));
-		physx::PxMaterial* pxMaterial = PhysXAPI::GetPhysics()->createMaterial(sphereCollider.StaticFriction, sphereCollider.DynamicFriction, sphereCollider.Restitution);
+		physx::PxTransform relativePos(Utils::ToPhysXVec3(sc.Offset));
+		physx::PxMaterial* pxMaterial = PhysXAPI::GetPhysics()->createMaterial(sc.StaticFriction, sc.DynamicFriction, sc.Restitution);
 
-		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxSphereGeometry(tc.Scale.x * (sphereCollider.Radius * 2.0f)), *pxMaterial);
+		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxSphereGeometry(tc.Scale.x * sc.Radius * 2.0f), *pxMaterial);
 
 		shape->setLocalPose(relativePos);
-		sphereCollider.Shape = (void*)shape;
-		sphereCollider.Rigidbody = (void*)actor;
+		sc.Shape = (void*)shape;
+		sc.Rigidbody = (void*)actor;
 
 		rb.Body = actor;
 
@@ -111,11 +110,49 @@ namespace origin {
 
 	void CapsuleColliderComponent::Create(Entity entity, PhysicsScene* physxScene)
 	{
+		const auto& tc = entity.GetComponent<TransformComponent>();
+		auto& cc = entity.GetComponent<CapsuleColliderComponent>();
+
+		physx::PxRigidActor* actor;
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			RigidbodyComponent& rb = entity.GetComponent<RigidbodyComponent>();
+			if (rb.Body)
+				actor = (physx::PxRigidBody*)rb.Body;
+			else
+				actor = physxScene->CreateActor(rb, tc.Translation, glm::quat(tc.Rotation));
+		}
+		else
+		{
+			RigidbodyComponent& rb = entity.AddComponent<RigidbodyComponent>();
+			rb.UseGravity = true;
+			rb.Kinematic = true;
+			actor = physxScene->CreateActor(rb, tc.Translation, glm::quat(tc.Rotation));
+		}
+
+		RigidbodyComponent& rb = entity.GetComponent<RigidbodyComponent>();
+		physx::PxTransform relativePos(Utils::ToPhysXVec3(cc.Offset));
+
+		physx::PxMaterial* pxMaterial = PhysXAPI::GetPhysics()->createMaterial(cc.StaticFriction, cc.DynamicFriction, cc.Restitution);
+
+		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(cc.Radius, Height/2.0f);
+		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, geometry, *pxMaterial);
+
+		shape->setLocalPose(relativePos);
+		cc.Shape = (void*)shape;
+		cc.Rigidbody = (void*)actor;
+		rb.Body = actor;
+		physxScene->GetScene()->addActor(*actor);
 	}
 
 	void CapsuleColliderComponent::Destroy()
 	{
+		physx::PxShape* shape = (physx::PxShape*)this->Shape;
+		physx::PxRigidActor* actor = (physx::PxRigidActor*)Rigidbody;
+		actor->detachShape(*shape);
 
+		Shape = nullptr;
+		Rigidbody = nullptr;
 	}
 
 }

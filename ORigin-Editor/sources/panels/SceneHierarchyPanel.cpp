@@ -230,6 +230,7 @@ namespace origin {
 			DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
 			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
 			DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
+			DisplayAddComponentEntry<CapsuleColliderComponent>("CAPSULE COLLIDER");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
@@ -370,8 +371,17 @@ namespace origin {
 				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
 
+		DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto& component)
+			{
+				ImGui::Checkbox("Horizontal", &component.Horizontal);
+				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
+				DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
+				DrawVecControl("Height", &component.Height, 0.025f, 0.0f, 10.0f, 1.0f);
+				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+			});
 
-		
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
 				std::string label = "None";

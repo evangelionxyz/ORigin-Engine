@@ -139,12 +139,13 @@ namespace origin {
 
 	static PhysXData* s_PhysXData = nullptr;
 
+	PhysXAPI* PhysXAPI::s_Instance = nullptr;
+
 	void PhysXAPI::Init()
 	{
+		s_Instance = this;
+
 		s_PhysXData = new PhysXData();
-
-		bool recordMemoryAllocations = true;
-
 		s_PhysXData->PhysxFoundation = PxCreateFoundation(
 			PX_PHYSICS_VERSION,
 			s_PhysXData->Allocator,
@@ -154,12 +155,23 @@ namespace origin {
 
 		s_PhysXData->PhysxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
 
+		int workerThreads = 4;
+		s_PhysXData->PhysxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(workerThreads);
+		OGN_CORE_ASSERT(s_PhysXData->PhysxCPUDispatcher, "PhysX CPU Dispatch is failed to created");
+		
+		OGN_CORE_INFO("PhysX API: Foundation Created");
+	}
+
+	void PhysXAPI::OnSimulationStart()
+	{
 		s_PhysXData->PhysXPvd = PxCreatePvd(*PhysXAPI::GetFoundation());
 
 		int port = 5425;
 		int timeoutMS = 10;
+		bool recordMemoryAllocations = false;
 		physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate("localhost", port, timeoutMS);
 		s_PhysXData->PhysXPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
+		OGN_CORE_INFO("PhysX API: PVD Connected");
 
 		s_PhysXData->PhysxPhysics = PxCreatePhysics(
 			PX_PHYSICS_VERSION,
@@ -168,35 +180,32 @@ namespace origin {
 			recordMemoryAllocations,
 			s_PhysXData->PhysXPvd);
 
+		bool pxPvdExtension = PxInitExtensions(*s_PhysXData->PhysxPhysics, s_PhysXData->PhysXPvd);
+		OGN_CORE_ASSERT(pxPvdExtension, "PhysX PVD Extension is failed to initilized");
 		OGN_CORE_ASSERT(s_PhysXData->PhysxPhysics, "PhysXAPI: Failed To Create Physics");
 
-		bool pxExtensionInitialized = PxInitExtensions(*s_PhysXData->PhysxPhysics, s_PhysXData->PhysXPvd);
-		OGN_CORE_ASSERT(pxExtensionInitialized, "PhysX Extension is failed to initilized");
+		OGN_CORE_INFO("PhysX API: Physics Created");
+	}
 
-		int workerThreads = 4;
-		s_PhysXData->PhysxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(workerThreads);
-		OGN_CORE_ASSERT(s_PhysXData->PhysxCPUDispatcher, "PhysX CPU Dispatch is failed to created");
+	void PhysXAPI::OnSimulationStop()
+	{
+		PxCloseExtensions();
+		OGN_CORE_INFO("PhysX API: Extensions Closed");
 
-		OGN_CORE_INFO("PhysX API: Initialized");
+		s_PhysXData->PhysxPhysics->release();
+		OGN_CORE_INFO("PhysX API: Physics Released");
 	}
 
 	void PhysXAPI::Shutdown()
 	{
 		s_PhysXData->PhysxCPUDispatcher->release();
-		s_PhysXData->PhysxCPUDispatcher = nullptr;
-
-		PxCloseExtensions();
-
-		s_PhysXData->PhysxPhysics->release();
-		s_PhysXData->PhysxPhysics = nullptr;
-
 		s_PhysXData->PhysxFoundation->release();
-		s_PhysXData->PhysxFoundation = nullptr;
+		OGN_CORE_WARN("PhysX API: Foundation Released");
 
 		delete s_PhysXData;
 		s_PhysXData = nullptr;
 
-		OGN_CORE_INFO("PhysX API : Shutdown");
+		OGN_CORE_WARN("PhysX API: Shutdown");
 	}
 
 	std::shared_ptr<PhysicsScene> PhysXAPI::CreateScene(const std::shared_ptr<Scene>& scene) const

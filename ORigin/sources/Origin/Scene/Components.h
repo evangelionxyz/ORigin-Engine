@@ -366,6 +366,7 @@ namespace origin
 	class RigidbodyComponent;
 	class BoxColliderComponent;
 	class SphereColliderComponent;
+	class CapsuleColliderComponent;
 
 	using AllComponents = ComponentGroup<
 		TransformComponent, CameraComponent, AnimationComponent,
@@ -373,6 +374,6 @@ namespace origin
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
-		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent
+		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent
 	>;
 }

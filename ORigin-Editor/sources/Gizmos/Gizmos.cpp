@@ -139,10 +139,32 @@ namespace origin {
 			const auto& sphere = scene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
 			for (auto entity : sphere)
 			{
-				const auto& [tc, cc] = sphere.get<TransformComponent, SphereColliderComponent>(entity);
+				const auto& [tc, sc] = sphere.get<TransformComponent, SphereColliderComponent>(entity);
 
-				// TODO: Add Offset
-				Renderer3D::DrawSphere(tc.GetTransform(), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (cc.Radius + 0.1f)* 2.0f);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + sc.Offset))
+					* glm::toMat4(glm::quat(tc.Rotation))
+					* glm::scale(glm::mat4(1.0f), tc.Scale);
+
+				Renderer3D::DrawSphere(transform,
+					glm::vec4(1.0f, 0.0f, 1.0f, 1.0f),
+					(sc.Radius + 0.1f) * 2.0f,
+					(int)entity);
+			}
+
+			const auto& capsule = scene->GetAllEntitiesWith<TransformComponent, CapsuleColliderComponent>();
+			for (auto entity : capsule)
+			{
+				const auto& [tc, cc] = capsule.get<TransformComponent, CapsuleColliderComponent>(entity);
+				glm::vec3 rot = glm::vec3(tc.Rotation.x, tc.Rotation.y, tc.Rotation.z + glm::radians(90.0f));
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
+					* glm::toMat4(glm::quat(rot))
+					* glm::scale(glm::mat4(1.0f), tc.Scale);
+
+				/*Renderer3D::DrawCapsule(transform,
+					glm::vec4(1.0f, 0.0f, 1.0f, 1.0f),
+					(cc.Radius + 0.1f) * 2.0f,
+					cc.Height * 1.5f,
+					(int)entity);*/
 			}
 
 		

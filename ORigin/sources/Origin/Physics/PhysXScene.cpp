@@ -10,24 +10,23 @@ namespace origin {
 	PhysXScene::PhysXScene(Scene* scene)
 		: m_Context(scene)
 	{
+	}
+
+	PhysXScene::~PhysXScene()
+	{
+		m_Context = nullptr;
+	}
+
+	void PhysXScene::OnSimulationStart()
+	{
+		PhysXAPI::Get().OnSimulationStart();
 		physx::PxSceneDesc sceneDesc(PhysXAPI::GetPhysics()->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 		sceneDesc.cpuDispatcher = PhysXAPI::GetCPUDispatcher();
 		sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
 
 		m_PhysXScene = PhysXAPI::GetPhysics()->createScene(sceneDesc);
-	}
 
-	PhysXScene::~PhysXScene()
-	{
-		m_PhysXScene->release();
-		m_PhysXScene = nullptr;
-
-		m_Context = nullptr;
-	}
-
-	void PhysXScene::OnSimulationStart()
-	{
 		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
 		{
 			Entity entity = { id, m_Context };
@@ -41,10 +40,18 @@ namespace origin {
 			if (!entity.GetComponent<SphereColliderComponent>().Rigidbody)
 				entity.GetComponent<SphereColliderComponent>().Create(entity, this);
 		}
+
+		for (auto& id : m_Context->m_Registry.view<CapsuleColliderComponent>())
+		{
+			Entity entity = { id, m_Context };
+			if (!entity.GetComponent<CapsuleColliderComponent>().Rigidbody)
+				entity.GetComponent<CapsuleColliderComponent>().Create(entity, this);
+		}
 	}
 
 	void PhysXScene::OnSimulationStop()
 	{
+
 		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
 		{
 			Entity entity = { id, m_Context };
@@ -55,6 +62,12 @@ namespace origin {
 		{
 			Entity entity = { id, m_Context };
 			entity.GetComponent<SphereColliderComponent>().Destroy();
+		}
+
+		for (auto& id : m_Context->m_Registry.view<CapsuleColliderComponent>())
+		{
+			Entity entity = { id, m_Context };
+			entity.GetComponent<CapsuleColliderComponent>().Destroy();
 		}
 
 		for (auto& id : m_Context->m_Registry.view<RigidbodyComponent>())
@@ -69,6 +82,10 @@ namespace origin {
 				body = nullptr;
 			}
 		}
+
+		m_PhysXScene->flushSimulation(false);
+		m_PhysXScene->release();
+		PhysXAPI::Get().OnSimulationStop();
 	}
 
 	void PhysXScene::Simulate(float deltaTime)

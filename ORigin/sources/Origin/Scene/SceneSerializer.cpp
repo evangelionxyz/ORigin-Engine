@@ -397,12 +397,12 @@ namespace origin
 		{
 			out << YAML::Key << "BoxColliderComponent";
 			out << YAML::BeginMap; // BoxColliderComponent
-			const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
-			out << YAML::Key << "Size" << YAML::Value << boxCollider.Size;
-			out << YAML::Key << "Offset" << YAML::Value << boxCollider.Offset;
-			out << YAML::Key << "Restitution" << YAML::Value << boxCollider.Restitution;
-			out << YAML::Key << "StaticFriction" << YAML::Value << boxCollider.StaticFriction;
-			out << YAML::Key << "DynamicFriction" << YAML::Value << boxCollider.DynamicFriction;
+			const auto& bc = entity.GetComponent<BoxColliderComponent>();
+			out << YAML::Key << "Size" << YAML::Value << bc.Size;
+			out << YAML::Key << "Offset" << YAML::Value << bc.Offset;
+			out << YAML::Key << "Restitution" << YAML::Value << bc.Restitution;
+			out << YAML::Key << "StaticFriction" << YAML::Value << bc.StaticFriction;
+			out << YAML::Key << "DynamicFriction" << YAML::Value << bc.DynamicFriction;
 
 			out << YAML::EndMap; // !BoxColliderComponent
 		}
@@ -420,18 +420,19 @@ namespace origin
 			out << YAML::EndMap;
 		}
 
-		if (entity.HasComponent<SphereColliderComponent>())
+		if (entity.HasComponent<CapsuleColliderComponent>())
 		{
-			out << YAML::Key << "SphereColliderComponent";
-			out << YAML::BeginMap; // SphereColliderComponent
-			const auto& circlerCollider = entity.GetComponent<SphereColliderComponent>();
-			out << YAML::Key << "Radius" << YAML::Value << circlerCollider.Radius;
-			out << YAML::Key << "Offset" << YAML::Value << circlerCollider.Offset;
-			out << YAML::Key << "Restitution" << YAML::Value << circlerCollider.Restitution;
-			out << YAML::Key << "StaticFriction" << YAML::Value << circlerCollider.StaticFriction;
-			out << YAML::Key << "DynamicFriction" << YAML::Value << circlerCollider.DynamicFriction;
+			out << YAML::Key << "CapsuleColliderComponent";
+			out << YAML::BeginMap; // CapsuleColliderComponent
+			const auto& cc = entity.GetComponent<CapsuleColliderComponent>();
+			out << YAML::Key << "Radius" << YAML::Value << cc.Radius;
+			out << YAML::Key << "Height" << YAML::Value << cc.Height;
+			out << YAML::Key << "Offset" << YAML::Value << cc.Offset;
+			out << YAML::Key << "Restitution" << YAML::Value << cc.Restitution;
+			out << YAML::Key << "StaticFriction" << YAML::Value << cc.StaticFriction;
+			out << YAML::Key << "DynamicFriction" << YAML::Value << cc.DynamicFriction;
 
-			out << YAML::EndMap; // !SphereColliderComponent
+			out << YAML::EndMap; // !CapsuleColliderComponent
 		}
 
 		if (entity.HasComponent<RigidbodyComponent>())
@@ -939,14 +940,15 @@ namespace origin
 					sphereCollider.DynamicFriction = sphereColliderComponent["DynamicFriction"].as<float>();
 				}
 
-				if (YAML::Node sphereColliderComponent = entity["SpherColliderComponent"])
+				if (YAML::Node capsueColliderComponent = entity["CapsuleColliderComponent"])
 				{
-					auto& boxCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
-					boxCollider.Radius = sphereColliderComponent["Radius"].as<float>();
-					boxCollider.Offset = sphereColliderComponent["Offset"].as<glm::vec3>();
-					boxCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
-					boxCollider.StaticFriction = sphereColliderComponent["StaticFriction"].as<float>();
-					boxCollider.DynamicFriction = sphereColliderComponent["DynamicFriction"].as<float>();
+					auto& capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
+					capsuleCollider.Radius = capsueColliderComponent["Radius"].as<float>();
+					capsuleCollider.Height = capsueColliderComponent["Height"].as<float>();
+					capsuleCollider.Offset = capsueColliderComponent["Offset"].as<glm::vec3>();
+					capsuleCollider.Restitution = capsueColliderComponent["Restitution"].as<float>();
+					capsuleCollider.StaticFriction = capsueColliderComponent["StaticFriction"].as<float>();
+					capsuleCollider.DynamicFriction = capsueColliderComponent["DynamicFriction"].as<float>();
 				}
 
 				if (YAML::Node rigidbodyComponent = entity["RigidbodyComponent"])
