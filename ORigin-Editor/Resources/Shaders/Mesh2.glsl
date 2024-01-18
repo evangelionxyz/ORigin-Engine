@@ -225,12 +225,16 @@ vec3 CalcSpotLights(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 s
 vec3 CalcDirLight(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
 {
     vec3 lightDirection = normalize(dirLight.Direction);
+
     vec3 reflectDirection = reflect(-lightDirection, normal);
     vec3 ambient = dirLight.Ambient * dirLight.Color * diffuseTexture;
+
     float diffuseContrib = max(dot(lightDirection, normal), 0.0);
     vec3 diffuse = diffuseContrib * dirLight.Diffuse * dirLight.Color * diffuseTexture;
+
     float specularContrib = pow(max(dot(viewDirection, reflectDirection), 0.0), material.Shininess);
     vec3 specular = dirLight.Specular * specularContrib * dirLight.Color * specularTexture;
+
     float shadow = ShadowCalculation(vertex.LightSpacePosition, dirLight.Direction);
     return ambient + (1.0 - shadow) * (diffuse + specular);
 }

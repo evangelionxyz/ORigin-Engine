@@ -82,7 +82,7 @@ namespace origin
 		AssetHandle Audio = 0;
 		std::string Name = "Audio";
 
-		float Volume = 100.0f;
+		float Volume = 1.0f;
 		float DopplerLevel = 1.0f;
 		float LowPass = 1.0f;
 		float Pitch = 1.0f;
@@ -124,7 +124,6 @@ namespace origin
 	{
 	public:
 		AssetHandle Model;
-
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
@@ -146,9 +145,6 @@ namespace origin
 		glm::vec3 Translation = glm::vec3(0.0f);
 		glm::vec3 Rotation = glm::vec3(0.0f);
 		glm::vec3 Scale = glm::vec3(1.0f);
-
-		glm::vec3 WorldPosition = glm::vec3(0.0f);
-		glm::quat WorldRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
@@ -196,7 +192,7 @@ namespace origin
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 
-		SpriteRendererComponent(const glm::vec4& color)
+		SpriteRendererComponent(const glm::vec4 color)
 			: Color(color) {}
 
 		SpriteRendererComponent(float r, float g, float b, float, float a)

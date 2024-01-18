@@ -251,6 +251,76 @@ namespace origin {
 			DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 		});
 
+		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
+			{
+				std::string label = "None";
+				bool isMeshValid = false;
+				ImGui::Text("Model");
+				ImGui::SameLine();
+
+				if (component.Model != 0)
+				{
+					if (AssetManager::IsAssetHandleValid(component.Model) && AssetManager::GetAssetType(component.Model) == AssetType::StaticMesh)
+					{
+						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Model);
+						label = metadata.Filepath.filename().string();
+						isMeshValid = true;
+					}
+					else
+					{
+						label = "Invalid";
+					}
+				}
+
+				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
+				buttonLabelSize.x += 20.0f;
+				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
+						if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
+						{
+							component.Model = handle;
+						}
+						else
+						{
+							OGN_CORE_WARN("Wrong asset type!");
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+
+				if (isMeshValid)
+				{
+					ImGui::SameLine();
+					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+					{
+						component.Model = 0;
+						isMeshValid = false;
+					}
+				}
+
+				if (isMeshValid)
+				{
+					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(component.Model);
+					if (ImGui::Button("Refresh Shader"))
+						model->GetMaterial()->RefreshShader();
+
+					ImGui::Separator();
+					ImGui::Text("Material");
+
+					DrawVec2Control("Tiling Factor", model->GetMaterial()->BufferData.TilingFactor, 0.01f, 1.0f);
+					ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->BufferData.Color));
+					DrawVecControl("Metallic", &model->GetMaterial()->BufferData.Metallic, 0.01f, 0.0f, 1.0f);
+					DrawVecControl("Roughness", &model->GetMaterial()->BufferData.Roughness, 0.01f, 0.0f, 1.0f);
+				}
+			});
+
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
 		{
 			auto& camera = component.Camera;
@@ -374,9 +444,9 @@ namespace origin {
 		DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto& component)
 			{
 				ImGui::Checkbox("Horizontal", &component.Horizontal);
-				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
-				DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
-				DrawVecControl("Height", &component.Height, 0.025f, 0.0f, 10.0f, 1.0f);
+				DrawVec3Control("Offset", component.Offset, 0.01f, 0.0f);
+				DrawVecControl("Radius", &component.Radius, 0.01f, 0.0f, 1000.0f, 0.5f);
+				DrawVecControl("Height", &component.Height, 0.01f, 0.0f, 1000.0f, 1.0f);
 				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
 				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
 				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
@@ -471,283 +541,6 @@ namespace origin {
 						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
 						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
 					}
-				}
-			});
-
-		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable
-			{
-				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
-				bool isSelected = false;
-
-				if (!scriptClassExist)
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
-
-				auto& scriptStorage = ScriptEngine::GetScriptClassStorage();
-				std::string currentScriptClasses = component.ClassName;
-
-				// drop-down
-				if (ImGui::BeginCombo("Script Class", currentScriptClasses.c_str()))
-				{
-					for (int i = 0; i < scriptStorage.size(); i++)
-					{
-						isSelected = currentScriptClasses == scriptStorage[i];
-						if (ImGui::Selectable(scriptStorage[i].c_str(), isSelected))
-						{
-							currentScriptClasses = scriptStorage[i];
-							component.ClassName = scriptStorage[i];
-						}
-						if (isSelected) ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-				
-				if (ImGui::Button("Detach"))
-				{
-					component.ClassName = "Detached";
-					isSelected = false;
-				}
-
-				bool detached = component.ClassName == "Detached";
-
-				// fields
-				bool isRunning = scene->IsRunning();
-				if (isRunning)
-				{
-					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-					if (scriptInstance && !detached)
-					{
-						auto& fields = scriptInstance->GetScriptClass()->GetFields();
-
-						for (const auto& [name, field] : fields)
-						{
-							if (field.Type == ScriptFieldType::Float)
-							{
-								float data = scriptInstance->GetFieldValue<float>(name);
-								if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
-								{
-									scriptInstance->SetFieldValue<float>(name, data);
-								}
-							}
-							if (field.Type == ScriptFieldType::Int)
-							{
-								int data = scriptInstance->GetFieldValue<int>(name);
-								if (ImGui::DragInt(name.c_str(), &data, 1))
-								{
-									scriptInstance->SetFieldValue<int>(name, data);
-								}
-							}
-							if (field.Type == ScriptFieldType::Vector2)
-							{
-								glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
-								if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
-								{
-									scriptInstance->SetFieldValue<glm::vec2>(name, data);
-								}
-							}
-							if (field.Type == ScriptFieldType::Vector3)
-							{
-								glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
-								if (ImGui::DragFloat3(name.c_str(),	glm::value_ptr(data), 0.25f))
-								{
-									scriptInstance->SetFieldValue<glm::vec3>(name, data);
-								}
-							}
-							if (field.Type == ScriptFieldType::Vector4)
-							{
-								glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
-								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
-								{
-									scriptInstance->SetFieldValue<glm::vec4>(name, data);
-								}
-							}
-						}
-					}
-				} // !IsRunning
-				else
-				{
-					if (scriptClassExist && !detached)
-					{
-						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
-						const auto& fields = entityClass->GetFields();
-						auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
-
-						for (const auto& [name, field] : fields)
-						{
-							if (entityFields.find(name) != entityFields.end())
-							{
-								ScriptFieldInstance& scriptField = entityFields.at(name);
-
-								if (field.Type == ScriptFieldType::Float)
-								{
-									float data = scriptField.GetValue<float>();
-									if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
-									{
-										scriptField.SetValue<float>(data);
-									}
-								}
-								if (field.Type == ScriptFieldType::Int)
-								{
-									int data = scriptField.GetValue<int>();
-									if (ImGui::DragInt(name.c_str(), &data, 1))
-									{
-										scriptField.SetValue<int>(data);
-									}
-								}
-								if (field.Type == ScriptFieldType::Vector2)
-								{
-									glm::vec2 data = scriptField.GetValue<glm::vec3>();
-									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
-									{
-										scriptField.SetValue<glm::vec2>(data);
-									}
-								}
-								if (field.Type == ScriptFieldType::Vector3)
-								{
-									glm::vec3 data = scriptField.GetValue<glm::vec3>();
-									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
-									{
-										scriptField.SetValue<glm::vec3>(data);
-									}
-								}
-								if (field.Type == ScriptFieldType::Vector4)
-								{
-									glm::vec4 data = scriptField.GetValue<glm::vec4>();
-									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
-									{
-										scriptField.SetValue<glm::vec4>(data);
-									}
-								}
-							}
-							else
-							{
-								if (field.Type == ScriptFieldType::Float)
-								{
-									float data = 0.0f;
-									if (ImGui::DragFloat(name.c_str(), &data))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<float>(data);
-									}
-								}
-
-								if (field.Type == ScriptFieldType::Int)
-								{
-									int data = 0;
-									if (ImGui::DragInt(name.c_str(), &data))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<int>(data);
-									}
-								}
-
-								if (field.Type == ScriptFieldType::Vector2)
-								{
-									glm::vec2 data(0.0f);
-									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data)))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<glm::vec2>(data);
-									}
-								}
-
-								if (field.Type == ScriptFieldType::Vector3)
-								{
-									glm::vec3 data(0.0f);
-									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data)))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<glm::vec3>(data);
-									}
-								}
-
-								if (field.Type == ScriptFieldType::Vector4)
-								{
-									glm::vec4 data(0.0f);
-									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data)))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<glm::vec4>(data);
-									}
-								}
-							}
-						}
-					}
-				}
-
-				if (!scriptClassExist)
-					ImGui::PopStyleColor();
-			});
-
-		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
-			{
-				std::string label = "None";
-				bool isMeshValid = false;
-				ImGui::Text("Model");
-				ImGui::SameLine();
-
-				if (component.Model != 0)
-				{
-					if (AssetManager::IsAssetHandleValid(component.Model) && AssetManager::GetAssetType(component.Model) == AssetType::StaticMesh)
-					{
-						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Model);
-						label = metadata.Filepath.filename().string();
-						isMeshValid = true;
-					}
-					else
-					{
-						label = "Invalid";
-					}
-				}
-
-				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
-				buttonLabelSize.x += 20.0f;
-				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
-						if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
-						{
-							component.Model = handle;
-						}
-						else
-						{
-							OGN_CORE_WARN("Wrong asset type!");
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-
-
-				if (isMeshValid)
-				{
-					ImGui::SameLine();
-					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
-					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
-					{
-						component.Model = 0;
-						isMeshValid = false;
-					}
-				}
-
-				if(isMeshValid)
-				{
-					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(component.Model);
-					if (ImGui::Button("Refresh Shader"))
-						model->GetMaterial()->RefreshShader();
-
-					ImGui::Separator();
-					ImGui::Text("Material");
-
-					ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->BufferData.Color));
-					DrawVec2Control("Tiling Factor", model->GetMaterial()->BufferData.TilingFactor, 0.01f, 1.0f);
 				}
 			});
 
@@ -916,9 +709,9 @@ namespace origin {
 					case LightingType::Directional:
 					{
 						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->m_DirLightData.Color));
-						DrawVecControl("Ambient", &component.Light->m_DirLightData.Ambient, 0.01f, 0.0f);
-						DrawVecControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f);
-						DrawVecControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f);
+						DrawVecControl("Strength", &component.Light->m_DirLightData.Strength, 0.01f, 0.0f, 100.0f);
+						DrawVecControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
+						DrawVecControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
 
 						if (component.Light->GetShadow()->GetFramebuffer())
 						{
@@ -1037,6 +830,215 @@ namespace origin {
 				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, 100.0f, 0.0f, width);
 				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width);
 				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.0f, width);
+			});
+
+		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable
+			{
+				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
+				bool isSelected = false;
+
+				if (!scriptClassExist)
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+
+				auto& scriptStorage = ScriptEngine::GetScriptClassStorage();
+				std::string currentScriptClasses = component.ClassName;
+
+				// drop-down
+				if (ImGui::BeginCombo("Script Class", currentScriptClasses.c_str()))
+				{
+					for (int i = 0; i < scriptStorage.size(); i++)
+					{
+						isSelected = currentScriptClasses == scriptStorage[i];
+						if (ImGui::Selectable(scriptStorage[i].c_str(), isSelected))
+						{
+							currentScriptClasses = scriptStorage[i];
+							component.ClassName = scriptStorage[i];
+						}
+						if (isSelected) ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+
+				if (ImGui::Button("Detach"))
+				{
+					component.ClassName = "Detached";
+					isSelected = false;
+				}
+
+				bool detached = component.ClassName == "Detached";
+
+				// fields
+				bool isRunning = scene->IsRunning();
+				if (isRunning)
+				{
+					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+					if (scriptInstance && !detached)
+					{
+						auto& fields = scriptInstance->GetScriptClass()->GetFields();
+
+						for (const auto& [name, field] : fields)
+						{
+							if (field.Type == ScriptFieldType::Float)
+							{
+								float data = scriptInstance->GetFieldValue<float>(name);
+								if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
+								{
+									scriptInstance->SetFieldValue<float>(name, data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Int)
+							{
+								int data = scriptInstance->GetFieldValue<int>(name);
+								if (ImGui::DragInt(name.c_str(), &data, 1))
+								{
+									scriptInstance->SetFieldValue<int>(name, data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector2)
+							{
+								glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
+								if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
+								{
+									scriptInstance->SetFieldValue<glm::vec2>(name, data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector3)
+							{
+								glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
+								if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
+								{
+									scriptInstance->SetFieldValue<glm::vec3>(name, data);
+								}
+							}
+							if (field.Type == ScriptFieldType::Vector4)
+							{
+								glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
+								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
+								{
+									scriptInstance->SetFieldValue<glm::vec4>(name, data);
+								}
+							}
+						}
+					}
+				} // !IsRunning
+				else
+				{
+					if (scriptClassExist && !detached)
+					{
+						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+						const auto& fields = entityClass->GetFields();
+						auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+
+						for (const auto& [name, field] : fields)
+						{
+							if (entityFields.find(name) != entityFields.end())
+							{
+								ScriptFieldInstance& scriptField = entityFields.at(name);
+
+								if (field.Type == ScriptFieldType::Float)
+								{
+									float data = scriptField.GetValue<float>();
+									if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
+									{
+										scriptField.SetValue<float>(data);
+									}
+								}
+								if (field.Type == ScriptFieldType::Int)
+								{
+									int data = scriptField.GetValue<int>();
+									if (ImGui::DragInt(name.c_str(), &data, 1))
+									{
+										scriptField.SetValue<int>(data);
+									}
+								}
+								if (field.Type == ScriptFieldType::Vector2)
+								{
+									glm::vec2 data = scriptField.GetValue<glm::vec3>();
+									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
+									{
+										scriptField.SetValue<glm::vec2>(data);
+					}
+				}
+								if (field.Type == ScriptFieldType::Vector3)
+								{
+									glm::vec3 data = scriptField.GetValue<glm::vec3>();
+									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
+									{
+										scriptField.SetValue<glm::vec3>(data);
+									}
+								}
+								if (field.Type == ScriptFieldType::Vector4)
+								{
+									glm::vec4 data = scriptField.GetValue<glm::vec4>();
+									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
+									{
+										scriptField.SetValue<glm::vec4>(data);
+									}
+								}
+			}
+							else
+							{
+								if (field.Type == ScriptFieldType::Float)
+								{
+									float data = 0.0f;
+									if (ImGui::DragFloat(name.c_str(), &data))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<float>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Int)
+								{
+									int data = 0;
+									if (ImGui::DragInt(name.c_str(), &data))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<int>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Vector2)
+								{
+									glm::vec2 data(0.0f);
+									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data)))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<glm::vec2>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Vector3)
+								{
+									glm::vec3 data(0.0f);
+									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data)))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<glm::vec3>(data);
+									}
+								}
+
+								if (field.Type == ScriptFieldType::Vector4)
+								{
+									glm::vec4 data(0.0f);
+									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data)))
+									{
+										ScriptFieldInstance& fieldInstance = entityFields[name];
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<glm::vec4>(data);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				if (!scriptClassExist)
+					ImGui::PopStyleColor();
 			});
 
 		DrawComponent<AudioListenerComponent>("AUDIO LISTENER", entity, [](auto& component)

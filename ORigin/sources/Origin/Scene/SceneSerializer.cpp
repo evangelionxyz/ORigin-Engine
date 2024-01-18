@@ -388,6 +388,8 @@ namespace origin
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
 				out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->BufferData.Color;
 				out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
+				out << YAML::Key << "Metallic" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
+				out << YAML::Key << "Roughness" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
 			}
 			
 			out << YAML::EndMap; // !StaticMeshComponent
@@ -550,7 +552,7 @@ namespace origin
 			case LightingType::Directional:
 			{
 				out << YAML::Key << "Color" << YAML::Value << light->m_DirLightData.Color;
-				out << YAML::Key << "Ambient" << YAML::Value << light->m_DirLightData.Ambient;
+				out << YAML::Key << "Strength" << YAML::Value << light->m_DirLightData.Strength;
 				out << YAML::Key << "Diffuse" << YAML::Value << light->m_DirLightData.Diffuse;
 				out << YAML::Key << "Specular" << YAML::Value << light->m_DirLightData.Specular;
 				break;
@@ -847,7 +849,7 @@ namespace origin
 					case LightingType::Directional:
 					{
 						light->m_DirLightData.Color = lightComponent["Color"].as<glm::vec4>();
-						light->m_DirLightData.Ambient = lightComponent["Ambient"].as<float>();
+						light->m_DirLightData.Strength = lightComponent["Strength"].as<float>();
 						light->m_DirLightData.Diffuse = lightComponent["Diffuse"].as<float>();
 						light->m_DirLightData.Specular = lightComponent["Specular"].as<float>();
 						break;
@@ -916,6 +918,8 @@ namespace origin
 						std::shared_ptr<Model>& model = AssetManager::GetAsset<Model>(sMesh.Model);
 						model->GetMaterial()->BufferData.Color = staticMeshComponent["Color"].as<glm::vec4>();
 						model->GetMaterial()->BufferData.TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
+						//model->GetMaterial()->BufferData.Metallic = staticMeshComponent["Metallic"].as<float>();
+						//model->GetMaterial()->BufferData.Roughness = staticMeshComponent["Roughness"].as<float>();
 					}
 					
 				}

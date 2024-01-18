@@ -694,7 +694,7 @@ namespace origin
 				for (auto& light : lightView)
 				{
 					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnRender(-lightTransform.GetForward());
+					lc.Light->OnRender(lightTransform);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
 				}
 
@@ -797,7 +797,7 @@ namespace origin
 				for (auto& light : lightView)
 				{
 					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnRender(-lightTransform.GetForward());
+					lc.Light->OnRender(lightTransform);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
 				}
 
@@ -824,8 +824,7 @@ namespace origin
 				if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 				{
 					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
-					lc.Light->GetShadow()->m_DepthBufferData.ModelTransform = modelTransform.GetTransform();
-					lc.Light->GetShadow()->OnRenderBegin(lightTransform);
+					lc.Light->GetShadow()->OnRenderBegin(lightTransform, modelTransform.GetTransform());
 					model->Draw();
 					lc.Light->GetShadow()->OnRenderEnd();
 				}

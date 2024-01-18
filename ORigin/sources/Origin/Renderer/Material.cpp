@@ -3,7 +3,7 @@
 
 namespace origin {
 
-	Material::Material(std::string name, const std::shared_ptr<Shader>& shader)
+	Material::Material(std::string name, const std::shared_ptr<Shader> shader)
 		: m_Name(name), m_Shader(shader)
 	{
 		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), 4);
@@ -64,7 +64,7 @@ namespace origin {
 		return textures;
 	}
 
-	std::shared_ptr<Material> Material::Create(const std::string& name, const std::shared_ptr<Shader>& shader)
+	std::shared_ptr<Material> Material::Create(const std::string& name, const std::shared_ptr<Shader> shader)
 	{
 		return std::make_shared<Material>(name, shader);
 	}

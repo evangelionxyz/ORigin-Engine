@@ -27,7 +27,6 @@ namespace origin {
 			else
 				actor = physxScene->CreateActor(rb, tc.Translation, glm::quat(tc.Rotation));
 		}
-
 		else
 		{
 			RigidbodyComponent& rb = entity.AddComponent<RigidbodyComponent>();
@@ -56,7 +55,6 @@ namespace origin {
 		physx::PxShape* shape = (physx::PxShape*)this->Shape;
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Rigidbody;
 		actor->detachShape(*shape);
-
 		Shape = nullptr;
 		Rigidbody = nullptr;
 	}
@@ -96,6 +94,7 @@ namespace origin {
 		rb.Body = actor;
 
 		physxScene->GetScene()->addActor(*actor);
+
 	}
 
 	void SphereColliderComponent::Destroy()
@@ -103,7 +102,6 @@ namespace origin {
 		physx::PxShape* shape = (physx::PxShape*)this->Shape;
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Rigidbody;
 		actor->detachShape(*shape);
-
 		Shape = nullptr;
 		Rigidbody = nullptr;
 	}
@@ -135,8 +133,9 @@ namespace origin {
 
 		physx::PxMaterial* pxMaterial = PhysXAPI::GetPhysics()->createMaterial(cc.StaticFriction, cc.DynamicFriction, cc.Restitution);
 
-		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(cc.Radius, Height/2.0f);
-		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, geometry, *pxMaterial);
+		// this is a horizontal capsule
+		m_Geometry = physx::PxCapsuleGeometry(cc.Radius, Height * tc.Scale.x);
+		physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*actor, m_Geometry, *pxMaterial);
 
 		shape->setLocalPose(relativePos);
 		cc.Shape = (void*)shape;
@@ -145,12 +144,24 @@ namespace origin {
 		physxScene->GetScene()->addActor(*actor);
 	}
 
+	physx::PxCapsuleGeometry CapsuleColliderComponent::GetGeometry() const
+	{
+		return m_Geometry;
+	}
+
+	physx::PxShape* CapsuleColliderComponent::GetShape() const
+	{
+		if (this->Shape)
+			return (physx::PxShape*)this->Shape;
+
+		return nullptr;
+	}
+
 	void CapsuleColliderComponent::Destroy()
 	{
 		physx::PxShape* shape = (physx::PxShape*)this->Shape;
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Rigidbody;
 		actor->detachShape(*shape);
-
 		Shape = nullptr;
 		Rigidbody = nullptr;
 	}

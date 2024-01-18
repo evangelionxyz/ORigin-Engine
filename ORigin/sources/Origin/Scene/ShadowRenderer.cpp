@@ -11,7 +11,7 @@ namespace origin {
 	ShadowRenderer::ShadowRenderer(const std::shared_ptr<Shader>& depthShader, LightingType type)
 		: m_DepthShader(depthShader)
 	{
-		m_DepthUniformBuffer = UniformBuffer::Create(sizeof(DepthBufferData), 11);
+		m_DepthUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 11);
 		Invalidate(type);
 	}
 
@@ -46,7 +46,7 @@ namespace origin {
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 	}
 
-	void ShadowRenderer::OnAttachTexture(const std::shared_ptr<Shader>& objectShader)
+	void ShadowRenderer::OnAttachTexture(const std::shared_ptr<Shader> objectShader)
 	{
 		OGN_CORE_ASSERT(m_Framebuffer, "ShadowRenderer: Invalid Framebuffer");
 		glBindTextureUnit(2, m_Framebuffer->GetDepthAttachmentRendererID());
@@ -70,29 +70,17 @@ namespace origin {
 		m_Framebuffer->Unbind();
 	}
 
-	void ShadowRenderer::OnRenderBegin(const TransformComponent& tc)
+	void ShadowRenderer::OnRenderBegin(const TransformComponent& tc, const glm::mat4& modelTransform)
 	{
 		m_DepthShader->Enable();
-
-		if (m_LightingType == LightingType::Point)
-		{
-			//ShadowProjection = glm::perspective(glm::radians(90.0f), m_Framebuffer->GetWidth() / (float)m_Framebuffer->GetHeight(), n, f);
-			//ShadowTransforms.push_back(ShadowProjection * glm::lookAt(lightTransform.Translation, lightTransform.Translation + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-			//ShadowTransforms.push_back(ShadowProjection * glm::lookAt(lightTransform.Translation, lightTransform.Translation + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-			//ShadowTransforms.push_back(ShadowProjection * glm::lookAt(lightTransform.Translation, lightTransform.Translation + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-			//ShadowTransforms.push_back(ShadowProjection * glm::lookAt(lightTransform.Translation, lightTransform.Translation + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
-			//ShadowTransforms.push_back(ShadowProjection * glm::lookAt(lightTransform.Translation, lightTransform.Translation + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
-			//ShadowTransforms.push_back(ShadowProjection * glm::lookAt(lightTransform.Translation, lightTransform.Translation + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
-		}
-
-		else if (m_LightingType == LightingType::Directional)
+		if (m_LightingType == LightingType::Directional)
 		{
 			glm::mat4 projection = glm::ortho(-Size, Size, -Size, Size, Near, Far);
-			glm::mat4 view = glm::lookAt(tc.Translation, tc.GetForward(), glm::vec3(0.0f, 1.0f, 0.0));
+			glm::mat4 view = glm::lookAt(glm::vec3(0.0f), glm::radians(-tc.GetUp()), glm::vec3(0.0f, 1.0f, 0.0));
 
-			m_DepthBufferData.LightViewProjection = projection * view;
+			m_LightViewProjection = projection * view * modelTransform;
 			m_DepthUniformBuffer->Bind();
-			m_DepthUniformBuffer->SetData(&m_DepthBufferData, sizeof(DepthBufferData));
+			m_DepthUniformBuffer->SetData(&m_LightViewProjection, sizeof(glm::mat4));
 		}
 	}
 

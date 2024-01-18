@@ -44,11 +44,10 @@ namespace origin {
 	{
 		glm::vec4 Direction = glm::vec4(0.0f);
 		glm::vec4 Color = glm::vec4(1.0f);
-		float Ambient = 0.1f;
-		float Diffuse = 0.1f;
-		float Specular = 0.1f;
+		float Strength = 1.0f;
+		float Diffuse = 1.0f;
+		float Specular = 1.0f;
 	};
-	
 	
 	class Lighting
 	{
@@ -56,7 +55,7 @@ namespace origin {
 		Lighting(LightingType type);
 		~Lighting();
 
-		void OnRender(const glm::vec3& lightDirection);
+		void OnRender(const TransformComponent& lightDirection);
 		void SetType(LightingType type);
 
 		LightBufferData m_LightData;

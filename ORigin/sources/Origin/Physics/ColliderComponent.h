@@ -66,12 +66,17 @@ namespace origin {
 		glm::vec3 Offset = glm::vec3(0.0f);
 		bool Horizontal = false;
 		float Radius = 0.5f;
-		float Height = 1.0f;
+		float Height = 0.5f;
+
+		physx::PxCapsuleGeometry GetGeometry() const;
+		physx::PxShape* GetShape() const;
 
 		void Create(Entity entity, PhysicsScene* physxScene) override;
 		void Destroy() override;
 
 	private:
+		physx::PxCapsuleGeometry m_Geometry;
+
 		friend class Scene;
 		friend class PhysXScene;
 		friend class JoltScene;

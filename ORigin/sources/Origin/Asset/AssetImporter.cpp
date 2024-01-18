@@ -155,7 +155,7 @@ namespace origin {
 
 	std::shared_ptr<Model> ModelImporter::LoadModel(const std::filesystem::path& path)
 	{
-		std::shared_ptr<Shader> shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
+		std::shared_ptr<Shader> shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true, true);
 		shader->Enable();
 
 		std::shared_ptr<Material> material = Material::Create("model", shader);

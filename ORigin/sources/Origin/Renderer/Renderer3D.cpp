@@ -389,8 +389,8 @@ namespace origin {
 
 	void Renderer3D::DrawCapsule(const glm::mat4& transform, const glm::vec4& color, float radius, float height, int entityID)
 	{
-		constexpr uint8_t segments = 20; // Number of segments in each circle
-		constexpr uint8_t stacks = 10;   // Number of stacks for the cylinder
+		constexpr uint8_t segments = 20;
+		constexpr uint8_t stacks = 10;
 
 		if (s_3Ddata.CubeIndexCount + (segments * 6 * 2) >= Renderer3DData::MaxIndices)
 			NextBatch();

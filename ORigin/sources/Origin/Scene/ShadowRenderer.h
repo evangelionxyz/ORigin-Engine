@@ -14,33 +14,24 @@ namespace origin
 		ShadowRenderer(const std::shared_ptr<Shader>& depthShader, LightingType type);
 
 		void Invalidate(LightingType type);
-		void OnAttachTexture(const std::shared_ptr<Shader>& objectShader);
+		void OnAttachTexture(const std::shared_ptr<Shader> objectShader);
 
 		void BindFramebuffer();
 		void UnbindFramebuffer();
 
-		void OnRenderBegin(const TransformComponent& tc);
+		void OnRenderBegin(const TransformComponent& tc, const glm::mat4& modelTransform);
 		void OnRenderEnd();
 
 		static std::shared_ptr<ShadowRenderer> Create(const std::shared_ptr<Shader>& depthShader, LightingType type);
 
 		std::shared_ptr<Framebuffer>& GetFramebuffer() { return m_Framebuffer; }
 
-		struct DepthBufferData
-		{
-			glm::mat4 LightViewProjection;
-			glm::mat4 ModelTransform;
-		};
-
-		DepthBufferData m_DepthBufferData;
-
+		glm::mat4 m_LightViewProjection;
 		glm::mat4 ShadowProjection;
 
-		std::vector<glm::mat4> ShadowTransforms;
-
-		float Size = 30.0f;
-		float Near = 0.00001f;
-		float Far = 1000.5f;
+		float Size = 20.0f;
+		float Near = -10.0f;
+		float Far = 1000.0f;
 
 	private:
 		LightingType m_LightingType;
