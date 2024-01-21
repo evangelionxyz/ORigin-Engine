@@ -8,13 +8,8 @@
 
 namespace origin
 {
-	OpenGLMesh::OpenGLMesh(
-		const std::vector<MeshVertex>& vertices, 
-		const std::vector<uint32_t>& indices, 
-		const std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>>& textures,
-		const std::string& modelFilepath)
+	OpenGLMesh::OpenGLMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices)
 	{
-		OGN_CORE_WARN("MESH INFO: \"{}\"", modelFilepath);
 		OGN_CORE_TRACE("VERTEX");
 		OGN_CORE_TRACE("	Size : {} bytes", sizeof(MeshVertex));
 
@@ -42,53 +37,10 @@ namespace origin
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
-
-		m_Textures = textures;
-		m_Loaded = true;
 	}
 
 	OpenGLMesh::~OpenGLMesh()
 	{
-	}
-
-	void OpenGLMesh::Draw(const std::shared_ptr<Shader>& shader)
-	{
-		if (!m_VertexArray)
-		{
-			m_Loaded = false;
-			return;
-		}
-
-		for (auto& t : m_Textures)
-		{
-			if (t.find(aiTextureType_DIFFUSE) != t.end())
-			{
-				t.at(aiTextureType_DIFFUSE)->Bind(0);
-				shader->SetInt("u_DiffTexture", 0);
-			}
-
-			if (t.find(aiTextureType_SPECULAR) != t.end())
-			{
-				t.at(aiTextureType_SPECULAR)->Bind(1);
-				shader->SetInt("m_SpecTexture", 1);
-			}
-		}
-
-		if (m_Textures.empty())
-		{
-			Renderer::WhiteTexture->Bind(0);
-			shader->SetInt("u_DiffTexture", 0);
-			Renderer::WhiteTexture->Bind(1);
-			shader->SetInt("m_SpecTexture", 1);
-		}
-
-		RenderCommand::DrawIndexed(m_VertexArray);
-
-		for (auto& t : m_Textures)
-		{
-			for (auto r : t)
-				r.second->Unbind();
-		}
 	}
 
 	void OpenGLMesh::Draw()

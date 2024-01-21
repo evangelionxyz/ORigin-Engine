@@ -29,18 +29,23 @@
 
 namespace origin
 {
-	class Component
-	{
-	public:
-		virtual void Destroy() = 0;
-	};
-
 	class IDComponent
 	{
 	public:
 		UUID ID;
+		UUID Parent = 0;
+		std::vector<UUID> Childs;
+
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
+
+		void AddChild(UUID entityID)
+		{
+			Childs.push_back(entityID);
+		}
+
+		bool HasChild() { return !Childs.empty(); }
+		bool HasParent() { return Parent != 0; }
 	};
 
 	class TagComponent
@@ -56,7 +61,6 @@ namespace origin
 	};
 
 	class Animation;
-
 	class AnimationComponent
 	{
 	public:
@@ -75,7 +79,6 @@ namespace origin
 	};
 
 	class Audio;
-
 	class AudioComponent
 	{
 	public:
@@ -165,21 +168,21 @@ namespace origin
 		{
 			glm::mat4 rotation = toMat4(glm::quat(Rotation));
 			glm::vec4 forward = rotation * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
-			return glm::vec3(forward);
+			return glm::normalize(glm::vec3(forward));
 		}
 
 		glm::vec3 GetUp() const
 		{
 			glm::mat4 rotation = toMat4(glm::quat(Rotation));
 			glm::vec4 up = rotation * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-			return glm::vec3(up);
+			return glm::normalize(glm::vec3(up));
 		}
 
 		glm::vec3 GetRight() const
 		{
 			glm::mat4 rotation = toMat4(glm::quat(Rotation));
 			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-			return glm::vec3(right);
+			return glm::normalize(glm::vec3(right));
 		}
 	};
 

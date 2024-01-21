@@ -23,6 +23,7 @@ namespace origin {
 
 	void EditorCamera::InitPerspective(float fovy, float aspectRatio, float nearClip, float farClip)
 	{
+		m_ProjectionType = ProjectionType::Perspective;
 		m_FOV = fovy;
 		m_AspectRatio = aspectRatio;
 		m_NearClip = nearClip;
@@ -33,6 +34,7 @@ namespace origin {
 
 	void EditorCamera::InitOrthographic(float size, float nearClip, float farClip)
 	{
+		m_ProjectionType = ProjectionType::Orthographic;
 		m_OrthoSize = size;
 		m_OrthoNearClip = nearClip;
 		m_OrthoFarClip = farClip;
@@ -74,12 +76,14 @@ namespace origin {
 	float EditorCamera::ZoomSpeed() const
 	{
 		float speed = 0.0f;
+		float distance = 0.0f;
 		switch (m_ProjectionType)
 		{
 		case ProjectionType::Perspective:
-			speed = (m_Distance * m_Distance) * 0.2f;
-			speed = std::min(speed, 50.0f);
-			speed = std::max(speed, 5.0f);
+			distance = m_Distance * 0.2f;
+			distance = std::max(distance, 0.0f);
+			speed = distance * distance;
+			speed = std::min(speed, 100.0f);
 			break;
 		case ProjectionType::Orthographic:
 			speed = m_OrthoSize * 0.5f;
@@ -123,8 +127,8 @@ namespace origin {
 
 		if (m_CameraStyle == Pivot)
 		{
-			xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.5f * (m_Distance <= 2.0f ? 1.0f : m_Distance);
-			yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.5f * (m_Distance <= 2.0f ? 1.0f : m_Distance);
+			xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
+			yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
 		}
 		else if (m_CameraStyle == FreeMove)
 		{
@@ -151,7 +155,9 @@ namespace origin {
 		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
 		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonRight) || Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		if (Input::IsMouseButtonPressed(Mouse::ButtonRight)
+			|| Input::IsMouseButtonPressed(Mouse::ButtonMiddle)
+			/*|| Input::IsMouseButtonPressed(Mouse::ButtonLeft)*/)
 		{
 			if (mouse.x > wWidth - 2.0f)
 			{
@@ -191,7 +197,7 @@ namespace origin {
 					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 						MousePan(delta);
 
-					m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, deltaTime * 8.0f);
+					m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, 0.8f);
 					lastPosition = m_FocalPoint - GetForwardDirection() * m_Distance;
 					break;
 
@@ -301,8 +307,8 @@ namespace origin {
 		case ProjectionType::Perspective:
 			if (m_CameraStyle == Pivot)
 			{
-				m_FocalPoint += -GetRightDirection() * delta.x * xSpeed;
-				m_FocalPoint += GetUpDirection() * delta.y * ySpeed;
+				m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
+				m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
 			}
 			else
 			{
@@ -331,8 +337,11 @@ namespace origin {
 		{
 		case ProjectionType::Perspective:
 			m_Distance -= delta * ZoomSpeed();
-			m_Distance = std::max(m_Distance, 5.0f);
-			m_FocalPoint += delta * GetForwardDirection() * ZoomSpeed();
+			if (m_Distance <= 1.0f)
+			{
+				m_FocalPoint += GetForwardDirection();
+				m_Distance = 1.0f;
+			}
 			break;
 		case ProjectionType::Orthographic:
 			m_OrthoSize -= delta * ZoomSpeed();

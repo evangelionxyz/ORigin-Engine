@@ -38,8 +38,6 @@ namespace origin {
 
 	void ParticleSystem::OnRender()
 	{
-		Renderer2D::Begin();
-
 		for (auto& particle : m_ParticlePool)
 		{
 			if (!particle.Active)
@@ -59,8 +57,6 @@ namespace origin {
 
 			Renderer2D::DrawQuad(transform, color, m_EntityID);
 		}
-
-		Renderer2D::End();
 	}
 
 	void ParticleSystem::Emit(const ParticleProps& props)

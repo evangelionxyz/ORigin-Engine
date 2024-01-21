@@ -84,7 +84,12 @@ flags { "NoPCH" }
 
 filter "system:windows"
 systemversion "latest"
-defines "OGN_WINDOWS_PLATFORM"
+defines {
+  "OGN_WINDOWS_PLATFORM",
+  "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
+    "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
+}
+
 links
 {
     "%{Library.WinSock}",

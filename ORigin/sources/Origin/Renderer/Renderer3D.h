@@ -14,7 +14,8 @@ namespace origin
 		static void Init();
 		static void Shutdown();
 
-		static void Begin();
+		static void Begin(const SceneCamera& camera, const glm::mat4& camTransform);
+		static void Begin(const EditorCamera& camera);
 		static void End();
 		static void Flush();
 

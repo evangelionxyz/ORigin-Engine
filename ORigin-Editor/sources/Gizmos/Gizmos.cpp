@@ -12,7 +12,7 @@ namespace origin {
 
 	void Gizmos::OnUpdate(const EditorCamera& camera)
 	{
-		Renderer::BeginScene(camera);
+		Renderer2D::Begin(camera);
 
 		if (camera.GetProjectionType() == ProjectionType::Orthographic)
 		{
@@ -23,7 +23,6 @@ namespace origin {
 		}
 
 		DrawIcons(camera);
-
 		DrawOverlay(camera);
 	}
 	void Gizmos::Draw2DVerticalGrid(const EditorCamera& camera)
@@ -116,6 +115,8 @@ namespace origin {
 
 	void Gizmos::DrawOverlay(const EditorCamera& camera)
 	{
+
+		Renderer3D::Begin(camera);
 		auto& scene = EditorLayer::Get().m_ActiveScene;
 
 		if (EditorLayer::Get().m_VisualizeCollider)
@@ -164,9 +165,7 @@ namespace origin {
 				Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f) ,cc.Radius, cc.Height * 2.0f, (int)entity);
 			}
 
-		
 			Renderer3D::End();
-
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 

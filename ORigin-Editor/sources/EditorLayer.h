@@ -94,6 +94,8 @@ namespace origin {
 
     std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
 
+    void Draw(float deltaTime);
+
     // Scene Viewport
   	void SceneViewport();
     void SceneViewportToolbar();
@@ -135,5 +137,6 @@ namespace origin {
     void GUIRender();
 
     friend class Gizmos;
+    friend class SceneHierarchyPanel;
   };
 }

@@ -12,11 +12,12 @@ namespace origin
 	enum class FramebufferTextureFormat
 	{
 		None = 0,
-
-		// color
+		// Color
+		RGBA16F,
 		RGBA8,
 		RED_INTEGER,
 
+		// Depth
 		DEPTH,
 		DEPTH24STENCIL8,
 
@@ -71,6 +72,8 @@ namespace origin
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
+
+		virtual uint32_t GetRendererID() const = 0;
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
 

@@ -10,10 +10,7 @@ namespace origin {
 	static const uint32_t s_MaxFramebufferSize = 8192;
 
 	namespace Utils	{
-
-
 		// ================ Texture 2D ================
-
 		static GLenum Texture2DTarget(bool multisampled) 
 		{ 
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D; 
@@ -120,6 +117,7 @@ namespace origin {
 		{
 			switch (format)
 			{
+				case origin::FramebufferTextureFormat::RGBA16F: return GL_RGBA16F;
 				case origin::FramebufferTextureFormat::RGBA8: return GL_RGBA8;
 				case origin::FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
@@ -180,6 +178,9 @@ namespace origin {
 				Utils::BindTexture2D(multisample, m_ColorAttachments[i]);
 				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
 				{
+				case FramebufferTextureFormat::RGBA16F:
+					Utils::AttachColorTexture2D(m_ColorAttachments[i], m_Spec.Samples, GL_RGBA16F, GL_RGBA, m_Spec.Width, m_Spec.Height, m_Spec.FilterMode, m_Spec.WrapMode, i);
+					break;
 				case FramebufferTextureFormat::RGBA8:
 					Utils::AttachColorTexture2D(m_ColorAttachments[i], m_Spec.Samples, GL_RGBA8, GL_RGBA, m_Spec.Width, m_Spec.Height, m_Spec.FilterMode, m_Spec.WrapMode, i);
 					break;
@@ -232,10 +233,8 @@ namespace origin {
 
 		if(m_ColorAttachments.empty())
 			glDrawBuffer(GL_NONE);
-		if (m_Spec.ReadBuffer == false);
+		if (m_Spec.ReadBuffer == false)
 			glReadBuffer(GL_NONE);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 	}
 
 	void OpenGL_Framebuffer::Bind()

@@ -1,6 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <memory>

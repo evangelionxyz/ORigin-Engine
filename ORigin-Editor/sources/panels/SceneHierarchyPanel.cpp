@@ -65,123 +65,139 @@ namespace origin {
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		// Hierarchy
+		EntityHierarchyPanel();
+		EntityPropertiesPanel();
+	}
+
+	void SceneHierarchyPanel::EntityHierarchyPanel()
+	{
 		ImGui::Begin("Hierarchy");
-
-		if (ImGui::IsWindowFocused()) m_HierarchyMenuActive = true;
-
-		if (m_Context)
+		if (!m_Context)
 		{
-			m_Context->m_Registry.each([&](auto entityID)
+			ImGui::End();
+			return;
+		}
+
+		m_HierarchyMenuActive = ImGui::IsWindowFocused();
+		m_Context->m_Registry.each([&](auto entityID)
 			{
 				Entity entity{ entityID, m_Context.get() };
 				DrawEntityNode(entity);
 			});
 
-			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-				m_SelectedEntity = {};
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-
-			if (m_HierarchyMenuActive)
+		if (m_HierarchyMenuActive)
+		{
+			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 			{
-				if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
+
+				if (ImGui::BeginMenu("CREATE"))
 				{
-					if (ImGui::BeginMenu("CREATE"))
+					if (ImGui::MenuItem("Empty"))
+						m_Context->CreateEntity("Empty");
+
+					if (ImGui::MenuItem("MAIN CAMERA"))
 					{
-						if (ImGui::MenuItem("Empty"))
-							m_Context->CreateEntity("Empty");
+						m_Context->CreateCamera("Main Camera");
+						m_SelectedEntity.AddComponent<AudioListenerComponent>();
+					}
 
-						if (ImGui::MenuItem("MAIN CAMERA"))
-						{
-							m_Context->CreateCamera("Main Camera");
-							m_SelectedEntity.AddComponent<AudioListenerComponent>();
-						}
+					if (ImGui::MenuItem("CAMERA"))
+						m_Context->CreateCamera("Camera");
 
-						if (ImGui::MenuItem("CAMERA"))
-							m_Context->CreateCamera("Camera");
-
-						// 2D Entity
-						if (ImGui::BeginMenu("2D"))
-						{
-							if (ImGui::MenuItem("Sprite"))
-								m_Context->CreateSpriteEntity("Sprite");
-							if (ImGui::MenuItem("Circle"))
-								m_Context->CreateCircle("Circle");
-
-							ImGui::EndMenu();
-						}
-
-						if (ImGui::BeginMenu("Lights"))
-						{
-							if (ImGui::MenuItem("Directional Light"))
-								m_Context->CreateDirectionalLight();
-
-							if (ImGui::MenuItem("Point Light"))
-								m_Context->CreatePointlight();
-							
-							if (ImGui::MenuItem("Spot Light"))
-								m_Context->CreateSpotLight();
-							
-							ImGui::EndMenu();
-						}
-
-						if (ImGui::BeginMenu("Mesh"))
-						{
-							if (ImGui::MenuItem("Empty Mesh"))
-								m_Context->CreateMesh("Empty Mesh");
-
-							ImGui::EndMenu();
-						}
+					if (ImGui::BeginMenu("2D"))
+					{
+						if (ImGui::MenuItem("Sprite"))
+							m_Context->CreateEntity("Sprite");
+						ImGui::EndMenu();
+					}
+					if (ImGui::BeginMenu("Mesh"))
+					{
+						if (ImGui::MenuItem("Empty Mesh"))
+							m_Context->CreateMesh("Empty Mesh");
 
 						ImGui::EndMenu();
 					}
-					ImGui::EndPopup();
+
+					ImGui::EndMenu();
 				}
+				ImGui::EndPopup();
 			}
-
-			ImGui::PopStyleVar();
 		}
-		ImGui::End(); // !Hierarchy
 
-		// Properties
+		ImGui::PopStyleVar();
+		ImGui::End();
+	}
+
+	void SceneHierarchyPanel::EntityPropertiesPanel()
+	{
 		ImGui::Begin("PROPERTIES");
 		if (m_SelectedEntity)
 			DrawComponents(m_SelectedEntity);
-		ImGui::End(); // !Properties
+		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int childIndex)
 	{
-		auto& tagComponent = entity.GetComponent<TagComponent>().Tag;
+		if (entity.HasParent() && childIndex == 0)
+			return;
 
-		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tagComponent.c_str());
+		auto& idc = entity.GetComponent<IDComponent>();
+		bool isSelected = m_SelectedEntity == entity;
+
+		ImGuiTreeNodeFlags flags = (isSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		flags |= ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
 
 		if (ImGui::IsItemClicked())
-		{
 			m_SelectedEntity = entity;
+
+		if (ImGui::BeginDragDropSource() && isSelected)
+		{
+			ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+			{
+				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG GAME OBJECT");
+				Entity srcEntity{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
+				OGN_CORE_TRACE("From: {0}", srcEntity.GetTag());
+				OGN_CORE_TRACE("To: {0}", entity.GetTag());
+				idc.AddChild(srcEntity.GetUUID());
+				srcEntity.GetComponent<IDComponent>().Parent = idc.ID;
+				OGN_CORE_TRACE("{0} Has {1} Child(s)", entity.GetTag(), idc.Childs.size());
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		if (node_open)
+		{
+			for (UUID entityID: idc.Childs)
+			{
+				Entity e = m_Context->GetEntityWithUUID(entityID);
+				DrawEntityNode(e, childIndex + 1);
+			}
+
+			ImGui::TreePop();
 		}
 
 		// destroy entity
-		if (ImGui::BeginPopupContextItem())
+		if (isSelected)
 		{
-			if (ImGui::MenuItem("Delete Entity"))
+			if (ImGui::BeginPopupContextItem() && ImGui::IsWindowFocused())
 			{
-				m_SelectedEntity = {};
-				m_Context->DestroyEntity(entity);
+				if (ImGui::MenuItem("Delete Entity"))
+				{
+					m_SelectedEntity = {};
+					m_Context->DestroyEntity(entity);
+				}
+				ImGui::EndPopup();
 			}
-			ImGui::EndPopup();
-		}
-
-		if (opened)
-		{
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)9817239, flags, tagComponent.c_str());
-			if(opened)
-				ImGui::TreePop();
-			ImGui::TreePop();
 		}
 	}
 
@@ -308,8 +324,6 @@ namespace origin {
 				if (isMeshValid)
 				{
 					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(component.Model);
-					if (ImGui::Button("Refresh Shader"))
-						model->GetMaterial()->RefreshShader();
 
 					ImGui::Separator();
 					ImGui::Text("Material");
@@ -318,6 +332,9 @@ namespace origin {
 					ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->BufferData.Color));
 					DrawVecControl("Metallic", &model->GetMaterial()->BufferData.Metallic, 0.01f, 0.0f, 1.0f);
 					DrawVecControl("Roughness", &model->GetMaterial()->BufferData.Roughness, 0.01f, 0.0f, 1.0f);
+
+					if (ImGui::Button("Refresh Shader"))
+						model->GetMaterial()->RefreshShader();
 				}
 			});
 
@@ -712,6 +729,9 @@ namespace origin {
 						DrawVecControl("Strength", &component.Light->m_DirLightData.Strength, 0.01f, 0.0f, 100.0f);
 						DrawVecControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
 						DrawVecControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
+						DrawVecControl("Far", &component.Light->GetShadow()->Far, 1.0f, -1000.0f, 1000.0f, 50.0f);
+						DrawVecControl("Near", &component.Light->GetShadow()->Near, 1.0f, -1000.0f, 1000.0f, -10.0f);
+						DrawVecControl("Size", &component.Light->GetShadow()->Size, 1.0f, -1000.0f, 1000.0f, 50.0f);
 
 						if (component.Light->GetShadow()->GetFramebuffer())
 						{

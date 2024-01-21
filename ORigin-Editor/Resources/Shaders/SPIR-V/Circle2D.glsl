@@ -38,8 +38,9 @@ void main()
 
 // type fragment
 #version 450 core
-layout (location = 0) out vec4 Color;
-layout (location = 1) out int entityID;
+layout(location = 0) out vec4 oColor;
+layout(location = 1) out vec4 oHDRColor;
+layout(location = 2) out int oEntityID;
 
 struct Vertex
 {
@@ -62,8 +63,8 @@ void main()
 	if (circle == 0.0) discard;
 
     // Set output color
-    Color = inVertex.Color;
-	Color.a *= circle;
+    oColor = inVertex.Color;
+	oColor.a *= circle;
 
-	entityID = v_EntityID;
+	oEntityID = v_EntityID;
 }

@@ -24,10 +24,16 @@ namespace origin {
 
 		m_Shader.reset();
 
-		m_Shader = Shader::Create(shaderPath, enableSpirv	, recompile);
+		m_Shader = Shader::Create(shaderPath, enableSpirv, recompile);
 		OGN_CORE_WARN("MATERIAL: Shader {} Refreshed", m_Shader->GetName());
 
 		return true;
+	}
+
+	void Material::LoadTexture(const char* filepath)
+	{
+		std::shared_ptr<Texture2D> texture = Texture2D::Create(filepath);
+		m_LoadedTextures.push_back(texture);
 	}
 
 	std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Material::LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type)

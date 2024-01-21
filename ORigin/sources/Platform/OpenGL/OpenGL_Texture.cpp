@@ -121,7 +121,6 @@ namespace origin {
 
     glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
     glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
-
     glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

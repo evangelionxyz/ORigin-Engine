@@ -20,33 +20,36 @@ namespace origin
 	{
 	public:
 		OpenGLModel() = default;
+		OpenGLModel(const std::string& filepath);
 		OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material);
 
-		virtual ~OpenGLModel() override;
+		~OpenGLModel() override;
 		void Draw() override;
-		void Draw(const glm::mat4& transform, int entityID) override;
+		void Draw(int entityID) override;
+		void SetTransform(const glm::mat4& transform) override;
 
 		std::shared_ptr<Material>& GetMaterial() override { return m_Material; }
 		const std::string& GetFilepath() const override { return m_Filepath; }
 
 	private:
-		struct ModelBuffer
+		struct ModelBufferData
 		{
 			glm::mat4 Transform;
 			int EntityID;
 		};
-
-		ModelBuffer m_ModelBuffer;
+		ModelBufferData m_ModelBufferData;
 
 		std::vector<MeshVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
 		std::vector<std::shared_ptr<Mesh>> m_Meshes;
-		std::shared_ptr<UniformBuffer> ModelUbo;
+		std::shared_ptr<UniformBuffer> m_Uniformbuffer;
 
 		void ProcessNode(aiNode* node, const aiScene* scene);
 		std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
 
 		std::shared_ptr<Material> m_Material;
 		std::string m_Filepath;
+
+		std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>> m_Textures;
 	};
 }

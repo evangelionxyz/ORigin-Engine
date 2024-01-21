@@ -26,75 +26,60 @@
 namespace origin {
 
   EditorLayer* EditorLayer::s_Instance = nullptr;
+	//float exposure = 0.5f;
 
-	EditorLayer::EditorLayer() : Layer("Editor")
+  EditorLayer::EditorLayer() : Layer("Editor")
   {
-    s_Instance = this;
+	  s_Instance = this;
   }
 
   EditorLayer::~EditorLayer()
   {
-    ScriptEngine::Shutdown();
+	  ScriptEngine::Shutdown();
   }
 
   void EditorLayer::OnAttach()
   {
-		// Load UI Textures
-		m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/playbutton.png");
-		m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/simulatebutton.png");
-		m_UITextures["stop"] = TextureImporter::LoadTexture2D("Resources/UITextures/stopbutton.png");
-		m_UITextures["pause"] = TextureImporter::LoadTexture2D("Resources/UITextures/pausebutton.png");
-		m_UITextures["stepping"] = TextureImporter::LoadTexture2D("Resources/UITextures/steppingframebutton.png");
-		m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
-		m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
-		m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
-		m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png");
-		m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
+	  // Load UI Textures
+	  m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/playbutton.png");
+	  m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/simulatebutton.png");
+	  m_UITextures["stop"] = TextureImporter::LoadTexture2D("Resources/UITextures/stopbutton.png");
+	  m_UITextures["pause"] = TextureImporter::LoadTexture2D("Resources/UITextures/pausebutton.png");
+	  m_UITextures["stepping"] = TextureImporter::LoadTexture2D("Resources/UITextures/steppingframebutton.png");
+	  m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
+	  m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
+	  m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
+	  m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png");
+	  m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
 
-    // ==============================
-    // Main Framebuffer Specification
-    // ==============================
-    FramebufferSpecification mainFramebufferSpec;
-    mainFramebufferSpec.Attachments =
-    {
-        FramebufferTextureFormat::RGBA8,
-        FramebufferTextureFormat::RED_INTEGER,
-        FramebufferTextureFormat::DEPTH24STENCIL8
-    };
+	  // ==============================
+	  // Main Framebuffer Specification
+	  // ==============================
+	  FramebufferSpecification mainFramebufferSpec;
+	  mainFramebufferSpec.Attachments =
+	  {
+		  FramebufferTextureFormat::RGBA16F,
+		  FramebufferTextureFormat::RGBA16F,
+		  FramebufferTextureFormat::RED_INTEGER,
+		  FramebufferTextureFormat::DEPTH24STENCIL8
+	  };
 
-    mainFramebufferSpec.Width = 1280;
-    mainFramebufferSpec.Height = 720;
-    m_Framebuffer = Framebuffer::Create(mainFramebufferSpec);
+	  mainFramebufferSpec.Width = 1280;
+	  mainFramebufferSpec.Height = 720;
+	  m_Framebuffer = Framebuffer::Create(mainFramebufferSpec);
 
-    // ==============================
-    // Game Framebuffer Specification
-    // ==============================
-    FramebufferSpecification gameFramebufferSpec;
-    gameFramebufferSpec.Attachments =
-    {
-        FramebufferTextureFormat::RGBA8,
-        FramebufferTextureFormat::DEPTH24STENCIL8
-    };
+	  m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 5000.0f);
+	  m_EditorCamera.InitOrthographic(10.0f, -1.0f, 100.0f);
+	  m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
-    gameFramebufferSpec.Width = 1280;
-    gameFramebufferSpec.Height = 720;
-    gameFramebufferSpec.ReadBuffer = false;
-    m_GameFramebuffer = Framebuffer::Create(gameFramebufferSpec);
-
-		m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 5000.0f);
-		m_EditorCamera.InitOrthographic(10.0f, -1.0f, 100.0f);
-    m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
-
-		m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
-		
-		m_ActiveScene = std::make_shared<Scene>();
-    const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
-    if (commandLineArgs.Count > 1)
-    {
-        m_ProjectDirectoryPath = commandLineArgs[1];
-        if (!OpenProject(m_ProjectDirectoryPath))
-          Application::Get().Close();
-    }
+	  m_ActiveScene = std::make_shared<Scene>();
+	  const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+	  if (commandLineArgs.Count > 1)
+	  {
+		  m_ProjectDirectoryPath = commandLineArgs[1];
+		  if (!OpenProject(m_ProjectDirectoryPath))
+			  Application::Get().Close();
+	  }
   }
 
   void EditorLayer::OnEvent(Event& e)
@@ -109,98 +94,78 @@ namespace origin {
 
   void EditorLayer::OnUpdate(Timestep deltaTime)
   {
-		m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
+	  Renderer2D::ResetStats();
+	  Renderer3D::ResetStats();
+	  InputProcedure(deltaTime);
+	  m_Time += deltaTime.Seconds();
+	  const bool enableCamera = !ImGuizmo::IsUsing() && !ImGui::GetIO().WantTextInput && Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
+	  m_EditorCamera.EnableMovement(enableCamera);
 
-    m_Time += deltaTime.Seconds();
+		m_ActiveScene->OnShadowRender();
 
-		const bool enableCamera = !ImGuizmo::IsUsing() && !ImGui::GetIO().WantTextInput && Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
-    m_EditorCamera.EnableMovement(enableCamera);
+	  // Resize
+	  if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+		  m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
+	  {
+		  m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+		  m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+		  m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+	  }
 
-    Renderer2D::ResetStats();
-    Renderer3D::ResetStats();
-    InputProcedure(deltaTime);
+	  m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
+	  m_Framebuffer->Bind();
 
-    // Resize
-    if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-        m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
-    {
-        m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-        m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-    }
+	  RenderCommand::Clear();
+	  RenderCommand::ClearColor(clearColor);
+	  m_Framebuffer->ClearAttachment(2, -1);
 
-    m_Framebuffer->Bind();
+		//m_ActiveScene->m_Hdr->OnRender(exposure);
 
-    RenderCommand::Clear();
-    RenderCommand::ClearColor(clearColor);
-      
-    m_Framebuffer->ClearAttachment(1, -1);
+	  Draw(deltaTime);
+	  auto [mx, my] = ImGui::GetMousePos();
+	  glm::vec2 mousePos = { mx, my };
+	  mousePos -= m_SceneViewportBounds[0];
+	  const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+	  mousePos.y = viewportSize.y - mousePos.y;
+	  mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
+	  mouseX = static_cast<int>(mousePos.x);
+	  mouseY = static_cast<int>(mousePos.y);
 
-    switch (m_SceneState)
-    {
-    case SceneState::Play:
-        m_GizmosType = -1;
-        m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-        m_ActiveScene->OnUpdateRuntime(deltaTime);
-        break;
+	  m_PixelData = m_Framebuffer->ReadPixel(2, mouseX, mouseY);
+	  m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
 
-    case SceneState::Edit:
-        m_EditorCamera.OnUpdate(deltaTime);
-        m_ActiveScene->OnUpdateEditor(deltaTime, m_EditorCamera);
-				Gizmos::OnUpdate(m_EditorCamera);
-        break;
-
-    case SceneState::Simulate:
-        m_EditorCamera.OnUpdate(deltaTime);
-        m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
-				Gizmos::OnUpdate(m_EditorCamera);
-        break;
-    }
-
-    auto [mx, my] = ImGui::GetMousePos();
-    glm::vec2 mousePos = {mx, my};
-    mousePos -= m_SceneViewportBounds[0];
-    const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
-    mousePos.y = viewportSize.y - mousePos.y;
-    mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
-    mouseX = static_cast<int>(mousePos.x);
-    mouseY = static_cast<int>(mousePos.y);
-
-    m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-    m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-
-		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity()) m_EditorCamera.SetEntityObject(selectedEntity);
-		else m_EditorCamera.SetEntityObject({});
-
-    m_Framebuffer->Unbind();
-
-    m_ActiveScene->OnShadowRender();
+	  m_Framebuffer->Unbind();
   }
 
   void EditorLayer::OnDuplicateEntity()
   {
-      if (m_SceneState != SceneState::Edit)
-          return;
+	  if (m_SceneState != SceneState::Edit)
+		  return;
 
-      if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
-      {
-          Entity entity = m_EditorScene->DuplicateEntity(selectedEntity);
-          m_SceneHierarchy.SetSelectedEntity(entity);
-      }
+	  if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+	  {
+		  Entity entity = m_EditorScene->DuplicateEntity(selectedEntity);
+		  m_SceneHierarchy.SetSelectedEntity(entity);
+	  }
   }
 
   void EditorLayer::OnGuiRender()
   {
-      m_Dockspace.Begin();
-      MenuBar();
-      SceneViewport();
-      m_SceneHierarchy.OnImGuiRender();
+	  m_Dockspace.Begin();
 
-			if(m_ContentBrowser)
-				m_ContentBrowser->OnImGuiRender();
+		ImGui::Begin("Test");
+		//ImGui::DragFloat("Exposure", &exposure, 0.1f, 0.0f, 1000.0f);
+		ImGui::End();
 
-      GUIRender();
-      m_Dockspace.End();
+	  MenuBar();
+	  SceneViewport();
+	  m_SceneHierarchy.OnImGuiRender();
+
+	  if (m_ContentBrowser)
+		  m_ContentBrowser->OnImGuiRender();
+
+	  GUIRender();
+	  m_Dockspace.End();
   }
 
   void EditorLayer::OnScenePlay()
@@ -217,206 +182,206 @@ namespace origin {
 
   void EditorLayer::OnScenePause()
   {
-      if (m_SceneState == SceneState::Edit)
-          return;
+	  if (m_SceneState == SceneState::Edit)
+		  return;
 
-      m_ActiveScene->SetPaused(true);
+	  m_ActiveScene->SetPaused(true);
   }
 
   void EditorLayer::OnSceneSimulate()
   {
-		if (m_SceneState == SceneState::Play)
-			OnSceneStop();
+	  if (m_SceneState == SceneState::Play)
+		  OnSceneStop();
 
-		m_SceneState = SceneState::Simulate;
+	  m_SceneState = SceneState::Simulate;
 
-		m_ActiveScene = Scene::Copy(m_EditorScene);
-		m_ActiveScene->OnSimulationStart();
+	  m_ActiveScene = Scene::Copy(m_EditorScene);
+	  m_ActiveScene->OnSimulationStart();
 
-		m_SceneHierarchy.SetContext(m_ActiveScene);
+	  m_SceneHierarchy.SetContext(m_ActiveScene);
   }
 
   void EditorLayer::OnSceneStop()
   {
-		ScriptEngine::ClearSceneContext();
+	  ScriptEngine::ClearSceneContext();
 
-    if (m_SceneState == SceneState::Play)
-        m_ActiveScene->OnRuntimeStop();
-    else if (m_SceneState == SceneState::Simulate)
-        m_ActiveScene->OnSimulationStop();
+	  if (m_SceneState == SceneState::Play)
+		  m_ActiveScene->OnRuntimeStop();
+	  else if (m_SceneState == SceneState::Simulate)
+		  m_ActiveScene->OnSimulationStop();
 
-    m_SceneHierarchy.SetContext(m_EditorScene);
-    m_ActiveScene = m_EditorScene;
+	  m_SceneHierarchy.SetContext(m_EditorScene);
+	  m_ActiveScene = m_EditorScene;
 
-    m_SceneState = SceneState::Edit;
+	  m_SceneState = SceneState::Edit;
   }
 
   bool EditorLayer::NewProject()
   {
-		if (Project::New())
-		{
-			ScriptEngine::Init();
+	  if (Project::New())
+	  {
+		  ScriptEngine::Init();
 
-			m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
+		  m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
-			m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
-			if (!m_ContentBrowser)
-			{
-				OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
-				return false;
-			}
+		  m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
+		  if (!m_ContentBrowser)
+		  {
+			  OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
+			  return false;
+		  }
 
-			EditorLayer::NewScene();
-		}
+		  EditorLayer::NewScene();
+	  }
 
-		return true;
+	  return true;
   }
 
   bool EditorLayer::OpenProject(const std::filesystem::path& path)
   {
-    if (Project::Load(path))
-    {
-      ScriptEngine::Init();
+	  if (Project::Load(path))
+	  {
+		  ScriptEngine::Init();
 
-      AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
-			OpenScene(handle);
-			
-			m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
+		  AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
+		  OpenScene(handle);
 
-      m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
-			if (!m_ContentBrowser)
-			{
-				OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
-				return false;
-			}
+		  m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
-      return true;
-    }
+		  m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
+		  if (!m_ContentBrowser)
+		  {
+			  OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
+			  return false;
+		  }
 
-    return false;
+		  return true;
+	  }
+
+	  return false;
   }
 
   bool EditorLayer::OpenProject()
   {
-    if (Project::Open())
-    {
-      ScriptEngine::Init();
+	  if (Project::Open())
+	  {
+		  ScriptEngine::Init();
 
-      AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
-			OpenScene(handle);
-      
-      m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
+		  AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
+		  OpenScene(handle);
 
-      m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
-			if (!m_ContentBrowser)
-			{
-				OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
-				return false;
-			}
+		  m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
-      return true;
-    }
+		  m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
+		  if (!m_ContentBrowser)
+		  {
+			  OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
+			  return false;
+		  }
 
-    return false;
+		  return true;
+	  }
+
+	  return false;
   }
 
   void EditorLayer::SaveProject()
   {
-    Project::SaveActive();
+	  Project::SaveActive();
   }
 
   void EditorLayer::NewScene()
   {
-    if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
-      OnSceneStop();
+	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+		  OnSceneStop();
 
-    m_EditorScene = std::make_shared<Scene>();
-    m_SceneHierarchy.SetContext(m_EditorScene, true);
+	  m_EditorScene = std::make_shared<Scene>();
+	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 
-    m_ActiveScene = m_EditorScene;
-    m_ScenePath = std::filesystem::path();
+	  m_ActiveScene = m_EditorScene;
+	  m_ScenePath = std::filesystem::path();
   }
 
   void EditorLayer::SaveScene()
   {
-    if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
-        OnSceneStop();
+	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+		  OnSceneStop();
 
-		if (!m_ScenePath.empty())
-		{
-      SerializeScene(m_ActiveScene, m_ScenePath);
-		}
-		else
-		{
-        SaveSceneAs();
-		}
+	  if (!m_ScenePath.empty())
+	  {
+		  SerializeScene(m_ActiveScene, m_ScenePath);
+	  }
+	  else
+	  {
+		  SaveSceneAs();
+	  }
 
-		Project::GetActive()->GetEditorAssetManager()->SerializeAssetRegistry();
+	  Project::GetActive()->GetEditorAssetManager()->SerializeAssetRegistry();
   }
 
   void EditorLayer::SaveSceneAs()
   {
-    if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
-        OnSceneStop();
+	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+		  OnSceneStop();
 
-    std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Scene (*.org,*.origin)\0*.org\0");
+	  std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Scene (*.org,*.origin)\0*.org\0");
 
-    if (!filepath.empty())
-    {
-      SerializeScene(m_ActiveScene, filepath);
-      m_ScenePath = filepath;
-    }
+	  if (!filepath.empty())
+	  {
+		  SerializeScene(m_ActiveScene, filepath);
+		  m_ScenePath = filepath;
+	  }
   }
 
   void EditorLayer::OpenScene(AssetHandle handle)
   {
-		if (!AssetManager::IsAssetHandleValid(handle) || handle == 0)
-		{
-			EditorLayer::NewScene();
-			return;
-		}
+	  if (!AssetManager::IsAssetHandleValid(handle) || handle == 0)
+	  {
+		  EditorLayer::NewScene();
+		  return;
+	  }
 
-    if (m_SceneState != SceneState::Edit)
-      OnSceneStop();
+	  if (m_SceneState != SceneState::Edit)
+		  OnSceneStop();
 
-    std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+	  std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
 
-		if (!readOnlyScene)
-		{
-			OGN_CORE_ERROR("EditorLayer: Invalid Scene");
-			return;
-		}
+	  if (!readOnlyScene)
+	  {
+		  OGN_CORE_ERROR("EditorLayer: Invalid Scene");
+		  return;
+	  }
 
-		m_EditorScene = Scene::Copy(readOnlyScene);
-		m_HoveredEntity = {};
+	  m_EditorScene = Scene::Copy(readOnlyScene);
+	  m_HoveredEntity = {};
 
-		m_SceneHierarchy.SetContext(m_EditorScene, true);
-		m_ActiveScene = m_EditorScene;
-    m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+	  m_SceneHierarchy.SetContext(m_EditorScene, true);
+	  m_ActiveScene = m_EditorScene;
+	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
   }
 
   void EditorLayer::OpenScene()
   {
-      if (m_SceneState == SceneState::Play)
-        OnSceneStop();
+	  if (m_SceneState == SceneState::Play)
+		  OnSceneStop();
 
-      std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
-			AssetHandle handle = SceneImporter::OpenScene(filepath);
-			if (handle == 0 || filepath.empty())
-				return;
+	  std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
+	  AssetHandle handle = SceneImporter::OpenScene(filepath);
+	  if (handle == 0 || filepath.empty())
+		  return;
 
-			std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
-			if (!readOnlyScene)
-			{
-				OGN_CORE_ERROR("EditorLayer: Invalid Scene");
-				return;
-			}
+	  std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+	  if (!readOnlyScene)
+	  {
+		  OGN_CORE_ERROR("EditorLayer: Invalid Scene");
+		  return;
+	  }
 
-			m_HoveredEntity = {};
-			m_EditorScene = Scene::Copy(readOnlyScene);
-			m_SceneHierarchy.SetContext(m_EditorScene, true);
-			m_ActiveScene = m_EditorScene;
-			m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+	  m_HoveredEntity = {};
+	  m_EditorScene = Scene::Copy(readOnlyScene);
+	  m_SceneHierarchy.SetContext(m_EditorScene, true);
+	  m_ActiveScene = m_EditorScene;
+	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
   }
 
   void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath)
@@ -489,6 +454,30 @@ namespace origin {
 			ImGui::EndMenuBar();
 			ImGui::PopStyleColor();
 			ImGui::PopStyleVar();
+		}
+	}
+
+	void EditorLayer::Draw(float deltaTime)
+	{
+		switch (m_SceneState)
+		{
+		case SceneState::Play:
+			m_GizmosType = -1;
+			m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+			m_ActiveScene->OnUpdateRuntime(deltaTime);
+			break;
+
+		case SceneState::Edit:
+			m_EditorCamera.OnUpdate(deltaTime);
+			m_ActiveScene->OnUpdateEditor(deltaTime, m_EditorCamera);
+			Gizmos::OnUpdate(m_EditorCamera);
+			break;
+
+		case SceneState::Simulate:
+			m_EditorCamera.OnUpdate(deltaTime);
+			m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
+			Gizmos::OnUpdate(m_EditorCamera);
+			break;
 		}
 	}
 
@@ -589,13 +578,12 @@ namespace origin {
 					}
 				}
 			}
-		}
-		
-		// centered image position
-		float offsetX = (m_SceneViewportSize.x - sizeX) * 0.5f;
-		float offsetY = (m_SceneViewportSize.y - sizeY + 30.0f) * 0.5f;
 
-		ImGui::SetCursorPos({ offsetX, offsetY });
+			// centered image position
+			float offsetX = (m_SceneViewportSize.x - sizeX) * 0.5f;
+			float offsetY = (m_SceneViewportSize.y - sizeY) * 0.5f;
+			ImGui::SetCursorPos({ offsetX, offsetY });
+		}
 
 		ImGui::Image(viewportID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
@@ -604,36 +592,8 @@ namespace origin {
 			{
 				if (m_SceneState == SceneState::Edit)
 				{
-					if (m_HoveredEntity)
-					{
-						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-						auto entity = m_SceneHierarchy.GetSelectedEntity();
-						if (entity.HasComponent<SpriteRenderer2DComponent>())
-						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path textureFile = Project::GetActiveAssetFileSystemPath(path);
-							auto& component = entity.GetComponent<SpriteRenderer2DComponent>();
-							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
-							{
-								std::shared_ptr<Texture2D>& texture = AssetManager::GetAsset<Texture2D>(component.Texture);
-								texture = TextureImporter::LoadTexture2D(textureFile.string());
-							}
-						}
-
-						if (entity.HasComponent<SpriteRendererComponent>())
-						{
-							const wchar_t* path = (const wchar_t*)payload->Data;
-							std::filesystem::path textureFile = Project::GetActiveAssetFileSystemPath(path);
-							auto& component = entity.GetComponent<SpriteRendererComponent>();
-							if (textureFile.extension() == ".png" || textureFile.extension() == ".jpg")
-								component.Texture = Texture2D::Create(textureFile.string());
-						}
-					}
-					else
-					{
-						AssetHandle handle = *(AssetHandle*)payload->Data;
-						OpenScene(handle);
-					}
+					AssetHandle handle = *(AssetHandle*)payload->Data;
+					OpenScene(handle);
 				}
 			}
 
@@ -924,40 +884,15 @@ namespace origin {
 					}
 					ImGui::Separator();
 
-					ImGui::Text("2D"); ImGui::Separator();
 					if (ImGui::MenuItem("Sprite"))
 					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateSpriteEntity("Sprite");
-						m_SceneHierarchy.SetSelectedEntity(entity);
-					}
-					if (ImGui::MenuItem("Circle"))
-					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateCircle("Circle");
+						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Sprite");
+						entity.AddComponent<SpriteRenderer2DComponent>();
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
 					ImGui::Separator();
 
 					ImGui::Text("3D"); ImGui::Separator();
-					if (ImGui::BeginMenu("Light"))
-					{
-						if (ImGui::MenuItem("Directional Light"))
-						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreateDirectionalLight();
-							m_SceneHierarchy.SetSelectedEntity(entity);
-						}
-						if (ImGui::MenuItem("Point Light"))
-						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreatePointlight();
-							m_SceneHierarchy.SetSelectedEntity(entity);
-						}
-						if (ImGui::MenuItem("Spot Light"))
-						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreateSpotLight();
-							m_SceneHierarchy.SetSelectedEntity(entity);
-						}
-
-						ImGui::EndMenu();
-					}
 					if (ImGui::BeginMenu("MESH"))
 					{
 						if (ImGui::MenuItem("Empty Mesh"))
@@ -965,7 +900,6 @@ namespace origin {
 							Entity entity = m_SceneHierarchy.GetContext()->CreateMesh("Empty Mesh");
 							m_SceneHierarchy.SetSelectedEntity(entity);
 						}
-
 						ImGui::EndMenu();
 					}
 				}
@@ -985,60 +919,7 @@ namespace origin {
 					{
 						m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 						m_SceneHierarchy.DestroyEntity(m_SelectedEntity);
-
 						m_HoveredEntity = {};
-					}
-
-					if (ImGui::BeginMenu("Properties"))
-					{
-						ImGui::Text("Rename");
-						if (m_SelectedEntity.HasComponent<TagComponent>())
-						{
-							auto& tag = m_SelectedEntity.GetComponent<TagComponent>().Tag;
-							char buffer[64];
-							strcpy_s(buffer, sizeof(buffer), tag.c_str());
-							if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
-							{
-								tag = std::string(buffer);
-								if (tag.empty()) tag = "'No Name'";
-							}
-						}
-
-						if (m_SelectedEntity.HasComponent<SpriteRendererComponent>())
-						{
-							auto& component = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
-							ImGui::Separator();
-							ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-						}
-
-						if (m_SelectedEntity.HasComponent<SpriteRenderer2DComponent>())
-						{
-							auto& component = m_SelectedEntity.GetComponent<SpriteRenderer2DComponent>();
-							ImGui::Separator();
-
-							ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-							if (component.Texture)
-							{
-								ImGui::Text("Texture");
-								ImGui::DragFloat2("Tilling Factor", glm::value_ptr(component.TillingFactor), 0.1f, 0.0f, 10.0f);
-								if (ImGui::Button("Delete", ImVec2(64.0f, 24.0f)))
-								{
-									std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(component.Texture);
-									texture->Delete();
-									texture = {};
-								}
-							}
-						}
-
-						if (m_SelectedEntity.HasComponent<CircleRendererComponent>())
-						{
-							auto& component = m_SelectedEntity.GetComponent<CircleRendererComponent>();
-							ImGui::Separator();
-							ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-							ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
-							ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
-						}
-						ImGui::EndMenu(); //!Properties
 					}
 				}
 				ImGui::EndPopup();
@@ -1049,25 +930,6 @@ namespace origin {
 
 	void EditorLayer::GUIRender()
 	{
-		if (guiAudioLibraryWindow)
-		{
-			ImGui::Begin("Audio Library", &guiAudioLibraryWindow);
-			ImGui::Text("List: ");
-			for (const auto& map : AudioEngine::GetMap())
-				ImGui::Text("%s", map.first.c_str());
-
-			if (ImGui::Button("Clear All"))
-				AudioEngine::GetMap().clear();
-
-			ImGui::End();
-		}
-
-		if (guiAudioCreationWindow)
-		{
-			ImGui::Begin("Audio Creation", &guiAudioCreationWindow);
-			ImGui::End();
-		}
-
 		if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
 		{
 			if (entity.HasComponent<AnimationComponent>())
@@ -1215,92 +1077,78 @@ namespace origin {
 			}
 		}
 		
-		if (guiRenderStatusWindow)
-		{
-			ImGui::Begin("Render Status", &guiRenderStatusWindow);
+		ImGui::Begin("Render Status", &guiRenderStatusWindow);
+		const char* CMSTypeString[] = { "PIVOT", "FREE MOVE" };
+		const char* currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
+		ImGui::Text("Distance %.5f", m_EditorCamera.GetDistance());
 
-			const char* CMSTypeString[] = { "PIVOT", "FREE MOVE" };
-			const char* currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
-			ImGui::Text("Distance %.5f", m_EditorCamera.GetDistance());
+		if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString)) {
+			for (int i = 0; i < 2; i++) {
+				const bool isSelected = currentCMSTypeString == CMSTypeString[i];
+				if (ImGui::Selectable(CMSTypeString[i], isSelected)) {
+					currentCMSTypeString = CMSTypeString[i];
+					m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
 
-			if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString)) {
-				for (int i = 0; i < 2; i++) {
-					const bool isSelected = currentCMSTypeString == CMSTypeString[i];
-					if (ImGui::Selectable(CMSTypeString[i], isSelected)) {
-						currentCMSTypeString = CMSTypeString[i];
-						m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
+				} if (isSelected) ImGui::SetItemDefaultFocus();
+			} ImGui::EndCombo();
+		}
+		if (ImGui::DragFloat("FOV", &m_CameraFov, 1.0f, 0.0f, 90.0f))
+			m_EditorCamera.SetFov(m_CameraFov);
 
-					} if (isSelected) ImGui::SetItemDefaultFocus();
-				} ImGui::EndCombo();
-			}
-			if (ImGui::DragFloat("FOV", &m_CameraFov, 1.0f, 0.0f, 90.0f))
-				m_EditorCamera.SetFov(m_CameraFov);
+		ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
 
-			ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
+		ImGui::Separator();
 
-			ImGui::Separator();
+		const auto Stats2D = Renderer2D::GetStats();
+		ImGui::Text("2D Stats");
+		ImGui::Text("Draw Calls: %d", Stats2D.DrawCalls);
+		ImGui::Text("Quads %d", Stats2D.QuadCount);
+		ImGui::SameLine(); ImGui::Text("Circles %d", Stats2D.CircleCount);
+		ImGui::SameLine(); ImGui::Text("Lines %d", Stats2D.LineCount);
+		ImGui::Text("Vertices: %d", Stats2D.GetTotalVertexCount());
+		ImGui::Text("Indices: %d", Stats2D.GetTotalIndexCount());
+		ImGui::Separator();
 
-			const auto Stats2D = Renderer2D::GetStats();
-			ImGui::Text("2D Stats");
-			ImGui::Text("Draw Calls: %d", Stats2D.DrawCalls);
-			ImGui::Text("Quads %d", Stats2D.QuadCount);
-			ImGui::SameLine(); ImGui::Text("Circles %d", Stats2D.CircleCount);
-			ImGui::SameLine(); ImGui::Text("Lines %d", Stats2D.LineCount);
-			ImGui::Text("Vertices: %d", Stats2D.GetTotalVertexCount());
-			ImGui::Text("Indices: %d", Stats2D.GetTotalIndexCount());
-			ImGui::Separator();
+		const auto Stats3D = Renderer3D::GetStats();
+		ImGui::Text("3D Stats");
+		ImGui::Text("Draw Calls: %d", Stats3D.DrawCalls);
+		ImGui::Text("Cube %d", Stats3D.CubeCount);
+		ImGui::Text("Vertices: %d", Stats3D.GetTotalVertexCount());
+		ImGui::Text("Indices: %d", Stats3D.GetTotalIndexCount());
+		ImGui::Separator();
 
-			const auto Stats3D = Renderer3D::GetStats();
-			ImGui::Text("3D Stats");
-			ImGui::Text("Draw Calls: %d", Stats3D.DrawCalls);
-			ImGui::Text("Cube %d", Stats3D.CubeCount);
-			ImGui::Text("Vertices: %d", Stats3D.GetTotalVertexCount());
-			ImGui::Text("Indices: %d", Stats3D.GetTotalIndexCount());
-			ImGui::Separator();
+		ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
 
-			ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
+		const char* RTTypeString[] = { "Normal", "HDR" };
+		const char* currentRTTypeString = RTTypeString[m_RenderTarget];
 
-			const char* RTTypeString[] = { "Normal" };
-			const char* currentRTTypeString = RTTypeString[m_RenderTarget];
-
-			if (ImGui::BeginCombo("Render Target", currentRTTypeString)) {
-				for (int i = 0; i < 1; i++) {
-					const bool isSelected = currentRTTypeString == RTTypeString[i];
-					if (ImGui::Selectable(RTTypeString[i], isSelected)) {
-						currentRTTypeString = RTTypeString[i];
-						m_RenderTarget = i;
-					} if (isSelected) ImGui::SetItemDefaultFocus();
-				} ImGui::EndCombo();
-			}
-
-			ImGui::End();
+		if (ImGui::BeginCombo("Render Target", currentRTTypeString)) {
+			for (int i = 0; i < 2; i++) {
+				const bool isSelected = currentRTTypeString == RTTypeString[i];
+				if (ImGui::Selectable(RTTypeString[i], isSelected)) {
+					currentRTTypeString = RTTypeString[i];
+					m_RenderTarget = i;
+				} if (isSelected) ImGui::SetItemDefaultFocus();
+			} ImGui::EndCombo();
 		}
 
-		if (guiMenuStyle)
-		{
-			ImGui::Begin("Style Editor", &guiMenuStyle);
-			ImGui::ShowStyleEditor();
-			ImGui::End();
-		}
+		ImGui::End();
 
-		if (guiDebugInfo)
-		{
-			ImGui::Begin("Debug Info", &guiDebugInfo);
+		ImGui::Begin("Style Editor", &guiMenuStyle);
+		ImGui::ShowStyleEditor();
+		ImGui::End();
 
-			ImGui::Text("Time (%.2f s)", m_Time);
-			if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
-			ImGui::Text("OpenGL Version : (%s)", glGetString(GL_VERSION));
-			ImGui::Text("ImGui version : (%s)", IMGUI_VERSION);
-			ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
-			ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
-			ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
-			ImGui::End();
-		}
+		ImGui::Begin("Debug Info", &guiDebugInfo);
+		ImGui::Text("Time (%.2f s)", m_Time);
+		if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
+		ImGui::Text("OpenGL Version : (%s)", glGetString(GL_VERSION));
+		ImGui::Text("ImGui version : (%s)", IMGUI_VERSION);
+		ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
+		ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
+		ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
+		ImGui::End();
 
-		if (guiImGuiDemoWindow)
-		{
-			ImGui::ShowDemoWindow(&guiImGuiDemoWindow);
-		}
+		ImGui::ShowDemoWindow(&guiImGuiDemoWindow);
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)

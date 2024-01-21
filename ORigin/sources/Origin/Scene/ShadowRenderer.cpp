@@ -11,7 +11,7 @@ namespace origin {
 	ShadowRenderer::ShadowRenderer(const std::shared_ptr<Shader>& depthShader, LightingType type)
 		: m_DepthShader(depthShader)
 	{
-		m_DepthUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 11);
+		m_DepthUniformBuffer = UniformBuffer::Create(sizeof(m_DepthBufferData), 0);
 		Invalidate(type);
 	}
 
@@ -23,8 +23,8 @@ namespace origin {
 			m_Framebuffer.reset();
 
 		FramebufferSpecification fbSpec;
-		fbSpec.Width = 2048;
-		fbSpec.Height = 2048;
+		fbSpec.Width = 1024;
+		fbSpec.Height = 1024;
 		fbSpec.ReadBuffer = false;
 		
 		switch (type)
@@ -76,11 +76,11 @@ namespace origin {
 		if (m_LightingType == LightingType::Directional)
 		{
 			glm::mat4 projection = glm::ortho(-Size, Size, -Size, Size, Near, Far);
-			glm::mat4 view = glm::lookAt(glm::vec3(0.0f), glm::radians(-tc.GetUp()), glm::vec3(0.0f, 1.0f, 0.0));
-
-			m_LightViewProjection = projection * view * modelTransform;
+			glm::mat4 view = glm::lookAt(-tc.GetUp(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0));
+			m_DepthBufferData.LightViewProjection = projection * view;
+			m_DepthBufferData.ModelTransform = modelTransform;
 			m_DepthUniformBuffer->Bind();
-			m_DepthUniformBuffer->SetData(&m_LightViewProjection, sizeof(glm::mat4));
+			m_DepthUniformBuffer->SetData(&m_DepthBufferData, sizeof(m_DepthBufferData));
 		}
 	}
 

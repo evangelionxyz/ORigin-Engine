@@ -39,8 +39,9 @@ void main()
 
 // type fragment
 #version 450 
-layout(location = 0) out vec4 color;
-layout(location = 1) out int entColor;
+layout(location = 0) out vec4 oColor;
+layout(location = 1) out vec4 oHDRColor;
+layout(location = 2) out int oEntityID;
 
 struct Vertex
 {
@@ -94,6 +95,6 @@ void main()
 		case 31: texColor *= texture(u_Textures[31], In.TexCoord); break;
 	};
 
-	color = texColor;
-	entColor = v_EntityID;
+	oColor = texColor;
+	oEntityID = v_EntityID;
 }

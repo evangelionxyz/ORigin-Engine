@@ -26,18 +26,26 @@ namespace origin
 
 		std::shared_ptr<Framebuffer>& GetFramebuffer() { return m_Framebuffer; }
 
-		glm::mat4 m_LightViewProjection;
+		struct DepthBufferData
+		{
+			glm::mat4 LightViewProjection;
+			glm::mat4 ModelTransform;
+		};
+		DepthBufferData m_DepthBufferData;
+
 		glm::mat4 ShadowProjection;
 
 		float Size = 20.0f;
 		float Near = -10.0f;
-		float Far = 1000.0f;
+		float Far = 10.0f;
 
 	private:
 		LightingType m_LightingType;
 		std::shared_ptr<Framebuffer> m_Framebuffer;
 		std::shared_ptr<UniformBuffer> m_DepthUniformBuffer;
 		std::shared_ptr<Shader> m_DepthShader;
+
+		friend class Lighting;
 	};
 
 

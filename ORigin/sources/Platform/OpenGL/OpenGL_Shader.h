@@ -128,7 +128,7 @@ namespace origin
 
     ShaderProgramSources ParseShader(const std::string& filePath);
     GLuint CompileShader(GLuint type, const std::string& source);
-    GLuint CreateProgram(const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc);
+    GLuint CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc);
     int GetUniformLocation(const std::string& name);
   };
 }

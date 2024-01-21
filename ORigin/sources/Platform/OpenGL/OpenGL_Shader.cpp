@@ -117,6 +117,45 @@ namespace origin {
     }
   }
 
+	ShaderProgramSources OpenGLShader::ParseShader(const std::string& filepath)
+	{
+		std::ifstream stream(filepath);
+
+		std::string line;
+		std::stringstream ss[3];
+		ShaderType type = ShaderType::NONE;
+
+		while (getline(stream, line))
+		{
+			if (line.find("//type ") != std::string::npos || line.find("// type ") != std::string::npos
+				|| line.find("#type ") != std::string::npos || line.find("# type ") != std::string::npos)
+			{
+				if (line.find("vertex") != std::string::npos || line.find("Vertex") != std::string::npos)
+				{
+					type = ShaderType::VERTEX;
+					Utils::ShaderDataTypeToString(type);
+				}
+				else if (line.find("fragment") != std::string::npos || line.find("Fragment") != std::string::npos)
+				{
+					type = ShaderType::FRAGMENT;
+					Utils::ShaderDataTypeToString(type);
+				}
+				else if (line.find("geometry") != std::string::npos || line.find("Geometry") != std::string::npos)
+				{
+					type = ShaderType::GEOMTERY;
+					Utils::ShaderDataTypeToString(type);
+				}
+			}
+
+			else
+			{
+				ss[(int)type] << line << "\n";
+			}
+		}
+
+		return { ss[0].str(), ss[1].str(), ss[2].str() };
+	}
+
   OpenGLShader::OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv)
     : m_Filepath(filepath), m_RendererID(0), m_EnableSpirv(enableSpirv), m_RecompileSPIRV(recompileSpirv)
   {
@@ -419,47 +458,6 @@ namespace origin {
     }
   }
 
-  ShaderProgramSources OpenGLShader::ParseShader(const std::string& filepath)
-  {
-    std::ifstream stream(filepath);
-
-    std::string line;
-    std::stringstream ss[3];
-    ShaderType type = ShaderType::NONE;
-
-    while (getline(stream, line))
-    {
-      if (line.find("//type ") != std::string::npos
-        || line.find("// type ") != std::string::npos
-        || line.find("#type ") != std::string::npos
-        || line.find("# type ") != std::string::npos)
-      {
-        if (line.find("vertex") != std::string::npos  || line.find("Vertex") != std::string::npos)
-        {
-          type = ShaderType::VERTEX;
-          Utils::ShaderDataTypeToString(type);
-        }
-        else if (line.find("fragment") != std::string::npos || line.find("Fragment") != std::string::npos)
-        {
-          type = ShaderType::FRAGMENT;
-          Utils::ShaderDataTypeToString(type);
-        }
-        else if (line.find("geometry") != std::string::npos || line.find_last_of("Geometry") != std::string::npos)
-        {
-          type = ShaderType::GEOMTERY;
-          Utils::ShaderDataTypeToString(type);
-        }
-      }
-
-      else
-      {
-        ss[(int)type] << line << "\n";
-      }
-    }
-
-    return { ss[0].str(), ss[1].str(), ss[2].str() };
-  }
-
   GLuint OpenGLShader::CompileShader(GLuint type, const std::string& source)
   {
     GLuint shaderID = glCreateShader(type);
@@ -473,50 +471,62 @@ namespace origin {
     if (!success)
     {
       glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
+      const char* m = "Shader: Failed to Compile ";
+      const char* shaderType{};
+
       switch (type)
       {
       case GL_VERTEX_SHADER:
-        OGN_CORE_WARN("Failed to Compile \"VERTEX\" Shader Location: {1}", m_Filepath);
+        shaderType = "VERTEX TYPE";
         break;
       case GL_FRAGMENT_SHADER:
-        OGN_CORE_WARN("Failed to Compile \"FRAGMENT\" Shader Location: {1}", m_Filepath);
+        shaderType = "FRAGMENT TYPE";
         break;
       case GL_GEOMETRY_SHADER:
-        OGN_CORE_WARN("Failed to Compile \"GEOMETRY\" Shader Location: {1}", m_Filepath);
+        shaderType = "GEOMETRY TYPE";
         break;
       }
+      size_t len = strlen(m) + strlen(shaderType) + 1;
+      char* msg = (char*)malloc(len);
 
-      glDeleteShader(shaderID);
+      if (msg != NULL)
+      {
+        strcpy(msg, m);
+        strcat(msg, shaderType);
+        OGN_CORE_ERROR(msg);
+        free(msg);
+      }
+
+      OGN_CORE_ASSERT(false, infoLog);
       return 0;
     }
 
     switch (type)
     {
     case GL_VERTEX_SHADER:
-      OGN_CORE_TRACE("{} \"VERTEX\" Succesfully Compiled", m_Name);
+      OGN_CORE_TRACE("VERTEX Succesfully Compiled");
       break;
     case GL_FRAGMENT_SHADER:
-      OGN_CORE_TRACE("{} \"FRAGMENT\" Succesfully Compiled", m_Name);
+      OGN_CORE_TRACE("FRAGMENT Succesfully Compiled");
       break;
     case GL_GEOMETRY_SHADER:
-      OGN_CORE_TRACE("{} \"GEOMETRY\" Succesfully Compiled", m_Name);
+      OGN_CORE_TRACE("GEOMETRY Succesfully Compiled");
       break;
     }
 
     return shaderID;
   }
 
-  GLuint OpenGLShader::CreateProgram(const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc)
+  GLuint OpenGLShader::CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc)
   {
     // Create Program
     GLuint shaderProgram = glCreateProgram();
     GLuint vShader = CompileShader(GL_VERTEX_SHADER, vertexSrc);
     GLuint fShader = CompileShader(GL_FRAGMENT_SHADER, fragmentSrc);
-
     if (!geometrySrc.empty())
     {
       GLuint gShader = CompileShader(GL_GEOMETRY_SHADER, geometrySrc);
-      glAttachShader(shaderProgram, gShader);
+		  glAttachShader(shaderProgram, gShader);
     }
 
     // Attach and Link Shader->Program

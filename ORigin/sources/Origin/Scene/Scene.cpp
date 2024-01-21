@@ -25,19 +25,6 @@ namespace origin
 	class SphereColliderComponent;
 	class CapsuleColliderComponent;
 
-	Scene::Scene()
-	{
-		if (!m_PhysicsScene)
-			m_PhysicsScene = PhysicsScene::Create(this);
-
-		m_Physics2D = new Physics2D(this);
-	}
-
-	Scene::~Scene()
-	{
-		delete m_Physics2D;
-	}
-
 	template <typename... Component>
 	static void CopyComponent(entt::registry& dst, entt::registry& src,
 	                          const std::unordered_map<UUID, entt::entity>& enttMap)
@@ -48,8 +35,7 @@ namespace origin
 			for (auto srcEntity : view)
 			{
 				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
-
-				const auto& srcComponent = src.get<Component>(srcEntity);
+				auto srcComponent = src.get<Component>(srcEntity);
 				dst.emplace_or_replace<Component>(dstEntity, srcComponent);
 			}
 		}(), ...);
@@ -78,6 +64,19 @@ namespace origin
 		CopyComponentIfExists<Component...>(dst, src);
 	}
 
+	Scene::Scene()
+	{
+		if (!m_PhysicsScene)
+			m_PhysicsScene = PhysicsScene::Create(this);
+
+		m_Physics2D = new Physics2D(this);
+	}
+
+	Scene::~Scene()
+	{
+		delete m_Physics2D;
+	}
+
 	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
 	{
 		auto newScene = std::make_shared<Scene>();
@@ -95,10 +94,8 @@ namespace origin
 		for (auto e : idView)
 		{
 			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
-
 			const auto name = srcSceneRegistry.get<TagComponent>(e).Tag;
 			newEntity = newScene->CreateEntityWithUUID(uuid, name);
-
 			enttMap[uuid] = static_cast<entt::entity>(newEntity);
 		}
 
@@ -126,103 +123,12 @@ namespace origin
 		return entity;
 	}
 
-	Entity Scene::CreatePointlight()
-	{
-		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(UUID());
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<LightComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = "Point Light";
-
-		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		entity.GetComponent<TransformComponent>().Translation.y = 5.0f;
-
-		entity.GetComponent<LightComponent>().Light = Lighting::Create(LightingType::Point);
-
-		m_EntityMap.insert(std::make_pair(uuid, entity));
-
-		return entity;
-	}
-
-	Entity Scene::CreateSpotLight()
-	{
-		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(UUID());
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<LightComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = "Spot Light";
-
-		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		entity.GetComponent<TransformComponent>().Translation.y = 3.0f;
-
-		entity.GetComponent<LightComponent>().Light = Lighting::Create(LightingType::Spot);
-
-		m_EntityMap.insert(std::make_pair(uuid, entity));
-
-		return entity;
-	}
-
-	Entity Scene::CreateDirectionalLight()
-	{
-		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(UUID());
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<LightComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = "Directional Light";
-
-		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		entity.GetComponent<TransformComponent>().Rotation.x = glm::radians(-90.0f);
-
-		entity.GetComponent<LightComponent>().Light = Lighting::Create(LightingType::Directional);
-		m_EntityMap.insert(std::make_pair(uuid, entity));
-
-		return entity;
-	}
-
 	Entity Scene::CreateMesh(const std::string& name)
 	{
 		Entity entity = {m_Registry.create(), this};
 		entity.AddComponent<IDComponent>(UUID());
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<StaticMeshComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
-
-		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap.insert(std::make_pair(uuid, entity));
-
-		return entity;
-	}
-
-	Entity Scene::CreateSpriteEntity(const std::string& name)
-	{
-		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(UUID());
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<SpriteRenderer2DComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
-
-		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap.insert(std::make_pair(uuid, entity));
-
-		return entity;
-	}
-
-	Entity Scene::CreateCube(const std::string& name)
-	{
-		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(UUID());
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<SpriteRendererComponent>();
 
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
@@ -246,23 +152,6 @@ namespace origin
 
 		auto& translation = entity.GetComponent<TransformComponent>().Translation;
 		translation.z = 8.0f;
-
-		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap.insert(std::make_pair(uuid, entity));
-
-		return entity;
-	}
-
-	Entity Scene::CreateCircle(const std::string& name)
-	{
-		Entity entity = {m_Registry.create(), this};
-
-		entity.AddComponent<IDComponent>();
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<CircleRendererComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Circle" : name;
 
 		UUID& uuid = entity.GetComponent<IDComponent>().ID;
 		m_EntityMap.insert(std::make_pair(uuid, entity));
@@ -313,7 +202,6 @@ namespace origin
 
 			if (camera.Primary)
 			{
-				Renderer::BeginScene(camera.Camera, tc);
 				RenderScene(camera.Camera, tc);
 				break;
 			}
@@ -417,7 +305,7 @@ namespace origin
 		}
 
 		// Audio Update
-		Renderer2D::Begin();
+		Renderer2D::Begin(editorCamera);
 		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
 		for (auto entity : audioView)
 		{
@@ -499,7 +387,7 @@ namespace origin
 		}
 
 		// Audio Update
-		Renderer2D::Begin();
+		Renderer2D::Begin(editorCamera);
 		AudioEngine::SetMute(false);
 		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
 		for (auto entity : audioView)
@@ -602,7 +490,8 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		// Particle
+		Renderer2D::Begin(camera, cameraTransform.GetTransform());
+
 		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
 		for (auto entity : particles)
 		{
@@ -675,7 +564,7 @@ namespace origin
 			Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
 		}
 
-		Renderer::EndScene();
+		Renderer2D::End();
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -694,11 +583,12 @@ namespace origin
 				for (auto& light : lightView)
 				{
 					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnRender(lightTransform);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
+					lc.Light->OnRender(lightTransform);
 				}
 
-				model->Draw(tc.GetTransform(), (int)entity);
+				model->SetTransform(tc.GetTransform());
+				model->Draw((int)entity);
 			}
 		}
 
@@ -707,7 +597,7 @@ namespace origin
 
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
-		Renderer::BeginScene(camera);
+		Renderer2D::Begin(camera);
 
 		// Particle
 		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
@@ -777,8 +667,7 @@ namespace origin
 			Renderer2D::DrawString(text.TextString, tc.GetTransform(), text, static_cast<int>(entity));
 		}
 
-		Renderer::EndScene();
-
+		Renderer2D::End();
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -797,11 +686,12 @@ namespace origin
 				for (auto& light : lightView)
 				{
 					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->OnRender(lightTransform);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
+					lc.Light->OnRender(lightTransform);
 				}
 
-				model->Draw(tc.GetTransform(), (int)entity);
+				model->SetTransform(tc.GetTransform());
+				model->Draw((int)entity);
 			}
 		}
 
@@ -810,6 +700,8 @@ namespace origin
 	
 	void Scene::OnShadowRender()
 	{
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& light : dirLight)
 		{
@@ -819,12 +711,13 @@ namespace origin
 			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto& entity : meshView)
 			{
-				auto& [modelTransform, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
 				if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
 				{
 					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
-					lc.Light->GetShadow()->OnRenderBegin(lightTransform, modelTransform.GetTransform());
+					lc.Light->GetShadow()->OnRenderBegin(lightTransform, tc.GetTransform());
+					model->SetTransform(tc.GetTransform());
 					model->Draw();
 					lc.Light->GetShadow()->OnRenderEnd();
 				}
@@ -832,6 +725,8 @@ namespace origin
 
 			lc.Light->GetShadow()->UnbindFramebuffer();
 		}
+		glCullFace(GL_BACK);
+		glDisable(GL_CULL_FACE);
 	}
 
 	void Scene::OnRuntimeStart()

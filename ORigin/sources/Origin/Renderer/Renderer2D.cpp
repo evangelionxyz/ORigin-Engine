@@ -10,8 +10,19 @@
 
 namespace origin {
 
+	struct CameraBufferData
+	{
+		glm::mat4 ViewProjection;
+		glm::vec3 Position;
+	};
+
+	static CameraBufferData s_CameraBufferData;
+	static std::shared_ptr<UniformBuffer> s_CameraUniformBuffer;
+
 	void Renderer2D::Init()
 	{
+		s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), 0);
+
 		// Quads
 		s_2Ddata.QuadVertexArray = VertexArray::Create();
 
@@ -116,8 +127,25 @@ namespace origin {
 		delete[] s_2Ddata.QuadVertexBufferBase;
 	}
 
-	void Renderer2D::Begin()
+	void Renderer2D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)
 	{
+		s_CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(camTransform);
+		s_CameraBufferData.Position = camera.GetPosition();
+
+		s_CameraUniformBuffer->Bind();
+		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
+
+		StartBatch();
+	}
+
+	void Renderer2D::Begin(const EditorCamera& camera)
+	{
+		s_CameraBufferData.ViewProjection = camera.GetViewProjection();
+		s_CameraBufferData.Position = camera.GetPosition();
+
+		s_CameraUniformBuffer->Bind();
+		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
+
 		StartBatch();
 	}
 

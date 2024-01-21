@@ -21,7 +21,7 @@ void main()
 {
     vertex.Position = vec3(uModelTransform * vec4(aPos, 1.0));
     vertex.Normal = mat3(transpose(inverse(uModelTransform))) * aNormal;
-	vertex.TexCoord = aTexCoord;
+	  vertex.TexCoord = aTexCoord;
 
     vertex.LightSpacePosition = uLightSpaceMatrix * vec4(vertex.Position, 1.0);
 	gl_Position = uViewProjection * vec4(vertex.Position, 1.0);

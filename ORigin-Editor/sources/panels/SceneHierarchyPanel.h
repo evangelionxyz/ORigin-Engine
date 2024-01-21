@@ -24,6 +24,10 @@ namespace origin {
 		Entity GetSelectedEntity() const;
 
 		void OnImGuiRender();
+
+		void EntityHierarchyPanel();
+		void EntityPropertiesPanel();
+
 		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
 		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
 		void DestroyEntity(Entity entity);
@@ -35,12 +39,11 @@ namespace origin {
 		template<typename T>
 		bool DisplayAddComponentEntry(const std::string& entryName);
 		bool m_HierarchyMenuActive = false;
-		void DrawEntityNode(Entity entity);
+		void DrawEntityNode(Entity entity, int childIndex = 0);
 		void DrawComponents(Entity entity);
 
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;
-
 		std::shared_ptr<Texture2D> m_NoTextureButton;
 	};
 

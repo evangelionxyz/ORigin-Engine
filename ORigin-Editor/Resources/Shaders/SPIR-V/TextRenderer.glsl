@@ -36,8 +36,9 @@ void main()
 
 // type fragment
 #version 450 core
-layout(location = 0) out vec4 o_Color;
-layout(location = 1) out int o_EntityID;
+layout(location = 0) out vec4 oColor;
+layout(location = 1) out vec4 oHDRColor;
+layout(location = 2) out int oEntityID;
 
 struct VertexOutput
 {
@@ -110,9 +111,9 @@ void main()
 		discard;
 
 	vec4 bgColor = vec4(0.0);
-    o_Color = mix(bgColor, Input.Color, opacity);
-	if (o_Color.a == 0.0)
+    oColor = mix(bgColor, Input.Color, opacity);
+	if (oColor.a == 0.0)
 		discard;
 
-	o_EntityID = v_EntityID;
+	oEntityID = v_EntityID;
 }

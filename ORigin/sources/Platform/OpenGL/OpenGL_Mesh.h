@@ -14,23 +14,12 @@ namespace origin
 	public:
 		OpenGLMesh() = default;
 
-		OpenGLMesh(
-			const std::vector<MeshVertex>& vertices, 
-			const std::vector<uint32_t>& indices, 
-			const std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>>& textures,
-			const std::string& modelFilepath = "");
-
+		OpenGLMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices);
 		~OpenGLMesh() override;
-
 		void Draw() override;
-		void Draw(const std::shared_ptr<Shader>& shader) override;
-		bool IsLoaded() const override { return m_Loaded; }
 
 	private:
 		std::shared_ptr<VertexArray> m_VertexArray;
 		std::shared_ptr<VertexBuffer> m_VertexBuffer;
-		std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>> m_Textures;
-
-		bool m_Loaded = false;
 	};
 }

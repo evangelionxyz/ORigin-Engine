@@ -16,11 +16,7 @@
 
 namespace origin {
 
-#define CAMERA_BINDING_POINT 0
-
 	static ShaderLibrary GShaderLibrary;
-	static Renderer::CameraBuffer s_CameraBuffer;
-	static std::shared_ptr<UniformBuffer> s_CameraUBO;
 
 	std::shared_ptr<Texture2D> Renderer::WhiteTexture;
 
@@ -36,8 +32,6 @@ namespace origin {
 		uint32_t whiteTextureData = 0xffffffff;
 		WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 
-		s_CameraUBO = UniformBuffer::Create(sizeof(s_CameraBuffer), CAMERA_BINDING_POINT);
-
 		return true;
 	}
 
@@ -47,36 +41,6 @@ namespace origin {
 		Renderer3D::Shutdown();
 
 		OGN_CORE_WARN("Renderer Shutdown");
-	}
-
-	void Renderer::BeginScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
-	{
-		s_CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(cameraTransform.GetTransform());
-		s_CameraBuffer.Position = camera.GetPosition();
-
-		s_CameraUBO->SetData(&s_CameraBuffer, sizeof(s_CameraBuffer));
-
-		Renderer2D::Begin();
-		Renderer3D::Begin();
-	}
-
-	void Renderer::BeginScene(const EditorCamera& camera)
-	{
-		s_CameraBuffer.ViewProjection = camera.GetViewProjection();
-		s_CameraBuffer.Position = camera.GetPosition();
-
-		s_CameraUBO->SetData(&s_CameraBuffer, sizeof(s_CameraBuffer));
-
-		Renderer2D::Begin();
-		Renderer3D::Begin();
-	}
-
-	void Renderer::EndScene()
-	{
-		Renderer2D::End();
-		Renderer3D::End();
-
-		s_CameraUBO->Unbind();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
@@ -98,11 +62,6 @@ namespace origin {
 	const std::unordered_map<std::string, std::shared_ptr<Shader>> Renderer::GetSaderLibrary()
 	{
 		return GShaderLibrary.GetMap();
-	}
-
-	Renderer::CameraBuffer Renderer::GetCameraBuffer()
-	{
-		return s_CameraBuffer;
 	}
 
 	void Renderer::LoadShader()

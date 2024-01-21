@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
+#include "Origin\Renderer\Renderer.h"
 #include "OpenGL_Model.h"
 #include "OpenGL_Mesh.h"
 
@@ -11,7 +12,27 @@
 
 namespace origin
 {
-	
+	OpenGLModel::OpenGLModel(const std::string& filepath)
+	{
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(filepath.c_str(),
+			aiProcess_Triangulate
+			| aiProcess_GenSmoothNormals
+			| aiProcess_FlipUVs
+			| aiProcess_JoinIdenticalVertices
+		);
+
+		OGN_CORE_INFO("MODEL: Trying to load \"{}\"", filepath);
+		if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		{
+			OGN_CORE_ERROR("MESH: ASSIMP: {}", importer.GetErrorString());
+			return;
+		}
+
+		ProcessNode(scene->mRootNode, scene);
+		m_Uniformbuffer = UniformBuffer::Create(sizeof(ModelBufferData), 1);
+	}
 
 	OpenGLModel::OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material)
 		: m_Filepath(filepath), m_Material(material)
@@ -33,31 +54,58 @@ namespace origin
 		}
 
 		ProcessNode(scene->mRootNode, scene);
-
-		ModelUbo = UniformBuffer::Create(sizeof(ModelBuffer), 1);
+		m_Uniformbuffer = UniformBuffer::Create(sizeof(ModelBufferData), 1);
 	}
 
+	
 	OpenGLModel::~OpenGLModel()
 	{
 	}
 
-	void OpenGLModel::Draw(const glm::mat4& transform, int entityID)
+	void OpenGLModel::Draw(int entityID)
 	{
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
-			if (mesh->IsLoaded())
-			{
-				m_Material->OnRender();
-				m_Material->m_Shader->Enable();
-				m_ModelBuffer.Transform = transform;
-				m_ModelBuffer.EntityID = entityID;
+			m_ModelBufferData.EntityID = entityID;
+			m_Uniformbuffer->Bind();
+			m_Uniformbuffer->SetData(&m_ModelBufferData, sizeof(ModelBufferData));
 
-				ModelUbo->Bind();
-				ModelUbo->SetData(&m_ModelBuffer, sizeof(ModelBuffer));
-				mesh->Draw(m_Material->m_Shader);
-				ModelUbo->Unbind();
+			if (m_Material)
+			{
+				m_Material->m_Shader->Enable();
+				m_Material->OnRender();
+
+				for (auto& t : m_Textures)
+				{
+					if (t.find(aiTextureType_DIFFUSE) != t.end())
+					{
+						t.at(aiTextureType_DIFFUSE)->Bind(0);
+						m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+					}
+
+					if (t.find(aiTextureType_SPECULAR) != t.end())
+					{
+						t.at(aiTextureType_SPECULAR)->Bind(1);
+						m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+					}
+				}
+
+				if (m_Textures.empty())
+				{
+					Renderer::WhiteTexture->Bind(0);
+					m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+					Renderer::WhiteTexture->Bind(1);
+					m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+				}
+
+				mesh->Draw();
 				m_Material->m_Shader->Disable();
 			}
+			else
+			{
+				mesh->Draw();
+			}
+			m_Uniformbuffer->Unbind();
 		}
 	}
 
@@ -65,11 +113,47 @@ namespace origin
 	{
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
-			if (mesh->IsLoaded())
+			if (m_Material)
+			{
+				m_Material->m_Shader->Enable();
+				m_Material->OnRender();
+
+				for (auto& t : m_Textures)
+				{
+					if (t.find(aiTextureType_DIFFUSE) != t.end())
+					{
+						t.at(aiTextureType_DIFFUSE)->Bind(0);
+						m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+					}
+
+					if (t.find(aiTextureType_SPECULAR) != t.end())
+					{
+						t.at(aiTextureType_SPECULAR)->Bind(1);
+						m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+					}
+				}
+
+				if (m_Textures.empty())
+				{
+					Renderer::WhiteTexture->Bind(0);
+					m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+					Renderer::WhiteTexture->Bind(1);
+					m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+				}
+
+				mesh->Draw();
+				m_Material->m_Shader->Disable();
+			}
+			else
 			{
 				mesh->Draw();
 			}
 		}
+	}
+
+	void OpenGLModel::SetTransform(const glm::mat4& transform)
+	{
+		m_ModelBufferData.Transform = transform;
 	}
 
 	void OpenGLModel::ProcessNode(aiNode* node, const aiScene* scene)
@@ -131,17 +215,19 @@ namespace origin
 			for (uint32_t in = 0; in < face.mNumIndices; in++)
 				indices.push_back(face.mIndices[in]);
 		}
-
-		std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>> textures;
-		if (mesh->mMaterialIndex > 0)
+		
+		if (m_Material)
 		{
-			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE);
-			textures.push_back(diffuseMaps);
-			std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> specMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_SPECULAR);
-			textures.push_back(specMaps);
+			if (mesh->mMaterialIndex > 0)
+			{
+				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE);
+				m_Textures.push_back(diffuseMaps);
+				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> specMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_SPECULAR);
+				m_Textures.push_back(specMaps);
+			}
 		}
 
-		return std::make_shared<OpenGLMesh>(vertices, indices, textures, m_Filepath);
+		return std::make_shared<OpenGLMesh>(vertices, indices);
 	}
 }

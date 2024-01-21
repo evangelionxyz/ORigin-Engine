@@ -10,6 +10,15 @@
 
 namespace origin {
 
+	struct CameraBufferData
+	{
+		glm::mat4 ViewProjection;
+		glm::vec3 Position;
+	};
+
+	static CameraBufferData s_CameraBufferData;
+	static std::shared_ptr<UniformBuffer> s_CameraUniformBuffer;
+
 	struct CubeVertex
 	{
 		glm::vec3 Position;
@@ -48,6 +57,8 @@ namespace origin {
 
 	void Renderer3D::Init()
 	{
+		s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), 0);
+
 		//  ======== Cube ========
 		s_3Ddata.CubeVertexArray = VertexArray::Create();
 		s_3Ddata.CubeVertexBuffer = VertexBuffer::Create(s_3Ddata.MaxVertices * sizeof(CubeVertex));
@@ -130,8 +141,25 @@ namespace origin {
 		s_3Ddata.CubeShader = Renderer::GetGShader("Cube");
 	}
 
-	void Renderer3D::Begin()
+	void Renderer3D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)
 	{
+		s_CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(camTransform);
+		s_CameraBufferData.Position = camera.GetPosition();
+
+		s_CameraUniformBuffer->Bind();
+		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
+
+		StartBatch();
+	}
+
+	void Renderer3D::Begin(const EditorCamera& camera)
+	{
+		s_CameraBufferData.ViewProjection = camera.GetViewProjection();
+		s_CameraBufferData.Position = camera.GetPosition();
+
+		s_CameraUniformBuffer->Bind();
+		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
+
 		StartBatch();
 	}
 
