@@ -54,17 +54,7 @@ namespace origin {
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		operator bool() const { return m_EntityHandle != entt::null; }
-		operator entt::entity() const { return m_EntityHandle; }
-		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
-		operator uintptr_t() const { return static_cast<uintptr_t>(m_EntityHandle); }
-		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
-		bool operator!=(const Entity& other) const { return !(*this == other); }
-
-		bool HasChild() {	return GetComponent<IDComponent>().HasChild(); }
-		bool HasParent() {	return GetComponent<IDComponent>().HasParent(); }
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
-
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 
 		bool IsContactWith(const std::string& objName)
@@ -75,6 +65,7 @@ namespace origin {
 			auto& rb2d = GetComponent<Rigidbody2DComponent>();
 			return rb2d.ContactWith == objName;
 		}
+
 		std::string& GetContactTag()
 		{
 			std::string objName;
@@ -88,6 +79,15 @@ namespace origin {
 			return objName;
 		}
 
+		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
+
+		operator bool() const { return m_EntityHandle != entt::null; }
+		operator entt::entity() const { return m_EntityHandle; }
+		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
+		operator uintptr_t() const { return static_cast<uintptr_t>(m_EntityHandle); }
+		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
+		bool operator!=(const Entity& other) const { return !(*this == other); }
+		
 	private:
 		entt::entity m_EntityHandle{entt::null};
 		Scene* m_Scene = nullptr;

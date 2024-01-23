@@ -18,13 +18,17 @@
 #include <misc\cpp\imgui_stdlib.h>
 
 namespace origin {
-	
+
 	SceneHierarchyPanel* SceneHierarchyPanel::s_Instance = nullptr;
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{
 		SetContext(context);
 		s_Instance = this;
+	}
+
+	SceneHierarchyPanel::~SceneHierarchyPanel()
+	{
 	}
 
 	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
@@ -72,18 +76,21 @@ namespace origin {
 	void SceneHierarchyPanel::EntityHierarchyPanel()
 	{
 		ImGui::Begin("Hierarchy");
+		m_HierarchyMenuActive = ImGui::IsWindowFocused();
+
 		if (!m_Context)
 		{
 			ImGui::End();
 			return;
 		}
 
-		m_HierarchyMenuActive = ImGui::IsWindowFocused();
 		m_Context->m_Registry.each([&](auto entityID)
 			{
-				Entity entity{ entityID, m_Context.get() };
-				DrawEntityNode(entity);
+				Entity entity = { entityID, m_Context.get() };
+				if (!entity.HasParent())
+					DrawEntityNode(&entity);
 			});
+
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
@@ -91,7 +98,6 @@ namespace origin {
 		{
 			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 			{
-
 				if (ImGui::BeginMenu("CREATE"))
 				{
 					if (ImGui::MenuItem("Empty"))
@@ -138,25 +144,22 @@ namespace origin {
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int childIndex)
+	void SceneHierarchyPanel::DrawEntityNode(Entity* entity)
 	{
-		if (entity.HasParent() && childIndex == 0)
-			return;
-
-		auto& idc = entity.GetComponent<IDComponent>();
-		bool isSelected = m_SelectedEntity == entity;
+		auto& idc = entity->GetComponent<IDComponent>();
+		bool isSelected = m_SelectedEntity == *entity;
 
 		ImGuiTreeNodeFlags flags = (isSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)*entity, flags, entity->GetTag().c_str());
 
 		if (ImGui::IsItemClicked())
-			m_SelectedEntity = entity;
+			m_SelectedEntity = *entity;
 
-		if (ImGui::BeginDragDropSource() && isSelected)
+		if (ImGui::BeginDragDropSource())
 		{
-			ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
+			ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", entity, sizeof(Entity));
 			ImGui::EndDragDropSource();
 		}
 
@@ -164,23 +167,23 @@ namespace origin {
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 			{
-				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG GAME OBJECT");
-				Entity srcEntity{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				OGN_CORE_TRACE("From: {0}", srcEntity.GetTag());
-				OGN_CORE_TRACE("To: {0}", entity.GetTag());
-				idc.AddChild(srcEntity.GetUUID());
-				srcEntity.GetComponent<IDComponent>().Parent = idc.ID;
-				OGN_CORE_TRACE("{0} Has {1} Child(s)", entity.GetTag(), idc.Childs.size());
+				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
+				AddNodeChild(*entity, src);
 			}
 			ImGui::EndDragDropTarget();
 		}
 
 		if (node_open)
 		{
-			for (UUID entityID: idc.Childs)
+			for (auto& e : idc.Children)
 			{
-				Entity e = m_Context->GetEntityWithUUID(entityID);
-				DrawEntityNode(e, childIndex + 1);
+				Entity entity = m_Context->GetEntityWithUUID(e.first);
+				auto& tag = entity.GetTag();
+				auto& parents = entity.GetComponent<IDComponent>().Parents;
+
+				DrawEntityNode(&entity);
+				//ImGui::TreePop();
 			}
 
 			ImGui::TreePop();
@@ -194,10 +197,81 @@ namespace origin {
 				if (ImGui::MenuItem("Delete Entity"))
 				{
 					m_SelectedEntity = {};
-					m_Context->DestroyEntity(entity);
+					m_Context->DestroyEntity(*entity);
 				}
 				ImGui::EndPopup();
 			}
+		}
+	}
+
+	bool SceneHierarchyPanel::AddNodeChild(Entity parent, Entity child)
+	{
+		auto& parentIdc = parent.GetComponent<IDComponent>();
+		auto& childIdc = child.GetComponent<IDComponent>();
+
+		auto& enttReg = m_Context->m_EntityMap;
+
+		if (parentIdc.Parents.find(child.GetUUID()) != parentIdc.Parents.end())
+		{
+			OGN_CORE_ERROR("Cannot add {0} to child because it was the parent", child.GetTag());
+			return false;
+		}
+
+		// check parent's children ID
+			// if it matches with child's parents ID (or one of them)
+			// then delete it
+		for (auto& c : parentIdc.Children)
+		{
+			// Iterate through child's parents
+			auto idc = c.second.GetComponent<IDComponent>();
+			for (auto& p : idc.Parents)
+			{
+				// Check if the child's parent ID matches any of the current child's children IDs
+				auto childIdIt = idc.Parents.find(p.first);
+				if (childIdIt != idc.Parents.end())
+				{
+					RemoveConnectionsFromChild(child, c.second, c.second.GetUUID());
+				}
+			}
+		}
+
+		parentIdc.Children.insert(std::make_pair(childIdc.ID, child));
+		UUID oldParent = childIdc.Parent;
+		childIdc.Parent = parent.GetUUID();
+
+		if (childIdc.Parent != oldParent)
+		{
+			if (enttReg.find(oldParent) != enttReg.end())
+			{
+				Entity e = { enttReg.at(oldParent), m_Context.get() };
+				e.GetComponent<IDComponent>().Children.erase(child.GetUUID());
+			}
+		}
+
+		Entity newParent = m_Context->GetEntityWithUUID(parent.GetUUID());
+		childIdc.Parents.insert(std::make_pair(parent.GetUUID(), newParent));
+
+		for (auto& p : parentIdc.Parents)
+		{
+			childIdc.Parents.insert(std::make_pair(p.first, p.second));
+		}
+
+		return true;
+	}
+
+	void SceneHierarchyPanel::RemoveConnectionsFromChild(Entity insertedChild, Entity nextChild, UUID parentId)
+	{
+		auto& insertedIdc = insertedChild.GetComponent<IDComponent>();
+		auto& nextChildIdc = nextChild.GetComponent<IDComponent>();
+
+		// Remove parent ID from current child's parents
+		insertedIdc.Parents.erase(parentId);
+		OGN_ERROR("{0} removed from {1}", parentId, insertedChild.GetTag());
+
+		// Recursively remove parent ID from all children of the current child
+		for (auto& c : nextChildIdc.Children)
+		{
+			RemoveConnectionsFromChild(insertedChild, c.second, c.second.GetUUID());
 		}
 	}
 
@@ -1066,6 +1140,8 @@ namespace origin {
 				ImGui::Checkbox("Enable", &component.Enable);
 			});
 	}
+
+	
 
 	template<typename T>
 	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)

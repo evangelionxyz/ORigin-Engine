@@ -6,7 +6,6 @@
 
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
-
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -17,6 +16,9 @@ namespace origin {
 	public:
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const std::shared_ptr<Scene>& context);
+
+		~SceneHierarchyPanel();
+
 		static SceneHierarchyPanel& Get() { return *s_Instance; }
 		std::shared_ptr<Scene> GetContext() { return m_Context; }
 
@@ -39,8 +41,11 @@ namespace origin {
 		template<typename T>
 		bool DisplayAddComponentEntry(const std::string& entryName);
 		bool m_HierarchyMenuActive = false;
-		void DrawEntityNode(Entity entity, int childIndex = 0);
+
+		void DrawEntityNode(Entity* entity);
 		void DrawComponents(Entity entity);
+		bool AddNodeChild(Entity parent, Entity child);
+		void RemoveConnectionsFromChild(Entity insertedChild, Entity nextChild, UUID parentId);
 
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;

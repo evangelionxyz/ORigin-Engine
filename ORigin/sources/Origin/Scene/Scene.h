@@ -52,6 +52,8 @@ namespace origin
     template <typename... Components>
     auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
+    std::unordered_map<UUID, entt::entity> GetEntityMap() { return m_EntityMap; }
+
   private:
     std::unique_ptr<PhysicsScene> m_PhysicsScene;
     Physics2D* m_Physics2D;

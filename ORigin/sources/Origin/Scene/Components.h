@@ -26,26 +26,21 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
 
-
 namespace origin
 {
 	class IDComponent
 	{
 	public:
 		UUID ID;
-		UUID Parent = 0;
-		std::vector<UUID> Childs;
-
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
 
-		void AddChild(UUID entityID)
-		{
-			Childs.push_back(entityID);
-		}
+		UUID Parent = 0;
+		std::unordered_map<UUID, Entity> Parents;
+		std::unordered_map<UUID, Entity> Children;
 
-		bool HasChild() { return !Childs.empty(); }
 		bool HasParent() { return Parent != 0; }
+		bool HasChildren() { return !Children.empty(); }
 	};
 
 	class TagComponent
