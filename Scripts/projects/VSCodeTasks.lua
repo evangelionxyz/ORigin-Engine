@@ -1,7 +1,7 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 os.chdir("../../")
 argument =
-[[// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+[[// Copyright (c) Evangelion Manuhutu | ORigin Engine
 // ORigin Project Specification for VSCode
 {
    "version": "2.0.0",

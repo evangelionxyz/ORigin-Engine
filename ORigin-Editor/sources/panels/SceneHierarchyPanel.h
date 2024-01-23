@@ -4,6 +4,7 @@
 #include "Origin\Scene\Scene.h"
 #include "Origin\Scene\Entity.h"
 
+#include <filesystem>
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
 #include <imgui.h>
@@ -42,7 +43,7 @@ namespace origin {
 		bool DisplayAddComponentEntry(const std::string& entryName);
 		bool m_HierarchyMenuActive = false;
 
-		void DrawEntityNode(Entity* entity);
+		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 		bool AddNodeChild(Entity parent, Entity child);
 		void RemoveConnectionsFromChild(Entity insertedChild, Entity nextChild, UUID parentId);

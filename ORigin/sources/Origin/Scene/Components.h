@@ -363,6 +363,7 @@ namespace origin
 	class CapsuleColliderComponent;
 
 	using AllComponents = ComponentGroup<
+		IDComponent, TagComponent,
 		TransformComponent, CameraComponent, AnimationComponent,
 		AudioComponent, AudioListenerComponent, LightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,

@@ -88,7 +88,7 @@ namespace origin {
 			{
 				Entity entity = { entityID, m_Context.get() };
 				if (!entity.HasParent())
-					DrawEntityNode(&entity);
+					DrawEntityNode(entity);
 			});
 
 
@@ -144,22 +144,22 @@ namespace origin {
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity* entity)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
-		auto& idc = entity->GetComponent<IDComponent>();
-		bool isSelected = m_SelectedEntity == *entity;
+		auto& idc = entity.GetComponent<IDComponent>();
+		bool isSelected = m_SelectedEntity == entity;
 
 		ImGuiTreeNodeFlags flags = (isSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)*entity, flags, entity->GetTag().c_str());
+		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
 
 		if (ImGui::IsItemClicked())
-			m_SelectedEntity = *entity;
+			m_SelectedEntity = entity;
 
 		if (ImGui::BeginDragDropSource())
 		{
-			ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", entity, sizeof(Entity));
+			ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
 			ImGui::EndDragDropSource();
 		}
 
@@ -169,21 +169,17 @@ namespace origin {
 			{
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				AddNodeChild(*entity, src);
+				AddNodeChild(entity, src);
 			}
 			ImGui::EndDragDropTarget();
 		}
 
 		if (node_open)
 		{
-			for (auto& e : idc.Children)
+			for (auto& c : idc.Children)
 			{
-				Entity entity = m_Context->GetEntityWithUUID(e.first);
-				auto& tag = entity.GetTag();
-				auto& parents = entity.GetComponent<IDComponent>().Parents;
-
-				DrawEntityNode(&entity);
-				//ImGui::TreePop();
+				Entity e = m_Context->GetEntityWithUUID(c.first);
+				DrawEntityNode(e);
 			}
 
 			ImGui::TreePop();
@@ -197,7 +193,7 @@ namespace origin {
 				if (ImGui::MenuItem("Delete Entity"))
 				{
 					m_SelectedEntity = {};
-					m_Context->DestroyEntity(*entity);
+					m_Context->DestroyEntity(entity);
 				}
 				ImGui::EndPopup();
 			}

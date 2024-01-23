@@ -180,15 +180,43 @@ namespace origin
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		OGN_CORE_ASSERT(entity.HasComponent<IDComponent>(), "");
+		auto idc = entity.GetComponent<IDComponent>();
 		out << YAML::BeginMap; // Entity
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
+
+		{
+			out << YAML::Key << "TreeNode";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Parent" << idc.Parent;
+
+			out << YAML::Key << "Parents" << YAML::Value;
+			out << YAML::BeginSeq;
+			for (auto p : idc.Parents)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "ID" << YAML::Value << p.first;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq; //!Parents
+
+			out << YAML::Key << "Children" << YAML::Value;
+			out << YAML::BeginSeq;
+			for (auto p : idc.Children)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "ID" << YAML::Value << p.first;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq; //!Children
+			out << YAML::EndMap;
+		}
 
 		if (entity.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap; // TagComponent
 
-			const auto& tag = entity.GetComponent<TagComponent>().Tag;
+			auto tag = entity.GetComponent<TagComponent>().Tag;
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 
 			out << YAML::EndMap; // TagComponent
@@ -685,15 +713,12 @@ namespace origin
 			return false;
 
 		auto sceneName = data["Scene"].as<std::string>();
-
 		OGN_CORE_TRACE("Deserializing scene '{0}'", sceneName);
-
 		if (YAML::Node entities = data["Entities"])
 		{
-			for (auto entity : entities)
+			for (YAML::iterator::value_type entity : entities)
 			{
-				auto uuid = entity["Entity"].as<uint64_t>();
-
+				uint64_t uuid = entity["Entity"].as<uint64_t>();
 				std::string name;
 				if (auto tagComponent = entity["TagComponent"])
 					name = tagComponent["Tag"].as<std::string>();
@@ -1042,6 +1067,38 @@ namespace origin
 							READ_FIELD_TYPE(Vector4, glm::vec4);
 							READ_FIELD_TYPE(Entity, UUID);
 							}
+						}
+					}
+				}
+			}
+
+			// Tree Node Deserialize
+			for (auto entity : entities)
+			{
+				uint64_t uuid = entity["Entity"].as<uint64_t>();
+				Entity newEntity = m_Scene->GetEntityWithUUID(uuid);
+				auto& idc = newEntity.GetComponent<IDComponent>();
+
+				if (YAML::Node treeNode = entity["TreeNode"])
+				{
+					idc.Parent = treeNode["Parent"].as<uint64_t>();
+					if (auto parents = treeNode["Parents"])
+					{
+						for (auto p : parents)
+						{
+							UUID uuid = p["ID"].as<uint64_t>();
+							Entity e = m_Scene->GetEntityWithUUID(uuid);
+							idc.Parents.insert(std::make_pair(e.GetUUID(), e));
+						}
+					}
+
+					if (auto children = treeNode["Children"])
+					{
+						for (auto c : children)
+						{
+							UUID uuid = c["ID"].as<uint64_t>();
+							Entity e = m_Scene->GetEntityWithUUID(uuid);
+							idc.Children.insert(std::make_pair(e.GetUUID(), e));
 						}
 					}
 				}

@@ -847,6 +847,7 @@ template<>\
 void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 
 	OGN_REG_COMPONENT(IDComponent)
+	OGN_REG_COMPONENT(TagComponent)
 	OGN_REG_COMPONENT(TransformComponent)
 	OGN_REG_COMPONENT(AudioComponent)
 	OGN_REG_COMPONENT(AudioListenerComponent)
@@ -857,7 +858,6 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(StaticMeshComponent)
 	OGN_REG_COMPONENT(TextComponent)
 	OGN_REG_COMPONENT(CircleRendererComponent)
-	OGN_REG_COMPONENT(TagComponent)
 	OGN_REG_COMPONENT(NativeScriptComponent)
 	OGN_REG_COMPONENT(ScriptComponent)
 	OGN_REG_COMPONENT(Rigidbody2DComponent)

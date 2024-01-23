@@ -367,7 +367,7 @@ namespace origin {
 
 	  std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
 	  AssetHandle handle = SceneImporter::OpenScene(filepath);
-	  if (handle == 0 || filepath.empty())
+		if (handle == 0 || filepath.empty())
 		  return;
 
 	  std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
