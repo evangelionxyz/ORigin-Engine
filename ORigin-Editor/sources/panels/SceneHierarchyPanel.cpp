@@ -50,7 +50,7 @@ namespace origin {
 		// set new scene
 		m_Context = context;
 
-		// recieve selected entity from new scene
+		// receive selected entity from new scene
 		if (!m_SelectedEntity)
 			return;
 
@@ -65,6 +65,32 @@ namespace origin {
 	{
 		m_Context->DestroyEntity(entity);
 		m_SelectedEntity = {};
+	}
+
+	void SceneHierarchyPanel::DeleteEntityTree(Entity entity)
+	{
+		auto& treeComponent = entity.GetComponent<TreeNodeComponent>();
+		if (entity.HasParent())
+		{
+			Entity parent = m_Context->GetEntityWithUUID(entity.GetParentUUID());
+			auto& parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
+			auto it = parentTreeComponent.Children.find(entity.GetUUID());
+			if (it != parentTreeComponent.Children.end())
+				parentTreeComponent.Children.erase(entity.GetUUID());
+		}
+		
+		// if this entity has child
+		// then erase entity from their parents
+		for (auto [childId, child] : treeComponent.Children)
+		{
+			auto& childTreeComponent = child.GetComponent<TreeNodeComponent>();
+			// 1. set the original parent to 0
+			// 2. recursively through grand child
+
+			childTreeComponent.Parent = 0;
+			for(auto [gchildId, gChild] : childTreeComponent.Children)
+				RemoveConnectionsFromChild(gChild, child, entity.GetUUID());
+		}
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -86,11 +112,9 @@ namespace origin {
 
 		m_Context->m_Registry.each([&](auto entityID)
 			{
-				Entity entity = { entityID, m_Context.get() };
-				if (!entity.HasParent())
-					DrawEntityNode(entity);
+				Entity entity{ entityID, m_Context.get() };
+				DrawEntityNode(entity);
 			});
-
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
@@ -144,16 +168,15 @@ namespace origin {
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
 	{
-		auto& idc = entity.GetComponent<IDComponent>();
-		bool isSelected = m_SelectedEntity == entity;
+		if (entity.HasParent() && index == 0)
+			return;
 
-		ImGuiTreeNodeFlags flags = (isSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
-
 		if (ImGui::IsItemClicked())
 			m_SelectedEntity = entity;
 
@@ -176,98 +199,88 @@ namespace origin {
 
 		if (node_open)
 		{
-			for (auto& c : idc.Children)
+			auto treeComponent = entity.GetComponent<TreeNodeComponent>();
+			for (auto [uuid, child] : treeComponent.Children)
 			{
-				Entity e = m_Context->GetEntityWithUUID(c.first);
-				DrawEntityNode(e);
+				Entity entt = m_Context->GetEntityWithUUID(uuid);
+				DrawEntityNode(entt, index + 1);
 			}
 
 			ImGui::TreePop();
 		}
 
-		// destroy entity
-		if (isSelected)
+		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::BeginPopupContextItem() && ImGui::IsWindowFocused())
+			if (ImGui::MenuItem("Delete"))
 			{
-				if (ImGui::MenuItem("Delete Entity"))
-				{
-					m_SelectedEntity = {};
-					m_Context->DestroyEntity(entity);
-				}
-				ImGui::EndPopup();
+				m_SelectedEntity = {};
+				DeleteEntityTree(entity);
+				m_Context->DestroyEntity(entity);
 			}
+			ImGui::EndPopup();
 		}
 	}
 
 	bool SceneHierarchyPanel::AddNodeChild(Entity parent, Entity child)
 	{
-		auto& parentIdc = parent.GetComponent<IDComponent>();
-		auto& childIdc = child.GetComponent<IDComponent>();
-
+		auto& parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
+		auto& childTreeComponent = child.GetComponent<TreeNodeComponent>();
 		auto& enttReg = m_Context->m_EntityMap;
 
-		if (parentIdc.Parents.find(child.GetUUID()) != parentIdc.Parents.end())
+		if (parentTreeComponent.Parents.find(child.GetUUID()) != parentTreeComponent.Parents.end())
 		{
-			OGN_CORE_ERROR("Cannot add {0} to child because it was the parent", child.GetTag());
+			OGN_CORE_ERROR("Cannot add {0} to child, it was the parent", child.GetTag());
 			return false;
 		}
 
-		// check parent's children ID
-			// if it matches with child's parents ID (or one of them)
-			// then delete it
-		for (auto& c : parentIdc.Children)
+		for (auto& [childId, child] : parentTreeComponent.Children)
 		{
-			// Iterate through child's parents
-			auto idc = c.second.GetComponent<IDComponent>();
-			for (auto& p : idc.Parents)
+			auto treeComponent = child.GetComponent<TreeNodeComponent>();
+			for (auto& [parentId, parent] : treeComponent.Parents)
 			{
-				// Check if the child's parent ID matches any of the current child's children IDs
-				auto childIdIt = idc.Parents.find(p.first);
-				if (childIdIt != idc.Parents.end())
+				auto childIdIt = treeComponent.Parents.find(parentId);
+				if (childIdIt != treeComponent.Parents.end())
 				{
-					RemoveConnectionsFromChild(child, c.second, c.second.GetUUID());
+					RemoveConnectionsFromChild(child, child, child.GetUUID());
 				}
 			}
 		}
 
-		parentIdc.Children.insert(std::make_pair(childIdc.ID, child));
-		UUID oldParent = childIdc.Parent;
-		childIdc.Parent = parent.GetUUID();
+		parentTreeComponent.Children[child.GetUUID()] =  child;
 
-		if (childIdc.Parent != oldParent)
+		UUID oldParent = childTreeComponent.Parent;
+		childTreeComponent.Parent = parent.GetUUID();
+
+		if (childTreeComponent.Parent != oldParent)
 		{
 			if (enttReg.find(oldParent) != enttReg.end())
 			{
-				Entity e = { enttReg.at(oldParent), m_Context.get() };
-				e.GetComponent<IDComponent>().Children.erase(child.GetUUID());
+				Entity e = m_Context->GetEntityWithUUID(oldParent);
+				e.GetComponent<TreeNodeComponent>().Children.erase(child.GetUUID());
 			}
 		}
 
 		Entity newParent = m_Context->GetEntityWithUUID(parent.GetUUID());
-		childIdc.Parents.insert(std::make_pair(parent.GetUUID(), newParent));
+		childTreeComponent.Parents[parent.GetUUID()] = newParent;
 
-		for (auto& p : parentIdc.Parents)
+		for (auto& p : parentTreeComponent.Parents)
 		{
-			childIdc.Parents.insert(std::make_pair(p.first, p.second));
+			childTreeComponent.Parents[p.first] = p.second;
 		}
 
 		return true;
 	}
 
-	void SceneHierarchyPanel::RemoveConnectionsFromChild(Entity insertedChild, Entity nextChild, UUID parentId)
+	void SceneHierarchyPanel::RemoveConnectionsFromChild(Entity child, Entity nextChild, UUID parentId)
 	{
-		auto& insertedIdc = insertedChild.GetComponent<IDComponent>();
-		auto& nextChildIdc = nextChild.GetComponent<IDComponent>();
+		auto& childIdc = child.GetComponent<TreeNodeComponent>();
+		auto& nextChildIdc = nextChild.GetComponent<TreeNodeComponent>();
 
-		// Remove parent ID from current child's parents
-		insertedIdc.Parents.erase(parentId);
-		OGN_ERROR("{0} removed from {1}", parentId, insertedChild.GetTag());
+		childIdc.Parents.erase(parentId);
 
-		// Recursively remove parent ID from all children of the current child
 		for (auto& c : nextChildIdc.Children)
 		{
-			RemoveConnectionsFromChild(insertedChild, c.second, c.second.GetUUID());
+			RemoveConnectionsFromChild(child, c.second, c.second.GetUUID());
 		}
 	}
 
@@ -903,14 +916,14 @@ namespace origin {
 
 				float width = 118.0f;
 				DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width);
-				DrawVecControl("Friction", &component.Friction, 0.02, 0.0f, 100.0f, 0.5f, width);
+				DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width);
 				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width);
 				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width);
 			});
 
 		DrawComponent<CircleCollider2DComponent>("CIRCLE COLLIDER 2D", entity, [](auto& component)
 			{
-				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1.0f, 16.0f, "Group Index %d");
+				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 				DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
@@ -1136,8 +1149,6 @@ namespace origin {
 				ImGui::Checkbox("Enable", &component.Enable);
 			});
 	}
-
-	
 
 	template<typename T>
 	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)

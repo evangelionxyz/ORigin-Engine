@@ -34,8 +34,9 @@ namespace origin {
 		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
 		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
 		void DestroyEntity(Entity entity);
-		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
+		void DeleteEntityTree(Entity entity);
 
+		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
 	private:
 		static SceneHierarchyPanel* s_Instance;
 
@@ -43,10 +44,11 @@ namespace origin {
 		bool DisplayAddComponentEntry(const std::string& entryName);
 		bool m_HierarchyMenuActive = false;
 
-		void DrawEntityNode(Entity entity);
+		void DrawEntityNode(Entity entity, int index = 0);
 		void DrawComponents(Entity entity);
 		bool AddNodeChild(Entity parent, Entity child);
-		void RemoveConnectionsFromChild(Entity insertedChild, Entity nextChild, UUID parentId);
+		void RemoveConnectionsFromChild(Entity child, Entity nextChild, UUID parentId);
+
 
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;
@@ -112,7 +114,6 @@ namespace origin {
 		ImGui::PopID();
 	}
 
-	// static function
 	static void DrawVec2Control(const std::string& label, glm::vec2& values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
 		ImGuiIO& io = ImGui::GetIO();
@@ -159,7 +160,6 @@ namespace origin {
 		ImGui::PopID();
 	}
 
-	// static function
 	static bool DrawVecControl(const std::string& label, float* values, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
 		bool changed = false;
@@ -185,7 +185,7 @@ namespace origin {
 			*values = resetValue;
 		ImGui::SameLine();
 
-		if(ImGui::DragFloat("##V", values, speed, minValue, maxValue))
+		if (ImGui::DragFloat("##V", values, speed, minValue, maxValue))
 			changed = true;
 
 		ImGui::PopItemWidth();

@@ -13,13 +13,15 @@ namespace origin
 	class ContentBrowserPanel
 	{
 	public:
-		ContentBrowserPanel();
+		ContentBrowserPanel() = default;
 		ContentBrowserPanel(const std::shared_ptr<Project>& project);
 		void OnImGuiRender();
 		
 	private:
+		void DrawNavButton();	
+		void DrawContentBrowser();
 		void RefreshAssetTree();
-		void NavigationButton();	
+		std::shared_ptr<Texture2D> DirectoryIcons(const std::filesystem::directory_entry& dirExtension);
 	
 		std::shared_ptr<Project> m_Project;
 		std::shared_ptr<ThumbnailCache> m_ThumbnailCache;
@@ -28,7 +30,6 @@ namespace origin
 		std::filesystem::path m_CurrentDirectory;
 		
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_IconMap;
-		std::shared_ptr<Texture2D> DirectoryIcons(const std::filesystem::directory_entry& dirExtension);
 
 		struct TreeNode
 		{
@@ -46,7 +47,7 @@ namespace origin
 		
 		std::map<int, std::filesystem::path> m_HistoryList;
 		int m_ForwardCount = 0;
-		float m_ThumbnailSize = 94.0f;
+		int m_ThumbnailSize = 64;
 
 		enum class Mode
 		{

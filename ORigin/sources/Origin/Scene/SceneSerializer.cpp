@@ -180,18 +180,18 @@ namespace origin
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		OGN_CORE_ASSERT(entity.HasComponent<IDComponent>(), "");
-		auto idc = entity.GetComponent<IDComponent>();
 		out << YAML::BeginMap; // Entity
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
+		auto treeComponent = entity.GetComponent<TreeNodeComponent>();
 		{
 			out << YAML::Key << "TreeNode";
 			out << YAML::BeginMap;
-			out << YAML::Key << "Parent" << idc.Parent;
+			out << YAML::Key << "Parent" << treeComponent.Parent;
 
 			out << YAML::Key << "Parents" << YAML::Value;
 			out << YAML::BeginSeq;
-			for (auto p : idc.Parents)
+			for (auto p : treeComponent.Parents)
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "ID" << YAML::Value << p.first;
@@ -201,7 +201,7 @@ namespace origin
 
 			out << YAML::Key << "Children" << YAML::Value;
 			out << YAML::BeginSeq;
-			for (auto p : idc.Children)
+			for (auto p : treeComponent.Children)
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "ID" << YAML::Value << p.first;
@@ -1077,18 +1077,18 @@ namespace origin
 			{
 				uint64_t uuid = entity["Entity"].as<uint64_t>();
 				Entity newEntity = m_Scene->GetEntityWithUUID(uuid);
-				auto& idc = newEntity.GetComponent<IDComponent>();
+				auto& treeComponent = newEntity.GetComponent<TreeNodeComponent>();
 
 				if (YAML::Node treeNode = entity["TreeNode"])
 				{
-					idc.Parent = treeNode["Parent"].as<uint64_t>();
+					treeComponent.Parent = treeNode["Parent"].as<uint64_t>();
 					if (auto parents = treeNode["Parents"])
 					{
 						for (auto p : parents)
 						{
 							UUID uuid = p["ID"].as<uint64_t>();
 							Entity e = m_Scene->GetEntityWithUUID(uuid);
-							idc.Parents.insert(std::make_pair(e.GetUUID(), e));
+							treeComponent.Parents[e.GetUUID()] = e;
 						}
 					}
 
@@ -1098,7 +1098,7 @@ namespace origin
 						{
 							UUID uuid = c["ID"].as<uint64_t>();
 							Entity e = m_Scene->GetEntityWithUUID(uuid);
-							idc.Children.insert(std::make_pair(e.GetUUID(), e));
+							treeComponent.Children[e.GetUUID()] = e;
 						}
 					}
 				}

@@ -28,12 +28,11 @@
 
 namespace origin
 {
-	class IDComponent
+	class TreeNodeComponent
 	{
 	public:
-		UUID ID;
-		IDComponent() = default;
-		IDComponent(const IDComponent&) = default;
+		TreeNodeComponent() = default;
+		TreeNodeComponent(const TreeNodeComponent&) = default;
 
 		UUID Parent = 0;
 		std::unordered_map<UUID, Entity> Parents;
@@ -41,6 +40,14 @@ namespace origin
 
 		bool HasParent() { return Parent != 0; }
 		bool HasChildren() { return !Children.empty(); }
+	};
+
+	class IDComponent
+	{
+	public:
+		UUID ID;
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
 	};
 
 	class TagComponent
@@ -363,7 +370,7 @@ namespace origin
 	class CapsuleColliderComponent;
 
 	using AllComponents = ComponentGroup<
-		IDComponent, TagComponent,
+		TreeNodeComponent, 
 		TransformComponent, CameraComponent, AnimationComponent,
 		AudioComponent, AudioListenerComponent, LightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,

@@ -79,7 +79,9 @@ namespace origin {
 			return objName;
 		}
 
-		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
+		UUID GetParentUUID() { return GetComponent<TreeNodeComponent>().Parent; }
+		bool HasParent() { return GetComponent<TreeNodeComponent>().Parent != 0; }
+		bool HasChildren() { return GetComponent<TreeNodeComponent>().Children.size() > 0; }
 
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
@@ -88,6 +90,8 @@ namespace origin {
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
 		
+		Scene* GetScene() const { return m_Scene; }
+
 	private:
 		entt::entity m_EntityHandle{entt::null};
 		Scene* m_Scene = nullptr;
