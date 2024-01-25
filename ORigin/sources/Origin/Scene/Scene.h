@@ -49,6 +49,8 @@ namespace origin
     void OnViewportResize(const uint32_t width, const uint32_t height);
     void OnShadowRender();
 
+    void UpdateTransform();
+
     template <typename... Components>
     auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 

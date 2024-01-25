@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "ScriptEngine.h"
@@ -12,9 +12,10 @@
 #include "mono\metadata\assembly.h"
 #include "mono\metadata\object.h"
 #include "mono\metadata\tabledefs.h"
-#include "mono\metadata\mono-debug.h"
 
 #include <FileWatch.hpp>
+
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin
 {

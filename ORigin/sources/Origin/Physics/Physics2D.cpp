@@ -13,6 +13,8 @@
 
 #include "Contact2DListener.h"
 
+#include <glm/glm.hpp>
+
 namespace origin {
 
 	static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
@@ -45,7 +47,7 @@ namespace origin {
 		for (auto& e : view)
 		{
 			Entity entity = { e, m_SceneContext };
-			auto& transform = entity.GetComponent<TransformComponent>();
+			auto& tc = entity.GetComponent<TransformComponent>();
 			const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
 
 			const auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
@@ -53,9 +55,9 @@ namespace origin {
 			if (body)
 			{
 				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Rotation.z = body->GetAngle();
+				tc.Translation.x = position.x;
+				tc.Translation.y = position.y;
+				tc.Rotation.z = body->GetAngle();
 			}
 		}
 	}

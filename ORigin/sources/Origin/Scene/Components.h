@@ -159,11 +159,16 @@ namespace origin
 		{
 		}
 
+		void SetTransform(glm::mat4 transform)
+		{
+			Math::DecomposeTransformEuler(transform, Translation, Rotation, Scale);
+		}
+
 		glm::mat4 GetTransform() const
 		{
-			glm::mat4 rotation = toMat4(glm::quat(Rotation));
-			return translate(glm::mat4(1.0f), Translation)
-				* rotation * scale(glm::mat4(1.0f), Scale);
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			return glm::translate(glm::mat4(1.0f), Translation)
+				* rotation * glm::scale(glm::mat4(1.0f), Scale);
 		}
 
 		glm::vec3 GetForward() const
@@ -186,6 +191,7 @@ namespace origin
 			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 			return glm::normalize(glm::vec3(right));
 		}
+
 	};
 
 	class SpriteRendererComponent

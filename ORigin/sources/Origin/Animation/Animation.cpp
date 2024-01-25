@@ -6,6 +6,8 @@
 
 #include "Origin\Renderer\Renderer2D.h"
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
 	void Animation::AddFrame(AssetHandle handle, float frameTime)

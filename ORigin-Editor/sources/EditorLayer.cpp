@@ -23,10 +23,13 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
+	float snapValues[3] = { 0.5f, 0.5f, 0.5f };
+
   EditorLayer* EditorLayer::s_Instance = nullptr;
-	//float exposure = 0.5f;
 
   EditorLayer::EditorLayer() : Layer("Editor")
   {
@@ -58,8 +61,8 @@ namespace origin {
 	  FramebufferSpecification mainFramebufferSpec;
 	  mainFramebufferSpec.Attachments =
 	  {
-		  FramebufferTextureFormat::RGBA16F,
-		  FramebufferTextureFormat::RGBA16F,
+		  FramebufferTextureFormat::RGBA8,
+		  FramebufferTextureFormat::RGBA8,
 		  FramebufferTextureFormat::RED_INTEGER,
 		  FramebufferTextureFormat::DEPTH24STENCIL8
 	  };
@@ -96,7 +99,9 @@ namespace origin {
   {
 	  Renderer2D::ResetStats();
 	  Renderer3D::ResetStats();
+
 	  InputProcedure(deltaTime);
+
 	  m_Time += deltaTime.Seconds();
 	  const bool enableCamera = !ImGuizmo::IsUsing() && !ImGui::GetIO().WantTextInput && Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
 	  m_EditorCamera.EnableMovement(enableCamera);
@@ -119,9 +124,8 @@ namespace origin {
 	  RenderCommand::ClearColor(clearColor);
 	  m_Framebuffer->ClearAttachment(2, -1);
 
-		//m_ActiveScene->m_Hdr->OnRender(exposure);
-
 	  Draw(deltaTime);
+
 	  auto [mx, my] = ImGui::GetMousePos();
 	  glm::vec2 mousePos = { mx, my };
 	  mousePos -= m_SceneViewportBounds[0];
@@ -152,19 +156,12 @@ namespace origin {
   void EditorLayer::OnGuiRender()
   {
 	  m_Dockspace.Begin();
-
-		ImGui::Begin("Test");
-		//ImGui::DragFloat("Exposure", &exposure, 0.1f, 0.0f, 1000.0f);
-		ImGui::End();
-
-	  MenuBar();
 	  SceneViewport();
-	  m_SceneHierarchy.OnImGuiRender();
-
+	  MenuBar();
+	  GUIRender();
 	  if (m_ContentBrowser)
 		  m_ContentBrowser->OnImGuiRender();
-
-	  GUIRender();
+	  m_SceneHierarchy.OnImGuiRender();
 	  m_Dockspace.End();
   }
 
@@ -230,10 +227,8 @@ namespace origin {
 			  OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
 			  return false;
 		  }
-
-		  EditorLayer::NewScene();
+		  NewScene();
 	  }
-
 	  return true;
   }
 
@@ -358,6 +353,8 @@ namespace origin {
 	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+
+		m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
   }
 
   void EditorLayer::OpenScene()
@@ -382,6 +379,7 @@ namespace origin {
 	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+		m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
   }
 
   void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath)
@@ -463,7 +461,6 @@ namespace origin {
 		{
 		case SceneState::Play:
 			m_GizmosType = -1;
-			m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
 			m_ActiveScene->OnUpdateRuntime(deltaTime);
 			break;
 
@@ -484,22 +481,19 @@ namespace origin {
 	void EditorLayer::SceneViewport()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar
-			| ImGuiWindowFlags_NoScrollWithMouse
-			| ImGuiWindowFlags_NoCollapse;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
 		ImGui::Begin("Scene", nullptr, window_flags);
+
+		SceneViewportMenu();
+		SceneViewportToolbar();
+		SceneViewportOverlay();
 
 		m_SceneViewportHovered = ImGui::IsWindowHovered();
 		m_SceneViewportFocused = ImGui::IsWindowFocused();
 
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered);
-
 		m_SceneHierarchy.SetHierarchyMenuActive(!ImGui::IsWindowFocused());
-
-		SceneViewportMenu();
-		SceneViewportToolbar();
 
 		const ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		const ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -507,49 +501,11 @@ namespace origin {
 		m_SceneViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_SceneViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-		// Debug Info Overlay
-		if (guiOverlay)
-		{
-			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration
-				| ImGuiWindowFlags_AlwaysAutoResize
-				| ImGuiWindowFlags_NoSavedSettings
-				| ImGuiWindowFlags_NoFocusOnAppearing
-				| ImGuiWindowFlags_NoNav;
-
-			ImGui::SetNextWindowPos( { (viewportMinRegion.x + viewportOffset.x) + 8.0f, (viewportMinRegion.y + viewportOffset.y) + 8.0f }, ImGuiCond_Always);
-
-			ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
-			if (ImGui::Begin("##top_left_overlay", nullptr, window_flags))
-			{
-				if (Project::GetActive())
-				{
-					if (!m_SceneHierarchy.GetContext())
-						ImGui::Text("Load a Scene or Create New Scene to begin!");
-				}
-				else
-				{
-					ImGui::Text("Create or Open a Project");
-				}
-				
-				ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-				ImGui::Text("Mouse Pos (%d, %d)", mouseX, mouseY);
-			}
-
-			ImGui::End();
-		}
-
 		ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-		auto viewportID = (ImTextureID)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget);
-
 		float sizeX = 0.0f, sizeY = 0.0f;
-		if (m_SceneState != SceneState::Play)
-		{
-			sizeX = m_SceneViewportSize.x;
-			sizeY = m_SceneViewportSize.y;
-		}
-		else
+		if (m_SceneState == SceneState::Play)
 		{
 			auto& camView = m_ActiveScene->m_Registry.view<CameraComponent>();
 			for (auto& e : camView)
@@ -582,9 +538,15 @@ namespace origin {
 			// centered image position
 			float offsetX = (m_SceneViewportSize.x - sizeX) * 0.5f;
 			float offsetY = (m_SceneViewportSize.y - sizeY) * 0.5f;
-			ImGui::SetCursorPos({ offsetX, offsetY });
+			ImGui::SetCursorPos({ offsetX, offsetY + 20.0f });
+		}
+		else
+		{
+			sizeX = m_SceneViewportSize.x;
+			sizeY = m_SceneViewportSize.y;
 		}
 
+		ImTextureID viewportID = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget));
 		ImGui::Image(viewportID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -596,95 +558,40 @@ namespace origin {
 					OpenScene(handle);
 				}
 			}
-
 			ImGui::EndDragDropTarget();
 		}
-
-		// Gizmos
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(
-			m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y,
-			m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x,
-			m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y
-		);
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
 		if (entity && m_GizmosType != -1)
 		{
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
+			// Gizmos
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y, m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x, m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y);
+			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
 
 			auto& tc = entity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
-			glm::vec3 originalRotation = tc.Rotation;
+			
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
-			bool snap = Input::IsKeyPressed(Key::LeftShift);
-			float snapValue = 0.5f;
-			if (snap && m_GizmosType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f;
-			static float snapValues[3] = { snapValue, snapValue, snapValue };
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				static_cast<ImGuizmo::OPERATION>(m_GizmosType), static_cast<ImGuizmo::MODE>(m_GizmosMode),
+				glm::value_ptr(transform), snapValues);
 
-			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
-
-			if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
+			if (ImGuizmo::IsUsing())
 			{
-				ImGuizmo::Manipulate(
-					glm::value_ptr(cameraView),
-					glm::value_ptr(cameraProjection),
-					static_cast<ImGuizmo::OPERATION>(m_GizmosType),
-					static_cast<ImGuizmo::MODE>(m_GizmosMode),
-					glm::value_ptr(transform),
-					snap ? snapValues : nullptr,
-					nullptr
-				);
-
-				glm::vec2 velocity = glm::vec2(0.0f);
-				if (ImGuizmo::IsUsing())
-				{
-					auto rb2d = entity.GetComponent<Rigidbody2DComponent>();
-					auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
-
-					glm::vec3 translation, rotation, scale;
-					Math::DecomposeTransformEuler(transform, translation, rotation, scale);
-
-					glm::vec2 deltaTranslation = glm::vec2(translation) - glm::vec2(tc.Translation);
-
-					velocity += glm::vec2(deltaTranslation);
-					velocity.x *= 2.0f;
-					velocity.y *= 5.0f;
-
-					body->ApplyForceToCenter(b2Vec2(velocity.x, velocity.y), rb2d.Awake);
-				}
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransformEuler(transform, translation, rotation, scale);
+				tc.Translation = translation;
+				glm::vec3 deltaRotation = rotation - tc.Rotation;
+				tc.Rotation += deltaRotation;
+				tc.Scale = scale;
 			}
-			else
-			{
-				ImGuizmo::Manipulate(
-					glm::value_ptr(cameraView),
-					glm::value_ptr(cameraProjection),
-					static_cast<ImGuizmo::OPERATION>(m_GizmosType),
-					static_cast<ImGuizmo::MODE>(m_GizmosMode),
-					glm::value_ptr(transform),
-					snap ? snapValues : nullptr,
-					nullptr
-				);
 
-				if (ImGuizmo::IsUsing())
-				{
-					glm::vec3 translation, rotation, scale;
-					Math::DecomposeTransformEuler(transform, translation, rotation, scale);
-
-					tc.Translation = translation;
-					glm::vec3 deltaRotation = rotation - tc.Rotation;
-					tc.Rotation += deltaRotation;
-					tc.Scale = scale;
-				}
-			}
+			if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
+				m_GizmosType = -1;
 		}
-
-		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
-			m_GizmosType = -1;
-
-		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -926,6 +833,36 @@ namespace origin {
 			}
 		}
 		ImGui::PopStyleVar();
+	}
+
+	void EditorLayer::SceneViewportOverlay()
+	{
+		const ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		const ImVec2& viewportOffset = ImGui::GetWindowPos();
+
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize
+			| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + 8.0f, (viewportMinRegion.y + viewportOffset.y) + 8.0f }, ImGuiCond_Always);
+
+		ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
+		if (ImGui::Begin("##top_left_overlay", nullptr, window_flags))
+		{
+			if (Project::GetActive())
+			{
+				if (!m_SceneHierarchy.GetContext())
+					ImGui::Text("Load a Scene or Create New Scene to begin!");
+			}
+			else
+			{
+				ImGui::Text("Create or Open a Project");
+			}
+
+			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::Text("Mouse Pos (%d, %d)", mouseX, mouseY);
+		}
+
+		ImGui::End();
 	}
 
 	void EditorLayer::GUIRender()
@@ -1194,7 +1131,6 @@ namespace origin {
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
-		
 		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY()};
 		const glm::vec2 delta = (mouse - m_InitialMousePosition);
 		m_InitialMousePosition = mouse;
@@ -1219,14 +1155,10 @@ namespace origin {
 					{
 						auto rb2d = entity.GetComponent<Rigidbody2DComponent>();
 						auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+						velocity.x += delta.x * orthoScale * 5.0f;
+						velocity.y -= delta.y * orthoScale * 5.0f;
 
-						translate.x += delta.x * 5.0f;
-						translate.y += -delta.y * 5.0f;
-
-						glm::vec2 deltaTranslate = translate - glm::vec2(tc.Translation);
-						velocity += glm::vec2(deltaTranslate);
-
-						body->ApplyForceToCenter(b2Vec2(velocity.x, velocity.y), rb2d.Awake);
+						body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
 					}
 					else
 					{

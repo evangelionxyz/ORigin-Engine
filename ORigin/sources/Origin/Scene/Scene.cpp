@@ -246,7 +246,6 @@ namespace origin
 			// Physics
 			m_PhysicsScene->Simulate(deltaTime);
 			m_Physics2D->Simulate(deltaTime);
-			
 		}
 
 		// Rendering
@@ -545,6 +544,7 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
+		UpdateTransform();
 		Renderer2D::Begin(camera, cameraTransform.GetTransform());
 
 		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
@@ -652,6 +652,7 @@ namespace origin
 
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
+		UpdateTransform();
 		Renderer2D::Begin(camera);
 
 		// Particle
@@ -782,6 +783,25 @@ namespace origin
 		}
 		glCullFace(GL_BACK);
 		glDisable(GL_CULL_FACE);
+	}
+
+	void Scene::UpdateTransform()
+	{
+		auto& t = m_Registry.view<TransformComponent, TreeNodeComponent>();
+		for (auto e : t)
+		{
+			auto& [tc, tree] = t.get<TransformComponent, TreeNodeComponent>(e);
+			if (tree.Parent)
+			{
+				Entity parent = GetEntityWithUUID(tree.Parent);
+				const auto& parentTc = parent.GetComponent<TransformComponent>();
+
+				glm::vec3 retScale = glm::vec3(1.0f);
+
+				glm::vec3 pTranslation, pRotation, pScale;
+				Math::DecomposeTransformEuler(parentTc.GetTransform(), pTranslation, pRotation, pScale);
+			}
+		}
 	}
 
 	void Scene::OnRuntimeStart()

@@ -3,6 +3,8 @@
 #include "ThumbnailCache.h"
 #include "Origin\Asset\AssetImporter.h"
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
 	ThumbnailCache::ThumbnailCache(const std::shared_ptr<Project>& project)

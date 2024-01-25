@@ -10,6 +10,9 @@
 #include <imgui.h>
 #include <stb_image.h>
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
+
 namespace origin {
 
 	Application* Application::s_Instance = nullptr;
@@ -47,7 +50,7 @@ namespace origin {
 			std::shared_ptr<Texture2D> splashImage = TextureImporter::LoadTexture2D("Resources/UITextures/splashscreen.png");
 			m_GuiLayer->Begin();
 			ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
-			ImVec2 windowSize = ImVec2(m_Window->GetWidth(), m_Window->GetHeight());
+			ImVec2 windowSize = ImVec2((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 			ImGuiWindowFlags imageWinFlags = ImGuiWindowFlags_NoTitleBar
 				| ImGuiWindowFlags_NoResize

@@ -4,6 +4,8 @@
 #include "stb_image.h"
 #include "OpenGL_Texture.h"
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
   namespace Utils {

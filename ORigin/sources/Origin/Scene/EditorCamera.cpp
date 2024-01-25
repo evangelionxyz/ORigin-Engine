@@ -289,7 +289,7 @@ namespace origin {
 			}
 			break;
 		case ProjectionType::Orthographic:
-			MouseZoom(delta * 0.1);
+			MouseZoom(delta * 0.1f);
 			UpdateView();
 			UpdateProjection();
 			break;

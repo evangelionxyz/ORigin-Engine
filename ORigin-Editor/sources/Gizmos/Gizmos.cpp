@@ -83,7 +83,7 @@ namespace origin {
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Translation) + cc2d.Offset, tc.Translation.z + COLLIDER2D_ZOFFSET))
 					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Scale * cc2d.Radius * 2.0f), 1.0f));
 
-				Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, (int)entity);
+				Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, 0.0f, (int)entity);
 			}
 		}
 

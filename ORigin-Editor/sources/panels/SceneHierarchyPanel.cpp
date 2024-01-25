@@ -17,6 +17,8 @@
 #include <glm\gtc\type_ptr.hpp>
 #include <misc\cpp\imgui_stdlib.h>
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
 	SceneHierarchyPanel* SceneHierarchyPanel::s_Instance = nullptr;
@@ -156,6 +158,19 @@ namespace origin {
 			}
 		}
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+			{
+				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
+				auto& srcTreeComponent = src.GetComponent<TreeNodeComponent>();
+				srcTreeComponent.Parent = 0;
+				srcTreeComponent.Parents.clear();
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 		ImGui::PopStyleVar();
 		ImGui::End();
 	}
@@ -170,13 +185,11 @@ namespace origin {
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
 	{
-		if (entity.HasParent() && index == 0)
+		Entity e = m_Context->GetEntityWithUUID(entity.GetUUID());
+		if (e.HasParent() && index == 0)
 			return;
 
-		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-
-		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+		bool node_open = ImGui::TreeNode((void*)(uint64_t)(uint32_t)entity, entity.GetTag().c_str());
 		if (ImGui::IsItemClicked())
 			m_SelectedEntity = entity;
 
@@ -233,12 +246,12 @@ namespace origin {
 			return false;
 		}
 
-		for (auto& [childId, child] : parentTreeComponent.Children)
+		for (auto [childId, child] : parentTreeComponent.Children)
 		{
-			auto treeComponent = child.GetComponent<TreeNodeComponent>();
+			auto& treeComponent = child.GetComponent<TreeNodeComponent>();
 			for (auto& [parentId, parent] : treeComponent.Parents)
 			{
-				auto childIdIt = treeComponent.Parents.find(parentId);
+				auto& childIdIt = treeComponent.Parents.find(parentId);
 				if (childIdIt != treeComponent.Parents.end())
 				{
 					RemoveConnectionsFromChild(child, child, child.GetUUID());
@@ -246,7 +259,7 @@ namespace origin {
 			}
 		}
 
-		parentTreeComponent.Children[child.GetUUID()] =  child;
+		parentTreeComponent.Children.insert(std::make_pair(child.GetUUID(), child));
 
 		UUID oldParent = childTreeComponent.Parent;
 		childTreeComponent.Parent = parent.GetUUID();
@@ -260,8 +273,7 @@ namespace origin {
 			}
 		}
 
-		Entity newParent = m_Context->GetEntityWithUUID(parent.GetUUID());
-		childTreeComponent.Parents[parent.GetUUID()] = newParent;
+		childTreeComponent.Parents.insert(std::make_pair(parent.GetUUID(), parent));
 
 		for (auto& p : parentTreeComponent.Parents)
 		{
@@ -330,7 +342,10 @@ namespace origin {
 			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
 			DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
 			DisplayAddComponentEntry<CapsuleColliderComponent>("CAPSULE COLLIDER");
-			DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
+
+			if(!m_SelectedEntity.HasComponent<Rigidbody2DComponent>())
+				DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
+
 			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
 
@@ -340,14 +355,13 @@ namespace origin {
 		ImGui::PopStyleVar();
 		ImGui::PopItemWidth();
 
-		DrawComponent<TransformComponent>("TRANSFORM", entity, [](auto& component)
+		DrawComponent<TransformComponent>("TRANSFORM", entity, [&](auto& component)
 		{
-			DrawVec3Control("Translation", component.Translation);
-
-			glm::vec3 rotation = glm::degrees(component.Rotation);
-			DrawVec3Control("Rotation", rotation, 1.0f);
-			component.Rotation = glm::radians(rotation);
-			DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
+				DrawVec3Control("Translation", component.Translation);
+				glm::vec3 rotation = glm::degrees(component.Rotation);
+				DrawVec3Control("Rotation", rotation, 1.0f);
+				component.Rotation = glm::radians(rotation);
+				DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 		});
 
 		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
@@ -906,7 +920,7 @@ namespace origin {
 
 		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto& component)
 			{
-				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1.0f, 16.0f, "Group Index %d");
+				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 
@@ -1157,6 +1171,7 @@ namespace origin {
 		{
 			m_SelectedEntity.AddComponent<T>();
 			ImGui::CloseCurrentPopup();
+
 			return true;
 		}
 

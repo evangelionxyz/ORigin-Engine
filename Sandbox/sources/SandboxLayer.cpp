@@ -1,10 +1,12 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "Origin\EntryPoint.h"
 #include "Origin\Asset\AssetImporter.h"
 
 #include "SandboxLayer.h"
 #include <imgui.h>
+
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 using namespace origin;
 

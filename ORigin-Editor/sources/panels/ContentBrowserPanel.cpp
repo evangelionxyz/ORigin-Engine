@@ -9,6 +9,8 @@
 
 #include <imgui.h>
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin
 {
 	static uint32_t itemRenderCount = 0;
@@ -46,7 +48,7 @@ namespace origin
 	void ContentBrowserPanel::DrawNavButton()
 	{
 		ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
-		ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 23.0f), false, childFlags);
+		ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 30.0f), false, childFlags);
 
 		// Navigation Button
 		ImVec2 navBtSize = ImVec2(23.0f, 23.0f);

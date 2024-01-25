@@ -171,7 +171,6 @@ namespace origin {
 		bool recordMemoryAllocations = false;
 		physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate("localhost", port, timeoutMS);
 		s_PhysXData->PhysXPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
-		OGN_CORE_INFO("PhysX API: PVD Connected");
 
 		s_PhysXData->PhysxPhysics = PxCreatePhysics(
 			PX_PHYSICS_VERSION,
@@ -183,17 +182,12 @@ namespace origin {
 		bool pxPvdExtension = PxInitExtensions(*s_PhysXData->PhysxPhysics, s_PhysXData->PhysXPvd);
 		OGN_CORE_ASSERT(pxPvdExtension, "PhysX PVD Extension is failed to initilized");
 		OGN_CORE_ASSERT(s_PhysXData->PhysxPhysics, "PhysXAPI: Failed To Create Physics");
-
-		OGN_CORE_INFO("PhysX API: Physics Created");
 	}
 
 	void PhysXAPI::OnSimulationStop()
 	{
 		PxCloseExtensions();
-		OGN_CORE_INFO("PhysX API: Extensions Closed");
-
 		s_PhysXData->PhysxPhysics->release();
-		OGN_CORE_INFO("PhysX API: Physics Released");
 	}
 
 	void PhysXAPI::Shutdown()

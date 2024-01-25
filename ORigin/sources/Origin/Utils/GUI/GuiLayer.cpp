@@ -29,18 +29,18 @@ namespace origin {
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-
+#if 0
 		ImVec4* colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 		colors[ImGuiCol_TextDisabled] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 		colors[ImGuiCol_WindowBg] = ImVec4(0.03f, 0.01f, 0.00f, 1.00f);
-		colors[ImGuiCol_ChildBg] = ImVec4(0.07f, 0.03f, 0.00f, 1.00f);
-		colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.03f, 0.00f, 1.00f);
+		colors[ImGuiCol_ChildBg] = ImVec4(0.03f, 0.01f, 0.00f, 1.00f);
+		colors[ImGuiCol_PopupBg] = ImVec4(0.03f, 0.01f, 0.00f, 1.00f);
 		colors[ImGuiCol_Border] = ImVec4(0.67f, 0.67f, 0.67f, 0.50f);
 		colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 		colors[ImGuiCol_FrameBg] = ImVec4(0.26f, 0.26f, 0.26f, 0.54f);
-		colors[ImGuiCol_FrameBgHovered] = ImVec4(0.07f, 0.03f, 0.00f, 1.00f);
-		colors[ImGuiCol_FrameBgActive] = ImVec4(0.07f, 0.03f, 0.00f, 1.00f);
+		colors[ImGuiCol_FrameBgHovered] = ImVec4(0.03f, 0.01f, 0.00f, 1.00f);
+		colors[ImGuiCol_FrameBgActive] = ImVec4(0.03f, 0.01f, 0.00f, 1.00f);
 		colors[ImGuiCol_TitleBg] = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
 		colors[ImGuiCol_TitleBgActive] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
@@ -87,31 +87,32 @@ namespace origin {
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
-		ImGuiIO& io = ImGui::GetIO();
-		float fontSize = 16.0f;
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
-
+#endif
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.GrabMinSize = 12.0f;
 		style.TabBorderSize = 0;
 		style.ScrollbarSize = 10.0f;
-		style.GrabRounding = 4.0f;
-		style.PopupRounding = 4.0f;
+		style.GrabRounding = 2.0f;
+		style.PopupRounding = 2.0f;
 		style.IndentSpacing = 12.0f;
-		style.FrameRounding = 3.0f;
+		style.FrameRounding = 2.0f;
 		style.ChildRounding = 3.0f;
 		style.WindowRounding = 3.0f;
 		style.WindowBorderSize = 0;
-		style.ScrollbarRounding = 4.0f;
+		style.ScrollbarRounding = 2.0f;
 
 		style.AntiAliasedFill = true;
 		style.AntiAliasedLines = true;
 		style.AntiAliasedLinesUseTex = true;
 
+		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigViewportsNoDecoration = true;
+
+		float fontSize = 16.0f;
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 
 		ImGui_ImplGlfw_InitForOpenGL(m_WindowContext, true);
 		ImGui_ImplOpenGL3_Init("#version 450");

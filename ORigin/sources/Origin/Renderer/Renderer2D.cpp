@@ -8,6 +8,8 @@
 
 #include "Origin\Asset\AssetManager.h"
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
 	struct CameraBufferData

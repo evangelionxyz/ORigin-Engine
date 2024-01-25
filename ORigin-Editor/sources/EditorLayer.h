@@ -91,7 +91,6 @@ namespace origin {
   private:
     static EditorLayer* s_Instance;
     float m_CameraFov = 45.0f;
-
     std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
 
     void Draw(float deltaTime);
@@ -100,39 +99,32 @@ namespace origin {
   	void SceneViewport();
     void SceneViewportToolbar();
     void SceneViewportMenu();
-
+    void SceneViewportOverlay();
     bool NewProject();
     bool OpenProject();
     bool OpenProject(const std::filesystem::path& path);
     void SaveProject();
-
 	  void MenuBar();
-
     void NewScene();
     void SaveScene();
     void SaveSceneAs();
     void OpenScene();
     void OpenScene(AssetHandle handle);
-
     void SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath);
-
     void OnDuplicateEntity();
-
     bool OnWindowDrop(WindowDropEvent& e);
     bool OnWindowResize(WindowResizeEvent& e);
     bool OnMouseMovedEvent(MouseMovedEvent& e);
     bool OnMouseButtonEvent(MouseButtonEvent& e);
-
     void OnEvent(Event& e) override;
     bool OnKeyPressed(KeyPressedEvent& e);
     bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-    void InputProcedure(Timestep time);
     void OnGuiRender() override;
-
     void OnScenePlay();
     void OnScenePause();
     void OnSceneSimulate();
     void OnSceneStop();
+    void InputProcedure(Timestep time);
 
     void GUIRender();
 

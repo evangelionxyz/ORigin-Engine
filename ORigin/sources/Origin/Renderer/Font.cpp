@@ -11,6 +11,8 @@
 
 #include <map>
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
 	static std::map<std::string, Font> m_WindowsFontMap;

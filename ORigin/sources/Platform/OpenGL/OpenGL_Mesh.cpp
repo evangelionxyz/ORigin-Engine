@@ -6,6 +6,8 @@
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\RenderCommand.h"
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin
 {
 	OpenGLMesh::OpenGLMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices)

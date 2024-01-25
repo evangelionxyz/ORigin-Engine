@@ -12,6 +12,8 @@ namespace origin
 		case RendererAPI::API::None:			return nullptr;
 		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLMesh>(vertices, indices);
 		}
+
+		return nullptr;
 	}
 
 }

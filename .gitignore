@@ -18,13 +18,6 @@ ORigin.sln.licenseheader
 # folders
 Binaries/
 Scripts/__pycache__
-
 ORigin/vendor/projectFiles
 ORigin/vendor/VulkanSDK
-
-ORigin-Editor/Resources/Cache
-ORigin-Editor/Resources/ScriptCore
-ORigin-Editor/Resources/intermediates
-
-ORigin-Editor/SandboxProject/Intermediates
-ORigin-Editor/Resources/ScriptCore/Int/Debug
+ORigin-Editor/Resources/ScriptCore/
