@@ -237,7 +237,6 @@ namespace origin
 	{
 	public:
 		std::shared_ptr<Lighting> Light;
-
 		LightComponent() = default;
 		LightComponent(const LightComponent&) = default;
 	};

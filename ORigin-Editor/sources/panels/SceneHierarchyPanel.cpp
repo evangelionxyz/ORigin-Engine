@@ -65,6 +65,7 @@ namespace origin {
 
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
+		DeleteEntityTree(entity);
 		m_Context->DestroyEntity(entity);
 		m_SelectedEntity = {};
 	}
@@ -227,8 +228,7 @@ namespace origin {
 			if (ImGui::MenuItem("Delete"))
 			{
 				m_SelectedEntity = {};
-				DeleteEntityTree(entity);
-				m_Context->DestroyEntity(entity);
+				DestroyEntity(entity);
 			}
 			ImGui::EndPopup();
 		}

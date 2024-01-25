@@ -108,9 +108,7 @@ namespace origin {
 		bool m_SceneViewportHovered = false;
 		bool m_SceneViewportFocused = false;
 		bool VpMenuContextActive;
-
 		Entity m_HoveredEntity = {};
-		Entity m_SelectedEntity = {};
 
     friend class Gizmos;
     friend class SceneHierarchyPanel;

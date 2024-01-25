@@ -109,7 +109,6 @@ namespace origin {
 		  m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
 	  }
 
-	  m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
 	  m_Framebuffer->Bind();
 
 	  RenderCommand::Clear();
@@ -569,14 +568,17 @@ namespace origin {
 
 			float snapValue = 0.5f;
 			if (m_GizmosType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f;
+				snapValue = 15.0f;
+			else if (m_GizmosType == ImGuizmo::OPERATION::BOUNDS)
+				snapValue = 0.1f;
+				
 			float snapValues[] = { snapValue, snapValue, snapValue };
-
+			float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
+			bool boundSizing = m_GizmosType == ImGuizmo::OPERATION::BOUNDS;
 			bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
-
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				static_cast<ImGuizmo::OPERATION>(m_GizmosType), static_cast<ImGuizmo::MODE>(m_GizmosMode),
-				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
+				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -798,15 +800,17 @@ namespace origin {
 					}
 					ImGui::Separator();
 
-					ImGui::Text("3D"); ImGui::Separator();
-					if (ImGui::BeginMenu("MESH"))
+					if (ImGui::MenuItem("Lighting"))
 					{
-						if (ImGui::MenuItem("Empty Mesh"))
-						{
-							Entity entity = m_SceneHierarchy.GetContext()->CreateMesh("Empty Mesh");
-							m_SceneHierarchy.SetSelectedEntity(entity);
-						}
-						ImGui::EndMenu();
+						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Lighting");
+						entity.AddComponent<LightComponent>().Light = Lighting::Create(LightingType::Directional);
+						m_SceneHierarchy.SetSelectedEntity(entity);
+					}
+
+					if (ImGui::MenuItem("Empty Mesh"))
+					{
+						Entity entity = m_SceneHierarchy.GetContext()->CreateMesh("Empty Mesh");
+						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
 				}
 
@@ -814,19 +818,20 @@ namespace origin {
 				if (m_VpMenuContext == ViewportMenuContext::EntityProperties)
 				{
 					// Entity Properties
-					std::string name = "None";
-					m_SelectedEntity == m_SceneHierarchy.GetSelectedEntity() ?
-						name = m_SelectedEntity.GetComponent<TagComponent>().Tag : name;
-
-					ImGui::Text("%s", name.c_str());
-					ImGui::Separator();
-
-					if (ImGui::MenuItem("Delete"))
+					Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+					if (selectedEntity)
 					{
-						m_SelectedEntity = m_SceneHierarchy.GetSelectedEntity();
-						m_SceneHierarchy.DestroyEntity(m_SelectedEntity);
-						m_HoveredEntity = {};
+						auto& tag = selectedEntity.GetComponent<TagComponent>().Tag;
+						ImGui::Text("%s", tag.c_str());
+						ImGui::Separator();
+
+						if (ImGui::MenuItem("Delete"))
+						{
+							m_SceneHierarchy.SetSelectedEntity({});
+							m_SceneHierarchy.DestroyEntity(selectedEntity);
+						}
 					}
+					
 				}
 				ImGui::EndPopup();
 			}
@@ -1091,26 +1096,26 @@ namespace origin {
 	{
 		bool control = Input::IsKeyPressed(Key::LeftControl);
 
+		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
 		{
-			if (!ImGuizmo::IsOver() && !control || ImGuizmo::IsOver() && m_GizmosType == -1 && !control)
+			if (!ImGuizmo::IsOver() && !control)
 			{
-				if (m_HoveredEntity != m_SelectedEntity)
+				uint32_t handle = (uint32_t)(entt::entity)m_HoveredEntity;
+				bool handleValid = handle <= m_ActiveScene->m_EntityMap.size() - 1;
+
+				if (handleValid)
 				{
-					m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+					if (m_HoveredEntity != selectedEntity)
+						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 				}
-
-				if (!m_HoveredEntity || m_HoveredEntity == m_SelectedEntity)
+				else if (!handleValid && m_GizmosType != ImGuizmo::OPERATION::BOUNDS)
 				{
-					if(m_EditorCamera.GetProjectionType() == ProjectionType::Perspective)
-						m_SceneHierarchy.SetSelectedEntity({});
-
-					m_GizmosType = -1;
+					m_SceneHierarchy.SetSelectedEntity({});
 				}
 			}
 
-			// Changing Gizmo Type
-			if (!ImGuizmo::IsOver() && m_HoveredEntity == m_SelectedEntity && control)
+			if (!ImGuizmo::IsOver() && m_HoveredEntity == selectedEntity && control)
 			{
 				if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
 				{
@@ -1130,18 +1135,26 @@ namespace origin {
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
+		static bool mlDragging = false;
+
 		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY()};
 		const glm::vec2 delta = (mouse - m_InitialMousePosition);
 		m_InitialMousePosition = mouse;
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
+		uint32_t handle = (uint32_t)(entt::entity)m_HoveredEntity;
+		bool handleValid = handle <= m_ActiveScene->m_EntityMap.size() - 1;
+
+		if (mlDragging)
+			handleValid = true;
 
 		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
+			mlDragging = true;
 			float orthoSize = m_EditorCamera.GetOrthoSize();
 			float orthoScale = orthoSize / m_SceneViewportSize.y;
 
-			if (entity && m_SceneViewportHovered)
+			if (handleValid && entity && m_SceneViewportHovered)
 			{
 				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
 				{
@@ -1186,6 +1199,10 @@ namespace origin {
 				}
 			}
 		}
+		else
+		{
+			mlDragging = false;
+		}
 
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
@@ -1214,6 +1231,7 @@ namespace origin {
 		const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
 		ImGuiIO& io = ImGui::GetIO();
+		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
 		switch (e.GetKeyCode())
 		{
@@ -1233,10 +1251,10 @@ namespace origin {
 
 			case Key::F:
 			{
-				if (m_SelectedEntity && !io.WantTextInput)
+				if (selectedEntity && !io.WantTextInput)
 				{
-					auto translation = m_SelectedEntity.GetComponent<TransformComponent>().Translation;
-					m_EditorCamera.SetPosition(translation);
+					const auto& tc = selectedEntity.GetComponent<TransformComponent>();
+					m_EditorCamera.SetPosition(tc.Translation);
 				}
 				break;
 			}
@@ -1277,6 +1295,13 @@ namespace origin {
 			{
 				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
 					m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
+				break;
+			}
+
+			case Key::Y:
+			{
+				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+					m_GizmosType = ImGuizmo::OPERATION::BOUNDS;
 				break;
 			}
 

@@ -21,7 +21,6 @@ namespace origin {
 				case LightingType::Directional: return "DIRECTIONAL";
 				default: return "";
 			}
-
 			return "Invalid Type";
 		}
 
@@ -30,7 +29,6 @@ namespace origin {
 			if(type == "SPOT") return LightingType::Spot;
 			if(type == "POINT") return LightingType::Point;
 			if(type == "DIRECTIONAL") return LightingType::Directional;
-
 			return LightingType::None;
 		}
 	}
