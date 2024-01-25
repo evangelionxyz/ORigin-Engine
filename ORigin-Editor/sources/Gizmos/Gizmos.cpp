@@ -115,7 +115,6 @@ namespace origin {
 
 	void Gizmos::DrawOverlay(const EditorCamera& camera)
 	{
-
 		Renderer3D::Begin(camera);
 		auto& scene = EditorLayer::Get().m_ActiveScene;
 
@@ -167,8 +166,24 @@ namespace origin {
 
 			Renderer3D::End();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
 
+
+			Renderer2D::Begin(camera);
+			const auto& sprite2d = scene->GetAllEntitiesWith<TransformComponent, SpriteRenderer2DComponent>();
+			for (auto e : sprite2d)
+			{
+				auto& tc = sprite2d.get<TransformComponent>(e);
+				Renderer2D::DrawRect(tc.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+			}
+
+			const auto& circle2d = scene->GetAllEntitiesWith<TransformComponent, SpriteRenderer2DComponent>();
+			for (auto e : circle2d)
+			{
+				auto& tc = circle2d.get<TransformComponent>(e);
+				Renderer2D::DrawCircle(tc.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
+			}
+			Renderer2D::End();
+		}
 	}
 
 	void Gizmos::DrawIcons(const EditorCamera & camera)

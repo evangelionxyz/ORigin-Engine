@@ -1,7 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-
 #include "SceneSerializer.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Project/Project.h"
@@ -9,14 +8,11 @@
 #include "Origin/Renderer/Shader.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Audio/Audio.h"
-
 #include "Entity.h"
 #include "Lighting.h"
 #include "Components.h"
-
 #include <fstream>
 #include <yaml-cpp/yaml.h>
-
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Asset/AssetManager.h"
 

@@ -12,11 +12,23 @@ namespace origin
 	class Input
 	{
 	public:
-		static bool IsKeyPressed(const KeyCode keycode);
-		static bool IsMouseButtonPressed(const MouseCode button);
-		static glm::vec2 GetMousePosition();
-		static float GetMouseX();
-		static float GetMouseY();
-		static void SetMousePosition(float x, float y);
+		Input();
+
+		bool IsKeyPressed(const KeyCode keycode);
+		bool IsMouseButtonPressed(const MouseCode button);
+		bool IsMouseDragging();
+
+		const glm::vec2 GetDeltaMouse();
+		glm::vec2 GetMousePosition();
+		float GetMouseX();
+		float GetMouseY();
+		void SetMousePosition(float x, float y);
+
+		static Input& Get() { return *s_Instance; }
+
+	private:
+		bool m_IsMouseDragging = false;
+		glm::vec2 m_MouseInitialPosition = glm::vec2(0.0f);
+		static Input* s_Instance;
 	};
 }

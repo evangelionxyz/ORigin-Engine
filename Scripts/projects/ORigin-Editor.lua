@@ -59,6 +59,8 @@ defines {
     "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
 }
 
+linkoptions { "/ignore:4099,4006" }
+
 filter "system:windows"
     systemversion "latest"
     postbuildcommands {

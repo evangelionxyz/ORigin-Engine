@@ -32,7 +32,6 @@ namespace origin {
 	struct ApplicationSpecification
 	{
 		ApplicationCommandLineArgs CommandLineArgs;
-
 		std::string Name = "ORigin Application";
 		std::string IconPath = "Resources/UITextures/icon_origin.png";
 		std::string WorkingDirectory;
@@ -44,44 +43,33 @@ namespace origin {
 	{
 	public:
 		Application(const ApplicationSpecification& spec);
-
 		virtual ~Application();
-
 		void OnEvent(Event& e);
 		void Run();
 		void Close() { m_Window->SetClose(true); }
-
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
-
-		bool SetVSync;
-
+		void SubmitToMainThread(const std::function<void()>& function);
 		inline static Application& Get() { return *s_Instance; }
 		inline bool GetMinimized() { return m_Minimized; }
 		inline Window& GetWindow() { return *m_Window.get(); }
 		const ApplicationSpecification& GetSpecification() const { return m_Spec; }
 		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
-
-		void SubmitToMainThread(const std::function<void()>& function);
+		bool SetVSync = false;
 
 	private:
-
-		std::unique_ptr<GraphicsContext> m_GraphicContext;
-
 		ApplicationSpecification m_Spec;
-		static Application* s_Instance;
-		bool OnWindowClose(WindowCloseEvent& e);
-		bool OnWindowResize(WindowResizeEvent& e);
-
-		void ExecuteMainThreadQueue();
-
-		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer, *m_SplashScreenGui;
-
+		std::unique_ptr<Input> m_MainInputHandle;
+		std::unique_ptr<GraphicsContext> m_GraphicContext;
+		static Application* s_Instance;
+		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
+		void ExecuteMainThreadQueue();
+		bool m_Minimized = false;
 		float m_LastFrame = 0.0f;
-
 		std::vector<std::function<void()>> m_MainThreadQueue;
 		std::mutex m_MainThreadMutex;
 	};

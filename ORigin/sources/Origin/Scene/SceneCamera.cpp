@@ -43,22 +43,25 @@ namespace origin
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		if (m_AspecRatioType == AspectRatioType::Free)
+		switch (m_AspecRatioType)
 		{
+		case origin::SceneCamera::AspectRatioType::Free:
 			m_ViewportSize.x = static_cast<float>(width);
 			m_ViewportSize.y = static_cast<float>(height);
+			m_AspectRatio = m_ViewportSize.x / m_ViewportSize.y;
+			break;
+		case origin::SceneCamera::AspectRatioType::SixteenByNine:
+			m_AspectRatio = 16.0f / 9.0f;
+			break;
+		case origin::SceneCamera::AspectRatioType::SixteenByTen:
+			m_AspectRatio = 16.0f / 10.0f;
+			break;
+		case origin::SceneCamera::AspectRatioType::FourByThree:
+			m_AspectRatio = 4.0f / 3.0f;
+			break;
+		case origin::SceneCamera::AspectRatioType::TwentyOneByNine:
+			m_AspectRatio = 21.0f / 9.0f;
 		}
-
-		else if(m_AspecRatioType == AspectRatioType::SixteenByNine)
-		{
-			// width = 1280
-			// height = width / 16 * 9
-
-			m_ViewportSize.x = static_cast<float>(width);
-			m_ViewportSize.y = static_cast<float>(width / 16.0f * 9.0f);
-		}
-
-		m_AspectRatio = m_ViewportSize.x / m_ViewportSize.y;
 
 		RecalculateProjection();
 	}

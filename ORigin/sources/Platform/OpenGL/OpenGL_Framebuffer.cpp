@@ -2,8 +2,9 @@
 
 #include "pch.h"
 #include "OpenGL_Framebuffer.h"
-
 #include <glad/glad.h>
+
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 

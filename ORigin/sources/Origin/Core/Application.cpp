@@ -92,6 +92,8 @@ namespace origin {
 			m_Window->Decorated(true);
 			m_Window->SetSize(1280, 640);
 		}
+
+		m_MainInputHandle = std::make_unique<Input>();
 	}
 
 	Application::~Application()
@@ -110,7 +112,7 @@ namespace origin {
 
 		while (m_Window->Loop())
 		{
-			float time = static_cast<float>(glfwGetTime());
+			double time = glfwGetTime();
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
 			timestep.SetDeltaTime(m_LastFrame);

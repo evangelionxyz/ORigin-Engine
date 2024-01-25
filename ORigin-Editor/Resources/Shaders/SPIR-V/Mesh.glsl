@@ -69,16 +69,8 @@ layout(std140, binding = 4) uniform MaterialBuffer
 	float Roughness;
 } Material;
 
-layout(std140, binding = 5) uniform HDRBuffer
-{
-	vec2 TexCoord;
-	float Exposure;
-} HDR;
-
-
 layout(location = 0) out vec4 oColor;
-layout(location = 1) out vec4 oHDRColor;
-layout(location = 2) out int oEntityID;
+layout(location = 1) out int oEntityID;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
@@ -109,8 +101,6 @@ void main()
 
 	vec3 result = vec3(1.0) - exp(-finalColor * 2.0);
   result = pow(result, vec3(1.0 / gamma));
-	oHDRColor = vec4(result, 1.0);
-
 	oEntityID = EntityID;
 }
 

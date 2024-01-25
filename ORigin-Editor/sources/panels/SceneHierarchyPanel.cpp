@@ -13,7 +13,6 @@
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Scene\Lighting.h"
-
 #include <glm\gtc\type_ptr.hpp>
 #include <misc\cpp\imgui_stdlib.h>
 
@@ -461,12 +460,12 @@ namespace origin {
 			ImGui::EndCombo();
 		}
 
-		const char* aspectRatioType[2] = { "Free", "16/9" };
+		const char* aspectRatioType[5] = { "Free", "16/10", "16/9", "21/9", "4/3" };
 		const char* currentAspectRatioType = aspectRatioType[static_cast<int>(camera.GetAspectRatioType())];
 		
 		if (ImGui::BeginCombo("Aspect Ratio", currentAspectRatioType))
 		{
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 5; i++)
 			{
 				isSelected = currentAspectRatioType == aspectRatioType[i];
 				if (ImGui::Selectable(aspectRatioType[i], isSelected))

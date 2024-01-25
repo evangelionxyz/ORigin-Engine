@@ -54,7 +54,6 @@ namespace origin {
 	  mainFramebufferSpec.Attachments =
 	  {
 		  FramebufferTextureFormat::RGBA8,
-		  FramebufferTextureFormat::RGBA8,
 		  FramebufferTextureFormat::RED_INTEGER,
 		  FramebufferTextureFormat::DEPTH24STENCIL8
 	  };
@@ -87,36 +86,40 @@ namespace origin {
       dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
   }
 
-  void EditorLayer::OnUpdate(Timestep deltaTime)
+  void EditorLayer::OnUpdate(Timestep ts)
   {
 	  Renderer2D::ResetStats();
 	  Renderer3D::ResetStats();
 
-	  InputProcedure(deltaTime);
+	  InputProcedure(ts);
 
-	  m_Time += deltaTime.Seconds();
+	  m_Time += ts.Seconds();
 	  const bool enableCamera = !ImGuizmo::IsUsing() && !ImGui::GetIO().WantTextInput && Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
 	  m_EditorCamera.EnableMovement(enableCamera);
-
 		m_ActiveScene->OnShadowRender();
 
-	  // Resize
-	  if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-		  m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
-	  {
-		  m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-		  m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-		  m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-	  }
+		switch (m_SceneState)
+		{
+		case origin::EditorLayer::SceneState::Edit:
+		case origin::EditorLayer::SceneState::Simulate:
+			if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+				m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
+			{
+				m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+				m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+				m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+			}
+			break;
+		case origin::EditorLayer::SceneState::Play:
+			m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+			break;
+		}
 
 	  m_Framebuffer->Bind();
-
 	  RenderCommand::Clear();
 	  RenderCommand::ClearColor(clearColor);
-	  m_Framebuffer->ClearAttachment(2, -1);
-
-	  Draw(deltaTime);
-
+	  m_Framebuffer->ClearAttachment(1, -1);
+	  Draw(ts);
 	  auto [mx, my] = ImGui::GetMousePos();
 	  glm::vec2 mousePos = { mx, my };
 	  mousePos -= m_SceneViewportBounds[0];
@@ -125,10 +128,8 @@ namespace origin {
 	  mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
 	  mouseX = static_cast<int>(mousePos.x);
 	  mouseY = static_cast<int>(mousePos.y);
-
-	  m_PixelData = m_Framebuffer->ReadPixel(2, mouseX, mouseY);
+	  m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 	  m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-
 	  m_Framebuffer->Unbind();
   }
 
@@ -494,8 +495,7 @@ namespace origin {
 
 		ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
-		float sizeX = 0.0f, sizeY = 0.0f;
+		
 		if (m_SceneState == SceneState::Play)
 		{
 			auto& camView = m_ActiveScene->m_Registry.view<CameraComponent>();
@@ -505,40 +505,77 @@ namespace origin {
 
 				if (cc.Primary)
 				{
-					if (cc.Camera.GetAspectRatioType() == SceneCamera::AspectRatioType::SixteenByNine)
+					switch (cc.Camera.GetAspectRatioType())
 					{
+					case SceneCamera::AspectRatioType::TwentyOneByNine:
 						// keep the width and adjust the height to maintain 16:9 aspect ratio
-						sizeX = m_SceneViewportSize.x;
-						sizeY = sizeX / 16.0f * 9.0f;
+						m_GameViewportSizeX = m_SceneViewportSize.x;
+						m_GameViewportSizeY = m_GameViewportSizeX / 21.0f * 9.0f;
 
 						// if the calculated height is greater than the available height, adjust the width
-						if (sizeY > m_SceneViewportSize.y)
+						if (m_GameViewportSizeY > m_SceneViewportSize.y)
 						{
-							sizeY = m_SceneViewportSize.y;
-							sizeX = sizeY / 9.0f * 16.0f;
+							m_GameViewportSizeY = m_SceneViewportSize.y;
+							m_GameViewportSizeX = m_GameViewportSizeY / 9.0f * 21.0f;
 						}
-					}
-					else
-					{
-						sizeX = m_SceneViewportSize.x;
-						sizeY = m_SceneViewportSize.y;
+						break;
+					case SceneCamera::AspectRatioType::SixteenByNine:
+						// keep the width and adjust the height to maintain 16:9 aspect ratio
+						m_GameViewportSizeX = m_SceneViewportSize.x;
+						m_GameViewportSizeY = m_GameViewportSizeX / 16.0f * 9.0f;
+
+						// if the calculated height is greater than the available height, adjust the width
+						if (m_GameViewportSizeY > m_SceneViewportSize.y)
+						{
+							m_GameViewportSizeY = m_SceneViewportSize.y;
+							m_GameViewportSizeX = m_GameViewportSizeY / 9.0f * 16.0f;
+						}
+						break;
+					case SceneCamera::AspectRatioType::SixteenByTen:
+						// keep the width and adjust the height to maintain 16:9 aspect ratio
+						m_GameViewportSizeX = m_SceneViewportSize.x;
+						m_GameViewportSizeY = m_GameViewportSizeX / 16.0f * 10.0f;
+
+						// if the calculated height is greater than the available height, adjust the width
+						if (m_GameViewportSizeY > m_SceneViewportSize.y)
+						{
+							m_GameViewportSizeY = m_SceneViewportSize.y;
+							m_GameViewportSizeX = m_GameViewportSizeY / 10.0f * 16.0f;
+						}
+						break;
+					case SceneCamera::AspectRatioType::FourByThree:
+						// keep the width and adjust the height to maintain 16:9 aspect ratio
+						m_GameViewportSizeX = m_SceneViewportSize.x;
+						m_GameViewportSizeY = m_GameViewportSizeX / 4.0f * 3.0f;
+
+						// if the calculated height is greater than the available height, adjust the width
+						if (m_GameViewportSizeY > m_SceneViewportSize.y)
+						{
+							m_GameViewportSizeY = m_SceneViewportSize.y;
+							m_GameViewportSizeX = m_GameViewportSizeY / 3.0f * 4.0f;
+						}
+						break;
+					case SceneCamera::AspectRatioType::Free:
+						m_GameViewportSizeX = m_SceneViewportSize.x;
+						m_GameViewportSizeY = m_SceneViewportSize.y;
+						break;
 					}
 				}
 			}
 
 			// centered image position
-			float offsetX = (m_SceneViewportSize.x - sizeX) * 0.5f;
-			float offsetY = (m_SceneViewportSize.y - sizeY) * 0.5f;
+			float offsetX = (m_SceneViewportSize.x - m_GameViewportSizeX) * 0.5f;
+			float offsetY = (m_SceneViewportSize.y - m_GameViewportSizeY) * 0.5f;
 			ImGui::SetCursorPos({ offsetX, offsetY + 20.0f });
 		}
 		else
 		{
-			sizeX = m_SceneViewportSize.x;
-			sizeY = m_SceneViewportSize.y;
+			m_GameViewportSizeX = m_SceneViewportSize.x;
+			m_GameViewportSizeY = m_SceneViewportSize.y;
 		}
 
 		ImTextureID viewportID = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget));
-		ImGui::Image(viewportID, ImVec2(sizeX, sizeY), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image(viewportID, ImVec2(m_GameViewportSizeX, m_GameViewportSizeY), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -574,8 +611,12 @@ namespace origin {
 				
 			float snapValues[] = { snapValue, snapValue, snapValue };
 			float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-			bool boundSizing = m_GizmosType == ImGuizmo::OPERATION::BOUNDS;
-			bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
+			bool boundSizing = m_GizmosType == ImGuizmo::OPERATION::BOUNDS
+				&& !entity.HasComponent<CameraComponent>()
+				&& !entity.HasComponent<LightComponent>()
+				&& !entity.HasComponent<AudioComponent>();
+
+			bool snap = Input::Get().IsKeyPressed(KeyCode(Key::LeftShift));
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				static_cast<ImGuizmo::OPERATION>(m_GizmosType), static_cast<ImGuizmo::MODE>(m_GizmosMode),
 				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
@@ -590,7 +631,7 @@ namespace origin {
 				tc.Scale = scale;
 			}
 
-			if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
+			if (ImGui::IsWindowFocused() && Input::Get().IsKeyPressed(Key::Escape))
 				m_GizmosType = -1;
 		}
 
@@ -1094,24 +1135,26 @@ namespace origin {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		bool control = Input::IsKeyPressed(Key::LeftControl);
+		bool control = Input::Get().IsKeyPressed(Key::LeftControl);
 
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+
 		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
 		{
 			if (!ImGuizmo::IsOver() && !control)
 			{
 				uint32_t handle = (uint32_t)(entt::entity)m_HoveredEntity;
-				bool handleValid = handle <= m_ActiveScene->m_EntityMap.size() - 1;
+				bool handleValid = handle <= m_ActiveScene->m_EntityMap.size();
 
 				if (handleValid)
 				{
 					if (m_HoveredEntity != selectedEntity)
 						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
 				}
-				else if (!handleValid && m_GizmosType != ImGuizmo::OPERATION::BOUNDS)
+				else if (!handleValid)
 				{
 					m_SceneHierarchy.SetSelectedEntity({});
+					m_GizmosType = -1;
 				}
 			}
 
@@ -1135,26 +1178,16 @@ namespace origin {
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
-		static bool mlDragging = false;
-
-		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY()};
-		const glm::vec2 delta = (mouse - m_InitialMousePosition);
-		m_InitialMousePosition = mouse;
+		auto delta = Input::Get().GetDeltaMouse();
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
-		uint32_t handle = (uint32_t)(entt::entity)m_HoveredEntity;
-		bool handleValid = handle <= m_ActiveScene->m_EntityMap.size() - 1;
 
-		if (mlDragging)
-			handleValid = true;
-
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
-			mlDragging = true;
 			float orthoSize = m_EditorCamera.GetOrthoSize();
 			float orthoScale = orthoSize / m_SceneViewportSize.y;
 
-			if (handleValid && entity && m_SceneViewportHovered)
+			if (entity && m_SceneViewportHovered)
 			{
 				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
 				{
@@ -1175,12 +1208,12 @@ namespace origin {
 					else
 					{
 						float snapSize = 0.5f;
-						if (Input::IsKeyPressed(Key::LeftShift))
+						if (Input::Get().IsKeyPressed(Key::LeftShift))
 						{
 							translate.x += delta.x * orthoScale;
 							translate.y -= delta.y * orthoScale;
 
-							if (Input::IsKeyPressed(Key::LeftControl))
+							if (Input::Get().IsKeyPressed(Key::LeftControl))
 								snapSize = 0.1f;
 
 							tc.Translation.x = round(translate.x / snapSize) * snapSize;
@@ -1199,12 +1232,8 @@ namespace origin {
 				}
 			}
 		}
-		else
-		{
-			mlDragging = false;
-		}
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
 		{
 			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
 			else if (lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;
@@ -1227,8 +1256,8 @@ namespace origin {
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		auto& app = Application::Get();
-		const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		const bool control = Input::Get().IsKeyPressed(Key::LeftControl) || Input::Get().IsKeyPressed(Key::RightControl);
+		const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
 
 		ImGuiIO& io = ImGui::GetIO();
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();

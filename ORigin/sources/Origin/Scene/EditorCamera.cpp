@@ -1,23 +1,19 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #include "pch.h"
 #include "EditorCamera.h"
-
 #include "Origin\Core\Application.h"
-
 #include "Origin/IO/Input.h"
 #include "Origin/IO/KeyCodes.h"
 #include "Origin/IO/MouseCodes.h"
 #include "Origin/Scene/Components.h"
 #include "Origin/Scene/Entity.h"
-
 #include <glfw/glfw3.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
-
 #include <algorithm>
+
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 
@@ -42,13 +38,13 @@ namespace origin {
 		UpdateView();
 	}
 
-	void EditorCamera::UpdateAudioListener(float deltaTime)
+	void EditorCamera::UpdateAudioListener(Timestep ts)
 	{
 		static glm::vec3 prevPos = GetPosition();
 		const glm::vec3& position = GetPosition();
 		const glm::vec3 delta = position - prevPos;
 		prevPos = position;
-		glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+		glm::vec3 velocity = (position - prevPos) / glm::vec3((float)ts);
 
 		m_AudioListener.Set(GetPosition(), velocity, GetForwardDirection(), GetUpDirection());
 	}
@@ -144,41 +140,39 @@ namespace origin {
 		return 0.8f;
 	}
 
-	void EditorCamera::OnUpdate(float deltaTime)
+	void EditorCamera::OnUpdate(Timestep ts)
 	{
-		m_DeltaTime = deltaTime;
-
-		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
+		const glm::vec2 mouse{ Input::Get().GetMouseX(), Input::Get().GetMouseY() };
 		const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 		m_InitialMousePosition = mouse;
 
 		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
 		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonRight)
-			|| Input::IsMouseButtonPressed(Mouse::ButtonMiddle)
-			/*|| Input::IsMouseButtonPressed(Mouse::ButtonLeft)*/)
+		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight)
+			|| Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle)
+			/*|| Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft)*/)
 		{
 			if (mouse.x > wWidth - 2.0f)
 			{
 				m_InitialMousePosition.x = 2.0f;
-				Input::SetMousePosition(2.0f, mouse.y);
+				Input::Get().SetMousePosition(2.0f, mouse.y);
 			}
 			else if (mouse.x < 2.0f)
 			{
 				m_InitialMousePosition.x = wWidth - 2.0f;
-				Input::SetMousePosition(wWidth - 2.0f, mouse.y);
+				Input::Get().SetMousePosition(wWidth - 2.0f, mouse.y);
 			}
 
 			if (mouse.y > wHeight - 2.0f)
 			{
 				m_InitialMousePosition.y = 2.0f;
-				Input::SetMousePosition(mouse.x, 2.0f);
+				Input::Get().SetMousePosition(mouse.x, 2.0f);
 			}
 			else if (mouse.y < 2.0f)
 			{
 				m_InitialMousePosition.y = wHeight - 2.0f;
-				Input::SetMousePosition(mouse.x, wHeight - 2.0f);
+				Input::Get().SetMousePosition(mouse.x, wHeight - 2.0f);
 			}
 		}
 
@@ -192,9 +186,9 @@ namespace origin {
 				switch (m_CameraStyle)
 				{
 				case CameraStyle::Pivot:
-					if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && !Input::Get().IsKeyPressed(Key::LeftControl))
 						MouseRotate(delta);
-					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
 						MousePan(delta);
 
 					m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, 0.8f);
@@ -202,31 +196,31 @@ namespace origin {
 					break;
 
 				case CameraStyle::FreeMove:
-					if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
 						MouseRotate(delta);
-					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
 						MousePan(delta);
 
-					if (Input::IsKeyPressed(Key::A))
+					if (Input::Get().IsKeyPressed(Key::A))
 						velocity -= GetRightDirection();
-					else if (Input::IsKeyPressed(Key::D))
+					else if (Input::Get().IsKeyPressed(Key::D))
 						velocity += GetRightDirection();
-					if (Input::IsKeyPressed(Key::W))
+					if (Input::Get().IsKeyPressed(Key::W))
 						velocity += GetForwardDirection();
-					else if (Input::IsKeyPressed(Key::S))
+					else if (Input::Get().IsKeyPressed(Key::S))
 						velocity -= GetForwardDirection();
 
-					if (Input::IsKeyPressed(Key::A) || Input::IsKeyPressed(Key::S) || Input::IsKeyPressed(Key::D) || Input::IsKeyPressed(Key::W))
-						m_MoveSpeed += deltaTime * 2.0f;
+					if (Input::Get().IsKeyPressed(Key::A) || Input::Get().IsKeyPressed(Key::S) || Input::Get().IsKeyPressed(Key::D) || Input::Get().IsKeyPressed(Key::W))
+						m_MoveSpeed += ts * 2.0f;
 					else
-						m_MoveSpeed -= deltaTime * 2.0f;
+						m_MoveSpeed -= ts * 2.0f;
 
 					if (m_MoveSpeed <= 2.0f)
 						m_MoveSpeed = 2.0f;
 					else if (m_MoveSpeed >= 20.0f)
 						m_MoveSpeed = 20.0f;
 
-					m_Position = glm::lerp(m_Position, m_Position + velocity, deltaTime * m_MoveSpeed);
+					m_Position = glm::lerp(m_Position, m_Position + velocity, (float)ts.DeltaTime() * m_MoveSpeed);
 					lastPosition = m_Position;
 
 					m_Distance = 5.0f;
@@ -236,7 +230,7 @@ namespace origin {
 			}
 			else if (m_ProjectionType == ProjectionType::Orthographic)
 			{
-				if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
+				if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
 					MousePan(delta);
 
 				lastPosition = m_Position;

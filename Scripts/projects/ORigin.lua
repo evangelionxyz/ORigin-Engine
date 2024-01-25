@@ -81,6 +81,7 @@ links {
 filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
 flags { "NoPCH" }
 
+linkoptions { "/ignore:4099,4006" }
 
 filter "system:windows"
 systemversion "latest"

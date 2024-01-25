@@ -12,6 +12,8 @@
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
+
 namespace origin {
 
   namespace Utils{

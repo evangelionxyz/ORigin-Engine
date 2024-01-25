@@ -8,17 +8,18 @@ namespace origin
 	class Timestep
 	{
 	public:
-		Timestep(float time = 0.0f) : m_Time(time), m_DeltaTime(0.0f)
-		{
+		Timestep(double time = 0.0)
+			: m_Time(time), m_DeltaTime(0.0)
+{
 			s_Instance = this;
 		}
 
-		operator float() const { return m_Time; }
-		static float Seconds() { return s_Instance->m_Time; }
-		static float MilliSeconds() { return s_Instance->m_Time * 1000.0f; }
-		static float DeltaTime() { return s_Instance->m_DeltaTime; }
+		operator double() const { return m_Time; }
+		static double Seconds() { return s_Instance->m_Time; }
+		static double MilliSeconds() { return s_Instance->m_Time * 1000.0; }
+		static double DeltaTime() { return s_Instance->m_DeltaTime; }
 
-		void SetDeltaTime(float deltaTime)
+		void SetDeltaTime(double deltaTime)
 		{
 			m_DeltaTime = deltaTime;
 		}
@@ -27,8 +28,8 @@ namespace origin
 
 	private:
 		static Timestep* s_Instance;
-		float m_Time;
-		float m_DeltaTime;
+		double m_Time;
+		double m_DeltaTime;
 	};
 
 	class Timer
@@ -43,14 +44,14 @@ namespace origin
 			m_Start = std::chrono::high_resolution_clock::now();
 		}
 
-		float Timer::Elapsed()
+		double Timer::Elapsed()
 		{
-			return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
+			return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001 * 0.001 * 0.001;
 		}
 
-		float Timer::ElapsedMillis()
+		double Timer::ElapsedMillis()
 		{
-			return Elapsed() * 1000.0f;
+			return Elapsed() * 1000.0;
 		}
 
 	private:

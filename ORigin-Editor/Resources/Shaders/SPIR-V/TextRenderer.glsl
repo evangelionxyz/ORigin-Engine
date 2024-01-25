@@ -1,6 +1,5 @@
 // type vertex
 #version 450 core
-
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec4 a_Color;
 layout(location = 2) in vec2 a_TexCoord;
@@ -37,8 +36,7 @@ void main()
 // type fragment
 #version 450 core
 layout(location = 0) out vec4 oColor;
-layout(location = 1) out vec4 oHDRColor;
-layout(location = 2) out int oEntityID;
+layout(location = 1) out int oEntityID;
 
 struct VertexOutput
 {
@@ -54,13 +52,13 @@ layout (binding = 0) uniform sampler2D u_FontAtlases[32];
 
 float screenPxRange(sampler2D atlas) {
 	const float pxRange = 2.0; // set to distance field's pixel range
-    vec2 unitRange = vec2(pxRange)/vec2(textureSize(atlas, 0));
-    vec2 screenTexSize = vec2(1.0)/fwidth(Input.TexCoord);
-    return max(0.5*dot(unitRange, screenTexSize), 1.0);
+  vec2 unitRange = vec2(pxRange)/vec2(textureSize(atlas, 0));
+  vec2 screenTexSize = vec2(1.0)/fwidth(Input.TexCoord);
+  return max(0.5*dot(unitRange, screenTexSize), 1.0);
 }
 
 float median(float r, float g, float b) {
-    return max(min(r, g), min(max(r, g), b));
+   return max(min(r, g), min(max(r, g), b));
 }
 
 void main()
@@ -106,7 +104,7 @@ void main()
 	}
 
     
-    float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+  float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
 	if (opacity == 0.0)
 		discard;
 

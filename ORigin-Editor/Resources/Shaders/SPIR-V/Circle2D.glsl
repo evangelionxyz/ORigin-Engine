@@ -39,7 +39,6 @@ void main()
 // type fragment
 #version 450 core
 layout(location = 0) out vec4 oColor;
-layout(location = 1) out vec4 oHDRColor;
 layout(location = 2) out int oEntityID;
 
 struct Vertex
@@ -56,14 +55,14 @@ layout (location = 4) in flat int v_EntityID;
 void main()
 {
 	// Calculate distance and fill circle with white
-    float distance = 1.0 - length(inVertex.LocalPosition);
-    float circle = smoothstep(0.0, inVertex.Fade, distance);
-    circle *= smoothstep(inVertex.Thickness + inVertex.Fade, inVertex.Thickness, distance);
+  float distance = 1.0 - length(inVertex.LocalPosition);
+  float circle = smoothstep(0.0, inVertex.Fade, distance);
+  circle *= smoothstep(inVertex.Thickness + inVertex.Fade, inVertex.Thickness, distance);
 
 	if (circle == 0.0) discard;
 
-    // Set output color
-    oColor = inVertex.Color;
+  // Set output color
+  oColor = inVertex.Color;
 	oColor.a *= circle;
 
 	oEntityID = v_EntityID;

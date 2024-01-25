@@ -6,6 +6,13 @@
 
 namespace origin
 {
+	Input* Input::s_Instance = nullptr;
+
+	Input::Input()
+	{
+		s_Instance = this;
+	}
+
 	bool Input::IsKeyPressed(const KeyCode keycode)
 	{
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -17,7 +24,22 @@ namespace origin
 	{
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		int state = glfwGetMouseButton(window, static_cast<int32_t>(button));
+		m_IsMouseDragging = state == GLFW_PRESS;
 		return state == GLFW_PRESS;
+	}
+
+	bool Input::IsMouseDragging()
+	{
+		return m_IsMouseDragging;
+	}
+
+	const glm::vec2 Input::GetDeltaMouse()
+	{
+		glm::vec2 mouse{ Input::GetMouseX(), Input::GetMouseY() };
+		glm::vec2 delta = (mouse - m_MouseInitialPosition);
+		m_MouseInitialPosition = mouse;
+
+		return delta;
 	}
 
 	glm::vec2 Input::GetMousePosition()
@@ -25,7 +47,6 @@ namespace origin
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-
 		return { (float)xpos, (float)ypos };
 	}
 

@@ -102,6 +102,7 @@ namespace origin {
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;
 		float cameraYaw = 0.0f, cameraPitch = 0.0f;
+		float m_GameViewportSizeX = 0.0f, m_GameViewportSizeY = 0.0f;
 		float m_Time = 0.0f;
 		bool drawLineMode = false;
 		bool m_VisualizeCollider = true;

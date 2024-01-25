@@ -6,7 +6,6 @@
 #include "Origin/Audio/Audio.h"
 #include "Scene.h"
 #include "ScriptableEntity.h"
-
 #include "Origin/Animation/Animation.h"
 #include "origin/Physics/Contact2DListener.h"
 #include "Origin/Physics/Physics2D.h"
@@ -15,8 +14,9 @@
 #include "Origin/Renderer/Renderer3D.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
-
 #include <glm/glm.hpp>
+
+#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin
 {
@@ -249,8 +249,8 @@ namespace origin
 		}
 
 		// Rendering
-		const auto& cameraView = m_Registry.view<CameraComponent, TransformComponent>();
-		for (const auto entity : cameraView)
+		auto& cameraView = m_Registry.view<CameraComponent, TransformComponent>();
+		for (auto entity : cameraView)
 		{
 			auto& [tc, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
@@ -849,19 +849,16 @@ namespace origin
 
 	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
 	{
-		if (m_ViewportHeight == height && m_ViewportWidth == width)
-			return;
-
-		m_ViewportWidth = width;
-		m_ViewportHeight = height;
-
 		const auto& view = m_Registry.view<CameraComponent>();
 		for (auto& e : view)
 		{
 			auto& cc = view.get<CameraComponent>(e);
-			if (cc.Camera.GetAspectRatioType() == SceneCamera::AspectRatioType::Free)
+			if(cc.Primary)
 				cc.Camera.SetViewportSize(width, height);
 		}
+
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
 	}
 	
 	void Scene::Step(int frames)

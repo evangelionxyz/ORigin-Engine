@@ -38,10 +38,9 @@ void main()
 }
 
 // type fragment
-#version 450 
+#version 450 core
 layout(location = 0) out vec4 oColor;
-layout(location = 1) out vec4 oHDRColor;
-layout(location = 2) out int oEntityID;
+layout(location = 1) out int oEntityID;
 
 struct Vertex
 {
