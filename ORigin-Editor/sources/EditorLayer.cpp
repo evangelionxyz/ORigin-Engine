@@ -68,7 +68,7 @@ namespace origin {
 	  m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
 	  m_ActiveScene = std::make_shared<Scene>();
-	  const auto commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+	  const auto& commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 	  if (commandLineArgs.Count > 1)
 	  {
 		  m_ProjectDirectoryPath = commandLineArgs[1];
@@ -567,9 +567,16 @@ namespace origin {
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
+			float snapValue = 0.5f;
+			if (m_GizmosType == ImGuizmo::OPERATION::ROTATE)
+				snapValue = 45.0f;
+			float snapValues[] = { snapValue, snapValue, snapValue };
+
+			bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
+
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				static_cast<ImGuizmo::OPERATION>(m_GizmosType), static_cast<ImGuizmo::MODE>(m_GizmosMode),
-				glm::value_ptr(transform), snapValues);
+				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{

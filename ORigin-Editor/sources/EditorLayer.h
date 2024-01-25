@@ -101,7 +101,6 @@ namespace origin {
 		int m_GizmosMode = 0;
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;
-		float snapValues[3] = { 0.5f, 0.5f, 0.5f };
 		float cameraYaw = 0.0f, cameraPitch = 0.0f;
 		float m_Time = 0.0f;
 		bool drawLineMode = false;
