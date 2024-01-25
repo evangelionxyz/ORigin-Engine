@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
-
 #include "EditorLayer.h"
 #include "Gizmos/Gizmos.h"
 #include "Origin/EntryPoint.h"
@@ -8,26 +7,19 @@
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Renderer/Font.h"
 #include "Origin/Asset/AssetManager.h"
-
 #include "Origin/Audio/Audio.h"
 #include "Origin/Utils/Utils.h"
-
 #include "Origin/Asset/AssetImporter.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 #include <filesystem>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
-
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
-
-	float snapValues[3] = { 0.5f, 0.5f, 0.5f };
 
   EditorLayer* EditorLayer::s_Instance = nullptr;
 
