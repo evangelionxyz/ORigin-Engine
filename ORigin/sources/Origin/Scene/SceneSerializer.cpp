@@ -1026,42 +1026,45 @@ namespace origin
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
 						OGN_CORE_ASSERT(entityClass, "Entity Class is Invalid");
 
-						const auto& fields = entityClass->GetFields();
-						auto& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
-
-						for (auto scriptField : scriptFields)
+						if (entityClass)
 						{
-							auto name = scriptField["Name"].as<std::string>();
-							auto typeString = scriptField["Type"].as<std::string>();
-							ScriptFieldType type = Utils::ScriptFieldTypeFromString(typeString);
+							const auto& fields = entityClass->GetFields();
+							auto& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
 
-							ScriptFieldInstance& fieldInstance = entityFields[name];
-
-							// for Log in editor
-							OGN_CORE_ASSERT(fields.find(name) != fields.end(), "Script Fields Not Found");
-							if (fields.find(name) == fields.end())
-								continue;
-
-							fieldInstance.Field = fields.at(name);
-
-							switch (type)
+							for (auto scriptField : scriptFields)
 							{
-							READ_FIELD_TYPE(Float, float);
-							READ_FIELD_TYPE(Double, double);
-							READ_FIELD_TYPE(Bool, bool);
-							READ_FIELD_TYPE(Char, char);
-							READ_FIELD_TYPE(Byte, int8_t);
-							READ_FIELD_TYPE(Short, int16_t);
-							READ_FIELD_TYPE(Int, int32_t);
-							READ_FIELD_TYPE(Long, int64_t);
-							READ_FIELD_TYPE(UByte, uint8_t);
-							READ_FIELD_TYPE(UShort, uint16_t);
-							READ_FIELD_TYPE(UInt, uint32_t);
-							READ_FIELD_TYPE(ULong, uint64_t);
-							READ_FIELD_TYPE(Vector2, glm::vec2);
-							READ_FIELD_TYPE(Vector3, glm::vec3);
-							READ_FIELD_TYPE(Vector4, glm::vec4);
-							READ_FIELD_TYPE(Entity, UUID);
+								auto name = scriptField["Name"].as<std::string>();
+								auto typeString = scriptField["Type"].as<std::string>();
+								ScriptFieldType type = Utils::ScriptFieldTypeFromString(typeString);
+
+								ScriptFieldInstance& fieldInstance = entityFields[name];
+
+								// for Log in editor
+								OGN_CORE_ASSERT(fields.find(name) != fields.end(), "Script Fields Not Found");
+								if (fields.find(name) == fields.end())
+									continue;
+
+								fieldInstance.Field = fields.at(name);
+
+								switch (type)
+								{
+									READ_FIELD_TYPE(Float, float);
+									READ_FIELD_TYPE(Double, double);
+									READ_FIELD_TYPE(Bool, bool);
+									READ_FIELD_TYPE(Char, char);
+									READ_FIELD_TYPE(Byte, int8_t);
+									READ_FIELD_TYPE(Short, int16_t);
+									READ_FIELD_TYPE(Int, int32_t);
+									READ_FIELD_TYPE(Long, int64_t);
+									READ_FIELD_TYPE(UByte, uint8_t);
+									READ_FIELD_TYPE(UShort, uint16_t);
+									READ_FIELD_TYPE(UInt, uint32_t);
+									READ_FIELD_TYPE(ULong, uint64_t);
+									READ_FIELD_TYPE(Vector2, glm::vec2);
+									READ_FIELD_TYPE(Vector3, glm::vec3);
+									READ_FIELD_TYPE(Vector4, glm::vec4);
+									READ_FIELD_TYPE(Entity, UUID);
+								}
 							}
 						}
 					}

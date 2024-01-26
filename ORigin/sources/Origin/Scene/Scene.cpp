@@ -220,7 +220,7 @@ namespace origin
 		m_Registry.destroy(entity);
 	}
 
-	void Scene::OnUpdateRuntime(Timestep deltaTime)
+	void Scene::OnUpdateRuntime(Timestep ts)
 	{
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
@@ -229,7 +229,7 @@ namespace origin
 			for (auto& e : scriptView)
 			{
 				Entity entity = {e, this};
-				ScriptEngine::OnUpdateEntity(entity, deltaTime);
+				ScriptEngine::OnUpdateEntity(entity, (float)ts.DeltaTime());
 			}
 
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -240,12 +240,12 @@ namespace origin
 					nsc.Instance->m_Entity = Entity{entity, this};
 					nsc.Instance->OnCreate();
 				}
-				nsc.Instance->OnUpdate(deltaTime);
+				nsc.Instance->OnUpdate(ts);
 			});
 
 			// Physics
-			m_PhysicsScene->Simulate(deltaTime);
-			m_Physics2D->Simulate(deltaTime);
+			m_PhysicsScene->Simulate(ts);
+			m_Physics2D->Simulate(ts);
 		}
 
 		// Rendering
@@ -264,7 +264,7 @@ namespace origin
 		// Particle Update
 		m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
 		{
-			pc.Particle.OnUpdate(deltaTime);
+			pc.Particle.OnUpdate(ts);
 		});
 
 		// Animation
@@ -273,7 +273,7 @@ namespace origin
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
 			if (ac.State.HasAnimations())
-				ac.State.GetAnimation().Update(deltaTime);
+				ac.State.GetAnimation().Update(ts);
 		}
 
 		glm::vec3 camVel(0.0f), camPos(0.0f);
@@ -303,7 +303,7 @@ namespace origin
 
 					prevPos = position;
 
-					glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
 					audio->Set3DAttributes(tc.Translation, velocity);
 					audio->UpdateDopplerEffect(camPos, camVel);
 				}
@@ -391,7 +391,7 @@ namespace origin
 		AudioEngine::SystemUpdate();
 	}
 
-	void Scene::OnUpdateSimulation(Timestep deltaTime, EditorCamera& editorCamera)
+	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& editorCamera)
 	{
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
@@ -401,7 +401,7 @@ namespace origin
 				for (const auto e : view)
 				{
 					Entity entity = {e, this};
-					ScriptEngine::OnUpdateEntity(entity, deltaTime);
+					ScriptEngine::OnUpdateEntity(entity, (float)ts.DeltaTime());
 				}
 
 				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -412,13 +412,13 @@ namespace origin
 						nsc.Instance->m_Entity = Entity{entity, this};
 						nsc.Instance->OnCreate();
 					}
-					nsc.Instance->OnUpdate(deltaTime);
+					nsc.Instance->OnUpdate(ts);
 				});
 			}
 
 			//Physics
-			m_PhysicsScene->Simulate(deltaTime);
-			m_Physics2D->Simulate(deltaTime);
+			m_PhysicsScene->Simulate(ts);
+			m_Physics2D->Simulate(ts);
 		}
 
 		// Render
@@ -427,7 +427,7 @@ namespace origin
 		{
 			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
 			{
-				pc.Particle.OnUpdate(deltaTime);
+				pc.Particle.OnUpdate(ts);
 			});
 		}
 
@@ -437,7 +437,7 @@ namespace origin
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
 			if (ac.State.HasAnimations())
-				ac.State.GetAnimation().Update(deltaTime);
+				ac.State.GetAnimation().Update(ts);
 		}
 
 		// Audio Update
@@ -461,7 +461,7 @@ namespace origin
 
 					prevPos = position;
 
-					glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
 					audio->Set3DAttributes(tc.Translation, velocity);
 					
 					audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
@@ -481,7 +481,7 @@ namespace origin
 				const glm::vec3& position = tc.Translation;
 				const glm::vec3 delta = position - prevPos;
 				prevPos = position;
-				glm::vec3 velocity = (position - prevPos) / glm::vec3(deltaTime);
+				glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
 
 				al.Listener.Set(tc.Translation, velocity, tc.GetForward(), tc.GetUp());
 			}
@@ -490,7 +490,7 @@ namespace origin
 		}
 
 		if (!isMainCameraListening)
-			editorCamera.UpdateAudioListener(deltaTime);
+			editorCamera.UpdateAudioListener(ts);
 
 		AudioEngine::SystemUpdate();
 	}

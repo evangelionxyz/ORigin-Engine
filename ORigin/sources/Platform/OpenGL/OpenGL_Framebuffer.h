@@ -32,7 +32,7 @@ namespace origin {
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
 	private:
-		uint32_t m_RendererID = 0;
+		uint32_t m_RendererID = 0, m_Renderbuffer = 0;
 		FramebufferSpecification m_Spec;
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
 		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;
