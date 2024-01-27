@@ -228,7 +228,7 @@ namespace origin
 			for (auto e : scriptView)
 			{
 				Entity entity = {e, this};
-				ScriptEngine::OnUpdateEntity(entity, (float)ts.DeltaTime());
+				ScriptEngine::OnUpdateEntity(entity, (float)ts);
 			}
 
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -400,7 +400,7 @@ namespace origin
 				for (const auto e : view)
 				{
 					Entity entity = {e, this};
-					ScriptEngine::OnUpdateEntity(entity, (float)ts.DeltaTime());
+					ScriptEngine::OnUpdateEntity(entity, (float)ts);
 				}
 
 				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)

@@ -14,6 +14,9 @@
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Scene\Lighting.h"
 
+#include "box2d\b2_revolute_joint.h"
+#include "box2d\b2_fixture.h"
+
 #include <glm\gtc\type_ptr.hpp>
 #include <misc\cpp\imgui_stdlib.h>
 
@@ -928,16 +931,28 @@ namespace origin {
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
 				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
-
 				glm::vec2 size = component.Size * glm::vec2(2.0f);
 				DrawVec2Control("Size", size, 0.01f, 0.5f);
 				component.Size = size / glm::vec2(2.0f);
 
 				float width = 118.0f;
-				DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width);
-				DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width);
-				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width);
-				DrawVecControl("Restitution Thrs", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width);
+				b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
+				if (DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+				{
+					if(fixture) fixture->SetDensity(component.Density);
+				}
+				if(DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
+				{
+					if(fixture) fixture->SetFriction(component.Friction);
+				}
+				if(DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
+				{
+					if(fixture) fixture->SetRestitution(component.Restitution);
+				}
+				if(DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
+				{
+					if(fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
+				}
 			});
 
 		DrawComponent<CircleCollider2DComponent>("CIRCLE COLLIDER 2D", entity, [](auto& component)
@@ -948,10 +963,23 @@ namespace origin {
 				DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
 
 				float width = 118.0f;
-				DrawVecControl("Density", &component.Density, 0.01f, 0.01f, 100.0f, 1.0f, width);
-				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, 100.0f, 0.0f, width);
-				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width);
-				DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width);
+				b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
+				if (DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+				{
+					if (fixture) fixture->SetDensity(component.Density);
+				}
+				if (DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
+				{
+					if (fixture) fixture->SetFriction(component.Friction);
+				}
+				if (DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
+				{
+					if (fixture) fixture->SetRestitution(component.Restitution);
+				}
+				if (DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
+				{
+					if (fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
+				}
 			});
 
 		DrawComponent<RevoluteJoint2DComponent>("REVOLUTE JOINT 2D", entity, [&](auto& component)
@@ -988,13 +1016,38 @@ namespace origin {
 					}
 				}
 
-				ImGui::Checkbox("Limit", &component.EnableLimit);
+				b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(component.Joint);
+				if (ImGui::Checkbox("Limit", &component.EnableLimit))
+				{
+					if (joint)
+						joint->EnableLimit(component.EnableLimit);
+				}
 				DrawVec2Control("Anchor", component.AnchorPoint);
-				DrawVecControl("Lower Angle", &component.LowerAngle, 0.0f);
-				DrawVecControl("Upper Angle", &component.UpperAngle, 0.0f);
-				DrawVecControl("Max Torque", &component.MaxMotorTorque, 0.0f);
-				ImGui::Checkbox("Motor", &component.EnableMotor);
-				DrawVecControl("Motor Speed", &component.MotorSpeed, 0.0f);
+				if (DrawVecControl("Lower Angle", &component.LowerAngle, 0.0f))
+				{
+					if (joint)
+						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
+				}
+				if (DrawVecControl("Upper Angle", &component.UpperAngle, 0.0f))
+				{
+					if (joint)
+						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
+				}
+				if (DrawVecControl("Max Torque", &component.MaxMotorTorque, 0.0f))
+				{
+					if (joint)
+						joint->SetMaxMotorTorque(component.MaxMotorTorque);
+				}
+				if (ImGui::Checkbox("Motor", &component.EnableMotor))
+				{
+					if (joint)
+						joint->EnableMotor(component.EnableMotor);
+				}
+				if (DrawVecControl("Motor Speed", &component.MotorSpeed, 0.0f))
+				{
+					if (joint)
+						joint->SetMotorSpeed(component.MotorSpeed);
+				}
 			});
 
 		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable

@@ -116,15 +116,6 @@ namespace origin {
 				tc.Translation.y = position.y;
 				tc.Rotation.z = body->GetAngle();
 			}
-
-			if (entity.HasComponent<RevoluteJoint2DComponent>())
-			{
-				auto& rjc = entity.GetComponent<RevoluteJoint2DComponent>();
-				b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(rjc.Joint);
-				if (joint)
-					joint->SetMotorSpeed(deltaTime);
-			}
-			
 		}
 	}
 
