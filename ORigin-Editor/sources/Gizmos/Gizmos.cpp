@@ -25,6 +25,7 @@ namespace origin {
 		DrawIcons(camera);
 		DrawOverlay(camera);
 	}
+
 	void Gizmos::Draw2DVerticalGrid(const EditorCamera& camera)
 	{
 		float orthoSize = camera.GetOrthoSize();
@@ -181,6 +182,17 @@ namespace origin {
 			{
 				auto& tc = circle2d.get<TransformComponent>(e);
 				Renderer2D::DrawCircle(tc.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
+			}
+
+			const auto& revoluteJoint2DView = scene->m_Registry.view<TransformComponent, RevoluteJoint2DComponent>();
+			for (auto e : revoluteJoint2DView)
+			{
+				auto& [tc, rjc] = revoluteJoint2DView.get<TransformComponent, RevoluteJoint2DComponent>(e);
+				glm::vec2 anchorPoint = glm::vec2(tc.Translation.x + rjc.AnchorPoint.x, tc.Translation.y + rjc.AnchorPoint.y);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(anchorPoint, tc.Translation.z + COLLIDER2D_ZOFFSET))
+					* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+
+				Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);
 			}
 			Renderer2D::End();
 		}

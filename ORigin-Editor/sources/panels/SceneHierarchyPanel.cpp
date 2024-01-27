@@ -13,6 +13,7 @@
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Scene\Lighting.h"
+
 #include <glm\gtc\type_ptr.hpp>
 #include <misc\cpp\imgui_stdlib.h>
 
@@ -190,8 +191,6 @@ namespace origin {
 			return;
 
 		bool node_open = ImGui::TreeNode((void*)(uint64_t)(uint32_t)entity, entity.GetTag().c_str());
-		if (ImGui::IsItemClicked())
-			m_SelectedEntity = entity;
 
 		if (ImGui::BeginDragDropSource())
 		{
@@ -208,6 +207,12 @@ namespace origin {
 				AddNodeChild(entity, src);
 			}
 			ImGui::EndDragDropTarget();
+		}
+
+		if (ImGui::IsItemHovered())
+		{
+			if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+				m_SelectedEntity = entity;
 		}
 
 		if (node_open)
@@ -347,6 +352,7 @@ namespace origin {
 
 			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
+			DisplayAddComponentEntry<RevoluteJoint2DComponent>("2D REVOLUTE JOINT");
 
 			ImGui::EndPopup();
 		}
@@ -945,7 +951,50 @@ namespace origin {
 				DrawVecControl("Density", &component.Density, 0.01f, 0.01f, 100.0f, 1.0f, width);
 				DrawVecControl("Friction", &component.Friction, 0.01f, 0.0f, 100.0f, 0.0f, width);
 				DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width);
-				DrawVecControl("Restitution Thrs", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.0f, width);
+				DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width);
+			});
+
+		DrawComponent<RevoluteJoint2DComponent>("REVOLUTE JOINT 2D", entity, [&](auto& component)
+			{
+				std::string label = "Connected Body";
+
+				if (component.ConnectedBodyID != 0)
+					label = "Connected";
+
+				ImGui::Button(label.c_str());
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+					{
+						OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+						Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
+						if (component.ConnectedBodyID == 0)
+						{
+							UUID uuid = src.GetUUID();
+							component.ConnectedBodyID = uuid;
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (component.ConnectedBodyID != 0)
+				{
+					ImGui::SameLine();
+					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+					{
+						component.ConnectedBodyID = 0;
+					}
+				}
+
+				ImGui::Checkbox("Limit", &component.EnableLimit);
+				DrawVec2Control("Anchor", component.AnchorPoint);
+				DrawVecControl("Lower Angle", &component.LowerAngle, 0.0f);
+				DrawVecControl("Upper Angle", &component.UpperAngle, 0.0f);
+				DrawVecControl("Max Torque", &component.MaxMotorTorque, 0.0f);
+				ImGui::Checkbox("Motor", &component.EnableMotor);
+				DrawVecControl("Motor Speed", &component.MotorSpeed, 0.0f);
 			});
 
 		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable

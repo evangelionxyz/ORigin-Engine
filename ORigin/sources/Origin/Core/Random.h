@@ -18,9 +18,15 @@ namespace origin {
 			return (float)s_Distribution(s_RandomEngine) / (float)std::numeric_limits<uint32_t>::max();
 		}
 
+		static float Float(float low, float high)
+		{
+			float r = (float)s_Distribution(s_RandomEngine) / (float)std::numeric_limits<uint32_t>::max();
+			r = (high - low) * r + low;
+			return r;
+		}
+
 	private:
 		static std::mt19937 s_RandomEngine;
 		static std::uniform_int_distribution<std::mt19937::result_type> s_Distribution;
 	};
 }
-

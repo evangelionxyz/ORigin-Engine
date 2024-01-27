@@ -187,7 +187,7 @@ namespace origin
 
 			out << YAML::Key << "Parents" << YAML::Value;
 			out << YAML::BeginSeq;
-			for (auto p : treeComponent.Parents)
+			for (auto& p : treeComponent.Parents)
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "ID" << YAML::Value << p.first;
@@ -197,7 +197,7 @@ namespace origin
 
 			out << YAML::Key << "Children" << YAML::Value;
 			out << YAML::BeginSeq;
-			for (auto p : treeComponent.Children)
+			for (auto& p : treeComponent.Children)
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "ID" << YAML::Value << p.first;
@@ -662,6 +662,25 @@ namespace origin
 			out << YAML::EndMap; // !CircleCollider2DComponent
 		}
 
+		if (entity.HasComponent<RevoluteJoint2DComponent>())
+		{
+			out << YAML::Key << "RevoluteJoint2DComponent";
+			out << YAML::BeginMap; // RevoluteJoint2DComponent;
+
+			const auto& rjc = entity.GetComponent<RevoluteJoint2DComponent>();
+			out << YAML::Key << "Connected Body ID" << rjc.ConnectedBodyID;
+			// Angles in degrees
+			out << YAML::Key << "Anchor"  << rjc.AnchorPoint;
+			out << YAML::Key << "EnableLimit" << rjc.EnableLimit;
+			out << YAML::Key << "LowerAngle" << rjc.LowerAngle;
+			out << YAML::Key << "UpperAngle" << rjc.UpperAngle;
+			out << YAML::Key << "MaxMotorTorque" << rjc.MaxMotorTorque;
+			out << YAML::Key << "EnableMotor" << rjc.EnableMotor;
+			out << YAML::Key << "MotorSpeed" << rjc.MotorSpeed;
+
+			out << YAML::EndMap; // !RevoluteJoint2DComponent;
+		}
+
 		if (entity.HasComponent<NativeScriptComponent>())
 		{
 			auto& nsc = entity.GetComponent<NativeScriptComponent>();
@@ -979,7 +998,6 @@ namespace origin
 				if (YAML::Node rigidbodyComponent = entity["RigidbodyComponent"])
 				{
 					auto& rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
-
 					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
 					rigidbody.CenterMassPosition = rigidbodyComponent["CenterMassPosition"].as<glm::vec3>();
 					rigidbody.UseGravity = rigidbodyComponent["UseGravity"].as<bool>();
@@ -992,6 +1010,19 @@ namespace origin
 					rigidbody.Kinematic = rigidbodyComponent["Kinematic"].as<bool>();
 					rigidbody.RetainAcceleration = rigidbodyComponent["RetainAcceleration"].as<bool>();
 
+				}
+
+				if (YAML::Node revoluteJoint2DComponent = entity["RevoluteJoint2DComponent"])
+				{
+					auto& rjc = deserializedEntity.AddComponent<RevoluteJoint2DComponent>();
+					rjc.ConnectedBodyID = revoluteJoint2DComponent["Connected Body ID"].as<uint64_t>();
+					rjc.AnchorPoint = revoluteJoint2DComponent["Anchor"].as<glm::vec2>();
+					rjc.EnableLimit = revoluteJoint2DComponent["EnableLimit"].as<bool>();
+					rjc.LowerAngle = revoluteJoint2DComponent["LowerAngle"].as<float>();
+					rjc.UpperAngle = revoluteJoint2DComponent["UpperAngle"].as<float>();
+					rjc.MaxMotorTorque = revoluteJoint2DComponent["MaxMotorTorque"].as<float>();
+					rjc.EnableMotor = revoluteJoint2DComponent["EnableMotor"].as<bool>();
+					rjc.MotorSpeed = revoluteJoint2DComponent["MotorSpeed"].as<float>();
 				}
 
 				if (YAML::Node textComponent = entity["TextComponent"])

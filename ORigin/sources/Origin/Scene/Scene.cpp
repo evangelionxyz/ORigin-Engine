@@ -184,8 +184,7 @@ namespace origin
 	{
 		if (m_EntityMap.find(uuid) != m_EntityMap.end())
 			return { m_EntityMap.at(uuid), this };
-
-		return {};
+		return *(Entity*) -1;
 	}
 
 	Entity Scene::FindEntityByName(std::string_view name)
@@ -198,7 +197,7 @@ namespace origin
 				return Entity{ entity, this };
 		}
 
-		return {};
+		return *(Entity*)-1;
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()
@@ -210,7 +209,7 @@ namespace origin
 			if (camera.Primary)
 				return Entity{ entity, this };
 		}
-		return {};
+		return *(Entity*)-1;
 	}
 
 
@@ -226,7 +225,7 @@ namespace origin
 		{
 			// Update Scripts
 			auto& scriptView = m_Registry.view<ScriptComponent>();
-			for (auto& e : scriptView)
+			for (auto e : scriptView)
 			{
 				Entity entity = {e, this};
 				ScriptEngine::OnUpdateEntity(entity, (float)ts.DeltaTime());
@@ -893,6 +892,7 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(Rigidbody2DComponent)
 	OGN_REG_COMPONENT(BoxCollider2DComponent)
 	OGN_REG_COMPONENT(CircleCollider2DComponent)
+	OGN_REG_COMPONENT(RevoluteJoint2DComponent)
 	OGN_REG_COMPONENT(ParticleComponent)
 	OGN_REG_COMPONENT(RigidbodyComponent)
 	OGN_REG_COMPONENT(BoxColliderComponent)

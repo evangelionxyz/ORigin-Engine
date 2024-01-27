@@ -364,6 +364,26 @@ namespace origin
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
 
+	class RevoluteJoint2DComponent
+	{
+	public:
+		glm::vec2 AnchorPoint;
+
+		// Angles in degrees 
+		// (it's it converted to radians when creating component)
+		bool EnableLimit = true;
+		float LowerAngle = 90.0f;
+		float UpperAngle = 45.0f;
+		float MaxMotorTorque = 10.0f;
+		bool EnableMotor = true;
+		float MotorSpeed = 0.0f;
+		void* Joint = nullptr;
+		UUID ConnectedBodyID = 0;
+
+		RevoluteJoint2DComponent() = default;
+		RevoluteJoint2DComponent(const RevoluteJoint2DComponent&) = default;
+	};
+
 	template <typename... Component>
 	struct ComponentGroup
 	{
@@ -380,7 +400,7 @@ namespace origin
 		AudioComponent, AudioListenerComponent, LightComponent,
 		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
-		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent,
+		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent,
 		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent
 	>;
 }

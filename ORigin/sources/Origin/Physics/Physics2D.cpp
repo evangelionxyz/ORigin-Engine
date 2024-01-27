@@ -6,10 +6,10 @@
 
 #include "box2d\box2d.h"
 #include "box2d\b2_world.h"
-#include "box2d\b2_body.h"
 #include "box2d\b2_fixture.h"
 #include "box2d\b2_polygon_shape.h"
 #include "box2d\b2_circle_shape.h"
+#include "box2d\b2_joint.h"
 
 #include "Contact2DListener.h"
 
@@ -31,8 +31,67 @@ namespace origin {
 	}
 
 	Physics2D::Physics2D(Scene* scene)
-		: m_SceneContext(scene)
+		: m_Context(scene)
 	{
+	}
+
+	void Physics2D::CreateRevoluteJoint(RevoluteJoint2DComponent rjc, b2Body* body, b2Vec2 anchorPoint)
+	{
+		b2RevoluteJointDef jointDef;
+
+		Entity connectedEntity = m_Context->GetEntityWithUUID(rjc.ConnectedBodyID);
+		auto& rb2d = connectedEntity.GetComponent<Rigidbody2DComponent>();
+		b2Body* connectedBody = static_cast<b2Body*>(rb2d.RuntimeBody);
+
+		OGN_CORE_ASSERT(connectedBody, "Connected Body is Invalid");
+
+		jointDef.Initialize(body, connectedBody, anchorPoint);
+
+		jointDef.lowerAngle = glm::radians(rjc.LowerAngle);
+		jointDef.upperAngle = glm::radians(rjc.UpperAngle);
+
+		jointDef.enableLimit = rjc.EnableLimit;
+		jointDef.maxMotorTorque = rjc.MaxMotorTorque;
+		jointDef.motorSpeed = rjc.MotorSpeed;
+		jointDef.enableMotor = rjc.EnableMotor;
+
+		rjc.Joint = (b2RevoluteJoint*)m_World->CreateJoint(&jointDef);
+	}
+
+	void Physics2D::CreateBoxCollider(BoxCollider2DComponent bc2d, b2Body* body, b2Vec2 boxSize)
+	{
+		b2PolygonShape boxShape;
+		boxShape.SetAsBox(boxSize.x, boxSize.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
+		bc2d.RuntimeBoxShape = &boxShape;
+
+		b2FixtureDef fixtureDef;
+		fixtureDef.filter.groupIndex = bc2d.Group;
+		fixtureDef.shape = &boxShape;
+		fixtureDef.density = bc2d.Density;
+		fixtureDef.friction = bc2d.Friction;
+		fixtureDef.restitution = bc2d.Restitution;
+		fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
+		bc2d.RuntimeFixture = &fixtureDef;
+		body->CreateFixture(&fixtureDef);
+	}
+
+	void Physics2D::CreateCircleCollider(CircleCollider2DComponent cc2d, b2Body* body, float radius)
+	{
+		b2CircleShape circleShape;
+		circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
+		circleShape.m_radius = radius;
+		cc2d.RuntimeCircleShape = &circleShape;
+
+		b2FixtureDef fixtureDef;
+		fixtureDef.filter.groupIndex = cc2d.Group;
+		fixtureDef.shape = &circleShape;
+		fixtureDef.density = cc2d.Density;
+		fixtureDef.friction = cc2d.Friction;
+		fixtureDef.restitution = cc2d.Restitution;
+		fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+		cc2d.RuntimeFixture = &fixtureDef;
+
+		body->CreateFixture(&fixtureDef);
 	}
 
 	void Physics2D::Simulate(float deltaTime)
@@ -43,22 +102,29 @@ namespace origin {
 		m_World->Step(deltaTime, velocityIterations, positionIterations);
 
 		// Retrieve transform from Box2D
-		auto& view = m_SceneContext->m_Registry.view<Rigidbody2DComponent>();
-		for (auto& e : view)
+		auto view = m_Context->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
+		for (entt::entity e : view)
 		{
-			Entity entity = { e, m_SceneContext };
-			auto& tc = entity.GetComponent<TransformComponent>();
-			const auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-
-			const auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+			Entity entity{ e, m_Context };
+			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
+			auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
 			if (body)
 			{
-				const auto& position = body->GetPosition();
+				auto& position = body->GetPosition();
 				tc.Translation.x = position.x;
 				tc.Translation.y = position.y;
 				tc.Rotation.z = body->GetAngle();
 			}
+
+			if (entity.HasComponent<RevoluteJoint2DComponent>())
+			{
+				auto& rjc = entity.GetComponent<RevoluteJoint2DComponent>();
+				b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(rjc.Joint);
+				if (joint)
+					joint->SetMotorSpeed(deltaTime);
+			}
+			
 		}
 	}
 
@@ -66,21 +132,17 @@ namespace origin {
 	{
 		m_World = new b2World({ 0.0f, -9.81f });
 
-		m_ContactListener = new Contact2DListener(m_SceneContext);
+		m_ContactListener = new Contact2DListener(m_Context);
 		m_World->SetContactListener(m_ContactListener);
 
-		auto view = m_SceneContext->m_Registry.view<Rigidbody2DComponent>();
+		auto view = m_Context->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
 		for (entt::entity e : view)
 		{
-			Entity entity = { e, m_SceneContext };
-			auto& transform = entity.GetComponent<TransformComponent>();
-			auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+			Entity entity = { e, m_Context };
+			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
 
 			b2BodyDef bodyDef;
-
-			// set user data based on the entity
 			bodyDef.userData.pointer = static_cast<uintptr_t>(e);
-
 			bodyDef.type = Box2DBodyType(rb2d.Type);
 			bodyDef.linearDamping = rb2d.LinearDamping;
 			bodyDef.angularDamping = rb2d.AngularDamping;
@@ -88,12 +150,10 @@ namespace origin {
 			bodyDef.awake = rb2d.Awake;
 			bodyDef.bullet = rb2d.Bullet;
 			bodyDef.enabled = rb2d.Enabled;
-
 			bodyDef.linearVelocity.SetZero();
 
-			// POSITION SETTINGS
-			float xPos = transform.Translation.x;
-			float yPos = transform.Translation.y;
+			float xPos = tc.Translation.x;
+			float yPos = tc.Translation.y;
 
 			if (rb2d.FreezePositionX)
 				xPos = bodyDef.position.x;
@@ -101,13 +161,13 @@ namespace origin {
 				yPos = bodyDef.position.y;
 
 			bodyDef.position.Set(xPos, yPos);
-
-			// ROTATION SETTINGS
-			bodyDef.angle = transform.Rotation.z;
-
+			bodyDef.angle = tc.Rotation.z;
 			bodyDef.gravityScale = rb2d.GravityScale;
 
 			b2Body* body = m_World->CreateBody(&bodyDef);
+
+			rb2d.RuntimeBody = body;
+
 			body->SetFixedRotation(rb2d.FixedRotation);
 
 			b2MassData massData;
@@ -116,66 +176,63 @@ namespace origin {
 			massData.mass = rb2d.Mass;
 			body->SetMassData(&massData);
 
-			rb2d.RuntimeBody = body;
-
 			if (entity.HasComponent<BoxCollider2DComponent>())
 			{
 				auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
-
-				b2PolygonShape boxShape;
-				boxShape.SetAsBox(
-					bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y,
-					b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f
-				);
-
-				bc2d.RuntimeBoxShape = &boxShape;
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.filter.groupIndex = bc2d.Group;
-				fixtureDef.shape = &boxShape;
-				fixtureDef.density = bc2d.Density;
-				fixtureDef.friction = bc2d.Friction;
-				fixtureDef.restitution = bc2d.Restitution;
-				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
-
-				bc2d.RuntimeFixture = &fixtureDef;
-
-				body->CreateFixture(&fixtureDef);
+				CreateBoxCollider(bc2d, body, b2Vec2(bc2d.Size.x * tc.Scale.x, bc2d.Size.y * tc.Scale.y));
 			}
 
 			if (entity.HasComponent<CircleCollider2DComponent>())
 			{
 				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+				float radius = tc.Scale.x * cc2d.Radius;
+				CreateCircleCollider(cc2d, body, radius);
+			}
+		}
 
-				b2CircleShape circleShape;
-				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-				circleShape.m_radius = transform.Scale.x * cc2d.Radius;
+		for (entt::entity e : view)
+		{
+			Entity entity = { e, m_Context };
+			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
+			b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
-				cc2d.RuntimeCircleShape = &circleShape;
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.filter.groupIndex = cc2d.Group;
-				fixtureDef.shape = &circleShape;
-				fixtureDef.density = cc2d.Density;
-				fixtureDef.friction = cc2d.Friction;
-				fixtureDef.restitution = cc2d.Restitution;
-				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
-
-				cc2d.RuntimeFixture = &fixtureDef;
-
-				body->CreateFixture(&fixtureDef);
+			if(entity.HasComponent<RevoluteJoint2DComponent>())
+			{
+				auto& rjc = entity.GetComponent<RevoluteJoint2DComponent>();
+				b2Vec2 pos = body->GetPosition();
+				b2Vec2 anchorPoint = b2Vec2(pos.x + rjc.AnchorPoint.x, pos.y + rjc.AnchorPoint.y);
+				if (rjc.ConnectedBodyID != 0)
+					CreateRevoluteJoint(rjc, body, anchorPoint);
 			}
 		}
 	}
 
 	void Physics2D::OnSimulationStop()
 	{
-		delete m_ContactListener;
-		m_ContactListener = nullptr;
+		auto view = m_Context->m_Registry.view<Rigidbody2DComponent, RevoluteJoint2DComponent>();
+		for (entt::entity e : view)
+		{
+			auto& rb2d = view.get<Rigidbody2DComponent>(e);
+			b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
+			if (body)
+			{
+				m_World->DestroyBody(body);
+				body = nullptr;
+			}
+
+			auto& rjc = view.get<RevoluteJoint2DComponent>(e);
+			if (rjc.Joint)
+			{
+				m_World->DestroyJoint((b2RevoluteJoint*)rjc.Joint);
+				rjc.Joint = nullptr;
+			}
+		}
 
 		m_World->SetContactListener(nullptr);
 
+		delete m_ContactListener;
 		delete m_World;
+		m_ContactListener = nullptr;
 		m_World = nullptr;
 	}
 
