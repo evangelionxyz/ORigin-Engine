@@ -35,8 +35,10 @@ namespace origin {
 		std::string Name = "ORigin Application";
 		std::string IconPath = "Resources/UITextures/icon_origin.png";
 		std::string WorkingDirectory;
+
+		uint32_t Width = 1280, Height = 640;
 		bool Runtime = false;
-		bool fullScreen = false;
+		bool Maximize = false;
 	};
 
 	class Application
@@ -63,7 +65,6 @@ namespace origin {
 		std::unique_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer, *m_SplashScreenGui;
 		std::unique_ptr<Input> m_MainInputHandle;
-		std::unique_ptr<GraphicsContext> m_GraphicContext;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);

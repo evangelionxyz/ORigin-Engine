@@ -12,7 +12,6 @@
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
-
 namespace origin {
 
 	Application* Application::s_Instance = nullptr;
@@ -20,7 +19,7 @@ namespace origin {
 	Application::Application(const ApplicationSpecification& spec)
 		: m_Spec(spec)
 	{
-		OGN_CORE_ASSERT(!s_Instance, "Application already exists!");
+		OGN_CORE_ASSERT(!s_Instance, "Application already opened!");
 		s_Instance = this;
 
 		if (!m_Spec.WorkingDirectory.empty())
@@ -28,72 +27,22 @@ namespace origin {
 
 		Window::GLFWInit();
 
+		m_Window = Window::Create(spec.Name.c_str(),
+			spec.Width, spec.Height, spec.Maximize);
+
+		m_Window->SetIcon(spec.IconPath.c_str());
+		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
+		m_MainInputHandle = std::make_unique<Input>();
+
 		if (!spec.Runtime)
 		{
-			WindowConfig windowConfig;
-			windowConfig.Title = spec.Name;
-			windowConfig.Decorated = false;
-			windowConfig.Width = 800;
-			windowConfig.Height = 420;
-
-			m_Window = Window::Create(windowConfig);
-
-			m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
-			m_GraphicContext->Init();
-			m_Window->SetIcon(spec.IconPath);
-			m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
-
-			m_GuiLayer = new GuiLayer();
-			m_GuiLayer->SetContext(m_Window->GetNativeWindow());
+			m_GuiLayer = new GuiLayer(m_Window->GetNativeWindow());
 			PushOverlay(m_GuiLayer);
-
-			std::shared_ptr<Texture2D> splashImage = TextureImporter::LoadTexture2D("Resources/UITextures/splashscreen.png");
-			m_GuiLayer->Begin();
-			ImVec2 windowPos = ImVec2(m_Window->GetPosition().x, m_Window->GetPosition().y);
-			ImVec2 windowSize = ImVec2((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-			ImGuiWindowFlags imageWinFlags = ImGuiWindowFlags_NoTitleBar
-				| ImGuiWindowFlags_NoResize
-				| ImGuiWindowFlags_NoMove
-				| ImGuiWindowFlags_NoScrollbar
-				| ImGuiWindowFlags_NoDocking;
-
-			ImGui::SetNextWindowSize(windowSize);
-			ImGui::SetNextWindowPos(windowPos);
-			ImGui::SetNextWindowBgAlpha(0.0f);
-			ImGui::Begin("Splash Screen", nullptr, imageWinFlags);
-			ImGui::Image(reinterpret_cast<ImTextureID>(splashImage->GetRendererID()), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
-			ImGui::End();
-
-			ImGui::PopStyleVar();
-			m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
-			m_GuiLayer->End();
-			m_Window->OnUpdate();
-		}
-		else
-		{
-			m_Window = Window::Create(m_Spec.Name, 1280, 640);
-			m_GraphicContext = GraphicsContext::Create(m_Window->GetNativeWindow());
-			m_GraphicContext->Init();
-			m_Window->SetIcon(spec.IconPath);
-			m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 		}
 
 		Renderer::Init();
 		Physics::Init();
 		AudioEngine::Init();
-
-		RenderCommand::Clear();
-		RenderCommand::ClearColor(glm::vec4(0.7f));
-		m_Window->OnUpdate();
-		
-		if (!m_Spec.Runtime)
-		{
-			m_Window->Decorated(true);
-			m_Window->SetSize(1280, 640);
-		}
-
-		m_MainInputHandle = std::make_unique<Input>();
 	}
 
 	Application::~Application()
@@ -110,7 +59,7 @@ namespace origin {
 	{
 		m_Window->SetVSync(false);
 
-		while (m_Window->Loop())
+		while (m_Window->IsLooping())
 		{
 			double time = glfwGetTime();
 			Timestep timestep = time - m_LastFrame;
@@ -172,22 +121,12 @@ namespace origin {
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
-		if(m_Window->Loop())
-			return false;
-
-		return true;
+		return !m_Window->IsLooping();
 	}
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
-		if (e.GetWidth() == 0 || e.GetHeight() == 0)
-		{
-			m_Minimized = true;
-			return true;
-		}
-		m_Minimized = false;
-		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
-
+		m_Minimized = e.GetWidth() == 0 || e.GetHeight() == 0;
 		return false;
 	}
 

@@ -40,12 +40,7 @@ namespace origin {
 
 	void EditorCamera::UpdateAudioListener(Timestep ts)
 	{
-		static glm::vec3 prevPos = GetPosition();
-		const glm::vec3& position = GetPosition();
-		const glm::vec3 delta = position - prevPos;
-		prevPos = position;
-		glm::vec3 velocity = (position - prevPos) / glm::vec3((float)ts);
-
+		glm::vec3 velocity = glm::vec3(0.0f);
 		m_AudioListener.Set(GetPosition(), velocity, GetForwardDirection(), GetUpDirection());
 	}
 

@@ -20,12 +20,13 @@ namespace origin {
 	void PhysXScene::OnSimulationStart()
 	{
 		PhysXAPI::Get().OnSimulationStart();
+
 		physx::PxSceneDesc sceneDesc(PhysXAPI::GetPhysics()->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 		sceneDesc.cpuDispatcher = PhysXAPI::GetCPUDispatcher();
 		sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-
 		m_PhysXScene = PhysXAPI::GetPhysics()->createScene(sceneDesc);
+
 
 		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
 		{
@@ -83,7 +84,6 @@ namespace origin {
 			}
 		}
 
-		m_PhysXScene->flushSimulation(false);
 		m_PhysXScene->release();
 		PhysXAPI::Get().OnSimulationStop();
 	}

@@ -25,6 +25,9 @@ namespace origin
 		ApplicationSpecification spec;
 		spec.Name = "Runtime";
 		spec.CommandLineArgs = args;
+		spec.Width = 1280;
+		spec.Height = 640;
+		spec.Maximize = true;
 		spec.Runtime = true;
 
 		OGN_CORE_INFO(spec.Name);

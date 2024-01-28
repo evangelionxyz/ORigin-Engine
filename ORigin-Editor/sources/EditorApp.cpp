@@ -15,15 +15,15 @@ namespace origin
     }
 
     ~RuntimeApp()
-    {
-    }
+    {}
   };
 
   Application* CreateApplication(ApplicationCommandLineArgs args)
   {
     ApplicationSpecification spec;
-    spec.Name = "ORigin-Editor";
+    spec.Name = "ORigin Editor";
     spec.CommandLineArgs = args;
+    spec.Maximize = true;
 
     OGN_CORE_INFO(spec.Name);
     return new RuntimeApp(spec);

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #include <Origin.h>
 #include "SandboxLayer.h"
 
@@ -12,6 +12,7 @@ namespace origin
 		{
 			PushLayer(new SandboxLayer());
 		}
+
 		~SandboxApp() { }
 	};
 

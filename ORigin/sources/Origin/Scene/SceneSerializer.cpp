@@ -373,7 +373,7 @@ namespace origin
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap; // Camera
 			out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(camera.GetProjectionType());
-			out << YAML::Key << "AspectRatioType" << YAML::Value << static_cast<int>(camera.GetAspectRatioType());
+			//out << YAML::Key << "AspectRatioType" << YAML::Value << static_cast<int>(camera.GetAspectRatioType());
 
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveFov();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
@@ -817,7 +817,7 @@ namespace origin
 
 					auto& cameraProps = cameraComponent["Camera"];
 					cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
-					cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
+					//cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
 
 					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());

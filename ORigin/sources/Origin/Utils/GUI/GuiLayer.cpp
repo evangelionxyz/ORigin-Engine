@@ -15,15 +15,11 @@
 
 namespace origin {
 
-	GuiLayer::GuiLayer()
-		: Layer("Gui Layer"), m_WindowContext(nullptr)
+	GuiLayer::GuiLayer(GLFWwindow* window)
+		: Layer("Gui Layer"), m_WindowContext(window)
 	{
 	}
 
-	void GuiLayer::SetContext(GLFWwindow* window)
-	{
-		m_WindowContext = window;
-	}
 
 	void GuiLayer::Init()
 	{

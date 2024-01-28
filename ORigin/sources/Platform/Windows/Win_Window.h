@@ -9,63 +9,44 @@
 
 namespace origin
 {
+	struct WindowData
+	{
+		std::string Title;
+		uint32_t Width;
+		uint32_t Height;
+		int xPos;
+		int yPos;
+		bool Maximized = false;
+		bool VSync = false;
+		int Close = 0;
+		std::function<void(Event&)> EventCallback;
+	};
+
 	class WinWindow : public Window
 	{
 	public:
 
-		WinWindow(const WindowConfig& config);
-		WinWindow(const std::string& title, uint32_t width, uint32_t height);
-		virtual ~WinWindow();
+		WinWindow(const char* title, uint32_t width, uint32_t height, bool maximized);
+		virtual ~WinWindow() override;
+		void OnUpdate() override;
+		bool IsLooping() const override { return glfwWindowShouldClose(m_MainWindow) == m_Data.Close; }
 
-		void SetVSync(bool enable = false) override;
 		void SetClose(bool close = false) override;
-
-		void Init();
+		void SetVSync(bool enable = false) override;
+		void SetIcon(const char* filepath) override;
+		void WindowCallbacks();
+		void SetFullscreen(bool enable) override;
 		void SetEventCallback(const std::function<void(Event&)>& callback) override;
 
-		void OnUpdate() override;
-		bool Loop() const override { return glfwWindowShouldClose(m_Window) == m_Data.Close; }
-		void SetFullscreen(bool enable) override { m_Data.Fullscreen = enable; }
-
-		void SetIcon(const std::string& filepath) override;
-		void WindowCallbacks();
-
-		void Destroy() override;
-		void Decorated(bool enable) override;
-
-		void SetSize(uint32_t width, uint32_t height) override;
-
-		glm::uvec2 GetPosition() override { return { m_Data.xPos, m_Data.yPos }; }
+		const char* GetTitle() const override { return m_Data.Title.c_str(); }
 		uint32_t GetWidth() const override { return m_Data.Width; }
 		uint32_t GetHeight() const override { return m_Data.Height; }
-		std::string GetTitle() const override { return m_Data.Title; }
-		GLFWwindow* GetNativeWindow() override { return m_Window; }
+		GLFWwindow* GetNativeWindow() override { return m_MainWindow; }
 
 	private:
-
-		struct WindowData
-		{
-			std::string Title;
-			uint32_t Width;
-			uint32_t Height;
-			int xPos;
-			int yPos;
-			bool Maximized = false;
-			bool Fullscreen = false;
-			bool VSync = false;
-			int Close = 0;
-
-			std::function<void(Event&)> EventCallback;
-		} m_Data;
-
-		WindowConfig m_Config;
-		GLFWwindow* m_Window;
-		GLFWmonitor* m_Monitor;
-
-		glm::ivec2 monitorSize;
-		glm::ivec2 monitorPos;
-		glm::ivec2 windowSize;
-		glm::ivec2 windowPos;
+		WindowData m_Data;
+		GLFWwindow* m_MainWindow;
+		std::unique_ptr<GraphicsContext> m_GraphicsContext;
 	};
 }
 

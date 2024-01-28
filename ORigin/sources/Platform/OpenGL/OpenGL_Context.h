@@ -1,19 +1,14 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Origin\Renderer\GraphicsContext.h"
-#include <GLFW\glfw3.h>
 
 namespace origin
 {
 	class OpenGLContext : public GraphicsContext
 	{
 	public:
-		OpenGLContext(GLFWwindow* windowHandle);
-
+		OpenGLContext();
 		void Init() override;
-
-	private:
-		GLFWwindow* m_WindowHandle;
 	};
 }

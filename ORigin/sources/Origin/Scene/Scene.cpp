@@ -184,7 +184,7 @@ namespace origin
 	{
 		if (m_EntityMap.find(uuid) != m_EntityMap.end())
 			return { m_EntityMap.at(uuid), this };
-		return *(Entity*) -1;
+		return {};
 	}
 
 	Entity Scene::FindEntityByName(std::string_view name)
@@ -197,7 +197,7 @@ namespace origin
 				return Entity{ entity, this };
 		}
 
-		return *(Entity*)-1;
+		return {};
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()
@@ -209,9 +209,8 @@ namespace origin
 			if (camera.Primary)
 				return Entity{ entity, this };
 		}
-		return *(Entity*)-1;
+		return {};
 	}
-
 
 	void Scene::DestroyEntity(Entity entity)
 	{
@@ -242,10 +241,53 @@ namespace origin
 				nsc.Instance->OnUpdate(ts);
 			});
 
-			// Physics
+			// Particle Update
+			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
+				{
+					pc.Particle.OnUpdate(ts);
+				});
+
+
+			// Animation
+			const auto& animView = m_Registry.view<AnimationComponent>();
+			for (const auto entity : animView)
+			{
+				auto& ac = animView.get<AnimationComponent>(entity);
+				if (ac.State.HasAnimations())
+					ac.State.GetAnimation().Update(ts);
+			}
+
+			// Audio Update
+			const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
+			for (const auto entity : audioView)
+			{
+				auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
+
+				if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+				{
+					audio->UpdateAudioComponent(ac);
+					if (ac.Spatial)
+					{
+						glm::vec3 velocity = glm::vec3(0.0f);
+						audio->Set3DAttributes(tc.Translation, velocity);
+					}
+				}
+			}
+
+			const auto& audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
+			for (const auto entity : audioListenerView)
+			{
+				auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
+				if (al.Enable)
+					al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
+				AudioEngine::SetMute(!al.Enable);
+			}
+
+			AudioEngine::SystemUpdate();
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
+		
 
 		// Rendering
 		auto& cameraView = m_Registry.view<CameraComponent, TransformComponent>();
@@ -259,67 +301,50 @@ namespace origin
 				break;
 			}
 		}
-
-		// Particle Update
-		m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
-		{
-			pc.Particle.OnUpdate(ts);
-		});
-
-		// Animation
-		const auto& animView = m_Registry.view<AnimationComponent>();
-		for (const auto entity : animView)
-		{
-			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.HasAnimations())
-				ac.State.GetAnimation().Update(ts);
-		}
-
-		glm::vec3 camVel(0.0f), camPos(0.0f);
-		const auto& camListenerView = m_Registry.view<CameraComponent, AudioListener>();
-		for(const auto entity : camListenerView)
-		{
-			auto& listener = camListenerView.get<AudioListener>(entity);
-			camPos = listener.GetPosition();
-			camPos = listener.GetVelocity();
-		}
-
-		// Audio Update
-		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
-		for (const auto entity : audioView)
-		{
-			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			
-			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
-			{
-				audio->UpdateAudioComponent(ac);
-				if (ac.Spatial)
-				{
-					static glm::vec3 prevPos = tc.Translation;
-
-					const glm::vec3& position = tc.Translation;
-					const glm::vec3 delta = position - prevPos;
-
-					prevPos = position;
-
-					glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
-					audio->Set3DAttributes(tc.Translation, velocity);
-					audio->UpdateDopplerEffect(camPos, camVel);
-				}
-			}
-		}
-
-		const auto& audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
-		for (const auto entity : audioListenerView)
-		{
-			auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-			if (al.Enable)
-				al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
-			AudioEngine::SetMute(!al.Enable);
-		}
-
-		AudioEngine::SystemUpdate();
 	}
+
+	void Scene::OnRuntimeStart()
+	{
+		m_Running = true;
+
+		ScriptEngine::SetSceneContext(this);
+		auto scriptView = m_Registry.view<ScriptComponent>();
+		for (auto e : scriptView)
+		{
+			Entity entity = { e, this };
+			ScriptEngine::OnCreateEntity(entity);
+		}
+
+		auto audioView = m_Registry.view<AudioComponent>();
+		for (auto& e : audioView)
+		{
+			auto& ac = audioView.get<AudioComponent>(e);
+			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			if (ac.PlayAtStart)
+				audio->Play();
+		}
+
+		m_PhysicsScene->OnSimulationStart();
+		m_Physics2D->OnSimulationStart();
+	}
+
+	void Scene::OnRuntimeStop()
+	{
+		m_Running = false;
+		ScriptEngine::ClearSceneContext();
+		const auto& audioView = m_Registry.view<AudioComponent>();
+
+		for (auto& e : audioView)
+		{
+			auto& ac = audioView.get<AudioComponent>(e);
+			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+				audio->Stop();
+		}
+
+		m_PhysicsScene->OnSimulationStop();
+		m_Physics2D->OnSimulationStop();
+	}
+
 
 	void Scene::OnUpdateEditor(Timestep deltaTime, EditorCamera& editorCamera)
 	{
@@ -396,102 +421,93 @@ namespace origin
 		{
 			// Update Scripts
 			{
-				const auto& view = m_Registry.view<ScriptComponent>();
-				for (const auto e : view)
+				m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& sc)
 				{
-					Entity entity = {e, this};
+					Entity entity{ entityID, this };
 					ScriptEngine::OnUpdateEntity(entity, (float)ts);
-				}
+				});
 
-				m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+				m_Registry.view<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
 				{
 					if (!nsc.Instance)
 					{
 						nsc.Instance = nsc.InstantiateScript();
-						nsc.Instance->m_Entity = Entity{entity, this};
+						nsc.Instance->m_Entity = Entity{ entityID, this};
 						nsc.Instance->OnCreate();
 					}
 					nsc.Instance->OnUpdate(ts);
 				});
 			}
 
-			//Physics
-			m_PhysicsScene->Simulate(ts);
-			m_Physics2D->Simulate(ts);
-		}
-
-		// Render
-		RenderScene(editorCamera);
-
-		{
 			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
 			{
 				pc.Particle.OnUpdate(ts);
 			});
-		}
 
-		// Animation
-		const auto& animView = m_Registry.view<AnimationComponent>();
-		for (const auto entity : animView)
-		{
-			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.HasAnimations())
-				ac.State.GetAnimation().Update(ts);
-		}
-
-		// Audio Update
-		Renderer2D::Begin(editorCamera);
-		AudioEngine::SetMute(false);
-		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
-		for (auto entity : audioView)
-		{
-			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			
-			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+			// Animation
+			m_Registry.view<AnimationComponent>().each([=](auto entityID, auto& ac)
 			{
-				audio->UpdateAudioComponent(ac);
+				if (ac.State.HasAnimations())
+					ac.State.GetAnimation().Update(ts);
+			});
 
-				if (ac.Spatial)
+			Renderer2D::Begin(editorCamera);
+			AudioEngine::SetMute(false);
+			const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
+			for (auto entity : audioView)
+			{
+				auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
+
+				if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
 				{
-					static glm::vec3 prevPos = tc.Translation;
+					audio->UpdateAudioComponent(ac);
 
-					const glm::vec3& position = tc.Translation;
-					const glm::vec3 delta = position - prevPos;
+					if (ac.Spatial)
+					{
+						static glm::vec3 prevPos = tc.Translation;
 
-					prevPos = position;
+						const glm::vec3& position = tc.Translation;
+						const glm::vec3 delta = position - prevPos;
 
-					glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
-					audio->Set3DAttributes(tc.Translation, velocity);
-					
-					audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
+						prevPos = position;
+
+						glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
+						audio->Set3DAttributes(tc.Translation, velocity);
+
+						audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
+					}
 				}
 			}
-		}
-		Renderer2D::End();
+			Renderer2D::End();
 
-		bool isMainCameraListening = false;
-		const auto& audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
-		for (const auto entity : audioListenerView)
-		{
-			auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-			if (al.Enable)
+			bool isMainCameraListening = false;
+			const auto& audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
+			for (const auto entity : audioListenerView)
 			{
-				static glm::vec3 prevPos = tc.Translation;
-				const glm::vec3& position = tc.Translation;
-				const glm::vec3 delta = position - prevPos;
-				prevPos = position;
-				glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
+				auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
+				if (al.Enable)
+				{
+					static glm::vec3 prevPos = tc.Translation;
+					const glm::vec3& position = tc.Translation;
+					const glm::vec3 delta = position - prevPos;
+					prevPos = position;
+					glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
 
-				al.Listener.Set(tc.Translation, velocity, tc.GetForward(), tc.GetUp());
+					al.Listener.Set(tc.Translation, velocity, tc.GetForward(), tc.GetUp());
+				}
+
+				isMainCameraListening = al.Enable;
 			}
 
-			isMainCameraListening = al.Enable;
+			if (!isMainCameraListening)
+				editorCamera.UpdateAudioListener(ts);
+
+			AudioEngine::SystemUpdate();
+			m_PhysicsScene->Simulate(ts);
+			m_Physics2D->Simulate(ts);
 		}
 
-		if (!isMainCameraListening)
-			editorCamera.UpdateAudioListener(ts);
-
-		AudioEngine::SystemUpdate();
+		RenderScene(editorCamera);
 	}
 
 	void Scene::OnSimulationStart()
@@ -801,49 +817,6 @@ namespace origin
 				Math::DecomposeTransformEuler(parentTc.GetTransform(), pTranslation, pRotation, pScale);
 			}
 		}
-	}
-
-	void Scene::OnRuntimeStart()
-	{
-		m_Running = true;
-
-		ScriptEngine::SetSceneContext(this);
-		auto scriptView = m_Registry.view<ScriptComponent>();
-		for (auto e : scriptView)
-		{
-			Entity entity = { e, this };
-			ScriptEngine::OnCreateEntity(entity);
-		}
-
-		auto audioView = m_Registry.view<AudioComponent>();
-		for (auto& e : audioView)
-		{
-			auto& ac = audioView.get<AudioComponent>(e);
-			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
-			if (ac.PlayAtStart)
-				audio->Play();
-		}
-
-		m_PhysicsScene->OnSimulationStart();
-		m_Physics2D->OnSimulationStart();
-	}
-
-	void Scene::OnRuntimeStop()
-	{
-		m_Running = false;
-
-		ScriptEngine::ClearSceneContext();
-
-		const auto& audioView = m_Registry.view<AudioComponent>();
-		for (auto& e : audioView)
-		{
-			auto& ac = audioView.get<AudioComponent>(e);
-			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
-				audio->Stop();
-		}
-
-		m_PhysicsScene->OnSimulationStop();
-		m_Physics2D->OnSimulationStop();
 	}
 
 	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)

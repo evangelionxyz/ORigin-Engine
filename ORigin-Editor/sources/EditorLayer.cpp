@@ -412,7 +412,6 @@ namespace origin {
 				{
 					if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 						OnSceneStop();
-
 					ScriptEngine::ReloadAssembly();
 				}
 				ImGui::EndMenu();
@@ -436,8 +435,10 @@ namespace origin {
 
 			if (ImGui::BeginMenu("View"))
 			{
-				if (ImGui::MenuItem("Fullscreen", "F11", &guiMenuFullscreen))
+				if (ImGui::MenuItem("Full Screen", "F11", &guiMenuFullscreen))
+				{
 					window.GetWindow().SetFullscreen(guiMenuFullscreen);
+				}
 				ImGui::EndMenu();
 			}
 
@@ -1367,6 +1368,7 @@ namespace origin {
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent& e)
 	{
+
 		return false;
 	}
 

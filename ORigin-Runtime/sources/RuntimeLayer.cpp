@@ -6,36 +6,22 @@
 
 using namespace origin;
 
-RuntimeLayer::RuntimeLayer()
-{
-}
-
-RuntimeLayer::~RuntimeLayer()
-{
-	m_ActiveScene->OnRuntimeStop();
-}
-
 void RuntimeLayer::OnAttach()
 {
-	OpenProject("D:/Dev/ORiginProjects/JojoJungle/JojoJungle.oxproj");
+	OpenProject("D:/Dev/ORiginProjects/TestGame/TestGame.oxproj");
+	RenderCommand::ClearColor(glm::vec4(0.0f));
 }
 
 void RuntimeLayer::OnUpdate(Timestep ts)
 {
 	RenderCommand::Clear();
-	RenderCommand::ClearColor(glm::vec4(0.0f));
-
-	Renderer2D::ResetStats();
-	Renderer3D::ResetStats();
-
-	uint32_t Wx = Application::Get().GetWindow().GetWidth();
-	uint32_t Wy = Application::Get().GetWindow().GetHeight();
-
 	m_ActiveScene->OnUpdateRuntime(ts);
+}
 
-	m_ActiveScene->OnViewportResize(Wx, Wy);
-	m_ActiveScene->OnShadowRender();
-
+void RuntimeLayer::OnEvent(Event& e)
+{
+	EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<FramebufferResizeEvent>(OGN_BIND_EVENT_FN(RuntimeLayer::OnResize));
 }
 
 bool RuntimeLayer::OpenProject(const std::filesystem::path& path)
@@ -46,6 +32,13 @@ bool RuntimeLayer::OpenProject(const std::filesystem::path& path)
 
 		AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
 		OpenScene(handle);
+
+		float width = Application::Get().GetWindow().GetWidth();
+		float height = Application::Get().GetWindow().GetHeight();
+		RenderCommand::SetViewport(0, 0, width, height);
+
+		m_ActiveScene->OnViewportResize(width, height);
+		m_ActiveScene->OnRuntimeStart();
 
 		return true;
 	}
@@ -61,3 +54,11 @@ void RuntimeLayer::OpenScene(AssetHandle handle)
 	m_ActiveScene = AssetManager::GetAsset<Scene>(handle);
 	m_ActiveScene->OnRuntimeStart();
 }
+
+bool RuntimeLayer::OnResize(FramebufferResizeEvent& e)
+{
+	m_ActiveScene->OnViewportResize(e.GetWidth(), e.GetHeight());
+	RenderCommand::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
+	return false;
+}
+

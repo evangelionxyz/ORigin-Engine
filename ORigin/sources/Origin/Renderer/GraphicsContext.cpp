@@ -7,12 +7,12 @@
 
 namespace origin
 {
-	std::unique_ptr<GraphicsContext> GraphicsContext::Create(void* window)
+	std::unique_ptr<GraphicsContext> GraphicsContext::Create()
 	{
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::None:    OGN_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-			case RendererAPI::API::OpenGL:  return std::make_unique<OpenGLContext>(static_cast<GLFWwindow*>(window));
+			case RendererAPI::API::OpenGL:  return std::make_unique<OpenGLContext>();
 		}
 
 		OGN_CORE_ASSERT(false, "Unknown RendererAPI!");

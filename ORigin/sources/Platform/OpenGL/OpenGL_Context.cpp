@@ -4,17 +4,16 @@
 #include "OpenGL_Context.h"
 #include <glad/glad.h>
 
+#include <GLFW/glfw3.h>
+
 namespace origin
 {
-	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
-		: m_WindowHandle(windowHandle)
+	OpenGLContext::OpenGLContext()
 	{
-		OGN_CORE_ASSERT(windowHandle, "Window Handle is null");
 	}
 
 	void OpenGLContext::Init()
 	{
-		glfwMakeContextCurrent(m_WindowHandle);
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		OGN_CORE_ASSERT(success, "Failed to initialize Glad!");
 
