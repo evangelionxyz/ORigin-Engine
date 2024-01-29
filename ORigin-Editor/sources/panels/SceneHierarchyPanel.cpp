@@ -162,19 +162,6 @@ namespace origin {
 			}
 		}
 
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
-			{
-				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				auto& srcTreeComponent = src.GetComponent<TreeNodeComponent>();
-				srcTreeComponent.Parent = 0;
-				srcTreeComponent.Parents.clear();
-			}
-			ImGui::EndDragDropTarget();
-		}
-
 		ImGui::PopStyleVar();
 		ImGui::End();
 	}
@@ -193,7 +180,20 @@ namespace origin {
 		if (e.HasParent() && index == 0)
 			return;
 
-		bool node_open = ImGui::TreeNode((void*)(uint64_t)(uint32_t)entity, entity.GetTag().c_str());
+		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				m_SelectedEntity = {};
+				DestroyEntity(entity);
+			}
+			ImGui::EndPopup();
+		}
 
 		if (ImGui::BeginDragDropSource())
 		{
@@ -230,14 +230,25 @@ namespace origin {
 			ImGui::TreePop();
 		}
 
-		if (ImGui::BeginPopupContextItem())
+		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 1.5f));
+		if (ImGui::BeginDragDropTarget())
 		{
-			if (ImGui::MenuItem("Delete"))
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 			{
-				m_SelectedEntity = {};
-				DestroyEntity(entity);
+				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
+				auto& srcTreeComponent = src.GetComponent<TreeNodeComponent>();
+
+				if (srcTreeComponent.Parent != 0)
+				{
+					Entity parent = m_Context->GetEntityWithUUID(srcTreeComponent.Parent);
+					parent.GetComponent<TreeNodeComponent>().Children.erase(src.GetUUID());
+				}
+
+				srcTreeComponent.Parent = 0;
+				srcTreeComponent.Parents.clear();
 			}
-			ImGui::EndPopup();
+			ImGui::EndDragDropTarget();
 		}
 	}
 

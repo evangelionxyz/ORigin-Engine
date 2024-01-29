@@ -139,7 +139,12 @@ namespace origin
 
 				const std::shared_ptr<Texture2D> thumbnail = DirectoryIcons(std::filesystem::directory_entry(m_CurrentDirectory / item));
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetRendererID()), { (float)m_ThumbnailSize, (float)m_ThumbnailSize }, { 0, 1 }, { 1, 0 });
+
+				float thumbnailHeight = m_ThumbnailSize * ((float)thumbnail->GetHeight() / (float)thumbnail->GetWidth());
+				float diff = (float)(m_ThumbnailSize - thumbnailHeight);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
+
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetRendererID()), { (float)m_ThumbnailSize, (float)thumbnailHeight }, { 0, 1 }, { 1, 0 });
 
 				if (ImGui::BeginDragDropSource())
 				{

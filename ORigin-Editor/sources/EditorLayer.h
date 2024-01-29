@@ -37,7 +37,6 @@ namespace origin {
   	void SceneViewport();
     void SceneViewportToolbar();
     void SceneViewportMenu();
-    void SceneViewportOverlay();
     bool NewProject();
     bool OpenProject();
     bool OpenProject(const std::filesystem::path& path);
@@ -72,16 +71,16 @@ namespace origin {
 			Simulate = 2
 		};
 
+		static EditorLayer* s_Instance;
 		SceneState m_SceneState = SceneState::Edit;
 		enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
 		ViewportMenuContext m_VpMenuContext = ViewportMenuContext::CreateMenu;
-		static EditorLayer* s_Instance;
-		float m_CameraFov = 45.0f;
 		SceneHierarchyPanel m_SceneHierarchy;
 		Dockspace m_Dockspace;
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
+		std::shared_ptr<Texture2D> m_OriginEngineTex;
 		std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
 		std::unique_ptr<ContentBrowserPanel> m_ContentBrowser;
 		std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
@@ -101,6 +100,7 @@ namespace origin {
 		int m_GizmosMode = 0;
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;
+		float m_CameraFov = 45.0f;
 		float cameraYaw = 0.0f, cameraPitch = 0.0f;
 		float m_GameViewportSizeX = 0.0f, m_GameViewportSizeY = 0.0f;
 		float m_Time = 0.0f;

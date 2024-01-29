@@ -36,16 +36,17 @@ namespace origin {
   void EditorLayer::OnAttach()
   {
 	  // Load UI Textures
-	  m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/playbutton.png");
-	  m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/simulatebutton.png");
-	  m_UITextures["stop"] = TextureImporter::LoadTexture2D("Resources/UITextures/stopbutton.png");
-	  m_UITextures["pause"] = TextureImporter::LoadTexture2D("Resources/UITextures/pausebutton.png");
-	  m_UITextures["stepping"] = TextureImporter::LoadTexture2D("Resources/UITextures/steppingframebutton.png");
+	  m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/play_icon.png");
+	  m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/simulate_icon.png");
+	  m_UITextures["stop"] = TextureImporter::LoadTexture2D("Resources/UITextures/stop_icon.png");
+	  m_UITextures["pause"] = TextureImporter::LoadTexture2D("Resources/UITextures/pause_icon.png");
+	  m_UITextures["stepping"] = TextureImporter::LoadTexture2D("Resources/UITextures/stepping_icon.png");
 	  m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
 	  m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
 	  m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
 	  m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png");
 	  m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
+		m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/origin_engine.png");
 
 	  // ==============================
 	  // Main Framebuffer Specification
@@ -150,6 +151,7 @@ namespace origin {
 	  m_Dockspace.Begin();
 	  SceneViewport();
 	  MenuBar();
+		SceneViewportToolbar();
 	  GUIRender();
 	  if (m_ContentBrowser)
 		  m_ContentBrowser->OnImGuiRender();
@@ -479,9 +481,7 @@ namespace origin {
 		ImGui::Begin("Scene", nullptr, window_flags);
 
 		SceneViewportMenu();
-		SceneViewportToolbar();
-		SceneViewportOverlay();
-
+		
 		m_SceneViewportHovered = ImGui::IsWindowHovered();
 		m_SceneViewportFocused = ImGui::IsWindowFocused();
 
@@ -642,132 +642,121 @@ namespace origin {
 
 	void EditorLayer::SceneViewportToolbar()
 	{
-		ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		ImVec2& viewportOffset = ImGui::GetWindowPos();
-
-		const float wndWidth = ImGui::GetWindowWidth();
-
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar
-			| ImGuiWindowFlags_NoScrollWithMouse
-			| ImGuiWindowFlags_AlwaysAutoResize
-			| ImGuiWindowFlags_NoDecoration
-			| ImGuiWindowFlags_NoCollapse;
-
-		float wndYpos = { (viewportMinRegion.y + viewportOffset.y) + 4.0f };
-
-		// Play Button
-		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + wndWidth / 2.5f, wndYpos }, ImGuiCond_Always);
-		ImGui::SetNextWindowBgAlpha(0.0f);
-
-		if (ImGui::Begin("##play_button", nullptr, window_flags))
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+		if (ImGui::Begin("Toolbar", nullptr, window_flags))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 2.0f));
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f, 0.0f));
+			const auto canvasPos = ImGui::GetCursorScreenPos();
+			const auto canvasSize = ImGui::GetContentRegionAvail();
 
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+			ImVec2 posMinA = ImVec2(canvasPos);
+			ImVec2 posMaxA = ImVec2(canvasPos.x + 600.0f, canvasPos.y + canvasSize.y);
+
+			static float hue = 0.0f;
+			hue += ImGui::GetIO().DeltaTime * 0.1f;
+			if (hue >= 360.0f)
+				hue -= 360.0f;
+			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);
+
+			auto rectTransparentColor = IM_COL32(0, 0, 0, 0);
+			drawList->AddRectFilledMultiColor(posMinA, posMaxA, rectColor, rectTransparentColor, rectTransparentColor, rectColor);
+			ImVec2 posMinB = ImVec2(canvasPos.x + canvasSize.x - 600.0f, canvasPos.y);
+			ImVec2 posMaxB = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
+			drawList->AddRectFilledMultiColor(posMinB, posMaxB, rectTransparentColor, rectColor, rectColor, rectTransparentColor);
+
+			ImTextureID origiEngineTex = reinterpret_cast<ImTextureID>(m_OriginEngineTex->GetRendererID());
+			float textureAspect = (float)m_OriginEngineTex->GetWidth() / (float)m_OriginEngineTex->GetHeight();
+
+			ImVec2 imagePosMin = ImVec2(canvasPos.x, canvasPos.y);
+			ImVec2 imagePosMax = ImVec2(canvasPos.x + (canvasSize.y * textureAspect), canvasPos.y + canvasSize.y);
+			drawList->AddImage(origiEngineTex, imagePosMin, imagePosMax, 
+				{ 0.0f, 1.0f }, { 1.0f, 0.0f });
+			
+			ImVec2 btPos = { (canvasSize.x / 2.0f) - 175.0f, (canvasSize.y - 30.0f) / 2.0f };
+			ImGui::SetCursorPos(btPos);
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+			// Play Button
+			std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
+			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 25.0f, 25.0f }))
 			{
-				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-				ImGui::SameLine();
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
+				if (m_SceneHierarchy.GetContext())
 				{
-					if (m_SceneHierarchy.GetContext())
+					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
 					{
-						if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
-						{
-							OnScenePlay();
-						}
-						else if (m_SceneState == SceneState::Play)
-						{
-							OnSceneStop();
-						}
+						OnScenePlay();
+					}
+					else if (m_SceneState == SceneState::Play)
+					{
+						OnSceneStop();
 					}
 				}
-				ImGui::PopStyleColor(3);
 			}
 
 			// Simulate Button
+			ImGui::SameLine();
+			bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
+			icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
+			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), {25.0f, 25.0f}))
 			{
-				std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play) ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-				ImGui::SameLine();
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
+				if (m_SceneHierarchy.GetContext())
 				{
-					if (m_SceneHierarchy.GetContext())
+					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
 					{
-						if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
-						{
-							OnSceneSimulate();
-						}
-						else if (m_SceneState == SceneState::Simulate)
-						{
-							OnSceneStop();
-						}
+						OnSceneSimulate();
+					}
+					else if (m_SceneState == SceneState::Simulate)
+					{
+						OnSceneStop();
 					}
 				}
-				ImGui::PopStyleColor(3);
 			}
 
 			// Pause Button
 			if (m_SceneState != SceneState::Edit)
 			{
-				bool isPaused = m_ActiveScene->IsPaused();
-				std::shared_ptr<Texture2D> icon = m_UITextures.at("pause");
 				ImGui::SameLine();
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-
-				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
+				bool isPaused = m_ActiveScene->IsPaused();
+				icon = m_UITextures.at("pause");
+				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 25.0f, 25.0f }))
 				{
 					m_ActiveScene->SetPaused(!isPaused);
 				}
 
-				ImGui::PopStyleColor(3);
-
 				if (isPaused)
 				{
-					std::shared_ptr<Texture2D> icon = m_UITextures.at("stepping");
+					icon = m_UITextures.at("stepping");
 					ImGui::SameLine();
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-
-					if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), ImVec2(25.0f, 25.0f)))
+					if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 25.0f, 25.0f }))
 					{
-						m_ActiveScene->Step(12);
+						m_ActiveScene->Step(1);
 					}
-
-					ImGui::PopStyleColor(3);
 				}
 			}
 
-			ImGui::PopStyleVar(2);
-			ImGui::End(); // !viewport_toolbar
-		}
+			ImGui::SameLine();
 
-		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + wndWidth - 145.0f, wndYpos }, ImGuiCond_Always);
-		ImGui::SetNextWindowBgAlpha(0.0f);
-		if (ImGui::Begin("##tool_bar", nullptr, window_flags))
-		{
-			// Camera Projection Mode Button
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-			auto mode = m_EditorCamera.GetProjectionType();
-			std::shared_ptr<Texture2D> cameraPrjModeButton = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
-			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(cameraPrjModeButton->GetRendererID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
+			// Projection mode
+			ImGui::SetCursorPos({ btPos.x + 175.0f, btPos.y });
+			const auto& mode = m_EditorCamera.GetProjectionType();
+			icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
+			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
 			{
-				if(mode == ProjectionType::Perspective)
+				if (mode == ProjectionType::Perspective)
 					m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
-				else if(mode == ProjectionType::Orthographic)
+				else if (mode == ProjectionType::Orthographic)
 					m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
 			}
+			ImGui::PopStyleColor(3);
+
+			ImGui::SetCursorPos({ canvasSize.x - 200.0f, btPos.y + 10.0f});
+			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+#if 0
 			ImGui::SameLine(0.0f, 5.0f);
-			
 			const ImVec4 btActive = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
 			ImVec4 btLOCAL, btGLOBAL;
 			if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
@@ -795,8 +784,9 @@ namespace origin {
 			if (ImGui::Button("GLOBAL", { 50.0f, 25.0f }))
 				m_GizmosMode = ImGuizmo::MODE::WORLD;
 			ImGui::PopStyleColor(8);
-
-			ImGui::End(); // !gizmo_mode
+#endif
+			
+			ImGui::End(); // !Toolbar
 		}
 	}
 
@@ -873,42 +863,11 @@ namespace origin {
 							m_SceneHierarchy.DestroyEntity(selectedEntity);
 						}
 					}
-					
 				}
 				ImGui::EndPopup();
 			}
 		}
 		ImGui::PopStyleVar();
-	}
-
-	void EditorLayer::SceneViewportOverlay()
-	{
-		const ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		const ImVec2& viewportOffset = ImGui::GetWindowPos();
-
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize
-			| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-
-		ImGui::SetNextWindowPos({ (viewportMinRegion.x + viewportOffset.x) + 8.0f, (viewportMinRegion.y + viewportOffset.y) + 8.0f }, ImGuiCond_Always);
-
-		ImGui::SetNextWindowBgAlpha(0.0f); // Transparent background
-		if (ImGui::Begin("##top_left_overlay", nullptr, window_flags))
-		{
-			if (Project::GetActive())
-			{
-				if (!m_SceneHierarchy.GetContext())
-					ImGui::Text("Load a Scene or Create New Scene to begin!");
-			}
-			else
-			{
-				ImGui::Text("Create or Open a Project");
-			}
-
-			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::Text("Mouse Pos (%d, %d)", mouseX, mouseY);
-		}
-
-		ImGui::End();
 	}
 
 	void EditorLayer::GUIRender()
