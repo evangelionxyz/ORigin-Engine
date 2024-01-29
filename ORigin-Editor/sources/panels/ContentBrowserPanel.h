@@ -47,7 +47,7 @@ namespace origin
 		
 		std::map<int, std::filesystem::path> m_HistoryList;
 		int m_ForwardCount = 0;
-		int m_ThumbnailSize = 64;
+		int m_ThumbnailSize = 90;
 
 		enum class Mode
 		{

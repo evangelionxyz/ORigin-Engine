@@ -27,9 +27,7 @@ namespace origin {
 #endif
 		glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
 		m_MainWindow = glfwCreateWindow(width, height, title, nullptr, nullptr);
-		m_Data.Width = width;
-		m_Data.Height = height;
-		glfwGetWindowPos(m_MainWindow, &initWinPosX, &initWinPosY);
+		
 
 		if (!m_MainWindow)
 		{
@@ -50,6 +48,13 @@ namespace origin {
 
 		m_GraphicsContext = GraphicsContext::Create();
 		m_GraphicsContext->Init();
+
+		int w, h;
+		glfwGetWindowSize(m_MainWindow, &w, &h);
+		m_Data.Width = (uint32_t)w;
+		m_Data.Height = (uint32_t)h;
+
+		glfwGetWindowPos(m_MainWindow, &initWinPosX, &initWinPosY);
 	}
 
 	WinWindow::~WinWindow()

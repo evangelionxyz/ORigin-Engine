@@ -165,6 +165,12 @@ namespace origin
 
 	Entity Scene::DuplicateEntity(Entity entity)
 	{
+		// TODO: Skipped for now
+		if (entity.HasChildren())
+		{
+			return entity;
+		}
+
 		std::string name = entity.GetTag();
 		Entity newEntity = CreateEntity(name);
 
@@ -176,6 +182,7 @@ namespace origin
 			auto& parentIdc = parent.GetComponent<TreeNodeComponent>();
 			parentIdc.Children[newEntity.GetUUID()] = newEntity;
 		}
+
 
 		return newEntity;
 	}

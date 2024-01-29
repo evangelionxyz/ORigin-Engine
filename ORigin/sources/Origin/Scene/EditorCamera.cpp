@@ -144,35 +144,35 @@ namespace origin {
 		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
 		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
 
-		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight)
-			|| Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle)
-			/*|| Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft)*/)
-		{
-			if (mouse.x > wWidth - 2.0f)
-			{
-				m_InitialMousePosition.x = 2.0f;
-				Input::Get().SetMousePosition(2.0f, mouse.y);
-			}
-			else if (mouse.x < 2.0f)
-			{
-				m_InitialMousePosition.x = wWidth - 2.0f;
-				Input::Get().SetMousePosition(wWidth - 2.0f, mouse.y);
-			}
-
-			if (mouse.y > wHeight - 2.0f)
-			{
-				m_InitialMousePosition.y = 2.0f;
-				Input::Get().SetMousePosition(mouse.x, 2.0f);
-			}
-			else if (mouse.y < 2.0f)
-			{
-				m_InitialMousePosition.y = wHeight - 2.0f;
-				Input::Get().SetMousePosition(mouse.x, wHeight - 2.0f);
-			}
-		}
-
 		if (m_EnableMovement)
 		{
+			if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight)
+				|| Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle)
+				/*|| Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft)*/)
+			{
+				if (mouse.x > wWidth - 2.0f)
+				{
+					m_InitialMousePosition.x = 2.0f;
+					Input::Get().SetMousePosition(2.0f, mouse.y);
+				}
+				else if (mouse.x < 2.0f)
+				{
+					m_InitialMousePosition.x = wWidth - 2.0f;
+					Input::Get().SetMousePosition(wWidth - 2.0f, mouse.y);
+				}
+
+				if (mouse.y > wHeight - 2.0f)
+				{
+					m_InitialMousePosition.y = 2.0f;
+					Input::Get().SetMousePosition(mouse.x, 2.0f);
+				}
+				else if (mouse.y < 2.0f)
+				{
+					m_InitialMousePosition.y = wHeight - 2.0f;
+					Input::Get().SetMousePosition(mouse.x, wHeight - 2.0f);
+				}
+			}
+
 			glm::vec3 lastPosition = m_LastPosition;
 			glm::vec3 velocity(0.0f);
 

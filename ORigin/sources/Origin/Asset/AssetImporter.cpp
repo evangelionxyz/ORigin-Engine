@@ -116,6 +116,8 @@ namespace origin {
 		TextureSpecification spec;
 		spec.Width = width;
 		spec.Height = height;
+		spec.MinFilter = ImageFilter::Nearest;
+		spec.MagFilter = ImageFilter::Nearest;
 
 		switch (channels)
 		{

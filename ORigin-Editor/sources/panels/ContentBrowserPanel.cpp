@@ -19,19 +19,18 @@ namespace origin
 		: m_Project(project), m_ThumbnailCache(std::make_shared<ThumbnailCache>(project)), m_BaseDirectory(m_Project->GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory)
 	{
 		m_TreeNodes.push_back(TreeNode(".", 0));
-
 		m_IconMap["backward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/backward_icon.png");
 		m_IconMap["forward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/forward_icon.png");
-		m_IconMap["directory_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/directory_icon.png");
+		m_IconMap["directory_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/folder_icon.png");
 		m_IconMap["asset_mode_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/asset_mode_icon.png");
 		m_IconMap["file_mode_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/file_mode_icon.png");
-		
 		m_IconMap["unknown"] = TextureImporter::LoadTexture2D("Resources/UITextures/file_icon.png");
 		m_IconMap[".jpg"] = TextureImporter::LoadTexture2D("Resources/UITextures/jpg_file_icon.png");
-		m_IconMap[".cs"] = TextureImporter::LoadTexture2D("Resources/UITextures/script_file_icon.png");
-		m_IconMap[".glsl"] = TextureImporter::LoadTexture2D("Resources/UITextures/glsl_file_icon.png");
+		m_IconMap[".cs"] = TextureImporter::LoadTexture2D("Resources/UITextures/script_icon.png");
+		m_IconMap[".glsl"] = TextureImporter::LoadTexture2D("Resources/UITextures/glsl_icon.png");
 		m_IconMap[".hlsl"] = TextureImporter::LoadTexture2D("Resources/UITextures/hlsl_file_icon.png");
-		m_IconMap[".org"] = TextureImporter::LoadTexture2D("Resources/UITextures/scene_file_icon.png");
+		m_IconMap[".org"] = TextureImporter::LoadTexture2D("Resources/UITextures/scene_icon.png");
+		m_IconMap[".mp3"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio_icon.png");
 		
 		RefreshAssetTree();
 		m_Mode = Mode::FileSystem;
@@ -341,11 +340,11 @@ namespace origin
 			if (ImGui::BeginMenu("Thumbnail Size"))
 			{
 				if (ImGui::MenuItem("Small"))
-					m_ThumbnailSize = 64;
+					m_ThumbnailSize = 70;
 				if (ImGui::MenuItem("Medium"))
-					m_ThumbnailSize = 80;
+					m_ThumbnailSize = 90;
 				if (ImGui::MenuItem("Large"))
-					m_ThumbnailSize = 92;
+					m_ThumbnailSize = 110;
 
 				ImGui::EndMenu();
 			}
