@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Origin\Renderer\Texture.h"
+#include <glm\glm.hpp>
 #include <vector>
 
 namespace origin {
@@ -22,6 +23,7 @@ namespace origin {
 	public:
 		Animation() = default;
 		void AddFrame(AssetHandle handle, float frameTime);
+		void DeleteFrame(int index);
 
 		void Reset();
 		void SetLooping(bool looping);
@@ -38,7 +40,8 @@ namespace origin {
 
 		int GetFrameIndex() const { return m_CurrentFrameIndex; }
 		size_t GetTotalFrames() const { return m_AnimationFrames.size(); }
-		void SetFrameTime(float frameTime);
+		void SetAnimationFrameTime(int index, float frameTime);
+		AnimationFrame& GetAnimationFrame(int index);
 
 		static std::shared_ptr<Animation> Create();
 		std::vector<AnimationFrame> GetAnimationFrames() { return m_AnimationFrames; }

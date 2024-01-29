@@ -12,6 +12,8 @@
 
 #include <ImGuizmo.h>
 #include <ImSequencer.h>
+#include <ImGradient.h>
+#include "ImCurveEdit.h"
 
 namespace origin {
 

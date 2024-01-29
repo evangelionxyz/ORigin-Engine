@@ -17,6 +17,9 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
+
+#include "Panels/AnimationTimeline.h"
+
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
@@ -75,6 +78,7 @@ namespace origin {
 		  if (!OpenProject(m_ProjectDirectoryPath))
 			  Application::Get().Close();
 	  }
+
   }
 
   void EditorLayer::OnEvent(Event& e)
@@ -149,6 +153,7 @@ namespace origin {
   void EditorLayer::OnGuiRender()
   {
 	  m_Dockspace.Begin();
+
 	  SceneViewport();
 	  MenuBar();
 		SceneViewportToolbar();
@@ -156,6 +161,9 @@ namespace origin {
 	  if (m_ContentBrowser)
 		  m_ContentBrowser->OnImGuiRender();
 	  m_SceneHierarchy.OnImGuiRender();
+
+		m_AnimationTimeline.OnImGuiRender();
+
 	  m_Dockspace.End();
   }
 
@@ -932,28 +940,34 @@ namespace origin {
 					static Animation animation;
 
 					// Drag and Drop
-					ImGui::Button("Drop Texture", ImVec2(80.0f, 30.0f));
-					if (ImGui::BeginDragDropTarget())
+					if (!state.HasAnimations())
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						ImGui::Button("Drop Texture");
+						if (ImGui::BeginDragDropTarget())
 						{
-							AssetHandle handle = *(AssetHandle*)payload->Data;
-							animation.AddFrame(handle, 0.23f);
+							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								AssetHandle handle = *(AssetHandle*)payload->Data;
+								animation.AddFrame(handle, 0.23f);
+							}
 						}
 					}
 
-					ImGui::SameLine();
-					if (ImGui::Button("Add Animation", { 90.0f, 30.0f }) && animation.HasFrame())
+					if (animation.HasFrame())
 					{
-						state.AddAnimation(animation);
-						OGN_CORE_TRACE("Animation added to {}", stateName);
+						ImGui::SameLine();
+						if (ImGui::Button("Add"))
+						{
+							state.AddAnimation(animation);
+							OGN_CORE_TRACE("Animation added to {}", stateName);
 
-						animation.Delete();
+							animation.Delete();
+						}
+
+						ImGui::SameLine();
+						if (ImGui::Button("Set Default"))
+							state.SetDefaultState(state.GetCurrentState());
 					}
-
-					ImGui::SameLine();
-					if (ImGui::Button("Set As Default State", ImVec2(80.0f, 30.f)))
-						state.SetDefaultState(state.GetCurrentState());
 
 					// Display what texture has been dropped
 					const float padding = 10.0f;
@@ -968,35 +982,50 @@ namespace origin {
 
 					ImGui::Columns(columnCount, nullptr, false);
 
+					// Preview
 					if (animation.HasFrame())
 					{
 						for (int i = 0; i < animation.GetTotalFrames(); i++)
 						{
-							std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(animation.GetCurrentValue());
+							std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(animation.GetValue(i));
 							const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
-							ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
+							ImGui::ImageButton(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
+							
+							if (ImGui::BeginPopupContextItem(std::to_string(i).c_str()))
+							{
+								if (ImGui::MenuItem("Delete"))
+									animation.DeleteFrame(i);
+								ImGui::EndPopup();
+							}
 
-							ImGui::TextWrapped("Frame %d", i + 1);
+							ImGui::DragFloat(std::to_string(i).c_str(), &animation.GetAnimationFrame(i).FrameTime, 0.1f, 0.0f, 60.0f, "%.1f S");
 
 							ImGui::NextColumn();
 						}
 						ImGui::Columns();
 					}
 
-
 					// Show the STATE animation
 					if (state.HasAnimations())
 					{
 						for (int i = 0; i < state.GetAnimation().GetTotalFrames(); i++)
 						{
-							std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(state.GetAnimation().GetValue(i));
+							Animation& anim = state.GetAnimation();
+							std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(anim.GetValue(i));
 							const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
 							ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
 
-							const int currentIndex = state.GetAnimation().GetFrameIndex();
+							if (ImGui::BeginPopupContextItem(std::to_string(i).c_str()))
+							{
+								if (ImGui::MenuItem("Delete"))
+									anim.DeleteFrame(i);
+								ImGui::EndPopup();
+							}
 
-							if (currentIndex == i)
-								ImGui::TextWrapped("  -----");
+							ImGui::DragFloat(std::to_string(i).c_str(), &anim.GetAnimationFrame(i).FrameTime, 0.1f, 0.0f, 60.0f, "%.1f S");
+
+							const int currentIndex = state.GetAnimation().GetFrameIndex();
+							if (currentIndex == i) ImGui::TextWrapped("  -----");
 
 							ImGui::NextColumn();
 						}

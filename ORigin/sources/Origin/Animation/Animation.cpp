@@ -16,6 +16,14 @@ namespace origin {
 		m_AnimationFrames.push_back(frame);
 	}
 
+	void Animation::DeleteFrame(int index)
+	{
+		if (!m_AnimationFrames.empty())
+		{
+			m_AnimationFrames.erase(m_AnimationFrames.begin() + index);
+		}
+	}
+
 	void Animation::Reset()
 	{
 		m_CurrentFrameIndex = 0;
@@ -69,11 +77,16 @@ namespace origin {
 		return m_AnimationFrames.at(frame).Handle;
 	}
 
-	void Animation::SetFrameTime(float frameTime)
+	void Animation::SetAnimationFrameTime(int index, float frameTime)
 	{
-		for (auto& frame : m_AnimationFrames)
-			frame.FrameTime = frameTime;
+		m_AnimationFrames[index].FrameTime = frameTime;
 	}
+
+	AnimationFrame& Animation::GetAnimationFrame(int index)
+	{
+		return m_AnimationFrames[index];
+	}
+
 	std::shared_ptr<Animation> Animation::Create()
 	{
 		return std::make_shared<Animation>();

@@ -1,11 +1,12 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
 #include <Origin.h>
 #include "Panels/Dockspace.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Panels/AnimationTimeline.h"
+
 #include <ImGuizmo.h>
-#include <ImSequencer.h>
 
 namespace origin {
 
@@ -79,6 +80,7 @@ namespace origin {
 		Dockspace m_Dockspace;
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;
+		AnimationTimeline m_AnimationTimeline;
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
 		std::shared_ptr<Texture2D> m_OriginEngineTex;
 		std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
