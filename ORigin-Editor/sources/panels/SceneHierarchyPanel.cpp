@@ -536,6 +536,10 @@ namespace origin {
 
 		DrawComponent<AnimationComponent>("ANIMATION", entity, [](auto& component)
 		{
+				for (auto& anim : component.Animations)
+				{
+					ImGui::Text(anim->GetName().c_str());
+				}
 		});
 
 		DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto& component)

@@ -260,8 +260,8 @@ namespace origin
 			for (const auto entity : animView)
 			{
 				auto& ac = animView.get<AnimationComponent>(entity);
-				if (ac.State.HasAnimations())
-					ac.State.GetAnimation().Update(ts);
+				if (!ac.Animations.empty())
+					ac.Animations[ac.CurrentAnimation]->OnUpdateRuntime();
 			}
 
 			// Audio Update
@@ -380,12 +380,9 @@ namespace origin
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<AnimationComponent>(entity);
-			if (ac.State.HasAnimations())
+			if (!ac.Animations.empty())
 			{
-				if (ac.State.Preview)
-					ac.State.Update(deltaTime);
-				else
-					ac.State.GetAnimation().Reset();
+				ac.Animations[ac.CurrentAnimation]->OnUpdateEditor();
 			}
 		}
 
@@ -411,7 +408,6 @@ namespace origin
 					glm::vec3 velocity = delta / glm::vec3(deltaTime);
 					audio->Set3DAttributes(tc.Translation, velocity);
 					audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
-					
 				}
 			}
 		}
@@ -452,11 +448,13 @@ namespace origin
 			});
 
 			// Animation
-			m_Registry.view<AnimationComponent>().each([=](auto entityID, auto& ac)
+			auto& animView = m_Registry.view<AnimationComponent>();
+			for (auto e : animView)
 			{
-				if (ac.State.HasAnimations())
-					ac.State.GetAnimation().Update(ts);
-			});
+				auto ac = animView.get<AnimationComponent>(e);
+				if(!ac.Animations.empty())
+					ac.Animations[ac.CurrentAnimation]->OnUpdateRuntime();
+			}
 
 			Renderer2D::Begin(editorCamera);
 			AudioEngine::SetMute(false);
@@ -605,12 +603,13 @@ namespace origin
 			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
 			for (auto& entity : animView)
 			{
-				auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (anim.State.HasAnimations() == false)
-					continue;
-
-				if (anim.State.GetAnimation().HasFrame())
-					sprite.Texture = anim.State.GetAnimation().GetCurrentValue();
+				auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
+				if (!ac.Animations.empty())
+				{
+					ac.Animations[ac.CurrentAnimation]->OnUpdateRuntime();
+					if (ac.Animations[ac.CurrentAnimation]->HasFrame())
+						sc.Texture = ac.Animations[ac.CurrentAnimation]->GetCurrentValue();
+				}
 			}
 		}
 
@@ -713,12 +712,12 @@ namespace origin
 		const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
 		for (auto& entity : animView)
 		{
-			auto& [sprite, anim] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-			if (anim.State.HasAnimations() == false)
-				continue;
-
-			if (anim.State.GetAnimation().HasFrame())
-				sprite.Texture = anim.State.GetAnimation().GetCurrentValue();
+			auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
+			if (!ac.Animations.empty())
+			{
+				if(ac.Animations[ac.CurrentAnimation]->HasFrame())
+					sc.Texture = ac.Animations[ac.CurrentAnimation]->GetCurrentValue();
+			}
 		}
 
 		auto& circles = m_Registry.view<TransformComponent, CircleRendererComponent>();

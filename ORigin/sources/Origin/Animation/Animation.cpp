@@ -10,85 +10,89 @@
 
 namespace origin {
 
-	void Animation::AddFrame(AssetHandle handle, float frameTime)
+	Animation::Animation(std::string name)
+		: m_Name(std::move(name))
 	{
-		AnimationFrame frame(handle, frameTime);
-		m_AnimationFrames.push_back(frame);
+	}
+
+	void Animation::AddFrame(AssetHandle handle)
+	{
+		AnimationFrame frame(handle);
+		AnimFrames.push_back(frame);
+	}
+
+	void Animation::AddFrame(AnimationFrame frame)
+	{
+		AnimFrames.push_back(frame);
 	}
 
 	void Animation::DeleteFrame(int index)
 	{
-		if (!m_AnimationFrames.empty())
+		if (HasFrame())
 		{
-			m_AnimationFrames.erase(m_AnimationFrames.begin() + index);
+			AnimFrames.erase(AnimFrames.begin() + index);
+			FrameIndex = index > 0 ? index - 1 : 0;
+		}
+
+	}
+
+	void Animation::OnUpdateEditor()
+	{
+		if (Preview)
+		{
+			if (CurrentFrame < MaxFrame)
+				CurrentFrame++;
+
+			if (CurrentFrame >= MaxFrame)
+				CurrentFrame = Looping ? 0 : MaxFrame;
+		}
+
+		for (int i = 0; i < AnimFrames.size(); i++)
+		{
+			if (CurrentFrame >= AnimFrames[i].FrameBegin && CurrentFrame < AnimFrames[i].FrameEnd)
+			{
+				FrameIndex = i;
+			}
 		}
 	}
 
-	void Animation::Reset()
-	{
-		m_CurrentFrameIndex = 0;
-	}
-
-	void Animation::Update(float deltaTime)
+	void Animation::OnUpdateRuntime()
 	{
 		if (!HasFrame())
 			return;
 
-		m_ElapsedFrameTime += deltaTime;
+		if (CurrentFrame < MaxFrame)
+			CurrentFrame++;
 
-		if (m_ElapsedFrameTime >= m_AnimationFrames[m_CurrentFrameIndex].FrameTime)
+		if (CurrentFrame >= MaxFrame)
+			CurrentFrame = Looping ? 0 : MaxFrame;
+
+		for (int i = 0; i < AnimFrames.size(); i++)
 		{
-			m_CurrentFrameIndex++;
-
-			if (m_CurrentFrameIndex >= m_AnimationFrames.size())
-				m_CurrentFrameIndex = m_Looping ? 0 : m_AnimationFrames.size() - 1;
-
-			m_ElapsedFrameTime = 0.0f;
+			if (CurrentFrame >= AnimFrames[i].FrameBegin && CurrentFrame < AnimFrames[i].FrameEnd)
+			{
+				FrameIndex = i;
+			}
 		}
-		
-	}
-
-	void Animation::Render(const glm::mat4& transform)
-	{
-		if (AssetManager::GetAssetType(GetCurrentValue()) == AssetType::Texture2D)
-		{
-			Renderer2D::DrawQuad(transform, AssetManager::GetAsset<Texture2D>(GetCurrentValue()));
-		}
-	}
-
-	void Animation::Delete()
-	{
-		m_CurrentFrameIndex = 0;
-		m_AnimationFrames.clear();
-	}
-
-	void Animation::SetLooping(bool looping)
-	{
-		m_Looping = looping;
 	}
 
 	AssetHandle Animation::GetCurrentValue()
 	{
-		return m_AnimationFrames.at(m_CurrentFrameIndex).Handle;
+		return AnimFrames[FrameIndex].Handle;
 	}
 
 	AssetHandle Animation::GetValue(int frame)
 	{
-		return m_AnimationFrames.at(frame).Handle;
+		return AnimFrames.at(frame).Handle;
 	}
 
-	void Animation::SetAnimationFrameTime(int index, float frameTime)
+	AnimationFrame& Animation::GetFrame(int index)
 	{
-		m_AnimationFrames[index].FrameTime = frameTime;
+		return AnimFrames[index];
 	}
 
-	AnimationFrame& Animation::GetAnimationFrame(int index)
+	std::shared_ptr<Animation> Animation::Create(const std::string& name)
 	{
-		return m_AnimationFrames[index];
-	}
-
-	std::shared_ptr<Animation> Animation::Create()
-	{
-		return std::make_shared<Animation>();
+		return std::make_shared<Animation>(name);
 	}
 }

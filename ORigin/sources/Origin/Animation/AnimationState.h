@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Animation.h"
@@ -38,6 +38,8 @@ namespace origin {
 
 		std::unordered_map<std::string, Animation> GetAnimationState() const { return m_Animations; }
 		const std::vector<std::string>& GetStateStorage() const { return m_StateStorage; }
+
+		int FrameMax = 60, CurrentFrame = 0;
 
 	private:
 		std::string m_CurrentState;

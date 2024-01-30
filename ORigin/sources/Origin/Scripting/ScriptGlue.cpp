@@ -907,11 +907,11 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<AnimationComponent>();
+		/*auto& ac = entity.GetComponent<AnimationComponent>();
 		if (ac.State.HasAnimations())
 		{
 			state = ScriptEngine::CreateString(ac.State.GetCurrentState().c_str());
-		}
+		}*/
 	}
 
 	static void AnimationComponent_SetActiveState(UUID entityID, MonoString* state)
@@ -922,10 +922,10 @@ namespace origin
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
 		auto& ac = entity.GetComponent<AnimationComponent>();
-		if (ac.State.HasAnimations())
+		/*if (ac.State.HasAnimations())
 		{
 			ac.State.SetActiveState(Utils::MonoStringToString(state));
-		}
+		}*/
 	}
 
 	static bool Input_IsKeyPressed(KeyCode keycode)

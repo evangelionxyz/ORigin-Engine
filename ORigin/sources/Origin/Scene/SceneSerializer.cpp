@@ -224,43 +224,35 @@ namespace origin
 
 			out << YAML::Key << "AnimationComponent";
 			out << YAML::BeginMap; // AnimationComponent
-			out << YAML::Key << "DefaultState" << YAML::Value << ac.State.GetDefaultState();
+			out << YAML::Key << "Animations";
+			out << YAML::BeginSeq; // Animations
 
-			out << YAML::Key << "States";
-			out << YAML::BeginSeq; // States
-
-			// Find States
-			for (int stateIndex = 0; stateIndex < ac.State.GetStateStorage().size(); stateIndex++)
+			for (int animIndex = 0; animIndex < ac.Animations.size(); animIndex++)
 			{
-				const std::string currentState = ac.State.GetStateStorage().at(stateIndex);
-
+				const std::shared_ptr<Animation> currentAnim = ac.Animations[animIndex];
 				out << YAML::BeginMap; // Name
-				out << YAML::Key << "Name" << currentState;
+				out << YAML::Key << "Name" << currentAnim->GetName();
+				out << YAML::Key << "Type" << (int)currentAnim->GetType();
+				out << YAML::Key << "Looping" << YAML::Value << currentAnim->Looping;
+				out << YAML::Key << "MaxFrame" << YAML::Value << currentAnim->MaxFrame;
 
-				if (ac.State.HasAnimations())
+				out << YAML::Key << "Frames" << YAML::Value;
+				out << YAML::BeginSeq; // Frames
+				for (int frameIndex = 0; frameIndex < currentAnim->GetTotalFrames(); frameIndex++)
 				{
-					auto animations = ac.State.GetAnimationState().at(currentState);
-					{
-						out << YAML::Key << "Frames" << YAML::Value;
-						out << YAML::BeginSeq; // Frames
-						for (int frameIndex = 0; frameIndex < animations.GetTotalFrames(); frameIndex++)
-						{
-							out << YAML::BeginMap; // ID
-							out << YAML::Key << "ID" << YAML::Value << animations.GetValue(frameIndex); // Add frame path directly to the sequence
-							out << YAML::Key << "FrameTime" << YAML::Value << animations.GetAnimationFrames().at(frameIndex).FrameTime;
-							out << YAML::EndMap; //!ID
-						}
-						out << YAML::EndSeq; //!Frames
-					}
-					out << YAML::Key << "Looping" << YAML::Value << animations.IsLooping();
+					out << YAML::BeginMap; // ID
+					out << YAML::Key << "ID" << YAML::Value << currentAnim->GetValue(frameIndex);
+					out << YAML::Key << "FrameBegin" << YAML::Value << currentAnim->GetFrame(frameIndex).FrameBegin;
+					out << YAML::Key << "FrameEnd" << YAML::Value << currentAnim->GetFrame(frameIndex).FrameEnd;
+					out << YAML::EndMap; //!ID
 				}
+				out << YAML::EndSeq; //!Frames
 				out << YAML::EndMap; // !Name
 			}
-			out << YAML::EndSeq; // !States
 
+			out << YAML::EndSeq; // !Animations
 			out << YAML::EndMap; // !AnimationComponent
 		}
-
 
 		if (entity.HasComponent<ScriptComponent>())
 		{
@@ -757,29 +749,30 @@ namespace origin
 				if (YAML::Node animationComponent = entity["AnimationComponent"])
 				{
 					auto& ac = deserializedEntity.AddComponent<AnimationComponent>();
-
-					if (auto states = animationComponent["States"])
+					if (auto animations = animationComponent["Animations"])
 					{
-						// Get all states
-						for (auto state : states)
+						for (auto anim : animations)
 						{
-							Animation animation;
-							ac.State.AddState(state["Name"].as<std::string>());
-							
-							// Retrieve all frames from the state
-							for (auto frames : state["Frames"])
+							std::string animName = anim["Name"].as<std::string>();
+							int animType = anim["Type"].as<int>();
+							std::shared_ptr<Animation> newAnim = Animation::Create(animName);
+							newAnim->SetType((AnimationType)animType);
+							newAnim->Looping = anim["Looping"].as<bool>();
+							newAnim->MaxFrame = anim["MaxFrame"].as<int>();
+
+							// Retrieve all frames from the animation
+							for (auto frames : anim["Frames"])
 							{
 								AssetHandle handle = frames["ID"].as<uint64_t>();
-								animation.AddFrame(handle, frames["FrameTime"].as<float>());
+								AnimationFrame newFrame;
+								newFrame.Handle = handle;
+								newFrame.FrameBegin = frames["FrameBegin"].as<int>();
+								newFrame.FrameEnd = frames["FrameEnd"].as<int>();
+								newAnim->AddFrame(newFrame);
 							}
-
-							// Add the animation after frames added
-							ac.State.AddAnimation(animation);
-							ac.State.SetLooping(state["Name"].as<std::string>(), state["Looping"].as<bool>());
+							ac.Animations.push_back(newAnim);
 						}
 					}
-
-					ac.State.SetActiveState(animationComponent["DefaultState"].as<std::string>());
 				}
 
 				if (YAML::Node audioComponent = entity["AudioComponent"])

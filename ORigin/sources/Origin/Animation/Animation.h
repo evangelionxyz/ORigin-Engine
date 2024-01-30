@@ -10,47 +10,68 @@ namespace origin {
 	struct AnimationFrame
 	{
 		AssetHandle Handle;
-		float FrameTime;
-
+		int FrameBegin = 0;
+		int FrameEnd = 4;
 		AnimationFrame() = default;
-		AnimationFrame(AssetHandle handle, float frameTime)
-			: Handle(handle), FrameTime(frameTime)
-		{}
+		AnimationFrame(AssetHandle handle)
+			: Handle(handle) {}
 	};
+
+	enum class AnimationType
+	{
+		None = -1,
+		SpriteSheet = 0,
+		Transform = 1
+	};
+
+	static const char* AnimationTypeToString(AnimationType type)
+	{
+		switch (type)
+		{
+			case AnimationType::None: return "Invalid";
+			case AnimationType::SpriteSheet: return "Sprite";
+			case AnimationType::Transform: return "Tr";
+		}
+
+		return "Invalid";
+	}
 
 	class Animation
 	{
 	public:
 		Animation() = default;
-		void AddFrame(AssetHandle handle, float frameTime);
+		Animation(std::string name);
+		
+		void AddFrame(AnimationFrame frame);
+		void AddFrame(AssetHandle handle);
 		void DeleteFrame(int index);
 
-		void Reset();
-		void SetLooping(bool looping);
-		void Update(float deltaTime);
-		void Render(const glm::mat4& transform);
-
-		void Delete();
-
-		bool HasFrame() const { return m_AnimationFrames.empty() == false; }
-		bool IsLooping() const { return m_Looping; }
+		void OnUpdateEditor();
+		void OnUpdateRuntime();
+		bool HasFrame() const { return AnimFrames.empty() == false; }
 
 		AssetHandle GetCurrentValue();
 		AssetHandle GetValue(int frame);
 
-		int GetFrameIndex() const { return m_CurrentFrameIndex; }
-		size_t GetTotalFrames() const { return m_AnimationFrames.size(); }
-		void SetAnimationFrameTime(int index, float frameTime);
-		AnimationFrame& GetAnimationFrame(int index);
+		size_t GetTotalFrames() const { return AnimFrames.size(); }
+		AnimationFrame& GetFrame(int index);
+		const std::string GetName() { return m_Name; }
 
-		static std::shared_ptr<Animation> Create();
-		std::vector<AnimationFrame> GetAnimationFrames() { return m_AnimationFrames; }
+		static std::shared_ptr<Animation> Create(const std::string& name);
+		std::vector<AnimationFrame> AnimFrames;
+		int CurrentFrame = 0;
+		int MaxFrame = 60;
+
+		int FrameIndex = 0;
+
+		bool Looping = false;
+		bool Preview = false;
+
+		void SetType(AnimationType type) { m_Type = type; }
+		AnimationType GetType() { return m_Type; }
 
 	private:
-		std::vector<AnimationFrame> m_AnimationFrames;
-
-		int m_CurrentFrameIndex = 0;
-		float m_ElapsedFrameTime = 0.0f;
-		bool m_Looping = false;
+		AnimationType m_Type = AnimationType::None;
+		std::string m_Name;
 	};
 }

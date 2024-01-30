@@ -66,9 +66,11 @@ namespace origin
 	class AnimationComponent
 	{
 	public:
+		int CurrentAnimation = 0;
+		std::vector<std::shared_ptr<Animation>> Animations;
+
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent&) = default;
-		AnimationState State;
 	};
 
 	class AudioListenerComponent

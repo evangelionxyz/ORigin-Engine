@@ -30,7 +30,7 @@ namespace origin {
 	{
 		OGN_CORE_ASSERT(AnimationExists(state), "Animation doesn't exist");
 
-		m_Animations.at(state).Delete();
+		//m_Animations.at(state).Delete();
 		m_Animations.erase(state);
 
 		auto it = std::find(m_StateStorage.begin(), m_StateStorage.end(), state);
@@ -50,25 +50,26 @@ namespace origin {
 	void AnimationState::Stop()
 	{
 		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState).Reset();
+		//m_Animations.at(m_CurrentState).Reset();
 	}
 
 	void AnimationState::Update(float deltaTime)
 	{
 		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState).Update(deltaTime);
+		m_Animations.at(m_CurrentState).OnUpdateRuntime();
 	}
 
 	void AnimationState::SetLooping(std::string state, bool looping)
 	{
 		OGN_CORE_ASSERT(AnimationExists(state), "Animation doesn't exist");
-		m_Animations.at(state).SetLooping(looping);
+		//m_Animations.at(state).SetLooping(looping);
 	}
 
 	bool AnimationState::IsLooping(std::string state)
 	{
 		OGN_CORE_ASSERT(AnimationExists(state), "Animation doesn't exist");
-		return m_Animations.at(state).IsLooping();
+		//return m_Animations.at(state).IsLooping();
+		return false;
 	}
 
 	Animation& AnimationState::GetAnimation()

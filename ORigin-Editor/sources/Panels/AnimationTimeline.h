@@ -1,10 +1,13 @@
 #pragma once
 #include "imgui.h"
 #include "Origin\Animation\Animation.h"
+#include "Origin\Animation\AnimationState.h"
+#include "Origin\Scene\Entity.h"
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 #include "ImCurveEdit.h"
-
+#include "Origin\Utils\Time.h"
 #include <math.h>
 #include <vector>
 #include <algorithm>
@@ -111,57 +114,23 @@ namespace origin {
 		SEQUENCER_EDIT_ALL = SEQUENCER_EDIT_STARTEND | SEQUENCER_CHANGE_FRAME
 	};
 
-	enum class AnimationType
-	{
-		None = -1,
-		Sprite = 0
-	};
-
-	static const char* AnimationTypeToString(AnimationType type)
-	{
-		switch (type)
-		{
-		case AnimationType::None: return "Invalid";
-		case AnimationType::Sprite: return "Sprite";
-		}
-
-		return "Invalid";
-	} 
-
-	struct AnimationItem
-	{
-		AnimationType Type;
-		int FrameStart, FrameEnd;
-		bool Expanded;
-		Animation Anim;
-	};
-
 	class AnimationTimeline
 	{
 	public:
 		AnimationTimeline();
-		void OnImGuiRender();
 
-		void BeginEdit(int entry);
-		void EndEdit();
-		int GetFrameMin() const { return m_FrameMin; }
-		int GetFrameMax() const { return m_FrameMax; }
-		int GetItemCount() const { return (int)m_Items.size(); }
-		const char* GetItemLabel(int index) const;
-		void Get(int index, int** start, int** end, int* type, unsigned int* color);
-		void Add(AnimationType type);
-		void Del(int index);
-		void DoubleClick(int index);
-		void CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect);
-		void CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect);
-		size_t GetCustomHeight(int index) { return m_Items[index].Expanded ? 300 : 0; }
+		void DrawEntityAnimation(std::vector<std::shared_ptr<Animation>>& animations, int* currentAnim);
+
+		void CustomDrawCompact(const std::shared_ptr<Animation>& anim, int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect);
+		void Get(const std::shared_ptr<Animation>& anim, int index, int** start, int** end, unsigned int* color);
+		const char* AnimationTimeline::GetItemLabel(AnimationType type, int index) const;
 		const char* GetCollapseFmt() const { return "%d Frames / %d entries"; }
+		size_t GetCustomHeight(int index);
 
-		int m_FrameMin = 0, m_FrameMax = 60;
-		std::vector<AnimationItem> m_Items;
+		int CurrentAnimIndex = 0;
 		RampEdit rampEdit;
+		bool Timeline(std::shared_ptr<Animation>& animation, int* currentFrame, bool* expanded, int* selectedEntry, int* firstFrame, int sequenceOptions);
 	};
 
-	bool Timeline(AnimationTimeline* timeline, int* currentFrame, bool* expanded, int* selectedEntry, int* firstFrame, int sequenceOptions);
 }
 

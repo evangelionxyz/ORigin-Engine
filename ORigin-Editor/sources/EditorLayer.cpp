@@ -78,7 +78,6 @@ namespace origin {
 		  if (!OpenProject(m_ProjectDirectoryPath))
 			  Application::Get().Close();
 	  }
-
   }
 
   void EditorLayer::OnEvent(Event& e)
@@ -161,8 +160,6 @@ namespace origin {
 	  if (m_ContentBrowser)
 		  m_ContentBrowser->OnImGuiRender();
 	  m_SceneHierarchy.OnImGuiRender();
-
-		m_AnimationTimeline.OnImGuiRender();
 
 	  m_Dockspace.End();
   }
@@ -884,167 +881,8 @@ namespace origin {
 		{
 			if (entity.HasComponent<AnimationComponent>())
 			{
-				ImGui::Begin("Animator", &guiAnimationWindow);
-				ImGui::Text("%s Animator", entity.GetTag().c_str());
-
 				auto& ac = entity.GetComponent<AnimationComponent>();
-				auto& state = ac.State;
-
-				// Insert State name
-				static std::string stateName;
-
-				ImGui::Text("State Name: "); ImGui::SameLine();
-
-				char buffer[256];
-				strcpy_s(buffer, sizeof(buffer), stateName.c_str());
-
-				if (ImGui::InputText("##stateName", buffer, sizeof(buffer)))
-					stateName = std::string(buffer);
-
-				ImGui::SameLine();
-				if (ImGui::Button("+", ImVec2(30.0f, 20.0f)))
-				{
-					if (!stateName.empty())
-					{
-						state.AddState(stateName);
-						stateName.clear();
-					}
-				}
-
-				if (entity.HasComponent<SpriteRenderer2DComponent>() && state.HasStates())
-				{
-					ImGui::Text("Animation State");
-					ImGui::SameLine();
-
-					// drop-down
-					auto& stateStorage = state.GetStateStorage();
-					std::string currentState = state.GetCurrentState();
-
-					if (ImGui::BeginCombo("##AnimationState", currentState.c_str()))
-					{
-						bool isSelected = false;
-						for (const auto& st : stateStorage)
-						{
-							isSelected = currentState == st;
-							if (ImGui::Selectable(st.c_str(), isSelected))
-							{
-								currentState = st;
-								state.SetActiveState(st);
-							}
-							if (isSelected)
-								ImGui::SetItemDefaultFocus();
-						}
-						ImGui::EndCombo();
-					} // !drop-down
-
-					static Animation animation;
-
-					// Drag and Drop
-					if (!state.HasAnimations())
-					{
-						ImGui::Button("Drop Texture");
-						if (ImGui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								AssetHandle handle = *(AssetHandle*)payload->Data;
-								animation.AddFrame(handle, 0.23f);
-							}
-						}
-					}
-
-					if (animation.HasFrame())
-					{
-						ImGui::SameLine();
-						if (ImGui::Button("Add"))
-						{
-							state.AddAnimation(animation);
-							OGN_CORE_TRACE("Animation added to {}", stateName);
-
-							animation.Delete();
-						}
-
-						ImGui::SameLine();
-						if (ImGui::Button("Set Default"))
-							state.SetDefaultState(state.GetCurrentState());
-					}
-
-					// Display what texture has been dropped
-					const float padding = 10.0f;
-					const float imageSize = 42.0f;
-					const float cellSize = imageSize + padding;
-
-					const float panelWidth = ImGui::GetContentRegionAvail().x;
-					int columnCount = static_cast<int>(panelWidth / cellSize);
-
-					if (columnCount < 1)
-						columnCount = 1;
-
-					ImGui::Columns(columnCount, nullptr, false);
-
-					// Preview
-					if (animation.HasFrame())
-					{
-						for (int i = 0; i < animation.GetTotalFrames(); i++)
-						{
-							std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(animation.GetValue(i));
-							const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
-							ImGui::ImageButton(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
-							
-							if (ImGui::BeginPopupContextItem(std::to_string(i).c_str()))
-							{
-								if (ImGui::MenuItem("Delete"))
-									animation.DeleteFrame(i);
-								ImGui::EndPopup();
-							}
-
-							ImGui::DragFloat(std::to_string(i).c_str(), &animation.GetAnimationFrame(i).FrameTime, 0.1f, 0.0f, 60.0f, "%.1f S");
-
-							ImGui::NextColumn();
-						}
-						ImGui::Columns();
-					}
-
-					// Show the STATE animation
-					if (state.HasAnimations())
-					{
-						for (int i = 0; i < state.GetAnimation().GetTotalFrames(); i++)
-						{
-							Animation& anim = state.GetAnimation();
-							std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(anim.GetValue(i));
-							const ImTextureID animTexture = reinterpret_cast<ImTextureID>(texture->GetRendererID());
-							ImGui::Image(animTexture, ImVec2(imageSize, imageSize), ImVec2(0, 1), ImVec2(1, 0));
-
-							if (ImGui::BeginPopupContextItem(std::to_string(i).c_str()))
-							{
-								if (ImGui::MenuItem("Delete"))
-									anim.DeleteFrame(i);
-								ImGui::EndPopup();
-							}
-
-							ImGui::DragFloat(std::to_string(i).c_str(), &anim.GetAnimationFrame(i).FrameTime, 0.1f, 0.0f, 60.0f, "%.1f S");
-
-							const int currentIndex = state.GetAnimation().GetFrameIndex();
-							if (currentIndex == i) ImGui::TextWrapped("  -----");
-
-							ImGui::NextColumn();
-						}
-						ImGui::Columns();
-
-						bool looping = state.IsLooping(currentState);
-						if (ImGui::Checkbox("Loop", &looping))
-							state.SetLooping(currentState, looping);
-
-						ImGui::SameLine();
-						if (ImGui::Button("Preview"))
-							state.Preview = !state.Preview;
-
-						ImGui::SameLine();
-						if (ImGui::Button("Delete State"))
-							state.RemoveState(currentState);
-					}
-				}
-				ImGui::End();
+				m_AnimationTimeline.DrawEntityAnimation(ac.Animations, &ac.CurrentAnimation);
 			}
 		}
 		
