@@ -76,6 +76,11 @@ namespace origin {
 		}
 	}
 
+	void Animation::Reset()
+	{
+		CurrentFrame = 0;
+	}
+
 	AssetHandle Animation::GetCurrentValue()
 	{
 		return AnimFrames[FrameIndex].Handle;
