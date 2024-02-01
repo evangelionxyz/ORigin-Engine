@@ -44,6 +44,7 @@ includedirs {
     "%{IncludeDir.GLAD}",
     "%{IncludeDir.GLM}",
     "%{IncludeDir.FMOD}",
+    "%{IncludeDir.Miniaudio}",
     "%{IncludeDir.ENTT}",
     "%{IncludeDir.MONO}",
     "%{IncludeDir.FILEWATCHER}",

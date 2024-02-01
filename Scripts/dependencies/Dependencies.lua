@@ -1,6 +1,4 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-
--- Set Dependencies Folder
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
 ASSIMP_SDK = os.getenv("ASSIMP_SDK")
@@ -18,6 +16,7 @@ IncludeDir["GLM"] = "%{wks.location}/ORigin/vendor/glm"
 IncludeDir["ENTT"] = "%{wks.location}/ORigin/vendor/entt/"
 IncludeDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/include"
 IncludeDir["FMOD"] = "%{wks.location}/ORigin/vendor/FMOD/include"
+IncludeDir["Miniaudio"] = "%{wks.location}/ORigin/vendor/Miniaudio"
 IncludeDir["FILEWATCHER"] = "%{wks.location}/ORigin/vendor/Filewatcher/include"
 IncludeDir["YAML_CPP"] = "%{wks.location}/ORigin/vendor/yaml-cpp/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
