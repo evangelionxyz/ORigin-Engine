@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "Lighting.h"
-#include "Origin/Audio/Audio.h"
-#include "Scene.h"
 #include "ScriptableEntity.h"
+#include "Origin/Audio/AudioEngine.h"
+#include "Origin/Audio/AudioSource.h"
 #include "Origin/Animation/Animation.h"
 #include "origin/Physics/Contact2DListener.h"
 #include "Origin/Physics/Physics2D.h"
@@ -270,13 +271,17 @@ namespace origin
 			{
 				auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
 
-				if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+				if (std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 				{
-					audio->UpdateAudioComponent(ac);
-					if (ac.Spatial)
+					audio->SetVolume(ac.Volume);
+					audio->SetPitch(ac.Pitch);
+					audio->SetPaning(ac.Panning);
+					audio->SetLoop(ac.Looping);
+					audio->SetSpatial(ac.Spatializing);
+					if (ac.Spatializing)
 					{
-						glm::vec3 velocity = glm::vec3(0.0f);
-						audio->Set3DAttributes(tc.Translation, velocity);
+						audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
+						audio->SetPosition(tc.Translation);
 					}
 				}
 			}
@@ -285,12 +290,9 @@ namespace origin
 			for (const auto entity : audioListenerView)
 			{
 				auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-				if (al.Enable)
-					al.Listener.Set(tc.Translation, glm::vec3(1.0f), tc.GetForward(), tc.GetUp());
-				AudioEngine::SetMute(!al.Enable);
+				
 			}
 
-			AudioEngine::SystemUpdate();
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
@@ -326,7 +328,7 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 			if (ac.PlayAtStart)
 				audio->Play();
 		}
@@ -344,14 +346,13 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+			if (const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 				audio->Stop();
 		}
 
 		m_PhysicsScene->OnSimulationStop();
 		m_Physics2D->OnSimulationStop();
 	}
-
 
 	void Scene::OnUpdateEditor(Timestep deltaTime, EditorCamera& editorCamera)
 	{
@@ -392,30 +393,23 @@ namespace origin
 		for (auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-
-			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+			if (std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 			{
-				audio->UpdateAudioComponent(ac);
-				if (ac.Spatial)
+				audio->SetVolume(ac.Volume);
+				audio->SetPitch(ac.Pitch);
+				audio->SetPaning(ac.Panning);
+				audio->SetLoop(ac.Looping);
+				audio->SetSpatial(ac.Spatializing);
+				if (ac.Spatializing)
 				{
-					static glm::vec3 prevPos = tc.Translation;
-
-					const glm::vec3& position = tc.Translation;
-					const glm::vec3 delta = position - prevPos;
-
-					prevPos = position;
-
-					glm::vec3 velocity = delta / glm::vec3(deltaTime);
-					audio->Set3DAttributes(tc.Translation, velocity);
-					audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
+					audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
+					audio->SetPosition(tc.Translation);
 				}
 			}
 		}
 		Renderer2D::End();
 
 		editorCamera.UpdateAudioListener(deltaTime);
-		AudioEngine::SetMute(false);
-		AudioEngine::SystemUpdate();
 	}
 
 	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& editorCamera)
@@ -457,29 +451,21 @@ namespace origin
 			}
 
 			Renderer2D::Begin(editorCamera);
-			AudioEngine::SetMute(false);
 			const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
 			for (auto entity : audioView)
 			{
 				auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-
-				if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+				if (std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 				{
-					audio->UpdateAudioComponent(ac);
-
-					if (ac.Spatial)
+					audio->SetVolume(ac.Volume);
+					audio->SetPitch(ac.Pitch);
+					audio->SetPaning(ac.Panning);
+					audio->SetLoop(ac.Looping);
+					audio->SetSpatial(ac.Spatializing);
+					if (ac.Spatializing)
 					{
-						static glm::vec3 prevPos = tc.Translation;
-
-						const glm::vec3& position = tc.Translation;
-						const glm::vec3 delta = position - prevPos;
-
-						prevPos = position;
-
-						glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
-						audio->Set3DAttributes(tc.Translation, velocity);
-
-						audio->UpdateDopplerEffect(editorCamera.GetAudioListener().GetPosition(), editorCamera.GetAudioListener().GetVelocity());
+						audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
+						audio->SetPosition(tc.Translation);
 					}
 				}
 			}
@@ -490,24 +476,14 @@ namespace origin
 			for (const auto entity : audioListenerView)
 			{
 				auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-				if (al.Enable)
-				{
-					static glm::vec3 prevPos = tc.Translation;
-					const glm::vec3& position = tc.Translation;
-					const glm::vec3 delta = position - prevPos;
-					prevPos = position;
-					glm::vec3 velocity = (position - prevPos) / glm::vec3(ts);
-
-					al.Listener.Set(tc.Translation, velocity, tc.GetForward(), tc.GetUp());
-				}
-
+				if(al.Enable)
+					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
 				isMainCameraListening = al.Enable;
 			}
 
-			if (!isMainCameraListening)
+			if(!isMainCameraListening)
 				editorCamera.UpdateAudioListener(ts);
 
-			AudioEngine::SystemUpdate();
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
@@ -535,7 +511,7 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+			std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 
 			if (ac.PlayAtStart)
 				audio->Play();
@@ -557,7 +533,7 @@ namespace origin
 		{
 			auto& ac = view.get<AudioComponent>(e);
 			
-			if (const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio))
+			if (const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 				audio->Stop();
 		}
 	}

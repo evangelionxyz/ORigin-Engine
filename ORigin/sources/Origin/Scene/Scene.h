@@ -7,11 +7,9 @@
 #include "Origin\Renderer\ParticleSystem.h"
 #include "Origin\Scene\Components.h"
 #include "Origin\Scene\Skybox.h"
-
-#include "entt\entt.hpp"
 #include "Origin\Renderer\Texture.h"
-
 #include "Origin\Utils\Time.h"
+#include "entt\entt.hpp"
 
 class b2World;
 

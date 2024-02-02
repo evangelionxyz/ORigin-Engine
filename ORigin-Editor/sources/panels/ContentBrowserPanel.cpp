@@ -62,27 +62,15 @@ namespace origin
 		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0)))
 		{
 			if (m_CurrentDirectory != Project::GetActiveAssetDirectory())
-			{
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
-				m_ForwardCount--;
-			}
 		}
 		
 		// Forward button
 		ImGui::SameLine();
 		navButtonTexture = m_IconMap.at("forward_button_icon");
 		ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0));
-		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-		{
-			if(!m_HistoryList.empty())
-			{
-				//m_CurrentDirectory /= m_HistoryList.at(m_ForwardCount);
-				//m_ForwardCount++;
-			}
-		}
-		ImGui::PopStyleColor(3);
-
 		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
 
 		// Push Button Colors
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -103,9 +91,21 @@ namespace origin
 	void ContentBrowserPanel::DrawContentBrowser()
 	{
 		ImGui::Begin("Content Browser");
+
+
 		DrawNavButton();
 
-		ImGui::BeginChild("item_list", ImVec2(ImGui::GetContentRegionAvail()), false);
+		const auto canvasPos = ImGui::GetCursorScreenPos();
+		const auto canvasSize = ImGui::GetContentRegionAvail();
+
+		ImGui::BeginChild("item_browser", canvasSize, false);
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		ImVec2 posMin = ImVec2(canvasPos);
+		ImVec2 posMax = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
+		uint32_t rectColor = IM_COL32(40, 30, 20, 255);
+		uint32_t rectTransparentColor = IM_COL32(0, 0, 0, 0);
+		drawList->AddRectFilledMultiColor(posMin, posMax, rectTransparentColor, rectTransparentColor, rectColor, rectColor);
 
 		static float padding = 10.0f;
 		const float cellSize = m_ThumbnailSize + padding;
@@ -154,14 +154,11 @@ namespace origin
 				}
 
 				ImGui::PopStyleColor();
+
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
 					if (isDirectory)
-					{
 						m_CurrentDirectory /= item.filename();
-						m_HistoryList.insert({ m_HistoryList.size(), m_CurrentDirectory });
-						m_ForwardCount++;
-					}
 				}
 
 				if (ImGui::BeginPopupContextItem())
@@ -201,6 +198,7 @@ namespace origin
 						shouldBreak = true;
 						RefreshAssetTree();
 					}
+
 					ImGui::EndPopup();
 				}
 
@@ -213,8 +211,6 @@ namespace origin
 					break;
 			}
 		}
-
-		// ==== File Mode ====
 		else if(m_Mode == Mode::FileSystem)
 		{
 			uint32_t count = 0;
@@ -272,10 +268,7 @@ namespace origin
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
 							if (directoryEntry.is_directory())
-							{
 								m_CurrentDirectory /= path.filename();
-								m_HistoryList.insert({ m_HistoryList.size(), m_CurrentDirectory });
-							}
 						}
 
 						if (ImGui::BeginPopupContextItem())

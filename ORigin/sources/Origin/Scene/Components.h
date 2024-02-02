@@ -1,26 +1,19 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-
 #pragma once
-#include "pch.h"
-
 #include "Origin/Animation/AnimationState.h"
-#include "Origin/Math/Math.h"
 #include "Origin/Audio/AudioListener.h"
-
+#include "Origin/Math/Math.h"
 #include "SceneCamera.h"
 #include "Origin/Core/UUID.h"
-
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Model.h"
 #include "Origin/Renderer/Font.h"
 #include "Origin/Renderer/ParticleSystem.h"
-
+#include "Origin/Renderer/Material.h"
+#include "Origin/Renderer/Framebuffer.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include "Origin/Renderer/Material.h"
-#include "Origin/Renderer/Framebuffer.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -77,27 +70,25 @@ namespace origin
 	{
 	public:
 		AudioListener Listener;
+		uint32_t Index = 0;
 		bool Enable = true;
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent&) = default;
 	};
 
-	class Audio;
+	class AudioSource;
 	class AudioComponent
 	{
 	public:
 		AssetHandle Audio = 0;
-		std::string Name = "Audio";
-
+		std::string Name;
 		float Volume = 1.0f;
-		float DopplerLevel = 1.0f;
-		float LowPass = 1.0f;
+		float Panning = 0.0f;
 		float Pitch = 1.0f;
-		float MinDistance = 1.0f;
-		float MaxDistance = 100.0f;
-
+		float MinDistance = 10.0f;
+		float MaxDistance = 20.0f;
+		bool Spatializing = false;
 		bool Looping = false;
-		bool Spatial = false;
 		bool PlayAtStart = false;
 
 		AudioComponent() = default;

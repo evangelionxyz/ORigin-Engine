@@ -36,22 +36,23 @@ namespace origin {
 		return s_AssetImportFunctions.at(metadata.Type)(handle, metadata);
 	}
 
-	std::shared_ptr<Audio> AudioImporter::ImportAudio(AssetHandle handle, AssetMetadata metadata)
+	std::shared_ptr<AudioSource> AudioImporter::ImportAudio(AssetHandle handle, AssetMetadata metadata)
 	{
-		AudioConfig config;
-		config.Name = metadata.Filepath.filename().string();
-		config.Spatial = false;
-		config.Looping = false;
-
-		return LoadAudio(Project::GetActiveAssetDirectory() / metadata.Filepath, config);
+		return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-	std::shared_ptr<Audio> AudioImporter::LoadAudio(const std::filesystem::path filepath, AudioConfig config)
+	std::shared_ptr<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path filepath)
 	{
-		std::shared_ptr<Audio> audio = Audio::Create();
-		audio->LoadSource(filepath, config);
+		std::shared_ptr<AudioSource> source = AudioSource::Create();
+		source->LoadSource("Audio", filepath, false, false);
+		return source;
+	}
 
-		return audio;
+	std::shared_ptr<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path filepath)
+	{
+		std::shared_ptr<AudioSource> source = AudioSource::Create();
+		source->LoadStreamingSource("Streaming Audio", filepath, false, false);
+		return source;
 	}
 
 	std::shared_ptr<Scene> SceneImporter::ImportScene(AssetHandle handle, const AssetMetadata& metadata)

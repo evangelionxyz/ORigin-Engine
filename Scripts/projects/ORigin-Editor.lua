@@ -39,7 +39,7 @@ includedirs {
     "%{IncludeDir.GLAD}",
     "%{IncludeDir.BOX2D}",
     "%{IncludeDir.ENTT}",
-    "%{IncludeDir.FMOD}",
+    "%{IncludeDir.Miniaudio}",
     "%{IncludeDir.IMGUI}",
     "%{IncludeDir.IMGUIZMO}",
     "%{IncludeDir.GLM}",

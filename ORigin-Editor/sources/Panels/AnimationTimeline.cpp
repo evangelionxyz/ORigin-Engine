@@ -59,50 +59,51 @@ namespace origin {
         ImGui::EndCombo();
       }
 
-      bool isDeleting = false;
       ImGui::SameLine();
-			if (ImGui::Button("-"))
-			{
-        animations.erase(animations.begin() + CurrentAnimIndex);
-        isDeleting = true;
-			}
-
-      if (!isDeleting)
+      if (ImGui::Button("-"))
       {
-				ImVec4 buttonColor = ImVec4(0.1f, 0.6f, 0.1f, 1.0f);
-				ImVec4 buttonColorHovered = ImVec4(0.1f, 0.8f, 0.1f, 1.0f);
-
-				if (animations[CurrentAnimIndex]->Preview)
-				{
-					buttonColor = ImVec4(0.6f, 0.1f, 0.1f, 1.0f);
-					buttonColorHovered = ImVec4(0.8f, 0.1f, 0.1f, 1.0f);
-				}
-
-				ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColorHovered);
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
-				if (ImGui::Button("Preview"))
-					animations[CurrentAnimIndex]->Preview = !animations[CurrentAnimIndex]->Preview;
-				ImGui::PopStyleColor(3);
-
-				ImGui::SameLine();
-				ImGui::Text("Frame");
-				ImGui::SameLine();
-				ImGui::InputInt("##current_frame", &animations[CurrentAnimIndex]->CurrentFrame);
-				ImGui::SameLine();
-				ImGui::Text("Max Frame");
-				ImGui::SameLine();
-				ImGui::InputInt("##frame_max", &animations[CurrentAnimIndex]->MaxFrame);
-				ImGui::SameLine();
-				ImGui::Text("Looping");
-				ImGui::SameLine();
-				ImGui::Checkbox("##looping", &animations[CurrentAnimIndex]->Looping);
-
-				ImGui::PopItemWidth();
-
-				Timeline(animations[CurrentAnimIndex], &animations[CurrentAnimIndex]->CurrentFrame, &expanded, &selectedEntry, &firstFrame,
-					SEQUENCER_EDIT_STARTEND | SEQUENCER_ADD | SEQUENCER_DEL | SEQUENCER_COPYPASTE | SEQUENCER_CHANGE_FRAME);
+        animations.erase(animations.begin() + CurrentAnimIndex);
+        CurrentAnimIndex = animations.size() > 0 ? animations.size() - 1 : 0;
       }
+
+
+      ImVec4 buttonColor = ImVec4(0.1f, 0.6f, 0.1f, 1.0f);
+      ImVec4 buttonColorHovered = ImVec4(0.1f, 0.8f, 0.1f, 1.0f);
+
+      if (animations[CurrentAnimIndex]->Preview)
+      {
+        buttonColor = ImVec4(0.6f, 0.1f, 0.1f, 1.0f);
+        buttonColorHovered = ImVec4(0.8f, 0.1f, 0.1f, 1.0f);
+      }
+
+      ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColorHovered);
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
+      if (ImGui::Button("Preview"))
+      {
+        animations[CurrentAnimIndex]->Preview = !animations[CurrentAnimIndex]->Preview;
+        animations[CurrentAnimIndex]->Reset();
+      }
+      ImGui::PopStyleColor(3);
+
+      ImGui::SameLine();
+      ImGui::Text("Frame");
+      ImGui::SameLine();
+      ImGui::InputInt("##current_frame", &animations[CurrentAnimIndex]->CurrentFrame);
+      ImGui::SameLine();
+      ImGui::Text("Max Frame");
+      ImGui::SameLine();
+      ImGui::InputInt("##frame_max", &animations[CurrentAnimIndex]->MaxFrame);
+      ImGui::SameLine();
+      ImGui::Text("Looping");
+      ImGui::SameLine();
+      ImGui::Checkbox("##looping", &animations[CurrentAnimIndex]->Looping);
+
+      ImGui::PopItemWidth();
+
+      Timeline(animations[CurrentAnimIndex], &animations[CurrentAnimIndex]->CurrentFrame, &expanded, &selectedEntry, &firstFrame,
+        SEQUENCER_EDIT_STARTEND | SEQUENCER_ADD | SEQUENCER_DEL | SEQUENCER_COPYPASTE | SEQUENCER_CHANGE_FRAME);
+
     }
 		
 		ImGui::End();
@@ -188,19 +189,19 @@ namespace origin {
     static int movingPart = -1;
     int delEntry = -1;
     int dupEntry = -1;
-    int ItemHeight = 20;
+    int itemHeight = 20;
 
     bool popupOpened = false;
     int sequenceCount = animation->GetTotalFrames();
 
     ImGui::BeginGroup();
 
-    ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
-    ImVec2 canvas_size = ImGui::GetContentRegionAvail();
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+    ImVec2 canvasSize = ImGui::GetContentRegionAvail();
 
     int firstFrameUsed = firstFrame ? *firstFrame : 0;
-    int controlHeight = sequenceCount * ItemHeight;
+    int controlHeight = sequenceCount * itemHeight;
     for (int i = 0; i < sequenceCount; i++)
       controlHeight += int(this->GetCustomHeight(i));
     int frameCount = ImMax(animation->MaxFrame, 1);
@@ -221,11 +222,11 @@ namespace origin {
     ImVector<CustomDraw> compactCustomDraws;
 
     // zoom in/out
-    const int visibleFrameCount = (int)floorf((canvas_size.x - legendWidth) / framePixelWidth);
+    const int visibleFrameCount = (int)floorf((canvasSize.x - legendWidth) / framePixelWidth);
     const float barWidthRatio = ImMin(visibleFrameCount / (float)frameCount, 1.f);
-    const float barWidthInPixels = barWidthRatio * (canvas_size.x - legendWidth);
+    const float barWidthInPixels = barWidthRatio * (canvasSize.x - legendWidth);
 
-    ImRect regionRect(canvas_pos, canvas_pos + canvas_size);
+    ImRect regionRect(canvasPos, canvasPos + canvasSize);
 
     static bool panningView = false;
     static ImVec2 panningViewSource;
@@ -258,34 +259,42 @@ namespace origin {
 
     if (expanded && !*expanded)
     {
-      ImGui::InvisibleButton("canvas", ImVec2(canvas_size.x - canvas_pos.x, (float)ItemHeight));
-      draw_list->AddRectFilled(canvas_pos, ImVec2(canvas_size.x + canvas_pos.x, canvas_pos.y + ItemHeight), 0xFF3D3837, 0);
+      ImGui::InvisibleButton("canvas", ImVec2(canvasSize.x - canvasPos.x, (float)itemHeight));
+      drawList->AddRectFilled(canvasPos, ImVec2(canvasSize.x + canvasPos.x, canvasPos.y + itemHeight), 0xFF3D3837, 0);
       char tmps[512];
       ImFormatString(tmps, IM_ARRAYSIZE(tmps), this->GetCollapseFmt(), frameCount, sequenceCount);
-      draw_list->AddText(ImVec2(canvas_pos.x + 26, canvas_pos.y + 2), 0xFFFFFFFF, tmps);
+      drawList->AddText(ImVec2(canvasPos.x + 26, canvasPos.y + 2), 0xFFFFFFFF, tmps);
     }
     else
     {
       bool hasScrollBar = true;
-      ImVec2 headerSize(canvas_size.x, (float)ItemHeight);
-      ImVec2 scrollBarSize(canvas_size.x, 14.f);
+      ImVec2 headerSize(canvasSize.x, (float)itemHeight);
+      ImVec2 scrollBarSize(canvasSize.x, 14.f);
       ImGui::InvisibleButton("topBar", headerSize);
-      draw_list->AddRectFilled(canvas_pos, canvas_pos + headerSize, 0xFFFF0000, 0);
+      drawList->AddRectFilled(canvasPos, canvasPos + headerSize, 0xFFFF0000, 0);
       ImVec2 childFramePos = ImGui::GetCursorScreenPos();
-      ImVec2 childFrameSize(canvas_size.x, canvas_size.y - 8.f - headerSize.y - (hasScrollBar ? scrollBarSize.y : 0));
+      ImVec2 childFrameSize(canvasSize.x, canvasSize.y - 8.f - headerSize.y - (hasScrollBar ? scrollBarSize.y : 0));
       ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
       ImGui::BeginChildFrame(889, childFrameSize);
 
       if(sequenceCount)
-        ImGui::InvisibleButton("contentBar", ImVec2(canvas_size.x, float(controlHeight)));
+        ImGui::InvisibleButton("contentBar", ImVec2(canvasSize.x, float(controlHeight)));
 
       const ImVec2 contentMin = ImGui::GetItemRectMin();
       const ImVec2 contentMax = ImGui::GetItemRectMax();
       const ImRect contentRect(contentMin, contentMax);
       const float contentHeight = contentMax.y - contentMin.y;
 
-      // full background
-      draw_list->AddRectFilled(canvas_pos, canvas_pos + canvas_size, 0xFF181818, 0);
+
+
+			ImVec2 posMin = ImVec2(canvasPos);
+			ImVec2 posMax = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
+			uint32_t rectColor = IM_COL32(40, 30, 20, 255);
+			uint32_t rectTransparentColor = IM_COL32(0, 0, 0, 0);
+      // Legend
+      drawList->AddRectFilled(posMin, { canvasSize.x + legendWidth, canvasPos.y + canvasSize.y }, IM_COL32(50, 40, 30, 255));
+      // Background
+			drawList->AddRectFilledMultiColor(posMin, posMax, rectTransparentColor, rectTransparentColor, rectColor, rectColor);
 
       if (animation->GetType() == AnimationType::SpriteSheet)
       {
@@ -302,7 +311,7 @@ namespace origin {
       }
 
       // current frame top
-      ImRect topRect(ImVec2(canvas_pos.x + legendWidth, canvas_pos.y), ImVec2(canvas_pos.x + canvas_size.x, canvas_pos.y + ItemHeight));
+      ImRect topRect(ImVec2(canvasPos.x + legendWidth, canvasPos.y), ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + itemHeight));
 
       if (!MovingCurrentFrame && !MovingScrollBar && movingEntry == -1 && sequenceOptions & SEQUENCER_CHANGE_FRAME && currentFrame && *currentFrame >= 0 && topRect.Contains(io.MousePos) && io.MouseDown[0])
       {
@@ -323,10 +332,10 @@ namespace origin {
       }
 
       //header
-      draw_list->AddRectFilled(canvas_pos, ImVec2(canvas_size.x + canvas_pos.x, canvas_pos.y + ItemHeight), 0xFF3D3837, 0);
+      drawList->AddRectFilled(canvasPos, ImVec2(canvasSize.x + canvasPos.x, canvasPos.y + itemHeight), IM_COL32(20, 10, 15, 255), 0);
       if (sequenceOptions & SEQUENCER_ADD)
       {
-        if (SequencerAddDelButton(draw_list, ImVec2(canvas_pos.x + legendWidth - ItemHeight, canvas_pos.y + 2), true))
+        if (SequencerAddDelButton(drawList, ImVec2(canvasPos.x + legendWidth - itemHeight, canvasPos.y + 2), true))
           ImGui::OpenPopup("Add Entry");
 
         if (ImGui::BeginPopup("Add Entry"))
@@ -359,51 +368,51 @@ namespace origin {
         {
           bool baseIndex = ((i % modFrameCount) == 0) || (i == animation->MaxFrame || i == 0);
           bool halfIndex = (i % halfModFrameCount) == 0;
-          int px = (int)canvas_pos.x + int(i * framePixelWidth) + legendWidth - int(firstFrameUsed * framePixelWidth);
+          int px = (int)canvasPos.x + int(i * framePixelWidth) + legendWidth - int(firstFrameUsed * framePixelWidth);
           int tiretStart = baseIndex ? 4 : (halfIndex ? 10 : 14);
-          int tiretEnd = baseIndex ? regionHeight : ItemHeight;
+          int tiretEnd = baseIndex ? regionHeight : itemHeight;
 
-          if (px <= (canvas_size.x + canvas_pos.x) && px >= (canvas_pos.x + legendWidth))
+          if (px <= (canvasSize.x + canvasPos.x) && px >= (canvasPos.x + legendWidth))
           {
-            draw_list->AddLine(ImVec2((float)px, canvas_pos.y + (float)tiretStart), ImVec2((float)px, canvas_pos.y + (float)tiretEnd - 1), 0xFF606060, 1);
-            draw_list->AddLine(ImVec2((float)px, canvas_pos.y + (float)ItemHeight), ImVec2((float)px, canvas_pos.y + (float)regionHeight - 1), 0x30606060, 1);
+            drawList->AddLine(ImVec2((float)px, canvasPos.y + (float)tiretStart), ImVec2((float)px, canvasPos.y + (float)tiretEnd - 1), 0xFF606060, 1);
+            drawList->AddLine(ImVec2((float)px, canvasPos.y + (float)itemHeight), ImVec2((float)px, canvasPos.y + (float)regionHeight - 1), 0x30606060, 1);
           }
 
-          if (baseIndex && px > (canvas_pos.x + legendWidth))
+          if (baseIndex && px > (canvasPos.x + legendWidth))
           {
             char tmps[512];
             ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", i);
-            draw_list->AddText(ImVec2((float)px + 3.f, canvas_pos.y), 0xFFBBBBBB, tmps);
+            drawList->AddText(ImVec2((float)px + 3.f, canvasPos.y), 0xFFBBBBBB, tmps);
           }
         };
 
       auto drawLineContent = [&](int i, int)
         {
-          int px = (int)canvas_pos.x + int(i * framePixelWidth) + legendWidth - int(firstFrameUsed * framePixelWidth);
+          int px = (int)canvasPos.x + int(i * framePixelWidth) + legendWidth - int(firstFrameUsed * framePixelWidth);
           int tiretStart = int(contentMin.y);
           int tiretEnd = int(contentMax.y);
 
-          if (px <= (canvas_size.x + canvas_pos.x) && px >= (canvas_pos.x + legendWidth))
-            draw_list->AddLine(ImVec2(float(px), float(tiretStart)), ImVec2(float(px), float(tiretEnd)), 0x30606060, 1);
+          if (px <= (canvasSize.x + canvasPos.x) && px >= (canvasPos.x + legendWidth))
+            drawList->AddLine(ImVec2(float(px), float(tiretStart)), ImVec2(float(px), float(tiretEnd)), 0x30606060, 1);
         };
 
       for (int i = 0; i <= animation->MaxFrame; i += frameStep)
-        drawLine(i, ItemHeight);
+        drawLine(i, itemHeight);
 
-      drawLine(0, ItemHeight);
-      drawLine(animation->MaxFrame, ItemHeight);
+      drawLine(0, itemHeight);
+      drawLine(animation->MaxFrame, itemHeight);
 
-      draw_list->PushClipRect(childFramePos, childFramePos + childFrameSize, true);
+      drawList->PushClipRect(childFramePos, childFramePos + childFrameSize, true);
 
       size_t customHeight = 0;
       for (int i = 0; i < sequenceCount; i++)
       {
-        ImVec2 tpos(contentMin.x + 3, contentMin.y + i * ItemHeight + 2 + customHeight);
-        draw_list->AddText(tpos, 0xFFFFFFFF, this->GetItemLabel(animation->GetType(), i));
+        ImVec2 tpos(contentMin.x + 3, contentMin.y + i * itemHeight + 2 + customHeight);
+        drawList->AddText(tpos, 0xFFFFFFFF, this->GetItemLabel(animation->GetType(), i));
 
         if (sequenceOptions & SEQUENCER_DEL)
         {
-          if (SequencerAddDelButton(draw_list, ImVec2(contentMin.x + legendWidth - ItemHeight + 2 - 10, tpos.y + 2), false))
+          if (SequencerAddDelButton(drawList, ImVec2(contentMin.x + legendWidth - itemHeight + 2 - 10, tpos.y + 2), false))
             delEntry = i;
         }
 
@@ -417,19 +426,19 @@ namespace origin {
         unsigned int col = (i & 1) ? 0xFF3A3636 : 0xFF413D3D;
 
         size_t localCustomHeight = this->GetCustomHeight(i);
-        ImVec2 pos = ImVec2(contentMin.x + legendWidth, contentMin.y + ItemHeight * i + 1 + customHeight);
-        ImVec2 sz = ImVec2(canvas_size.x + canvas_pos.x, pos.y + ItemHeight - 1 + localCustomHeight);
-        if (!popupOpened && cy >= pos.y && cy < pos.y + (ItemHeight + localCustomHeight) && movingEntry == -1 && cx>contentMin.x && cx < contentMin.x + canvas_size.x)
+        ImVec2 pos = ImVec2(contentMin.x + legendWidth, contentMin.y + itemHeight * i + 1 + customHeight);
+        ImVec2 sz = ImVec2(canvasSize.x + canvasPos.x, pos.y + itemHeight - 1 + localCustomHeight);
+        if (!popupOpened && cy >= pos.y && cy < pos.y + (itemHeight + localCustomHeight) && movingEntry == -1 && cx>contentMin.x && cx < contentMin.x + canvasSize.x)
         {
           col += 0x80201008;
           pos.x -= legendWidth;
         }
 
-        draw_list->AddRectFilled(pos, sz, col, 0);
+        drawList->AddRectFilled(pos, sz, col, 0);
         customHeight += localCustomHeight;
       }
 
-      draw_list->PushClipRect(childFramePos + ImVec2(float(legendWidth), 0.f), childFramePos + childFrameSize, true);
+      drawList->PushClipRect(childFramePos + ImVec2(float(legendWidth), 0.f), childFramePos + childFrameSize, true);
 
       // vertical frame lines in content area
       for (int i = 0; i <= animation->MaxFrame; i += frameStep)
@@ -446,7 +455,7 @@ namespace origin {
         customHeight = 0;
         for (int i = 0; i < *selectedEntry; i++)
           customHeight += this->GetCustomHeight(i);
-        draw_list->AddRectFilled(ImVec2(contentMin.x, contentMin.y + ItemHeight * *selectedEntry + customHeight), ImVec2(contentMin.x + canvas_size.x, contentMin.y + ItemHeight * (*selectedEntry + 1) + customHeight), 0x801080FF, 1.f);
+        drawList->AddRectFilled(ImVec2(contentMin.x, contentMin.y + itemHeight * *selectedEntry + customHeight), ImVec2(contentMin.x + canvasSize.x, contentMin.y + itemHeight * (*selectedEntry + 1) + customHeight), 0x801080FF, 1.f);
       }
 
       // slots
@@ -458,17 +467,17 @@ namespace origin {
         this->Get(animation, i, &start, &end, &color);
         size_t localCustomHeight = this->GetCustomHeight(i);
 
-        ImVec2 pos = ImVec2(contentMin.x + legendWidth - firstFrameUsed * framePixelWidth, contentMin.y + ItemHeight * i + 1 + customHeight);
+        ImVec2 pos = ImVec2(contentMin.x + legendWidth - firstFrameUsed * framePixelWidth, contentMin.y + itemHeight * i + 1 + customHeight);
         ImVec2 slotP1(pos.x + *start * framePixelWidth, pos.y + 2);
-        ImVec2 slotP2(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + ItemHeight - 2);
-        ImVec2 slotP3(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + ItemHeight - 2 + localCustomHeight);
+        ImVec2 slotP2(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + itemHeight - 2);
+        ImVec2 slotP3(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + itemHeight - 2 + localCustomHeight);
         unsigned int slotColor = color | 0xFF000000;
         unsigned int slotColorHalf = (color & 0xFFFFFF) | 0x40000000;
 
-        if (slotP1.x <= (canvas_size.x + contentMin.x) && slotP2.x >= (contentMin.x + legendWidth))
+        if (slotP1.x <= (canvasSize.x + contentMin.x) && slotP2.x >= (contentMin.x + legendWidth))
         {
-          draw_list->AddRectFilled(slotP1, slotP3, slotColorHalf, 2);
-          draw_list->AddRectFilled(slotP1, slotP2, slotColor, 2);
+          drawList->AddRectFilled(slotP1, slotP3, slotColorHalf, 2);
+          drawList->AddRectFilled(slotP1, slotP2, slotColor, 2);
         }
 
         const float max_handle_width = slotP2.x - slotP1.x / 3.0f;
@@ -486,7 +495,7 @@ namespace origin {
             ImRect& rc = rects[j];
             if (!rc.Contains(io.MousePos))
               continue;
-            draw_list->AddRectFilled(rc.Min, rc.Max, quadColor[j], 2);
+            drawList->AddRectFilled(rc.Min, rc.Max, quadColor[j], 2);
           }
 
           for (int j = 0; j < 3; j++)
@@ -509,21 +518,21 @@ namespace origin {
         // custom draw
         if (localCustomHeight > 0)
         {
-          ImVec2 rp(canvas_pos.x, contentMin.y + ItemHeight * i + 1 + customHeight);
-          ImRect customRect(rp + ImVec2(legendWidth - (firstFrameUsed - 0.5f) * framePixelWidth, float(ItemHeight)),
-            rp + ImVec2(legendWidth + (animation->MaxFrame - firstFrameUsed - 0.5f + 2.f) * framePixelWidth, float(localCustomHeight + ItemHeight)));
-          ImRect clippingRect(rp + ImVec2(float(legendWidth), float(ItemHeight)), rp + ImVec2(canvas_size.x, float(localCustomHeight + ItemHeight)));
+          ImVec2 rp(canvasPos.x, contentMin.y + itemHeight * i + 1 + customHeight);
+          ImRect customRect(rp + ImVec2(legendWidth - (firstFrameUsed - 0.5f) * framePixelWidth, float(itemHeight)),
+            rp + ImVec2(legendWidth + (animation->MaxFrame - firstFrameUsed - 0.5f + 2.f) * framePixelWidth, float(localCustomHeight + itemHeight)));
+          ImRect clippingRect(rp + ImVec2(float(legendWidth), float(itemHeight)), rp + ImVec2(canvasSize.x, float(localCustomHeight + itemHeight)));
 
-          ImRect legendRect(rp + ImVec2(0.f, float(ItemHeight)), rp + ImVec2(float(legendWidth), float(localCustomHeight)));
-          ImRect legendClippingRect(canvas_pos + ImVec2(0.f, float(ItemHeight)), canvas_pos + ImVec2(float(legendWidth), float(localCustomHeight + ItemHeight)));
+          ImRect legendRect(rp + ImVec2(0.f, float(itemHeight)), rp + ImVec2(float(legendWidth), float(localCustomHeight)));
+          ImRect legendClippingRect(canvasPos + ImVec2(0.f, float(itemHeight)), canvasPos + ImVec2(float(legendWidth), float(localCustomHeight + itemHeight)));
           customDraws.push_back({ i, customRect, legendRect, clippingRect, legendClippingRect });
         }
         else
         {
-          ImVec2 rp(canvas_pos.x, contentMin.y + ItemHeight * i + customHeight);
+          ImVec2 rp(canvasPos.x, contentMin.y + itemHeight * i + customHeight);
           ImRect customRect(rp + ImVec2(legendWidth - (firstFrameUsed - 0.5f) * framePixelWidth, float(0.f)),
-            rp + ImVec2(legendWidth + (animation->MaxFrame - firstFrameUsed - 0.5f + 2.f) * framePixelWidth, float(ItemHeight)));
-          ImRect clippingRect(rp + ImVec2(float(legendWidth), float(0.f)), rp + ImVec2(canvas_size.x, float(ItemHeight)));
+            rp + ImVec2(legendWidth + (animation->MaxFrame - firstFrameUsed - 0.5f + 2.f) * framePixelWidth, float(itemHeight)));
+          ImRect clippingRect(rp + ImVec2(float(legendWidth), float(0.f)), rp + ImVec2(canvasSize.x, float(itemHeight)));
 
           compactCustomDraws.push_back({ i, customRect, ImRect(), clippingRect, ImRect() });
         }
@@ -576,17 +585,17 @@ namespace origin {
       {
         static const float cursorWidth = 8.f;
         float cursorOffset = contentMin.x + legendWidth + (*currentFrame - firstFrameUsed) * framePixelWidth + framePixelWidth / 2 - cursorWidth * 0.5f;
-        draw_list->AddLine(ImVec2(cursorOffset, canvas_pos.y), ImVec2(cursorOffset, contentMax.y), 0xA02A2AFF, cursorWidth);
+        drawList->AddLine(ImVec2(cursorOffset, canvasPos.y), ImVec2(cursorOffset, contentMax.y), 0xA02A2AFF, cursorWidth);
         char tmps[512];
         ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", *currentFrame);
-        draw_list->AddText(ImVec2(cursorOffset + 10, canvas_pos.y + 2), 0xFF2A2AFF, tmps);
+        drawList->AddText(ImVec2(cursorOffset + 10, canvasPos.y + 2), 0xFF2A2AFF, tmps);
       }
 
-      draw_list->PopClipRect();
-      draw_list->PopClipRect();
+      drawList->PopClipRect();
+      drawList->PopClipRect();
 
       for (auto& customDraw : compactCustomDraws)
-        this->CustomDrawCompact(animation, customDraw.index, draw_list, customDraw.customRect, customDraw.clippingRect);
+        this->CustomDrawCompact(animation, customDraw.index, drawList, customDraw.customRect, customDraw.clippingRect);
 
       ImGui::EndChildFrame();
       ImGui::PopStyleColor();
@@ -598,19 +607,19 @@ namespace origin {
         ImVec2 scrollBarMax = ImGui::GetItemRectMax();
 
         // ratio = number of frames visible in control / number to total frames
-        float startFrameOffset = ((float)(firstFrameUsed) / (float)frameCount) * (canvas_size.x - legendWidth);
+        float startFrameOffset = ((float)(firstFrameUsed) / (float)frameCount) * (canvasSize.x - legendWidth);
         ImVec2 scrollBarA(scrollBarMin.x + legendWidth, scrollBarMin.y - 2);
-        ImVec2 scrollBarB(scrollBarMin.x + canvas_size.x, scrollBarMax.y - 1);
-        draw_list->AddRectFilled(scrollBarA, scrollBarB, 0xFF222222, 0);
+        ImVec2 scrollBarB(scrollBarMin.x + canvasSize.x, scrollBarMax.y - 1);
+        drawList->AddRectFilled(scrollBarA, scrollBarB, 0xFF222222, 0);
 
         ImRect scrollBarRect(scrollBarA, scrollBarB);
         bool inScrollBar = scrollBarRect.Contains(io.MousePos);
 
-        draw_list->AddRectFilled(scrollBarA, scrollBarB, 0xFF101010, 8);
+        drawList->AddRectFilled(scrollBarA, scrollBarB, 0xFF101010, 8);
 
         ImVec2 scrollBarC(scrollBarMin.x + legendWidth + startFrameOffset, scrollBarMin.y);
         ImVec2 scrollBarD(scrollBarMin.x + legendWidth + barWidthInPixels + startFrameOffset, scrollBarMax.y - 2);
-        draw_list->AddRectFilled(scrollBarC, scrollBarD, (inScrollBar || MovingScrollBar) ? 0xFF606060 : 0xFF505050, 6);
+        drawList->AddRectFilled(scrollBarC, scrollBarD, (inScrollBar || MovingScrollBar) ? 0xFF606060 : 0xFF505050, 6);
 
         ImRect barHandleLeft(scrollBarC, ImVec2(scrollBarC.x + 14, scrollBarD.y));
         ImRect barHandleRight(ImVec2(scrollBarD.x - 14, scrollBarC.y), scrollBarD);
@@ -621,8 +630,8 @@ namespace origin {
         static bool sizingRBar = false;
         static bool sizingLBar = false;
 
-        draw_list->AddRectFilled(barHandleLeft.Min, barHandleLeft.Max, (onLeft || sizingLBar) ? 0xFFAAAAAA : 0xFF666666, 6);
-        draw_list->AddRectFilled(barHandleRight.Min, barHandleRight.Max, (onRight || sizingRBar) ? 0xFFAAAAAA : 0xFF666666, 6);
+        drawList->AddRectFilled(barHandleLeft.Min, barHandleLeft.Max, (onLeft || sizingLBar) ? 0xFFAAAAAA : 0xFF666666, 6);
+        drawList->AddRectFilled(barHandleRight.Min, barHandleRight.Max, (onRight || sizingRBar) ? 0xFFAAAAAA : 0xFF666666, 6);
 
         ImRect scrollBarThumb(scrollBarC, scrollBarD);
         static const float MinBarWidth = 4.f;
@@ -639,11 +648,11 @@ namespace origin {
             float barNewWidth = ImMax(barWidthInPixels + io.MouseDelta.x, MinBarWidth);
             float barRatio = barNewWidth / barWidthInPixels;
             framePixelWidthTarget = framePixelWidth = framePixelWidth / barRatio;
-            int newVisibleFrameCount = int((canvas_size.x - legendWidth + extraWidth) / (framePixelWidthTarget + extraWidth));
+            int newVisibleFrameCount = int((canvasSize.x - legendWidth + extraWidth) / (framePixelWidthTarget + extraWidth));
             int lastFrame = *firstFrame + newVisibleFrameCount;
             if (lastFrame > animation->MaxFrame)
             {
-              framePixelWidthTarget = framePixelWidth = (canvas_size.x - legendWidth) / float(animation->MaxFrame - *firstFrame);
+              framePixelWidthTarget = framePixelWidth = (canvasSize.x - legendWidth) / float(animation->MaxFrame - *firstFrame);
             }
           }
         }
@@ -725,7 +734,7 @@ namespace origin {
 
     if (expanded)
     {
-      if (SequencerAddDelButton(draw_list, ImVec2(canvas_pos.x + 2, canvas_pos.y + 2), !*expanded))
+      if (SequencerAddDelButton(drawList, ImVec2(canvasPos.x + 2, canvasPos.y + 2), !*expanded))
         *expanded = !*expanded;
     }
 

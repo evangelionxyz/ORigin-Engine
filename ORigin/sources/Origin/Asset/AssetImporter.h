@@ -2,7 +2,7 @@
 #pragma once
 #include "AssetMetadata.h"
 
-#include "Origin\Audio\Audio.h"
+#include "Origin\Audio\AudioSource.h"
 #include "Origin\Scene\Scene.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Model.h"
@@ -18,8 +18,9 @@ namespace origin {
 	class AudioImporter
 	{
 	public:
-		static std::shared_ptr<Audio> ImportAudio(AssetHandle handle, AssetMetadata metadata);
-		static std::shared_ptr<Audio> LoadAudio(const std::filesystem::path filepath, AudioConfig config);
+		static std::shared_ptr<AudioSource> ImportAudio(AssetHandle handle, AssetMetadata metadata);
+		static std::shared_ptr<AudioSource> LoadAudioSource(const std::filesystem::path filepath);
+		static std::shared_ptr<AudioSource> LoadStreamingSource(const std::filesystem::path filepath);
 	};
 
 	class SceneImporter

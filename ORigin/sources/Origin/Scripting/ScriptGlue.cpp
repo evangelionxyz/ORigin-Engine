@@ -24,7 +24,7 @@
 #include "box2d/b2_polygon_shape.h"
 #include "box2d/b2_circle_shape.h"
 
-#include "Origin/Audio/Audio.h"
+#include "Origin/Audio/AudioSource.h"
 
 namespace origin
 {
@@ -338,7 +338,7 @@ namespace origin
 		auto& ac = entity.GetComponent<AudioComponent>();
 		OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
 
-		const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+		const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 		audio->Play();
 	}
 
@@ -352,7 +352,7 @@ namespace origin
 		auto& ac = entity.GetComponent<AudioComponent>();
 		OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
 
-		const std::shared_ptr<Audio>& audio = AssetManager::GetAsset<Audio>(ac.Audio);
+		const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 		audio->Stop();
 	}
 
@@ -463,7 +463,7 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		entity.GetComponent<AudioComponent>().Spatial = spatial;
+		entity.GetComponent<AudioComponent>().Spatializing = spatial;
 	}
 
 	static bool AudioComponent_IsSpatial(UUID entityID)
@@ -473,7 +473,7 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		return entity.GetComponent<AudioComponent>().Spatial;
+		return entity.GetComponent<AudioComponent>().Spatializing;
 	}
 
 	static void AudioComponent_SetPlayAtStart(UUID entityID, bool playAtStart)

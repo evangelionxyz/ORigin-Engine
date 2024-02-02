@@ -30,7 +30,7 @@ namespace origin {
 		{
 			case AnimationType::None: return "Invalid";
 			case AnimationType::SpriteSheet: return "Sprite";
-			case AnimationType::Transform: return "Tr";
+			case AnimationType::Transform: return "Transform";
 		}
 
 		return "Invalid";
@@ -49,6 +49,7 @@ namespace origin {
 		void OnUpdateEditor();
 		void OnUpdateRuntime();
 		bool HasFrame() const { return AnimFrames.empty() == false; }
+		void Reset();
 
 		AssetHandle GetCurrentValue();
 		AssetHandle GetValue(int frame);

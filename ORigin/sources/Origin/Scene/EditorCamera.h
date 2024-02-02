@@ -56,7 +56,6 @@ namespace origin {
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;
 		glm::quat GetOrientation() const;
-		AudioListener GetAudioListener() { return m_AudioListener; }
 		const CameraStyle GetStyle() { return m_CameraStyle; }
 		const ProjectionType GetProjectionType() const { return m_ProjectionType; }
 

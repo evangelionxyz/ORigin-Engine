@@ -43,7 +43,6 @@ includedirs {
     "%{IncludeDir.IMGUIZMO}",
     "%{IncludeDir.GLAD}",
     "%{IncludeDir.GLM}",
-    "%{IncludeDir.FMOD}",
     "%{IncludeDir.Miniaudio}",
     "%{IncludeDir.ENTT}",
     "%{IncludeDir.MONO}",

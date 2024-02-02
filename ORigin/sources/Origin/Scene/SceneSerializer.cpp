@@ -7,7 +7,7 @@
 #include "Origin/Renderer/Model.h"
 #include "Origin/Renderer/Shader.h"
 #include "Origin/Renderer/Renderer.h"
-#include "Origin/Audio/Audio.h"
+#include "Origin/Audio/AudioSource.h"
 #include "Entity.h"
 #include "Lighting.h"
 #include "Components.h"
@@ -329,12 +329,12 @@ namespace origin
 				out << YAML::Key << "AudioHandle" << YAML::Value << ac.Audio;
 				out << YAML::Key << "Name" << ac.Name;
 				out << YAML::Key << "Volume" << YAML::Value << ac.Volume;
-				out << YAML::Key << "DopplerLevel" << YAML::Value << ac.DopplerLevel;
 				out << YAML::Key << "Pitch" << YAML::Value << ac.Pitch;
+				out << YAML::Key << "Panning" << YAML::Value << ac.Panning;
 				out << YAML::Key << "MinDistance" << YAML::Value << ac.MinDistance;
 				out << YAML::Key << "MaxDistance" << YAML::Value << ac.MaxDistance;
 				out << YAML::Key << "Looping" << YAML::Value << ac.Looping;
-				out << YAML::Key << "Spatial" << YAML::Value << ac.Spatial;
+				out << YAML::Key << "Spatial" << YAML::Value << ac.Spatializing;
 				out << YAML::Key << "PlayAtStart" << YAML::Value << ac.PlayAtStart;
 			}
 			
@@ -784,23 +784,19 @@ namespace origin
 						ac.Audio = audioComponent["AudioHandle"].as<uint64_t>();
 						ac.Name = audioComponent["Name"].as<std::string>();
 						ac.Volume = audioComponent["Volume"].as<float>();
-						ac.DopplerLevel = audioComponent["DopplerLevel"].as<float>();
 						ac.Pitch = audioComponent["Pitch"].as<float>();
+						ac.Panning = audioComponent["Panning"].as<float>();
 						ac.MinDistance = audioComponent["MinDistance"].as<float>();
 						ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
 						ac.Looping = audioComponent["Looping"].as<bool>();
-						ac.Spatial = audioComponent["Spatial"].as<bool>();
+						ac.Spatializing = audioComponent["Spatial"].as<bool>();
 						ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
-
-						auto& audio = AssetManager::GetAsset<Audio>(ac.Audio);
-
-						audio->SetGain(ac.Volume);
-						audio->SetDopplerLevel(ac.DopplerLevel);
+						auto& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+						audio->SetVolume(ac.Volume);
 						audio->SetLoop(ac.Looping);
 						audio->SetPitch(ac.Pitch);
-						audio->SetMinDistance(ac.MinDistance);
-						audio->SetMaxDistance(ac.MaxDistance);
-						audio->SetSpatial(ac.Spatial);
+						audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
+						audio->SetSpatial(ac.Spatializing);
 					}
 				}
 
@@ -1041,14 +1037,14 @@ namespace origin
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])
 				{
 					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
-					OGN_CORE_ASSERT(deserializedEntity, "Entity is invalid");
+					OGN_CORE_ASSERT(deserializedEntity, "SceneSerializer:  Entity is invalid");
 
 					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 
 					if (auto scriptFields = scriptComponent["ScriptFields"])
 					{
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
-						OGN_CORE_ASSERT(entityClass, "Entity Class is Invalid");
+						OGN_CORE_ASSERT(entityClass, "SceneSerializer: Entity Class is Invalid");
 
 						if (entityClass)
 						{
@@ -1063,7 +1059,6 @@ namespace origin
 
 								ScriptFieldInstance& fieldInstance = entityFields[name];
 
-								// for Log in editor
 								OGN_CORE_ASSERT(fields.find(name) != fields.end(), "Script Fields Not Found");
 								if (fields.find(name) == fields.end())
 									continue;

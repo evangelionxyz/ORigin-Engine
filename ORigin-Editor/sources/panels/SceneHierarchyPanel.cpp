@@ -9,7 +9,7 @@
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Components.h"
-#include "Origin\Audio\Audio.h"
+#include "Origin\Audio\AudioSource.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Scene\Lighting.h"
@@ -637,11 +637,11 @@ namespace origin {
 				if (isAudioValid == false)
 					return;
 
-				std::shared_ptr<Audio> audio = AssetManager::GetAsset<Audio>(component.Audio);
+				std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(component.Audio);
 
-				if (audio->IsLoaded())
+				if (audio->IsLoaded)
 				{
-					auto& name = component.Name;
+					auto &name = component.Name;
 					char buffer[256];
 					ImGui::Text("Name");
 					ImGui::SameLine();
@@ -649,11 +649,9 @@ namespace origin {
 					if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 					{
 						name = std::string(buffer);
-						audio->GetConfig().Name = name;
+						audio->SetName(name.c_str());
 					}
 
-					ImGui::Text("Spatialize: %s", component.Spatial ? "On" : "Off");
-					ImGui::Separator();
 					if (ImGui::Button("Play")) audio->Play();
 					ImGui::SameLine();
 					if (ImGui::Button("Stop")) audio->Stop();
@@ -661,20 +659,16 @@ namespace origin {
 
 					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
 					ImGui::SameLine();
-					if (ImGui::Checkbox("Looping", &component.Looping))
-						audio->SetLoop(component.Looping);
-
+					ImGui::Checkbox("Looping", &component.Looping);
 					DrawVecControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
 					DrawVecControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
-					DrawVecControl("Low Pass", &component.LowPass, 0.025f, 0.0f, 1.0f, 1.0f);
+					DrawVecControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
 
 					ImGui::Separator();
-					if (ImGui::Checkbox("Spatialize", &component.Spatial))
-						audio->SetSpatial(component.Spatial);
+					ImGui::Checkbox("Spatialize", &component.Spatializing);
 
-					if (component.Spatial)
+					if (component.Spatializing)
 					{
-						DrawVecControl("Doppler Level", &component.DopplerLevel, 0.1f, 0.0f, 10000.0f, 1.0f);
 						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
 						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
 					}
