@@ -151,6 +151,16 @@ namespace origin {
 		StartBatch();
 	}
 
+	void Renderer2D::Begin(const glm::mat4 &viewProjection, const glm::vec3& position)
+	{
+		s_CameraBufferData.ViewProjection = viewProjection;
+		s_CameraBufferData.Position = position;
+		s_CameraUniformBuffer->Bind();
+		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
+
+		StartBatch();
+	}
+
 	void Renderer2D::End()
 	{
 		Flush();

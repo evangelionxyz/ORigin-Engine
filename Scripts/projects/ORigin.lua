@@ -79,7 +79,6 @@ links {
     "PhysXCharacterKinematic",
 
     "%{Library.Vulkan}",
-    "%{Library.FMOD}",
     "%{Library.Assimp}",
     "%{Library.MONO}",
 }

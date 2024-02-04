@@ -1,10 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by ORigin-Editor.rc
 //
-#define IDI_ICON1                       101
+#define IDB_PNG1                        101
 
 // Next default values for new objects
 // 

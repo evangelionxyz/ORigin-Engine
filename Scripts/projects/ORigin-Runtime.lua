@@ -1,7 +1,7 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 -- ORigin Runtime Project
-project "ORigin-Runtime"
+project "Runtime"
 location "%{wks.location}/ORigin-Runtime"
 language "C++"
 cppdialect "C++17"
@@ -13,7 +13,6 @@ targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
 objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
 files {
-    -- source file
     "%{prj.location}/sources/**.h",
     "%{prj.location}/sources/**.cpp",
     "%{prj.location}/**.h",

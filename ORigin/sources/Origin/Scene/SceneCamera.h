@@ -62,7 +62,7 @@ namespace origin {
 
 
 	private:
-		AspectRatioType m_AspecRatioType = AspectRatioType::SixteenByNine;
+		AspectRatioType m_AspecRatioType = AspectRatioType::Free;
 		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 
 		void RecalculateProjection();
@@ -74,7 +74,7 @@ namespace origin {
 		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 		glm::vec3 m_Position = glm::vec3(1.0f);
 
-		// Persepective
+		// Perspective
 		float m_PerspectiveFOV = glm::radians(45.0f);
 		float m_PerspectiveNear = 0.01f, m_PerspectiveFar = 100.0f;
 

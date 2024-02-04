@@ -1,22 +1,16 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
 #include "Origin\Utils\Layer.h"
-
 #include "Origin\IO\Events\AppEvent.h"
 #include "Origin\IO\Events\KeyEvent.h"
 #include "Origin\IO\Events\MouseEvent.h"
-
-#include "GLFW/glfw3.h"
-
-#include "imgui.h"
 
 namespace origin
 {
 	class GuiLayer : public Layer
 	{
 	public:
-		GuiLayer(GLFWwindow* window);
+		GuiLayer(void* window);
 		~GuiLayer();
 
 		void Init();
@@ -33,8 +27,8 @@ namespace origin
 		uint32_t GetActiveWidgetID();
 
 	private:
-		GLFWwindow* m_WindowContext = nullptr;
-		ImVec2 m_DisplaySize;
+		void* m_Context = nullptr;
+		float m_Width = 0.0f, m_Height = 0.0f;
 		bool m_BlockEvents = false;
 		float m_Time = 0.0f;
 	};

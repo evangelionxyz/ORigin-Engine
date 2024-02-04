@@ -25,7 +25,7 @@ namespace origin {
 
 		const char* operator[](int index) const {
 			if (index > Count) __debugbreak();
-				return Args[index];
+			return Args[index];
 		}
 	};
 
@@ -33,7 +33,7 @@ namespace origin {
 	{
 		ApplicationCommandLineArgs CommandLineArgs;
 		std::string Name = "ORigin Application";
-		std::string IconPath = "Resources/UITextures/icon_origin.png";
+		std::string IconPath = "Resources/icon.png";
 		std::string WorkingDirectory;
 
 		uint32_t Width = 1280, Height = 640;

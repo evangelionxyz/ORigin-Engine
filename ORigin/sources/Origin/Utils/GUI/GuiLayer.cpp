@@ -1,7 +1,6 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-
 #include "GuiLayer.h"
 #include "Origin\Core\Application.h"
 
@@ -9,19 +8,15 @@
 #include <backends\imgui_impl_glfw.h>
 #include <backends\imgui_impl_opengl3.h>
 #include <imgui_internal.h>
-
 #include <ImGuizmo.h>
-#include <ImSequencer.h>
-#include <ImGradient.h>
 #include "ImCurveEdit.h"
 
 namespace origin {
 
-	GuiLayer::GuiLayer(GLFWwindow* window)
-		: Layer("Gui Layer"), m_WindowContext(window)
+	GuiLayer::GuiLayer(void* window)
+		: Layer("Gui Layer"), m_Context(window)
 	{
 	}
-
 
 	void GuiLayer::Init()
 	{
@@ -124,7 +119,7 @@ namespace origin {
 		float fontSize = 16.0f;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 
-		ImGui_ImplGlfw_InitForOpenGL(m_WindowContext, true);
+		ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)m_Context, true);
 		ImGui_ImplOpenGL3_Init("#version 450");
 	}
 
@@ -147,7 +142,8 @@ namespace origin {
 
 	void GuiLayer::SetDisplaySize(float width, float height)
 	{
-		m_DisplaySize = ImVec2(width, height);
+		m_Width = width;
+		m_Height = height;
 	}
 
 	void GuiLayer::Begin()
@@ -163,7 +159,7 @@ namespace origin {
 		ImGuiIO& io = ImGui::GetIO();
 
 		Application& app = Application::Get();
-		io.DisplaySize = ImVec2(m_DisplaySize);
+		io.DisplaySize = ImVec2(m_Width, m_Height);
 		
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

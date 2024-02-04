@@ -652,18 +652,17 @@ namespace origin {
 						audio->SetName(name.c_str());
 					}
 
-					if (ImGui::Button("Play")) audio->Play();
-					ImGui::SameLine();
-					if (ImGui::Button("Stop")) audio->Stop();
-					ImGui::SameLine();
+					
 
 					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
-					ImGui::SameLine();
 					ImGui::Checkbox("Looping", &component.Looping);
 					DrawVecControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
 					DrawVecControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
 					DrawVecControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
-
+					float sizeX = ImGui::GetContentRegionAvail().x;
+					if (ImGui::Button("Play", { sizeX, 0.0f })) audio->Play();
+					if (ImGui::Button("Pause", { sizeX, 0.0f })) audio->Pause();
+					if (ImGui::Button("Stop", { sizeX, 0.0f })) audio->Stop();
 					ImGui::Separator();
 					ImGui::Checkbox("Spatialize", &component.Spatializing);
 
@@ -677,9 +676,9 @@ namespace origin {
 
 		DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
 			{
-			if(!component.FontAsset)
-				component.FontAsset = Font::GetDefault();
-					
+				if(!component.FontAsset)
+					component.FontAsset = Font::GetDefault();
+
 				ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
 
 				if (ImGui::BeginDragDropTarget())

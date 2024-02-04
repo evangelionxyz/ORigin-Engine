@@ -36,7 +36,7 @@ namespace origin {
 
 		if (!spec.Runtime)
 		{
-			m_GuiLayer = new GuiLayer(m_Window->GetNativeWindow());
+			m_GuiLayer = new GuiLayer((void*)m_Window->GetNativeWindow());
 			PushOverlay(m_GuiLayer);
 		}
 

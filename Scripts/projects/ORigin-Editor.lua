@@ -1,7 +1,7 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 -- ORigin Editor Project
-project "ORigin-Editor"
+project "Editor"
 location "%{wks.location}/ORigin-Editor"
 language "C++"
 cppdialect "C++17"
@@ -13,18 +13,12 @@ targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
 objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
 files {
-    -- source file
     "%{prj.location}/sources/**.h",
     "%{prj.location}/sources/**.cpp",
     "%{prj.location}/**.h",
     "%{prj.location}/**.rc",
     "%{prj.location}/**.aps",
-
-    -- shader file
     "%{prj.location}/Resources/Shaders/**.glsl",
-    "%{prj.location}/Resources/Shaders/**.hlsl",
-
-    -- img file
     "%{prj.location}/Resources/UITextures/**.png",
     "%{prj.location}/Resources/UITextures/**.jpg",
     "%{prj.location}/**.ico",
@@ -62,12 +56,7 @@ linkoptions { "/ignore:4099,4006" }
 
 filter "system:windows"
     systemversion "latest"
-    postbuildcommands {
-
-    -- Copy 3rd Party Library
-        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-        "{COPY} %{wks.location}ORigin/vendor/FMOD/lib/fmod.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin"
-    }
+    
 
 filter "configurations:Debug"
     defines {
@@ -84,12 +73,6 @@ filter "configurations:Debug"
         "%{Library.SPIRV_Cross_GLSL_Debug}",
         "%{Library.SPIRV_Tools_Debug}",
     }
-    
-    postbuildcommands {
-        --"{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
-        --"{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
-        --"{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-    }
 
 filter "configurations:Release"
    defines {
@@ -100,11 +83,6 @@ filter "configurations:Release"
     kind "WindowedApp"
     runtime "Release"
     optimize "On"
-    postbuildcommands {
-        "{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
-        "{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
-        "{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
-    }
 
 filter "configurations:Dist"
     defines {
@@ -116,7 +94,8 @@ filter "configurations:Dist"
     runtime "Release"
     optimize "On"
     postbuildcommands {
-        "{COPYDIR} %{prj.location}mono %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/mono",
-        "{COPYDIR} %{prj.location}Resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/Resources",
-        "{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
+      "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
+      "{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
+      "{COPYDIR} %{prj.location}lib %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/lib",
+      "{COPYDIR} %{prj.location}resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/resources",
     }
