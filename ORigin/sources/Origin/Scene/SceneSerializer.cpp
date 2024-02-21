@@ -402,10 +402,13 @@ namespace origin
 			{
 				out << YAML::Key << "MeshHandle" << YAML::Value << sMesh.Model;
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
-				out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->BufferData.Color;
-				out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
-				out << YAML::Key << "Metallic" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
-				out << YAML::Key << "Roughness" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
+				if (model)
+				{
+					out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->BufferData.Color;
+					out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
+					out << YAML::Key << "Metallic" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
+					out << YAML::Key << "Roughness" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
+				}
 			}
 			
 			out << YAML::EndMap; // !StaticMeshComponent

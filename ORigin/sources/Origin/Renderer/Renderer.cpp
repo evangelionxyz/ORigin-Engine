@@ -16,22 +16,28 @@
 
 namespace origin {
 
+	RenderData Renderer::s_RenderData;
+	static Statistics s_Statistics;
 	static ShaderLibrary GShaderLibrary;
 
 	std::shared_ptr<Texture2D> Renderer::WhiteTexture;
+
+	Statistics &Renderer::GetStatistics()
+	{
+		return s_Statistics;
+	}
 
 	bool Renderer::Init()
 	{
 		RenderCommand::Init();
 
-		Renderer::LoadShader();
-		Renderer2D::Init();
-		Renderer3D::Init();
-
 		WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
 		WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 
+		Renderer::LoadShader();
+		Renderer2D::Init();
+		Renderer3D::Init();
 		return true;
 	}
 

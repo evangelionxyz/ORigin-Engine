@@ -25,7 +25,7 @@ namespace origin {
     bool guiMenuFullscreen = false;
     bool guiMenuStyle = false;
     bool guiPrompt = false;
-    bool guiRenderStatusWindow = true;
+    bool guiRenderSettingsWindow = true;
     bool guiDebugInfo = true;
     bool guiImGuiDemoWindow = false;
     bool guiOverlay = true;

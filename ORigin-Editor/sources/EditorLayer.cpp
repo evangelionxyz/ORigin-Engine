@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "EditorLayer.h"
 #include "Gizmos/Gizmos.h"
 #include "Origin/EntryPoint.h"
@@ -66,7 +67,6 @@ namespace origin {
 	  m_Framebuffer = Framebuffer::Create(mainFramebufferSpec);
 
 	  m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 5000.0f);
-	  m_EditorCamera.InitOrthographic(10.0f, -1.0f, 100.0f);
 	  m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
 	  m_ActiveScene = std::make_shared<Scene>();
@@ -91,8 +91,7 @@ namespace origin {
 
   void EditorLayer::OnUpdate(Timestep ts)
   {
-	  Renderer2D::ResetStats();
-	  Renderer3D::ResetStats();
+	  Renderer::GetStatistics().Reset();
 
 	  InputProcedure(ts);
 
@@ -432,7 +431,7 @@ namespace origin {
 			if (ImGui::BeginMenu("Window"))
 			{
 				ImGui::MenuItem("Style Editor", nullptr, &guiMenuStyle);
-				ImGui::MenuItem("Render Status", nullptr, &guiRenderStatusWindow);
+				ImGui::MenuItem("Render Settings", nullptr, &guiRenderSettingsWindow);
 				ImGui::MenuItem("Debug Info", nullptr, &guiDebugInfo);
 				ImGui::MenuItem("Demo Window", nullptr, &guiImGuiDemoWindow);
 
@@ -513,11 +512,9 @@ namespace origin {
 					switch (cc.Camera.GetAspectRatioType())
 					{
 					case SceneCamera::AspectRatioType::TwentyOneByNine:
-						// keep the width and adjust the height to maintain 16:9 aspect ratio
 						m_GameViewportSizeX = m_SceneViewportSize.x;
 						m_GameViewportSizeY = m_GameViewportSizeX / 21.0f * 9.0f;
 
-						// if the calculated height is greater than the available height, adjust the width
 						if (m_GameViewportSizeY > m_SceneViewportSize.y)
 						{
 							m_GameViewportSizeY = m_SceneViewportSize.y;
@@ -525,11 +522,9 @@ namespace origin {
 						}
 						break;
 					case SceneCamera::AspectRatioType::SixteenByNine:
-						// keep the width and adjust the height to maintain 16:9 aspect ratio
 						m_GameViewportSizeX = m_SceneViewportSize.x;
 						m_GameViewportSizeY = m_GameViewportSizeX / 16.0f * 9.0f;
 
-						// if the calculated height is greater than the available height, adjust the width
 						if (m_GameViewportSizeY > m_SceneViewportSize.y)
 						{
 							m_GameViewportSizeY = m_SceneViewportSize.y;
@@ -537,11 +532,9 @@ namespace origin {
 						}
 						break;
 					case SceneCamera::AspectRatioType::SixteenByTen:
-						// keep the width and adjust the height to maintain 16:9 aspect ratio
 						m_GameViewportSizeX = m_SceneViewportSize.x;
 						m_GameViewportSizeY = m_GameViewportSizeX / 16.0f * 10.0f;
 
-						// if the calculated height is greater than the available height, adjust the width
 						if (m_GameViewportSizeY > m_SceneViewportSize.y)
 						{
 							m_GameViewportSizeY = m_SceneViewportSize.y;
@@ -549,11 +542,9 @@ namespace origin {
 						}
 						break;
 					case SceneCamera::AspectRatioType::FourByThree:
-						// keep the width and adjust the height to maintain 16:9 aspect ratio
 						m_GameViewportSizeX = m_SceneViewportSize.x;
 						m_GameViewportSizeY = m_GameViewportSizeX / 4.0f * 3.0f;
 
-						// if the calculated height is greater than the available height, adjust the width
 						if (m_GameViewportSizeY > m_SceneViewportSize.y)
 						{
 							m_GameViewportSizeY = m_SceneViewportSize.y;
@@ -758,38 +749,6 @@ namespace origin {
 
 			ImGui::SetCursorPos({ canvasSize.x - 200.0f, btPos.y + 10.0f});
 			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-#if 0
-			ImGui::SameLine(0.0f, 5.0f);
-			const ImVec4 btActive = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-			ImVec4 btLOCAL, btGLOBAL;
-			if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
-			{
-				btGLOBAL = ImVec4(0.8f, 0.1f, 0.1f, 1.0f);
-				btLOCAL = btActive;
-			}
-
-			if (m_GizmosMode == ImGuizmo::MODE::WORLD)
-			{
-				btLOCAL = ImVec4(0.1f, 0.2f, 0.8f, 1.0f);
-				btGLOBAL = btActive;
-			}
-
-			ImGui::PushStyleColor(ImGuiCol_Button, btLOCAL);
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, btLOCAL);
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, btActive);
-			if (ImGui::Button("LOCAL", { 50.0f, 25.0f }))
-				m_GizmosMode = ImGuizmo::MODE::LOCAL;
-			ImGui::SameLine(0.0f, 5.0f);
-
-			ImGui::PushStyleColor(ImGuiCol_Button, btGLOBAL);
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, btGLOBAL);
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, btActive);
-			if (ImGui::Button("GLOBAL", { 50.0f, 25.0f }))
-				m_GizmosMode = ImGuizmo::MODE::WORLD;
-			ImGui::PopStyleColor(8);
-#endif
-			
 			ImGui::End(); // !Toolbar
 		}
 	}
@@ -885,78 +844,83 @@ namespace origin {
 			}
 		}
 		
-		ImGui::Begin("Render Status", &guiRenderStatusWindow);
-		const char* CMSTypeString[] = { "PIVOT", "FREE MOVE" };
-		const char* currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
-		ImGui::Text("Distance %.5f", m_EditorCamera.GetDistance());
+		if (guiRenderSettingsWindow)
+		{
+			ImGui::Begin("Render Settings", &guiRenderSettingsWindow);
+			const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
+			const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
+			ImGui::Text("Distance %.5f", m_EditorCamera.GetDistance());
 
-		if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString)) {
-			for (int i = 0; i < 2; i++) {
-				const bool isSelected = currentCMSTypeString == CMSTypeString[i];
-				if (ImGui::Selectable(CMSTypeString[i], isSelected)) {
-					currentCMSTypeString = CMSTypeString[i];
-					m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
+			if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					const bool isSelected = currentCMSTypeString == CMSTypeString[i];
+					if (ImGui::Selectable(CMSTypeString[i], isSelected))
+					{
+						currentCMSTypeString = CMSTypeString[i];
+						m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
 
-				} if (isSelected) ImGui::SetItemDefaultFocus();
-			} ImGui::EndCombo();
+					} if (isSelected) ImGui::SetItemDefaultFocus();
+				} ImGui::EndCombo();
+			}
+			if (ImGui::DragFloat("FOV", &m_CameraFov, 1.0f, 0.0f, 90.0f))
+				m_EditorCamera.SetFov(m_CameraFov);
+
+			ImGui::Checkbox("Visualize Collider", &m_VisualizeCollider);
+
+			ImGui::Separator();
+
+			const auto renderStats = Renderer::GetStatistics();
+			ImGui::Text("Total Time (s) : (%.2f s)", m_Time);
+			if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
+			ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
+			ImGui::Text("Quads: %d", renderStats.QuadCount);
+			ImGui::Text("Circles: %d", renderStats.CircleCount);
+			ImGui::Text("Lines: %d", renderStats.LineCount);
+			ImGui::Text("Cubes: %d", renderStats.CubeCount);
+			ImGui::Text("Vertices: %d", renderStats.GetTotalVertexCount());
+			ImGui::Text("Indices: %d", renderStats.GetTotalIndexCount());
+			ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
+			ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
+			ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
+			ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
+			ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
+
+			ImGui::Separator();
+
+			ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
+
+			const char *RTTypeString[] = { "Normal", "HDR" };
+			const char *currentRTTypeString = RTTypeString[m_RenderTarget];
+
+			if (ImGui::BeginCombo("Render Target", currentRTTypeString))
+			{
+				for (int i = 0; i < 2; i++)
+				{
+					const bool isSelected = currentRTTypeString == RTTypeString[i];
+					if (ImGui::Selectable(RTTypeString[i], isSelected))
+					{
+						currentRTTypeString = RTTypeString[i];
+						m_RenderTarget = i;
+					} if (isSelected) ImGui::SetItemDefaultFocus();
+				} ImGui::EndCombo();
+			}
+
+			ImGui::End();
 		}
-		if (ImGui::DragFloat("FOV", &m_CameraFov, 1.0f, 0.0f, 90.0f))
-			m_EditorCamera.SetFov(m_CameraFov);
 
-		ImGui::Checkbox("Visualize Colliders", &m_VisualizeCollider);
-
-		ImGui::Separator();
-
-		const auto Stats2D = Renderer2D::GetStats();
-		ImGui::Text("2D Stats");
-		ImGui::Text("Draw Calls: %d", Stats2D.DrawCalls);
-		ImGui::Text("Quads %d", Stats2D.QuadCount);
-		ImGui::SameLine(); ImGui::Text("Circles %d", Stats2D.CircleCount);
-		ImGui::SameLine(); ImGui::Text("Lines %d", Stats2D.LineCount);
-		ImGui::Text("Vertices: %d", Stats2D.GetTotalVertexCount());
-		ImGui::Text("Indices: %d", Stats2D.GetTotalIndexCount());
-		ImGui::Separator();
-
-		const auto Stats3D = Renderer3D::GetStats();
-		ImGui::Text("3D Stats");
-		ImGui::Text("Draw Calls: %d", Stats3D.DrawCalls);
-		ImGui::Text("Cube %d", Stats3D.CubeCount);
-		ImGui::Text("Vertices: %d", Stats3D.GetTotalVertexCount());
-		ImGui::Text("Indices: %d", Stats3D.GetTotalIndexCount());
-		ImGui::Separator();
-
-		ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
-
-		const char* RTTypeString[] = { "Normal", "HDR" };
-		const char* currentRTTypeString = RTTypeString[m_RenderTarget];
-
-		if (ImGui::BeginCombo("Render Target", currentRTTypeString)) {
-			for (int i = 0; i < 2; i++) {
-				const bool isSelected = currentRTTypeString == RTTypeString[i];
-				if (ImGui::Selectable(RTTypeString[i], isSelected)) {
-					currentRTTypeString = RTTypeString[i];
-					m_RenderTarget = i;
-				} if (isSelected) ImGui::SetItemDefaultFocus();
-			} ImGui::EndCombo();
+		if (guiMenuStyle)
+		{
+			ImGui::Begin("Style Editor", &guiMenuStyle);
+			ImGui::ShowStyleEditor();
+			ImGui::End();
 		}
 
-		ImGui::End();
-
-		ImGui::Begin("Style Editor", &guiMenuStyle);
-		ImGui::ShowStyleEditor();
-		ImGui::End();
-
-		ImGui::Begin("Debug Info", &guiDebugInfo);
-		ImGui::Text("Time (%.2f s)", m_Time);
-		if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
-		ImGui::Text("OpenGL Version : (%s)", glGetString(GL_VERSION));
-		ImGui::Text("ImGui version : (%s)", IMGUI_VERSION);
-		ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
-		ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
-		ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
-		ImGui::End();
-
-		ImGui::ShowDemoWindow(&guiImGuiDemoWindow);
+		if (guiImGuiDemoWindow)
+		{
+			ImGui::ShowDemoWindow(&guiImGuiDemoWindow);
+		}
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
@@ -1193,7 +1157,6 @@ namespace origin {
 
 	bool EditorLayer::OnWindowResize(WindowResizeEvent& e)
 	{
-
 		return false;
 	}
 
