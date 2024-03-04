@@ -1,0 +1,10 @@
+AssetRegistry:
+  - Handle: 580222918059897393
+    Filepath: Scenes/scene.org
+    Type: AssetType::None
+  - Handle: 14508972543186998605
+    Filepath: Sprites/minecraft_test.sprite
+    Type: AssetType::SpriteSheet
+  - Handle: 15441346468003250585
+    Filepath: Sprites/minecraft_test.png
+    Type: AssetType::Texture2D

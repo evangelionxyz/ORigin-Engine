@@ -1,0 +1,17 @@
+Scene: scene.org
+Entities:
+  - Entity: 755714057797679197
+    TreeNode:
+      Parent: 0
+      Parents:
+        []
+      Children:
+        []
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]

@@ -59,8 +59,8 @@ namespace origin {
 		if (!m_SelectedEntity)
 			return;
 
-		auto entityID = m_SelectedEntity.GetUUID();
-		auto& newEntity = m_Context->GetEntityWithUUID(entityID);
+		UUID entityID = m_SelectedEntity.GetUUID();
+		auto &newEntity = m_Context->GetEntityWithUUID(entityID);
 
 		if (entityID == newEntity.GetUUID())
 			m_SelectedEntity = newEntity;
@@ -75,26 +75,26 @@ namespace origin {
 
 	void SceneHierarchyPanel::DeleteEntityTree(Entity entity)
 	{
-		auto& treeComponent = entity.GetComponent<TreeNodeComponent>();
+		auto &treeComponent = entity.GetComponent<TreeNodeComponent>();
 		if (entity.HasParent())
 		{
 			Entity parent = m_Context->GetEntityWithUUID(entity.GetParentUUID());
-			auto& parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
-			auto it = parentTreeComponent.Children.find(entity.GetUUID());
+			auto &parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
+			auto &it = parentTreeComponent.Children.find(entity.GetUUID());
 			if (it != parentTreeComponent.Children.end())
 				parentTreeComponent.Children.erase(entity.GetUUID());
 		}
 		
 		// if this entity has child
 		// then erase entity from their parents
-		for (auto [childId, child] : treeComponent.Children)
+		for (auto &[childId, child] : treeComponent.Children)
 		{
-			auto& childTreeComponent = child.GetComponent<TreeNodeComponent>();
+			auto &childTreeComponent = child.GetComponent<TreeNodeComponent>();
 			// 1. set the original parent to 0
 			// 2. recursively through grand child
 
 			childTreeComponent.Parent = 0;
-			for(auto [gchildId, gChild] : childTreeComponent.Children)
+			for(auto &[gchildId, gChild] : childTreeComponent.Children)
 				RemoveConnectionsFromChild(gChild, child, entity.GetUUID());
 		}
 	}
@@ -108,8 +108,6 @@ namespace origin {
 	void SceneHierarchyPanel::EntityHierarchyPanel()
 	{
 		ImGui::Begin("Hierarchy");
-		m_HierarchyMenuActive = ImGui::IsWindowFocused();
-
 		if (!m_Context)
 		{
 			ImGui::End();
@@ -124,42 +122,22 @@ namespace origin {
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
-		if (m_HierarchyMenuActive)
+		if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 		{
-			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
+			if (ImGui::BeginMenu("CREATE"))
 			{
-				if (ImGui::BeginMenu("CREATE"))
+				if (ImGui::MenuItem("Empty")) m_Context->CreateEntity("Empty");
+				if (ImGui::MenuItem("Sprite")) m_Context->CreateEntity("Sprite");
+				if (ImGui::MenuItem("Empty Mesh")) m_Context->CreateMesh("Empty Mesh");
+				if (ImGui::MenuItem("Camera"))
 				{
-					if (ImGui::MenuItem("Empty"))
-						m_Context->CreateEntity("Empty");
-
-					if (ImGui::MenuItem("MAIN CAMERA"))
-					{
-						m_Context->CreateCamera("Main Camera");
-						m_SelectedEntity.AddComponent<AudioListenerComponent>();
-					}
-
-					if (ImGui::MenuItem("CAMERA"))
-						m_Context->CreateCamera("Camera");
-
-					if (ImGui::BeginMenu("2D"))
-					{
-						if (ImGui::MenuItem("Sprite"))
-							m_Context->CreateEntity("Sprite");
-						ImGui::EndMenu();
-					}
-					if (ImGui::BeginMenu("Mesh"))
-					{
-						if (ImGui::MenuItem("Empty Mesh"))
-							m_Context->CreateMesh("Empty Mesh");
-
-						ImGui::EndMenu();
-					}
-
-					ImGui::EndMenu();
+					m_SelectedEntity = m_Context->CreateCamera("Camera");
+					m_SelectedEntity.AddComponent<AudioListenerComponent>();
 				}
-				ImGui::EndPopup();
+
+				ImGui::EndMenu();
 			}
+			ImGui::EndPopup();
 		}
 
 		ImGui::PopStyleVar();
@@ -220,8 +198,8 @@ namespace origin {
 
 		if (node_open)
 		{
-			auto treeComponent = entity.GetComponent<TreeNodeComponent>();
-			for (auto [uuid, child] : treeComponent.Children)
+			auto &treeComponent = entity.GetComponent<TreeNodeComponent>();
+			for (auto &[uuid, child] : treeComponent.Children)
 			{
 				Entity entt = m_Context->GetEntityWithUUID(uuid);
 				DrawEntityNode(entt, index + 1);
@@ -237,7 +215,7 @@ namespace origin {
 			{
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				auto& srcTreeComponent = src.GetComponent<TreeNodeComponent>();
+				auto &srcTreeComponent = src.GetComponent<TreeNodeComponent>();
 
 				if (srcTreeComponent.Parent != 0)
 				{
@@ -254,9 +232,9 @@ namespace origin {
 
 	bool SceneHierarchyPanel::AddNodeChild(Entity parent, Entity child)
 	{
-		auto& parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
-		auto& childTreeComponent = child.GetComponent<TreeNodeComponent>();
-		auto& enttReg = m_Context->m_EntityMap;
+		auto &parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
+		auto &childTreeComponent = child.GetComponent<TreeNodeComponent>();
+		auto &registry = m_Context->m_EntityMap;
 
 		if (parentTreeComponent.Parents.find(child.GetUUID()) != parentTreeComponent.Parents.end())
 		{
@@ -264,16 +242,14 @@ namespace origin {
 			return false;
 		}
 
-		for (auto [childId, child] : parentTreeComponent.Children)
+		for (auto &[childId, child] : parentTreeComponent.Children)
 		{
-			auto& treeComponent = child.GetComponent<TreeNodeComponent>();
-			for (auto& [parentId, parent] : treeComponent.Parents)
+			auto &treeComponent = child.GetComponent<TreeNodeComponent>();
+			for (auto &[parentId, parent] : treeComponent.Parents)
 			{
 				auto& childIdIt = treeComponent.Parents.find(parentId);
 				if (childIdIt != treeComponent.Parents.end())
-				{
 					RemoveConnectionsFromChild(child, child, child.GetUUID());
-				}
 			}
 		}
 
@@ -284,7 +260,7 @@ namespace origin {
 
 		if (childTreeComponent.Parent != oldParent)
 		{
-			if (enttReg.find(oldParent) != enttReg.end())
+			if (registry.find(oldParent) != registry.end())
 			{
 				Entity e = m_Context->GetEntityWithUUID(oldParent);
 				e.GetComponent<TreeNodeComponent>().Children.erase(child.GetUUID());
@@ -293,25 +269,21 @@ namespace origin {
 
 		childTreeComponent.Parents.insert(std::make_pair(parent.GetUUID(), parent));
 
-		for (auto& p : parentTreeComponent.Parents)
-		{
+		for (auto &p : parentTreeComponent.Parents)
 			childTreeComponent.Parents[p.first] = p.second;
-		}
 
 		return true;
 	}
 
 	void SceneHierarchyPanel::RemoveConnectionsFromChild(Entity child, Entity nextChild, UUID parentId)
 	{
-		auto& childIdc = child.GetComponent<TreeNodeComponent>();
-		auto& nextChildIdc = nextChild.GetComponent<TreeNodeComponent>();
+		auto &childIdc = child.GetComponent<TreeNodeComponent>();
+		auto &nextChildIdc = nextChild.GetComponent<TreeNodeComponent>();
 
 		childIdc.Parents.erase(parentId);
 
-		for (auto& c : nextChildIdc.Children)
-		{
+		for (auto &c : nextChildIdc.Children)
 			RemoveConnectionsFromChild(child, c.second, c.second.GetUUID());
-		}
 	}
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)

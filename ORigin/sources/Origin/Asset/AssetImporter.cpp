@@ -16,11 +16,12 @@ namespace origin {
 
 	// Functions to Importing and Loading assets
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
-		{	AssetType::Audio, AudioImporter::ImportAudio },
+		{	AssetType::Audio, AudioImporter::Import },
 		{	AssetType::Texture2D, TextureImporter::ImportTexture2D },
-		{	AssetType::Scene, SceneImporter::ImportScene },
-		{ AssetType::Mesh, ModelImporter::ImportModel },
-		{ AssetType::StaticMesh, ModelImporter::ImportModel }
+		{	AssetType::Scene, SceneImporter::Import },
+		{ AssetType::Mesh, ModelImporter::Import },
+		{ AssetType::StaticMesh, ModelImporter::Import },
+		{ AssetType::SpriteSheet, SpriteSheetImporter::Import }
 	};
 	
 	// It is automatically match Functions by checking the metadata
@@ -36,7 +37,7 @@ namespace origin {
 		return s_AssetImportFunctions.at(metadata.Type)(handle, metadata);
 	}
 
-	std::shared_ptr<AudioSource> AudioImporter::ImportAudio(AssetHandle handle, AssetMetadata metadata)
+	std::shared_ptr<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
 	{
 		return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
@@ -55,7 +56,7 @@ namespace origin {
 		return source;
 	}
 
-	std::shared_ptr<Scene> SceneImporter::ImportScene(AssetHandle handle, const AssetMetadata& metadata)
+	std::shared_ptr<Scene> SceneImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
 	{
 		return LoadScene(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
@@ -137,26 +138,12 @@ namespace origin {
 		return texture;
 	}
 
-	std::shared_ptr<Texture2D> TextureImporter::GetWhiteTexture()
+	std::shared_ptr<Model> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
 	{
-		static std::shared_ptr<Texture2D> whiteTexture;
-		if (!whiteTexture)
-		{
-			uint32_t whiteTextureData = 0xffffffff;
-			Buffer data = Buffer(&whiteTextureData, sizeof(uint32_t));
-
-			whiteTexture = Texture2D::Create(TextureSpecification(), data);
-		}
-
-		return whiteTexture;
+		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-	std::shared_ptr<Model> ModelImporter::ImportModel(AssetHandle handle, const AssetMetadata& metadata)
-	{
-		return LoadModel(Project::GetActiveAssetDirectory() / metadata.Filepath);
-	}
-
-	std::shared_ptr<Model> ModelImporter::LoadModel(const std::filesystem::path& path)
+	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path& path)
 	{
 		std::shared_ptr<Shader> shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
 		shader->Enable();
@@ -165,6 +152,17 @@ namespace origin {
 		std::shared_ptr<Model> model = Model::Create(path.generic_string(), material);
 
 		return model;
+	}
+
+	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
+	{
+		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+	}
+
+	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
+	{
+		std::shared_ptr<SpriteSheet> spriteSheet = SpriteSheet::Create(filepath);
+		return spriteSheet;
 	}
 
 }

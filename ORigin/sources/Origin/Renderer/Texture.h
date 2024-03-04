@@ -29,9 +29,9 @@ namespace origin {
 	{
 		uint32_t Width = 1, Height = 1;
 		ImageFormat Format = ImageFormat::RGBA8;
-		ImageFilter MinFilter = ImageFilter::Linear;
-		ImageFilter MagFilter = ImageFilter::Linear;
-		bool GenerateMips = true;
+		ImageFilter MinFilter = ImageFilter::Nearest;
+		ImageFilter MagFilter = ImageFilter::Nearest;
+		bool GenerateMips = false;
 
 		TextureSpecification() = default;
 	};

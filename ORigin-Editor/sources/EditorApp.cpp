@@ -23,7 +23,7 @@ namespace origin
     ApplicationSpecification spec;
     spec.Name = "ORigin Editor";
     spec.CommandLineArgs = args;
-    spec.Maximize = true;
+    spec.Maximize = false;
 
     OGN_CORE_INFO(spec.Name);
     return new RuntimeApp(spec);

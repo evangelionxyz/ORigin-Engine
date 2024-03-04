@@ -31,19 +31,15 @@ namespace origin {
 		void EntityHierarchyPanel();
 		void EntityPropertiesPanel();
 
-		void SetHierarchyMenuActive(bool enable) { m_HierarchyMenuActive = enable; }
 		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
 		void DestroyEntity(Entity entity);
 		void DeleteEntityTree(Entity entity);
 
-		const bool GetHierarchyMenuActive() { return m_HierarchyMenuActive; }
 	private:
 		static SceneHierarchyPanel* s_Instance;
 
 		template<typename T>
 		bool DisplayAddComponentEntry(const std::string& entryName);
-		bool m_HierarchyMenuActive = false;
-
 		void DrawEntityNode(Entity entity, int index = 0);
 		void DrawComponents(Entity entity);
 		bool AddNodeChild(Entity parent, Entity child);

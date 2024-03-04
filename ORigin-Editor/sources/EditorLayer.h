@@ -5,6 +5,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/AnimationTimeline.h"
+#include "Panels/SpriteSheetEditor.h"
 
 #include <ImGuizmo.h>
 
@@ -50,11 +51,11 @@ namespace origin {
     void OpenScene(AssetHandle handle);
     void SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath);
     void OnDuplicateEntity();
+    void OnEvent(Event& e) override;
     bool OnWindowDrop(WindowDropEvent& e);
     bool OnWindowResize(WindowResizeEvent& e);
     bool OnMouseMovedEvent(MouseMovedEvent& e);
     bool OnMouseButtonEvent(MouseButtonEvent& e);
-    void OnEvent(Event& e) override;
     bool OnKeyPressed(KeyPressedEvent& e);
     bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
     void OnGuiRender() override;
@@ -81,6 +82,8 @@ namespace origin {
 		EditorCamera m_EditorCamera;
 		ShaderLibrary m_ShaderLibrary;
 		AnimationTimeline m_AnimationTimeline;
+		std::unique_ptr<SpriteSheetEditor> m_SpriteSheetEditor;
+
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
 		std::shared_ptr<Texture2D> m_OriginEngineTex;
 		std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
@@ -114,6 +117,7 @@ namespace origin {
 		Entity m_HoveredEntity = {};
 
     friend class Gizmos;
+    friend class ContentBrowserPanel;
     friend class SceneHierarchyPanel;
   };
 }

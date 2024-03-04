@@ -20,6 +20,7 @@ namespace origin {
 		{ ".ogg", AssetType::Audio },
 		{ ".mp3", AssetType::Audio },
 		{ ".wav", AssetType::Audio },
+		{ ".sprite", AssetType::SpriteSheet },
 	};
 
 	static AssetType GetAssetTypeFromFileExtension(const std::filesystem::path& extension)
@@ -196,7 +197,7 @@ namespace origin {
 			AssetHandle handle = (AssetHandle)node["Handle"].as<uint64_t>();
 			auto& metadata = m_AssetRegistry[handle];
 			metadata.Filepath = node["Filepath"].as<std::string>();
-			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());
+			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>().c_str());
 		}
 
 		return true;

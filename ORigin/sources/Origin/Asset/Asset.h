@@ -15,11 +15,12 @@ namespace origin {
 		Audio,
 		StaticMesh,
 		Mesh,
-		Animation
+		Animation,
+		SpriteSheet
 	};
 
-	std::string_view AssetTypeToString(AssetType type);
-	AssetType AssetTypeFromString(std::string_view assetType);
+	const char *AssetTypeToString(AssetType type);
+	AssetType AssetTypeFromString(const char *assetType);
 
 	class Asset
 	{

@@ -43,9 +43,9 @@
 #include "Origin\Scene\SceneCamera.h"
 #include "Origin\Scene\Components.h"
 #include "Origin\Scene\Lighting.h"
+#include "Origin\Scene\SpriteSheet.h"
 
 #include "Origin\Utils\GUI\GuiLayer.h"
-//#include "Origin\Utils\GUI\Sequencer.h"
 #include "Origin\Utils\Time.h"
 #include "Origin\Core\Assert.h"
 

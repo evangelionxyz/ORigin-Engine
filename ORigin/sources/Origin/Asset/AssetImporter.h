@@ -4,6 +4,7 @@
 
 #include "Origin\Audio\AudioSource.h"
 #include "Origin\Scene\Scene.h"
+#include "Origin\Scene\SpriteSheet.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Model.h"
 
@@ -18,7 +19,7 @@ namespace origin {
 	class AudioImporter
 	{
 	public:
-		static std::shared_ptr<AudioSource> ImportAudio(AssetHandle handle, AssetMetadata metadata);
+		static std::shared_ptr<AudioSource> Import(AssetHandle handle, AssetMetadata metadata);
 		static std::shared_ptr<AudioSource> LoadAudioSource(const std::filesystem::path filepath);
 		static std::shared_ptr<AudioSource> LoadStreamingSource(const std::filesystem::path filepath);
 	};
@@ -26,7 +27,7 @@ namespace origin {
 	class SceneImporter
 	{
 	public:
-		static std::shared_ptr<Scene> ImportScene(AssetHandle handle, const AssetMetadata& metadata);
+		static std::shared_ptr<Scene> Import(AssetHandle handle, const AssetMetadata& metadata);
 
 		static std::shared_ptr<Scene> LoadScene(const std::filesystem::path& filepath);
 		static AssetHandle OpenScene(const std::filesystem::path& filepath);
@@ -38,14 +39,20 @@ namespace origin {
 	public:
 		static std::shared_ptr<Texture2D> ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata);
 		static std::shared_ptr<Texture2D> LoadTexture2D(const std::filesystem::path& path);
-		static std::shared_ptr<Texture2D> GetWhiteTexture();
 	};
 
 	class ModelImporter
 	{
 	public:
-		static std::shared_ptr<Model> ImportModel(AssetHandle handle, const AssetMetadata& metadata);
-		static std::shared_ptr<Model> LoadModel(const std::filesystem::path& path);
+		static std::shared_ptr<Model> Import(AssetHandle handle, const AssetMetadata& metadata);
+		static std::shared_ptr<Model> Load(const std::filesystem::path& path);
+	};
+
+	class SpriteSheetImporter
+	{
+	public:
+		static std::shared_ptr<SpriteSheet> Import(AssetHandle handle, const AssetMetadata &metadata);
+		static std::shared_ptr<SpriteSheet> Load(const std::filesystem::path &filepath);
 	};
 
 }

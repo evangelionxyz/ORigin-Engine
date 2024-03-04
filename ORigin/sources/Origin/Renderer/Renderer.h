@@ -18,7 +18,7 @@ namespace origin {
 		static const uint32_t MaxTriangles = 20000;
 		static const uint32_t MaxVertices = MaxTriangles * 28;
 		static const uint32_t MaxQuadIndices = MaxTriangles * 6;
-		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
+		static const uint32_t MaxTextureSlots = 32;
 	};
 
 	struct Statistics
@@ -43,17 +43,20 @@ namespace origin {
 		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
-		static void OnUpdate();
+		static void SetCurrentShader(const std::shared_ptr<Shader> &shader);
 
+		const static std::shared_ptr<Shader>& GetCurrentShader() { return s_GlobalShader; }
 		static std::shared_ptr<Shader> GetGShader(const std::string& name);
-		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetSaderLibrary();
+		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetShaderLibrary();
 
 		static std::shared_ptr<Texture2D> WhiteTexture;
+		static std::shared_ptr<Texture2D> BlackTexture;
 
 		static Statistics &GetStatistics();
 		static RenderData s_RenderData;
 
 	private:
-		static void LoadShader();
+		static void LoadShaders();
+		static std::shared_ptr<Shader> s_GlobalShader;
 	};
 }

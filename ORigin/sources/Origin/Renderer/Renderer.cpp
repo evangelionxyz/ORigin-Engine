@@ -16,11 +16,13 @@
 
 namespace origin {
 
-	RenderData Renderer::s_RenderData;
 	static Statistics s_Statistics;
-	static ShaderLibrary GShaderLibrary;
+	static ShaderLibrary s_ShaderLibrary;
 
+	RenderData Renderer::s_RenderData;
+	std::shared_ptr<Shader> Renderer::s_GlobalShader;
 	std::shared_ptr<Texture2D> Renderer::WhiteTexture;
+	std::shared_ptr<Texture2D> Renderer::BlackTexture;
 
 	Statistics &Renderer::GetStatistics()
 	{
@@ -31,11 +33,15 @@ namespace origin {
 	{
 		RenderCommand::Init();
 
-		WhiteTexture = Texture2D::Create(TextureSpecification());
 		uint32_t whiteTextureData = 0xffffffff;
+		WhiteTexture = Texture2D::Create(TextureSpecification());
 		WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 
-		Renderer::LoadShader();
+		uint32_t blackTextureData = 0xff000000;
+		BlackTexture = Texture2D::Create(TextureSpecification());
+		BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
+
+		Renderer::LoadShaders();
 		Renderer2D::Init();
 		Renderer3D::Init();
 		return true;
@@ -54,31 +60,31 @@ namespace origin {
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer::OnUpdate()
+	void Renderer::SetCurrentShader(const std::shared_ptr<Shader> &shader)
 	{
-		RenderCommand::ClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		RenderCommand::Clear();
+		s_GlobalShader = shader;
+		s_GlobalShader->Enable();
 	}
 
 	std::shared_ptr<Shader> Renderer::GetGShader(const std::string& name)
 	{
-		return GShaderLibrary.Get(name);
+		return s_ShaderLibrary.Get(name);
 	}
 
-	const std::unordered_map<std::string, std::shared_ptr<Shader>> Renderer::GetSaderLibrary()
+	const std::unordered_map<std::string, std::shared_ptr<Shader>> Renderer::GetShaderLibrary()
 	{
-		return GShaderLibrary.GetMap();
+		return s_ShaderLibrary.GetMap();
 	}
 
-	void Renderer::LoadShader()
+	void Renderer::LoadShaders()
 	{
 		bool recompileShader = false;
 
-		GShaderLibrary.Load("Line2D", "Resources/Shaders/SPIR-V/Line2D.glsl", true, recompileShader);
-		GShaderLibrary.Load("Circle2D", "Resources/Shaders/SPIR-V/Circle2D.glsl", true, recompileShader);
-		GShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true, recompileShader);
-		GShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true, recompileShader);
-		GShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true, recompileShader);
-		GShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
+		s_ShaderLibrary.Load("Line2D", "Resources/Shaders/SPIR-V/Line2D.glsl", true, recompileShader);
+		s_ShaderLibrary.Load("Circle2D", "Resources/Shaders/SPIR-V/Circle2D.glsl", true, recompileShader);
+		s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true, recompileShader);
+		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true, recompileShader);
+		s_ShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true, recompileShader);
+		s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 	}
 }

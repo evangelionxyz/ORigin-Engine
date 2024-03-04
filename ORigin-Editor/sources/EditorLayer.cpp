@@ -54,17 +54,17 @@ namespace origin {
 	  // ==============================
 	  // Main Framebuffer Specification
 	  // ==============================
-	  FramebufferSpecification mainFramebufferSpec;
-	  mainFramebufferSpec.Attachments =
+	  FramebufferSpecification fbSpec;
+	  fbSpec.Attachments =
 	  {
 		  FramebufferTextureFormat::RGBA8,
 		  FramebufferTextureFormat::RED_INTEGER,
 		  FramebufferTextureFormat::DEPTH24STENCIL8
 	  };
 
-	  mainFramebufferSpec.Width = 1280;
-	  mainFramebufferSpec.Height = 720;
-	  m_Framebuffer = Framebuffer::Create(mainFramebufferSpec);
+	  fbSpec.Width = 1280;
+	  fbSpec.Height = 720;
+	  m_Framebuffer = Framebuffer::Create(fbSpec);
 
 	  m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 5000.0f);
 	  m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
@@ -77,33 +77,47 @@ namespace origin {
 		  if (!OpenProject(m_ProjectDirectoryPath))
 			  Application::Get().Close();
 	  }
+
+		m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
   }
 
   void EditorLayer::OnEvent(Event& e)
   {
-      m_EditorCamera.OnEvent(e);
-      EventDispatcher dispatcher(e);
-      dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseMovedEvent));
-      dispatcher.Dispatch<WindowResizeEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnWindowResize));
-      dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
-      dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+		m_EditorCamera.OnEvent(e);
+		m_SpriteSheetEditor->OnEvent(e);
+
+    EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseMovedEvent));
+    dispatcher.Dispatch<WindowResizeEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnWindowResize));
+    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
   }
 
-  void EditorLayer::OnUpdate(Timestep ts)
+	void EditorLayer::OnUpdate(Timestep ts)
   {
 	  Renderer::GetStatistics().Reset();
+		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
 
 	  InputProcedure(ts);
 
 	  m_Time += ts.Seconds();
-	  const bool enableCamera = !ImGuizmo::IsUsing() && !ImGui::GetIO().WantTextInput && Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0;
+
+		// SpriteSheet Editor
+		m_SpriteSheetEditor->OnRender(ts);
+		
+
+	  const bool enableCamera = !ImGuizmo::IsUsing()
+			&& !ImGui::GetIO().WantTextInput
+			&& Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0
+			&& !m_SpriteSheetEditor->IsFocused;
+
 	  m_EditorCamera.EnableMovement(enableCamera);
 		m_ActiveScene->OnShadowRender();
 
 		switch (m_SceneState)
 		{
-		case origin::EditorLayer::SceneState::Edit:
-		case origin::EditorLayer::SceneState::Simulate:
+		case EditorLayer::SceneState::Edit:
+		case EditorLayer::SceneState::Simulate:
 			if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 				m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
 			{
@@ -112,14 +126,14 @@ namespace origin {
 				m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
 			}
 			break;
-		case origin::EditorLayer::SceneState::Play:
+		case EditorLayer::SceneState::Play:
 			m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
 			break;
 		}
 
+	  RenderCommand::ClearColor(clearColor);
 	  m_Framebuffer->Bind();
 	  RenderCommand::Clear();
-	  RenderCommand::ClearColor(clearColor);
 	  m_Framebuffer->ClearAttachment(1, -1);
 	  Draw(ts);
 	  auto [mx, my] = ImGui::GetMousePos();
@@ -155,9 +169,12 @@ namespace origin {
 	  MenuBar();
 		SceneViewportToolbar();
 	  GUIRender();
+
 	  if (m_ContentBrowser)
 		  m_ContentBrowser->OnImGuiRender();
 	  m_SceneHierarchy.OnImGuiRender();
+
+		m_SpriteSheetEditor->OnImGuiRender();
 
 	  m_Dockspace.End();
   }
@@ -488,9 +505,7 @@ namespace origin {
 		m_SceneViewportHovered = ImGui::IsWindowHovered();
 		m_SceneViewportFocused = ImGui::IsWindowFocused();
 
-		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered);
-		m_SceneHierarchy.SetHierarchyMenuActive(!ImGui::IsWindowFocused());
-
+		
 		const ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		const ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		const ImVec2& viewportOffset = ImGui::GetWindowPos();
@@ -648,13 +663,16 @@ namespace origin {
 			ImVec2 posMinA = ImVec2(canvasPos);
 			ImVec2 posMaxA = ImVec2(canvasPos.x + 600.0f, canvasPos.y + canvasSize.y);
 
-			static float hue = 0.0f;
+			/*static float hue = 0.0f;
 			hue += ImGui::GetIO().DeltaTime * 0.1f;
 			if (hue >= 360.0f)
 				hue -= 360.0f;
-			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);
+			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);*/
+			uint32_t rectColor = ImColor(0.1f, 0.8f, 0.1f);
+			if (m_SceneState == SceneState::Play)
+				rectColor = ImColor(0.8f, 0.1f, 0.1f);
 
-			auto rectTransparentColor = IM_COL32(0, 0, 0, 0);
+			uint32_t rectTransparentColor = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
 			drawList->AddRectFilledMultiColor(posMinA, posMaxA, rectColor, rectTransparentColor, rectTransparentColor, rectColor);
 			ImVec2 posMinB = ImVec2(canvasPos.x + canvasSize.x - 600.0f, canvasPos.y);
 			ImVec2 posMaxB = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
@@ -700,13 +718,9 @@ namespace origin {
 				if (m_SceneHierarchy.GetContext())
 				{
 					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
-					{
 						OnSceneSimulate();
-					}
 					else if (m_SceneState == SceneState::Simulate)
-					{
 						OnSceneStop();
-					}
 				}
 			}
 
@@ -885,8 +899,6 @@ namespace origin {
 			ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
 			ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
 			ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
-			ImGui::Text("Hierarchy Menu Activity (%d)", m_SceneHierarchy.GetHierarchyMenuActive());
-
 			ImGui::Separator();
 
 			ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));

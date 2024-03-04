@@ -204,7 +204,7 @@ void SandboxLayer::OnEvent(Event& e)
 {
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowResizeEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnWindowResize));
-	camera.OnEvent(e);
+	//camera.OnEvent(e);
 }
 
 bool SandboxLayer::OnWindowResize(WindowResizeEvent& e)

@@ -22,16 +22,15 @@ namespace origin {
 		s_AudioData.Config.noDevice = MA_FALSE;
 
 		s_AudioData.Engine = std::make_unique<ma_engine>();
-		if (ma_engine_init(&s_AudioData.Config, s_AudioData.Engine.get()) != MA_SUCCESS)
-			OGN_CORE_ASSERT(false, "Miniaudio Engine: Failed To Initialized");
-
-		OGN_CORE_INFO("Miniaudio Engine: Initialized");
+		ma_result result = ma_engine_init(&s_AudioData.Config, s_AudioData.Engine.get());
+		OGN_CORE_ASSERT(result == MA_SUCCESS, "[MiniaudioEngine] Failed To Initialized");
+		OGN_CORE_INFO("[MiniaudioEngine] Initialized");
 	}
 
 	void AudioEngine::Shutdown()
 	{
 		ma_engine_uninit(s_AudioData.Engine.get());
-		OGN_CORE_WARN("Miniaudio Engine: Shutdown");
+		OGN_CORE_WARN("[MiniaudioEngine] Shutdown");
 	}
 
 	ma_engine *AudioEngine::GetEngine()

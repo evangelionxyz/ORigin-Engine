@@ -5,7 +5,7 @@
 
 namespace origin {
 
-	std::string_view AssetTypeToString(AssetType type)
+	const char *AssetTypeToString(AssetType type)
 	{
 		switch (type)
 		{
@@ -18,12 +18,13 @@ namespace origin {
 			case AssetType::StaticMesh: return "AssetType::StaticMesh";
 			case AssetType::Mesh: return "AssetType::Mesh";
 			case AssetType::Animation: return "AssetType::Animation";
+			case AssetType::SpriteSheet: return "AssetType::SpriteSheet";
 		}
 		OGN_CORE_ASSERT(false, "AssetType: Unkown Asset Type");
 		return "AssetType::Invalid";
 	}
 
-	AssetType AssetTypeFromString(std::string_view assetType)
+	AssetType AssetTypeFromString(const char *assetType)
 	{
 		if (assetType == "AssetType::None") return AssetType::None;
 		if (assetType == "AssetType::Scene") return AssetType::Scene;
@@ -34,6 +35,7 @@ namespace origin {
 		if (assetType == "AssetType::StaticMesh") return AssetType::StaticMesh;
 		if (assetType == "AssetType::Mesh") return AssetType::Mesh;
 		if (assetType == "AssetType::Animation") return AssetType::Animation;
+		if (assetType == "AssetType::SpriteSheet") return AssetType::SpriteSheet;
 		return AssetType::None;
 	}
 }

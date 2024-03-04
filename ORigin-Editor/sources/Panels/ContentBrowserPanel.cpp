@@ -92,7 +92,6 @@ namespace origin
 	{
 		ImGui::Begin("Content Browser");
 
-
 		DrawNavButton();
 
 		const auto canvasPos = ImGui::GetCursorScreenPos();
@@ -119,10 +118,10 @@ namespace origin
 		if (m_Mode == Mode::Asset)
 		{
 			TreeNode* node = m_TreeNodes.data();
-			const auto& currentDir = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
-			for (const auto& path : currentDir)
+			const auto& relativePath = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
+			for (const auto& path : relativePath)
 			{
-				if (node->Path == currentDir)
+				if (node->Path == relativePath)
 					break;
 
 				if (node->Children.find(path) != node->Children.end())
@@ -132,6 +131,7 @@ namespace origin
 			for (const auto& [item, treeNodeIndex] : node->Children)
 			{
 				bool shouldBreak = false;
+
 				const bool isDirectory = std::filesystem::is_directory(Project::GetActiveAssetDirectory() / item);
 				std::string filenameStr = item.generic_string();
 
@@ -159,12 +159,26 @@ namespace origin
 				{
 					if (isDirectory)
 						m_CurrentDirectory /= item.filename();
+
+					if (item.extension() == ".sprite")
+						EditorLayer::Get().m_SpriteSheetEditor->SetSelectedSpriteSheet(m_TreeNodes[treeNodeIndex].Handle);
 				}
 
 				if (ImGui::BeginPopupContextItem())
 				{
 					Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
 					ImGui::Separator();
+
+					if (item.extension() == ".png" || item.extension() == ".jpg")
+					{
+						if (ImGui::MenuItem("Create Sprite Sheet"))
+						{
+							EditorLayer::Get().m_SpriteSheetEditor->CreateNewSpriteSheet();
+							EditorLayer::Get().m_SpriteSheetEditor->AddTexture(m_TreeNodes[treeNodeIndex].Handle);
+							EditorLayer::Get().m_SpriteSheetEditor->Serialize(m_CurrentDirectory / (item.stem().string() + ".sprite"));
+							RefreshAssetTree();
+						}
+					}
 
 					if (item.extension() == ".org")
 					{
@@ -320,7 +334,7 @@ namespace origin
 
 		ImGui::Columns(1);
 
-		// Right Click Context
+		// Right Click Context For Window
 		if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 		{
 			if (ImGui::BeginMenu("CREATE"))

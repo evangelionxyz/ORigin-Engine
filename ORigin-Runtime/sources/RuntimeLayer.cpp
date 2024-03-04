@@ -70,8 +70,8 @@ bool RuntimeLayer::OpenProject(const std::filesystem::path& path)
 		AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
 		OpenScene(handle);
 
-		float width = Application::Get().GetWindow().GetWidth();
-		float height = Application::Get().GetWindow().GetHeight();
+		float width = static_cast<float>(Application::Get().GetWindow().GetWidth());
+		float height = static_cast<float>(Application::Get().GetWindow().GetHeight());
 		RenderCommand::SetViewport(0, 0, width, height);
 
 		m_ActiveScene->OnViewportResize(width, height);
