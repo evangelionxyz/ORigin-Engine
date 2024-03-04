@@ -34,6 +34,3 @@
 [submodule "ORigin/vendor/PhysX"]
 	path = ORigin/vendor/PhysX
 	url = https://github.com/kaks-ev/NVIDIA-PhysX
-[submodule "ORigin/vendor/ImGui"]
-	path = ORigin/vendor/ImGui
-	url = https://github.com/ocornut/imgui.git
