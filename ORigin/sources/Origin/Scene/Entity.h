@@ -23,8 +23,7 @@ namespace origin {
 		{
 			OGN_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
-			if(m_Scene)
-				m_Scene->OnComponentAdded<T>(*this, component);
+			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
 		}
 
@@ -32,8 +31,7 @@ namespace origin {
 		T& AddOrReplaceComponent(Args&&... args)
 		{
 			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
-			if (m_Scene)
-				m_Scene->OnComponentAdded<T>(*this, component);
+			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
 		}
 

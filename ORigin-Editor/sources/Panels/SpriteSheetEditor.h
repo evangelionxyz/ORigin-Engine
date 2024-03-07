@@ -37,6 +37,7 @@ namespace origin
 		bool Deserialize();
 
 		void OnEvent(Event &e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 
 		bool IsFocused = false;
 		bool IsHovered = false;
@@ -45,15 +46,16 @@ namespace origin
 		std::shared_ptr<SpriteSheet> m_SpriteSheet;
 		std::shared_ptr<Framebuffer> m_Framebuffer;
 		std::shared_ptr<Texture2D> m_Texture;
-		glm::vec2 m_ViewportSize;
+		std::vector<SpriteSheetController> m_Controls;
 
+		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+		glm::ivec2 m_Mouse = { 0, 0 };
 		std::filesystem::path m_CurrentFilepath;
 
-		Entity m_SelectedSprite;
-
-		std::vector<SpriteSheetController> m_Controls;
 		bool m_IsOpened = false;
 		int m_SelectedIndex = 0;
+		int m_HoveredIndex = -1;
 	};
 
 }

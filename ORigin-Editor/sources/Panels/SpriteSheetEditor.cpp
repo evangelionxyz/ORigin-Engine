@@ -3,6 +3,7 @@
 #include "Origin\Renderer\Renderer2D.h"
 #include "Origin\Asset\Serializer.h"
 #include "Origin\Asset\AssetManager.h"
+#include "Origin\Scene\EntityManager.h"
 
 #include <glm\gtc\type_ptr.hpp>
 #include <yaml-cpp\yaml.h>
@@ -73,7 +74,7 @@ namespace origin
 	{
 		if (m_IsOpened)
 		{
-			ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar);
+			ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			
 			IsFocused = ImGui::IsWindowFocused();
 			IsHovered = ImGui::IsWindowHovered();
@@ -81,22 +82,34 @@ namespace origin
 			m_Camera.SetMoveActive(IsFocused);
 			m_Camera.SetDraggingActive(IsFocused);
 			m_Camera.SetScrollingActive(IsHovered);
+
+			const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
+			const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+			const ImVec2 &viewportOffset = ImGui::GetWindowPos();
+			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+			m_ViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+
 			const float spriteSize = 64.0f;
 
-			if (ImGui::Button("Save"))
-			{
-				Serialize(m_CurrentFilepath);
-			}
-
-			m_ViewportSize = glm::vec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
 			ImTextureID texture = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID());
 			ImGui::Image(texture, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
 
 			ImGui::End();
 
 			ImGui::Begin("Sprite Sheet Controller");
+			ImGui::Text("Mouse (%d, %d)", m_Mouse.x, m_Mouse.y);
+			ImGui::Text("Selected %d", m_SelectedIndex);
+			ImGui::Text("Hovered %d", m_HoveredIndex);
+
 			if (m_Texture)
 			{
+				if (ImGui::Button("Save"))
+				{
+					Serialize(m_CurrentFilepath);
+				}
+
 				texture = reinterpret_cast<ImTextureID>(m_Texture->GetRendererID());
 				ImVec2 atlasSize { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
@@ -107,7 +120,7 @@ namespace origin
 					m_SelectedIndex = m_Controls.size() - 1;
 				}
 
-				if (!m_Controls.empty())
+				if (!m_Controls.empty() && m_SelectedIndex >= 0)
 				{
 					auto &c = m_Controls[m_SelectedIndex];
 					c.Min = { (c.Position.x * c.Size.x) / atlasSize.x, (c.Position.y * c.Size.y) / atlasSize.y };
@@ -140,7 +153,8 @@ namespace origin
 						if (ImGui::MenuItem("Delete"))
 						{
 							m_Controls.erase(m_Controls.begin() + i);
-							m_SelectedIndex = i > 0 ? i - 1: 0;
+							if(m_SelectedIndex >= 0)
+								m_SelectedIndex = i > 0 ? i - 1: 0;
 						}
 
 						ImGui::EndPopup();
@@ -166,6 +180,9 @@ namespace origin
 
 	void SpriteSheetEditor::OnRender(float ts)
 	{
+		if (!m_IsOpened)
+			return;
+
 		m_Camera.OnUpdate(ts);
 
 		RenderCommand::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -185,7 +202,7 @@ namespace origin
 		{
 			int texX = m_Texture->GetWidth() / 2;
 			int texY = m_Texture->GetHeight() / 2;
-			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, 1.0 }), m_Texture);
+			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, 1.0 }), m_Texture, -20);
 
 			int i = 0;
 			for (auto &c : m_Controls)
@@ -195,14 +212,28 @@ namespace origin
 				float posX = c.Position.x * sizeX - texX / 2.0f;
 				float posY = c.Position.y * sizeY - texY / 2.0f;
 
-				glm::vec4 col = i == m_SelectedIndex ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+				/*glm::vec4 col = i == m_SelectedIndex ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 				Renderer2D::DrawRect({ posX + sizeX / 2.0f, posY + sizeY / 2.0f, 1.0f },
-														 { sizeX, sizeY }, col);
+														 { sizeX, sizeY }, col);*/
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), { posX + sizeX / 2.0f, posY + sizeY / 2.0f, 1.0f })
+					* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
+
+				Renderer2D::DrawQuad(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), i);
 				i++;
 			}
 		}
 
+
 		Renderer2D::End();
+
+		auto [mx, my] = ImGui::GetMousePos();
+		glm::vec2 mousePos = { mx, my };
+		mousePos -= m_ViewportBounds[0];
+		const glm::vec2 &viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		mousePos.y = viewportSize.y - mousePos.y;
+		mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
+		m_Mouse = { static_cast<int>(mousePos.x), static_cast<int>(mousePos.y) };
+		m_HoveredIndex = m_Framebuffer->ReadPixel(1, m_Mouse.x, m_Mouse.y);
 
 		m_Framebuffer->Unbind();
 	}
@@ -297,6 +328,21 @@ namespace origin
 	void SpriteSheetEditor::OnEvent(Event &e)
 	{
 		m_Camera.OnEvent(e);
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditor::OnMouseButtonPressed));
+	}
+
+	bool SpriteSheetEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+	{
+		if (e.GetMouseButton() == Mouse::ButtonLeft && IsHovered)
+		{
+			if (m_HoveredIndex != m_SelectedIndex && m_HoveredIndex >= 0)
+				m_SelectedIndex = m_HoveredIndex;
+			else
+				m_SelectedIndex = -1;
+		}
+
+		return false;
 	}
 
 }

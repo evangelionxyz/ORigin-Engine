@@ -3,8 +3,6 @@
 
 namespace origin
 {
-	entt::registry EntityManager::m_EditorRegistry;
-
 	Entity EntityManager::CreateEntity(const std::string &name, Scene *scene)
 	{
 		return CreateEntityWithUUID(UUID(), name, scene);
@@ -72,20 +70,6 @@ namespace origin
 	{
 		scene->m_EntityMap.erase(entity.GetUUID());
 		scene->m_Registry.destroy(entity);
-	}
-
-	Entity EntityManager::CreateEditorEntity(const std::string &name)
-	{
-		Entity entity = { m_EditorRegistry.create(), nullptr };
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<TagComponent>().Tag = name;
-		entity.AddComponent<IDComponent>().ID = UUID();
-		return entity;
-	}
-
-	void EntityManager::DestroyEditorEntity(Entity entity)
-	{
-		m_EditorRegistry.destroy(entity);
 	}
 
 }

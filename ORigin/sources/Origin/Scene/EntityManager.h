@@ -54,11 +54,5 @@ namespace origin
 		static Entity CreateMesh(const std::string &name, Scene *scene);
 		static Entity DuplicateEntity(Entity entity, Scene *scene);
 		static void DestroyEntity(Entity entity, Scene *scene);
-
-		static Entity CreateEditorEntity(const std::string &name);
-		static void DestroyEditorEntity(Entity entity);
-
-	private:
-		static entt::registry m_EditorRegistry;
 	};
 }

@@ -365,7 +365,7 @@ namespace origin {
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, texture, tilingFactor, tintColor);
+		DrawQuad(transform, texture, -1, tilingFactor, tintColor);
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
@@ -393,7 +393,7 @@ namespace origin {
 		Renderer::GetStatistics().QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor, int entityID)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, int entityID, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
 		OGN_CORE_ASSERT(texture, "Renderer2D: Invalid texture");
 
@@ -437,7 +437,7 @@ namespace origin {
 		Renderer::GetStatistics().QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, const glm::vec2& tilingFactor, const glm::vec4& tintColor, int entityID)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, int entityID, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
 		constexpr int QuadVertexCount = 4;
 		const glm::vec2* textureCoords = subTexture->GetTexCoords();
@@ -504,7 +504,7 @@ namespace origin {
 			* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, texture, tilingFactor, tintColor);
+		DrawQuad(transform, texture, -1, tilingFactor, tintColor);
 	}
 
 	void Renderer2D::DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color, int entityID)
@@ -573,7 +573,7 @@ namespace origin {
 	{
 		std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Texture);
 		if (texture)
-			DrawQuad(transform, texture, src.TillingFactor, src.Color, entityID);
+			DrawQuad(transform, texture, -1, src.TillingFactor, src.Color);
 		else
 			DrawQuad(transform, src.Color, entityID);
 	}

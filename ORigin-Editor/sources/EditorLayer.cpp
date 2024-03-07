@@ -134,6 +134,7 @@ namespace origin {
 	  RenderCommand::Clear();
 	  m_Framebuffer->ClearAttachment(1, -1);
 	  Draw(ts);
+
 	  auto [mx, my] = ImGui::GetMousePos();
 	  glm::vec2 mousePos = { mx, my };
 	  mousePos -= m_SceneViewportBounds[0];
@@ -144,6 +145,7 @@ namespace origin {
 	  mouseY = static_cast<int>(mousePos.y);
 	  m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 	  m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+
 	  m_Framebuffer->Unbind();
   }
 

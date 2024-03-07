@@ -223,7 +223,7 @@ namespace origin {
 
 				}
 
-				Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f), (int)entity);
+				Renderer2D::DrawQuad(transform, texture, (int)entity, glm::vec2(1.0f), glm::vec4(1.0f));
 			};
 
 		auto& cam = reg.view<TransformComponent, CameraComponent>();
