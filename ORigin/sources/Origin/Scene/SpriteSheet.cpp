@@ -9,7 +9,7 @@ namespace origin
 	{
 	}
 
-	void SpriteSheet::AddTexture(AssetHandle handle)
+	void SpriteSheet::SetMainTexture(AssetHandle handle)
 	{
 		m_TextureHandle = handle;
 	}

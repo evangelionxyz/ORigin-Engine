@@ -17,9 +17,9 @@ namespace origin {
 	// Functions to Importing and Loading assets
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
 		{	AssetType::Audio, AudioImporter::Import },
-		{	AssetType::Texture2D, TextureImporter::ImportTexture2D },
+		{	AssetType::Texture, TextureImporter::ImportTexture2D },
 		{	AssetType::Scene, SceneImporter::Import },
-		{ AssetType::Mesh, ModelImporter::Import },
+		{ AssetType::MeshSource, ModelImporter::Import },
 		{ AssetType::StaticMesh, ModelImporter::Import },
 		{ AssetType::SpriteSheet, SpriteSheetImporter::Import }
 	};
@@ -30,7 +30,7 @@ namespace origin {
 	{
 		if (s_AssetImportFunctions.find(metadata.Type) == s_AssetImportFunctions.end())
 		{
-			OGN_CORE_ERROR("No Importer available for asset type: {} ", AssetTypeToString(metadata.Type));
+			OGN_CORE_ERROR("[AssetImporter] No Importer available for asset type: {} ", AssetTypeToString(metadata.Type));
 			return nullptr;
 		}
 

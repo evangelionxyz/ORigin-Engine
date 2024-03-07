@@ -25,7 +25,6 @@ namespace origin {
 		void InitOrthographic(float size, float nearClip, float farClip);
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& e);
-		void SetEntityObject(Entity entity);
 		void SetViewportSize(float width, float height);
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; }
 		void SetPosition(const glm::vec3& position) { m_Position = position; }
@@ -39,8 +38,11 @@ namespace origin {
 		const glm::mat4& GetViewMatrix() const;
 		virtual const glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
 		void SetStyle(CameraStyle style) { m_CameraStyle = style; }
-		void EnableMovement(bool enable) { m_EnableMovement = enable; }
-		bool IsActive() { return m_EnableMovement; }
+		void SetDraggingActive(bool enable) { m_CanDragging = enable; }
+		void SetScrollingActive(bool enable) { m_CanScrolling = enable; }
+		void SetMoveActive(bool enable) { m_CanMoving = enable; }
+		void SetOrthoSize(float size) { m_OrthoSize = size; }
+
 		float GetYaw() const { return m_Yaw; }
 		float GetPitch() const { return m_Pitch; }
 		float GetZoomSpeed() { return ZoomSpeed(); }
@@ -73,13 +75,13 @@ namespace origin {
 		float RotationSpeed() const;
 		std::pair<float, float> PanSpeed() const;
 		glm::vec3 m_Position = glm::vec3(0.0f);
-		glm::vec3 m_LastPosition = glm::vec3(0.0f);
-		glm::vec3 m_TargetPosition = glm::vec3(0.0f);
 		glm::vec3 m_FocalPoint = glm::vec3(0.0f);
 		glm::vec2 m_InitialMousePosition = glm::vec2(0.0f);
 		glm::mat4 m_Projection = glm::mat4(1.0f);
 		glm::mat4 m_View = glm::mat4(1.0f);
-		bool m_EnableMovement;
+		bool m_CanDragging = true;
+		bool m_CanScrolling = true;
+		bool m_CanMoving = true;
 		float m_Distance = 8.0f;
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;

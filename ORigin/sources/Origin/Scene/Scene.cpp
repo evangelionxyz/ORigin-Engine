@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Entity.h"
 #include "Lighting.h"
+#include "EntityManager.h"
 #include "ScriptableEntity.h"
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
@@ -25,45 +26,6 @@ namespace origin
 	class RigidbodyComponent;
 	class SphereColliderComponent;
 	class CapsuleColliderComponent;
-
-	template <typename... Component>
-	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
-	{
-		([&]()
-		{
-			auto view = src.view<Component>();
-			for (auto srcEntity : view)
-			{
-				entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
-				auto srcComponent = src.get<Component>(srcEntity);
-				dst.emplace_or_replace<Component>(dstEntity, srcComponent);
-			}
-		}(), ...);
-	}
-
-	template <typename... Component>
-	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity> enttMap)
-	{
-		CopyComponent<Component...>(dst, src, enttMap);
-	}
-
-	template <typename... Component>
-	static void CopyComponentIfExists(Entity dst, Entity src)
-	{
-		([&]()
-		{
-				if (src.HasComponent<Component>())
-				{
-					dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
-				}
-		}(), ...);
-	}
-
-	template <typename... Component>
-	static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
-	{
-		CopyComponentIfExists<Component...>(dst, src);
-	}
 
 	Scene::Scene()
 	{
@@ -96,7 +58,7 @@ namespace origin
 		{
 			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
 			const auto name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			newEntity = newScene->CreateEntityWithUUID(uuid, name);
+			newEntity = EntityManager::CreateEntityWithUUID(uuid, name, newScene.get());
 			enttMap[uuid] = static_cast<entt::entity>(newEntity);
 		}
 
@@ -104,88 +66,6 @@ namespace origin
 		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newScene;
-	}
-
-	Entity Scene::CreateEntity(const std::string& name)
-	{
-		return CreateEntityWithUUID(UUID(), name);
-	}
-
-	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
-	{
-		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(uuid);
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<TreeNodeComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
-
-		m_EntityMap[uuid] = entity;
-
-		return entity;
-	}
-
-	Entity Scene::CreateMesh(const std::string& name)
-	{
-		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(UUID());
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<TreeNodeComponent>();
-		entity.AddComponent<StaticMeshComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
-
-		UUID& uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap[uuid] = entity;
-
-		return entity;
-	}
-
-	Entity Scene::CreateCamera(const std::string& name)
-	{
-		Entity entity = {m_Registry.create(), this};
-
-		entity.AddComponent<IDComponent>();
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<CameraComponent>();
-		entity.AddComponent<TreeNodeComponent>();
-
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Camera" : name;
-
-		auto& translation = entity.GetComponent<TransformComponent>().Translation;
-		translation.z = 8.0f;
-
-		UUID uuid = entity.GetComponent<IDComponent>().ID;
-		m_EntityMap[uuid] = entity;
-
-		return entity;
-	}
-
-	Entity Scene::DuplicateEntity(Entity entity)
-	{
-		// TODO: Skipped for now
-		if (entity.HasChildren())
-		{
-			return entity;
-		}
-
-		std::string name = entity.GetTag();
-		Entity newEntity = CreateEntity(name);
-
-		CopyComponentIfExists(AllComponents{}, newEntity, entity);
-
-		if (entity.HasParent())
-		{
-			Entity parent = GetEntityWithUUID(entity.GetParentUUID());
-			auto& parentIdc = parent.GetComponent<TreeNodeComponent>();
-			parentIdc.Children[newEntity.GetUUID()] = newEntity;
-		}
-
-
-		return newEntity;
 	}
 
 	Entity Scene::GetEntityWithUUID(UUID uuid)
@@ -210,20 +90,14 @@ namespace origin
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{
-		const auto& view = m_Registry.view<CameraComponent>();
-		for (auto& entity : view)
+		const auto &view = m_Registry.view<CameraComponent>();
+		for (auto &entity : view)
 		{
-			const CameraComponent& camera = view.get<CameraComponent>(entity);
+			const CameraComponent &camera = view.get<CameraComponent>(entity);
 			if (camera.Primary)
-				return Entity{ entity, this };
+				return Entity { entity, this };
 		}
 		return {};
-	}
-
-	void Scene::DestroyEntity(Entity entity)
-	{
-		m_EntityMap.erase(entity.GetUUID());
-		m_Registry.destroy(entity);
 	}
 
 	void Scene::OnUpdateRuntime(Timestep ts)

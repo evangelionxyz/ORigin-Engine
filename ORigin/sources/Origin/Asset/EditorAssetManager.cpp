@@ -12,8 +12,8 @@ namespace origin {
 
 	static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap = {
 		{ ".org", AssetType::Scene },
-		{ ".jpg", AssetType::Texture2D },
-		{ ".png", AssetType::Texture2D },
+		{ ".jpg", AssetType::Texture },
+		{ ".png", AssetType::Texture },
 		{ ".obj", AssetType::StaticMesh },
 		{ ".gltf", AssetType::StaticMesh },
 		{ ".fbx", AssetType::StaticMesh },
@@ -27,7 +27,7 @@ namespace origin {
 	{
 		if (s_AssetExtensionMap.find(extension) == s_AssetExtensionMap.end())
 		{
-			OGN_CORE_WARN("Could not find AssetType for: {}", extension);
+			OGN_CORE_WARN("[EditorAssetManager] Could not find AssetType for: {}", extension);
 			return AssetType::None;
 		}
 
@@ -56,9 +56,13 @@ namespace origin {
 			const AssetMetadata& metadata = GetMetadata(handle);
 			asset = AssetImporter::ImportAsset(handle, metadata);
 			if (!asset)
-				OGN_CORE_ERROR("EditorAssetManager: - Asset Import Failed!");
-
-			m_LoadedAssets[handle] = asset;
+			{
+				OGN_CORE_ERROR("[EditorAssetManager] Asset Import Failed!");
+			}
+			else
+			{
+				m_LoadedAssets[handle] = asset;
+			}
 		}
 
 		return asset;
@@ -194,10 +198,10 @@ namespace origin {
 
 		for (const auto& node : rootNode)
 		{
-			AssetHandle handle = (AssetHandle)node["Handle"].as<uint64_t>();
+			AssetHandle handle = node["Handle"].as<uint64_t>();
 			auto& metadata = m_AssetRegistry[handle];
 			metadata.Filepath = node["Filepath"].as<std::string>();
-			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>().c_str());
+			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());
 		}
 
 		return true;

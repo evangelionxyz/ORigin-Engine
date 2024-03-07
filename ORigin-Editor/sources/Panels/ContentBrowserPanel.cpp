@@ -33,7 +33,7 @@ namespace origin
 		m_IconMap[".mp3"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio_icon.png");
 		
 		RefreshAssetTree();
-		m_Mode = Mode::FileSystem;
+		m_Mode = Mode::Asset;
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()
@@ -174,7 +174,7 @@ namespace origin
 						if (ImGui::MenuItem("Create Sprite Sheet"))
 						{
 							EditorLayer::Get().m_SpriteSheetEditor->CreateNewSpriteSheet();
-							EditorLayer::Get().m_SpriteSheetEditor->AddTexture(m_TreeNodes[treeNodeIndex].Handle);
+							EditorLayer::Get().m_SpriteSheetEditor->SetMainTexture(m_TreeNodes[treeNodeIndex].Handle);
 							EditorLayer::Get().m_SpriteSheetEditor->Serialize(m_CurrentDirectory / (item.stem().string() + ".sprite"));
 							RefreshAssetTree();
 						}

@@ -10,6 +10,7 @@
 #include "Origin/Renderer/Font.h"
 #include "Origin/Utils/Utils.h"
 #include "Origin/Asset/AssetImporter.h"
+#include "Origin/Scene/EntityManager.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -104,15 +105,12 @@ namespace origin {
 
 		// SpriteSheet Editor
 		m_SpriteSheetEditor->OnRender(ts);
-		
 
-	  const bool enableCamera = !ImGuizmo::IsUsing()
-			&& !ImGui::GetIO().WantTextInput
-			&& Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0
-			&& !m_SpriteSheetEditor->IsFocused;
-
-	  m_EditorCamera.EnableMovement(enableCamera);
 		m_ActiveScene->OnShadowRender();
+
+		m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput);
+		m_EditorCamera.SetDraggingActive(m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
+		m_EditorCamera.SetScrollingActive(m_SceneViewportHovered);
 
 		switch (m_SceneState)
 		{
@@ -156,7 +154,7 @@ namespace origin {
 
 	  if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
 	  {
-		  Entity entity = m_EditorScene->DuplicateEntity(selectedEntity);
+			Entity entity = EntityManager::DuplicateEntity(selectedEntity, m_EditorScene.get());
 		  m_SceneHierarchy.SetSelectedEntity(entity);
 	  }
   }
@@ -782,13 +780,13 @@ namespace origin {
 
 					if (ImGui::MenuItem("Empty"))
 					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Empty");
+						Entity entity = EntityManager::CreateEntity("Emtpy", m_SceneHierarchy.GetContext().get());
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
 
 					if (ImGui::MenuItem("Main Camera"))
 					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateCamera("Main Camera");
+						Entity entity = EntityManager::CreateCamera("Main Camera", m_SceneHierarchy.GetContext().get());
 						entity.AddComponent<AudioListenerComponent>();
 
 						m_SceneHierarchy.SetSelectedEntity(entity);
@@ -796,14 +794,14 @@ namespace origin {
 
 					if (ImGui::MenuItem("Camera"))
 					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateCamera("Camera");
+						Entity entity = EntityManager::CreateCamera("Camera", m_SceneHierarchy.GetContext().get());
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
 					ImGui::Separator();
 
 					if (ImGui::MenuItem("Sprite"))
 					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Sprite");
+						Entity entity = EntityManager::CreateEntity("Sprite", m_SceneHierarchy.GetContext().get());
 						entity.AddComponent<SpriteRenderer2DComponent>();
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
@@ -811,14 +809,14 @@ namespace origin {
 
 					if (ImGui::MenuItem("Lighting"))
 					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateEntity("Lighting");
+						Entity entity = EntityManager::CreateEntity("Lighting", m_SceneHierarchy.GetContext().get());
 						entity.AddComponent<LightComponent>().Light = Lighting::Create(LightingType::Directional);
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
 
 					if (ImGui::MenuItem("Empty Mesh"))
 					{
-						Entity entity = m_SceneHierarchy.GetContext()->CreateMesh("Empty Mesh");
+						Entity entity = EntityManager::CreateMesh("Emtpy Mesh", m_SceneHierarchy.GetContext().get());
 						m_SceneHierarchy.SetSelectedEntity(entity);
 					}
 				}

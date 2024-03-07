@@ -28,7 +28,7 @@ namespace origin
 		static std::shared_ptr<Model> Create(const std::string& filepath, std::shared_ptr<Material> material);
 
 		static AssetType GetStaticType() { return AssetType::StaticMesh; }
-		AssetType GetType() const override { return AssetType::StaticMesh; }
+		AssetType GetType() const override { return GetStaticType(); }
 	};
 }
 

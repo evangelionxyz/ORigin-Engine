@@ -69,7 +69,7 @@ namespace origin {
 	public:
 		static std::shared_ptr<Texture2D> Create(const TextureSpecification& specification, Buffer data = Buffer());
 		static std::shared_ptr<Texture2D> Create(const std::filesystem::path& filepath, const TextureSpecification& specification = TextureSpecification());
-		static AssetType GetStaticType() { return AssetType::Texture2D; }
+		static AssetType GetStaticType() { return AssetType::Texture; }
 		virtual AssetType GetType() const { return GetStaticType(); }
 	};
 
@@ -86,7 +86,7 @@ namespace origin {
 		static std::shared_ptr<TextureCube> Create(uint32_t width, uint32_t height);
 		static std::shared_ptr<TextureCube> Create(const std::string& filepath);
 
-		static AssetType GetStaticType() { return AssetType::Texture2D; }
+		static AssetType GetStaticType() { return AssetType::Texture; }
 		virtual AssetType GetType() const { return GetStaticType(); }
 	};
 }

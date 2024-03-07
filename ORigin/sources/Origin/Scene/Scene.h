@@ -25,18 +25,13 @@ namespace origin
     Scene();
     ~Scene();
     static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
-    virtual AssetType GetType() const override { return AssetType::Scene; }
-
-    Entity CreateEntity(const std::string& name);
-    Entity CreateCamera(const std::string& name);
-    Entity CreateMesh(const std::string& name);
-    Entity CreateEntityWithUUID(UUID uuid, const std::string& name);
+		static AssetType GetStaticType() { return AssetType::Scene; }
+		AssetType GetType() const override { return GetStaticType(); }
+    
     Entity GetPrimaryCameraEntity();
-    Entity DuplicateEntity(Entity entity);
     Entity GetEntityWithUUID(UUID uuid);
     Entity FindEntityByName(std::string_view name);
 
-    void DestroyEntity(Entity entity);
     void OnRuntimeStart();
     void OnRuntimeStop();
     void OnUpdateRuntime(Timestep time);
@@ -84,6 +79,7 @@ namespace origin
     int m_StepFrames = 0;
 
     friend class Entity;
+    friend class EntityManager;
     friend class EditorLayer;
     friend class Gizmos;
     friend class SceneSerializer;

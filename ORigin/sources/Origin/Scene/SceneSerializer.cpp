@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "SceneSerializer.h"
+#include "EntityManager.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Renderer/Model.h"
@@ -37,9 +38,9 @@ namespace origin
 	{
 		switch (bodyType)
 		{
-		case Rigidbody2DComponent::BodyType::Static: return "Static";
-		case Rigidbody2DComponent::BodyType::Dynamic: return "Dynamic";
-		case Rigidbody2DComponent::BodyType::Kinematic: return "Kinematic";
+			case Rigidbody2DComponent::BodyType::Static: return "Static";
+			case Rigidbody2DComponent::BodyType::Dynamic: return "Dynamic";
+			case Rigidbody2DComponent::BodyType::Kinematic: return "Kinematic";
 		}
 
 		OGN_CORE_ASSERT(false, "Unknown body type");
@@ -621,7 +622,7 @@ namespace origin
 				if (auto tagComponent = entity["TagComponent"])
 					name = tagComponent["Tag"].as<std::string>();
 
-				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
+				Entity deserializedEntity = EntityManager::CreateEntityWithUUID(uuid, name, m_Scene.get());
 
 				if (YAML::Node transformComponent = entity["TransformComponent"])
 				{

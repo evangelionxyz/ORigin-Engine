@@ -9,6 +9,7 @@
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Shader.h"
 #include "Origin\Scene\Components.h"
+#include "Origin\Scene\EntityManager.h"
 #include "Origin\Audio\AudioSource.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
@@ -69,7 +70,7 @@ namespace origin {
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
 		DeleteEntityTree(entity);
-		m_Context->DestroyEntity(entity);
+		EntityManager::DestroyEntity(entity, m_Context.get());
 		m_SelectedEntity = {};
 	}
 
@@ -126,12 +127,12 @@ namespace origin {
 		{
 			if (ImGui::BeginMenu("CREATE"))
 			{
-				if (ImGui::MenuItem("Empty")) m_Context->CreateEntity("Empty");
-				if (ImGui::MenuItem("Sprite")) m_Context->CreateEntity("Sprite");
-				if (ImGui::MenuItem("Empty Mesh")) m_Context->CreateMesh("Empty Mesh");
+				if (ImGui::MenuItem("Empty")) EntityManager::CreateEntity("Empty", m_Context.get());
+				if (ImGui::MenuItem("Sprite")) EntityManager::CreateEntity("Sprite", m_Context.get());
+				if (ImGui::MenuItem("Empty Mesh")) EntityManager::CreateMesh("Empty Mesh", m_Context.get());
 				if (ImGui::MenuItem("Camera"))
 				{
-					m_SelectedEntity = m_Context->CreateCamera("Camera");
+					m_SelectedEntity = EntityManager::CreateCamera("Camera", m_Context.get());
 					m_SelectedEntity.AddComponent<AudioListenerComponent>();
 				}
 
@@ -733,7 +734,7 @@ namespace origin {
 				ImGui::SameLine();
 				if (component.Texture != 0)
 				{
-					if (AssetManager::IsAssetHandleValid(component.Texture) && AssetManager::GetAssetType(component.Texture) == AssetType::Texture2D)
+					if (AssetManager::IsAssetHandleValid(component.Texture) && AssetManager::GetAssetType(component.Texture) == AssetType::Texture)
 					{
 						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Texture);
 						label = metadata.Filepath.filename().string();
@@ -755,7 +756,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
-						if (AssetManager::GetAssetType(handle) == AssetType::Texture2D)
+						if (AssetManager::GetAssetType(handle) == AssetType::Texture)
 						{
 							component.Texture = handle;
 						}

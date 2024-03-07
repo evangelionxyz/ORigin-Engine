@@ -20,6 +20,8 @@ namespace origin
 		spec.Attachments =
 		{
 			FramebufferTextureFormat::RGBA8,
+			FramebufferTextureFormat::RED_INTEGER,
+			FramebufferTextureFormat::DEPTH24STENCIL8
 		};
 
 		spec.Width = 1280;
@@ -36,22 +38,29 @@ namespace origin
 	void SpriteSheetEditor::SetSelectedSpriteSheet(AssetHandle handle)
 	{
 		m_SpriteSheet = AssetManager::GetAsset<SpriteSheet>(handle);
-		std::filesystem::path path = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
-		Deserialize(path);
+
+		m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+
+		if (Deserialize() && !m_IsOpened)
+		{
+			m_Camera.SetOrthoSize(m_Texture->GetWidth() / 2.0f);
+			m_IsOpened = true;
+		}
 	}
 
-	void SpriteSheetEditor::AddTexture(AssetHandle handle)
+	void SpriteSheetEditor::SetMainTexture(AssetHandle handle)
 	{
 		if (m_SpriteSheet)
-			m_SpriteSheet->AddTexture(handle);
+			m_SpriteSheet->SetMainTexture(handle);
 	}
 
-	void SpriteSheetEditor::AddSprite(int position, glm::vec2 min, glm::vec2 max)
+	void SpriteSheetEditor::AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max)
 	{
-		SpriteData sprite;
+		SpriteData sprite {};
+		sprite.Position = position;
+		sprite.Size = size;
 		sprite.Min = min;
 		sprite.Max = max;
-		sprite.Position = position;
 		m_SpriteSheet->Sprites.push_back(sprite);
 	}
 
@@ -62,94 +71,107 @@ namespace origin
 
 	void SpriteSheetEditor::OnImGuiRender()
 	{
-		ImGui::Begin("Sprite Sheet Editor", nullptr, ImGuiWindowFlags_NoScrollbar);
-
-		const float spriteSize = 64.0f;
-		ImGui::BeginChild("sprite_sheet_editor_vp", { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - spriteSize * 2.5f },
-											ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiChildFlags_ResizeY);
-
-		IsFocused = ImGui::IsWindowFocused();
-		IsHovered = ImGui::IsWindowHovered();
-
-		if (ImGui::Button("Save"))
+		if (m_IsOpened)
 		{
-			if (!m_Filepath.empty())
-				Serialize(m_Filepath);
-		}
+			ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar);
+			
+			IsFocused = ImGui::IsWindowFocused();
+			IsHovered = ImGui::IsWindowHovered();
 
-		m_ViewportSize = glm::vec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-		ImTextureID texture = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID());
-		ImGui::Image(texture, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
-		ImGui::EndChild();
+			m_Camera.SetMoveActive(IsFocused);
+			m_Camera.SetDraggingActive(IsFocused);
+			m_Camera.SetScrollingActive(IsHovered);
+			const float spriteSize = 64.0f;
 
-		ImGui::BeginChild("sprites", { ImGui::GetContentRegionAvail().x, spriteSize * 2.4f});
-		if (m_Texture)
-		{
-			texture = reinterpret_cast<ImTextureID>(m_Texture->GetRendererID());
-			ImVec2 atlasSize { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
+			if (ImGui::Button("Save"))
 			{
-				static glm::ivec2 spritePositions = glm::ivec2(0, 0);
-				static glm::ivec2 size = glm::ivec2(16, 16);
-				glm::vec2 min { (spritePositions.x * size.x) / atlasSize.x, ((spritePositions.y - 1.0f) * size.y) / atlasSize.y };
-				glm::vec2 max { ((spritePositions.x + 1.0) * size.x) / atlasSize.x, (spritePositions.y * size.y) / atlasSize.y };
-				ImGui::Columns(2);
-				ImGui::Image(texture, { spriteSize, spriteSize }, ImVec2(min.x, min.y), ImVec2(max.x, max.y));
-				ImGui::NextColumn();
-				ImGui::DragInt2("Positions", glm::value_ptr(spritePositions), 1.0f);
-				ImGui::DragInt2("Size", glm::value_ptr(size), 1.0f);
+				Serialize(m_CurrentFilepath);
+			}
+
+			m_ViewportSize = glm::vec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+			ImTextureID texture = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID());
+			ImGui::Image(texture, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
+
+			ImGui::End();
+
+			ImGui::Begin("Sprite Sheet Controller");
+			if (m_Texture)
+			{
+				texture = reinterpret_cast<ImTextureID>(m_Texture->GetRendererID());
+				ImVec2 atlasSize { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
 				if (ImGui::Button("Add"))
-					AddSprite(m_SpriteSheet->Sprites.size(), min, max);
-			}
-
-			const float padding = 10.0f;
-			const float cellSize = spriteSize + padding;
-			const float panelWidth = ImGui::GetWindowContentRegionWidth();
-			int columnCount = static_cast<int>(panelWidth / cellSize);
-			if (columnCount < 1)
-				columnCount = 1;
-
-			ImGui::Columns(columnCount, nullptr, false);
-
-			for (int i = 0; i < m_SpriteSheet->Sprites.size(); i++ )
-			{
-				auto &s = m_SpriteSheet->Sprites[i];
-				ImGui::PushID(i);
-				ImGui::ImageButton(texture, { spriteSize, spriteSize }, { s.Min.x, s.Min.y }, { s.Max.x, s.Max.y });
-				if (ImGui::BeginPopupContextItem("sprite_context", 1))
 				{
-					if (ImGui::MenuItem("Delete"))
-						RemoveSprite(i);
-						
-					ImGui::EndPopup();
+					SpriteSheetController control;
+					m_Controls.push_back(control);
+					m_SelectedIndex = m_Controls.size() - 1;
 				}
 
-				if (ImGui::IsItemHovered())
+				if (!m_Controls.empty())
 				{
-					ImGui::BeginTooltip();
-					ImGui::Text("Position: %d, ", s.Position);
-					ImGui::Text("Min: %f, %f, ", s.Min.x, s.Min.y);
-					ImGui::Text("Max: %f, %f, ", s.Max.x, s.Max.y);
-					ImGui::EndTooltip();
+					auto &c = m_Controls[m_SelectedIndex];
+					c.Min = { (c.Position.x * c.Size.x) / atlasSize.x, (c.Position.y * c.Size.y) / atlasSize.y };
+					c.Max = { ((c.Position.x + 1.0) * c.Size.x) / atlasSize.x, ((c.Position.y + 1.0f) * c.Size.y) / atlasSize.y };
+					ImGui::DragFloat("##xPos", &c.Position.x, c.Size.x / atlasSize.x, 0.0f, atlasSize.x / c.Size.x - 1.0f);
+					ImGui::DragFloat("##yPos", &c.Position.y, c.Size.y / atlasSize.y, 0.0f, atlasSize.y / c.Size.y - 1.0f);
+					ImGui::DragFloat2("Size", glm::value_ptr(c.Size), 1.0f, 0.0f);
 				}
 
-				ImGui::NextColumn();
-				ImGui::PopID();
+				const float padding = 10.0f;
+				const float cellSize = spriteSize + padding;
+				const float panelWidth = ImGui::GetWindowContentRegionWidth();
+				int columnCount = static_cast<int>(panelWidth / cellSize);
+				if (columnCount < 1)
+					columnCount = 1;
+
+				ImGui::Columns(columnCount, nullptr, false);
+
+				for (int i = 0; i < m_Controls.size(); i++)
+				{
+					auto &control = m_Controls[i];
+					ImGui::PushID(i);
+					ImGui::ImageButton(texture, { spriteSize, spriteSize }, { control.Min.x, control.Max.y }, { control.Max.x, control.Min.y });
+
+					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+						m_SelectedIndex = i;
+
+					if (ImGui::BeginPopupContextItem("sprite_context", 1))
+					{
+						if (ImGui::MenuItem("Delete"))
+						{
+							m_Controls.erase(m_Controls.begin() + i);
+							m_SelectedIndex = i > 0 ? i - 1: 0;
+						}
+
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::BeginTooltip();
+						ImGui::Text("Position: %f, %f ", control.Position.x, control.Position.y);
+						ImGui::Text("Size: %f, %f ", control.Size.x, control.Size.y);
+						ImGui::Text("Min: %f, %f ", control.Min.x, control.Min.y);
+						ImGui::Text("Max: %f, %f ", control.Max.x, control.Max.y);
+						ImGui::EndTooltip();
+					}
+
+					ImGui::NextColumn();
+					ImGui::PopID();
+				}
 			}
+			ImGui::End();
 		}
-		ImGui::EndChild();
-
-		ImGui::End();
 	}
 
 	void SpriteSheetEditor::OnRender(float ts)
 	{
-		m_Camera.EnableMovement(IsFocused && IsHovered);
 		m_Camera.OnUpdate(ts);
 
 		RenderCommand::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 		m_Framebuffer->Bind();
 		RenderCommand::Clear();
+		m_Framebuffer->ClearAttachment(1, -1);
 
 		if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 				m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (m_ViewportSize.x != spec.Width || m_ViewportSize.y != spec.Height))
@@ -161,12 +183,25 @@ namespace origin
 		Renderer2D::Begin(m_Camera);
 		if (m_Texture)
 		{
-			float x = 10.0f;
-			float y = x * ((float)m_Texture->GetHeight() / (float)m_Texture->GetWidth());
+			int texX = m_Texture->GetWidth() / 2;
+			int texY = m_Texture->GetHeight() / 2;
+			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, 1.0 }), m_Texture);
 
-			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), glm::vec3(x, y, 1.0f)), m_Texture);
+			int i = 0;
+			for (auto &c : m_Controls)
+			{
+				float sizeX = c.Size.x / 2.0f;
+				float sizeY = c.Size.y / 2.0f;
+				float posX = c.Position.x * sizeX - texX / 2.0f;
+				float posY = c.Position.y * sizeY - texY / 2.0f;
+
+				glm::vec4 col = i == m_SelectedIndex ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+				Renderer2D::DrawRect({ posX + sizeX / 2.0f, posY + sizeY / 2.0f, 1.0f },
+														 { sizeX, sizeY }, col);
+				i++;
+			}
 		}
-			
+
 		Renderer2D::End();
 
 		m_Framebuffer->Unbind();
@@ -174,7 +209,10 @@ namespace origin
 
 	bool SpriteSheetEditor::Serialize(const std::filesystem::path &filepath)
 	{
-		m_Filepath = filepath;
+		m_CurrentFilepath = filepath;
+
+		for (auto &control : m_Controls)
+			AddSprite(control.Position, control.Size, control.Min, control.Max);
 
 		YAML::Emitter out;
 		out << YAML::BeginMap; // SpriteSheet
@@ -185,9 +223,12 @@ namespace origin
 			out << YAML::Key << "Sprites" << YAML::Value << YAML::BeginSeq;
 			for (auto &s : m_SpriteSheet->Sprites)
 			{
+				out << YAML::BeginMap;
 				out << YAML::Key << "Position" << s.Position;
+				out << YAML::Key << "Size" << s.Size;
 				out << YAML::Key << "Min" << s.Min;
 				out << YAML::Key << "Max" << s.Max;
+				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
 			out << YAML::EndMap;
@@ -200,9 +241,10 @@ namespace origin
 		return true;
 	}
 
-	bool SpriteSheetEditor::Deserialize(const std::filesystem::path &filepath)
+	bool SpriteSheetEditor::Deserialize()
 	{
-		std::ifstream stream(filepath.string());
+		std::ifstream stream(m_CurrentFilepath.string());
+
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 
@@ -213,20 +255,41 @@ namespace origin
 		if (YAML::Node data = spriteSheet["SpriteSheet"])
 		{
 			AssetHandle textureHandle = data["Texture"].as<uint64_t>();
+			m_SpriteSheet->SetMainTexture(textureHandle);
 			m_Texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+
+			if (!m_Texture)
+			{
+				OGN_CORE_ERROR("[SpriteSheetEditor] Main Texture Is Not Valid");
+				OGN_CORE_ERROR("[SpriteSheetEditor] {}", textureHandle);
+				return false;
+			}
+
+			glm::vec2 atlasSize = { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
 			if (YAML::Node sprites = data["Sprites"])
 			{
 				for (auto s : sprites)
 				{
 					AddSprite(
-						s["Position"].as<int>(),
+						s["Position"].as<glm::vec2>(),
+						s["Size"].as<glm::vec2>(),
 						s["Min"].as<glm::vec2>(),
 						s["Max"].as<glm::vec2>()
 					);
 				}
 			}
 
+
+			for (auto &sprite : m_SpriteSheet->Sprites)
+			{
+				SpriteSheetController control;
+				control.Position = sprite.Position;
+				control.Size = sprite.Size;
+				control.Min = sprite.Min;
+				control.Max = sprite.Max;
+				m_Controls.push_back(control);
+			}
 		}
 		return true;
 	}

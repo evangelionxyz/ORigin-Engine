@@ -11,12 +11,11 @@ namespace origin {
 		{
 			case AssetType::None: return "AssetType::None";
 			case AssetType::Scene: return "AssetType::Scene";
-			case AssetType::Texture2D: return "AssetType::Texture2D";
+			case AssetType::Texture: return "AssetType::Texture";
 			case AssetType::Font: return "AssetType::Font";
-			case AssetType::TextureCube: return "AssetType::TextureCube";
 			case AssetType::Audio: return "AssetType::Audio";
 			case AssetType::StaticMesh: return "AssetType::StaticMesh";
-			case AssetType::Mesh: return "AssetType::Mesh";
+			case AssetType::MeshSource: return "AssetType::MeshSource";
 			case AssetType::Animation: return "AssetType::Animation";
 			case AssetType::SpriteSheet: return "AssetType::SpriteSheet";
 		}
@@ -24,16 +23,15 @@ namespace origin {
 		return "AssetType::Invalid";
 	}
 
-	AssetType AssetTypeFromString(const char *assetType)
+	AssetType AssetTypeFromString(const std::string_view &assetType)
 	{
 		if (assetType == "AssetType::None") return AssetType::None;
 		if (assetType == "AssetType::Scene") return AssetType::Scene;
-		if (assetType == "AssetType::Texture2D") return AssetType::Texture2D;
+		if (assetType == "AssetType::Texture") return AssetType::Texture;
 		if (assetType == "AssetType::Font") return AssetType::Font;
-		if (assetType == "AssetType::TextureCube") return AssetType::TextureCube;
 		if (assetType == "AssetType::Audio") return AssetType::Audio;
 		if (assetType == "AssetType::StaticMesh") return AssetType::StaticMesh;
-		if (assetType == "AssetType::Mesh") return AssetType::Mesh;
+		if (assetType == "AssetType::MeshSource") return AssetType::MeshSource;
 		if (assetType == "AssetType::Animation") return AssetType::Animation;
 		if (assetType == "AssetType::SpriteSheet") return AssetType::SpriteSheet;
 		return AssetType::None;

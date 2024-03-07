@@ -8,7 +8,8 @@ namespace origin
 {
 	struct SpriteData
 	{
-		uint32_t Position;
+		glm::vec2 Position;
+		glm::vec2 Size;
 		glm::vec2 Min, Max;
 	};
 
@@ -17,7 +18,8 @@ namespace origin
 	public:
 		SpriteSheet() = default;
 		SpriteSheet(const std::filesystem::path &filepath);
-		void AddTexture(AssetHandle handle);
+
+		void SetMainTexture(AssetHandle handle);
 
 		static std::shared_ptr<SpriteSheet> Create();
 		static std::shared_ptr<SpriteSheet> Create(const std::filesystem::path &filepath);
