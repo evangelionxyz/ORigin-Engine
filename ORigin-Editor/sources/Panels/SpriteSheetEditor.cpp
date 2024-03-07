@@ -99,7 +99,6 @@ namespace origin
 			ImGui::End();
 
 			ImGui::Begin("Sprite Sheet Controller");
-			ImGui::Text("Mouse (%d, %d)", m_Mouse.x, m_Mouse.y);
 			ImGui::Text("Selected %d", m_SelectedIndex);
 			ImGui::Text("Hovered %d", m_HoveredIndex);
 
@@ -120,14 +119,20 @@ namespace origin
 					m_SelectedIndex = m_Controls.size() - 1;
 				}
 
-				if (!m_Controls.empty() && m_SelectedIndex >= 0)
+				int offset = 0;
+				for (int i = 0; i < m_Controls.size(); i++)
 				{
-					auto &c = m_Controls[m_SelectedIndex];
-					c.Min = { (c.Position.x * c.Size.x) / atlasSize.x, (c.Position.y * c.Size.y) / atlasSize.y };
-					c.Max = { ((c.Position.x + 1.0) * c.Size.x) / atlasSize.x, ((c.Position.y + 1.0f) * c.Size.y) / atlasSize.y };
-					ImGui::DragFloat("##xPos", &c.Position.x, c.Size.x / atlasSize.x, 0.0f, atlasSize.x / c.Size.x - 1.0f);
-					ImGui::DragFloat("##yPos", &c.Position.y, c.Size.y / atlasSize.y, 0.0f, atlasSize.y / c.Size.y - 1.0f);
-					ImGui::DragFloat2("Size", glm::value_ptr(c.Size), 1.0f, 0.0f);
+					if (m_SelectedIndex == (i + offset) / 5)
+					{
+						auto &c = m_Controls[m_SelectedIndex];
+						c.Min = { (c.Position.x * c.Size.x) / atlasSize.x, (c.Position.y * c.Size.y) / atlasSize.y };
+						c.Max = { ((c.Position.x + 1.0) * c.Size.x) / atlasSize.x, ((c.Position.y + 1.0f) * c.Size.y) / atlasSize.y };
+						ImGui::Text("CORNER: %d", (int)c.SelectedCorner);
+						ImGui::DragFloat("##xPos", &c.Position.x, c.Size.x / atlasSize.x, 0.0f, atlasSize.x / c.Size.x - 1.0f);
+						ImGui::DragFloat("##yPos", &c.Position.y, c.Size.y / atlasSize.y, 0.0f, atlasSize.y / c.Size.y - 1.0f);
+						ImGui::DragFloat2("Size", glm::value_ptr(c.Size), 1.0f, 0.0f);
+					}
+					offset += 5;
 				}
 
 				const float padding = 10.0f;
@@ -139,14 +144,17 @@ namespace origin
 
 				ImGui::Columns(columnCount, nullptr, false);
 
+				offset = 0;
 				for (int i = 0; i < m_Controls.size(); i++)
 				{
-					auto &control = m_Controls[i];
+					auto &control = m_Controls[(i + offset) / 5];
 					ImGui::PushID(i);
 					ImGui::ImageButton(texture, { spriteSize, spriteSize }, { control.Min.x, control.Max.y }, { control.Max.x, control.Min.y });
 
 					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-						m_SelectedIndex = i;
+					{
+						m_SelectedIndex = (i + offset) / 5;
+					}
 
 					if (ImGui::BeginPopupContextItem("sprite_context", 1))
 					{
@@ -154,7 +162,7 @@ namespace origin
 						{
 							m_Controls.erase(m_Controls.begin() + i);
 							if(m_SelectedIndex >= 0)
-								m_SelectedIndex = i > 0 ? i - 1: 0;
+								m_SelectedIndex = i > 0 ? ((i + offset) / 5) - 1: 0;
 						}
 
 						ImGui::EndPopup();
@@ -172,6 +180,8 @@ namespace origin
 
 					ImGui::NextColumn();
 					ImGui::PopID();
+
+					offset += 5;
 				}
 			}
 			ImGui::End();
@@ -181,7 +191,10 @@ namespace origin
 	void SpriteSheetEditor::OnRender(float ts)
 	{
 		if (!m_IsOpened)
+		{
+			Reset();
 			return;
+		}
 
 		m_Camera.OnUpdate(ts);
 
@@ -202,27 +215,47 @@ namespace origin
 		{
 			int texX = m_Texture->GetWidth() / 2;
 			int texY = m_Texture->GetHeight() / 2;
-			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, 1.0 }), m_Texture, -20);
+			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, 0.0f }), m_Texture);
 
-			int i = 0;
-			for (auto &c : m_Controls)
+			int offset = 0;
+			for (int i = 0; i < m_Controls.size(); i++)
 			{
+				auto &c = m_Controls[(i + offset) / 5];
 				float sizeX = c.Size.x / 2.0f;
 				float sizeY = c.Size.y / 2.0f;
 				float posX = c.Position.x * sizeX - texX / 2.0f;
 				float posY = c.Position.y * sizeY - texY / 2.0f;
 
-				/*glm::vec4 col = i == m_SelectedIndex ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-				Renderer2D::DrawRect({ posX + sizeX / 2.0f, posY + sizeY / 2.0f, 1.0f },
-														 { sizeX, sizeY }, col);*/
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), { posX + sizeX / 2.0f, posY + sizeY / 2.0f, 1.0f })
-					* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
+				bool selected = m_SelectedIndex == (i + offset) / 5;
+				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { posX + sizeX / 2.0f, posY + sizeY / 2.0f, 0.1f })
+					* glm::scale(glm::mat4(1.0f), { sizeX, sizeY, 1.0f });
+				glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+				Renderer2D::DrawRect(tf, col);
+				col = { 1.0f, 1.0f, 1.0f, 0.0f };
+				Renderer2D::DrawQuad(tf, col, offset);
 
-				Renderer2D::DrawQuad(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), i);
-				i++;
+				if (selected)
+				{
+					// bottom left corner
+					col = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
+					glm::mat4 tf = glm::translate(glm::mat4(1.0f), { posX, posY,1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+					Renderer2D::DrawQuad(tf, col, offset + 1);
+
+					// top left corner
+					tf = glm::translate(glm::mat4(1.0f), { posX, posY + sizeY,1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+					Renderer2D::DrawQuad(tf, col, offset + 2);
+
+					// bottom right corner
+					tf = glm::translate(glm::mat4(1.0f), { posX + sizeX, posY, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+					Renderer2D::DrawQuad(tf, col, offset + 3);
+
+					// top right corner
+					tf = glm::translate(glm::mat4(1.0f), { posX + sizeX, posY + sizeY,1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+					Renderer2D::DrawQuad(tf, col, offset + 4);
+				}
+				offset += 5;
 			}
 		}
-
 
 		Renderer2D::End();
 
@@ -242,9 +275,6 @@ namespace origin
 	{
 		m_CurrentFilepath = filepath;
 
-		for (auto &control : m_Controls)
-			AddSprite(control.Position, control.Size, control.Min, control.Max);
-
 		YAML::Emitter out;
 		out << YAML::BeginMap; // SpriteSheet
 		out << YAML::Key << "SpriteSheet";
@@ -252,13 +282,13 @@ namespace origin
 			out << YAML::BeginMap;
 			out << YAML::Key << "Texture" << YAML::Value << m_SpriteSheet->GetTextureHandle();
 			out << YAML::Key << "Sprites" << YAML::Value << YAML::BeginSeq;
-			for (auto &s : m_SpriteSheet->Sprites)
+			for (auto &ctrl : m_Controls)
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "Position" << s.Position;
-				out << YAML::Key << "Size" << s.Size;
-				out << YAML::Key << "Min" << s.Min;
-				out << YAML::Key << "Max" << s.Max;
+				out << YAML::Key << "Position" << ctrl.Position;
+				out << YAML::Key << "Size" << ctrl.Size;
+				out << YAML::Key << "Min" << ctrl.Min;
+				out << YAML::Key << "Max" << ctrl.Max;
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
@@ -274,6 +304,7 @@ namespace origin
 
 	bool SpriteSheetEditor::Deserialize()
 	{
+		std::vector<SpriteData> spriteDatas;
 		std::ifstream stream(m_CurrentFilepath.string());
 
 		std::stringstream strStream;
@@ -302,17 +333,16 @@ namespace origin
 			{
 				for (auto s : sprites)
 				{
-					AddSprite(
-						s["Position"].as<glm::vec2>(),
-						s["Size"].as<glm::vec2>(),
-						s["Min"].as<glm::vec2>(),
-						s["Max"].as<glm::vec2>()
-					);
+					SpriteData sprite {};
+					sprite.Position = s["Position"].as<glm::vec2>();
+					sprite.Size = s["Size"].as<glm::vec2>();
+					sprite.Min = s["Min"].as<glm::vec2>();
+					sprite.Max = s["Max"].as<glm::vec2>();
+					spriteDatas.push_back(sprite);
 				}
 			}
 
-
-			for (auto &sprite : m_SpriteSheet->Sprites)
+			for (auto &sprite : spriteDatas)
 			{
 				SpriteSheetController control;
 				control.Position = sprite.Position;
@@ -322,6 +352,9 @@ namespace origin
 				m_Controls.push_back(control);
 			}
 		}
+
+		m_SpriteSheet->Sprites = std::move(spriteDatas);
+
 		return true;
 	}
 
@@ -337,12 +370,38 @@ namespace origin
 		if (e.GetMouseButton() == Mouse::ButtonLeft && IsHovered)
 		{
 			if (m_HoveredIndex != m_SelectedIndex && m_HoveredIndex >= 0)
-				m_SelectedIndex = m_HoveredIndex;
-			else
+			{
+				int h = m_HoveredIndex / 5;
+				m_SelectedIndex = h;
+
+				if (m_HoveredIndex == h * 5 + 1)
+					m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_LEFT;
+				else if (m_HoveredIndex == h * 5 + 2)
+					m_Controls[m_SelectedIndex].SelectedCorner = TOP_LEFT;
+				else if (m_HoveredIndex == h * 5 + 3)
+					m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_RIGHT;
+				else if (m_HoveredIndex == h * 5 + 4)
+					m_Controls[m_SelectedIndex].SelectedCorner = TOP_RIGHT;
+				else
+					m_Controls[m_SelectedIndex].SelectedCorner = NONE;
+
+			}
+			else if (m_HoveredIndex < 0)
 				m_SelectedIndex = -1;
 		}
 
 		return false;
+	}
+
+	void SpriteSheetEditor::Reset()
+	{
+		if (m_SpriteSheet)
+		{
+			m_SpriteSheet.reset();
+		}
+
+		if (!m_Controls.empty())
+			m_Controls.clear();
 	}
 
 }

@@ -10,12 +10,20 @@
 
 namespace origin
 {
+
+	enum ControllerCorner
+	{
+		NONE = -1, TOP_LEFT, BOTTOM_LEFT, TOP_RIGHT, BOTTOM_RIGHT
+	};
+
 	struct SpriteSheetController
 	{
 		glm::vec2 Position { 0.0f, 0.0f };
 		glm::vec2 Size { 16.0f, 16.0f };
 		glm::vec2 Min { 1.0f, 1.0f };
 		glm::vec2 Max { 1.0f, 1.0f };
+
+		ControllerCorner SelectedCorner;
 	};
 
 	class SpriteSheetEditor
@@ -42,6 +50,9 @@ namespace origin
 		bool IsFocused = false;
 		bool IsHovered = false;
 	private:
+
+		void Reset();
+
 		EditorCamera m_Camera;
 		std::shared_ptr<SpriteSheet> m_SpriteSheet;
 		std::shared_ptr<Framebuffer> m_Framebuffer;
