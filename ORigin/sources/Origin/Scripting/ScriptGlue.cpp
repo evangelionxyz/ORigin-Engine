@@ -930,7 +930,7 @@ namespace origin
 
 	static bool Input_IsKeyPressed(KeyCode keycode)
 	{
-		return Input::Get().IsKeyPressed(keycode);
+		return Input::IsKeyPressed(keycode);
 	}
 
 	template <typename... Component>

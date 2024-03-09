@@ -24,22 +24,13 @@ namespace origin
 	{
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		int state = glfwGetMouseButton(window, static_cast<int32_t>(button));
-		m_IsMouseDragging = state == GLFW_PRESS;
+		s_Instance->m_IsMouseDragging = state == GLFW_PRESS;
 		return state == GLFW_PRESS;
 	}
 
 	bool Input::IsMouseDragging()
 	{
-		return m_IsMouseDragging;
-	}
-
-	const glm::vec2 Input::GetDeltaMouse()
-	{
-		glm::vec2 mouse{ Input::GetMouseX(), Input::GetMouseY() };
-		glm::vec2 delta = (mouse - m_MouseInitialPosition);
-		m_MouseInitialPosition = mouse;
-
-		return delta;
+		return s_Instance->m_IsMouseDragging;
 	}
 
 	glm::vec2 Input::GetMousePosition()
@@ -52,12 +43,12 @@ namespace origin
 
 	float Input::GetMouseX()
 	{
-		return GetMousePosition().x;
+		return s_Instance->GetMousePosition().x;
 	}
 
 	float Input::GetMouseY()
 	{
-		return GetMousePosition().y;
+		return s_Instance->GetMousePosition().y;
 	}
 
 	void Input::SetMousePosition(float x, float y)

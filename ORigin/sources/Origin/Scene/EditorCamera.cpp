@@ -136,35 +136,35 @@ namespace origin {
 
 	void EditorCamera::OnUpdate(Timestep ts)
 	{
-		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
+		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
 		const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 		m_InitialMousePosition = mouse;
 
 		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
 		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
 
-		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight)|| Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
+		if (Input::IsMouseButtonPressed(Mouse::ButtonRight)|| Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 		{
 			if (mouse.x > wWidth - 2.0f)
 			{
 				m_InitialMousePosition.x = 2.0f;
-				Input::Get().SetMousePosition(2.0f, mouse.y);
+				Input::SetMousePosition(2.0f, mouse.y);
 			}
 			else if (mouse.x < 2.0f)
 			{
 				m_InitialMousePosition.x = wWidth - 2.0f;
-				Input::Get().SetMousePosition(wWidth - 2.0f, mouse.y);
+				Input::SetMousePosition(wWidth - 2.0f, mouse.y);
 			}
 
 			if (mouse.y > wHeight - 2.0f)
 			{
 				m_InitialMousePosition.y = 2.0f;
-				Input::Get().SetMousePosition(mouse.x, 2.0f);
+				Input::SetMousePosition(mouse.x, 2.0f);
 			}
 			else if (mouse.y < 2.0f)
 			{
 				m_InitialMousePosition.y = wHeight - 2.0f;
-				Input::Get().SetMousePosition(mouse.x, wHeight - 2.0f);
+				Input::SetMousePosition(mouse.x, wHeight - 2.0f);
 			}
 		}
 
@@ -176,9 +176,9 @@ namespace origin {
 			switch (m_CameraStyle)
 			{
 				case CameraStyle::Pivot:
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && !Input::Get().IsKeyPressed(Key::LeftControl))
+					if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
 						MouseRotate(delta);
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
+					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 						MousePan(delta);
 
 					m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, 0.8f);
@@ -186,21 +186,21 @@ namespace origin {
 					break;
 
 				case CameraStyle::FreeMove:
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
+					if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 						MouseRotate(delta);
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
+					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 						MousePan(delta);
 
-					if (Input::Get().IsKeyPressed(Key::A))
+					if (Input::IsKeyPressed(Key::A))
 						velocity -= GetRightDirection();
-					else if (Input::Get().IsKeyPressed(Key::D))
+					else if (Input::IsKeyPressed(Key::D))
 						velocity += GetRightDirection();
-					if (Input::Get().IsKeyPressed(Key::W))
+					if (Input::IsKeyPressed(Key::W))
 						velocity += GetForwardDirection();
-					else if (Input::Get().IsKeyPressed(Key::S))
+					else if (Input::IsKeyPressed(Key::S))
 						velocity -= GetForwardDirection();
 
-					if (Input::Get().IsKeyPressed(Key::A) || Input::Get().IsKeyPressed(Key::S) || Input::Get().IsKeyPressed(Key::D) || Input::Get().IsKeyPressed(Key::W))
+					if (Input::IsKeyPressed(Key::A) || Input::IsKeyPressed(Key::S) || Input::IsKeyPressed(Key::D) || Input::IsKeyPressed(Key::W))
 						m_MoveSpeed += ts * 2.0f;
 					else
 						m_MoveSpeed -= ts * 2.0f;
@@ -220,7 +220,7 @@ namespace origin {
 		}
 		else if (m_ProjectionType == ProjectionType::Orthographic)
 		{
-			if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
+			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
 				MousePan(delta);
 
 			lastPosition = m_Position;
@@ -321,7 +321,7 @@ namespace origin {
 		case ProjectionType::Orthographic:
 			m_OrthoSize -= delta * ZoomSpeed();
 			m_OrthoSize = std::max(m_OrthoSize, 1.0f);
-			m_OrthoSize = std::min(m_OrthoSize, 100.0f);
+			m_OrthoSize = std::min(m_OrthoSize, m_MaxOrthoSize);
 			break;
 		}
 	}

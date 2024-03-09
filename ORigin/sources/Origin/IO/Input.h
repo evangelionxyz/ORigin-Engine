@@ -14,17 +14,14 @@ namespace origin
 	public:
 		Input();
 
-		bool IsKeyPressed(const KeyCode keycode);
-		bool IsMouseButtonPressed(const MouseCode button);
-		bool IsMouseDragging();
+		static bool IsKeyPressed(const KeyCode keycode);
+		static bool IsMouseButtonPressed(const MouseCode button);
+		static bool IsMouseDragging();
 
-		const glm::vec2 GetDeltaMouse();
-		glm::vec2 GetMousePosition();
-		float GetMouseX();
-		float GetMouseY();
-		void SetMousePosition(float x, float y);
-
-		static Input& Get() { return *s_Instance; }
+		static glm::vec2 GetMousePosition();
+		static float GetMouseX();
+		static float GetMouseY();
+		static void SetMousePosition(float x, float y);
 
 	private:
 		bool m_IsMouseDragging = false;

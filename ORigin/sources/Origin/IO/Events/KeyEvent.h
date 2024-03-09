@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "pch.h"
@@ -11,12 +11,11 @@ namespace origin {
 	{
 	public:
 		KeyCode GetKeyCode() const { return m_KeyCode; }
-
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
+
 	protected:
 		KeyEvent(const KeyCode keycode)
 			: m_KeyCode(keycode) {}
-
 		KeyCode m_KeyCode;
 	};
 

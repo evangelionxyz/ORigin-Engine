@@ -1,6 +1,12 @@
 AssetRegistry:
+  - Handle: 6853883006132539411
+    Filepath: Sprites/DungeonCrawlTileset.png
+    Type: AssetType::Texture
   - Handle: 11166908125760348250
     Filepath: Sprites/minecraft_test.sprite
+    Type: AssetType::SpriteSheet
+  - Handle: 11831229362763570218
+    Filepath: Sprites/DungeonCrawlTileset.sprite
     Type: AssetType::SpriteSheet
   - Handle: 12368061447856671797
     Filepath: Sprites/minecraft_test.png

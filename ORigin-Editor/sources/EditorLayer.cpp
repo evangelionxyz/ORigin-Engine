@@ -627,7 +627,7 @@ namespace origin {
 				&& !entity.HasComponent<LightComponent>()
 				&& !entity.HasComponent<AudioComponent>();
 
-			bool snap = Input::Get().IsKeyPressed(KeyCode(Key::LeftShift));
+			bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				static_cast<ImGuizmo::OPERATION>(m_GizmosType), static_cast<ImGuizmo::MODE>(m_GizmosMode),
 				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
@@ -642,7 +642,7 @@ namespace origin {
 				tc.Scale = scale;
 			}
 
-			if (ImGui::IsWindowFocused() && Input::Get().IsKeyPressed(Key::Escape))
+			if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
 				m_GizmosType = -1;
 		}
 
@@ -937,7 +937,7 @@ namespace origin {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		bool control = Input::Get().IsKeyPressed(Key::LeftControl);
+		bool control = Input::IsKeyPressed(Key::LeftControl);
 
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
@@ -980,11 +980,14 @@ namespace origin {
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
-		auto delta = Input::Get().GetDeltaMouse();
+		static glm::vec2 initialPosition = { 0.0f, 0.0f };
+		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
+		const glm::vec2 delta = mouse - initialPosition;
+		initialPosition = mouse;
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
 
-		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft))
+		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
 			float orthoSize = m_EditorCamera.GetOrthoSize();
 			float orthoScale = orthoSize / m_SceneViewportSize.y;
@@ -1010,12 +1013,12 @@ namespace origin {
 					else
 					{
 						float snapSize = 0.5f;
-						if (Input::Get().IsKeyPressed(Key::LeftShift))
+						if (Input::IsKeyPressed(Key::LeftShift))
 						{
 							translate.x += delta.x * orthoScale;
 							translate.y -= delta.y * orthoScale;
 
-							if (Input::Get().IsKeyPressed(Key::LeftControl))
+							if (Input::IsKeyPressed(Key::LeftControl))
 								snapSize = 0.1f;
 
 							tc.Translation.x = round(translate.x / snapSize) * snapSize;
@@ -1035,7 +1038,7 @@ namespace origin {
 			}
 		}
 
-		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
+		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 		{
 			if (lastMouseX == mouseX && lastMouseY == mouseY) VpMenuContextActive = true;
 			else if (lastMouseX != mouseX && lastMouseY != mouseY) VpMenuContextActive = false;
@@ -1058,8 +1061,8 @@ namespace origin {
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		auto& app = Application::Get();
-		const bool control = Input::Get().IsKeyPressed(Key::LeftControl) || Input::Get().IsKeyPressed(Key::RightControl);
-		const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
+		const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
 		ImGuiIO& io = ImGui::GetIO();
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();

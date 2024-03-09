@@ -42,6 +42,7 @@ namespace origin {
 		void SetScrollingActive(bool enable) { m_CanScrolling = enable; }
 		void SetMoveActive(bool enable) { m_CanMoving = enable; }
 		void SetOrthoSize(float size) { m_OrthoSize = size; }
+		void SetOrthoSizeMax(float size) { m_MaxOrthoSize = size; }
 
 		float GetYaw() const { return m_Yaw; }
 		float GetPitch() const { return m_Pitch; }
@@ -93,5 +94,6 @@ namespace origin {
 		float m_OrthoNearClip = -1.0f;
 		float m_OrthoFarClip = 100.0f;
 		float m_OrthoSize = 10.0f;
+		float m_MaxOrthoSize = 100.0f;
 	};
 }

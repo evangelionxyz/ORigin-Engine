@@ -1,4 +1,7 @@
 #pragma once
+#include "Origin\IO\Events\Event.h"
+#include "Origin\IO\Events\KeyEvent.h"
+
 #include "Origin\Scene\SpriteSheet.h"
 #include "Origin\Scene\Entity.h"
 #include "Origin\Renderer\Texture.h"
@@ -23,7 +26,7 @@ namespace origin
 		glm::vec2 Min { 1.0f, 1.0f };
 		glm::vec2 Max { 1.0f, 1.0f };
 
-		ControllerCorner SelectedCorner;
+		ControllerCorner SelectedCorner = ControllerCorner::NONE;
 	};
 
 	class SpriteSheetEditor
@@ -37,6 +40,7 @@ namespace origin
 
 		void AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max);;
 		void RemoveSprite(int index);
+		void Duplicate(int index);
 
 		void OnImGuiRender();
 		void OnRender(float ts);
@@ -46,6 +50,8 @@ namespace origin
 
 		void OnEvent(Event &e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+		bool OnKeyPressed(KeyPressedEvent &e);
+		void OnMouse(float ts);
 
 		bool IsFocused = false;
 		bool IsHovered = false;
@@ -62,6 +68,7 @@ namespace origin
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::ivec2 m_Mouse = { 0, 0 };
+		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
 		std::filesystem::path m_CurrentFilepath;
 
 		bool m_IsOpened = false;
