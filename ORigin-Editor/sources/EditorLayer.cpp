@@ -149,8 +149,6 @@ namespace origin {
 	  m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
 		m_Gizmos->SetHovered(m_PixelData);
 
-		m_Gizmos->SetSelectedEntity(m_SceneHierarchy.GetSelectedEntity());
-
 	  m_Framebuffer->Unbind();
   }
 
@@ -485,15 +483,15 @@ namespace origin {
 			break;
 
 		case SceneState::Edit:
+			m_Gizmos->OnRender(m_EditorCamera);
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnUpdateEditor(deltaTime, m_EditorCamera);
-			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 
 		case SceneState::Simulate:
+			m_Gizmos->OnRender(m_EditorCamera);
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
-			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 		}
 	}
@@ -977,8 +975,11 @@ namespace origin {
 				}
 				else if (!handleValid)
 				{
-					m_SceneHierarchy.SetSelectedEntity({});
-					m_Gizmos->SetType(GizmoType::NONE);
+					if (m_PixelData >= -1)
+					{
+						m_SceneHierarchy.SetSelectedEntity({});
+						m_Gizmos->SetType(GizmoType::NONE);
+					}
 				}
 			}
 		}

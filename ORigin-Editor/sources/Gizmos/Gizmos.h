@@ -11,12 +11,10 @@ namespace origin {
 	enum class Boundary2DCorner
 	{
 		NONE = -1,
-		TOP_LEFT,
-		TOP_RIGHT,
-		BOTTOM_LEFT,
-		BOTTOM_RIGHT,
-		LEFT,
-		RIGHT
+		BOTTOM_LEFT = 0,
+		TOP_LEFT = 1,
+		BOTTOM_RIGHT = 2,
+		TOP_RIGHT = 3
 	};
 
 	enum class GizmoType
@@ -39,9 +37,7 @@ namespace origin {
 	{
 	public:
 		Gizmos() = default;
-		void SetSelectedEntity(Entity entity);
 		void OnRender(const EditorCamera &camera);
-
 		void OnEvent(Event &e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 		void SetSnapValue(float value) { m_SnapValue = value; }
@@ -58,7 +54,6 @@ namespace origin {
 
 	private:
 		Boundary2DCorner m_Boundary2DCorner = Boundary2DCorner::NONE;
-		Entity m_SelectedEntity;
 		EditorCamera m_Camera;
 		GizmoType m_Type = GizmoType::NONE;
 		int m_Hovered = -1;

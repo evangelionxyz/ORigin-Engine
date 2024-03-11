@@ -9,10 +9,10 @@
 
 namespace origin {
 
-#define GRID2D_ZOFFSET 0.9f
+#define GRID2D_ZOFFSET -5.0f
 #define ICON_ZOFFSET 1.0f
 #define COLLIDER2D_ZOFFSET 1.05f
-#define SELECTED2D_ZOFFSET 1.1f
+#define SELECTED2D_ZOFFSET 0.1f
 
 #define BOUNDARY2D_ID -2
 
@@ -267,11 +267,6 @@ namespace origin {
 		Renderer2D::End();
 	}
 
-	void Gizmos::SetSelectedEntity(Entity entity)
-	{
-		m_SelectedEntity = entity;
-	}
-
 	void Gizmos::OnRender(const EditorCamera &camera)
 	{
 		m_Camera = camera;
@@ -280,44 +275,50 @@ namespace origin {
 
 		if (camera.GetProjectionType() == ProjectionType::Orthographic)
 		{
+			if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+			{
+				if (m_Type == GizmoType::BOUNDARY2D)
+				{
+					CalculateBoundary2DSizing();
+
+					float size = camera.GetOrthoSize() * 0.03f;
+					auto &tc = selectedEntity.GetComponent<TransformComponent>();
+
+					// bottom left corner
+					glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
+					glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
+
+					glm::vec4 col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_LEFT ? green : red;
+
+					std::vector<glm::vec3> cornerOffsets = {
+							{ -tc.Scale.x / 2.0f, -tc.Scale.y / 2.0f, 1.0f }, // Bottom left
+							{ -tc.Scale.x / 2.0f,  tc.Scale.y / 2.0f, 1.0f }, // Top left
+							{  tc.Scale.x / 2.0f, -tc.Scale.y / 2.0f, 1.0f }, // Bottom right
+							{  tc.Scale.x / 2.0f,  tc.Scale.y / 2.0f, 1.0f }  // Top right
+					};
+
+					for (int i = 0; i < 4; ++i)
+					{
+						glm::vec4 col = (m_Boundary2DCorner == static_cast<Boundary2DCorner>(i)) ? green : red;
+
+						glm::quat rotationQuat = glm::quat(tc.Rotation);
+
+						glm::mat4 tf = glm::translate(glm::mat4(1.0f), tc.Translation + glm::vec3(rotationQuat * glm::vec4(cornerOffsets[i], 0.0f))) *
+							glm::toMat4(rotationQuat) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+
+						Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - (i + 1));
+					}
+				}
+			}
+
 			RenderCommand::SetLineWidth(1.1f);
 			Draw2DVerticalGrid();
 			Draw2DOverlay();
 			RenderCommand::SetLineWidth(1.0f);
-
-			if (m_SelectedEntity)
-			{
-				float size = camera.GetOrthoSize() * 0.03f;
-				auto &tc = m_SelectedEntity.GetComponent<TransformComponent>();
-
-				// bottom left corner
-				glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
-				glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
-				glm::vec4 col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_LEFT ? green : red;
-				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x - tc.Scale.x / 2.0f, tc.Translation.y - tc.Scale.y / 2.0f, tc.Translation.z + 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 1);
-
-				// top left corner
-				col = m_Boundary2DCorner == Boundary2DCorner::TOP_LEFT ? green : red;
-				tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x - tc.Scale.x / 2.0f, tc.Translation.y + tc.Scale.y / 2.0f, tc.Translation.z + 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 2);
-
-				// bottom right corner
-				col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_RIGHT ? green : red;
-				tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x + tc.Scale.x / 2.0f, tc.Translation.y - tc.Scale.y / 2.0f, tc.Translation.z - 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 3);
-
-				// top right corner
-				col = m_Boundary2DCorner == Boundary2DCorner::TOP_RIGHT ? green : red;
-				tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x + tc.Scale.x / 2.0f, tc.Translation.y + tc.Scale.y / 2.0f, tc.Translation.z + 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 4);
-
-				CalculateBoundary2DSizing();
-			}
 		}
 
 		DrawIcons();
-		DrawOverlay();
+		//DrawOverlay();
 
 		Renderer2D::End();
 	}
@@ -361,57 +362,57 @@ namespace origin {
 
 	void Gizmos::SetType(GizmoType type)
 	{
-		switch (m_Hovered)
-		{
-			case BOUNDARY2D_ID - 1:
-			case BOUNDARY2D_ID - 2:
-			case BOUNDARY2D_ID - 3:
-			case BOUNDARY2D_ID - 4:
-				break;
-			default:
-				m_Type = type;
-				break;
-		}
+		if (m_Hovered >= -1)
+			m_Type = type;
 	}
 
 	void Gizmos::CalculateBoundary2DSizing()
 	{
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
-		const glm::vec2 mouse = { Input::GetMouseX(), Input::GetMouseY() };
-		const glm::vec2 delta = mouse - initialPosition;
+		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
+		const glm::vec2 delta { mouse - initialPosition };
 		initialPosition = mouse;
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
-		{
-			auto &tc = m_SelectedEntity.GetComponent<TransformComponent>();
-			float orthoScale = m_Camera.GetOrthoSize() / m_Camera.GetHeight();
+		float orthoScale = m_Camera.GetOrthoSize() / m_Camera.GetHeight();
 
-			switch (m_Boundary2DCorner)
+		if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+		{
+			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && EditorLayer::Get().m_SceneViewportHovered)
 			{
-				case Boundary2DCorner::TOP_RIGHT:
-					tc.Translation.x += delta.x * orthoScale / 2.0f;
-					tc.Scale.x += delta.x * orthoScale;
-					tc.Translation.y -= delta.y * orthoScale / 2.0f;
-					tc.Scale.y -= delta.y * orthoScale;
-					break;
-				case Boundary2DCorner::BOTTOM_RIGHT:
-					tc.Translation.x += delta.x * orthoScale / 2.0f;
-					tc.Scale.x += delta.x * orthoScale;
-					tc.Translation.y -= delta.y * orthoScale / 2.0f;
-					tc.Scale.y += delta.y * orthoScale;
-					break;
-				case Boundary2DCorner::TOP_LEFT:
-					tc.Translation.x -= delta.x * orthoScale / 2.0f;
-					tc.Scale.x -= delta.x * orthoScale;
-					tc.Translation.y -= delta.y * orthoScale / 2.0f;
-					tc.Scale.y -= delta.y * orthoScale;
-					break;
-				case Boundary2DCorner::BOTTOM_LEFT:
-					tc.Translation.x += delta.x * orthoScale / 2.0f;
-					tc.Scale.x -= delta.x * orthoScale;
-					tc.Translation.y -= delta.y * orthoScale / 2.0f;
-					tc.Scale.y += delta.y * orthoScale;
-					break;
+				auto &tc = selectedEntity.GetComponent<TransformComponent>();
+				glm::vec2 localDelta = delta;
+
+				glm::vec4 transformedDelta = glm::quat(glm::radians(tc.Rotation)) * glm::vec4(delta, 0.0f, 1.0f);
+				localDelta.x = transformedDelta.x;
+				localDelta.y = transformedDelta.y;
+
+				switch (m_Boundary2DCorner)
+				{
+					case Boundary2DCorner::TOP_RIGHT:
+						tc.Scale.x += localDelta.x * orthoScale;
+						tc.Scale.y -= localDelta.y * orthoScale;
+						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
+						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						break;
+					case Boundary2DCorner::BOTTOM_RIGHT:
+						tc.Scale.x += localDelta.x * orthoScale;
+						tc.Scale.y += localDelta.y * orthoScale;
+						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
+						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						break;
+					case Boundary2DCorner::TOP_LEFT:
+						tc.Scale.x -= localDelta.x * orthoScale;
+						tc.Scale.y -= localDelta.y * orthoScale;
+						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
+						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						break;
+					case Boundary2DCorner::BOTTOM_LEFT:
+						tc.Scale.x -= localDelta.x * orthoScale;
+						tc.Scale.y += localDelta.y * orthoScale;
+						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
+						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						break;
+				}
 			}
 		}
 	}
