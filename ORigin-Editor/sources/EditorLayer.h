@@ -83,6 +83,7 @@ namespace origin {
 		ShaderLibrary m_ShaderLibrary;
 		AnimationTimeline m_AnimationTimeline;
 		std::unique_ptr<SpriteSheetEditor> m_SpriteSheetEditor;
+		std::unique_ptr<Gizmos> m_Gizmos;
 
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
 		std::shared_ptr<Texture2D> m_OriginEngineTex;
@@ -100,7 +101,6 @@ namespace origin {
 
 		int lastMouseX = 0, mouseX = 0;
 		int lastMouseY = 0, mouseY = 0;
-		int m_GizmosType = -1;
 		int m_GizmosMode = 0;
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;

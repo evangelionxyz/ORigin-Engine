@@ -45,7 +45,6 @@ namespace origin {
 		bool AddNodeChild(Entity parent, Entity child);
 		void RemoveConnectionsFromChild(Entity child, Entity nextChild, UUID parentId);
 
-
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;
 		std::shared_ptr<Texture2D> m_NoTextureButton;

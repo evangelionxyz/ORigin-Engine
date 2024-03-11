@@ -1,1 +1,1 @@
-call ..\Binaries\Debug\ORigin\ORigin-Editor.exe
+call ..\Binaries\Release\ORigin\Editor.exe

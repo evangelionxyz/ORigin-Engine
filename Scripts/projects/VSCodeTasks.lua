@@ -10,7 +10,7 @@ argument =
         // Build Solution
         "label": "Solution Build - Release",
         "type": "shell",
-        "command": "MSBuild ORigin.sln /p:Configuration=Release",
+        "command": "MSBuild OR1.sln /p:Configuration=Release",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -20,7 +20,7 @@ argument =
         // Rebuild Solution
         "label": "Solution Rebuild - Release",
         "type": "shell",
-        "command": "MSBuild ORigin.sln /t:Rebuild /p:Configuration=Release",
+        "command": "MSBuild OR1.sln /t:Rebuild /p:Configuration=Release",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -30,7 +30,7 @@ argument =
         // Build Solution
         "label": "Solution Build - Debug",
         "type": "shell",
-        "command": "MSBuild ORigin.sln /p:Configuration=Debug",
+        "command": "MSBuild OR1.sln /p:Configuration=Debug",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -40,7 +40,7 @@ argument =
         // Rebuild Solution
         "label": "Solution Rebuild - Debug",
         "type": "shell",
-        "command": "MSBuild ORigin.sln /t:Rebuild /p:Configuration=Debug",
+        "command": "MSBuild OR1.sln /t:Rebuild /p:Configuration=Debug",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -50,7 +50,7 @@ argument =
         // Clean Solution
         "label": "Solution Clean",
         "type": "shell",
-        "command": "MSBuild ORigin.sln /t:Clean",
+        "command": "MSBuild OR1.sln /t:Clean",
         "group": {
             "kind": "build",
             "isDefault": true
@@ -84,7 +84,6 @@ argument =
         // Build Editor
         "label": "Editor Build",
         "type": "shell",
-        "command": "MSBuild ORigin-Editor\\ORigin-Editor.vcxproj",
         "group": {
             "kind": "build",
             "isDefault": true

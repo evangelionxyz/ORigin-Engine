@@ -1,6 +1,10 @@
 #include "Gizmos.h"
 
+#include "Origin\Scene\Components.h"
 #include "Origin\Renderer\Renderer2D.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
 #include "..\EditorLayer.h"
 
 namespace origin {
@@ -10,26 +14,12 @@ namespace origin {
 #define COLLIDER2D_ZOFFSET 1.05f
 #define SELECTED2D_ZOFFSET 1.1f
 
-	void Gizmos::OnUpdate(const EditorCamera& camera)
+#define BOUNDARY2D_ID -2
+
+	void Gizmos::Draw2DVerticalGrid()
 	{
-		Renderer2D::Begin(camera);
-
-		if (camera.GetProjectionType() == ProjectionType::Orthographic)
-		{
-			RenderCommand::SetLineWidth(1.1f);
-			Draw2DVerticalGrid(camera);
-			Draw2DOverlay(camera);
-			RenderCommand::SetLineWidth(1.0f);
-		}
-
-		DrawIcons(camera);
-		DrawOverlay(camera);
-	}
-
-	void Gizmos::Draw2DVerticalGrid(const EditorCamera& camera)
-	{
-		float orthoSize = camera.GetOrthoSize();
-		glm::vec2 cameraPosition = glm::vec2(camera.GetPosition());
+		float orthoSize = m_Camera.GetOrthoSize();
+		glm::vec2 cameraPosition = glm::vec2(m_Camera.GetPosition());
 
 		float lineSpacing = 1.0f;
 		if (orthoSize >= 20.0f)
@@ -37,10 +27,10 @@ namespace origin {
 
 		float offset = -0.5f * lineSpacing;
 
-		float minX = cameraPosition.x - orthoSize - camera.GetWidth() / 10.0f;
-		float maxX = cameraPosition.x + orthoSize + camera.GetWidth() / 10.0f;
-		float minY = cameraPosition.y - orthoSize - camera.GetHeight() / 10.0f;
-		float maxY = cameraPosition.y + orthoSize + camera.GetHeight() / 10.0f;
+		float minX = cameraPosition.x - orthoSize - m_Camera.GetWidth() / 10.0f;
+		float maxX = cameraPosition.x + orthoSize + m_Camera.GetWidth() / 10.0f;
+		float minY = cameraPosition.y - orthoSize - m_Camera.GetHeight() / 10.0f;
+		float maxY = cameraPosition.y + orthoSize + m_Camera.GetHeight() / 10.0f;
 
 		auto nx = floor(minX / lineSpacing) * lineSpacing;
 		auto ny = floor(minY / lineSpacing) * lineSpacing;
@@ -56,7 +46,7 @@ namespace origin {
 		Renderer2D::End();
 	}
 
-	void Gizmos::Draw2DOverlay(const EditorCamera& camera)
+	void Gizmos::Draw2DOverlay()
 	{
 		auto& reg = EditorLayer::Get().m_ActiveScene->m_Registry;
 
@@ -114,9 +104,9 @@ namespace origin {
 		Renderer2D::End();
 	}
 
-	void Gizmos::DrawOverlay(const EditorCamera& camera)
+	void Gizmos::DrawOverlay()
 	{
-		Renderer3D::Begin(camera);
+		Renderer3D::Begin(m_Camera);
 		auto& scene = EditorLayer::Get().m_ActiveScene;
 
 		if (EditorLayer::Get().m_VisualizeCollider)
@@ -169,7 +159,7 @@ namespace origin {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
-			Renderer2D::Begin(camera);
+			Renderer2D::Begin(m_Camera);
 			const auto& sprite2d = scene->GetAllEntitiesWith<TransformComponent, SpriteRenderer2DComponent>();
 			for (auto e : sprite2d)
 			{
@@ -198,7 +188,7 @@ namespace origin {
 		}
 	}
 
-	void Gizmos::DrawIcons(const EditorCamera & camera)
+	void Gizmos::DrawIcons()
 	{
 		auto textures = EditorLayer::Get().m_UITextures;
 		auto& reg = EditorLayer::Get().m_ActiveScene->m_Registry;
@@ -206,14 +196,14 @@ namespace origin {
 		auto drawIcon = [&](TransformComponent tc, std::shared_ptr<Texture2D> texture, int entity)
 			{
 				glm::mat4 transform = glm::mat4(1.0f);
-				float scale = glm::clamp(glm::length(camera.GetPosition() - tc.Translation) * 0.05f, 1.0f, 10.0f);
+				float scale = glm::clamp(glm::length(m_Camera.GetPosition() - tc.Translation) * 0.05f, 1.0f, 10.0f);
 
-				switch (camera.GetProjectionType())
+				switch (m_Camera.GetProjectionType())
 				{
 				case ProjectionType::Perspective:
 					transform = glm::translate(glm::mat4(1.0f), tc.Translation)
-						* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-						* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
+						* glm::rotate(glm::mat4(1.0f), -m_Camera.GetYaw(), glm::vec3(0, 1, 0))
+						* glm::rotate(glm::mat4(1.0f), -m_Camera.GetPitch(), glm::vec3(1, 0, 0))
 						* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
 					break;
 
@@ -232,7 +222,7 @@ namespace origin {
 			auto& [tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
 			auto& sceneCam = cc.Camera;
 
-			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
+			if (m_Camera.GetOrthoSize() > 10.0f || m_Camera.GetProjectionType() == ProjectionType::Perspective)
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);
 
@@ -246,10 +236,10 @@ namespace origin {
 
 					glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
 
-					glm::vec3 pos = camera.GetProjectionType() == ProjectionType::Perspective ?
+					glm::vec3 pos = m_Camera.GetProjectionType() == ProjectionType::Perspective ?
 						glm::vec3(tc.Translation) : glm::vec3(tc.Translation.x, tc.Translation.y, 1.3f);
 
-					glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ?
+					glm::vec3 rotation = m_Camera.GetProjectionType() == ProjectionType::Perspective ?
 						glm::vec3(tc.Rotation) : glm::vec3(0.0f, 0.0f, tc.Rotation.z);
 
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
@@ -275,6 +265,155 @@ namespace origin {
 		}
 
 		Renderer2D::End();
+	}
+
+	void Gizmos::SetSelectedEntity(Entity entity)
+	{
+		m_SelectedEntity = entity;
+	}
+
+	void Gizmos::OnRender(const EditorCamera &camera)
+	{
+		m_Camera = camera;
+
+		Renderer2D::Begin(camera);
+
+		if (camera.GetProjectionType() == ProjectionType::Orthographic)
+		{
+			RenderCommand::SetLineWidth(1.1f);
+			Draw2DVerticalGrid();
+			Draw2DOverlay();
+			RenderCommand::SetLineWidth(1.0f);
+
+			if (m_SelectedEntity)
+			{
+				float size = camera.GetOrthoSize() * 0.03f;
+				auto &tc = m_SelectedEntity.GetComponent<TransformComponent>();
+
+				// bottom left corner
+				glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
+				glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
+				glm::vec4 col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_LEFT ? green : red;
+				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x - tc.Scale.x / 2.0f, tc.Translation.y - tc.Scale.y / 2.0f, tc.Translation.z + 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 1);
+
+				// top left corner
+				col = m_Boundary2DCorner == Boundary2DCorner::TOP_LEFT ? green : red;
+				tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x - tc.Scale.x / 2.0f, tc.Translation.y + tc.Scale.y / 2.0f, tc.Translation.z + 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 2);
+
+				// bottom right corner
+				col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_RIGHT ? green : red;
+				tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x + tc.Scale.x / 2.0f, tc.Translation.y - tc.Scale.y / 2.0f, tc.Translation.z - 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 3);
+
+				// top right corner
+				col = m_Boundary2DCorner == Boundary2DCorner::TOP_RIGHT ? green : red;
+				tf = glm::translate(glm::mat4(1.0f), { tc.Translation.x + tc.Scale.x / 2.0f, tc.Translation.y + tc.Scale.y / 2.0f, tc.Translation.z + 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+				Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - 4);
+
+				CalculateBoundary2DSizing();
+			}
+		}
+
+		DrawIcons();
+		DrawOverlay();
+
+		Renderer2D::End();
+	}
+
+	void Gizmos::OnEvent(Event &e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(Gizmos::OnMouseButtonPressed));
+	}
+
+	bool Gizmos::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+	{
+		if (e.GetMouseButton() == Mouse::ButtonLeft)
+		{
+			switch (m_Hovered)
+			{
+				// bottom left
+				case BOUNDARY2D_ID - 1:
+					m_Boundary2DCorner = Boundary2DCorner::BOTTOM_LEFT;
+					break;
+				// top left
+				case BOUNDARY2D_ID - 2:
+					m_Boundary2DCorner = Boundary2DCorner::TOP_LEFT;
+					break;
+				// bottom right
+				case BOUNDARY2D_ID - 3:
+					m_Boundary2DCorner = Boundary2DCorner::BOTTOM_RIGHT;
+					break;
+				// top right
+				case BOUNDARY2D_ID - 4:
+					m_Boundary2DCorner = Boundary2DCorner::TOP_RIGHT;
+					break;
+				default:
+					m_Boundary2DCorner = Boundary2DCorner::NONE;
+					break;
+			}
+		}
+
+		return false;
+	}
+
+	void Gizmos::SetType(GizmoType type)
+	{
+		switch (m_Hovered)
+		{
+			case BOUNDARY2D_ID - 1:
+			case BOUNDARY2D_ID - 2:
+			case BOUNDARY2D_ID - 3:
+			case BOUNDARY2D_ID - 4:
+				break;
+			default:
+				m_Type = type;
+				break;
+		}
+	}
+
+	void Gizmos::CalculateBoundary2DSizing()
+	{
+		static glm::vec2 initialPosition = { 0.0f, 0.0f };
+		const glm::vec2 mouse = { Input::GetMouseX(), Input::GetMouseY() };
+		const glm::vec2 delta = mouse - initialPosition;
+		initialPosition = mouse;
+
+		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		{
+			auto &tc = m_SelectedEntity.GetComponent<TransformComponent>();
+			float orthoScale = m_Camera.GetOrthoSize() / m_Camera.GetHeight();
+
+			switch (m_Boundary2DCorner)
+			{
+				case Boundary2DCorner::TOP_RIGHT:
+					tc.Translation.x += delta.x * orthoScale / 2.0f;
+					tc.Scale.x += delta.x * orthoScale;
+					tc.Translation.y -= delta.y * orthoScale / 2.0f;
+					tc.Scale.y -= delta.y * orthoScale;
+					break;
+				case Boundary2DCorner::BOTTOM_RIGHT:
+					tc.Translation.x += delta.x * orthoScale / 2.0f;
+					tc.Scale.x += delta.x * orthoScale;
+					tc.Translation.y -= delta.y * orthoScale / 2.0f;
+					tc.Scale.y += delta.y * orthoScale;
+					break;
+				case Boundary2DCorner::TOP_LEFT:
+					tc.Translation.x -= delta.x * orthoScale / 2.0f;
+					tc.Scale.x -= delta.x * orthoScale;
+					tc.Translation.y -= delta.y * orthoScale / 2.0f;
+					tc.Scale.y -= delta.y * orthoScale;
+					break;
+				case Boundary2DCorner::BOTTOM_LEFT:
+					tc.Translation.x += delta.x * orthoScale / 2.0f;
+					tc.Scale.x -= delta.x * orthoScale;
+					tc.Translation.y -= delta.y * orthoScale / 2.0f;
+					tc.Scale.y += delta.y * orthoScale;
+					break;
+			}
+		}
 	}
 
 }

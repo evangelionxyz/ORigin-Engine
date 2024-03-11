@@ -76,7 +76,7 @@ namespace origin
 
 	void SpriteSheetEditor::Duplicate(int index)
 	{
-		m_Controls.insert(m_Controls.begin() + index, m_Controls[index]);
+		m_Controls.insert(m_Controls.end(), m_Controls[index]);
 	}
 
 	void SpriteSheetEditor::OnImGuiRender()
@@ -108,8 +108,6 @@ namespace origin
 			ImGui::End();
 
 			ImGui::Begin("Sprite Sheet Controller");
-			ImGui::Text("Selected %d", m_SelectedIndex);
-			ImGui::Text("Hovered %d", m_HoveredIndex);
 
 			if (m_Texture)
 			{
@@ -138,15 +136,8 @@ namespace origin
 					if (m_SelectedIndex == offset / 5)
 					{
 						auto &c = m_Controls[m_SelectedIndex];
-
-						// bottom left and top right
-						c.Min = { (c.Position.x * c.Size.x) / atlasSize.x, (c.Position.y * c.Size.y) / atlasSize.y };
-						c.Max = { ((c.Position.x + 1.0f) * c.Size.x) / atlasSize.x, ((c.Position.y + 1.0f) * c.Size.y) / atlasSize.y };
-
-						ImGui::Text("Position %.2f, %.2f", c.Position.x, c.Position.y);
-						ImGui::Text("Size %.2f, %.2f", c.Size.x, c.Size.y);
-						ImGui::Text("Min %.2f, %.2f", c.Min.x, c.Min.y);
-						ImGui::Text("Max %.2f, %.2f", c.Max.x, c.Max.y);
+						c.Min = { (c.Position.x + (atlasSize.x - c.Size.x) / 2.0f) /  atlasSize.x, (c.Position.y + (atlasSize.y - c.Size.y) / 2.0f) / atlasSize.y };
+						c.Max = { (c.Position.x + (atlasSize.x + c.Size.x) / 2.0f) / atlasSize.x, (c.Position.y + (atlasSize.y + c.Size.y) / 2.0f) / atlasSize.y };
 					}
 					offset += 5;
 				}
@@ -229,9 +220,10 @@ namespace origin
 			m_Framebuffer->Resize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
 		}
 
-		Renderer2D::Begin(m_Camera);
 		if (m_Texture)
 		{
+			Renderer2D::Begin(m_Camera);
+
 			int texX = m_Texture->GetWidth();
 			int texY = m_Texture->GetHeight();
 			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, 0.0f }), m_Texture);
@@ -240,11 +232,9 @@ namespace origin
 			for (int i = 0; i < m_Controls.size(); i++)
 			{
 				auto &c = m_Controls[i];
-				float posX = c.Position.x * c.Size.x - texX / 2.0f;
-				float posY = c.Position.y * c.Size.y - texY / 2.0f;
 
 				bool selected = m_SelectedIndex == offset / 5;
-				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { posX + c.Size.x / 2.0f, posY + c.Size.y / 2.0f, 0.1f })
+				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x, c.Position.y, 0.1f })
 					* glm::scale(glm::mat4(1.0f), { c.Size.x, c.Size.y, 1.0f });
 				glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 				Renderer2D::DrawRect(tf, col);
@@ -257,32 +247,31 @@ namespace origin
 					// bottom left corner
 					glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
 					glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
-				#if 0
 					col = c.SelectedCorner == ControllerCorner::BOTTOM_LEFT ? green : red;
-					glm::mat4 tf = glm::translate(glm::mat4(1.0f), { posX, posY,1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-					//Renderer2D::DrawQuad(tf, col, offset + 1);
+					glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x - c.Size.x / 2.0f, c.Position.y - c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+					Renderer2D::DrawQuad(tf, col, offset + 1);
 
 					// top left corner
 					col = c.SelectedCorner == ControllerCorner::TOP_LEFT ? green : red;
-					tf = glm::translate(glm::mat4(1.0f), { posX, posY + c.Size.y,1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-					//Renderer2D::DrawQuad(tf, col, offset + 2);
+					tf = glm::translate(glm::mat4(1.0f), { c.Position.x - c.Size.x / 2.0f, c.Position.y + c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+					Renderer2D::DrawQuad(tf, col, offset + 2);
 
 					// bottom right corner
 					col = c.SelectedCorner == ControllerCorner::BOTTOM_RIGHT ? green : red;
-					tf = glm::translate(glm::mat4(1.0f), { posX + c.Size.x, posY, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-					//Renderer2D::DrawQuad(tf, col, offset + 3);
+					tf = glm::translate(glm::mat4(1.0f), { c.Position.x + c.Size.x / 2.0f, c.Position.y - c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+					Renderer2D::DrawQuad(tf, col, offset + 3);
 
 					// top right corner
-				#endif
 					col = c.SelectedCorner == ControllerCorner::TOP_RIGHT ? green : red;
-					tf = glm::translate(glm::mat4(1.0f), { posX + c.Size.x, posY + c.Size.y,1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+					tf = glm::translate(glm::mat4(1.0f), { c.Position.x + c.Size.x / 2.0f, c.Position.y + c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
 					Renderer2D::DrawQuad(tf, col, offset + 4);
+
 				}
 				offset += 5;
 			}
-		}
 
-		Renderer2D::End();
+			Renderer2D::End();
+		}
 
 		auto [mx, my] = ImGui::GetMousePos();
 		glm::vec2 mousePos = { mx, my };
@@ -440,6 +429,7 @@ namespace origin
 	bool SpriteSheetEditor::OnKeyPressed(KeyPressedEvent &e)
 	{
 		bool control = Input::IsKeyPressed(Key::LeftControl);
+
 		if (control && e.GetKeyCode() == Key::D && m_SelectedIndex >= 0 && !m_Controls.empty())
 			Duplicate(m_SelectedIndex);
 
@@ -456,15 +446,12 @@ namespace origin
 		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsHovered && m_SelectedIndex >= 0)
 		{
 			auto &c = m_Controls[m_SelectedIndex];
-			float orthoScale = m_Camera.GetOrthoSize() / m_ViewportSize.y;
-
-			float deltaX = delta.x * orthoScale / c.Size.x;
-			float deltaY = delta.y * orthoScale / c.Size.y;
+			float orthoScale = m_Camera.GetOrthoSize() / m_Camera.GetHeight();
 
 			glm::vec2 atlasSize = { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
-			m_MoveTranslation.x += deltaX;
-			m_MoveTranslation.y -= deltaY;
+			m_MoveTranslation.x += delta.x * orthoScale;
+			m_MoveTranslation.y -= delta.y * orthoScale;
 
 			float snapSize = 0.5f;
 			if (Input::IsKeyPressed(Key::LeftShift))
@@ -489,42 +476,38 @@ namespace origin
 				{
 					case NONE:
 						if (Input::IsKeyPressed(Key::X))
-							c.Position.x += deltaX;
+							c.Position.x += delta.x * orthoScale;
 						else if (Input::IsKeyPressed(Key::Y))
-							c.Position.y -= deltaY;
+							c.Position.y -= delta.y * orthoScale;
 						else
 						{
-							c.Position.x += deltaX;
-							c.Position.y -= deltaY;
+							c.Position.x += delta.x * orthoScale;
+							c.Position.y -= delta.y * orthoScale;
 						}
 						break;
 					case TOP_RIGHT:
+						c.Position.x += delta.x * orthoScale / 2.0f;
 						c.Size.x += delta.x * orthoScale;
+						c.Position.y -= delta.y * orthoScale / 2.0f;
 						c.Size.y -= delta.y * orthoScale;
-						c.Position.x = (c.Min.x * atlasSize.x) / c.Size.x;
-						c.Position.y = (c.Min.y * atlasSize.y) / c.Size.y;
 						break;
 					case BOTTOM_RIGHT:
-						c.Position.y += deltaY;
-						c.Size.y = (c.Min.y * atlasSize.y) / c.Position.y;
-						c.Size.y -= deltaY;
-
+						c.Position.x += delta.x * orthoScale / 2.0f;
 						c.Size.x += delta.x * orthoScale;
-						c.Position.x = (c.Min.x * atlasSize.x) / c.Size.x;
+						c.Position.y -= delta.y * orthoScale / 2.0f;
+						c.Size.y += delta.y * orthoScale;
 						break;
 					case TOP_LEFT:
-						c.Position.x += deltaX;
-
+						c.Position.x += delta.x * orthoScale / 2.0f;
+						c.Size.x -= delta.x * orthoScale;
+						c.Position.y -= delta.y * orthoScale / 2.0f;
 						c.Size.y -= delta.y * orthoScale;
-						c.Position.y = (c.Min.y * atlasSize.y) / c.Size.y;
 						break;
 					case BOTTOM_LEFT:
-						c.Position.x += deltaX;
-
-						c.Size.y -= delta.y * orthoScale;
-						c.Position.y = (c.Min.y * atlasSize.y) / c.Size.y;
-						break;
-					default:
+						c.Position.x += delta.x * orthoScale / 2.0f;
+						c.Size.x -= delta.x * orthoScale;
+						c.Position.y -= delta.y * orthoScale / 2.0f;
+						c.Size.y += delta.y * orthoScale;
 						break;
 				}
 			}

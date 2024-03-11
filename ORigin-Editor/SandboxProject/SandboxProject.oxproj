@@ -1,6 +1,6 @@
 Project:
   Name: SandboxProject
-  StartScene: 0
+  StartScene: 6155524723123555774
   AssetDirectory: Assets
   AssetRegistry: AssetRegistry
   ScriptModulePath: Binaries/SandboxProject.dll

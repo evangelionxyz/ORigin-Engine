@@ -67,7 +67,7 @@ namespace origin {
 	  fbSpec.Height = 720;
 	  m_Framebuffer = Framebuffer::Create(fbSpec);
 
-	  m_EditorCamera.InitPerspective(45.0f, 1.778f, 0.1f, 5000.0f);
+	  m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
 	  m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
 	  m_ActiveScene = std::make_shared<Scene>();
@@ -79,6 +79,7 @@ namespace origin {
 			  Application::Get().Close();
 	  }
 
+		m_Gizmos = std::make_unique<Gizmos>();
 		m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
   }
 
@@ -86,6 +87,7 @@ namespace origin {
   {
 		m_EditorCamera.OnEvent(e);
 		m_SpriteSheetEditor->OnEvent(e);
+		m_Gizmos->OnEvent(e);
 
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseMovedEvent));
@@ -145,6 +147,9 @@ namespace origin {
 	  mouseY = static_cast<int>(mousePos.y);
 	  m_PixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 	  m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+		m_Gizmos->SetHovered(m_PixelData);
+
+		m_Gizmos->SetSelectedEntity(m_SceneHierarchy.GetSelectedEntity());
 
 	  m_Framebuffer->Unbind();
   }
@@ -475,20 +480,20 @@ namespace origin {
 		switch (m_SceneState)
 		{
 		case SceneState::Play:
-			m_GizmosType = -1;
+			m_Gizmos->SetType(GizmoType::NONE);
 			m_ActiveScene->OnUpdateRuntime(deltaTime);
 			break;
 
 		case SceneState::Edit:
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnUpdateEditor(deltaTime, m_EditorCamera);
-			Gizmos::OnUpdate(m_EditorCamera);
+			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 
 		case SceneState::Simulate:
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
-			Gizmos::OnUpdate(m_EditorCamera);
+			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 		}
 	}
@@ -601,7 +606,7 @@ namespace origin {
 		}
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
-		if (entity && m_GizmosType != -1)
+		if (entity && m_Gizmos->GetType() != GizmoType::NONE)
 		{
 			// Gizmos
 			ImGuizmo::SetDrawlist();
@@ -614,22 +619,36 @@ namespace origin {
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
+			ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)0;
+
 			float snapValue = 0.5f;
-			if (m_GizmosType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 15.0f;
-			else if (m_GizmosType == ImGuizmo::OPERATION::BOUNDS)
-				snapValue = 0.1f;
-				
+			switch (m_Gizmos->GetType())
+			{
+				case GizmoType::TRANSLATE:
+					operation = ImGuizmo::OPERATION::TRANSLATE;
+					break;
+				case GizmoType::ROTATE:
+					operation = ImGuizmo::OPERATION::ROTATE;
+					snapValue = 15.0f;
+					break;
+				case GizmoType::SCALE:
+					operation = ImGuizmo::OPERATION::SCALE;
+					break;
+				case GizmoType::BOUNDARY:
+					operation = ImGuizmo::OPERATION::BOUNDS;
+					snapValue = 0.1f;
+					break;
+			}
+
 			float snapValues[] = { snapValue, snapValue, snapValue };
 			float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-			bool boundSizing = m_GizmosType == ImGuizmo::OPERATION::BOUNDS
+			bool boundSizing = m_Gizmos->GetType() == GizmoType::BOUNDARY
 				&& !entity.HasComponent<CameraComponent>()
 				&& !entity.HasComponent<LightComponent>()
 				&& !entity.HasComponent<AudioComponent>();
 
 			bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				static_cast<ImGuizmo::OPERATION>(m_GizmosType), static_cast<ImGuizmo::MODE>(m_GizmosMode),
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), operation, static_cast<ImGuizmo::MODE>(m_GizmosMode),
 				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
@@ -643,7 +662,9 @@ namespace origin {
 			}
 
 			if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
-				m_GizmosType = -1;
+			{
+				m_Gizmos->SetType(GizmoType::NONE);
+			}
 		}
 
 		ImGui::End();
@@ -668,9 +689,9 @@ namespace origin {
 			if (hue >= 360.0f)
 				hue -= 360.0f;
 			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);*/
-			uint32_t rectColor = ImColor(0.1f, 0.8f, 0.1f);
+			uint32_t rectColor = ImColor(0.2231f, 0.44321f, 0.1f);
 			if (m_SceneState == SceneState::Play)
-				rectColor = ImColor(0.8f, 0.1f, 0.1f);
+				rectColor = ImColor(0.7213f, 0.2321f, 0.1f);
 
 			uint32_t rectTransparentColor = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
 			drawList->AddRectFilledMultiColor(posMinA, posMaxA, rectColor, rectTransparentColor, rectTransparentColor, rectColor);
@@ -899,6 +920,7 @@ namespace origin {
 			ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
 			ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
 			ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
+			ImGui::Text("Hovered Pixel (%d)", m_PixelData);
 			ImGui::Separator();
 
 			ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(clearColor));
@@ -956,21 +978,7 @@ namespace origin {
 				else if (!handleValid)
 				{
 					m_SceneHierarchy.SetSelectedEntity({});
-					m_GizmosType = -1;
-				}
-			}
-
-			if (!ImGuizmo::IsOver() && m_HoveredEntity == selectedEntity && control)
-			{
-				if (m_GizmosMode == ImGuizmo::MODE::LOCAL)
-				{
-					m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
-						m_GizmosType = ImGuizmo::OPERATION::ROTATE : m_GizmosType == ImGuizmo::OPERATION::ROTATE ? m_GizmosType = ImGuizmo::OPERATION::SCALE : m_GizmosType = -1;
-				}
-				else if (m_GizmosMode == ImGuizmo::MODE::WORLD)
-				{
-					m_GizmosType == -1 ? m_GizmosType = ImGuizmo::OPERATION::TRANSLATE : m_GizmosType == ImGuizmo::OPERATION::TRANSLATE ?
-						m_GizmosType = ImGuizmo::OPERATION::ROTATE : m_GizmosType == ImGuizmo::OPERATION::ROTATE ? m_GizmosType = -1 : m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
+					m_Gizmos->SetType(GizmoType::NONE);
 				}
 			}
 		}
@@ -989,8 +997,7 @@ namespace origin {
 
 		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
-			float orthoSize = m_EditorCamera.GetOrthoSize();
-			float orthoScale = orthoSize / m_SceneViewportSize.y;
+			float orthoScale = m_EditorCamera.GetOrthoSize() / m_EditorCamera.GetHeight();
 
 			if (entity && m_SceneViewportHovered)
 			{
@@ -1079,7 +1086,7 @@ namespace origin {
 			case Key::E:
 			{
 				if (!ImGuizmo::IsUsing() && !io.WantTextInput && m_GizmosMode == ImGuizmo::MODE::LOCAL)
-					m_GizmosType = ImGuizmo::OPERATION::SCALE;
+					m_Gizmos->SetType(GizmoType::SCALE);
 				break;
 			}
 
@@ -1108,7 +1115,7 @@ namespace origin {
 			case Key::R:
 			{
 				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_GizmosType = ImGuizmo::OPERATION::ROTATE;
+					m_Gizmos->SetType(GizmoType::ROTATE);
 				break;
 			}
 
@@ -1128,14 +1135,14 @@ namespace origin {
 			case Key::T:
 			{
 				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_GizmosType = ImGuizmo::OPERATION::TRANSLATE;
+					m_Gizmos->SetType(GizmoType::TRANSLATE);
 				break;
 			}
 
 			case Key::Y:
 			{
 				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_GizmosType = ImGuizmo::OPERATION::BOUNDS;
+					m_Gizmos->SetType(GizmoType::BOUNDARY2D);
 				break;
 			}
 
@@ -1166,7 +1173,6 @@ namespace origin {
 
 	bool EditorLayer::OnWindowDrop(WindowDropEvent& e)
 	{
-		// AssetManager::ImportAsset();
 		return true;
 	}
 
