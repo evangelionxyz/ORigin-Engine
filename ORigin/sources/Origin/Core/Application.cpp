@@ -61,10 +61,9 @@ namespace origin {
 
 		while (m_Window->IsLooping())
 		{
-			double time = glfwGetTime();
+			float time = static_cast<float>(glfwGetTime());
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
-			timestep.SetDeltaTime(m_LastFrame);
 
 			ExecuteMainThreadQueue();
 

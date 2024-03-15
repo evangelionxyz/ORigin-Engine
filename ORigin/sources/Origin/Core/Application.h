@@ -1,16 +1,14 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Window.h"
+#include "Input.h"
+#include "AppEvent.h"
+#include "Time.h"
+#include "Layer.h"
+#include "LayerStack.h"
 
-#include "Origin\IO\Input.h"
-#include "Origin\IO\Events\AppEvent.h"
-
-#include "Origin\Utils\Time.h"
-#include "Origin\Utils\Layer.h"
-#include "Origin\Utils\LayerStack.h"
-#include "Origin\Utils\GUI\GuiLayer.h"
-
+#include "Origin\GUI\GuiLayer.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\GraphicsContext.h"
 

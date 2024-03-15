@@ -13,6 +13,12 @@ namespace origin
 		glm::vec2 Min, Max;
 	};
 
+	struct SpriteRender
+	{
+		SpriteData Data;
+		AssetHandle TextureHandle = 0;
+	};
+
 	class SpriteSheet : public Asset
 	{
 	public:
@@ -23,7 +29,6 @@ namespace origin
 
 		static std::shared_ptr<SpriteSheet> Create();
 		static std::shared_ptr<SpriteSheet> Create(const std::filesystem::path &filepath);
-
 
 		static AssetType GetStaticType() { return AssetType::SpriteSheet; }
 		virtual AssetType GetType() const { return GetStaticType(); }

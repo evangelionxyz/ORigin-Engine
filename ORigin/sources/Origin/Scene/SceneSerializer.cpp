@@ -401,22 +401,6 @@ namespace origin
 			out << YAML::EndMap; // !ParticleComponent
 		}
 
-		if (entity.HasComponent<SpriteRendererComponent>())
-		{
-			out << YAML::Key << "SpriteRendererComponent";
-			out << YAML::BeginMap; // SpriteRendererComponent
-
-			const auto& src = entity.GetComponent<SpriteRendererComponent>();
-			out << YAML::Key << "Color" << YAML::Value << src.Color;
-			if (src.Texture)
-			{
-				auto& texturePath = relative(src.Texture->GetFilepath(), Project::GetActiveAssetDirectory());
-				out << YAML::Key << "TexturePath" << YAML::Value << texturePath.generic_string();
-			}
-
-			out << YAML::EndMap; // !SpriteRendererComponent
-		}
-
 		if (entity.HasComponent<SpriteRenderer2DComponent>())
 		{
 			out << YAML::Key << "SpriteRenderer2DComponent";
@@ -709,14 +693,6 @@ namespace origin
 					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 
 					cc.Primary = cameraComponent["Primary"].as<bool>();
-				}
-
-				if (YAML::Node spriteRendererComponent = entity["SpriteRendererComponent"])
-				{
-					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
-					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
-					if (spriteRendererComponent["TexturePath"])
-						src.Texture = Texture2D::Create(spriteRendererComponent["TexturePath"].as<std::string>());
 				}
 
 				if (YAML::Node particleComponent = entity["ParticleComponent"])

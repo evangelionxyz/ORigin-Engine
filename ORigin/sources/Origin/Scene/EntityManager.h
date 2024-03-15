@@ -48,7 +48,9 @@ namespace origin
 	{
 	public:
 		static Entity CreateEntity(const std::string &name, Scene *scene);
+		static Entity CreateAudio(const std::string &name, Scene *scene);
 		static Entity CreateSprite(const std::string &name, Scene *scene);
+		static Entity CreateCircle(const std::string &name, Scene *scene);
 		static Entity CreateCamera(const std::string &name, Scene *scene);
 		static Entity CreateEntityWithUUID(UUID uuid, const std::string &name, Scene *scene);
 		static Entity CreateMesh(const std::string &name, Scene *scene);

@@ -1,12 +1,12 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Physics\RigidbodyComponent.h"
-#include "Origin\Physics\ColliderComponent.h"
 #include "Components.h"
 #include "Scene.h"
+#include "Origin\Physics\RigidbodyComponent.h"
+#include "Origin\Physics\ColliderComponent.h"
 #include "entt\entt.hpp"
-#include "box2d/b2_contact.h"
+#include "box2d\b2_contact.h"
 
 namespace origin {
 
@@ -14,14 +14,13 @@ namespace origin {
 	{
 	public:
 		Entity() = default;
-		Entity(entt::entity handle);
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			OGN_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
+			OGN_CORE_ASSERT(!HasComponent<T>(), "[Entity::AddComponent] already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;

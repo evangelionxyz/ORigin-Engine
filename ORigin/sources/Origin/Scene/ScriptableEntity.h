@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Utils\Time.h"
+#include "Origin\Core\Time.h"
 #include "Origin\Scene\Entity.h"
 
 namespace origin

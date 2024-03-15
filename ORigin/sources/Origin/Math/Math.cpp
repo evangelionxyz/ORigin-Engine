@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Math.h"
@@ -150,4 +150,11 @@ namespace origin
 
 		return true;
 	}
+
+	glm::vec3 Math::Normalize(const glm::vec3 &v)
+	{
+		float l = glm::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+		return { v.x / l, v.y / l, v.z / l };
+	}
+
 }

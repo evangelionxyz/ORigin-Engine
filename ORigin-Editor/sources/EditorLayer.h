@@ -75,8 +75,6 @@ namespace origin {
 
 		static EditorLayer* s_Instance;
 		SceneState m_SceneState = SceneState::Edit;
-		enum ViewportMenuContext { CreateMenu = 0, EntityProperties = 1 };
-		ViewportMenuContext m_VpMenuContext = ViewportMenuContext::CreateMenu;
 		SceneHierarchyPanel m_SceneHierarchy;
 		Dockspace m_Dockspace;
 		EditorCamera m_EditorCamera;
@@ -92,27 +90,20 @@ namespace origin {
 		std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
 		std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
 
-		glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+		glm::vec4 m_ClearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 		glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
-		glm::vec2 m_GameViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
 		glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_SceneViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
-		glm::vec3 cameraPosition = {};
 
-		int lastMouseX = 0, mouseX = 0;
-		int lastMouseY = 0, mouseY = 0;
+    ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
 		int m_GizmosMode = 0;
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;
-		float m_CameraFov = 45.0f;
-		float cameraYaw = 0.0f, cameraPitch = 0.0f;
-		float m_GameViewportSizeX = 0.0f, m_GameViewportSizeY = 0.0f;
 		float m_Time = 0.0f;
-		bool drawLineMode = false;
+		bool m_DrawLineModeActive = false;
 		bool m_VisualizeCollider = true;
 		bool m_SceneViewportHovered = false;
 		bool m_SceneViewportFocused = false;
-		bool VpMenuContextActive;
 		Entity m_HoveredEntity = {};
 
     friend class Gizmos;

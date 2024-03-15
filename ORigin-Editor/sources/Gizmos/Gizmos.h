@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Origin\Core\Base.h"
-#include "Origin\IO\Events\Event.h"
+#include "Origin\Core\Event.h"
 #include "Origin\Scene\Entity.h"
 #include "Origin\Scene\EditorCamera.h"
 #include <glm\glm.hpp>
@@ -46,15 +46,14 @@ namespace origin {
 		GizmoType GetType() const { return m_Type; }
 
 	private:
-		void Draw2DVerticalGrid();
+		void Draw2DVerticalGrid(const EditorCamera &camera);
 		void Draw2DOverlay();
-		void DrawOverlay();
-		void DrawIcons();
-		void CalculateBoundary2DSizing();
+		void DrawOverlay(const EditorCamera &camera);
+		void DrawIcons(const EditorCamera &camera);
+		void CalculateBoundary2DSizing(const EditorCamera &camera);
 
 	private:
 		Boundary2DCorner m_Boundary2DCorner = Boundary2DCorner::NONE;
-		EditorCamera m_Camera;
 		GizmoType m_Type = GizmoType::NONE;
 		int m_Hovered = -1;
 		float m_SnapValue = 0.0f;

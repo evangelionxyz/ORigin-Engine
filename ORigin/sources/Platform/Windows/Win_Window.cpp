@@ -3,10 +3,10 @@
 #include "pch.h"
 #include "Win_Window.h"
 
-#include "Origin\IO\KeyCodes.h"
-#include "Origin\IO\Events\KeyEvent.h"
-#include "Origin\IO\Events\MouseEvent.h"
-#include "Origin\IO\Events\AppEvent.h"
+#include "Origin\Core\KeyCodes.h"
+#include "Origin\Core\KeyEvent.h"
+#include "Origin\Core\MouseEvent.h"
+#include "Origin\Core\AppEvent.h"
 #include "Origin\Core\Application.h"
 #include "Origin\Asset\AssetImporter.h"
 

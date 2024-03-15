@@ -42,8 +42,8 @@ void RuntimeLayer::OnLoadingScreen(uint32_t waitingTime)
 	{
 		RenderCommand::Clear();
 		RenderCommand::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-		float width = Application::Get().GetWindow().GetWidth();
-		float height = Application::Get().GetWindow().GetHeight();
+		uint32_t width = Application::Get().GetWindow().GetWidth();
+		uint32_t height = Application::Get().GetWindow().GetHeight();
 		RenderCommand::SetViewport(0, 0, width, height);
 		float orthoSize = 1.0f;
 		glm::mat4 projection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 0.0f, 10.0f);
@@ -70,8 +70,8 @@ bool RuntimeLayer::OpenProject(const std::filesystem::path& path)
 		AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
 		OpenScene(handle);
 
-		float width = static_cast<float>(Application::Get().GetWindow().GetWidth());
-		float height = static_cast<float>(Application::Get().GetWindow().GetHeight());
+		uint32_t width = Application::Get().GetWindow().GetWidth();
+		uint32_t height = Application::Get().GetWindow().GetHeight();
 		RenderCommand::SetViewport(0, 0, width, height);
 
 		m_ActiveScene->OnViewportResize(width, height);

@@ -1,16 +1,19 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "EditorCamera.h"
 #include "Origin\Core\Application.h"
-#include "Origin/IO/Input.h"
-#include "Origin/IO/KeyCodes.h"
-#include "Origin/IO/MouseCodes.h"
-#include "Origin/Scene/Components.h"
-#include "Origin/Scene/Entity.h"
-#include <glfw/glfw3.h>
+#include "Origin\Core\Input.h"
+#include "Origin\Core\KeyCodes.h"
+#include "Origin\Core\MouseCodes.h"
+#include "Origin\Scene\Components.h"
+#include "Origin\Scene\Entity.h"
+
+#include <glfw\glfw3.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/compatibility.hpp>
+#include <glm\gtx\quaternion.hpp>
+#include <glm\gtx\compatibility.hpp>
 #include <algorithm>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
@@ -104,7 +107,6 @@ namespace origin {
 			m_View = glm::inverse(m_View);
 			break;
 		}
-
 	}
 
 	std::pair<float, float> EditorCamera::PanSpeed() const
@@ -191,30 +193,41 @@ namespace origin {
 					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 						MousePan(delta);
 
-					if (Input::IsKeyPressed(Key::A))
-						velocity -= GetRightDirection();
-					else if (Input::IsKeyPressed(Key::D))
-						velocity += GetRightDirection();
-					if (Input::IsKeyPressed(Key::W))
-						velocity += GetForwardDirection();
-					else if (Input::IsKeyPressed(Key::S))
-						velocity -= GetForwardDirection();
+					if (m_CanMoving)
+					{
+						if (Input::IsKeyPressed(Key::A))
+						{
+							velocity -= GetRightDirection();
+							m_MoveSpeed += ts * 2.0f;
+						}
+						else if (Input::IsKeyPressed(Key::D))
+						{
+							velocity += GetRightDirection();
+							m_MoveSpeed += ts * 2.0f;
+						}
+						if (Input::IsKeyPressed(Key::W))
+						{
+							velocity += GetForwardDirection();
+							m_MoveSpeed += ts * 2.0f;
+						}
+						else if (Input::IsKeyPressed(Key::S))
+						{
+							velocity -= GetForwardDirection();
+							m_MoveSpeed += ts * 2.0f;
+						}
+						else
+						{
+							m_MoveSpeed -= ts * 2.0f;
+						}
 
-					if (Input::IsKeyPressed(Key::A) || Input::IsKeyPressed(Key::S) || Input::IsKeyPressed(Key::D) || Input::IsKeyPressed(Key::W))
-						m_MoveSpeed += ts * 2.0f;
-					else
-						m_MoveSpeed -= ts * 2.0f;
+						m_MoveSpeed = glm::clamp(m_MoveSpeed, 2.0f, 20.0f);
+						m_Position = glm::lerp(m_Position, m_Position + velocity, ts * m_MoveSpeed);
 
-					if (m_MoveSpeed <= 2.0f)
-						m_MoveSpeed = 2.0f;
-					else if (m_MoveSpeed >= 20.0f)
-						m_MoveSpeed = 20.0f;
-
-					m_Position = glm::lerp(m_Position, m_Position + velocity, (float)ts.DeltaTime() * m_MoveSpeed);
-					lastPosition = m_Position;
-
-					m_Distance = 5.0f;
-					m_FocalPoint = lastPosition + GetForwardDirection() * m_Distance;
+						lastPosition = m_Position;
+						m_Distance = 5.0f;
+						m_FocalPoint = lastPosition + GetForwardDirection() * m_Distance;
+					}
+					
 					break;
 			}
 		}
@@ -272,7 +285,7 @@ namespace origin {
 		if (!m_CanDragging)
 			return;
 
-		auto [xSpeed, ySpeed] = PanSpeed();
+		auto &[xSpeed, ySpeed] = PanSpeed();
 
 		switch (m_ProjectionType)
 		{

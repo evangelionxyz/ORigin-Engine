@@ -19,6 +19,8 @@ namespace origin
 	public:
 		static bool DecomposeTransform(const glm::mat4& transform, glm::vec3& outTranslation, glm::quat& rotation, glm::vec3& scale);
 		static bool DecomposeTransformEuler(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
+
+		static glm::vec3 Normalize(const glm::vec3 &v);
 	};
 }
 

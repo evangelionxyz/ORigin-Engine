@@ -8,6 +8,13 @@ namespace origin
 		return CreateEntityWithUUID(UUID(), name, scene);
 	}
 
+	Entity EntityManager::CreateAudio(const std::string &name, Scene *scene)
+	{
+		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
+		entity.AddComponent<AudioComponent>();
+		return entity;
+	}
+
 	Entity EntityManager::CreateSprite(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
@@ -15,10 +22,18 @@ namespace origin
 		return entity;
 	}
 
+	Entity EntityManager::CreateCircle(const std::string &name, Scene *scene)
+	{
+		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
+		entity.AddComponent<CircleRendererComponent>();
+		return entity;
+	}
+
 	Entity EntityManager::CreateCamera(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
 		entity.AddComponent<CameraComponent>();
+		entity.AddComponent<AudioListenerComponent>();
 		entity.GetComponent<TransformComponent>().Translation.z = 8.0f;
 		return entity;
 	}
@@ -29,11 +44,8 @@ namespace origin
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<TreeNodeComponent>();
-
-		auto &tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
+		entity.AddComponent<TagComponent>().Tag = name;
 		scene->m_EntityMap[entity.GetUUID()] = entity;
-
 		return entity;
 	}
 
@@ -41,7 +53,6 @@ namespace origin
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
 		entity.AddComponent<StaticMeshComponent>();
-
 		return entity;
 	}
 
@@ -53,16 +64,13 @@ namespace origin
 
 		std::string name = entity.GetTag();
 		Entity newEntity = CreateEntity(name, scene);
-
 		CopyComponentIfExists(AllComponents{}, newEntity, entity);
-
 		if (entity.HasParent())
 		{
 			Entity parent = scene->GetEntityWithUUID(entity.GetParentUUID());
 			auto &parentIdc = parent.GetComponent<TreeNodeComponent>();
 			parentIdc.Children[newEntity.GetUUID()] = newEntity;
 		}
-
 		return newEntity;
 	}
 

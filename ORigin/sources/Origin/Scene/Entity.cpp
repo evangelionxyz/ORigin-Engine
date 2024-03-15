@@ -9,10 +9,4 @@ namespace origin
 		: m_EntityHandle(handle), m_Scene(scene)
 	{
 	}
-
-	Entity::Entity(entt::entity handle)
-		: m_EntityHandle(handle), m_Scene(nullptr)
-	{
-	}
-
 }

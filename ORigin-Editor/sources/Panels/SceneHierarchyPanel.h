@@ -35,6 +35,9 @@ namespace origin {
 		void DestroyEntity(Entity entity);
 		void DeleteEntityTree(Entity entity);
 
+		bool IsSceneHierarchyFocused = false;
+		bool IsScenePropertiesFocused = false;
+
 	private:
 		static SceneHierarchyPanel* s_Instance;
 
@@ -44,6 +47,8 @@ namespace origin {
 		void DrawComponents(Entity entity);
 		bool AddNodeChild(Entity parent, Entity child);
 		void RemoveConnectionsFromChild(Entity child, Entity nextChild, UUID parentId);
+
+	
 
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;

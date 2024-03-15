@@ -1,19 +1,17 @@
 #pragma once
-#include "Origin\IO\Events\Event.h"
-#include "Origin\IO\Events\KeyEvent.h"
-
+#include "Origin\Core\UUID.h"
+#include "Origin\Core\Event.h"
+#include "Origin\Core\KeyEvent.h"
 #include "Origin\Scene\SpriteSheet.h"
 #include "Origin\Scene\Entity.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Framebuffer.h"
 #include "Origin\Scene\EditorCamera.h"
-#include "Origin\Core\UUID.h"
 
 #include <glm\glm.hpp>
 
 namespace origin
 {
-
 	enum ControllerCorner
 	{
 		NONE = -1, TOP_LEFT, BOTTOM_LEFT, TOP_RIGHT, BOTTOM_RIGHT
@@ -42,8 +40,8 @@ namespace origin
 		void RemoveSprite(int index);
 		void Duplicate(int index);
 
-		void OnImGuiRender();
-		void OnRender(float ts);
+		void OnGuiRender();
+		void OnUpdate(Timestep ts);
 
 		bool Serialize(const std::filesystem::path &filepath);
 		bool Deserialize();

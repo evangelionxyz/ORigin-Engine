@@ -1,9 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "pch.h"
-
-#include "Origin\IO\KeyCodes.h"
+#include "KeyCodes.h"
 
 namespace origin {
 

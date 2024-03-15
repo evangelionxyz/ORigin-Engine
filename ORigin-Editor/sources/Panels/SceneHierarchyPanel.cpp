@@ -44,19 +44,19 @@ namespace origin {
 
 	Entity SceneHierarchyPanel::GetSelectedEntity() const
 	{
-		return m_SelectedEntity;
+		if(m_SelectedEntity.GetScene())
+			return m_SelectedEntity;
+
+		return {};
 	}
 
 	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context, bool reset)
 	{
-		// reset scene
 		if (reset)
 			m_SelectedEntity = {};
 
-		// set new scene
 		m_Context = context;
 
-		// receive selected entity from new scene
 		if (!m_SelectedEntity)
 			return;
 
@@ -69,9 +69,9 @@ namespace origin {
 
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
+		m_SelectedEntity = {};
 		DeleteEntityTree(entity);
 		EntityManager::DestroyEntity(entity, m_Context.get());
-		m_SelectedEntity = {};
 	}
 
 	void SceneHierarchyPanel::DeleteEntityTree(Entity entity)
@@ -115,6 +115,8 @@ namespace origin {
 			return;
 		}
 
+		IsSceneHierarchyFocused = ImGui::IsWindowFocused();
+
 		m_Context->m_Registry.each([&](auto entityID)
 			{
 				Entity entity{ entityID, m_Context.get() };
@@ -128,14 +130,20 @@ namespace origin {
 			if (ImGui::BeginMenu("CREATE"))
 			{
 				if (ImGui::MenuItem("Empty")) EntityManager::CreateEntity("Empty", m_Context.get());
-				if (ImGui::MenuItem("Sprite")) EntityManager::CreateEntity("Sprite", m_Context.get());
-				if (ImGui::MenuItem("Empty Mesh")) EntityManager::CreateMesh("Empty Mesh", m_Context.get());
-				if (ImGui::MenuItem("Camera"))
+				if (ImGui::BeginMenu("2D"))
 				{
-					m_SelectedEntity = EntityManager::CreateCamera("Camera", m_Context.get());
-					m_SelectedEntity.AddComponent<AudioListenerComponent>();
+					if (ImGui::MenuItem("Sprite")) EntityManager::CreateSprite("Sprite", m_Context.get());
+					if (ImGui::MenuItem("Circle")) EntityManager::CreateCircle("Circle", m_Context.get());
+					ImGui::EndMenu();
 				}
 
+				if (ImGui::BeginMenu("3D"))
+				{
+					if (ImGui::MenuItem("Empty Mesh")) EntityManager::CreateMesh("Empty Mesh", m_Context.get());
+					ImGui::EndMenu();
+				}
+
+				if (ImGui::MenuItem("Camera")) EntityManager::CreateCamera("Camera", m_Context.get());
 				ImGui::EndMenu();
 			}
 			ImGui::EndPopup();
@@ -148,6 +156,7 @@ namespace origin {
 	void SceneHierarchyPanel::EntityPropertiesPanel()
 	{
 		ImGui::Begin("PROPERTIES");
+		IsScenePropertiesFocused = ImGui::IsWindowFocused();
 		if (m_SelectedEntity)
 			DrawComponents(m_SelectedEntity);
 		ImGui::End();
@@ -322,7 +331,6 @@ namespace origin {
 			DisplayAddComponentEntry<AudioComponent>("AUDIO");
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
 			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
-			DisplayAddComponentEntry<SpriteRendererComponent>("SPRITE RENDERER");
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
 			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER 2D");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
@@ -692,38 +700,6 @@ namespace origin {
 				DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
 			});
 
-		DrawComponent<SpriteRendererComponent>("SPRITE RENDERER", entity, [](auto& component)
-			{
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-
-				if (!component.Texture)
-					ImGui::Button("DROP TEXTURE", ImVec2(80.0f, 30.0f));
-				else ImGui::ImageButton(reinterpret_cast<ImTextureID>(component.Texture->GetRendererID()), ImVec2(80.0f, 80.0f), ImVec2(0, 1), ImVec2(1, 0));
-
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path texturePath = Project::GetActiveAssetFileSystemPath(path);
-						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
-							component.Texture = Texture2D::Create(texturePath);
-					}
-				}
-
-				if (component.Texture)
-				{
-					ImGui::SameLine();
-					if (ImGui::Button("Delete", ImVec2(80.0f, 30.0f)))
-					{
-						component.Texture->Delete();
-						component.Texture = {};
-						return;
-					}
-					ImGui::Text("Path: %s", component.Texture->GetFilepath().c_str());
-				}
-			});
-
 		DrawComponent<SpriteRenderer2DComponent>("SPRITE RENDERER 2D", entity, [](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
@@ -757,14 +733,19 @@ namespace origin {
 					{
 						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
 						if (AssetManager::GetAssetType(handle) == AssetType::Texture)
-						{
 							component.Texture = handle;
+						else if (AssetManager::GetAssetType(handle) == AssetType::SpriteSheet)
+						{
+							//SpriteSheet
 						}
 						else
-						{
 							OGN_CORE_WARN("Wrong asset type!");
-						}
-
+					}
+					else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITE_SHEET_"))
+					{
+						SpriteRender sprite = *static_cast<SpriteRender *>(payload->Data);
+						component.Texture = sprite.TextureHandle;
+						component.SpriteData = sprite.Data;
 					}
 					ImGui::EndDragDropTarget();
 				}

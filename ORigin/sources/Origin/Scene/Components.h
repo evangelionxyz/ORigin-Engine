@@ -11,6 +11,7 @@
 #include "Origin/Renderer/ParticleSystem.h"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
+#include "SpriteSheet.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -187,42 +188,30 @@ namespace origin
 
 	};
 
-	class SpriteRendererComponent
-	{
-	public:
-		glm::vec4 Color = glm::vec4(1.0f);
-		std::shared_ptr<Texture2D> Texture;
-
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-
-		SpriteRendererComponent(const glm::vec4 color)
-			: Color(color) {}
-
-		SpriteRendererComponent(float r, float g, float b, float, float a)
-			: Color(r, g, b, a) {}
-	};
-
 	class SpriteRenderer2DComponent
 	{
 	public:
 		glm::vec4 Color = glm::vec4(1.0f);
 		glm::vec2 TillingFactor = glm::vec2(1.0f);
 		AssetHandle Texture = 0;
-
+		SpriteData SpriteData;
 		bool FlipX = false;
 		bool FlipY = false;
 
 		SpriteRenderer2DComponent() = default;
 		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&) = default;
+		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&, glm::vec4 color)
+			: Color(color) {}
+		SpriteRenderer2DComponent(float r, float g, float b, float a)
+			: Color(r, g, b, a){}
+	};
 
-		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&, glm::vec4 color) : Color(color)
-		{
-		}
-
-		SpriteRenderer2DComponent(float r, float g, float b, float a) : Color(r, g, b, a)
-		{
-		}
+	class SpriteSheet2DComponent
+	{
+	public:
+		SpriteSheet SpriteSheet;
+		SpriteSheet2DComponent() = default;
+		SpriteSheet2DComponent(const SpriteSheet2DComponent &) = default;
 	};
 
 	class Lighting;
@@ -391,7 +380,7 @@ namespace origin
 		TreeNodeComponent, 
 		TransformComponent, CameraComponent, AnimationComponent,
 		AudioComponent, AudioListenerComponent, LightComponent,
-		SpriteRendererComponent, SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
+		SpriteRenderer2DComponent, SpriteSheet2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent,
 		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent

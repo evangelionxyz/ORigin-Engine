@@ -4,7 +4,7 @@
 #include "Origin\Asset\Serializer.h"
 #include "Origin\Asset\AssetManager.h"
 #include "Origin\Scene\EntityManager.h"
-#include "Origin\IO\Input.h"
+#include "Origin\Core\Input.h"
 
 #include <glm\gtc\type_ptr.hpp>
 #include <yaml-cpp\yaml.h>
@@ -79,7 +79,7 @@ namespace origin
 		m_Controls.insert(m_Controls.end(), m_Controls[index]);
 	}
 
-	void SpriteSheetEditor::OnImGuiRender()
+	void SpriteSheetEditor::OnGuiRender()
 	{
 		if (m_IsOpened)
 		{
@@ -125,7 +125,7 @@ namespace origin
 					SpriteSheetController control;
 					m_MoveTranslation = control.Position;
 					m_Controls.push_back(control);
-					m_SelectedIndex = m_Controls.size() - 1;
+					m_SelectedIndex = static_cast<int>(m_Controls.size()) - 1;
 				}
 
 				ImGui::Text("Atlas Size: %.2f, %.2f", atlasSize.x, atlasSize.y);
@@ -188,6 +188,18 @@ namespace origin
 						ImGui::EndTooltip();
 					}
 
+					if (ImGui::BeginDragDropSource())
+					{
+						SpriteRender sprite;
+						sprite.Data.Position = control.Position;
+						sprite.Data.Size = control.Size;
+						sprite.Data.Min = control.Min;
+						sprite.Data.Max = control.Max;
+						sprite.TextureHandle = m_SpriteSheet->GetTextureHandle();
+						ImGui::SetDragDropPayload("SPRITE_SHEET_", &sprite, sizeof(SpriteRender));
+						ImGui::EndDragDropSource();
+					}
+
 					ImGui::NextColumn();
 					ImGui::PopID();
 					offset += 5;
@@ -197,7 +209,7 @@ namespace origin
 		}
 	}
 
-	void SpriteSheetEditor::OnRender(float ts)
+	void SpriteSheetEditor::OnUpdate(Timestep ts)
 	{
 		if (!m_IsOpened)
 		{
@@ -391,25 +403,13 @@ namespace origin
 				m_SelectedIndex = h;
 
 				if (m_HoveredIndex == h * 5 + 1)
-				{
-
 					m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_LEFT;
-				}
 				else if (m_HoveredIndex == h * 5 + 2)
-				{
-
 					m_Controls[m_SelectedIndex].SelectedCorner = TOP_LEFT;
-				}
 				else if (m_HoveredIndex == h * 5 + 3)
-				{
-
 					m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_RIGHT;
-				}
 				else if (m_HoveredIndex == h * 5 + 4)
-				{
-
 					m_Controls[m_SelectedIndex].SelectedCorner = TOP_RIGHT;
-				}
 				else
 				{
 					m_Controls[m_SelectedIndex].SelectedCorner = NONE;
@@ -428,6 +428,9 @@ namespace origin
 
 	bool SpriteSheetEditor::OnKeyPressed(KeyPressedEvent &e)
 	{
+		if (!IsFocused)
+			return false;
+
 		bool control = Input::IsKeyPressed(Key::LeftControl);
 
 		if (control && e.GetKeyCode() == Key::D && m_SelectedIndex >= 0 && !m_Controls.empty())
@@ -517,9 +520,7 @@ namespace origin
 	void SpriteSheetEditor::Reset()
 	{
 		if (m_SpriteSheet)
-		{
 			m_SpriteSheet.reset();
-		}
 
 		if (!m_Controls.empty())
 			m_Controls.clear();

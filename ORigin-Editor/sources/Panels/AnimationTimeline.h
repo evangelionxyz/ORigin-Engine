@@ -7,7 +7,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 #include "ImCurveEdit.h"
-#include "Origin\Utils\Time.h"
+#include "Origin\Core\Time.h"
 #include <math.h>
 #include <vector>
 #include <algorithm>

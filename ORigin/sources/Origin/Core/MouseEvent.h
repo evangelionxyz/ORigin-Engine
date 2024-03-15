@@ -2,8 +2,7 @@
 
 #pragma once
 #include "Event.h"
-
-#include "Origin\IO\MouseCodes.h"
+#include "MouseCodes.h"
 
 namespace origin {
 

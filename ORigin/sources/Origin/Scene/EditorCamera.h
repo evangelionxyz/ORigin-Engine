@@ -2,10 +2,10 @@
 
 #pragma once
 #include "ProjectionType.h"
-#include "Origin\IO\Events\Event.h"
-#include "Origin\IO\Events\MouseEvent.h"
+#include "Origin\Core\Event.h"
+#include "Origin\Core\MouseEvent.h"
 #include "Origin\Audio\AudioListener.h"
-#include "Origin\Utils\Time.h"
+#include "Origin\Core\Time.h"
 #include <glm\glm.hpp>
 
 namespace origin {

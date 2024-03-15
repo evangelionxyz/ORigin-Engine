@@ -12,8 +12,8 @@
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
 
-#include "Origin/IO/KeyCodes.h"
-#include "Origin/IO/Input.h"
+#include "Origin/Core/KeyCodes.h"
+#include "Origin/Core/Input.h"
 
 #include "mono/metadata/object.h"
 #include "mono/metadata/reflection.h"

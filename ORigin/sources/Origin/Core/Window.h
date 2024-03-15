@@ -1,9 +1,8 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include <GLFW/glfw3.h>
-#include "Origin/IO/Events/Event.h"
-
+#include <GLFW\glfw3.h>
+#include "Event.h"
 #include "glm\glm.hpp"
 
 namespace origin {

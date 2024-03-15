@@ -16,10 +16,10 @@ namespace origin {
 
 #define BOUNDARY2D_ID -2
 
-	void Gizmos::Draw2DVerticalGrid()
+	void Gizmos::Draw2DVerticalGrid(const EditorCamera &camera)
 	{
-		float orthoSize = m_Camera.GetOrthoSize();
-		glm::vec2 cameraPosition = glm::vec2(m_Camera.GetPosition());
+		float orthoSize = camera.GetOrthoSize();
+		glm::vec2 cameraPosition = glm::vec2(camera.GetPosition());
 
 		float lineSpacing = 1.0f;
 		if (orthoSize >= 20.0f)
@@ -27,10 +27,10 @@ namespace origin {
 
 		float offset = -0.5f * lineSpacing;
 
-		float minX = cameraPosition.x - orthoSize - m_Camera.GetWidth() / 10.0f;
-		float maxX = cameraPosition.x + orthoSize + m_Camera.GetWidth() / 10.0f;
-		float minY = cameraPosition.y - orthoSize - m_Camera.GetHeight() / 10.0f;
-		float maxY = cameraPosition.y + orthoSize + m_Camera.GetHeight() / 10.0f;
+		float minX = cameraPosition.x - orthoSize - camera.GetWidth() / 10.0f;
+		float maxX = cameraPosition.x + orthoSize + camera.GetWidth() / 10.0f;
+		float minY = cameraPosition.y - orthoSize - camera.GetHeight() / 10.0f;
+		float maxY = cameraPosition.y + orthoSize + camera.GetHeight() / 10.0f;
 
 		auto nx = floor(minX / lineSpacing) * lineSpacing;
 		auto ny = floor(minY / lineSpacing) * lineSpacing;
@@ -48,9 +48,9 @@ namespace origin {
 
 	void Gizmos::Draw2DOverlay()
 	{
-		auto& reg = EditorLayer::Get().m_ActiveScene->m_Registry;
+		auto &editor = EditorLayer::Get();
 
-		if (EditorLayer::Get().m_VisualizeCollider)
+		if (editor.m_VisualizeCollider)
 		{
 			auto& scene = EditorLayer::Get().m_ActiveScene;
 
@@ -78,7 +78,7 @@ namespace origin {
 			}
 		}
 
-		if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+		if (Entity selectedEntity = editor.m_SceneHierarchy.GetSelectedEntity())
 		{
 			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
@@ -104,9 +104,8 @@ namespace origin {
 		Renderer2D::End();
 	}
 
-	void Gizmos::DrawOverlay()
+	void Gizmos::DrawOverlay(const EditorCamera &camera)
 	{
-		Renderer3D::Begin(m_Camera);
 		auto& scene = EditorLayer::Get().m_ActiveScene;
 
 		if (EditorLayer::Get().m_VisualizeCollider)
@@ -152,27 +151,11 @@ namespace origin {
 					* glm::toMat4(glm::quat(rot))
 					* glm::scale(glm::mat4(1.0f), tc.Scale);
 
-				Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f) ,cc.Radius, cc.Height * 2.0f, (int)entity);
+				Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius, cc.Height * 2.0f, (int)entity);
 			}
 
 			Renderer3D::End();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-
-			Renderer2D::Begin(m_Camera);
-			const auto& sprite2d = scene->GetAllEntitiesWith<TransformComponent, SpriteRenderer2DComponent>();
-			for (auto e : sprite2d)
-			{
-				auto& tc = sprite2d.get<TransformComponent>(e);
-				Renderer2D::DrawRect(tc.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-			}
-
-			const auto& circle2d = scene->GetAllEntitiesWith<TransformComponent, SpriteRenderer2DComponent>();
-			for (auto e : circle2d)
-			{
-				auto& tc = circle2d.get<TransformComponent>(e);
-				Renderer2D::DrawCircle(tc.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
-			}
 
 			const auto& revoluteJoint2DView = scene->m_Registry.view<TransformComponent, RevoluteJoint2DComponent>();
 			for (auto e : revoluteJoint2DView)
@@ -188,29 +171,28 @@ namespace origin {
 		}
 	}
 
-	void Gizmos::DrawIcons()
+	void Gizmos::DrawIcons(const EditorCamera &camera)
 	{
-		auto textures = EditorLayer::Get().m_UITextures;
-		auto& reg = EditorLayer::Get().m_ActiveScene->m_Registry;
+		auto &textures = EditorLayer::Get().m_UITextures;
+		auto &reg = EditorLayer::Get().m_ActiveScene->m_Registry;
 
-		auto drawIcon = [&](TransformComponent tc, std::shared_ptr<Texture2D> texture, int entity)
+		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture, int entity)
 			{
 				glm::mat4 transform = glm::mat4(1.0f);
-				float scale = glm::clamp(glm::length(m_Camera.GetPosition() - tc.Translation) * 0.05f, 1.0f, 10.0f);
+				float scale = glm::clamp(glm::length(camera.GetPosition() - tc.Translation) * 0.05f, 1.0f, 10.0f);
 
-				switch (m_Camera.GetProjectionType())
+				switch (camera.GetProjectionType())
 				{
 				case ProjectionType::Perspective:
 					transform = glm::translate(glm::mat4(1.0f), tc.Translation)
-						* glm::rotate(glm::mat4(1.0f), -m_Camera.GetYaw(), glm::vec3(0, 1, 0))
-						* glm::rotate(glm::mat4(1.0f), -m_Camera.GetPitch(), glm::vec3(1, 0, 0))
+						* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
+						* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
 						* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
 					break;
 
 				case ProjectionType::Orthographic:
 					transform = translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, ICON_ZOFFSET));
 					break;
-
 				}
 
 				Renderer2D::DrawQuad(transform, texture, (int)entity, glm::vec2(1.0f), glm::vec4(1.0f));
@@ -222,7 +204,7 @@ namespace origin {
 			auto& [tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
 			auto& sceneCam = cc.Camera;
 
-			if (m_Camera.GetOrthoSize() > 10.0f || m_Camera.GetProjectionType() == ProjectionType::Perspective)
+			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);
 
@@ -236,10 +218,10 @@ namespace origin {
 
 					glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
 
-					glm::vec3 pos = m_Camera.GetProjectionType() == ProjectionType::Perspective ?
+					glm::vec3 pos = camera.GetProjectionType() == ProjectionType::Perspective ?
 						glm::vec3(tc.Translation) : glm::vec3(tc.Translation.x, tc.Translation.y, 1.3f);
 
-					glm::vec3 rotation = m_Camera.GetProjectionType() == ProjectionType::Perspective ?
+					glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ?
 						glm::vec3(tc.Rotation) : glm::vec3(0.0f, 0.0f, tc.Rotation.z);
 
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
@@ -269,8 +251,7 @@ namespace origin {
 
 	void Gizmos::OnRender(const EditorCamera &camera)
 	{
-		m_Camera = camera;
-
+		Renderer3D::Begin(camera);
 		Renderer2D::Begin(camera);
 
 		if (camera.GetProjectionType() == ProjectionType::Orthographic)
@@ -279,7 +260,7 @@ namespace origin {
 			{
 				if (m_Type == GizmoType::BOUNDARY2D)
 				{
-					CalculateBoundary2DSizing();
+					CalculateBoundary2DSizing(camera);
 
 					float size = camera.GetOrthoSize() * 0.03f;
 					auto &tc = selectedEntity.GetComponent<TransformComponent>();
@@ -309,18 +290,17 @@ namespace origin {
 						Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - (i + 1));
 					}
 				}
+				Renderer2D::End();
 			}
 
 			RenderCommand::SetLineWidth(1.1f);
-			Draw2DVerticalGrid();
 			Draw2DOverlay();
+			Draw2DVerticalGrid(camera);
 			RenderCommand::SetLineWidth(1.0f);
 		}
 
-		DrawIcons();
-		//DrawOverlay();
-
-		Renderer2D::End();
+		DrawOverlay(camera);
+		DrawIcons(camera);
 	}
 
 	void Gizmos::OnEvent(Event &e)
@@ -366,14 +346,14 @@ namespace origin {
 			m_Type = type;
 	}
 
-	void Gizmos::CalculateBoundary2DSizing()
+	void Gizmos::CalculateBoundary2DSizing(const EditorCamera &camera)
 	{
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
 		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
 		const glm::vec2 delta { mouse - initialPosition };
 		initialPosition = mouse;
 
-		float orthoScale = m_Camera.GetOrthoSize() / m_Camera.GetHeight();
+		float orthoScale = camera.GetOrthoSize() / camera.GetHeight();
 
 		if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
 		{
