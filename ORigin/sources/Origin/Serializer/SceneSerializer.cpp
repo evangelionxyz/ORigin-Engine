@@ -2,21 +2,22 @@
 
 #include "pch.h"
 #include "SceneSerializer.h"
-#include "EntityManager.h"
-#include "Origin/Scripting/ScriptEngine.h"
-#include "Origin/Project/Project.h"
-#include "Origin/Renderer/Model.h"
-#include "Origin/Renderer/Shader.h"
-#include "Origin/Renderer/Renderer.h"
-#include "Origin/Audio/AudioSource.h"
-#include "Entity.h"
-#include "Lighting.h"
-#include "Components.h"
+#include "Origin\Scene\EntityManager.h"
+#include "Origin\Scene\Components.h"
+#include "Origin\Scene\Entity.h"
+#include "Origin\Scene\Lighting.h"
+#include "Origin\Scripting\ScriptEngine.h"
+#include "Origin\Project\Project.h"
+#include "Origin\Renderer\Model.h"
+#include "Origin\Renderer\Shader.h"
+#include "Origin\Renderer\Renderer.h"
+#include "Origin\Audio\AudioSource.h"
+#include "Origin\Asset\AssetManager.h"
+#include "Origin\Asset\AssetManager.h"
+#include "Origin\Serializer\Serializer.h"
+
 #include <fstream>
-#include <yaml-cpp/yaml.h>
-#include "Origin/Asset/AssetManager.h"
-#include "Origin/Asset/AssetManager.h"
-#include "Origin\Asset\Serializer.h"
+#include <yaml-cpp\yaml.h>
 
 namespace origin
 {
@@ -287,17 +288,11 @@ namespace origin
 
 			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
 
-			if (sMesh.Model != 0)
+			if (sMesh.Handle != 0)
 			{
-				out << YAML::Key << "MeshHandle" << YAML::Value << sMesh.Model;
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Model);
-				if (model)
-				{
-					out << YAML::Key << "Color" << YAML::Value << model->GetMaterial()->BufferData.Color;
-					out << YAML::Key << "TilingFactor" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
-					out << YAML::Key << "Metallic" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
-					out << YAML::Key << "Roughness" << YAML::Value << model->GetMaterial()->BufferData.TilingFactor;
-				}
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Handle);
+				out << YAML::Key << "Mesh" << YAML::Value << sMesh.Handle;
+				out << YAML::Key << "Material" << YAML::Value << sMesh.MaterialHandle;
 			}
 			
 			out << YAML::EndMap; // !StaticMeshComponent
@@ -807,18 +802,13 @@ namespace origin
 
 				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
 				{
-					auto& sMesh = deserializedEntity.AddComponent<StaticMeshComponent>();
-
-					if (staticMeshComponent["MeshHandle"])
-					{
-						sMesh.Model = staticMeshComponent["MeshHandle"].as<uint64_t>();
-						std::shared_ptr<Model>& model = AssetManager::GetAsset<Model>(sMesh.Model);
-						model->GetMaterial()->BufferData.Color = staticMeshComponent["Color"].as<glm::vec4>();
-						model->GetMaterial()->BufferData.TilingFactor = staticMeshComponent["TilingFactor"].as<glm::vec2>();
-						//model->GetMaterial()->BufferData.Metallic = staticMeshComponent["Metallic"].as<float>();
-						//model->GetMaterial()->BufferData.Roughness = staticMeshComponent["Roughness"].as<float>();
-					}
-					
+					auto& mc = deserializedEntity.AddComponent<StaticMeshComponent>();
+					mc.Handle = staticMeshComponent["Mesh"].as<uint64_t>();
+					mc.MaterialHandle = staticMeshComponent["Material"].as<uint64_t>();
+					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mc.Handle);
+					std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(mc.MaterialHandle);
+					if(material)
+						model->SetMaterial(std::move(material));
 				}
 
 				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])

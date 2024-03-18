@@ -1,8 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "OpenGL_Shader.h"
-#include "Origin/Utils/Time.h"
+#include "Origin/Core/Time.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>

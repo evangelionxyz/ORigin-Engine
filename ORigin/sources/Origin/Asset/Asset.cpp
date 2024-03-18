@@ -15,6 +15,7 @@ namespace origin {
 			case AssetType::Font: return "AssetType::Font";
 			case AssetType::Audio: return "AssetType::Audio";
 			case AssetType::StaticMesh: return "AssetType::StaticMesh";
+			case AssetType::Material: return "AssetType::Material";
 			case AssetType::MeshSource: return "AssetType::MeshSource";
 			case AssetType::Animation: return "AssetType::Animation";
 			case AssetType::SpriteSheet: return "AssetType::SpriteSheet";
@@ -31,6 +32,7 @@ namespace origin {
 		if (assetType == "AssetType::Font") return AssetType::Font;
 		if (assetType == "AssetType::Audio") return AssetType::Audio;
 		if (assetType == "AssetType::StaticMesh") return AssetType::StaticMesh;
+		if (assetType == "AssetType::Material") return AssetType::Material;
 		if (assetType == "AssetType::MeshSource") return AssetType::MeshSource;
 		if (assetType == "AssetType::Animation") return AssetType::Animation;
 		if (assetType == "AssetType::SpriteSheet") return AssetType::SpriteSheet;

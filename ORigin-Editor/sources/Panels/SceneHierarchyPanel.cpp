@@ -2,6 +2,7 @@
 
 #include "SceneHierarchyPanel.h"
 #include "../EditorLayer.h"
+#include "Origin\GUI\UI.h"
 #include "Origin\Project\Project.h"
 #include "Origin\Asset\AssetManager.h"
 #include "Origin\Asset\AssetMetaData.h"
@@ -144,6 +145,7 @@ namespace origin {
 				}
 
 				if (ImGui::MenuItem("Camera")) EntityManager::CreateCamera("Camera", m_Context.get());
+				if (ImGui::MenuItem("Lighting")) EntityManager::CreateLighting("Lighting", m_Context.get());
 				ImGui::EndMenu();
 			}
 			ImGui::EndPopup();
@@ -336,7 +338,12 @@ namespace origin {
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
 			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
-			DisplayAddComponentEntry<LightComponent>("LIGHTING");
+			if (DisplayAddComponentEntry<LightComponent>("LIGHTING"))
+			{
+				auto &lc = m_SelectedEntity.GetComponent<LightComponent>();
+				if (!lc.Light)
+					lc.Light = Lighting::Create(LightingType::Directional);
+			}
 			DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
 			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
 			DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
@@ -357,37 +364,34 @@ namespace origin {
 
 		DrawComponent<TransformComponent>("TRANSFORM", entity, [&](auto& component)
 		{
-				DrawVec3Control("Translation", component.Translation);
+				UI::DrawVec3Control("Translation", component.Translation);
 				glm::vec3 rotation = glm::degrees(component.Rotation);
-				DrawVec3Control("Rotation", rotation, 1.0f);
+				UI::DrawVec3Control("Rotation", rotation, 1.0f);
 				component.Rotation = glm::radians(rotation);
-				DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
+				UI::DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 		});
 
 		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
 			{
-				std::string label = "None";
 				bool isMeshValid = false;
-				ImGui::Text("Model");
-				ImGui::SameLine();
+				std::string lable = "None";
 
-				if (component.Model != 0)
+				if (component.Handle != 0)
 				{
-					if (AssetManager::IsAssetHandleValid(component.Model) && AssetManager::GetAssetType(component.Model) == AssetType::StaticMesh)
+					if (AssetManager::IsAssetHandleValid(component.Handle) && AssetManager::GetAssetType(component.Handle) == AssetType::StaticMesh)
 					{
-						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Model);
-						label = metadata.Filepath.filename().string();
+						const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Handle);
+						lable = metadata.Filepath.filename().string();
 						isMeshValid = true;
 					}
 					else
 					{
-						label = "Invalid";
+						lable = "Invalid";
 					}
 				}
 
-				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
-				buttonLabelSize.x += 20.0f;
-				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+				ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+				ImGui::Button(lable.c_str(), buttonSize);
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -395,7 +399,7 @@ namespace origin {
 						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
 						if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
 						{
-							component.Model = handle;
+							component.Handle = handle;
 						}
 						else
 						{
@@ -405,33 +409,52 @@ namespace origin {
 					ImGui::EndDragDropTarget();
 				}
 
+				const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+				const float xSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 
 				if (isMeshValid)
 				{
 					ImGui::SameLine();
-					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
-					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+					ImGui::PushID("model_delete");
+					if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
 					{
-						component.Model = 0;
+						component.Handle = 0;
 						isMeshValid = false;
 					}
-				}
+					ImGui::PopID();
 
-				if (isMeshValid)
-				{
-					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(component.Model);
+					std::shared_ptr<Model> &model = AssetManager::GetAsset<Model>(component.Handle);
+					ImGui::Button("Material", buttonSize);
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+							if (AssetManager::GetAssetType(handle) == AssetType::Material)
+							{
+								std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
+								model->SetMaterial(mat);
+								component.MaterialHandle = handle;
+							}
+							else
+							{
+								OGN_CORE_WARN("Wrong asset type!");
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
 
-					ImGui::Separator();
-					ImGui::Text("Material");
-
-					DrawVec2Control("Tiling Factor", model->GetMaterial()->BufferData.TilingFactor, 0.01f, 1.0f);
-					ImGui::ColorEdit4("Color", glm::value_ptr(model->GetMaterial()->BufferData.Color));
-					DrawVecControl("Metallic", &model->GetMaterial()->BufferData.Metallic, 0.01f, 0.0f, 1.0f);
-					DrawVecControl("Roughness", &model->GetMaterial()->BufferData.Roughness, 0.01f, 0.0f, 1.0f);
-
-					if (ImGui::Button("Refresh Shader"))
-						model->GetMaterial()->RefreshShader();
+					if (component.MaterialHandle != 0)
+					{
+						ImGui::SameLine();
+						ImGui::PushID("material_delete");
+						if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
+						{
+							component.MaterialHandle = 0;
+							model->RemoveMaterial();
+						}
+						ImGui::PopID();
+					}
 				}
 			});
 
@@ -536,38 +559,38 @@ namespace origin {
 				ImGui::Text("Kinematic"); ImGui::SameLine();
 				ImGui::Checkbox("##Kinematic", &component.Kinematic);
 
-				DrawVecControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
-				DrawVec3Control("Center Mass", component.CenterMassPosition);
+				UI::DrawVecControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawVec3Control("Center Mass", component.CenterMassPosition);
 
 		});
 
 		DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto& component)
 		{
-				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
-				DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
-				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
+				UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
+				UI::DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 		});
 
 		DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto& component)
 			{
-				DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
-				DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
-				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
+				UI::DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
+				UI::DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
 
 		DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto& component)
 			{
 				ImGui::Checkbox("Horizontal", &component.Horizontal);
-				DrawVec3Control("Offset", component.Offset, 0.01f, 0.0f);
-				DrawVecControl("Radius", &component.Radius, 0.01f, 0.0f, 1000.0f, 0.5f);
-				DrawVecControl("Height", &component.Height, 0.01f, 0.0f, 1000.0f, 1.0f);
-				DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawVec3Control("Offset", component.Offset, 0.01f, 0.0f);
+				UI::DrawVecControl("Radius", &component.Radius, 0.01f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawVecControl("Height", &component.Height, 0.01f, 0.0f, 1000.0f, 1.0f);
+				UI::DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
 
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
@@ -633,13 +656,11 @@ namespace origin {
 						audio->SetName(name.c_str());
 					}
 
-					
-
 					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
 					ImGui::Checkbox("Looping", &component.Looping);
-					DrawVecControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
-					DrawVecControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
-					DrawVecControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
+					UI::DrawVecControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
+					UI::DrawVecControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
+					UI::DrawVecControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
 					float sizeX = ImGui::GetContentRegionAvail().x;
 					if (ImGui::Button("Play", { sizeX, 0.0f })) audio->Play();
 					if (ImGui::Button("Pause", { sizeX, 0.0f })) audio->Pause();
@@ -649,8 +670,8 @@ namespace origin {
 
 					if (component.Spatializing)
 					{
-						DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
-						DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+						UI::DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+						UI::DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
 					}
 				}
 			});
@@ -679,8 +700,8 @@ namespace origin {
 				ImGui::InputTextMultiline("Text String", &component.TextString);
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 				
-				DrawVecControl("Kerning", &component.Kerning, 0.01f);
-				DrawVecControl("Line Spacing", &component.LineSpacing, 0.01f);
+				UI::DrawVecControl("Kerning", &component.Kerning, 0.01f);
+				UI::DrawVecControl("Line Spacing", &component.LineSpacing, 0.01f);
 			});
 
 		DrawComponent<ParticleComponent>("PARTICLE", entity, [](auto& component)
@@ -689,15 +710,15 @@ namespace origin {
 
 				ImGui::ColorEdit4("Color Begin", glm::value_ptr(component.ColorBegin));
 				ImGui::ColorEdit4("Color End", glm::value_ptr(component.ColorEnd));
-				DrawVec3Control("Velocity", component.Velocity, 0.01f, 0.0f, columnWidth);
-				DrawVec3Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
-				DrawVec3Control("Rotation", component.Rotation, 0.01f, 0.0f, columnWidth);
+				UI::DrawVec3Control("Velocity", component.Velocity, 0.01f, 0.0f, columnWidth);
+				UI::DrawVec3Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
+				UI::DrawVec3Control("Rotation", component.Rotation, 0.01f, 0.0f, columnWidth);
 
-				DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
-				DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
-				DrawVecControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
-				DrawVecControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
-				DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
+				UI::DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
+				UI::DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
+				UI::DrawVecControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
+				UI::DrawVecControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
+				UI::DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
 			});
 
 		DrawComponent<SpriteRenderer2DComponent>("SPRITE RENDERER 2D", entity, [](auto& component)
@@ -757,7 +778,7 @@ namespace origin {
 					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
 						component.Texture = 0;
-					DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
+					UI::DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
 					ImGui::Text("Flip");
 					ImGui::SameLine();
 					ImGui::Checkbox("X", &component.FlipX);
@@ -793,12 +814,12 @@ namespace origin {
 					case LightingType::Directional:
 					{
 						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->m_DirLightData.Color));
-						DrawVecControl("Strength", &component.Light->m_DirLightData.Strength, 0.01f, 0.0f, 100.0f);
-						DrawVecControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
-						DrawVecControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
-						DrawVecControl("Far", &component.Light->GetShadow()->Far, 1.0f, -1000.0f, 1000.0f, 50.0f);
-						DrawVecControl("Near", &component.Light->GetShadow()->Near, 1.0f, -1000.0f, 1000.0f, -10.0f);
-						DrawVecControl("Size", &component.Light->GetShadow()->Size, 1.0f, -1000.0f, 1000.0f, 50.0f);
+						UI::DrawVecControl("Strength", &component.Light->m_DirLightData.Strength, 0.01f, 0.0f, 100.0f);
+						UI::DrawVecControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
+						UI::DrawVecControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
+						UI::DrawVecControl("Far", &component.Light->GetShadow()->Far, 1.0f, -1000.0f, 1000.0f, 50.0f);
+						UI::DrawVecControl("Near", &component.Light->GetShadow()->Near, 1.0f, -1000.0f, 1000.0f, -10.0f);
+						UI::DrawVecControl("Size", &component.Light->GetShadow()->Size, 1.0f, -1000.0f, 1000.0f, 50.0f);
 
 						if (component.Light->GetShadow()->GetFramebuffer())
 						{
@@ -828,10 +849,10 @@ namespace origin {
 					case LightingType::Point:
 					{
 						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->Color));
-						DrawVecControl("Ambient", &component.Light->Ambient, 0.01f, 0.0f);
-						DrawVecControl("Specular", &component.Light->Specular, 0.01f, 0.0f);
-						DrawVecControl("Intensity", &component.Light->Intensity, 0.01f, 0.0f);
-						DrawVecControl("Size", &component.Light->SpreadSize, 0.1f, 0.1f, 10000.0f);
+						UI::DrawVecControl("Ambient", &component.Light->Ambient, 0.01f, 0.0f);
+						UI::DrawVecControl("Specular", &component.Light->Specular, 0.01f, 0.0f);
+						UI::DrawVecControl("Intensity", &component.Light->Intensity, 0.01f, 0.0f);
+						UI::DrawVecControl("Size", &component.Light->SpreadSize, 0.1f, 0.1f, 10000.0f);
 						break;
 					}
 #endif
@@ -867,12 +888,12 @@ namespace origin {
 				ImGui::EndCombo();
 			}
 
-			DrawVecControl("Gravity Scale", &component.GravityScale, 0.01f);
-			DrawVecControl("Rotational Inertia", &component.RotationalInertia, 0.01f);
-			DrawVecControl("Linear Damping", &component.LinearDamping, 0.025f, 0.0f, 1000.0f);
-			DrawVecControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
-			DrawVecControl("Mass", &component.Mass, 0.01f);
-			DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
+			UI::DrawVecControl("Gravity Scale", &component.GravityScale, 0.01f);
+			UI::DrawVecControl("Rotational Inertia", &component.RotationalInertia, 0.01f);
+			UI::DrawVecControl("Linear Damping", &component.LinearDamping, 0.025f, 0.0f, 1000.0f);
+			UI::DrawVecControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
+			UI::DrawVecControl("Mass", &component.Mass, 0.01f);
+			UI::DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
 
 			ImGui::Text("Freeze Position");
 			ImGui::SameLine();
@@ -892,26 +913,26 @@ namespace origin {
 			{
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
-				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
+				UI::DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
 				glm::vec2 size = component.Size * glm::vec2(2.0f);
-				DrawVec2Control("Size", size, 0.01f, 0.5f);
+				UI::DrawVec2Control("Size", size, 0.01f, 0.5f);
 				component.Size = size / glm::vec2(2.0f);
 
 				float width = 118.0f;
 				b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
-				if (DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+				if (UI::DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
 				{
 					if(fixture) fixture->SetDensity(component.Density);
 				}
-				if(DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
+				if(UI::DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if(fixture) fixture->SetFriction(component.Friction);
 				}
-				if(DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
+				if(UI::DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if(fixture) fixture->SetRestitution(component.Restitution);
 				}
-				if(DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
+				if(UI::DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
 				{
 					if(fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
 				}
@@ -921,24 +942,24 @@ namespace origin {
 			{
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
-				DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
-				DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
+				UI::DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
+				UI::DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
 
 				float width = 118.0f;
 				b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
-				if (DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+				if (UI::DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
 				{
 					if (fixture) fixture->SetDensity(component.Density);
 				}
-				if (DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
+				if (UI::DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if (fixture) fixture->SetFriction(component.Friction);
 				}
-				if (DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
+				if (UI::DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if (fixture) fixture->SetRestitution(component.Restitution);
 				}
-				if (DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
+				if (UI::DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
 				{
 					if (fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
 				}
@@ -984,18 +1005,18 @@ namespace origin {
 					if (joint)
 						joint->EnableLimit(component.EnableLimit);
 				}
-				DrawVec2Control("Anchor", component.AnchorPoint);
-				if (DrawVecControl("Lower Angle", &component.LowerAngle, 0.0f))
+				UI::DrawVec2Control("Anchor", component.AnchorPoint);
+				if (UI::DrawVecControl("Lower Angle", &component.LowerAngle, 0.0f))
 				{
 					if (joint)
 						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
 				}
-				if (DrawVecControl("Upper Angle", &component.UpperAngle, 0.0f))
+				if (UI::DrawVecControl("Upper Angle", &component.UpperAngle, 0.0f))
 				{
 					if (joint)
 						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
 				}
-				if (DrawVecControl("Max Torque", &component.MaxMotorTorque, 0.0f))
+				if (UI::DrawVecControl("Max Torque", &component.MaxMotorTorque, 0.0f))
 				{
 					if (joint)
 						joint->SetMaxMotorTorque(component.MaxMotorTorque);
@@ -1005,7 +1026,7 @@ namespace origin {
 					if (joint)
 						joint->EnableMotor(component.EnableMotor);
 				}
-				if (DrawVecControl("Motor Speed", &component.MotorSpeed, 0.0f))
+				if (UI::DrawVecControl("Motor Speed", &component.MotorSpeed, 0.0f))
 				{
 					if (joint)
 						joint->SetMotorSpeed(component.MotorSpeed);
@@ -1239,5 +1260,45 @@ namespace origin {
 		}
 
 		return false;
+	}
+
+	template<typename T, typename UIFunction>
+	void DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
+	{
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+
+		if (entity.HasComponent<T>())
+		{
+			auto &component = entity.GetComponent<T>();
+			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 4, 4 });
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImGui::Separator();
+			bool open = ImGui::TreeNodeEx((void *)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+			ImGui::PopStyleVar();
+
+			ImGui::SameLine(contentRegionAvailable.x - lineHeight);
+			if (ImGui::Button("+", ImVec2(lineHeight, lineHeight)))
+				ImGui::OpenPopup("Component Settings");
+
+			bool removeComponent = false;
+			if (ImGui::BeginPopup("Component Settings"))
+			{
+				if (ImGui::MenuItem("Remove component"))
+					removeComponent = true;
+
+				ImGui::EndPopup();
+			}
+
+			if (open)
+			{
+				uiFunction(component);
+				ImGui::TreePop();
+			}
+
+			if (removeComponent)
+				entity.RemoveComponent<T>();
+		}
 	}
 }

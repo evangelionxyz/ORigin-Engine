@@ -4,7 +4,6 @@
 #include "Gizmos/Gizmos.h"
 #include "Origin/EntryPoint.h"
 #include "Origin/Utils/PlatformUtils.h"
-#include "Origin/Scene/SceneSerializer.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Renderer/Font.h"
@@ -166,7 +165,8 @@ namespace origin {
 			m_ContentBrowser->OnImGuiRender();
 
 		m_SceneHierarchy.OnImGuiRender();
-		m_SpriteSheetEditor->OnGuiRender();
+		m_SpriteSheetEditor->OnImGuiRender();
+		m_MaterialEditor.OnImGuiRender();
 
 	  MenuBar();
 		SceneViewportToolbar();

@@ -70,7 +70,7 @@ namespace origin
 		delete[] indices;
 
 		LoadTexture();
-		m_Shader = Renderer::GetGShader("Skybox");
+		m_Shader = Renderer::GetShader("Skybox");
 		m_Shader->Enable();
 	}
 

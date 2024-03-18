@@ -1,7 +1,7 @@
 #include "SpriteSheetEditor.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\Renderer2D.h"
-#include "Origin\Asset\Serializer.h"
+#include "Origin\Serializer\SpriteSheetSerializer.h"
 #include "Origin\Asset\AssetManager.h"
 #include "Origin\Scene\EntityManager.h"
 #include "Origin\Core\Input.h"
@@ -79,7 +79,7 @@ namespace origin
 		m_Controls.insert(m_Controls.end(), m_Controls[index]);
 	}
 
-	void SpriteSheetEditor::OnGuiRender()
+	void SpriteSheetEditor::OnImGuiRender()
 	{
 		if (m_IsOpened)
 		{
@@ -300,75 +300,30 @@ namespace origin
 	bool SpriteSheetEditor::Serialize(const std::filesystem::path &filepath)
 	{
 		m_CurrentFilepath = filepath;
-
-		YAML::Emitter out;
-		out << YAML::BeginMap; // SpriteSheet
-		out << YAML::Key << "SpriteSheet";
+		m_SpriteSheet->Sprites.clear();
+		for (auto &ctrl : m_Controls)
 		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Texture" << YAML::Value << m_SpriteSheet->GetTextureHandle();
-			out << YAML::Key << "Sprites" << YAML::Value << YAML::BeginSeq;
-			for (auto &ctrl : m_Controls)
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "Position" << ctrl.Position;
-				out << YAML::Key << "Size" << ctrl.Size;
-				out << YAML::Key << "Min" << ctrl.Min;
-				out << YAML::Key << "Max" << ctrl.Max;
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-			out << YAML::EndMap;
+			SpriteData data;
+			data.Position = ctrl.Position;
+			data.Min = ctrl.Min;
+			data.Max = ctrl.Max;
+			data.Size = ctrl.Size;
+			m_SpriteSheet->Sprites.push_back(data);
 		}
-		out << YAML::EndMap; // !SpriteSheet
 
-		std::ofstream outFile(filepath.string());
-		outFile << out.c_str();
-
-		return true;
+		return SpriteSheetSerializer::Serialize(filepath, m_SpriteSheet);
 	}
 
 	bool SpriteSheetEditor::Deserialize()
 	{
-		std::vector<SpriteData> spriteDatas;
-		std::ifstream stream(m_CurrentFilepath.string());
+		m_SpriteSheet->Sprites.clear();
 
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
+		bool ret = SpriteSheetSerializer::Deserialize(m_CurrentFilepath, m_SpriteSheet);
 
-		YAML::Node spriteSheet = YAML::Load(strStream.str());
-		if (!spriteSheet["SpriteSheet"])
-			return false;
-
-		if (YAML::Node data = spriteSheet["SpriteSheet"])
+		if (ret)
 		{
-			AssetHandle textureHandle = data["Texture"].as<uint64_t>();
-			m_SpriteSheet->SetMainTexture(textureHandle);
-			m_Texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-
-			if (!m_Texture)
-			{
-				OGN_CORE_ERROR("[SpriteSheetEditor] Main Texture Is Not Valid");
-				OGN_CORE_ERROR("[SpriteSheetEditor] {}", textureHandle);
-				return false;
-			}
-
-			glm::vec2 atlasSize = { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
-
-			if (YAML::Node sprites = data["Sprites"])
-			{
-				for (auto s : sprites)
-				{
-					SpriteData sprite {};
-					sprite.Position = s["Position"].as<glm::vec2>();
-					sprite.Size = s["Size"].as<glm::vec2>();
-					sprite.Min = s["Min"].as<glm::vec2>();
-					sprite.Max = s["Max"].as<glm::vec2>();
-					spriteDatas.push_back(sprite);
-				}
-			}
-
-			for (auto &sprite : spriteDatas)
+			m_Texture = AssetManager::GetAsset<Texture2D>(m_SpriteSheet->GetTextureHandle());
+			for (auto &sprite : m_SpriteSheet->Sprites)
 			{
 				SpriteSheetController control;
 				control.Position = sprite.Position;
@@ -378,11 +333,7 @@ namespace origin
 				m_Controls.push_back(control);
 			}
 		}
-
-		m_SpriteSheet->Sprites = std::move(spriteDatas);
-		m_SelectedIndex = -1;
-
-		return true;
+		return ret;
 	}
 
 	void SpriteSheetEditor::OnEvent(Event &e)

@@ -11,6 +11,24 @@ AssetRegistry:
   - Handle: 6853883006132539411
     Filepath: Sprites/DungeonCrawlTileset.png
     Type: AssetType::Texture
+  - Handle: 7092806916357103773
+    Filepath: Models/sphere.obj
+    Type: AssetType::StaticMesh
+  - Handle: 8569817200224537892
+    Filepath: Models/cube.obj
+    Type: AssetType::StaticMesh
   - Handle: 12368061447856671797
     Filepath: Sprites/minecraft_test.png
     Type: AssetType::Texture
+  - Handle: 13707348780738508932
+    Filepath: Materials/Material.mat
+    Type: AssetType::Material
+  - Handle: 14457226710400017717
+    Filepath: Materials/Blue.mat
+    Type: AssetType::Material
+  - Handle: 16303558325313807773
+    Filepath: Models/plane.obj
+    Type: AssetType::StaticMesh
+  - Handle: 18396952890443678112
+    Filepath: Materials/Red.mat
+    Type: AssetType::Material

@@ -1,10 +1,12 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "ContentBrowserPanel.h"
 #include "../EditorLayer.h"
 
-#include "Origin/Asset/AssetImporter.h"
-#include "Origin/Project/Project.h"
-#include "Origin/Utils/Utils.h"
+#include "Origin\Serializer\MaterialSerializer.h"
+#include "Origin\Asset\AssetImporter.h"
+#include "Origin\Project\Project.h"
+#include "Origin\Utils\Utils.h"
 #include "Origin\Utils\StringUtils.h"
 
 #include <imgui.h>
@@ -98,6 +100,8 @@ namespace origin
 		const auto canvasSize = ImGui::GetContentRegionAvail();
 
 		ImGui::BeginChild("item_browser", canvasSize, false);
+
+	#if 0
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
 		ImVec2 posMin = ImVec2(canvasPos);
@@ -105,6 +109,7 @@ namespace origin
 		uint32_t rectColor = IM_COL32(40, 30, 20, 255);
 		uint32_t rectTransparentColor = IM_COL32(0, 0, 0, 0);
 		drawList->AddRectFilledMultiColor(posMin, posMax, rectTransparentColor, rectTransparentColor, rectColor, rectColor);
+	#endif
 
 		static float padding = 10.0f;
 		const float cellSize = m_ThumbnailSize + padding;
@@ -161,7 +166,14 @@ namespace origin
 						m_CurrentDirectory /= item.filename();
 
 					if (item.extension() == ".sprite")
+					{
 						EditorLayer::Get().m_SpriteSheetEditor->SetSelectedSpriteSheet(m_TreeNodes[treeNodeIndex].Handle);
+					}
+
+					if (item.extension() == ".mat")
+					{
+						EditorLayer::Get().m_MaterialEditor.SetSelectedMaterial(m_TreeNodes[treeNodeIndex].Handle);
+					}
 				}
 
 				if (ImGui::BeginPopupContextItem())
@@ -341,11 +353,23 @@ namespace origin
 			{
 				if (ImGui::MenuItem("New Folder", nullptr))
 				{
-					std::string folderName = "New Folder";
-					const auto newFolderPath = m_CurrentDirectory / folderName;
-					if (!std::filesystem::exists(newFolderPath))
-						std::filesystem::create_directory(newFolderPath);
+					const std::filesystem::path folder = m_CurrentDirectory / "New Folder";
+					if (!std::filesystem::exists(folder))
+					{
+						std::filesystem::create_directory(folder);
+					}
 				}
+
+				if (ImGui::MenuItem("Material", nullptr))
+				{
+					std::shared_ptr<Material> material = Material::Create();
+					const std::filesystem::path materialPath = m_CurrentDirectory / "Material.mat";
+					if (!std::filesystem::exists(materialPath))
+					{
+						MaterialSerializer::Serialize(materialPath, material);
+					}
+				}
+
 				ImGui::EndMenu();
 			}
 

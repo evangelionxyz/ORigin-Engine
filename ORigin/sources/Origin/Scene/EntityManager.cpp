@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "EntityManager.h"
 
+#include "Lighting.h"
+
 namespace origin
 {
 	Entity EntityManager::CreateEntity(const std::string &name, Scene *scene)
@@ -35,6 +37,13 @@ namespace origin
 		entity.AddComponent<CameraComponent>();
 		entity.AddComponent<AudioListenerComponent>();
 		entity.GetComponent<TransformComponent>().Translation.z = 8.0f;
+		return entity;
+	}
+
+	Entity EntityManager::CreateLighting(const std::string &name, Scene *scene)
+	{
+		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
+		entity.AddComponent<LightComponent>().Light = Lighting::Create(LightingType::Directional);
 		return entity;
 	}
 

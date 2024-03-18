@@ -211,10 +211,10 @@ namespace origin {
 		s_Render2DData.QuadVertexPositions[2] = {	 0.5f,  0.5f, 0.0f, 1.0f };
 		s_Render2DData.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		s_Render2DData.QuadShader = Renderer::GetGShader("Quad2D");
-		s_Render2DData.TextShader = Renderer::GetGShader("Text");
-		s_Render2DData.CircleShader = Renderer::GetGShader("Circle2D");
-		s_Render2DData.LineShader = Renderer::GetGShader("Line2D");
+		s_Render2DData.QuadShader = Renderer::GetShader("Quad2D");
+		s_Render2DData.TextShader = Renderer::GetShader("Text");
+		s_Render2DData.CircleShader = Renderer::GetShader("Circle2D");
+		s_Render2DData.LineShader = Renderer::GetShader("Line2D");
 	}
 
 	void Renderer2D::Shutdown()

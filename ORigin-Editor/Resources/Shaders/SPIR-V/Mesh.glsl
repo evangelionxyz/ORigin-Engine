@@ -64,9 +64,10 @@ layout(std140, binding = 3) uniform DirectionalLightBuffer
 layout(std140, binding = 4) uniform MaterialBuffer
 {
 	vec4 Color;
-	vec2 TilingFactor;
+	float Emission;
 	float Metallic;
 	float Roughness;
+	bool UseNormalMaps;
 } Material;
 
 layout(location = 0) out vec4 oColor;
@@ -77,30 +78,25 @@ layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec2 fragTexCoord;
 layout(location = 3) in vec4 fragPositionLightSpace;
 
-layout(binding = 0) uniform sampler2D u_DiffTexture;
-layout(binding = 1) uniform sampler2D u_SpecTexture;
+layout(binding = 0) uniform sampler2D u_AlbedoMap;
+layout(binding = 1) uniform sampler2D u_SpecularMap;
 layout(binding = 2) uniform sampler2D u_ShadowMap;
-layout(binding = 3) uniform sampler2D u_HDRColor;
 
 float calcShadow(vec3 normal, vec3 lightDirection);
-vec3 calculateDirectionalLight(vec3 normal, vec3 viewDirection, vec3 diffTexture, vec3 specTexture);
+vec3 calculateDirectionalLight(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture);
 
 void main()
 {
 	vec3 normal = normalize(fragNormal);
 	vec3 viewDirection = normalize(fragPosition - Camera.Position);
 
-	vec3 diffTexture = texture(u_DiffTexture, vec2(fragTexCoord * Material.TilingFactor)).rgb;
-	vec3 specTexture = texture(u_SpecTexture, vec2(fragTexCoord * Material.TilingFactor)).rgb;
-	vec3 totalLight = calculateDirectionalLight(normal, viewDirection, diffTexture, specTexture);
+	vec3 diffuseTexture = texture(u_AlbedoMap, fragTexCoord).rgb;
+	vec3 specularTexture = texture(u_SpecularMap, fragTexCoord).rgb;
+	vec3 totalLight = calculateDirectionalLight(normal, viewDirection, diffuseTexture, specularTexture);
+
 	vec3 finalColor = totalLight * Material.Color.rgb;
 
-	float gamma = 2.2;
-	//finalColor *= pow(finalColor, vec3(1.0/gamma));
 	oColor = vec4(finalColor, 1.0);
-
-	vec3 result = vec3(1.0) - exp(-finalColor * 2.0);
-  result = pow(result, vec3(1.0 / gamma));
 	oEntityID = EntityID;
 }
 
@@ -132,21 +128,15 @@ float calcShadow(vec3 normal, vec3 lightDirection)
 	return shadow;
 }
 
-vec3 calculateDirectionalLight(vec3 normal, vec3 viewDirection, vec3 diffTexture, vec3 specTexture)
+vec3 calculateDirectionalLight(vec3 normal, vec3 viewDirection, vec3 diffuseTexture, vec3 specularTexture)
 {
 	vec3 lightDirection = normalize(Dirlight.Direction.xyz);
-
-	vec3 strength = Dirlight.Strength * Dirlight.Color.rgb * diffTexture;
+	vec3 strength = Dirlight.Strength * Dirlight.Color.rgb * diffuseTexture;
 	float diffuseFactor = max(dot(lightDirection, normal), 0.0);
-	vec3 diffuseColor = diffuseFactor * Dirlight.Diffuse * Dirlight.Color.rgb * diffTexture;
-
-	//vec3 reflectDirection = reflect(-lightDirection, normal);
-	//float specularFactor = pow(max(dot(viewDirection, reflectDirection), 0.0), 64.0);
+	vec3 diffuseColor = diffuseFactor * Dirlight.Diffuse * Dirlight.Color.rgb * diffuseTexture;
 	vec3 halfwayDir = normalize(lightDirection + viewDirection);  
 	float specularFactor = pow(max(dot(viewDirection, halfwayDir), 0.0), 64.0);
-	vec3 specularColor = specularFactor * Dirlight.Specular * Dirlight.Color.rgb * specTexture;
-
+	vec3 specularColor = specularFactor * Dirlight.Specular * Dirlight.Color.rgb * specularTexture;
 	float shadow = calcShadow(normal, lightDirection);
-
-  return strength + (1.0 - shadow) * (diffuseColor + specularColor);
+  return (strength + (1.0 - shadow) * (diffuseColor + specularColor));
 }

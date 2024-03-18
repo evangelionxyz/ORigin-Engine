@@ -17,6 +17,7 @@ namespace origin {
 		{ ".obj", AssetType::StaticMesh },
 		{ ".gltf", AssetType::StaticMesh },
 		{ ".fbx", AssetType::StaticMesh },
+		{ ".mat", AssetType::Material },
 		{ ".ogg", AssetType::Audio },
 		{ ".mp3", AssetType::Audio },
 		{ ".wav", AssetType::Audio },

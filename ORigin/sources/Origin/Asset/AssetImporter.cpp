@@ -1,9 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "Asset.h"
 #include "AssetImporter.h"
 #include "Origin\Project\Project.h"
-#include "Origin\Scene\SceneSerializer.h"
+#include "Origin\Serializer\MaterialSerializer.h"
+#include "Origin\Serializer\SceneSerializer.h"
 #include "Origin\Utils\PlatformUtils.h"
 #include "Origin\Renderer\Material.h"
 #include "Origin\Renderer\Renderer.h"
@@ -20,6 +22,7 @@ namespace origin {
 		{	AssetType::Texture, TextureImporter::ImportTexture2D },
 		{	AssetType::Scene, SceneImporter::Import },
 		{ AssetType::MeshSource, ModelImporter::Import },
+		{ AssetType::Material, MaterialImporter::Import },
 		{ AssetType::StaticMesh, ModelImporter::Import },
 		{ AssetType::SpriteSheet, SpriteSheetImporter::Import }
 	};
@@ -145,12 +148,7 @@ namespace origin {
 
 	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path& path)
 	{
-		std::shared_ptr<Shader> shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
-		shader->Enable();
-
-		std::shared_ptr<Material> material = Material::Create("model", shader);
-		std::shared_ptr<Model> model = Model::Create(path.generic_string(), material);
-
+		std::shared_ptr<Model> model = Model::Create(path.generic_string());
 		return model;
 	}
 
@@ -163,6 +161,18 @@ namespace origin {
 	{
 		std::shared_ptr<SpriteSheet> spriteSheet = SpriteSheet::Create(filepath);
 		return spriteSheet;
+	}
+
+	std::shared_ptr<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
+	{
+		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+	}
+
+	std::shared_ptr<Material> MaterialImporter::Load(const std::filesystem::path &filepath)
+	{
+		std::shared_ptr<Material> material = Material::Create();
+		MaterialSerializer::Deserialize(filepath, material);
+		return material;
 	}
 
 }

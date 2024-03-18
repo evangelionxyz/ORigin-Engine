@@ -21,12 +21,13 @@ namespace origin
 	public:
 		OpenGLModel() = default;
 		OpenGLModel(const std::string& filepath);
-		OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material);
 
 		~OpenGLModel() override;
 		void Draw() override;
 		void Draw(int entityID) override;
 		void SetTransform(const glm::mat4& transform) override;
+		void SetMaterial(std::shared_ptr<Material> mat) override;
+		void RemoveMaterial() override;
 
 		std::shared_ptr<Material>& GetMaterial() override { return m_Material; }
 		const std::string& GetFilepath() const override { return m_Filepath; }

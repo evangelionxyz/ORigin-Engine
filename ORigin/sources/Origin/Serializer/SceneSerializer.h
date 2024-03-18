@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Scene.h"
+#include "Origin\Scene\Scene.h"
 #include <filesystem>
 
 namespace origin

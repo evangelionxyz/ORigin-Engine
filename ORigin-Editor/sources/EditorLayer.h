@@ -4,6 +4,7 @@
 #include "Panels/Dockspace.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Panels/MaterialEditor.h"
 #include "Panels/AnimationTimeline.h"
 #include "Panels/SpriteSheetEditor.h"
 
@@ -78,8 +79,8 @@ namespace origin {
 		SceneHierarchyPanel m_SceneHierarchy;
 		Dockspace m_Dockspace;
 		EditorCamera m_EditorCamera;
-		ShaderLibrary m_ShaderLibrary;
 		AnimationTimeline m_AnimationTimeline;
+    MaterialEditor m_MaterialEditor;
 		std::unique_ptr<SpriteSheetEditor> m_SpriteSheetEditor;
 		std::unique_ptr<Gizmos> m_Gizmos;
 

@@ -1,14 +1,14 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #include "pch.h"
+#include "Origin\Project\Project.h"
 #include "Origin\Renderer\Renderer.h"
 #include "OpenGL_Model.h"
 #include "OpenGL_Mesh.h"
-
-#include "Origin\Project\Project.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
+
+#define ALBEDO_MAP		"u_AlbedoMap"
+#define SPECULAR_MAP	"u_SpecularMap"
 
 namespace origin
 {
@@ -16,11 +16,11 @@ namespace origin
 	{
 		Assimp::Importer importer;
 
-		const aiScene* scene = importer.ReadFile(filepath.c_str(),
-			aiProcess_Triangulate
-			| aiProcess_GenSmoothNormals
-			| aiProcess_FlipUVs
-			| aiProcess_JoinIdenticalVertices
+		const aiScene *scene = importer.ReadFile(filepath.c_str(),
+																						 aiProcess_Triangulate
+																						 | aiProcess_GenSmoothNormals
+																						 | aiProcess_FlipUVs
+																						 | aiProcess_JoinIdenticalVertices
 		);
 
 		OGN_CORE_INFO("MODEL: Trying to load \"{}\"", filepath);
@@ -31,33 +31,13 @@ namespace origin
 		}
 
 		ProcessNode(scene->mRootNode, scene);
-		m_Uniformbuffer = UniformBuffer::Create(sizeof(ModelBufferData), 1);
+
+		int binding = 1;
+		m_Uniformbuffer = UniformBuffer::Create(sizeof(ModelBufferData), binding);
+
+		m_Material = Material::Create();
 	}
 
-	OpenGLModel::OpenGLModel(const std::string& filepath, std::shared_ptr<Material> material)
-		: m_Filepath(filepath), m_Material(material)
-	{
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(filepath.c_str(),
-			aiProcess_Triangulate
-			| aiProcess_GenSmoothNormals
-			| aiProcess_FlipUVs
-			| aiProcess_JoinIdenticalVertices
-		);
-
-		OGN_CORE_INFO("MODEL: Trying to load \"{}\"", filepath);
-		if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-		{
-			OGN_CORE_ERROR("MESH: ASSIMP: {}", importer.GetErrorString());
-			return;
-		}
-
-		ProcessNode(scene->mRootNode, scene);
-		m_Uniformbuffer = UniformBuffer::Create(sizeof(ModelBufferData), 1);
-	}
-
-	
 	OpenGLModel::~OpenGLModel()
 	{
 	}
@@ -72,34 +52,33 @@ namespace origin
 
 			if (m_Material)
 			{
-				m_Material->m_Shader->Enable();
-				m_Material->OnRender();
+				m_Material->Bind();
 
 				for (auto& t : m_Textures)
 				{
 					if (t.find(aiTextureType_DIFFUSE) != t.end())
 					{
 						t.at(aiTextureType_DIFFUSE)->Bind(0);
-						m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+						m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
 					}
 
 					if (t.find(aiTextureType_SPECULAR) != t.end())
 					{
 						t.at(aiTextureType_SPECULAR)->Bind(1);
-						m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+						m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
 					}
 				}
 
 				if (m_Textures.empty())
 				{
 					Renderer::WhiteTexture->Bind(0);
-					m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+					m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
 					Renderer::WhiteTexture->Bind(1);
-					m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+					m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
 				}
 
 				mesh->Draw();
-				m_Material->m_Shader->Disable();
+				m_Material->Unbind();
 			}
 			else
 			{
@@ -115,34 +94,33 @@ namespace origin
 		{
 			if (m_Material)
 			{
-				m_Material->m_Shader->Enable();
-				m_Material->OnRender();
+				m_Material->Bind();
 
 				for (auto& t : m_Textures)
 				{
 					if (t.find(aiTextureType_DIFFUSE) != t.end())
 					{
 						t.at(aiTextureType_DIFFUSE)->Bind(0);
-						m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+						m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
 					}
 
 					if (t.find(aiTextureType_SPECULAR) != t.end())
 					{
 						t.at(aiTextureType_SPECULAR)->Bind(1);
-						m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+						m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
 					}
 				}
 
 				if (m_Textures.empty())
 				{
 					Renderer::WhiteTexture->Bind(0);
-					m_Material->m_Shader->SetInt("u_DiffTexture", 0);
+					m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
 					Renderer::WhiteTexture->Bind(1);
-					m_Material->m_Shader->SetInt("m_SpecTexture", 1);
+					m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
 				}
 
 				mesh->Draw();
-				m_Material->m_Shader->Disable();
+				m_Material->Unbind();
 			}
 			else
 			{
@@ -156,7 +134,17 @@ namespace origin
 		m_ModelBufferData.Transform = transform;
 	}
 
-	void OpenGLModel::ProcessNode(aiNode* node, const aiScene* scene)
+	void OpenGLModel::SetMaterial(std::shared_ptr<Material> mat)
+	{
+		m_Material = mat;
+	}
+
+	void OpenGLModel::RemoveMaterial()
+	{
+		m_Material = Renderer::GetMaterial("DefaultMesh");
+	}
+
+	void OpenGLModel::ProcessNode(aiNode *node, const aiScene *scene)
 	{
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{

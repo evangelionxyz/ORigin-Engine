@@ -55,8 +55,10 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
 	boxModel = Model::Create("D:/Dev/ORiginProjects/Assets/cube.obj");
 	boxTexture = TextureImporter::LoadTexture2D("D:/Dev/ORiginProjects/Assets/crate.jpg");
 
-	std::shared_ptr<Material> material = Material::Create("mat", shader);
-	plane = Model::Create("D:/Dev/ORiginProjects/TestGame/Assets/Models/checker_plane.obj", material);
+	std::shared_ptr<Material> material = Material::Create();
+	material->AddShader(shader);
+	plane = Model::Create("D:/Dev/ORiginProjects/TestGame/Assets/Models/checker_plane.obj");
+	plane->SetMaterial(material);
 
 	cube = Model::Create("Resources/Models/cube.obj");
 	light = new TestLight(cube);

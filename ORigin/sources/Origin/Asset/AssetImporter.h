@@ -28,7 +28,6 @@ namespace origin {
 	{
 	public:
 		static std::shared_ptr<Scene> Import(AssetHandle handle, const AssetMetadata& metadata);
-
 		static std::shared_ptr<Scene> LoadScene(const std::filesystem::path& filepath);
 		static AssetHandle OpenScene(const std::filesystem::path& filepath);
 		static void SaveScene(std::shared_ptr<Scene> scene, const std::filesystem::path& path);
@@ -53,6 +52,13 @@ namespace origin {
 	public:
 		static std::shared_ptr<SpriteSheet> Import(AssetHandle handle, const AssetMetadata &metadata);
 		static std::shared_ptr<SpriteSheet> Load(const std::filesystem::path &filepath);
+	};
+
+	class MaterialImporter
+	{
+	public:
+		static std::shared_ptr<Material> Import(AssetHandle handle, const AssetMetadata &metadata);
+		static std::shared_ptr<Material> Load(const std::filesystem::path &filepath);
 	};
 
 }

@@ -502,9 +502,9 @@ namespace origin
 		{
 			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
-			if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
+			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
 			{
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
 
 				for (auto& light : lightView)
 				{
@@ -606,9 +606,9 @@ namespace origin
 		{
 			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
-			if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
+			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
 			{
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
 
 				for (auto& light : lightView)
 				{
@@ -640,9 +640,9 @@ namespace origin
 			{
 				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
-				if (AssetManager::GetAssetType(mesh.Model) == AssetType::StaticMesh)
+				if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
 				{
-					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Model);
+					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
 					lc.Light->GetShadow()->OnRenderBegin(lightTransform, tc.GetTransform());
 					model->SetTransform(tc.GetTransform());
 					model->Draw();

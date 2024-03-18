@@ -1,19 +1,46 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "Material.h"
+#include "Origin\Asset\AssetManager.h"
 
 namespace origin {
 
-	Material::Material(std::string name, const std::shared_ptr<Shader> shader)
-		: m_Name(name), m_Shader(shader)
+	Material::Material()
 	{
-		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), 4);
-		OGN_CORE_INFO("MATERIAL: Material {} Created", name);
+		m_Shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
+		m_Shader->Enable();
+
+		int binding = 4;
+		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), binding);
 	}
 
-	void Material::OnRender()
+	Material::Material(const std::shared_ptr<Shader> &shader)
+		: m_Shader(shader)
+	{
+		OGN_CORE_ASSERT(m_Shader, "[Material] Shader is uninitialized or empty!")
+		m_Shader->Enable();
+
+		int binding = 4;
+		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), binding);
+	}
+
+	void Material::Bind()
 	{
 		m_UniformBuffer->Bind();
 		m_UniformBuffer->SetData(&BufferData, sizeof(MaterialBufferData));
+		m_Shader->Enable();
+	}
+
+	void Material::Unbind()
+	{
+		m_Shader->Disable();
+		m_UniformBuffer->Unbind();
+	}
+
+	void Material::AddShader(const std::shared_ptr<Shader> &shader)
+	{
+		m_Shader = shader;
 	}
 
 	bool Material::RefreshShader()
@@ -25,15 +52,9 @@ namespace origin {
 		m_Shader.reset();
 
 		m_Shader = Shader::Create(shaderPath, enableSpirv, recompile);
-		OGN_CORE_WARN("MATERIAL: Shader {} Refreshed", m_Shader->GetName());
+		OGN_CORE_WARN("[Material] Shader {} Refreshed", m_Shader->GetName());
 
 		return true;
-	}
-
-	void Material::LoadTexture(const char* filepath)
-	{
-		std::shared_ptr<Texture2D> texture = Texture2D::Create(filepath);
-		m_LoadedTextures.push_back(texture);
 	}
 
 	std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Material::LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type)
@@ -70,9 +91,14 @@ namespace origin {
 		return textures;
 	}
 
-	std::shared_ptr<Material> Material::Create(const std::string& name, const std::shared_ptr<Shader> shader)
+	std::shared_ptr<Material> Material::Create()
 	{
-		return std::make_shared<Material>(name, shader);
+		return std::make_shared<Material>();
+	}
+
+	std::shared_ptr<Material> Material::Create(const std::shared_ptr<Shader> &shader)
+	{
+		return std::make_shared<Material>(shader);
 	}
 
 }

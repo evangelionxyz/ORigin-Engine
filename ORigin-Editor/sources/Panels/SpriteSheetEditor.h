@@ -40,7 +40,7 @@ namespace origin
 		void RemoveSprite(int index);
 		void Duplicate(int index);
 
-		void OnGuiRender();
+		void OnImGuiRender();
 		void OnUpdate(Timestep ts);
 
 		bool Serialize(const std::filesystem::path &filepath);

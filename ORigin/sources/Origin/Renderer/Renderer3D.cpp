@@ -123,7 +123,7 @@ namespace origin {
 			s_Render3DData.CubeVertexPosition[23] = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
 		}
 
-		s_Render3DData.CubeShader = Renderer::GetGShader("Cube");
+		s_Render3DData.CubeShader = Renderer::GetShader("Cube");
 	}
 
 	void Renderer3D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)

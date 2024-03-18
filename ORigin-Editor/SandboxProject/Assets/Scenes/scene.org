@@ -1,6 +1,6 @@
 Scene: scene.org
 Entities:
-  - Entity: 6789597424333494102
+  - Entity: 18397032541662640472
     TreeNode:
       Parent: 0
       Parents:
@@ -8,10 +8,62 @@ Entities:
       Children:
         []
     TagComponent:
-      Tag: Sprite
+      Tag: Cube
     TransformComponent:
-      Translation: [0, -0, 0]
+      Translation: [-3.86840868, 7.4505806e-09, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
+    StaticMeshComponent:
+      Mesh: 8569817200224537892
+      Material: 13707348780738508932
+  - Entity: 150454035038110105
+    TreeNode:
+      Parent: 0
+      Parents:
+        []
+      Children:
+        []
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Translation: [0, -1.60726559, 0]
+      Rotation: [0, 0, 0]
+      Scale: [25, 1, 25]
+    StaticMeshComponent:
+      Mesh: 16303558325313807773
+      Material: 18396952890443678112
+  - Entity: 7765790783727652203
+    TreeNode:
+      Parent: 0
+      Parents:
+        []
+      Children:
+        []
+    TagComponent:
+      Tag: Lighting
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [-2.28638124, 0, 0.383972436]
+      Scale: [1, 1, 1]
+    LightComponent:
+      Type: DIRECTIONAL
+      Color: [0.713675201, 0.713675201, 0.713675201, 1]
+      Strength: 0.129999995
+      Diffuse: 1
+      Specular: 1
+  - Entity: 9682638574541052146
+    TreeNode:
+      Parent: 0
+      Parents:
+        []
+      Children:
+        []
+    TagComponent:
+      Tag: Sphere
+    TransformComponent:
+      Translation: [-0.454545319, 0, -0.138968572]
+      Rotation: [0, -0.296705961, 0]
+      Scale: [1, 1, 1]
+    StaticMeshComponent:
+      Mesh: 7092806916357103773
+      Material: 14457226710400017717

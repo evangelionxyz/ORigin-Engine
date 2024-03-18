@@ -46,8 +46,10 @@ namespace origin {
 		static void SetCurrentShader(const std::shared_ptr<Shader> &shader);
 
 		const static std::shared_ptr<Shader>& GetCurrentShader() { return s_GlobalShader; }
-		static std::shared_ptr<Shader> GetGShader(const std::string& name);
+		static std::shared_ptr<Shader> GetShader(const std::string &name);
 		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetShaderLibrary();
+
+		static std::shared_ptr<Material> GetMaterial(const std::string &name);
 
 		static std::shared_ptr<Texture2D> WhiteTexture;
 		static std::shared_ptr<Texture2D> BlackTexture;
@@ -57,6 +59,8 @@ namespace origin {
 
 	private:
 		static void LoadShaders();
+		static void LoadMaterials();
+
 		static std::shared_ptr<Shader> s_GlobalShader;
 	};
 }

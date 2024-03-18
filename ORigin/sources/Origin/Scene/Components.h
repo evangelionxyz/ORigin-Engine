@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
 #include "Origin/Animation/AnimationState.h"
 #include "Origin/Audio/AudioListener.h"
@@ -122,7 +122,8 @@ namespace origin
 	class StaticMeshComponent
 	{
 	public:
-		AssetHandle Model;
+		AssetHandle Handle = 0;
+		AssetHandle MaterialHandle = 0;
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
