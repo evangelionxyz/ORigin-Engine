@@ -35,7 +35,6 @@ namespace origin {
 
 		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
 		void DestroyEntity(Entity entity);
-		void DeleteEntityTree(Entity entity);
 
 		bool IsSceneHierarchyFocused = false;
 		bool IsScenePropertiesFocused = false;
@@ -47,8 +46,7 @@ namespace origin {
 		bool DisplayAddComponentEntry(const std::string& entryName);
 		void DrawEntityNode(Entity entity, int index = 0);
 		void DrawComponents(Entity entity);
-		bool AddNodeChild(Entity parent, Entity child);
-		void RemoveConnectionsFromChild(Entity child, Entity nextChild, UUID parentId);
+		void AddNodeChild(Entity parent, Entity child);
 		std::shared_ptr<Scene> m_Context;
 		Entity m_SelectedEntity;
 		std::shared_ptr<Texture2D> m_NoTextureButton;

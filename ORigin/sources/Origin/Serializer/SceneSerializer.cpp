@@ -74,23 +74,12 @@ namespace origin
 			out << YAML::Key << "TreeNode";
 			out << YAML::BeginMap;
 			out << YAML::Key << "Parent" << treeComponent.Parent;
-
-			out << YAML::Key << "Parents" << YAML::Value;
-			out << YAML::BeginSeq;
-			for (auto& p : treeComponent.Parents)
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "ID" << YAML::Value << p.first;
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq; //!Parents
-
 			out << YAML::Key << "Children" << YAML::Value;
 			out << YAML::BeginSeq;
-			for (auto& p : treeComponent.Children)
+			for (auto& cUUID : treeComponent.Children)
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "ID" << YAML::Value << p.first;
+				out << YAML::Key << "ID" << YAML::Value << cUUID;
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq; //!Children
@@ -958,23 +947,12 @@ namespace origin
 				if (YAML::Node treeNode = entity["TreeNode"])
 				{
 					treeComponent.Parent = treeNode["Parent"].as<uint64_t>();
-					if (auto parents = treeNode["Parents"])
-					{
-						for (auto p : parents)
-						{
-							UUID uuid = p["ID"].as<uint64_t>();
-							Entity e = m_Scene->GetEntityWithUUID(uuid);
-							treeComponent.Parents[e.GetUUID()] = e;
-						}
-					}
-
 					if (auto children = treeNode["Children"])
 					{
 						for (auto c : children)
 						{
 							UUID uuid = c["ID"].as<uint64_t>();
-							Entity e = m_Scene->GetEntityWithUUID(uuid);
-							treeComponent.Children[e.GetUUID()] = e;
+							treeComponent.Children.push_back(uuid);
 						}
 					}
 				}

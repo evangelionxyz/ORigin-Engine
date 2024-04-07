@@ -78,9 +78,41 @@ namespace origin
 		{
 			Entity parent = scene->GetEntityWithUUID(entity.GetParentUUID());
 			auto &parentIdc = parent.GetComponent<TreeNodeComponent>();
-			parentIdc.Children[newEntity.GetUUID()] = newEntity;
+			parentIdc.Children.push_back(newEntity.GetUUID());
 		}
+
 		return newEntity;
+	}
+
+	bool EntityManager::ChildExists(UUID destination, UUID source, Scene *scene)
+	{
+		Entity entity = scene->GetEntityWithUUID(destination);
+		auto &destinationTnc = entity.GetComponent<TreeNodeComponent>();
+
+		for (UUID nextChild : destinationTnc.Children)
+		{
+			if (nextChild == source)
+				return true;
+
+			//	return EntityManager::ChildExists(c, child, scene);
+		}
+
+		return false;
+	}
+
+	bool EntityManager::ParentOrGrandParentExists(UUID destinationParent, UUID source, Scene *scene)
+	{
+		Entity entity = scene->GetEntityWithUUID(destinationParent);
+		auto &nextDestinationParent = entity.GetComponent<TreeNodeComponent>().Parent;
+
+		if (destinationParent == source)
+			return true;
+
+		if(nextDestinationParent != 0)
+			if (EntityManager::ParentOrGrandParentExists(nextDestinationParent, source, scene))
+				return true;
+
+		return false;
 	}
 
 	void EntityManager::DestroyEntity(Entity entity, Scene *scene)

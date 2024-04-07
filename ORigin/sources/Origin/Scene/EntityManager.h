@@ -56,6 +56,10 @@ namespace origin
 		static Entity CreateEntityWithUUID(UUID uuid, const std::string &name, Scene *scene);
 		static Entity CreateMesh(const std::string &name, Scene *scene);
 		static Entity DuplicateEntity(Entity entity, Scene *scene);
+
+		static bool ChildExists(UUID destination, UUID source, Scene *scene);
+		static bool ParentOrGrandParentExists(UUID destinationParent, UUID source, Scene *scene);
+
 		static void DestroyEntity(Entity entity, Scene *scene);
 	};
 }

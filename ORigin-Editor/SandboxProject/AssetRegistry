@@ -20,6 +20,9 @@ AssetRegistry:
   - Handle: 12368061447856671797
     Filepath: Sprites/minecraft_test.png
     Type: AssetType::Texture
+  - Handle: 13093705806621393669
+    Filepath: Sounds/solitude-dark-ambient-electronic-197737.mp3
+    Type: AssetType::Audio
   - Handle: 13707348780738508932
     Filepath: Materials/Material.mat
     Type: AssetType::Material

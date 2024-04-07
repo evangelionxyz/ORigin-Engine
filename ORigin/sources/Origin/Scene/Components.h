@@ -29,8 +29,7 @@ namespace origin
 		TreeNodeComponent(const TreeNodeComponent&) = default;
 
 		UUID Parent = 0;
-		std::unordered_map<UUID, Entity> Parents;
-		std::unordered_map<UUID, Entity> Children;
+		std::vector<UUID> Children;
 
 		bool HasParent() { return Parent != 0; }
 		bool HasChildren() { return !Children.empty(); }

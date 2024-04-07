@@ -12,7 +12,7 @@ namespace origin
 		void SetSelectedMaterial(AssetHandle handle);
 		void OnImGuiRender();
 
-		bool Serialize(const std::filesystem::path filepath);
+		bool Serialize(const std::filesystem::path &filepath);
 		bool Deserialize();
 
 	private:

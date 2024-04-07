@@ -267,7 +267,7 @@ namespace origin
 		for (auto entity : audioView)
 		{
 			auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 			{
 				audio->SetVolume(ac.Volume);
 				audio->SetPitch(ac.Pitch);

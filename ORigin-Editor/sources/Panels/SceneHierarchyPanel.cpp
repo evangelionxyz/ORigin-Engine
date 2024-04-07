@@ -71,34 +71,7 @@ namespace origin {
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
 		m_SelectedEntity = {};
-		DeleteEntityTree(entity);
 		EntityManager::DestroyEntity(entity, m_Context.get());
-	}
-
-	void SceneHierarchyPanel::DeleteEntityTree(Entity entity)
-	{
-		auto &treeComponent = entity.GetComponent<TreeNodeComponent>();
-		if (entity.HasParent())
-		{
-			Entity parent = m_Context->GetEntityWithUUID(entity.GetParentUUID());
-			auto &parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
-			auto &it = parentTreeComponent.Children.find(entity.GetUUID());
-			if (it != parentTreeComponent.Children.end())
-				parentTreeComponent.Children.erase(entity.GetUUID());
-		}
-		
-		// if this entity has child
-		// then erase entity from their parents
-		for (auto &[childId, child] : treeComponent.Children)
-		{
-			auto &childTreeComponent = child.GetComponent<TreeNodeComponent>();
-			// 1. set the original parent to 0
-			// 2. recursively through grand child
-
-			childTreeComponent.Parent = 0;
-			for(auto &[gchildId, gChild] : childTreeComponent.Children)
-				RemoveConnectionsFromChild(gChild, child, entity.GetUUID());
-		}
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -197,6 +170,7 @@ namespace origin {
 			{
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
+				// the current 'entity' is the target (new parent for src)
 				AddNodeChild(entity, src);
 			}
 			ImGui::EndDragDropTarget();
@@ -211,9 +185,9 @@ namespace origin {
 		if (node_open)
 		{
 			auto &treeComponent = entity.GetComponent<TreeNodeComponent>();
-			for (auto &[uuid, child] : treeComponent.Children)
+			for (UUID c : treeComponent.Children)
 			{
-				Entity entt = m_Context->GetEntityWithUUID(uuid);
+				Entity entt = m_Context->GetEntityWithUUID(c);
 				DrawEntityNode(entt, index + 1);
 			}
 
@@ -227,75 +201,53 @@ namespace origin {
 			{
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				auto &srcTreeComponent = src.GetComponent<TreeNodeComponent>();
-
-				if (srcTreeComponent.Parent != 0)
+				// the current 'entity' is the target (new parent for src)
+				auto &srcTnc = src.GetComponent<TreeNodeComponent>();
+				if (srcTnc.Parent != 0)
 				{
-					Entity parent = m_Context->GetEntityWithUUID(srcTreeComponent.Parent);
-					parent.GetComponent<TreeNodeComponent>().Children.erase(src.GetUUID());
+					auto &parent = m_Context->GetEntityWithUUID(srcTnc.Parent);
+					auto &tnc = parent.GetComponent<TreeNodeComponent>();
+					auto it = std::find(tnc.Children.begin(), tnc.Children.end(), src.GetUUID());
+					tnc.Children.erase(it);
+					srcTnc.Parent = 0;
 				}
-
-				srcTreeComponent.Parent = 0;
-				srcTreeComponent.Parents.clear();
 			}
 			ImGui::EndDragDropTarget();
 		}
 	}
 
-	bool SceneHierarchyPanel::AddNodeChild(Entity parent, Entity child)
+	void SceneHierarchyPanel::AddNodeChild(Entity destination, Entity source)
 	{
-		auto &parentTreeComponent = parent.GetComponent<TreeNodeComponent>();
-		auto &childTreeComponent = child.GetComponent<TreeNodeComponent>();
+		auto &destinationTnc = destination.GetComponent<TreeNodeComponent>();
+		auto &sourceTnc = source.GetComponent<TreeNodeComponent>();
 		auto &registry = m_Context->m_EntityMap;
 
-		if (parentTreeComponent.Parents.find(child.GetUUID()) != parentTreeComponent.Parents.end())
+		if (!EntityManager::ChildExists(destination.GetUUID(), source.GetUUID(), m_Context.get()))
 		{
-			OGN_CORE_ERROR("Cannot add {0} to child, it was the parent", child.GetTag());
-			return false;
-		}
-
-		for (auto &[childId, child] : parentTreeComponent.Children)
-		{
-			auto &treeComponent = child.GetComponent<TreeNodeComponent>();
-			for (auto &[parentId, parent] : treeComponent.Parents)
+			if (destinationTnc.Parent != 0)
 			{
-				auto& childIdIt = treeComponent.Parents.find(parentId);
-				if (childIdIt != treeComponent.Parents.end())
-					RemoveConnectionsFromChild(child, child, child.GetUUID());
+				if (!EntityManager::ParentOrGrandParentExists(destinationTnc.Parent, source.GetUUID(), m_Context.get()))
+				{
+					if (sourceTnc.Parent != 0)
+					{
+						auto &ptnc = m_Context->GetEntityWithUUID(sourceTnc.Parent).GetComponent<TreeNodeComponent>();
+						ptnc.Children.erase(std::find(ptnc.Children.begin(), ptnc.Children.end(), source.GetUUID()));
+					}
+					destinationTnc.Children.push_back(source.GetUUID());
+					sourceTnc.Parent = destination.GetUUID();
+				}
+			}
+			else
+			{
+				if (sourceTnc.Parent != 0)
+				{
+					auto &ptnc = m_Context->GetEntityWithUUID(sourceTnc.Parent).GetComponent<TreeNodeComponent>();
+					ptnc.Children.erase(std::find(ptnc.Children.begin(), ptnc.Children.end(), source.GetUUID()));
+				}
+				destinationTnc.Children.push_back(source.GetUUID());
+				sourceTnc.Parent = destination.GetUUID();
 			}
 		}
-
-		parentTreeComponent.Children.insert(std::make_pair(child.GetUUID(), child));
-
-		UUID oldParent = childTreeComponent.Parent;
-		childTreeComponent.Parent = parent.GetUUID();
-
-		if (childTreeComponent.Parent != oldParent)
-		{
-			if (registry.find(oldParent) != registry.end())
-			{
-				Entity e = m_Context->GetEntityWithUUID(oldParent);
-				e.GetComponent<TreeNodeComponent>().Children.erase(child.GetUUID());
-			}
-		}
-
-		childTreeComponent.Parents.insert(std::make_pair(parent.GetUUID(), parent));
-
-		for (auto &p : parentTreeComponent.Parents)
-			childTreeComponent.Parents[p.first] = p.second;
-
-		return true;
-	}
-
-	void SceneHierarchyPanel::RemoveConnectionsFromChild(Entity child, Entity nextChild, UUID parentId)
-	{
-		auto &childIdc = child.GetComponent<TreeNodeComponent>();
-		auto &nextChildIdc = nextChild.GetComponent<TreeNodeComponent>();
-
-		childIdc.Parents.erase(parentId);
-
-		for (auto &c : nextChildIdc.Children)
-			RemoveConnectionsFromChild(child, c.second, c.second.GetUUID());
 	}
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
@@ -373,7 +325,6 @@ namespace origin {
 
 		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
 			{
-				bool isMeshValid = false;
 				std::string lable = "None";
 
 				if (component.Handle != 0)
@@ -382,7 +333,6 @@ namespace origin {
 					{
 						const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Handle);
 						lable = metadata.Filepath.filename().string();
-						isMeshValid = true;
 					}
 					else
 					{
@@ -391,6 +341,7 @@ namespace origin {
 				}
 
 				ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+				// Model Button
 				ImGui::Button(lable.c_str(), buttonSize);
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -412,19 +363,32 @@ namespace origin {
 				const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
 				const float xSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 
-				if (isMeshValid)
+				if (component.Handle != 0)
 				{
 					ImGui::SameLine();
 					ImGui::PushID("model_delete");
 					if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
-					{
 						component.Handle = 0;
-						isMeshValid = false;
-					}
 					ImGui::PopID();
 
 					std::shared_ptr<Model> &model = AssetManager::GetAsset<Model>(component.Handle);
-					ImGui::Button("Material", buttonSize);
+
+					if (component.MaterialHandle != 0)
+					{
+						if (AssetManager::IsAssetHandleValid(component.MaterialHandle) && AssetManager::GetAssetType(component.MaterialHandle) == AssetType::Material)
+						{
+							const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.MaterialHandle);
+							lable = metadata.Filepath.filename().string();
+						}
+						else
+						{
+							lable = "Default";
+						}
+					}
+
+					// Material Button
+					ImGui::Button(lable.c_str(), buttonSize);
+
 					if (ImGui::BeginDragDropTarget())
 					{
 						if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -456,6 +420,7 @@ namespace origin {
 						ImGui::PopID();
 					}
 				}
+
 			});
 
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
@@ -726,7 +691,6 @@ namespace origin {
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
 				std::string label = "None";
-				bool isTextureValid = false;
 				ImGui::Text("Texture");
 				ImGui::SameLine();
 				if (component.Texture != 0)
@@ -735,7 +699,6 @@ namespace origin {
 					{
 						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Texture);
 						label = metadata.Filepath.filename().string();
-						isTextureValid = true;
 					}
 					else
 					{
@@ -771,7 +734,7 @@ namespace origin {
 					ImGui::EndDragDropTarget();
 				}
 
-				if (isTextureValid)
+				if (component.Texture != 0)
 				{
 					ImGui::SameLine();
 					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
