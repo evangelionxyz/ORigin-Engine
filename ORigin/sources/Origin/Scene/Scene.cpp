@@ -141,7 +141,7 @@ namespace origin
 
 			// Audio Update
 			const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
-			for (const auto entity : audioView)
+			for (auto entity : audioView)
 			{
 				auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
 
@@ -161,14 +161,14 @@ namespace origin
 			}
 
 			const auto& audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
-			for (const auto entity : audioListenerView)
+			for (auto entity : audioListenerView)
 			{
 				auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-				
 			}
 
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
+			UpdateTransform();
 		}
 		
 
@@ -243,6 +243,8 @@ namespace origin
 
 		//Render
 		RenderScene(editorCamera);
+		UpdateTransform();
+
 		{
 			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
 			{
@@ -362,6 +364,8 @@ namespace origin
 			m_Physics2D->Simulate(ts);
 		}
 
+		UpdateTransform();
+
 		RenderScene(editorCamera);
 	}
 
@@ -414,7 +418,6 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		UpdateTransform();
 		Renderer2D::Begin(camera, cameraTransform.GetTransform());
 
 		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
@@ -523,7 +526,6 @@ namespace origin
 
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
-		UpdateTransform();
 		Renderer2D::Begin(camera);
 
 		// Particle
@@ -658,19 +660,26 @@ namespace origin
 
 	void Scene::UpdateTransform()
 	{
-		auto& t = m_Registry.view<TransformComponent, TreeNodeComponent>();
-		for (auto e : t)
+		auto &view = m_Registry.view<IDComponent, TransformComponent, TreeNodeComponent>();
+		for (auto entity : view)
 		{
-			auto& [tc, tree] = t.get<TransformComponent, TreeNodeComponent>(e);
-			if (tree.Parent)
+			auto entityID = view.get<IDComponent>(entity).ID;
+			auto &[tc, tree] = view.get<TransformComponent, TreeNodeComponent>(entity);
+
+			if (tree.Parent != 0)
 			{
-				Entity parent = GetEntityWithUUID(tree.Parent);
-				const auto& parentTc = parent.GetComponent<TransformComponent>();
+				auto &ptc = GetEntityWithUUID(tree.Parent).GetComponent<TransformComponent>();
 
-				glm::vec3 retScale = glm::vec3(1.0f);
-
-				glm::vec3 pTranslation, pRotation, pScale;
-				Math::DecomposeTransformEuler(parentTc.GetTransform(), pTranslation, pRotation, pScale);
+				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(ptc.WorldRotation), tc.Translation);
+				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+				tc.WorldRotation = ptc.WorldRotation + tc.Rotation;
+				tc.WorldScale = tc.Scale * ptc.WorldScale;
+			}
+			else
+			{
+				tc.WorldTranslation = tc.Translation;
+				tc.WorldRotation = tc.Rotation;
+				tc.WorldScale = tc.Scale;
 			}
 		}
 	}

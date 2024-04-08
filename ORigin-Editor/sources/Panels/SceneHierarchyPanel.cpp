@@ -145,7 +145,6 @@ namespace origin {
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
 
 		if (ImGui::BeginPopupContextItem())
@@ -316,11 +315,11 @@ namespace origin {
 
 		DrawComponent<TransformComponent>("TRANSFORM", entity, [&](auto& component)
 		{
-				UI::DrawVec3Control("Translation", component.Translation);
-				glm::vec3 rotation = glm::degrees(component.Rotation);
-				UI::DrawVec3Control("Rotation", rotation, 1.0f);
-				component.Rotation = glm::radians(rotation);
-				UI::DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
+			UI::DrawVec3Control("Translation", component.Translation);
+			glm::vec3 rotation = glm::degrees(component.Rotation);
+			UI::DrawVec3Control("Rotation", rotation, 1.0f);
+			component.Rotation = glm::radians(rotation);
+			UI::DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 		});
 
 		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)

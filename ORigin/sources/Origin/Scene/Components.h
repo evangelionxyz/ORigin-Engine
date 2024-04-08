@@ -144,6 +144,9 @@ namespace origin
 		glm::vec3 Translation = glm::vec3(0.0f);
 		glm::vec3 Rotation = glm::vec3(0.0f);
 		glm::vec3 Scale = glm::vec3(1.0f);
+		glm::vec3 WorldTranslation = glm::vec3(0.0f);
+		glm::vec3 WorldRotation = glm::vec3(0.0f);
+		glm::vec3 WorldScale = glm::vec3(1.0f);
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
@@ -155,33 +158,33 @@ namespace origin
 
 		void SetTransform(glm::mat4 transform)
 		{
-			Math::DecomposeTransformEuler(transform, Translation, Rotation, Scale);
+			Math::DecomposeTransformEuler(transform, WorldTranslation, WorldRotation, WorldScale);
 		}
 
 		glm::mat4 GetTransform() const
 		{
-			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
-			return glm::translate(glm::mat4(1.0f), Translation)
-				* rotation * glm::scale(glm::mat4(1.0f), Scale);
+			glm::mat4 rotation = glm::toMat4(glm::quat(WorldRotation));
+			return glm::translate(glm::mat4(1.0f), WorldTranslation)
+				* rotation * glm::scale(glm::mat4(1.0f), WorldScale);
 		}
 
 		glm::vec3 GetForward() const
 		{
-			glm::mat4 rotation = toMat4(glm::quat(Rotation));
+			glm::mat4 rotation = toMat4(glm::quat(WorldRotation));
 			glm::vec4 forward = rotation * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
 			return glm::normalize(glm::vec3(forward));
 		}
 
 		glm::vec3 GetUp() const
 		{
-			glm::mat4 rotation = toMat4(glm::quat(Rotation));
+			glm::mat4 rotation = toMat4(glm::quat(WorldRotation));
 			glm::vec4 up = rotation * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 			return glm::normalize(glm::vec3(up));
 		}
 
 		glm::vec3 GetRight() const
 		{
-			glm::mat4 rotation = toMat4(glm::quat(Rotation));
+			glm::mat4 rotation = toMat4(glm::quat(WorldRotation));
 			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 			return glm::normalize(glm::vec3(right));
 		}

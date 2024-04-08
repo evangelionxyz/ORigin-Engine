@@ -10,8 +10,6 @@ namespace origin::UI
 	// static function
 	static void DrawVec3Control(const char *label, glm::vec3 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
-		ImGuiIO &io = ImGui::GetIO();
-
 		ImGui::PushID(label);
 
 		ImGui::Columns(2);
@@ -68,8 +66,6 @@ namespace origin::UI
 
 	static void DrawVec2Control(const char *label, glm::vec2 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
-		ImGuiIO &io = ImGui::GetIO();
-
 		ImGui::PushID(label);
 
 		ImGui::Columns(2);
@@ -115,7 +111,6 @@ namespace origin::UI
 	static bool DrawVecControl(const char *label, float *values, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
 	{
 		bool changed = false;
-		ImGuiIO &io = ImGui::GetIO();
 
 		ImGui::PushID(label);
 

@@ -90,6 +90,7 @@ namespace origin {
 
 		m_EditorCamera.OnEvent(e);
 		m_SpriteSheetEditor->OnEvent(e);
+		m_Gizmos->OnEvent(e);
   }
 
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -365,7 +366,7 @@ namespace origin {
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
-		m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+		//m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
   }
 
   void EditorLayer::OpenScene()
@@ -390,7 +391,7 @@ namespace origin {
 	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
-		m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+		//m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
   }
 
   void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath)
@@ -605,11 +606,12 @@ namespace origin {
 			ImGuizmo::SetRect(m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y, m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x, m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y);
 			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
 
-			auto& tc = entity.GetComponent<TransformComponent>();
+			auto &tc = entity.GetComponent<TransformComponent>();
+			auto &tree = entity.GetComponent<TreeNodeComponent>();
 			glm::mat4 transform = tc.GetTransform();
 			
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
+			const glm::mat4 &cameraProjection = m_EditorCamera.GetProjection();
+			const glm::mat4 &cameraView = m_EditorCamera.GetViewMatrix();
 
 			m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
 
@@ -647,10 +649,30 @@ namespace origin {
 			{
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransformEuler(transform, translation, rotation, scale);
-				tc.Translation = translation;
-				glm::vec3 deltaRotation = rotation - tc.Rotation;
-				tc.Rotation += deltaRotation;
-				tc.Scale = scale;
+
+				if (tree.Parent != 0)
+				{
+					auto &ptc = m_ActiveScene->GetEntityWithUUID(tree.Parent).GetComponent<TransformComponent>();
+					glm::vec4 localTranslation = glm::inverse(ptc.GetTransform()) * glm::vec4(translation, 1.0f);
+
+					// Apply parent's scale to local translation
+					localTranslation.x *= ptc.WorldScale.x;
+					localTranslation.y *= ptc.WorldScale.y;
+					localTranslation.z *= ptc.WorldScale.z;
+
+					// Convert back to world space
+					tc.Translation = glm::vec3(ptc.GetTransform() * localTranslation);
+
+					tc.Translation = glm::vec3(localTranslation);
+					tc.Rotation = rotation - ptc.WorldRotation;
+					tc.Scale = scale / ptc.WorldScale;
+				}
+				else
+				{
+					tc.Translation = translation;
+					tc.Rotation += rotation - tc.Rotation;
+					tc.Scale = scale;
+				}
 			}
 
 			if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))

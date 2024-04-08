@@ -112,9 +112,9 @@ namespace origin {
 			if (body)
 			{
 				auto& position = body->GetPosition();
-				tc.Translation.x = position.x;
-				tc.Translation.y = position.y;
-				tc.Rotation.z = body->GetAngle();
+				tc.WorldTranslation.x = position.x;
+				tc.WorldTranslation.y = position.y;
+				tc.WorldRotation.z = body->GetAngle();
 			}
 		}
 	}
@@ -143,8 +143,8 @@ namespace origin {
 			bodyDef.enabled = rb2d.Enabled;
 			bodyDef.linearVelocity.SetZero();
 
-			float xPos = tc.Translation.x;
-			float yPos = tc.Translation.y;
+			float xPos = tc.WorldTranslation.x;
+			float yPos = tc.WorldTranslation.y;
 
 			if (rb2d.FreezePositionX)
 				xPos = bodyDef.position.x;
@@ -152,7 +152,7 @@ namespace origin {
 				yPos = bodyDef.position.y;
 
 			bodyDef.position.Set(xPos, yPos);
-			bodyDef.angle = tc.Rotation.z;
+			bodyDef.angle = tc.WorldRotation.z;
 			bodyDef.gravityScale = rb2d.GravityScale;
 
 			b2Body* body = m_World->CreateBody(&bodyDef);
@@ -170,13 +170,13 @@ namespace origin {
 			if (entity.HasComponent<BoxCollider2DComponent>())
 			{
 				auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
-				CreateBoxCollider(bc2d, body, b2Vec2(bc2d.Size.x * tc.Scale.x, bc2d.Size.y * tc.Scale.y));
+				CreateBoxCollider(bc2d, body, b2Vec2(bc2d.Size.x * tc.WorldScale.x, bc2d.Size.y * tc.WorldScale.y));
 			}
 
 			if (entity.HasComponent<CircleCollider2DComponent>())
 			{
 				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
-				float radius = tc.Scale.x * cc2d.Radius;
+				float radius = tc.WorldScale.x * cc2d.Radius;
 				CreateCircleCollider(cc2d, body, radius);
 			}
 		}

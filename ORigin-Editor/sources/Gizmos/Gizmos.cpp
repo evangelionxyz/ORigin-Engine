@@ -59,9 +59,9 @@ namespace origin {
 			{
 				const auto& [tc, bc2d] = quad.get<TransformComponent, BoxCollider2DComponent>(entity);
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Translation) + bc2d.Offset, COLLIDER2D_ZOFFSET))
-					* glm::rotate(glm::mat4(1.0f), tc.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Scale) * bc2d.Size * 2.0f, 1.0f));
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + bc2d.Offset, COLLIDER2D_ZOFFSET))
+					* glm::rotate(glm::mat4(1.0f), tc.WorldRotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale) * bc2d.Size * 2.0f, 1.0f));
 
 				Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), (int)entity);
 			}
@@ -71,8 +71,8 @@ namespace origin {
 			{
 				const auto& [tc, cc2d] = circle.get<TransformComponent, CircleCollider2DComponent>(entity);
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Translation) + cc2d.Offset, tc.Translation.z + COLLIDER2D_ZOFFSET))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.Scale * cc2d.Radius * 2.0f), 1.0f));
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc2d.Offset, tc.WorldTranslation.z + COLLIDER2D_ZOFFSET))
+					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale * cc2d.Radius * 2.0f), 1.0f));
 
 				Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, 0.0f, (int)entity);
 			}
@@ -81,22 +81,20 @@ namespace origin {
 		if (Entity selectedEntity = editor.m_SceneHierarchy.GetSelectedEntity())
 		{
 			const auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 rotation = glm::toMat4(glm::quat(tc.Rotation));
+			glm::mat4 rotation = glm::toMat4(glm::quat(tc.WorldRotation));
 
 			if (selectedEntity.HasComponent<SpriteRenderer2DComponent>())
 			{
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + SELECTED2D_ZOFFSET))
-					* rotation * glm::scale(glm::mat4(1.0f), tc.Scale);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z + SELECTED2D_ZOFFSET))
+					* rotation * glm::scale(glm::mat4(1.0f), tc.WorldScale);
 				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 			}
 
 			if (selectedEntity.HasComponent<CircleRendererComponent>())
 			{
-				glm::vec3 translation = tc.Translation + glm::vec3(0.0f, 0.0f, 0.5f);
-				glm::vec3 scale = tc.Scale * glm::vec3(1.0f);
-
+				glm::vec3 translation = tc.WorldTranslation + glm::vec3(0.0f, 0.0f, 0.5f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-					* rotation * glm::scale(glm::mat4(1.0f), scale);
+					* rotation * glm::scale(glm::mat4(1.0f), tc.WorldScale);
 
 				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
 			}
@@ -117,11 +115,9 @@ namespace origin {
 			{
 				const auto& [tc, bc] = box.get<TransformComponent, BoxColliderComponent>(entity);
 
-				glm::vec3 scale = tc.Scale * glm::vec3(bc.Size * 2.0f);
-
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + bc.Offset))
-					* glm::toMat4(glm::quat(tc.Rotation))
-					* glm::scale(glm::mat4(1.0f), scale * 2.0f);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + bc.Offset))
+					* glm::toMat4(glm::quat(tc.WorldRotation))
+					* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(bc.Size * 2.0f) * 2.0f);
 
 				Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)entity);
 			}
@@ -131,9 +127,9 @@ namespace origin {
 			{
 				const auto& [tc, sc] = sphere.get<TransformComponent, SphereColliderComponent>(entity);
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + sc.Offset))
-					* glm::toMat4(glm::quat(tc.Rotation))
-					* glm::scale(glm::mat4(1.0f), tc.Scale);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + sc.Offset))
+					* glm::toMat4(glm::quat(tc.WorldRotation))
+					* glm::scale(glm::mat4(1.0f), tc.WorldScale);
 
 				Renderer3D::DrawSphere(transform,
 					glm::vec4(1.0f, 0.0f, 1.0f, 1.0f),
@@ -145,11 +141,11 @@ namespace origin {
 			for (auto entity : capsule)
 			{
 				const auto& [tc, cc] = capsule.get<TransformComponent, CapsuleColliderComponent>(entity);
-				glm::vec3 rot = tc.Rotation + glm::vec3(0.0f, 0.0f, glm::radians(90.0f));
+				glm::vec3 rot = tc.WorldRotation + glm::vec3(0.0f, 0.0f, glm::radians(90.0f));
 
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.Translation + cc.Offset))
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + cc.Offset))
 					* glm::toMat4(glm::quat(rot))
-					* glm::scale(glm::mat4(1.0f), tc.Scale);
+					* glm::scale(glm::mat4(1.0f), tc.WorldScale);
 
 				Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius, cc.Height * 2.0f, (int)entity);
 			}
@@ -161,8 +157,8 @@ namespace origin {
 			for (auto e : revoluteJoint2DView)
 			{
 				auto& [tc, rjc] = revoluteJoint2DView.get<TransformComponent, RevoluteJoint2DComponent>(e);
-				glm::vec2 anchorPoint = glm::vec2(tc.Translation.x + rjc.AnchorPoint.x, tc.Translation.y + rjc.AnchorPoint.y);
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(anchorPoint, tc.Translation.z + COLLIDER2D_ZOFFSET))
+				glm::vec2 anchorPoint = glm::vec2(tc.WorldTranslation.x + rjc.AnchorPoint.x, tc.WorldTranslation.y + rjc.AnchorPoint.y);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(anchorPoint, tc.WorldTranslation.z + COLLIDER2D_ZOFFSET))
 					* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
 				Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);
@@ -179,19 +175,19 @@ namespace origin {
 		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture, int entity)
 			{
 				glm::mat4 transform = glm::mat4(1.0f);
-				float scale = glm::clamp(glm::length(camera.GetPosition() - tc.Translation) * 0.05f, 1.0f, 10.0f);
+				float scale = glm::clamp(glm::length(camera.GetPosition() - tc.WorldTranslation) * 0.05f, 1.0f, 10.0f);
 
 				switch (camera.GetProjectionType())
 				{
 				case ProjectionType::Perspective:
-					transform = glm::translate(glm::mat4(1.0f), tc.Translation)
+					transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
 						* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
 						* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
 						* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
 					break;
 
 				case ProjectionType::Orthographic:
-					transform = translate(glm::mat4(1.0f), glm::vec3(tc.Translation.x, tc.Translation.y, ICON_ZOFFSET));
+					transform = translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation.x, tc.WorldTranslation.y, ICON_ZOFFSET));
 					break;
 				}
 
@@ -219,10 +215,10 @@ namespace origin {
 					glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
 
 					glm::vec3 pos = camera.GetProjectionType() == ProjectionType::Perspective ?
-						glm::vec3(tc.Translation) : glm::vec3(tc.Translation.x, tc.Translation.y, 1.3f);
+						glm::vec3(tc.WorldTranslation) : glm::vec3(tc.WorldTranslation.x, tc.WorldTranslation.y, 1.3f);
 
 					glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ?
-						glm::vec3(tc.Rotation) : glm::vec3(0.0f, 0.0f, tc.Rotation.z);
+						glm::vec3(tc.WorldRotation) : glm::vec3(0.0f, 0.0f, tc.WorldRotation.z);
 
 					glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
 						* glm::toMat4(glm::qua(rotation)) * scale;
@@ -268,23 +264,20 @@ namespace origin {
 					// bottom left corner
 					glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
 					glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
-
 					glm::vec4 col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_LEFT ? green : red;
 
 					std::vector<glm::vec3> cornerOffsets = {
-							{ -tc.Scale.x / 2.0f, -tc.Scale.y / 2.0f, 1.0f }, // Bottom left
-							{ -tc.Scale.x / 2.0f,  tc.Scale.y / 2.0f, 1.0f }, // Top left
-							{  tc.Scale.x / 2.0f, -tc.Scale.y / 2.0f, 1.0f }, // Bottom right
-							{  tc.Scale.x / 2.0f,  tc.Scale.y / 2.0f, 1.0f }  // Top right
+							{ -tc.WorldScale.x / 2.0f, -tc.WorldScale.y / 2.0f, 1.0f }, // Bottom left
+							{ -tc.WorldScale.x / 2.0f,  tc.WorldScale.y / 2.0f, 1.0f }, // Top left
+							{  tc.WorldScale.x / 2.0f, -tc.WorldScale.y / 2.0f, 1.0f }, // Bottom right
+							{  tc.WorldScale.x / 2.0f,  tc.WorldScale.y / 2.0f, 1.0f }  // Top right
 					};
 
 					for (int i = 0; i < 4; ++i)
 					{
 						glm::vec4 col = (m_Boundary2DCorner == static_cast<Boundary2DCorner>(i)) ? green : red;
-
-						glm::quat rotationQuat = glm::quat(tc.Rotation);
-
-						glm::mat4 tf = glm::translate(glm::mat4(1.0f), tc.Translation + glm::vec3(rotationQuat * glm::vec4(cornerOffsets[i], 0.0f))) *
+						glm::quat rotationQuat = glm::quat(tc.WorldRotation);
+						glm::mat4 tf = glm::translate(glm::mat4(1.0f), tc.WorldTranslation + glm::vec3(rotationQuat * glm::vec4(cornerOffsets[i], 0.0f))) *
 							glm::toMat4(rotationQuat) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
 
 						Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - (i + 1));
@@ -362,7 +355,7 @@ namespace origin {
 				auto &tc = selectedEntity.GetComponent<TransformComponent>();
 				glm::vec2 localDelta = delta;
 
-				glm::vec4 transformedDelta = glm::quat(glm::radians(tc.Rotation)) * glm::vec4(delta, 0.0f, 1.0f);
+				glm::vec4 transformedDelta = glm::quat(glm::radians(tc.WorldRotation)) * glm::vec4(delta, 0.0f, 1.0f);
 				localDelta.x = transformedDelta.x;
 				localDelta.y = transformedDelta.y;
 

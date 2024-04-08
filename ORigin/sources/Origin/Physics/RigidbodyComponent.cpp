@@ -104,11 +104,11 @@ namespace origin {
 		dActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, !MoveY);
 		dActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, !MoveZ);
 
-		glm::quat quatRotation = glm::quat(transform.Rotation);
+		glm::quat quatRotation = glm::quat(transform.WorldRotation);
 
 		physx::PxRigidBodyExt::updateMassAndInertia(*dActor, Mass, &Utils::ToPhysXVec3(CenterMassPosition));
 		actor->is<physx::PxRigidDynamic>()->setGlobalPose(physx::PxTransform(
-			Utils::ToPhysXVec3(transform.Translation), 
+			Utils::ToPhysXVec3(transform.WorldTranslation), 
 			Utils::ToPhysXQuat(quatRotation))
 		);
 	}
