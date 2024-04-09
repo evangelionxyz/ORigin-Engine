@@ -184,11 +184,12 @@ namespace origin
 	class SpriteRenderer2DComponent
 	{
 	public:
-		glm::vec4 Color = glm::vec4(1.0f);
-		glm::vec2 TillingFactor = glm::vec2(1.0f);
-
 		AssetHandle Texture = 0;
-		SpriteSheetData *SpriteSheet = nullptr;
+
+		glm::vec4 Color = glm::vec4(1.0f);
+		glm::vec2 Min = glm::vec2(0.0f);
+		glm::vec2 Max = glm::vec2(0.0f);
+		glm::vec2 TillingFactor = glm::vec2(1.0f);
 
 		bool FlipX = false;
 		bool FlipY = false;

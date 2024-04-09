@@ -32,7 +32,6 @@ namespace origin
 
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
 		static void DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, int entityID = -1, const glm::vec2&tilingFactor = glm::vec2(1.0f), const glm::vec4& tintColor = glm::vec4(1.0f));
-		static void DrawQuad(const glm::mat4& transform, SpriteSheetData sprite, int entityID = -1, const glm::vec4& tintColor = glm::vec4(1.0f));
 		static void DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, int entityID = -1, const glm::vec2&tilingFactor = glm::vec2(1.0f), const glm::vec4& tintColor = glm::vec4(1.0f));
 
 		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color);

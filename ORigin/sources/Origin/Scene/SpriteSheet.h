@@ -8,7 +8,9 @@ namespace origin
 {
 	struct SpriteSheetData
 	{
-		glm::vec2 Min, Max;
+		glm::vec2 Min = glm::vec2(0.0f);
+		glm::vec2 Max = glm::vec2(0.0f);
+		AssetHandle TextureHandle = 0;
 	};
 
 	class SpriteSheet : public Asset

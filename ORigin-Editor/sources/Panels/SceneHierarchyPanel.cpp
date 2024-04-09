@@ -691,7 +691,11 @@ namespace origin {
 					{
 						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
 						if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+						{
 							component.Texture = handle;
+							component.Min = glm::vec2(0.0f);
+							component.Max = glm::vec2(0.0f);
+						}
 						else if (AssetManager::GetAssetType(handle) == AssetType::SpriteSheet)
 						{
 							//SpriteSheet
@@ -701,8 +705,11 @@ namespace origin {
 					}
 					else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
 					{
-						SpriteSheetData data= *static_cast<SpriteSheetData *>(payload->Data);
-						component.SpriteSheet = &data;
+
+						SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
+						component.Min = data.Min;
+						component.Max = data.Max;
+						component.Texture = data.TextureHandle;
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -713,7 +720,15 @@ namespace origin {
 					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
 					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+					{
 						component.Texture = 0;
+						component.Min = glm::vec2(0.0f);
+						component.Max = glm::vec2(0.0f);
+					}
+
+					UI::DrawVec2Control("Min", component.Min, 0.0001f, 1.0f);
+					UI::DrawVec2Control("Max", component.Max, 0.0001f, 1.0f);
+
 					UI::DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
 					ImGui::Text("Flip");
 					ImGui::SameLine();

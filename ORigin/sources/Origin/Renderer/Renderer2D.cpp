@@ -479,19 +479,6 @@ namespace origin {
 		Renderer::GetStatistics().QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4 &transform, SpriteSheetData sprite, int entityID, const glm::vec4 &tintColor)
-	{
-		glm::vec2 coords[4] =
-		{
-			{ sprite.Min.x, sprite.Min.y },
-			{ sprite.Max.x, sprite.Min.y },
-			{ sprite.Max.x, sprite.Max.y },
-			{ sprite.Min.x, sprite.Max.y }
-		};
-
-
-	}
-
 	void Renderer2D::DrawRotatedQuad(const glm::vec2 &position, const glm::vec2 &size, float rotation, const glm::vec4 &color)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
@@ -586,9 +573,63 @@ namespace origin {
 	{
 		std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Texture);
 		if (texture)
-			DrawQuad(transform, texture, -1, src.TillingFactor, src.Color);
+		{
+			if ((src.Max != glm::vec2(0.0f)) && (src.Min != glm::vec2(0.0f)))
+			{
+				constexpr size_t quadVertexCount = 4;
+				const glm::vec2 textureCoords[4] = 
+				{ 
+					{ src.Min.x, src.Min.y }, 
+					{ src.Max.x, src.Min.y },
+					{ src.Max.x, src.Max.y }, 
+					{ src.Min.x, src.Max.y } 
+				};
+
+				if (s_Render2DData.QuadIndexCount >= Renderer::s_RenderData.MaxQuadIndices)
+					NextBatch();
+
+				float textureIndex = 0.0f;
+				for (uint32_t i = 1; i < s_Render2DData.TextureSlotIndex; i++)
+				{
+					if (*s_Render2DData.TextureSlots[i] == *texture)
+					{
+						textureIndex = (float)i;
+						break;
+					}
+				}
+
+				if (textureIndex == 0.0f)
+				{
+					if (s_Render2DData.TextureSlotIndex >= Renderer::s_RenderData.MaxTextureSlots)
+						NextBatch();
+
+					textureIndex = (float)s_Render2DData.TextureSlotIndex;
+					s_Render2DData.TextureSlots[s_Render2DData.TextureSlotIndex] = texture;
+					s_Render2DData.TextureSlotIndex++;
+				}
+
+				for (size_t i = 0; i < quadVertexCount; i++)
+				{
+					s_Render2DData.QuadVertexBufferPtr->Position = transform * s_Render2DData.QuadVertexPositions[i];
+					s_Render2DData.QuadVertexBufferPtr->Color = src.Color;
+					s_Render2DData.QuadVertexBufferPtr->TexCoord = textureCoords[i];
+					s_Render2DData.QuadVertexBufferPtr->TexIndex = textureIndex;
+					s_Render2DData.QuadVertexBufferPtr->TilingFactor = src.TillingFactor;
+					s_Render2DData.QuadVertexBufferPtr->EntityID = entityID;
+					s_Render2DData.QuadVertexBufferPtr++;
+				}
+				s_Render2DData.QuadIndexCount += 6;
+				Renderer::GetStatistics().QuadCount++;
+			}
+			else
+			{
+				DrawQuad(transform, texture, entityID, src.TillingFactor, src.Color);
+			}
+		}
 		else
+		{
 			DrawQuad(transform, src.Color, entityID);
+		}
 	}
 
 	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, int entityID)

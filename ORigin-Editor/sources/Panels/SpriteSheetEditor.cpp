@@ -191,6 +191,9 @@ namespace origin
 					if (ImGui::BeginDragDropSource())
 					{
 						SpriteSheetData data;
+						data.Min = control.Min;
+						data.Max = control.Max;
+						data.TextureHandle = m_SpriteSheet->GetTextureHandle();
 						ImGui::SetDragDropPayload("SPRITESHEET_ITEM", &data, sizeof(SpriteSheetData));
 						ImGui::EndDragDropSource();
 					}

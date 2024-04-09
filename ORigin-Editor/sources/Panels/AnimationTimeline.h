@@ -125,7 +125,6 @@ namespace origin {
 		void Get(const std::shared_ptr<Animation>& anim, int index, int** start, int** end, unsigned int* color);
 		const char* AnimationTimeline::GetItemLabel(AnimationType type, int index) const;
 		const char* GetCollapseFmt() const { return "%d Frames / %d entries"; }
-		size_t GetCustomHeight(int index);
 
 		int CurrentAnimIndex = 0;
 		RampEdit rampEdit;

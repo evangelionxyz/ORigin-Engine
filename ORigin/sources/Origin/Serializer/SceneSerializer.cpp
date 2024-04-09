@@ -389,7 +389,11 @@ namespace origin
 			if (src.Texture != 0)
 			{
 				out << YAML::Key << "Handle" << YAML::Value << src.Texture;
+				out << YAML::Key << "Min" << YAML::Value << src.Min;
+				out << YAML::Key << "Max" << YAML::Value << src.Max;
 				out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
+				out << YAML::Key << "FlipX" << YAML::Value << src.FlipX;
+				out << YAML::Key << "FlipY" << YAML::Value << src.FlipY;
 			}
 
 			out << YAML::EndMap; // !SpriteRenderer2DComponent
@@ -695,6 +699,8 @@ namespace origin
 					if(spriteRenderer2DComponent["Handle"])
 					{
 						src.Texture = spriteRenderer2DComponent["Handle"].as<uint64_t>();
+						src.Min = spriteRenderer2DComponent["Min"].as<glm::vec2>();
+						src.Max = spriteRenderer2DComponent["Max"].as<glm::vec2>();
 						src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
 					}
 				}
