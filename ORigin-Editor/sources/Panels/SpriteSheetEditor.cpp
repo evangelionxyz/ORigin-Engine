@@ -49,6 +49,7 @@ namespace origin
 		{
 			m_Camera.SetOrthoSizeMax(m_Texture->GetWidth() * 1.25f);
 			m_Camera.SetOrthoSize(m_Texture->GetWidth());
+			m_Camera.SetPosition(glm::vec3(0.0f));
 			m_IsOpened = true;
 		}
 	}
@@ -83,7 +84,7 @@ namespace origin
 	{
 		if (m_IsOpened)
 		{
-			ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+			ImGui::Begin("Sprite Sheet Inpector", &m_IsOpened, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
 			IsFocused = ImGui::IsWindowFocused();
 			IsHovered = ImGui::IsWindowHovered();

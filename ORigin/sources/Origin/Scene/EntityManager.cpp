@@ -52,9 +52,8 @@ namespace origin
 		Entity entity = { scene->m_Registry.create(), scene};
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<TreeNodeComponent>();
 		entity.AddComponent<TagComponent>().Tag = name;
-		scene->m_EntityMap[entity.GetUUID()] = entity;
+		scene->m_EntityMap[uuid] = entity;
 		return entity;
 	}
 
@@ -76,25 +75,80 @@ namespace origin
 		CopyComponentIfExists(AllComponents{}, newEntity, entity);
 		if (entity.HasParent())
 		{
-			Entity parent = scene->GetEntityWithUUID(entity.GetParentUUID());
-			auto &parentIdc = parent.GetComponent<TreeNodeComponent>();
-			parentIdc.Children.push_back(newEntity.GetUUID());
+			auto &entityIDC = entity.GetComponent<IDComponent>();
+			auto &parentIDC = scene->GetEntityWithUUID(entityIDC.Parent).GetComponent<IDComponent>();
+			parentIDC.Children.push_back(newEntity.GetUUID());
 		}
 
 		return newEntity;
 	}
 
+	void EntityManager::AddChild(Entity destination, Entity source, Scene *scene)
+	{
+		auto &destIDC = destination.GetComponent<IDComponent>();
+		auto &srcIDC = source.GetComponent<IDComponent>();
+
+		if (!EntityManager::ChildExists(destination.GetUUID(), source.GetUUID(), scene))
+		{
+			if (destination.HasParent())
+			{
+				if (!EntityManager::ParentOrGrandParentExists(destIDC.Parent, source.GetUUID(), scene))
+				{
+					if (source.HasParent())
+					{
+						auto &children = scene->GetEntityWithUUID(srcIDC.Parent).GetComponent<IDComponent>().Children;
+						children.erase(std::find(children.begin(), children.end(), source.GetUUID()));
+					}
+					destIDC.Children.push_back(source.GetUUID());
+					srcIDC.Parent = destination.GetUUID();
+				}
+			}
+			else
+			{
+				if (source.HasParent())
+				{
+					auto &children = scene->GetEntityWithUUID(srcIDC.Parent).GetComponent<IDComponent>().Children;
+					children.erase(std::find(children.begin(), children.end(), source.GetUUID()));
+				}
+				destIDC.Children.push_back(source.GetUUID());
+				srcIDC.Parent = destination.GetUUID();
+			}
+		}
+	}
+
+	void EntityManager::DeleteChild(Entity parent, Entity child)
+	{
+		if (parent.HasChildren())
+		{
+			auto &parentIDC = parent.GetComponent<IDComponent>();
+			parentIDC.Children.erase(std::find(parentIDC.Children.begin(), parentIDC.Children.end(), child.GetUUID()));
+		}
+	}
+
 	bool EntityManager::ChildExists(UUID destination, UUID source, Scene *scene)
 	{
-		Entity entity = scene->GetEntityWithUUID(destination);
-		auto &destinationTnc = entity.GetComponent<TreeNodeComponent>();
+		Entity destEntity = scene->GetEntityWithUUID(destination);
+		auto &destIDC = destEntity.GetComponent<IDComponent>();
+		for (UUID child : destIDC.Children)
+		{
+			if (child == source)
+				return true;
+		}
 
-		for (UUID nextChild : destinationTnc.Children)
+		return false;
+	}
+
+	bool EntityManager::ChildOrGrandChildExists(UUID destination, UUID source, Scene *scene)
+	{
+		Entity destEntity = scene->GetEntityWithUUID(destination);
+		auto &destIDC = destEntity.GetComponent<IDComponent>();
+
+		for (UUID nextChild : destIDC.Children)
 		{
 			if (nextChild == source)
 				return true;
 
-			//	return EntityManager::ChildExists(c, child, scene);
+			return ChildOrGrandChildExists(nextChild, source, scene);
 		}
 
 		return false;
@@ -102,23 +156,31 @@ namespace origin
 
 	bool EntityManager::ParentOrGrandParentExists(UUID destinationParent, UUID source, Scene *scene)
 	{
-		Entity entity = scene->GetEntityWithUUID(destinationParent);
-		auto &nextDestinationParent = entity.GetComponent<TreeNodeComponent>().Parent;
+		Entity destEntity = scene->GetEntityWithUUID(destinationParent);
+		auto &destIDC = destEntity.GetComponent<IDComponent>();
 
 		if (destinationParent == source)
 			return true;
 
-		if(nextDestinationParent != 0)
-			if (EntityManager::ParentOrGrandParentExists(nextDestinationParent, source, scene))
+		if(destIDC.Parent != 0)
+			if (EntityManager::ParentOrGrandParentExists(destIDC.Parent, source, scene))
 				return true;
 
 		return false;
 	}
 
-	void EntityManager::DestroyEntity(Entity entity, Scene *scene)
+	void EntityManager::DestroyEntityFromScene(Entity entity, Scene *scene)
 	{
+		auto &children = entity.GetComponent<IDComponent>().Children;
+
+		// destroy children recursively
+		for (auto child : children)
+		{
+			Entity c = scene->GetEntityWithUUID(child);
+			EntityManager::DestroyEntityFromScene(c, scene);
+		}
+
 		scene->m_EntityMap.erase(entity.GetUUID());
 		scene->m_Registry.destroy(entity);
 	}
-
 }

@@ -57,9 +57,12 @@ namespace origin
 		static Entity CreateMesh(const std::string &name, Scene *scene);
 		static Entity DuplicateEntity(Entity entity, Scene *scene);
 
+		static void AddChild(Entity destination, Entity source, Scene *scene);
+		static void DeleteChild(Entity parent, Entity child);
 		static bool ChildExists(UUID destination, UUID source, Scene *scene);
+		static bool ChildOrGrandChildExists(UUID destination, UUID source, Scene *scene);
 		static bool ParentOrGrandParentExists(UUID destinationParent, UUID source, Scene *scene);
 
-		static void DestroyEntity(Entity entity, Scene *scene);
+		static void DestroyEntityFromScene(Entity entity, Scene *scene);
 	};
 }

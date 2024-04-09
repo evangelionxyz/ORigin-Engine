@@ -40,15 +40,16 @@ namespace origin {
 		bool IsScenePropertiesFocused = false;
 
 	private:
-		static SceneHierarchyPanel* s_Instance;
-
 		template<typename T>
 		bool DisplayAddComponentEntry(const std::string& entryName);
 		void DrawEntityNode(Entity entity, int index = 0);
 		void DrawComponents(Entity entity);
-		void AddNodeChild(Entity parent, Entity child);
+
+		Entity EntityContextMenu();
+
+		static SceneHierarchyPanel* s_Instance;
 		std::shared_ptr<Scene> m_Context;
-		Entity m_SelectedEntity;
 		std::shared_ptr<Texture2D> m_NoTextureButton;
+		Entity m_SelectedEntity;
 	};
 }

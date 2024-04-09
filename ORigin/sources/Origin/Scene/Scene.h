@@ -38,12 +38,12 @@ namespace origin
     void OnSimulationStart();
     void OnSimulationStop();
     void OnUpdateSimulation(Timestep time, EditorCamera& camera);
-    void OnUpdateEditor(Timestep time, EditorCamera& camera);
+    void OnEditorUpdate(Timestep time, EditorCamera& camera);
     void OnViewportResize(const uint32_t width, const uint32_t height);
     void OnShadowRender();
 
 
-    void UpdateTransform();
+    void UpdateEditorTransform();
 
     template <typename... Components>
     auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }

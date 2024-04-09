@@ -56,10 +56,14 @@ namespace origin
 		auto idView = srcSceneRegistry.view<IDComponent>();
 		for (auto e : idView)
 		{
-			UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
+			auto idc = srcSceneRegistry.get<IDComponent>(e);
 			const auto name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			newEntity = EntityManager::CreateEntityWithUUID(uuid, name, newScene.get());
-			enttMap[uuid] = static_cast<entt::entity>(newEntity);
+			newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, newScene.get());
+			auto &eIDC = newEntity.GetComponent<IDComponent>();
+			eIDC.Parent = idc.Parent;
+			eIDC.Children = idc.Children;
+
+			enttMap[idc.ID] = static_cast<entt::entity>(newEntity);
 		}
 
 		// Copy components (except IDComponent and TagComponent) into new scene (destination)
@@ -136,7 +140,7 @@ namespace origin
 			{
 				auto& ac = animView.get<AnimationComponent>(entity);
 				if (!ac.Animations.empty())
-					ac.Animations[ac.CurrentAnimation]->OnUpdateRuntime();
+					ac.Animations[ac.CurrentAnimation]->OnRuntimeUpdate();
 			}
 
 			// Audio Update
@@ -168,7 +172,6 @@ namespace origin
 
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
-			UpdateTransform();
 		}
 		
 
@@ -228,7 +231,7 @@ namespace origin
 		m_Physics2D->OnSimulationStop();
 	}
 
-	void Scene::OnUpdateEditor(Timestep deltaTime, EditorCamera& editorCamera)
+	void Scene::OnEditorUpdate(Timestep deltaTime, EditorCamera& editorCamera)
 	{
 		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
@@ -240,10 +243,6 @@ namespace origin
 			}
 			nsc.Instance->OnUpdate(deltaTime);
 		});
-
-		//Render
-		RenderScene(editorCamera);
-		UpdateTransform();
 
 		{
 			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
@@ -286,6 +285,10 @@ namespace origin
 		Renderer2D::End();
 
 		editorCamera.UpdateAudioListener(deltaTime);
+
+		//Render
+		RenderScene(editorCamera);
+		UpdateEditorTransform();
 	}
 
 	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& editorCamera)
@@ -323,7 +326,7 @@ namespace origin
 			{
 				auto ac = animView.get<AnimationComponent>(e);
 				if(!ac.Animations.empty())
-					ac.Animations[ac.CurrentAnimation]->OnUpdateRuntime();
+					ac.Animations[ac.CurrentAnimation]->OnRuntimeUpdate();
 			}
 
 			Renderer2D::Begin(editorCamera);
@@ -363,8 +366,6 @@ namespace origin
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
-
-		UpdateTransform();
 
 		RenderScene(editorCamera);
 	}
@@ -459,7 +460,7 @@ namespace origin
 				auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
 				if (!ac.Animations.empty())
 				{
-					ac.Animations[ac.CurrentAnimation]->OnUpdateRuntime();
+					ac.Animations[ac.CurrentAnimation]->OnRuntimeUpdate();
 					if (ac.Animations[ac.CurrentAnimation]->HasFrame())
 						sc.Texture = ac.Animations[ac.CurrentAnimation]->GetCurrentValue();
 				}
@@ -658,18 +659,16 @@ namespace origin
 		glDisable(GL_CULL_FACE);
 	}
 
-	void Scene::UpdateTransform()
+	void Scene::UpdateEditorTransform()
 	{
-		auto &view = m_Registry.view<IDComponent, TransformComponent, TreeNodeComponent>();
+		auto &view = m_Registry.view<IDComponent, TransformComponent>();
 		for (auto entity : view)
 		{
-			auto entityID = view.get<IDComponent>(entity).ID;
-			auto &[tc, tree] = view.get<TransformComponent, TreeNodeComponent>(entity);
+			auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
 
-			if (tree.Parent != 0)
+			if (idc.Parent != 0)
 			{
-				auto &ptc = GetEntityWithUUID(tree.Parent).GetComponent<TransformComponent>();
-
+				auto &ptc = GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
 				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(ptc.WorldRotation), tc.Translation);
 				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
 				tc.WorldRotation = ptc.WorldRotation + tc.Rotation;
@@ -713,7 +712,6 @@ template<>\
 void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 
 	OGN_REG_COMPONENT(IDComponent)
-	OGN_REG_COMPONENT(TreeNodeComponent)
 	OGN_REG_COMPONENT(TagComponent)
 	OGN_REG_COMPONENT(TransformComponent)
 	OGN_REG_COMPONENT(AudioComponent)

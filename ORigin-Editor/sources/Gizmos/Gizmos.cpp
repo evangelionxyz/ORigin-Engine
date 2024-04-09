@@ -347,43 +347,54 @@ namespace origin {
 		initialPosition = mouse;
 
 		float orthoScale = camera.GetOrthoSize() / camera.GetHeight();
+		glm::vec3 translation = glm::vec3(delta, 0.0f);
 
-		if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+		if (Entity entity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
 		{
 			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && EditorLayer::Get().m_SceneViewportHovered)
 			{
-				auto &tc = selectedEntity.GetComponent<TransformComponent>();
-				glm::vec2 localDelta = delta;
+				auto &tc = entity.GetComponent<TransformComponent>();
+				auto &idc = entity.GetComponent<IDComponent>();
 
-				glm::vec4 transformedDelta = glm::quat(glm::radians(tc.WorldRotation)) * glm::vec4(delta, 0.0f, 1.0f);
-				localDelta.x = transformedDelta.x;
-				localDelta.y = transformedDelta.y;
+				if (entity.HasParent())
+				{
+					Entity parent = EditorLayer::Get().m_ActiveScene->GetEntityWithUUID(idc.Parent);
+					auto &parentTC = parent.GetComponent<TransformComponent>();
+					translation = glm::inverse(glm::quat(parentTC.WorldRotation))
+						//* glm::quat(tc.WorldRotation) 
+						* glm::vec3(delta.x * orthoScale, delta.y * orthoScale, 0.0f);
+				}
+				else
+				{
+					translation = glm::quat(tc.WorldRotation) 
+						* glm::vec4(delta.x * orthoScale, delta.y * orthoScale, 0.0f, 1.0f);
+				}
 
 				switch (m_Boundary2DCorner)
 				{
 					case Boundary2DCorner::TOP_RIGHT:
-						tc.Scale.x += localDelta.x * orthoScale;
-						tc.Scale.y -= localDelta.y * orthoScale;
-						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
-						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						tc.Scale.x += translation.x;
+						tc.Scale.y -= translation.y;
+						tc.Translation.x -= translation.x / 2.0f;
+						tc.Translation.y += translation.y / 2.0f;
 						break;
 					case Boundary2DCorner::BOTTOM_RIGHT:
-						tc.Scale.x += localDelta.x * orthoScale;
-						tc.Scale.y += localDelta.y * orthoScale;
-						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
-						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						tc.Scale.x += translation.x;
+						tc.Scale.y += translation.y;
+						tc.Translation.x -= translation.x / 2.0f;
+						tc.Translation.y += translation.y / 2.0f;
 						break;
 					case Boundary2DCorner::TOP_LEFT:
-						tc.Scale.x -= localDelta.x * orthoScale;
-						tc.Scale.y -= localDelta.y * orthoScale;
-						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
-						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						tc.Scale.x -= translation.x;
+						tc.Scale.y -= translation.y;
+						tc.Translation.x -= translation.x / 2.0f;
+						tc.Translation.y += translation.y / 2.0f;
 						break;
 					case Boundary2DCorner::BOTTOM_LEFT:
-						tc.Scale.x -= localDelta.x * orthoScale;
-						tc.Scale.y += localDelta.y * orthoScale;
-						tc.Translation.x -= localDelta.x * orthoScale / 2.0f;
-						tc.Translation.y += localDelta.y * orthoScale / 2.0f;
+						tc.Scale.x -= translation.x;
+						tc.Scale.y += translation.y;
+						tc.Translation.x -= translation.x / 2.0f;
+						tc.Translation.y += translation.y / 2.0f;
 						break;
 				}
 			}

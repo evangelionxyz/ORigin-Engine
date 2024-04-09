@@ -102,11 +102,11 @@ namespace origin {
 		m_World->Step(deltaTime, velocityIterations, positionIterations);
 
 		// Retrieve transform from Box2D
-		auto view = m_Context->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
-		for (entt::entity e : view)
+		auto rb2dView = m_Context->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
+		for (entt::entity e : rb2dView)
 		{
 			Entity entity{ e, m_Context };
-			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
+			auto& [tc, rb2d] = rb2dView.get<TransformComponent, Rigidbody2DComponent>(e);
 			auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
 			if (body)
@@ -115,6 +115,23 @@ namespace origin {
 				tc.WorldTranslation.x = position.x;
 				tc.WorldTranslation.y = position.y;
 				tc.WorldRotation.z = body->GetAngle();
+			}
+		}
+
+		auto view = m_Context->m_Registry.view<IDComponent, TransformComponent>();
+		for (entt::entity e : view)
+		{
+			auto &[idc, tc] = view.get<IDComponent, TransformComponent>(e);
+			Entity entity { e, m_Context };
+
+			if (!entity.HasComponent<Rigidbody2DComponent>() && idc.Parent != 0)
+			{
+				auto &parentTC = m_Context->GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
+				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(parentTC.WorldRotation), tc.Translation);
+				tc.WorldTranslation = rotatedLocalPos + parentTC.WorldTranslation;
+				tc.WorldRotation = parentTC.WorldRotation + tc.Rotation;
+				tc.WorldScale = tc.Scale * parentTC.WorldScale;
+				
 			}
 		}
 	}

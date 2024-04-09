@@ -71,7 +71,16 @@ namespace origin {
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
 		m_SelectedEntity = {};
-		EntityManager::DestroyEntity(entity, m_Context.get());
+
+		// delete itself from parent
+		auto &idc = entity.GetComponent<IDComponent>();
+		Entity parent = m_Context->GetEntityWithUUID(idc.Parent);
+		if(parent)
+			EntityManager::DeleteChild(parent, entity);
+
+		// destroy itself from Scene
+		// and destroy its children Scene (recusively)
+		EntityManager::DestroyEntityFromScene(entity, m_Context.get());
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -92,36 +101,23 @@ namespace origin {
 		IsSceneHierarchyFocused = ImGui::IsWindowFocused();
 
 		m_Context->m_Registry.each([&](auto entityID)
-			{
-				Entity entity{ entityID, m_Context.get() };
-				DrawEntityNode(entity);
-			});
+		{
+			Entity entity{ entityID, m_Context.get() };
+			DrawEntityNode(entity);
+		});
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
-		if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
+		if (!m_Context->IsRunning())
 		{
-			if (ImGui::BeginMenu("CREATE"))
+			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
 			{
-				if (ImGui::MenuItem("Empty")) EntityManager::CreateEntity("Empty", m_Context.get());
-				if (ImGui::BeginMenu("2D"))
-				{
-					if (ImGui::MenuItem("Sprite")) EntityManager::CreateSprite("Sprite", m_Context.get());
-					if (ImGui::MenuItem("Circle")) EntityManager::CreateCircle("Circle", m_Context.get());
-					ImGui::EndMenu();
-				}
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20.f, 20.f));
+				EntityContextMenu();
+				ImGui::PopStyleVar();
 
-				if (ImGui::BeginMenu("3D"))
-				{
-					if (ImGui::MenuItem("Empty Mesh")) EntityManager::CreateMesh("Empty Mesh", m_Context.get());
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::MenuItem("Camera")) EntityManager::CreateCamera("Camera", m_Context.get());
-				if (ImGui::MenuItem("Lighting")) EntityManager::CreateLighting("Lighting", m_Context.get());
-				ImGui::EndMenu();
+				ImGui::EndPopup();
 			}
-			ImGui::EndPopup();
 		}
 
 		ImGui::PopStyleVar();
@@ -139,40 +135,50 @@ namespace origin {
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
 	{
-		Entity e = m_Context->GetEntityWithUUID(entity.GetUUID());
-		if (e.HasParent() && index == 0)
+		if (entity.HasParent() && index == 0)
 			return;
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
+			| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+		bool isDeleting = false;
 
-		if (ImGui::BeginPopupContextItem())
+		if (!m_Context->IsRunning())
 		{
-			if (ImGui::MenuItem("Delete"))
+			if (ImGui::BeginPopupContextItem())
 			{
-				m_SelectedEntity = {};
-				DestroyEntity(entity);
+				Entity e = EntityContextMenu();
+				if (e.GetScene())
+					EntityManager::AddChild(entity, e, m_Context.get());
+
+				if (ImGui::MenuItem("Delete"))
+				{
+					DestroyEntity(entity);
+					isDeleting = true;
+				}
+
+				ImGui::EndPopup();
 			}
-			ImGui::EndPopup();
-		}
 
-		if (ImGui::BeginDragDropSource())
-		{
-			ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
-			ImGui::EndDragDropSource();
-		}
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+			if (ImGui::BeginDragDropSource())
 			{
-				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				// the current 'entity' is the target (new parent for src)
-				AddNodeChild(entity, src);
+				ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
+				ImGui::EndDragDropSource();
 			}
-			ImGui::EndDragDropTarget();
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+				{
+					OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+					Entity src { *static_cast<entt::entity *>(payload->Data), m_Context.get() };
+					// the current 'entity' is the target (new parent for src)
+					EntityManager::AddChild(entity, src, m_Context.get());
+				}
+				ImGui::EndDragDropTarget();
+			}
 		}
 
 		if (ImGui::IsItemHovered())
@@ -183,11 +189,13 @@ namespace origin {
 
 		if (node_open)
 		{
-			auto &treeComponent = entity.GetComponent<TreeNodeComponent>();
-			for (UUID c : treeComponent.Children)
+			if (!isDeleting)
 			{
-				Entity entt = m_Context->GetEntityWithUUID(c);
-				DrawEntityNode(entt, index + 1);
+				for (UUID c : entity.GetComponent<IDComponent>().Children)
+				{
+					Entity entt = m_Context->GetEntityWithUUID(c);
+					DrawEntityNode(entt, index + 1);
+				}
 			}
 
 			ImGui::TreePop();
@@ -201,51 +209,18 @@ namespace origin {
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
 				// the current 'entity' is the target (new parent for src)
-				auto &srcTnc = src.GetComponent<TreeNodeComponent>();
-				if (srcTnc.Parent != 0)
+				if (src.HasParent())
 				{
-					auto &parent = m_Context->GetEntityWithUUID(srcTnc.Parent);
-					auto &tnc = parent.GetComponent<TreeNodeComponent>();
-					auto it = std::find(tnc.Children.begin(), tnc.Children.end(), src.GetUUID());
-					tnc.Children.erase(it);
-					srcTnc.Parent = 0;
+					auto &srcIDC = src.GetComponent<IDComponent>();
+					auto &parent = m_Context->GetEntityWithUUID(srcIDC.Parent);
+					auto &parentIDC = parent.GetComponent<IDComponent>();
+
+					auto it = std::find(parentIDC.Children.begin(), parentIDC.Children.end(), src.GetUUID());
+					parentIDC.Children.erase(it);
+					srcIDC.Parent = 0;
 				}
 			}
 			ImGui::EndDragDropTarget();
-		}
-	}
-
-	void SceneHierarchyPanel::AddNodeChild(Entity destination, Entity source)
-	{
-		auto &destinationTnc = destination.GetComponent<TreeNodeComponent>();
-		auto &sourceTnc = source.GetComponent<TreeNodeComponent>();
-		auto &registry = m_Context->m_EntityMap;
-
-		if (!EntityManager::ChildExists(destination.GetUUID(), source.GetUUID(), m_Context.get()))
-		{
-			if (destinationTnc.Parent != 0)
-			{
-				if (!EntityManager::ParentOrGrandParentExists(destinationTnc.Parent, source.GetUUID(), m_Context.get()))
-				{
-					if (sourceTnc.Parent != 0)
-					{
-						auto &ptnc = m_Context->GetEntityWithUUID(sourceTnc.Parent).GetComponent<TreeNodeComponent>();
-						ptnc.Children.erase(std::find(ptnc.Children.begin(), ptnc.Children.end(), source.GetUUID()));
-					}
-					destinationTnc.Children.push_back(source.GetUUID());
-					sourceTnc.Parent = destination.GetUUID();
-				}
-			}
-			else
-			{
-				if (sourceTnc.Parent != 0)
-				{
-					auto &ptnc = m_Context->GetEntityWithUUID(sourceTnc.Parent).GetComponent<TreeNodeComponent>();
-					ptnc.Children.erase(std::find(ptnc.Children.begin(), ptnc.Children.end(), source.GetUUID()));
-				}
-				destinationTnc.Children.push_back(source.GetUUID());
-				sourceTnc.Parent = destination.GetUUID();
-			}
 		}
 	}
 
@@ -1210,6 +1185,45 @@ namespace origin {
 			});
 	}
 
+	Entity SceneHierarchyPanel::EntityContextMenu()
+	{
+		Entity entity = {};
+
+		if (ImGui::BeginMenu("CREATE"))
+		{
+			if (ImGui::MenuItem("Empty")) 
+				entity = EntityManager::CreateEntity("Empty", m_Context.get());
+
+			if (ImGui::BeginMenu("2D"))
+			{
+				if (ImGui::MenuItem("Sprite")) 
+					entity = EntityManager::CreateSprite("Sprite", m_Context.get());
+				if (ImGui::MenuItem("Circle")) 
+					entity = EntityManager::CreateCircle("Circle", m_Context.get());
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("3D"))
+			{
+				if (ImGui::MenuItem("Empty Mesh"))
+					entity = EntityManager::CreateMesh("Empty Mesh", m_Context.get());
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::MenuItem("Camera"))
+				entity = EntityManager::CreateCamera("Camera", m_Context.get());
+			if (ImGui::MenuItem("Lighting"))
+				entity = EntityManager::CreateLighting("Lighting", m_Context.get());
+
+			ImGui::EndMenu();
+		}
+
+		if (entity)
+			m_SelectedEntity = entity;
+
+		return entity;
+	}
+
 	template<typename T>
 	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)
 	{
@@ -1227,7 +1241,9 @@ namespace origin {
 	template<typename T, typename UIFunction>
 	void DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
+			| ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth
+			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		if (entity.HasComponent<T>())
 		{

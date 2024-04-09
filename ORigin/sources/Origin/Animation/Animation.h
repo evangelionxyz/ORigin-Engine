@@ -47,7 +47,7 @@ namespace origin {
 		void DeleteFrame(int index);
 
 		void OnUpdateEditor();
-		void OnUpdateRuntime();
+		void OnRuntimeUpdate();
 		bool HasFrame() const { return AnimFrames.empty() == false; }
 		void Reset();
 

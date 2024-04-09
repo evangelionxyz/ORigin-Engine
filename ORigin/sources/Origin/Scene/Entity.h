@@ -79,11 +79,10 @@ namespace origin {
 			return objName;
 		}
 
-		UUID GetParentUUID() { return GetComponent<TreeNodeComponent>().Parent; }
-		bool HasParent() { return GetComponent<TreeNodeComponent>().Parent != 0; }
-		bool HasChildren() { return GetComponent<TreeNodeComponent>().Children.size() > 0; }
+		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
+		bool HasChildren() { return GetComponent<IDComponent>().Children.size() > 0; }
 
-		operator bool() const { return m_EntityHandle != entt::null; }
+		operator bool() const { return m_EntityHandle != entt::null && m_Scene != nullptr; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
 		operator uintptr_t() const { return static_cast<uintptr_t>(m_EntityHandle); }

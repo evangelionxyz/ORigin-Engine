@@ -66,25 +66,19 @@ namespace origin
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		OGN_CORE_ASSERT(entity.HasComponent<IDComponent>(), "");
+		auto &idc = entity.GetComponent<IDComponent>();
 		out << YAML::BeginMap; // Entity
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
-
-		auto treeComponent = entity.GetComponent<TreeNodeComponent>();
+		out << YAML::Key << "Parent" << idc.Parent;
+		out << YAML::Key << "Children" << YAML::Value;
+		out << YAML::BeginSeq;
+		for (UUID uuid : idc.Children)
 		{
-			out << YAML::Key << "TreeNode";
 			out << YAML::BeginMap;
-			out << YAML::Key << "Parent" << treeComponent.Parent;
-			out << YAML::Key << "Children" << YAML::Value;
-			out << YAML::BeginSeq;
-			for (auto& cUUID : treeComponent.Children)
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "ID" << YAML::Value << cUUID;
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq; //!Children
+			out << YAML::Key << "ID" << YAML::Value << uuid;
 			out << YAML::EndMap;
 		}
+		out << YAML::EndSeq; //!Children
 
 		if (entity.HasComponent<TagComponent>())
 		{
@@ -937,23 +931,18 @@ namespace origin
 				}
 			}
 
-			// Tree Node Deserialize
-			for (auto entity : entities)
+			for (YAML::iterator::value_type entity : entities)
 			{
-				uint64_t uuid = entity["Entity"].as<uint64_t>();
+				UUID uuid = entity["Entity"].as<uint64_t>();
 				Entity newEntity = m_Scene->GetEntityWithUUID(uuid);
-				auto& treeComponent = newEntity.GetComponent<TreeNodeComponent>();
-
-				if (YAML::Node treeNode = entity["TreeNode"])
+				auto &idc = newEntity.GetComponent<IDComponent>();
+				idc.Parent = entity["Parent"].as<uint64_t>();
+				if (auto children = entity["Children"])
 				{
-					treeComponent.Parent = treeNode["Parent"].as<uint64_t>();
-					if (auto children = treeNode["Children"])
+					for (auto c : children)
 					{
-						for (auto c : children)
-						{
-							UUID uuid = c["ID"].as<uint64_t>();
-							treeComponent.Children.push_back(uuid);
-						}
+						UUID uuid = c["ID"].as<uint64_t>();
+						idc.Children.push_back(uuid);
 					}
 				}
 			}

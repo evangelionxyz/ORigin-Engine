@@ -56,7 +56,7 @@ namespace origin {
 		}
 	}
 
-	void Animation::OnUpdateRuntime()
+	void Animation::OnRuntimeUpdate()
 	{
 		if (!HasFrame())
 			return;

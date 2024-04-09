@@ -1,120 +1,19 @@
 Scene: scene.org
 Entities:
-  - Entity: 15245754327550289251
-    TreeNode:
-      Parent: 0
-      Children:
-        []
+  - Entity: 8562711090068116299
+    Parent: 0
+    Children:
+      []
     TagComponent:
-      Tag: Camera
+      Tag: Floor
     TransformComponent:
-      Translation: [0, 0, 8]
+      Translation: [7.4505806e-09, -1.79072022, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-    AudioListenerComponent:
-      Enable: true
-  - Entity: 2136231923185382507
-    TreeNode:
-      Parent: 0
-      Children:
-        []
-    TagComponent:
-      Tag: Joint
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [18.7358379, 1.86803949, 1]
+    SpriteRenderer2DComponent:
+      Color: [0, 0.102564335, 1, 1]
     Rigidbody2DComponent:
       BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    RevoluteJoint2DComponent:
-      Connected Body ID: 10317566689531953420
-      Anchor: [0, 0]
-      EnableLimit: false
-      LowerAngle: 90
-      UpperAngle: 45
-      MaxMotorTorque: 10
-      EnableMotor: true
-      MotorSpeed: 1
-  - Entity: 12072066660809579894
-    TreeNode:
-      Parent: 10317566689531953420
-      Children:
-        []
-    TagComponent:
-      Tag: Blue
-    TransformComponent:
-      Translation: [2, -1, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.102563858, 0, 1, 1]
-  - Entity: 3153500860209059905
-    TreeNode:
-      Parent: 10317566689531953420
-      Children:
-        []
-    TagComponent:
-      Tag: Yellow
-    TransformComponent:
-      Translation: [-1, -2, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [0.948717952, 1, 0, 1]
-  - Entity: 14915619403703834533
-    TreeNode:
-      Parent: 10317566689531953420
-      Children:
-        []
-    TagComponent:
-      Tag: Red
-    TransformComponent:
-      Translation: [-2, 1, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 0, 0, 1]
-  - Entity: 10317566689531953420
-    TreeNode:
-      Parent: 0
-      Children:
-        - ID: 3153500860209059905
-        - ID: 12072066660809579894
-        - ID: 14915619403703834533
-        - ID: 7667633807329972346
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [0, 3.7252903e-09, 0]
-      Rotation: [0, 0, -2.98023224e-08]
-      Scale: [0.999999881, 0.999999881, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-    Rigidbody2DComponent:
-      BodyType: Dynamic
       Mass: 1
       LinearDamping: 0
       AngularDamping: 0.00999999978
@@ -136,16 +35,39 @@ Entities:
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 7667633807329972346
-    TreeNode:
-      Parent: 10317566689531953420
-      Children:
-        []
+  - Entity: 16811406483695989937
+    Parent: 0
+    Children:
+      []
     TagComponent:
-      Tag: green
+      Tag: Sprite
     TransformComponent:
-      Translation: [1, 2, 0]
+      Translation: [0.0348799229, 4.25535583, -0.474999994]
+      Rotation: [0, 0, 0]
+      Scale: [53.3729324, 53.3729324, 53.3729324]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 6853883006132539411
+      TillingFactor: [1, 1]
+  - Entity: 651578986577902210
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 2.5, 8]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [0, 1, 0.153846025, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+    AudioListenerComponent:
+      Enable: true

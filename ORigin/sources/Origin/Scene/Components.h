@@ -22,25 +22,15 @@
 
 namespace origin
 {
-	class TreeNodeComponent
-	{
-	public:
-		TreeNodeComponent() = default;
-		TreeNodeComponent(const TreeNodeComponent&) = default;
-
-		UUID Parent = 0;
-		std::vector<UUID> Children;
-
-		bool HasParent() { return Parent != 0; }
-		bool HasChildren() { return !Children.empty(); }
-	};
-
 	class IDComponent
 	{
 	public:
 		UUID ID;
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
+
+		UUID Parent = 0;
+		std::vector<UUID> Children;
 	};
 
 	class TagComponent
@@ -379,9 +369,7 @@ namespace origin
 	class SphereColliderComponent;
 	class CapsuleColliderComponent;
 
-	using AllComponents = ComponentGroup<
-		TreeNodeComponent, 
-		TransformComponent, CameraComponent, AnimationComponent,
+	using AllComponents = ComponentGroup<TransformComponent, CameraComponent, AnimationComponent,
 		AudioComponent, AudioListenerComponent, LightComponent,
 		SpriteRenderer2DComponent, SpriteSheet2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,

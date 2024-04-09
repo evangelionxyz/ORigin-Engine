@@ -56,7 +56,7 @@ namespace origin {
 	void AnimationState::Update(float deltaTime)
 	{
 		OGN_CORE_ASSERT(AnimationExists(m_CurrentState), "Animation doesn't exist");
-		m_Animations.at(m_CurrentState).OnUpdateRuntime();
+		m_Animations.at(m_CurrentState).OnRuntimeUpdate();
 	}
 
 	void AnimationState::SetLooping(std::string state, bool looping)
