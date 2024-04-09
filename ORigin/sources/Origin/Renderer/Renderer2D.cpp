@@ -479,7 +479,20 @@ namespace origin {
 		Renderer::GetStatistics().QuadCount++;
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::mat4 &transform, SpriteSheetData sprite, int entityID, const glm::vec4 &tintColor)
+	{
+		glm::vec2 coords[4] =
+		{
+			{ sprite.Min.x, sprite.Min.y },
+			{ sprite.Max.x, sprite.Min.y },
+			{ sprite.Max.x, sprite.Max.y },
+			{ sprite.Min.x, sprite.Max.y }
+		};
+
+
+	}
+
+	void Renderer2D::DrawRotatedQuad(const glm::vec2 &position, const glm::vec2 &size, float rotation, const glm::vec4 &color)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
 	}

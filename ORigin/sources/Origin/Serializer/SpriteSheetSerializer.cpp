@@ -21,8 +21,6 @@ namespace origin
 			for (auto &sprite : spriteSheet->Sprites)
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "Position" << sprite.Position;
-				out << YAML::Key << "Size" << sprite.Size;
 				out << YAML::Key << "Min" << sprite.Min;
 				out << YAML::Key << "Max" << sprite.Max;
 				out << YAML::EndMap;
@@ -57,9 +55,7 @@ namespace origin
 			{
 				for (auto &s : sprites)
 				{
-					SpriteData sprite {};
-					sprite.Position = s["Position"].as<glm::vec2>();
-					sprite.Size = s["Size"].as<glm::vec2>();
+					SpriteSheetData sprite {};
 					sprite.Min = s["Min"].as<glm::vec2>();
 					sprite.Max = s["Max"].as<glm::vec2>();
 					spriteSheet->Sprites.push_back(sprite);

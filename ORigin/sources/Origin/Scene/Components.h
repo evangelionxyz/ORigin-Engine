@@ -186,8 +186,10 @@ namespace origin
 	public:
 		glm::vec4 Color = glm::vec4(1.0f);
 		glm::vec2 TillingFactor = glm::vec2(1.0f);
+
 		AssetHandle Texture = 0;
-		SpriteData SpriteData;
+		SpriteSheetData *SpriteSheet = nullptr;
+
 		bool FlipX = false;
 		bool FlipY = false;
 
@@ -195,6 +197,7 @@ namespace origin
 		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&) = default;
 		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&, glm::vec4 color)
 			: Color(color) {}
+
 		SpriteRenderer2DComponent(float r, float g, float b, float a)
 			: Color(r, g, b, a){}
 	};

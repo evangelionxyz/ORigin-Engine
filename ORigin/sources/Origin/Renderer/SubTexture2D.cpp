@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "SubTexture2D.h"
@@ -20,4 +20,10 @@ namespace origin {
 		glm::vec2 max{ ((coords.x + spriteSize.x) * cellSize.x) / texture->GetWidth(), ((coords.y + spriteSize.y) * cellSize.y) / texture->GetHeight() };
 		return std::make_shared<SubTexture2D>(texture, min, max);
 	}
+
+	std::shared_ptr<SubTexture2D> SubTexture2D::CreateFromSpriteSheet(const std::shared_ptr<Texture2D> &texture, SpriteSheetData sprite)
+	{
+		return std::make_shared<SubTexture2D>(texture, sprite.Min, sprite.Max);
+	}
+
 }

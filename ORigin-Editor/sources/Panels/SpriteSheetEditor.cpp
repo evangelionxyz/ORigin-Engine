@@ -49,7 +49,7 @@ namespace origin
 		{
 			m_Camera.SetOrthoSizeMax(m_Texture->GetWidth() * 1.25f);
 			m_Camera.SetOrthoSize(m_Texture->GetWidth());
-			m_Camera.SetPosition(glm::vec3(0.0f));
+			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
 		}
 	}
@@ -62,9 +62,7 @@ namespace origin
 
 	void SpriteSheetEditor::AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max)
 	{
-		SpriteData sprite {};
-		sprite.Position = position;
-		sprite.Size = size;
+		SpriteSheetData sprite {};
 		sprite.Min = min;
 		sprite.Max = max;
 		m_SpriteSheet->Sprites.push_back(sprite);
@@ -77,7 +75,8 @@ namespace origin
 
 	void SpriteSheetEditor::Duplicate(int index)
 	{
-		m_Controls.insert(m_Controls.end(), m_Controls[index]);
+		m_Controls.insert(m_Controls.begin(), m_Controls[index]);
+		m_SelectedIndex = 0;
 	}
 
 	void SpriteSheetEditor::OnImGuiRender()
@@ -191,13 +190,8 @@ namespace origin
 
 					if (ImGui::BeginDragDropSource())
 					{
-						SpriteRender sprite;
-						sprite.Data.Position = control.Position;
-						sprite.Data.Size = control.Size;
-						sprite.Data.Min = control.Min;
-						sprite.Data.Max = control.Max;
-						sprite.TextureHandle = m_SpriteSheet->GetTextureHandle();
-						ImGui::SetDragDropPayload("SPRITE_SHEET_", &sprite, sizeof(SpriteRender));
+						SpriteSheetData data;
+						ImGui::SetDragDropPayload("SPRITESHEET_ITEM", &data, sizeof(SpriteSheetData));
 						ImGui::EndDragDropSource();
 					}
 
@@ -304,11 +298,9 @@ namespace origin
 		m_SpriteSheet->Sprites.clear();
 		for (auto &ctrl : m_Controls)
 		{
-			SpriteData data;
-			data.Position = ctrl.Position;
+			SpriteSheetData data;
 			data.Min = ctrl.Min;
 			data.Max = ctrl.Max;
-			data.Size = ctrl.Size;
 			m_SpriteSheet->Sprites.push_back(data);
 		}
 
@@ -324,13 +316,16 @@ namespace origin
 		if (ret)
 		{
 			m_Texture = AssetManager::GetAsset<Texture2D>(m_SpriteSheet->GetTextureHandle());
+			glm::vec2 atlasSize { m_Texture->GetWidth(), m_Texture->GetHeight() };
 			for (auto &sprite : m_SpriteSheet->Sprites)
 			{
 				SpriteSheetController control;
-				control.Position = sprite.Position;
-				control.Size = sprite.Size;
 				control.Min = sprite.Min;
 				control.Max = sprite.Max;
+				control.Size.x = sprite.Max.x * atlasSize.x - sprite.Min.x * atlasSize.x;
+				control.Size.y = sprite.Max.y * atlasSize.y - sprite.Min.y * atlasSize.y;
+				control.Position.x = sprite.Min.x * atlasSize.x - (atlasSize.x - control.Size.x) / 2.0f;
+				control.Position.y = sprite.Min.y * atlasSize.y - (atlasSize.y - control.Size.y) / 2.0f;
 				m_Controls.push_back(control);
 			}
 		}
@@ -393,6 +388,9 @@ namespace origin
 
 	void SpriteSheetEditor::OnMouse(float ts)
 	{
+		if (m_Controls.empty())
+			return;
+
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
 		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
 		const glm::vec2 delta = mouse - initialPosition;

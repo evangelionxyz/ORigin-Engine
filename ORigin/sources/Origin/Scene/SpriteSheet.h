@@ -6,17 +6,9 @@
 
 namespace origin
 {
-	struct SpriteData
+	struct SpriteSheetData
 	{
-		glm::vec2 Position;
-		glm::vec2 Size;
 		glm::vec2 Min, Max;
-	};
-
-	struct SpriteRender
-	{
-		SpriteData Data;
-		AssetHandle TextureHandle = 0;
 	};
 
 	class SpriteSheet : public Asset
@@ -34,7 +26,7 @@ namespace origin
 		virtual AssetType GetType() const { return GetStaticType(); }
 
 		const AssetHandle GetTextureHandle() const { return m_TextureHandle; }
-		std::vector<SpriteData> Sprites;
+		std::vector<SpriteSheetData> Sprites;
 	private:
 		std::filesystem::path m_Filepath;
 		AssetHandle m_TextureHandle;

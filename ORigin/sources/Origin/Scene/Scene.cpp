@@ -450,8 +450,8 @@ namespace origin
 				});
 			for (const entt::entity& entity : entities)
 			{
-				auto& [transform, sprite] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
+				auto& [tc, sc] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
+				Renderer2D::DrawSprite(tc.GetTransform(), sc, static_cast<int>(entity));
 			}
 
 			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();

@@ -699,11 +699,10 @@ namespace origin {
 						else
 							OGN_CORE_WARN("Wrong asset type!");
 					}
-					else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITE_SHEET_"))
+					else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
 					{
-						SpriteRender sprite = *static_cast<SpriteRender *>(payload->Data);
-						component.Texture = sprite.TextureHandle;
-						component.SpriteData = sprite.Data;
+						SpriteSheetData data= *static_cast<SpriteSheetData *>(payload->Data);
+						component.SpriteSheet = &data;
 					}
 					ImGui::EndDragDropTarget();
 				}
