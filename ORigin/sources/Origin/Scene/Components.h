@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
+
 #include "Origin/Animation/AnimationState.h"
+
 #include "Origin/Audio/AudioListener.h"
 #include "Origin/Math/Math.h"
 #include "SceneCamera.h"
@@ -39,21 +41,24 @@ namespace origin
 		std::string Tag;
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
-
 		TagComponent(const std::string& tag) : Tag(tag)
 		{
 		}
 	};
 
-	class Animation;
-	class AnimationComponent
+	class SpriteAnimation;
+	class SpriteAnimationComponent
 	{
 	public:
-		int CurrentAnimation = 0;
-		std::vector<std::shared_ptr<Animation>> Animations;
+		std::shared_ptr<AnimationState<SpriteAnimation>> State;
 
-		AnimationComponent() = default;
-		AnimationComponent(const AnimationComponent&) = default;
+		SpriteAnimationComponent()
+		{
+			State = std::make_shared<AnimationState<SpriteAnimation>>();
+		}
+
+		SpriteAnimationComponent(const SpriteAnimationComponent&) = default;
+		static const AnimationType Type = AnimationType::Sprite;
 	};
 
 	class AudioListenerComponent
@@ -187,8 +192,8 @@ namespace origin
 		AssetHandle Texture = 0;
 
 		glm::vec4 Color = glm::vec4(1.0f);
-		glm::vec2 Min = glm::vec2(0.0f);
-		glm::vec2 Max = glm::vec2(0.0f);
+		glm::vec2 Min = glm::vec2(0.0f, 0.0f);
+		glm::vec2 Max = glm::vec2(1.0f, 1.0f);
 		glm::vec2 TillingFactor = glm::vec2(1.0f);
 
 		bool FlipX = false;
@@ -201,14 +206,6 @@ namespace origin
 
 		SpriteRenderer2DComponent(float r, float g, float b, float a)
 			: Color(r, g, b, a){}
-	};
-
-	class SpriteSheet2DComponent
-	{
-	public:
-		SpriteSheet SpriteSheet;
-		SpriteSheet2DComponent() = default;
-		SpriteSheet2DComponent(const SpriteSheet2DComponent &) = default;
 	};
 
 	class Lighting;
@@ -373,9 +370,9 @@ namespace origin
 	class SphereColliderComponent;
 	class CapsuleColliderComponent;
 
-	using AllComponents = ComponentGroup<TransformComponent, CameraComponent, AnimationComponent,
+	using AllComponents = ComponentGroup<TransformComponent, CameraComponent, SpriteAnimationComponent,
 		AudioComponent, AudioListenerComponent, LightComponent,
-		SpriteRenderer2DComponent, SpriteSheet2DComponent, StaticMeshComponent, TextComponent,
+		SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent,
 		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent

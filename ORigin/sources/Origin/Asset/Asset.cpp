@@ -18,7 +18,7 @@ namespace origin {
 			case AssetType::Material: return "AssetType::Material";
 			case AssetType::MeshSource: return "AssetType::MeshSource";
 			case AssetType::Animation: return "AssetType::Animation";
-			case AssetType::SpriteSheet: return "AssetType::SpriteSheet";
+			case AssetType::SpritesSheet: return "AssetType::SpritesSheet";
 		}
 		OGN_CORE_ASSERT(false, "AssetType: Unkown Asset Type");
 		return "AssetType::Invalid";
@@ -35,7 +35,7 @@ namespace origin {
 		if (assetType == "AssetType::Material") return AssetType::Material;
 		if (assetType == "AssetType::MeshSource") return AssetType::MeshSource;
 		if (assetType == "AssetType::Animation") return AssetType::Animation;
-		if (assetType == "AssetType::SpriteSheet") return AssetType::SpriteSheet;
+		if (assetType == "AssetType::SpritesSheet") return AssetType::SpritesSheet;
 		return AssetType::None;
 	}
 }

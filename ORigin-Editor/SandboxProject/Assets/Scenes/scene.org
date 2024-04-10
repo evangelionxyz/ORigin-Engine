@@ -1,3 +1,265 @@
 Scene: scene.org
 Entities:
-  []
+  - Entity: 814932788553843695
+    Parent: 5591016593278036947
+    Children:
+      []
+    TagComponent:
+      Tag: Empty
+    AudioComponent:
+      AudioHandle: 8622424555671573006
+      Name: solitude-dark-ambient-electronic-197737.mp3
+      Volume: 0.5
+      Pitch: 1
+      Panning: 0
+      MinDistance: 10
+      MaxDistance: 20
+      Looping: true
+      Spatial: false
+      PlayAtStart: true
+    TransformComponent:
+      Translation: [-2, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 5591016593278036947
+    Parent: 0
+    Children:
+      - ID: 814932788553843695
+    TagComponent:
+      Tag: SOUNDS
+    TransformComponent:
+      Translation: [0, -3, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 14437012448512618022
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Chery
+    SpriteAnimationComponent:
+      States:
+        - Name: Idle
+          Looping: true
+          MaxFrame: 60
+          Speed: 30
+          Frames:
+            - ID: 2452532763512065933
+              FrameBegin: 0
+              FrameEnd: 19
+              Min: [0.190200523, 0.255339712]
+              Max: [0.219612285, 0.755339682]
+            - ID: 2452532763512065933
+              FrameBegin: 20
+              FrameEnd: 38
+              Min: [0.0147126419, 0.250005513]
+              Max: [0.0441244058, 0.750005484]
+            - ID: 2452532763512065933
+              FrameBegin: 39
+              FrameEnd: 59
+              Min: [0.425491691, 0.18818593]
+              Max: [0.454903454, 0.816551805]
+    TransformComponent:
+      Translation: [3, 0.988861442, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.74000001, 0.74000001, 0.74000001]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 2452532763512065933
+      Min: [0.190200523, 0.255339712]
+      Max: [0.219612285, 0.755339682]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 17396602356542328739
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [-0.0242130756, -1.97578692, 0]
+      Rotation: [0, 0, 0]
+      Scale: [15.1582727, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 17648302011125788142
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 1, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 8
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+    AudioListenerComponent:
+      Enable: true
+  - Entity: 9727672079995921163
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Player
+    SpriteAnimationComponent:
+      States:
+        - Name: Idle
+          Looping: true
+          MaxFrame: 54
+          Speed: 10
+          Frames:
+            - ID: 16707881503323011987
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0.0118429009, -0.0130627155]
+              Max: [0.0790661871, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 5
+              FrameEnd: 9
+              Min: [0.104172446, -0.0130627155]
+              Max: [0.171395734, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 10
+              FrameEnd: 14
+              Min: [0.195081532, -0.0130627155]
+              Max: [0.262304813, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 15
+              FrameEnd: 19
+              Min: [0.285990626, -0.0130627155]
+              Max: [0.353213906, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0.375479251, -0.0130627155]
+              Max: [0.442702562, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 25
+              FrameEnd: 29
+              Min: [0.466388345, 0.00256228447]
+              Max: [0.533611655, 0.841187716]
+            - ID: 16707881503323011987
+              FrameBegin: 30
+              FrameEnd: 34
+              Min: [0.558717906, -0.0130627155]
+              Max: [0.625941217, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 35
+              FrameEnd: 39
+              Min: [0.648206532, 0.00256228447]
+              Max: [0.715429842, 0.841187716]
+            - ID: 16707881503323011987
+              FrameBegin: 39
+              FrameEnd: 43
+              Min: [0.740536094, -0.0130627155]
+              Max: [0.807759345, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0.831445158, -0.0130627155]
+              Max: [0.898668468, 0.825562716]
+            - ID: 16707881503323011987
+              FrameBegin: 49
+              FrameEnd: 53
+              Min: [0.920933783, 0.00256228447]
+              Max: [0.988157094, 0.841187716]
+    ScriptComponent:
+      ClassName: SandboxProject.Assets.Scripts.PlayerMovement
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 3
+        - Name: JumpHeight
+          Type: Float
+          Data: 5
+    TransformComponent:
+      Translation: [0.0167773459, -1, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 16707881503323011987
+      Min: [0.920933783, 0.00256228447]
+      Max: [0.988157094, 0.841187716]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 20
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5

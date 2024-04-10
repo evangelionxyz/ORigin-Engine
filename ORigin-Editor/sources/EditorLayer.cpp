@@ -812,10 +812,10 @@ namespace origin {
 	{
 		if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
 		{
-			if (entity.HasComponent<AnimationComponent>())
+			if (entity.HasComponent<SpriteAnimationComponent>())
 			{
-				auto& ac = entity.GetComponent<AnimationComponent>();
-				m_AnimationTimeline.DrawEntityAnimation(ac.Animations, &ac.CurrentAnimation);
+				auto& ac = entity.GetComponent<SpriteAnimationComponent>();
+				AnimationTimeline::DrawSpriteAnimTimeline(ac);
 			}
 		}
 		

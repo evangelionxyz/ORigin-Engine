@@ -1,37 +1,43 @@
 AssetRegistry:
-  - Handle: 6155524723123555774
-    Filepath: Scenes/scene.org
-    Type: AssetType::Scene
-  - Handle: 6853883006132539411
-    Filepath: Sprites/DungeonCrawlTileset.png
+  - Handle: 2014741741371408179
+    Filepath: Sprites/Main Characters/Virtual Guy/Idle (32x32).sprite
+    Type: AssetType::SpritesSheet
+  - Handle: 2452532763512065933
+    Filepath: Sprites/Items/Fruits/Cherries.png
     Type: AssetType::Texture
-  - Handle: 7092806916357103773
-    Filepath: Models/sphere.obj
-    Type: AssetType::StaticMesh
-  - Handle: 8569817200224537892
-    Filepath: Models/cube.obj
-    Type: AssetType::StaticMesh
-  - Handle: 9290087295062805641
-    Filepath: Sprites/minecraft_test.sprite
-    Type: AssetType::SpriteSheet
-  - Handle: 12368061447856671797
-    Filepath: Sprites/minecraft_test.png
+  - Handle: 2704668797119576077
+    Filepath: Sprites/Items/Checkpoints/End/End (Idle).png
     Type: AssetType::Texture
-  - Handle: 13093705806621393669
+  - Handle: 3875991619915856441
+    Filepath: Sprites/Items/Boxes/Box1/Idle.png
+    Type: AssetType::Texture
+  - Handle: 4430354893406830390
+    Filepath: Sprites/Items/Boxes/Box3/Idle.png
+    Type: AssetType::Texture
+  - Handle: 7072008334079100734
+    Filepath: Sprites/Items/Fruits/Cherries.sprite
+    Type: AssetType::SpritesSheet
+  - Handle: 8622424555671573006
     Filepath: Sounds/solitude-dark-ambient-electronic-197737.mp3
     Type: AssetType::Audio
-  - Handle: 13707348780738508932
-    Filepath: Materials/Material.mat
-    Type: AssetType::Material
-  - Handle: 14457226710400017717
-    Filepath: Materials/Blue.mat
-    Type: AssetType::Material
-  - Handle: 16303558325313807773
-    Filepath: Models/plane.obj
-    Type: AssetType::StaticMesh
-  - Handle: 17413753496797735207
-    Filepath: Sprites/DungeonCrawlTileset.sprite
-    Type: AssetType::SpriteSheet
-  - Handle: 18396952890443678112
-    Filepath: Materials/Red.mat
-    Type: AssetType::Material
+  - Handle: 8763776668281863141
+    Filepath: Sprites/Other/Transition.png
+    Type: AssetType::Texture
+  - Handle: 9477193703314235854
+    Filepath: Sprites/Main Characters/Virtual Guy/Run (32x32).sprite
+    Type: AssetType::SpritesSheet
+  - Handle: 10561939124411563609
+    Filepath: Sprites/Other/Dust Particle.png
+    Type: AssetType::Texture
+  - Handle: 11720522658030779459
+    Filepath: Sprites/Main Characters/Virtual Guy/Run (32x32).png
+    Type: AssetType::Texture
+  - Handle: 16562962638386903553
+    Filepath: Sprites/Traps/Sand Mud Ice/Sand Particle.png
+    Type: AssetType::Texture
+  - Handle: 16707881503323011987
+    Filepath: Sprites/Main Characters/Virtual Guy/Idle (32x32).png
+    Type: AssetType::Texture
+  - Handle: 16877372621965693190
+    Filepath: Scenes/scene.org
+    Type: AssetType::Scene

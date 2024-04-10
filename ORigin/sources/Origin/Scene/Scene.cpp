@@ -8,7 +8,9 @@
 #include "ScriptableEntity.h"
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
+
 #include "Origin/Animation/Animation.h"
+
 #include "origin/Physics/Contact2DListener.h"
 #include "Origin/Physics/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
@@ -135,12 +137,14 @@ namespace origin
 
 
 			// Animation
-			const auto& animView = m_Registry.view<AnimationComponent>();
+			const auto& animView = m_Registry.view<SpriteAnimationComponent>();
 			for (const auto entity : animView)
 			{
-				auto& ac = animView.get<AnimationComponent>(entity);
-				if (!ac.Animations.empty())
-					ac.Animations[ac.CurrentAnimation]->OnRuntimeUpdate();
+				auto& ac = animView.get<SpriteAnimationComponent>(entity);
+				if (ac.State->HasAnimations())
+				{
+					ac.State->OnUpdateRuntime(ts);
+				}
 			}
 
 			// Audio Update
@@ -231,7 +235,7 @@ namespace origin
 		m_Physics2D->OnSimulationStop();
 	}
 
-	void Scene::OnEditorUpdate(Timestep deltaTime, EditorCamera& editorCamera)
+	void Scene::OnEditorUpdate(Timestep ts, EditorCamera& editorCamera)
 	{
 		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
@@ -241,24 +245,24 @@ namespace origin
 				nsc.Instance->m_Entity = Entity{entity, this};
 				nsc.Instance->OnCreate();
 			}
-			nsc.Instance->OnUpdate(deltaTime);
+			nsc.Instance->OnUpdate(ts);
 		});
 
 		{
 			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
 			{
-				pc.Particle.OnUpdate(deltaTime);
+				pc.Particle.OnUpdate(ts);
 			});
 		}
 
 		// Animation
-		const auto& animView = m_Registry.view<AnimationComponent>();
+		const auto& animView = m_Registry.view<SpriteAnimationComponent>();
 		for (const auto entity : animView)
 		{
-			auto& ac = animView.get<AnimationComponent>(entity);
-			if (!ac.Animations.empty())
+			auto& ac = animView.get<SpriteAnimationComponent>(entity);
+			if(ac.State->HasAnimations())
 			{
-				ac.Animations[ac.CurrentAnimation]->OnUpdateEditor();
+				ac.State->OnUpdateEditor(ts);
 			}
 		}
 
@@ -284,7 +288,7 @@ namespace origin
 		}
 		Renderer2D::End();
 
-		editorCamera.UpdateAudioListener(deltaTime);
+		editorCamera.UpdateAudioListener(ts);
 
 		//Render
 		RenderScene(editorCamera);
@@ -321,12 +325,12 @@ namespace origin
 			});
 
 			// Animation
-			auto& animView = m_Registry.view<AnimationComponent>();
+			auto& animView = m_Registry.view<SpriteAnimationComponent>();
 			for (auto e : animView)
 			{
-				auto ac = animView.get<AnimationComponent>(e);
-				if(!ac.Animations.empty())
-					ac.Animations[ac.CurrentAnimation]->OnRuntimeUpdate();
+				auto ac = animView.get<SpriteAnimationComponent>(e);
+				if (ac.State->HasAnimations())
+					ac.State->OnUpdateRuntime(ts);
 			}
 
 			Renderer2D::Begin(editorCamera);
@@ -454,15 +458,20 @@ namespace origin
 				Renderer2D::DrawSprite(tc.GetTransform(), sc, static_cast<int>(entity));
 			}
 
-			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
+			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, SpriteAnimationComponent>();
 			for (auto& entity : animView)
 			{
-				auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-				if (!ac.Animations.empty())
+				auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, SpriteAnimationComponent>(entity);
+
+				if (ac.State->HasAnimations())
 				{
-					ac.Animations[ac.CurrentAnimation]->OnRuntimeUpdate();
-					if (ac.Animations[ac.CurrentAnimation]->HasFrame())
-						sc.Texture = ac.Animations[ac.CurrentAnimation]->GetCurrentValue();
+					if (ac.State->GetAnimation()->HasFrame())
+					{
+						auto &anim = ac.State->GetAnimation();
+						sc.Texture = anim->GetCurrentFrame().Handle;
+						sc.Min = anim->GetCurrentFrame().Min;
+						sc.Max = anim->GetCurrentFrame().Max;
+					}
 				}
 			}
 		}
@@ -562,14 +571,19 @@ namespace origin
 			Renderer2D::DrawSprite(tc.GetTransform(), sprite, static_cast<int>(entity));
 		}
 
-		const auto& animView = m_Registry.view<SpriteRenderer2DComponent, AnimationComponent>();
+		const auto& animView = m_Registry.view<SpriteRenderer2DComponent, SpriteAnimationComponent>();
 		for (auto& entity : animView)
 		{
-			auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, AnimationComponent>(entity);
-			if (!ac.Animations.empty())
+			auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, SpriteAnimationComponent>(entity);
+			if (ac.State->HasAnimations())
 			{
-				if(ac.Animations[ac.CurrentAnimation]->HasFrame())
-					sc.Texture = ac.Animations[ac.CurrentAnimation]->GetCurrentValue();
+				if (ac.State->GetAnimation()->HasFrame())
+				{
+					auto &anim = ac.State->GetAnimation();
+					sc.Texture = anim->GetCurrentFrame().Handle;
+					sc.Min = anim->GetCurrentFrame().Min;
+					sc.Max = anim->GetCurrentFrame().Max;
+				}
 			}
 		}
 
@@ -716,9 +730,8 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(TransformComponent)
 	OGN_REG_COMPONENT(AudioComponent)
 	OGN_REG_COMPONENT(AudioListenerComponent)
-	OGN_REG_COMPONENT(AnimationComponent)
+	OGN_REG_COMPONENT(SpriteAnimationComponent)
 	OGN_REG_COMPONENT(SpriteRenderer2DComponent)
-	OGN_REG_COMPONENT(SpriteSheet2DComponent)
 	OGN_REG_COMPONENT(LightComponent)
 	OGN_REG_COMPONENT(StaticMeshComponent)
 	OGN_REG_COMPONENT(TextComponent)

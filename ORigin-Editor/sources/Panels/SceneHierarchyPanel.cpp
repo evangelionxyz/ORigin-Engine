@@ -258,10 +258,17 @@ namespace origin {
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
 			DisplayAddComponentEntry<AudioComponent>("AUDIO");
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
-			DisplayAddComponentEntry<AnimationComponent>("ANIMATION");
+			DisplayAddComponentEntry<SpriteRenderer2DComponent>("2D SPRITE RENDERER 2D");
+			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
+			DisplayAddComponentEntry<RevoluteJoint2DComponent>("2D REVOLUTE JOINT");
+			DisplayAddComponentEntry<SpriteAnimationComponent>("2D SPRITE ANIMATION");
+			DisplayAddComponentEntry<CircleRendererComponent>("2D CIRCLE RENDERER 2D");
+			if (!m_SelectedEntity.HasComponent<Rigidbody2DComponent>())
+			{
+				DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
+			}
 			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
-			DisplayAddComponentEntry<CircleRendererComponent>("CIRCLE RENDERER 2D");
-			DisplayAddComponentEntry<SpriteRenderer2DComponent>("SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
 			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
 			if (DisplayAddComponentEntry<LightComponent>("LIGHTING"))
@@ -274,13 +281,6 @@ namespace origin {
 			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
 			DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
 			DisplayAddComponentEntry<CapsuleColliderComponent>("CAPSULE COLLIDER");
-
-			if(!m_SelectedEntity.HasComponent<Rigidbody2DComponent>())
-				DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
-
-			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
-			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
-			DisplayAddComponentEntry<RevoluteJoint2DComponent>("2D REVOLUTE JOINT");
 
 			ImGui::EndPopup();
 		}
@@ -406,22 +406,22 @@ namespace origin {
 			const char* currentProjectionType = projectionType[static_cast<int>(camera.GetProjectionType())];
 
 			bool isSelected = false;
-		if (ImGui::BeginCombo("Projection", currentProjectionType))
-		{
-			for (int i = 0; i < 2; i++)
+			if (ImGui::BeginCombo("Projection", currentProjectionType))
 			{
-				isSelected = currentProjectionType == projectionType[i];
-				if (ImGui::Selectable(projectionType[i], isSelected))
+				for (int i = 0; i < 2; i++)
 				{
-					currentProjectionType = projectionType[i];
-					component.Camera.SetProjectionType(static_cast<ProjectionType>(i));
-				}
+					isSelected = currentProjectionType == projectionType[i];
+					if (ImGui::Selectable(projectionType[i], isSelected))
+					{
+						currentProjectionType = projectionType[i];
+						component.Camera.SetProjectionType(static_cast<ProjectionType>(i));
+					}
 
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
 			}
-			ImGui::EndCombo();
-		}
 
 		const char* aspectRatioType[5] = { "Free", "16/10", "16/9", "21/9", "4/3" };
 		const char* currentAspectRatioType = aspectRatioType[static_cast<int>(camera.GetAspectRatioType())];
@@ -477,12 +477,12 @@ namespace origin {
 				camera.SetOrthographicFarClip(orthoFarClip);
 		}});
 
-		DrawComponent<AnimationComponent>("ANIMATION", entity, [](auto& component)
+		DrawComponent<SpriteAnimationComponent>("SPRITE ANIMATION", entity, [](auto& component)
 		{
-				for (auto& anim : component.Animations)
-				{
-					ImGui::Text(anim->GetName().c_str());
-				}
+			for (auto anim : component.State->GetStateStorage())
+			{
+				ImGui::Text(anim.c_str());
+			}
 		});
 
 		DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto& component)
@@ -694,22 +694,17 @@ namespace origin {
 						{
 							component.Texture = handle;
 							component.Min = glm::vec2(0.0f);
-							component.Max = glm::vec2(0.0f);
-						}
-						else if (AssetManager::GetAssetType(handle) == AssetType::SpriteSheet)
-						{
-							//SpriteSheet
+							component.Max = glm::vec2(1.0f);
 						}
 						else
 							OGN_CORE_WARN("Wrong asset type!");
 					}
 					else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
 					{
-
 						SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
+						component.Texture = data.TextureHandle;
 						component.Min = data.Min;
 						component.Max = data.Max;
-						component.Texture = data.TextureHandle;
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -723,16 +718,15 @@ namespace origin {
 					{
 						component.Texture = 0;
 						component.Min = glm::vec2(0.0f);
-						component.Max = glm::vec2(0.0f);
+						component.Max = glm::vec2(1.0f);
 					}
-
-					UI::DrawVec2Control("Min", component.Min, 0.0001f, 1.0f);
-					UI::DrawVec2Control("Max", component.Max, 0.0001f, 1.0f);
 
 					UI::DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
 					ImGui::Text("Flip");
 					ImGui::SameLine();
+					ImGui::PushID(1);
 					ImGui::Checkbox("X", &component.FlipX);
+					ImGui::PopID();
 					ImGui::SameLine();
 					ImGui::Checkbox("Y", &component.FlipY);
 				}

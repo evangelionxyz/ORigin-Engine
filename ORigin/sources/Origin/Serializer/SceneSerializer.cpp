@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "SceneSerializer.h"
+
 #include "Origin\Scene\EntityManager.h"
 #include "Origin\Scene\Components.h"
 #include "Origin\Scene\Entity.h"
@@ -91,40 +92,44 @@ namespace origin
 			out << YAML::EndMap; // TagComponent
 		}
 
-		if (entity.HasComponent<AnimationComponent>())
+		if (entity.HasComponent<SpriteAnimationComponent>())
 		{
-			auto& ac = entity.GetComponent<AnimationComponent>();
+			SpriteAnimationComponent &ac = entity.GetComponent<SpriteAnimationComponent>();
 
-			out << YAML::Key << "AnimationComponent";
-			out << YAML::BeginMap; // AnimationComponent
-			out << YAML::Key << "Animations";
-			out << YAML::BeginSeq; // Animations
+			out << YAML::Key << "SpriteAnimationComponent";
+			out << YAML::BeginMap; // SpriteAnimationComponent
+			out << YAML::Key << "States";
+			out << YAML::BeginSeq; // States
 
-			for (int animIndex = 0; animIndex < ac.Animations.size(); animIndex++)
+			auto states = ac.State->GetAnimationState();
+
+			for (auto it = states.begin(); it != states.end(); it++)
 			{
-				const std::shared_ptr<Animation> currentAnim = ac.Animations[animIndex];
+				const std::shared_ptr<SpriteAnimation> &currentAnim = it->second;
 				out << YAML::BeginMap; // Name
-				out << YAML::Key << "Name" << currentAnim->GetName();
-				out << YAML::Key << "Type" << (int)currentAnim->GetType();
+				out << YAML::Key << "Name" << it->first;
 				out << YAML::Key << "Looping" << YAML::Value << currentAnim->Looping;
 				out << YAML::Key << "MaxFrame" << YAML::Value << currentAnim->MaxFrame;
-
+				out << YAML::Key << "Speed" << YAML::Value << currentAnim->Speed;
 				out << YAML::Key << "Frames" << YAML::Value;
 				out << YAML::BeginSeq; // Frames
-				for (int frameIndex = 0; frameIndex < currentAnim->GetTotalFrames(); frameIndex++)
+				for (int i = 0; i < currentAnim->GetTotalFrames(); i++)
 				{
 					out << YAML::BeginMap; // ID
-					out << YAML::Key << "ID" << YAML::Value << currentAnim->GetValue(frameIndex);
-					out << YAML::Key << "FrameBegin" << YAML::Value << currentAnim->GetFrame(frameIndex).FrameBegin;
-					out << YAML::Key << "FrameEnd" << YAML::Value << currentAnim->GetFrame(frameIndex).FrameEnd;
+					out << YAML::Key << "ID" << YAML::Value << currentAnim->GetFrame(i).Handle;
+					out << YAML::Key << "FrameBegin" << YAML::Value << currentAnim->GetFrame(i).FrameBegin;
+					out << YAML::Key << "FrameEnd" << YAML::Value << currentAnim->GetFrame(i).FrameEnd;
+					out << YAML::Key << "Min" << YAML::Value << currentAnim->GetFrame(i).Min;
+					out << YAML::Key << "Max" << YAML::Value << currentAnim->GetFrame(i).Max;
 					out << YAML::EndMap; //!ID
 				}
 				out << YAML::EndSeq; //!Frames
 				out << YAML::EndMap; // !Name
+				break;
 			}
 
-			out << YAML::EndSeq; // !Animations
-			out << YAML::EndMap; // !AnimationComponent
+			out << YAML::EndSeq; // !States
+			out << YAML::EndMap; // !SpriteAnimationComponent
 		}
 
 		if (entity.HasComponent<ScriptComponent>())
@@ -604,31 +609,32 @@ namespace origin
 					al.Enable = audioListnerComponent["Enable"].as<bool>();
 				}
 
-				if (YAML::Node animationComponent = entity["AnimationComponent"])
+				if (YAML::Node spriteAnimationComponent = entity["SpriteAnimationComponent"])
 				{
-					auto& ac = deserializedEntity.AddComponent<AnimationComponent>();
-					if (auto animations = animationComponent["Animations"])
+					auto& ac = deserializedEntity.AddComponent<SpriteAnimationComponent>();
+					if (auto states = spriteAnimationComponent["States"])
 					{
-						for (auto anim : animations)
+						for (auto state : states)
 						{
-							std::string animName = anim["Name"].as<std::string>();
-							int animType = anim["Type"].as<int>();
-							std::shared_ptr<Animation> newAnim = Animation::Create(animName);
-							newAnim->SetType((AnimationType)animType);
-							newAnim->Looping = anim["Looping"].as<bool>();
-							newAnim->MaxFrame = anim["MaxFrame"].as<int>();
+							std::string name = state["Name"].as<std::string>();
+							std::shared_ptr<SpriteAnimation> newAnim = std::make_shared<SpriteAnimation>();
+							newAnim->Looping = state["Looping"].as<bool>();
+							newAnim->MaxFrame = state["MaxFrame"].as<int>();
+							newAnim->Speed = state["Speed"].as<float>();
 
-							// Retrieve all frames from the animation
-							for (auto frames : anim["Frames"])
+							for (auto frames : state["Frames"])
 							{
 								AssetHandle handle = frames["ID"].as<uint64_t>();
-								AnimationFrame newFrame;
-								newFrame.Handle = handle;
-								newFrame.FrameBegin = frames["FrameBegin"].as<int>();
-								newFrame.FrameEnd = frames["FrameEnd"].as<int>();
-								newAnim->AddFrame(newFrame);
+								SpriteAnimationFrame frame(handle);
+								frame.FrameBegin = frames["FrameBegin"].as<int>();
+								frame.FrameEnd = frames["FrameEnd"].as<int>();
+								frame.Min = frames["Min"].as<glm::vec2>();
+								frame.Max = frames["Max"].as<glm::vec2>();
+								newAnim->AddFrame(frame);
 							}
-							ac.Animations.push_back(newAnim);
+
+							ac.State->AddState(name);
+							ac.State->AddAnimation(newAnim);
 						}
 					}
 				}

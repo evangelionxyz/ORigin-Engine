@@ -17,7 +17,7 @@ namespace origin {
 		Material,
 		MeshSource,
 		Animation,
-		SpriteSheet
+		SpritesSheet
 	};
 
 	const char *AssetTypeToString(AssetType type);

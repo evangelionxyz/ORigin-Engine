@@ -1,161 +1,8 @@
 #include "AnimationTimeline.h"
-#include "Origin\Scene\Components.h"
+#include "Origin/Scene/Components.h"
 
 namespace origin
 {
-
-	AnimationTimeline::AnimationTimeline()
-	{
-	}
-
-	void AnimationTimeline::DrawEntityAnimation(std::vector<std::shared_ptr<Animation>> &animations, int *currentAnim)
-	{
-
-
-		static int selectedEntry = -1;
-		static int firstFrame = 0;
-		static bool expanded = true;
-
-		ImGui::Begin("Animation");
-
-		ImGui::PushItemWidth(130);
-		ImGui::Text("New");
-		ImGui::SameLine();
-		static std::string animName;
-		char buffer[256];
-		strcpy_s(buffer, sizeof(buffer), animName.c_str());
-		if (ImGui::InputText("##anim_name", buffer, sizeof(buffer)))
-			animName = std::string(buffer);
-
-		ImGui::SameLine();
-		if (ImGui::Button("+"))
-		{
-			if (!animName.empty())
-			{
-				std::shared_ptr<Animation> newAnim = Animation::Create(animName);
-				animations.push_back(newAnim);
-				animName.clear();
-			}
-		}
-
-		ImGui::PopItemWidth();
-
-		if (!animations.empty())
-		{
-			ImGui::PushItemWidth(130);
-			ImGui::SameLine();
-			std::string currentAnimName = animations[CurrentAnimIndex]->GetName();
-			if (ImGui::BeginCombo("##animation_state", currentAnimName.c_str()))
-			{
-				bool isSelected = false;
-				for (int i = 0; i < animations.size(); i++)
-				{
-					isSelected = currentAnimName == animations[i]->GetName();
-					if (ImGui::Selectable(animations[i]->GetName().c_str(), isSelected))
-						CurrentAnimIndex = i;
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-
-			bool isDeleting = false;
-			ImGui::SameLine();
-			if (ImGui::Button("-"))
-			{
-				animations.erase(animations.begin() + CurrentAnimIndex);
-				CurrentAnimIndex = animations.size() > 0 ? animations.size() - 1 : 0;
-				isDeleting = true;
-			}
-
-			*currentAnim = CurrentAnimIndex;
-
-			if (isDeleting)
-			{
-				ImGui::End();
-				return;
-			}
-
-			ImVec4 buttonColor = ImVec4(0.1f, 0.6f, 0.1f, 1.0f);
-			ImVec4 buttonColorHovered = ImVec4(0.1f, 0.8f, 0.1f, 1.0f);
-
-			if (animations[CurrentAnimIndex]->Preview)
-			{
-				buttonColor = ImVec4(0.6f, 0.1f, 0.1f, 1.0f);
-				buttonColorHovered = ImVec4(0.8f, 0.1f, 0.1f, 1.0f);
-			}
-
-			ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColorHovered);
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
-			if (ImGui::Button("Preview"))
-			{
-				animations[CurrentAnimIndex]->Preview = !animations[CurrentAnimIndex]->Preview;
-				animations[CurrentAnimIndex]->Reset();
-			}
-
-			ImGui::PopStyleColor(3);
-			ImGui::SameLine();
-			ImGui::Text("Frame");
-			ImGui::SameLine();
-			ImGui::InputInt("##current_frame", &animations[CurrentAnimIndex]->CurrentFrame);
-			ImGui::SameLine();
-			ImGui::Text("Max Frame");
-			ImGui::SameLine();
-			ImGui::InputInt("##frame_max", &animations[CurrentAnimIndex]->MaxFrame);
-			ImGui::SameLine();
-			ImGui::Text("Looping");
-			ImGui::SameLine();
-			ImGui::Checkbox("##looping", &animations[CurrentAnimIndex]->Looping);
-			ImGui::PopItemWidth();
-
-			Timeline(animations[CurrentAnimIndex], &animations[CurrentAnimIndex]->CurrentFrame, &expanded, &selectedEntry, &firstFrame,
-							 SEQUENCER_EDIT_STARTEND | SEQUENCER_ADD | SEQUENCER_DEL | SEQUENCER_COPYPASTE | SEQUENCER_CHANGE_FRAME);
-		}
-
-		ImGui::End();
-	}
-
-	const char *AnimationTimeline::GetItemLabel(AnimationType type, int index) const
-	{
-		static char tmps[512];
-		snprintf(tmps, 512, "[%02d] %s", index, AnimationTypeToString(type));
-		return tmps;
-	}
-
-	void AnimationTimeline::Get(const std::shared_ptr<Animation> &anim, int index, int **start, int **end, unsigned int *color)
-	{
-		auto &item = anim->GetFrame(index);
-		if (color)
-			*color = IM_COL32(230, 100, 0, 255);
-		if (start)
-			*start = &item.FrameBegin;
-		if (end)
-			*end = &item.FrameEnd;
-	}
-
-	void AnimationTimeline::CustomDrawCompact(const std::shared_ptr<Animation> &anim, int index, ImDrawList *draw_list, const ImRect &rc, const ImRect &clippingRect)
-	{
-		auto &frame = anim->GetFrame(index);
-		rampEdit.mMax = ImVec2(float(anim->MaxFrame), 1.f);
-		rampEdit.mMin = ImVec2(0.0f, 0.f);
-		draw_list->PushClipRect(clippingRect.Min, clippingRect.Max, true);
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < rampEdit.mPointCount[i]; j++)
-			{
-				float p = rampEdit.mPts[i][j].x;
-				if (p < frame.FrameBegin || p > frame.FrameEnd)
-					continue;
-				float r = p / float(anim->MaxFrame);
-				float x = ImLerp(rc.Min.x, rc.Max.x, r);
-				draw_list->AddLine(ImVec2(x, rc.Min.y + 6), ImVec2(x, rc.Max.y - 4), 0xAA000000, 4.f);
-			}
-		}
-		draw_list->PopClipRect();
-	}
-
 	static bool SequencerAddDelButton(ImDrawList *draw_list, ImVec2 pos, bool add = true)
 	{
 		ImGuiIO &io = ImGui::GetIO();
@@ -176,21 +23,141 @@ namespace origin
 		return clickedBtn;
 	}
 
-	bool AnimationTimeline::Timeline(std::shared_ptr<Animation> &animation, int *currentFrame, bool *expanded, int *selectedEntry, int *firstFrame, int sequenceOptions)
+	template<typename T>
+	void Get(const std::shared_ptr<T> &anim, int index, int **start, int **end, unsigned int *color)
+	{
+		auto &frame = anim->GetFrame(index);
+		if (color)
+			*color = IM_COL32(230, 100, 0, 255);
+		if (start)
+			*start = &frame.FrameBegin;
+		if (end)
+			*end = &frame.FrameEnd;
+	}
+
+	void AnimationTimeline::DrawSpriteAnimTimeline(SpriteAnimationComponent &sa)
+	{
+		static int selectedEntry = -1;
+		static int firstFrame = 0;
+		static bool expanded = true;
+
+		ImGui::Begin("Animation");
+
+		ImGui::PushItemWidth(100);
+		ImGui::Text("New");
+		ImGui::SameLine();
+		static std::string stateName;
+		char buffer[256];
+		strcpy_s(buffer, sizeof(buffer), stateName.c_str());
+		if (ImGui::InputText("##anim_name", buffer, sizeof(buffer)))
+			stateName = std::string(buffer);
+
+		ImGui::SameLine();
+		if (ImGui::Button("+"))
+		{
+			if (!stateName.empty())
+			{
+				std::shared_ptr<SpriteAnimation> anim = std::make_shared<SpriteAnimation>();
+				sa.State->AddState(stateName);
+				sa.State->AddAnimation(anim);
+				stateName.clear();
+			}
+		}
+
+		ImGui::PopItemWidth();
+
+		if (sa.State->HasAnimations())
+		{
+			ImGui::PushItemWidth(100);
+			ImGui::SameLine();
+			std::string currentAnimName = sa.State->GetCurrentState();
+
+			if (ImGui::BeginCombo("##animation_state", currentAnimName.c_str()))
+			{
+				bool isSelected = false;
+				for (int i = 0; i < sa.State->GetStateStorage().size(); i++)
+				{
+					isSelected = currentAnimName == sa.State->GetStateStorage()[i];
+					if (ImGui::Selectable(sa.State->GetStateStorage()[i].c_str(), isSelected))
+						sa.State->SetActiveState(sa.State->GetStateStorage()[i]);
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			bool isDeleting = false;
+			ImGui::SameLine();
+			if (ImGui::Button("-"))
+			{
+				sa.State->RemoveState(sa.State->GetCurrentState());
+				isDeleting = true;
+			}
+
+			if (isDeleting)
+			{
+				ImGui::End();
+				return;
+			}
+
+			ImVec4 buttonColor = ImVec4(0.1f, 0.6f, 0.1f, 1.0f);
+			ImVec4 buttonColorHovered = ImVec4(0.1f, 0.8f, 0.1f, 1.0f);
+
+
+			if (sa.State->GetAnimation()->Preview)
+			{
+				buttonColor = ImVec4(0.6f, 0.1f, 0.1f, 1.0f);
+				buttonColorHovered = ImVec4(0.8f, 0.1f, 0.1f, 1.0f);
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, buttonColorHovered);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, buttonColor);
+			if (ImGui::Button("Preview"))
+			{
+				sa.State->GetAnimation()->Preview = !sa.State->GetAnimation()->Preview;
+				sa.State->GetAnimation()->Reset();
+			}
+
+			ImGui::PopStyleColor(3);
+
+			ImGui::SameLine();
+			ImGui::Text("Frame");
+			ImGui::SameLine();
+			ImGui::InputFloat("##current_frame", &sa.State->GetAnimation()->CurrentFrame, 1.0f, 0.0f, "%.0f");
+			ImGui::SameLine();
+			ImGui::Text("Max Frame");
+			ImGui::SameLine();
+			ImGui::InputInt("##frame_max", &sa.State->GetAnimation()->MaxFrame);
+			ImGui::SameLine();
+			ImGui::InputFloat("##speed", &sa.State->GetAnimation()->Speed);
+			ImGui::SameLine();
+			ImGui::Text("Looping");
+			ImGui::SameLine();
+			ImGui::Checkbox("##looping", &sa.State->GetAnimation()->Looping);
+			ImGui::PopItemWidth();
+
+			SpriteAnimTimeline(sa.State->GetAnimation(), &sa.State->GetAnimation()->CurrentFrame, &expanded, &selectedEntry, &firstFrame,
+							 SEQUENCER_EDIT_STARTEND | SEQUENCER_ADD | SEQUENCER_DEL | SEQUENCER_COPYPASTE | SEQUENCER_CHANGE_FRAME);
+		}
+
+		ImGui::End();
+	}
+
+	bool AnimationTimeline::SpriteAnimTimeline(std::shared_ptr<SpriteAnimation> &animation, float *currentFrame, bool *expanded, int *selectedEntry, int *firstFrame, int sequenceOptions)
 	{
 		bool ret = false;
 
 		ImGuiIO &io = ImGui::GetIO();
 
-		int cx = (int)(io.MousePos.x);
-		int cy = (int)(io.MousePos.y);
-
-
-		int legendWidth = 130;
-
 		static int movingEntry = -1;
 		static int movingPos = -1;
 		static int movingPart = -1;
+
+		int cx = (int)(io.MousePos.x);
+		int cy = (int)(io.MousePos.y);
+		int legendWidth = 130;
 
 		int delEntry = -1;
 		int dupEntry = -1;
@@ -236,18 +203,24 @@ namespace origin
 		drawList->AddRectFilled(canvasPos, { canvasPos.x + legendWidth, canvasPos.y + canvasSize.y }, IM_COL32(20, 20, 20, 255));
 		drawList->AddRectFilled({ canvasPos.x + legendWidth, canvasPos.y }, { canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y }, IM_COL32(10, 10, 10, 255));
 
-		if (animation->GetType() == AnimationType::SpriteSheet)
+		ImGui::Button("Drag Here");
+		if (ImGui::BeginDragDropTarget())
 		{
-			ImGui::Button("Drag Here");
-			if (ImGui::BeginDragDropTarget())
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
-				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-				{
-					AssetHandle handle = *(AssetHandle *)payload->Data;
-					animation->AddFrame(handle);
-				}
-				ImGui::EndDragDropTarget();
+				AssetHandle handle = *(AssetHandle *)payload->Data;
+				SpriteAnimationFrame frame(handle);
+				animation->AddFrame(frame);
 			}
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
+			{
+				SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
+				SpriteAnimationFrame frame(data.TextureHandle);
+				frame.Min = data.Min;
+				frame.Max = data.Max;
+				animation->AddFrame(frame);
+			}
+			ImGui::EndDragDropTarget();
 		}
 
 		// current frame top
@@ -258,11 +231,11 @@ namespace origin
 		{
 			if (frameCount)
 			{
-				*currentFrame = (int)((io.MousePos.x - topRect.Min.x) / framePixelWidth);
-				if (*currentFrame < 0)
-					*currentFrame = 0;
+				*currentFrame = (float)(int)((io.MousePos.x - topRect.Min.x) / framePixelWidth);
+				if (*currentFrame < 0.0f)
+					*currentFrame = 0.0f;
 				if (*currentFrame >= animation->MaxFrame)
-					*currentFrame = animation->MaxFrame;
+					*currentFrame = (float)animation->MaxFrame;
 			}
 			if (!io.MouseDown[0])
 				MovingCurrentFrame = false;
@@ -270,27 +243,7 @@ namespace origin
 
 		//header
 		drawList->AddRectFilled(canvasPos, ImVec2(canvasSize.x + canvasPos.x, canvasPos.y + itemHeight), IM_COL32(20, 10, 15, 255), 0);
-		if (sequenceOptions & SEQUENCER_ADD)
-		{
-			if (SequencerAddDelButton(drawList, ImVec2(canvasPos.x + legendWidth - itemHeight, canvasPos.y + 2), true))
-				ImGui::OpenPopup("Add Entry");
-
-			if (ImGui::BeginPopup("Add Entry"))
-			{
-				for (int i = 0; i < 1; i++)
-				{
-					if (ImGui::Selectable(AnimationTypeToString((AnimationType)i)))
-					{
-						animation->SetType((AnimationType)i);
-						*selectedEntry = sequenceCount - 1;
-					}
-				}
-
-				ImGui::EndPopup();
-				popupOpened = true;
-			}
-		}
-
+		
 		//header frame number and lines
 		int modFrameCount = 10;
 		int frameStep = 1;
@@ -344,8 +297,7 @@ namespace origin
 		for (int i = 0; i < sequenceCount; i++)
 		{
 			ImVec2 tpos(contentMin.x + 3, contentMin.y + i * itemHeight + 2);
-			drawList->AddText(tpos, 0xFFFFFFFF, this->GetItemLabel(animation->GetType(), i));
-
+			drawList->AddText(tpos, 0xFFFFFFFF, "SPRITE");
 			if (sequenceOptions & SEQUENCER_DEL)
 			{
 				if (SequencerAddDelButton(drawList, ImVec2(contentMin.x + legendWidth - itemHeight + 2 - 10, tpos.y + 2), false))
@@ -393,7 +345,7 @@ namespace origin
 		{
 			int *start, *end;
 			unsigned int color;
-			this->Get(animation, i, &start, &end, &color);
+			Get<SpriteAnimation>(animation, i, &start, &end, &color);
 			ImVec2 pos = ImVec2(contentMin.x + legendWidth - firstFrameUsed * framePixelWidth, contentMin.y + itemHeight * i + 1);
 			ImVec2 slotP1(pos.x + *start * framePixelWidth, pos.y + 2);
 			ImVec2 slotP2(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + itemHeight - 2);
@@ -455,7 +407,7 @@ namespace origin
 			if (std::abs(diffFrame) > 0)
 			{
 				int *start, *end;
-				this->Get(animation, movingEntry, &start, &end, NULL);
+				Get<SpriteAnimation>(animation, movingEntry, &start, &end, NULL);
 				if (selectedEntry)
 					*selectedEntry = movingEntry;
 				int &l = *start;
@@ -489,13 +441,13 @@ namespace origin
 		}
 
 		// cursor
-		if (currentFrame && firstFrame && *currentFrame >= *firstFrame && *currentFrame <= animation->MaxFrame)
+		if (currentFrame && firstFrame && (int)*currentFrame >= *firstFrame && (int)*currentFrame <= animation->MaxFrame)
 		{
 			static const float cursorWidth = 4.0f;
-			float cursorOffset = contentMin.x + legendWidth + (*currentFrame - firstFrameUsed) * framePixelWidth + framePixelWidth / 2 - cursorWidth * 0.5f;
+			float cursorOffset = contentMin.x + legendWidth + ((int)*currentFrame - firstFrameUsed) * framePixelWidth + framePixelWidth / 2 - cursorWidth * 0.5f;
 			drawList->AddLine(ImVec2(cursorOffset, canvasPos.y), ImVec2(cursorOffset, contentMax.y), 0xA02A2AFF, cursorWidth);
 			char tmps[512];
-			ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", *currentFrame);
+			ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", (int)*currentFrame);
 			drawList->AddText(ImVec2(cursorOffset + 10, canvasPos.y + 2), 0xFF2A2AFF, tmps);
 		}
 

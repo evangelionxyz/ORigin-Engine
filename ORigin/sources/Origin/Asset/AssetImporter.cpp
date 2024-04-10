@@ -24,7 +24,7 @@ namespace origin {
 		{ AssetType::MeshSource, ModelImporter::Import },
 		{ AssetType::Material, MaterialImporter::Import },
 		{ AssetType::StaticMesh, ModelImporter::Import },
-		{ AssetType::SpriteSheet, SpriteSheetImporter::Import }
+		{ AssetType::SpritesSheet, SpriteSheetImporter::Import }
 	};
 	
 	// It is automatically match Functions by checking the metadata
@@ -159,8 +159,7 @@ namespace origin {
 
 	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
 	{
-		std::shared_ptr<SpriteSheet> spriteSheet = SpriteSheet::Create(filepath);
-		return spriteSheet;
+		return SpriteSheet::Create(filepath);
 	}
 
 	std::shared_ptr<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)

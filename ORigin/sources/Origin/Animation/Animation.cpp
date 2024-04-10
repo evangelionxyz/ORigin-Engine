@@ -2,49 +2,32 @@
 
 #include "pch.h"
 #include "Animation.h"
-#include "Origin\Asset\AssetManager.h"
-
-#include "Origin\Renderer\Renderer2D.h"
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
-
-	Animation::Animation(std::string name)
-		: m_Name(std::move(name))
+	
+	void SpriteAnimation::AddFrame(SpriteAnimationFrame frame)
 	{
+		AnimFrames.push_back(std::move(frame));
 	}
 
-	void Animation::AddFrame(AssetHandle handle)
-	{
-		AnimationFrame frame(handle);
-		AnimFrames.push_back(frame);
-	}
-
-	void Animation::AddFrame(AnimationFrame frame)
-	{
-		AnimFrames.push_back(frame);
-	}
-
-	void Animation::DeleteFrame(int index)
+	void SpriteAnimation::DeleteFrame(int index)
 	{
 		if (HasFrame())
 		{
 			AnimFrames.erase(AnimFrames.begin() + index);
 			FrameIndex = index > 0 ? index - 1 : 0;
 		}
-
 	}
 
-	void Animation::OnUpdateEditor()
+	void SpriteAnimation::OnUpdateEditor(Timestep ts)
 	{
 		if (Preview)
 		{
 			if (CurrentFrame < MaxFrame)
-				CurrentFrame++;
+				CurrentFrame += ts * 60.0f * (Speed * 0.1f);
 
 			if (CurrentFrame >= MaxFrame)
-				CurrentFrame = Looping ? 0 : MaxFrame;
+				CurrentFrame = Looping ? 0.0f: MaxFrame;
 		}
 
 		for (int i = 0; i < AnimFrames.size(); i++)
@@ -56,16 +39,16 @@ namespace origin {
 		}
 	}
 
-	void Animation::OnRuntimeUpdate()
+	void SpriteAnimation::OnUpdateRuntime(Timestep ts)
 	{
 		if (!HasFrame())
 			return;
 
 		if (CurrentFrame < MaxFrame)
-			CurrentFrame++;
+			CurrentFrame += ts * 60.0f * (Speed * 0.1f);
 
 		if (CurrentFrame >= MaxFrame)
-			CurrentFrame = Looping ? 0 : MaxFrame;
+			CurrentFrame = Looping ? 0.0f : MaxFrame;
 
 		for (int i = 0; i < AnimFrames.size(); i++)
 		{
@@ -76,28 +59,18 @@ namespace origin {
 		}
 	}
 
-	void Animation::Reset()
+	void SpriteAnimation::Reset()
 	{
-		CurrentFrame = 0;
+		CurrentFrame = 0.0f;
 	}
 
-	AssetHandle Animation::GetCurrentValue()
+	SpriteAnimationFrame  &SpriteAnimation::GetCurrentFrame()
 	{
-		return AnimFrames[FrameIndex].Handle;
+		return AnimFrames[FrameIndex];
 	}
 
-	AssetHandle Animation::GetValue(int frame)
-	{
-		return AnimFrames.at(frame).Handle;
-	}
-
-	AnimationFrame& Animation::GetFrame(int index)
+	SpriteAnimationFrame  &SpriteAnimation::GetFrame(int index)
 	{
 		return AnimFrames[index];
-	}
-
-	std::shared_ptr<Animation> Animation::Create(const std::string& name)
-	{
-		return std::make_shared<Animation>(name);
 	}
 }

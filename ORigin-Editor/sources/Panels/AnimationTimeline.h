@@ -14,6 +14,17 @@
 
 namespace origin {
 
+	enum SEQUENCER_OPTIONS
+	{
+		SEQUENCER_EDIT_NONE = BIT(0),
+		SEQUENCER_EDIT_STARTEND = BIT(1),
+		SEQUENCER_CHANGE_FRAME = BIT(3),
+		SEQUENCER_ADD = BIT(4),
+		SEQUENCER_DEL = BIT(5),
+		SEQUENCER_COPYPASTE = BIT(6),
+		SEQUENCER_EDIT_ALL = SEQUENCER_EDIT_STARTEND | SEQUENCER_CHANGE_FRAME
+	};
+
 	struct RampEdit : public ImCurveEdit::Delegate
 	{
 		RampEdit()
@@ -43,6 +54,7 @@ namespace origin {
 			mMax = ImVec2(1.f, 1.f);
 			mMin = ImVec2(0.f, 0.f);
 		}
+
 		size_t GetCurveCount()
 		{
 			return 3;
@@ -93,6 +105,7 @@ namespace origin {
 		bool mbVisible[3];
 		ImVec2 mMin;
 		ImVec2 mMax;
+
 	private:
 		void SortValues(size_t curveIndex)
 		{
@@ -103,33 +116,11 @@ namespace origin {
 		}
 	};
 
-	enum SEQUENCER_OPTIONS
-	{
-		SEQUENCER_EDIT_NONE = 0,
-		SEQUENCER_EDIT_STARTEND = 1 << 1,
-		SEQUENCER_CHANGE_FRAME = 1 << 3,
-		SEQUENCER_ADD = 1 << 4,
-		SEQUENCER_DEL = 1 << 5,
-		SEQUENCER_COPYPASTE = 1 << 6,
-		SEQUENCER_EDIT_ALL = SEQUENCER_EDIT_STARTEND | SEQUENCER_CHANGE_FRAME
-	};
-
 	class AnimationTimeline
 	{
 	public:
-		AnimationTimeline();
-
-		void DrawEntityAnimation(std::vector<std::shared_ptr<Animation>>& animations, int* currentAnim);
-
-		void CustomDrawCompact(const std::shared_ptr<Animation>& anim, int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect);
-		void Get(const std::shared_ptr<Animation>& anim, int index, int** start, int** end, unsigned int* color);
-		const char* AnimationTimeline::GetItemLabel(AnimationType type, int index) const;
-		const char* GetCollapseFmt() const { return "%d Frames / %d entries"; }
-
-		int CurrentAnimIndex = 0;
-		RampEdit rampEdit;
-		bool Timeline(std::shared_ptr<Animation>& animation, int* currentFrame, bool* expanded, int* selectedEntry, int* firstFrame, int sequenceOptions);
+		static void DrawSpriteAnimTimeline(SpriteAnimationComponent &anim);
+		static bool SpriteAnimTimeline(std::shared_ptr<SpriteAnimation> &anim, float *currentFrame, bool* expanded, int* selectedEntry, int* firstFrame, int sequenceOptions);
 	};
-
 }
 

@@ -647,7 +647,7 @@ namespace origin
 		*outColor = entity.GetComponent<SpriteRenderer2DComponent>().Color;
 	}
 
-	static void SpriteRenderer2DComponent_FlipX(UUID entityID, bool* flip)
+	static void SpriteRenderer2DComponent_SetFlipX(UUID entityID, bool* flip)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -655,6 +655,36 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		
 		entity.GetComponent<SpriteRenderer2DComponent>().FlipX = *flip;
+	}
+
+	static void SpriteRenderer2DComponent_GetFlipX(UUID entityID, bool *flip)
+	{
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*flip = entity.GetComponent<SpriteRenderer2DComponent>().FlipX;
+	}
+
+	static void SpriteRenderer2DComponent_SetFlipY(UUID entityID, bool *flip)
+	{
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		entity.GetComponent<SpriteRenderer2DComponent>().FlipY = *flip;
+	}
+
+	static void SpriteRenderer2DComponent_GetFlipY(UUID entityID, bool *flip)
+	{
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene");
+
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*flip = entity.GetComponent<SpriteRenderer2DComponent>().FlipY;
 	}
 
 	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4* color)
@@ -900,32 +930,32 @@ namespace origin
 		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
 	}
 
-	static void AnimationComponent_GetActiveState(UUID entityID, MonoString* state)
+	static void SpriteAnimationComponent_GetActiveState(UUID entityID, MonoString* state)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		/*auto& ac = entity.GetComponent<AnimationComponent>();
-		if (ac.State.HasAnimations())
+		auto& ac = entity.GetComponent<SpriteAnimationComponent>();
+		if (ac.State->HasAnimations())
 		{
-			state = ScriptEngine::CreateString(ac.State.GetCurrentState().c_str());
-		}*/
+			state = ScriptEngine::CreateString(ac.State->GetCurrentState().c_str());
+		}
 	}
 
-	static void AnimationComponent_SetActiveState(UUID entityID, MonoString* state)
+	static void SpriteAnimationComponent_SetActiveState(UUID entityID, MonoString* state)
 	{
 		Scene* scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<AnimationComponent>();
-		/*if (ac.State.HasAnimations())
+		auto& ac = entity.GetComponent<SpriteAnimationComponent>();
+		if (ac.State->HasAnimations())
 		{
-			ac.State.SetActiveState(Utils::MonoStringToString(state));
-		}*/
+			ac.State->SetActiveState(Utils::MonoStringToString(state));
+		}
 	}
 
 	static bool Input_IsKeyPressed(KeyCode keycode)
@@ -1042,7 +1072,10 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetColor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetTilingFactor);
 		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetTilingFactor);
-		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_FlipX);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetFlipX);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetFlipX);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_GetFlipY);
+		OGN_ADD_INTERNAL_CALLS(SpriteRenderer2DComponent_SetFlipY);
 
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetOffset);
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetOffset);
@@ -1070,8 +1103,8 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitutionThreshold);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitutionThreshold);
 
-		OGN_ADD_INTERNAL_CALLS(AnimationComponent_SetActiveState);
-		OGN_ADD_INTERNAL_CALLS(AnimationComponent_GetActiveState);
+		OGN_ADD_INTERNAL_CALLS(SpriteAnimationComponent_SetActiveState);
+		OGN_ADD_INTERNAL_CALLS(SpriteAnimationComponent_GetActiveState);
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);

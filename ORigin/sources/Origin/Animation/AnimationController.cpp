@@ -5,25 +5,29 @@
 
 namespace origin {
 
-	AnimationController::AnimationController(std::shared_ptr<AnimationState>& state)
+	template<typename T>
+	AnimationController<T>::AnimationController(std::shared_ptr<AnimationState<T>> &state)
 		: m_State(state)
 	{
 	}
 
-	void AnimationController::AddAnimationState(Animation anim, const std::string& state) const
+	template<typename T>
+	void AnimationController<T>::AddAnimationState(const std::shared_ptr<T> &anim, const std::string &state) const
 	{
 		m_State->AddState(state);
 		m_State->AddAnimation(anim);
 	}
 
-	void AnimationController::AddTransitionCondition(const std::string& name, bool condition)
+	template<typename T>
+	void AnimationController<T>::AddTransitionCondition(const std::string &name, bool condition)
 	{
 		m_Conditions[name] = condition;
 	}
 
-	std::shared_ptr<AnimationController> AnimationController::Create(std::shared_ptr<AnimationState>& state)
+	template<typename T>
+	std::shared_ptr<AnimationController<T>> AnimationController<T>::Create(std::shared_ptr<AnimationState<T>>& state)
 	{
-		return std::make_shared<AnimationController>(state);
+		return std::make_shared<AnimationController<T>>(state);
 	}
 
 }

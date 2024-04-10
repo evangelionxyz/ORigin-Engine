@@ -571,60 +571,79 @@ namespace origin {
 
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID)
 	{
-		std::shared_ptr<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Texture);
+		const std::shared_ptr<Texture2D> &texture = AssetManager::GetAsset<Texture2D>(src.Texture);
 		if (texture)
 		{
-			if ((src.Max != glm::vec2(0.0f)) && (src.Min != glm::vec2(0.0f)))
+		//#if 0
+			constexpr size_t quadVertexCount = 4;
+			glm::vec2 textureCoords[4]
 			{
-				constexpr size_t quadVertexCount = 4;
-				const glm::vec2 textureCoords[4] = 
-				{ 
-					{ src.Min.x, src.Min.y }, 
-					{ src.Max.x, src.Min.y },
-					{ src.Max.x, src.Max.y }, 
-					{ src.Min.x, src.Max.y } 
-				};
+				{ src.Min.x, src.Min.y },
+				{ src.Max.x, src.Min.y },
+				{ src.Max.x, src.Max.y },
+				{ src.Min.x, src.Max.y }
+			};
 
-				if (s_Render2DData.QuadIndexCount >= Renderer::s_RenderData.MaxQuadIndices)
+			if (src.FlipX)
+			{
+				textureCoords[0] = { src.Max.x, src.Min.y };
+				textureCoords[1] = { src.Min.x, src.Min.y };
+				textureCoords[2] = { src.Min.x, src.Max.y };
+				textureCoords[3] = { src.Max.x, src.Max.y };
+			}
+			else if (src.FlipY)
+			{
+				textureCoords[0] = { src.Min.x, src.Max.y };
+				textureCoords[1] = { src.Max.x, src.Max.y };
+				textureCoords[2] = { src.Max.x, src.Min.y };
+				textureCoords[3] = { src.Min.x, src.Min.y };
+			}
+
+			if (src.FlipX && src.FlipY)
+			{
+				textureCoords[0] = { src.Max.x, src.Max.y };
+				textureCoords[1] = { src.Min.x, src.Max.y };
+				textureCoords[2] = { src.Min.x, src.Min.y };
+				textureCoords[3] = { src.Max.x, src.Min.y };
+			}
+
+			if (s_Render2DData.QuadIndexCount >= Renderer::s_RenderData.MaxQuadIndices)
+				NextBatch();
+
+			float textureIndex = 0.0f;
+			for (uint32_t i = 1; i < s_Render2DData.TextureSlotIndex; i++)
+			{
+				if (*s_Render2DData.TextureSlots[i] == *texture)
+				{
+					textureIndex = (float)i;
+					break;
+				}
+			}
+
+			if (textureIndex == 0.0f)
+			{
+				if (s_Render2DData.TextureSlotIndex >= Renderer::s_RenderData.MaxTextureSlots)
 					NextBatch();
 
-				float textureIndex = 0.0f;
-				for (uint32_t i = 1; i < s_Render2DData.TextureSlotIndex; i++)
-				{
-					if (*s_Render2DData.TextureSlots[i] == *texture)
-					{
-						textureIndex = (float)i;
-						break;
-					}
-				}
-
-				if (textureIndex == 0.0f)
-				{
-					if (s_Render2DData.TextureSlotIndex >= Renderer::s_RenderData.MaxTextureSlots)
-						NextBatch();
-
-					textureIndex = (float)s_Render2DData.TextureSlotIndex;
-					s_Render2DData.TextureSlots[s_Render2DData.TextureSlotIndex] = texture;
-					s_Render2DData.TextureSlotIndex++;
-				}
-
-				for (size_t i = 0; i < quadVertexCount; i++)
-				{
-					s_Render2DData.QuadVertexBufferPtr->Position = transform * s_Render2DData.QuadVertexPositions[i];
-					s_Render2DData.QuadVertexBufferPtr->Color = src.Color;
-					s_Render2DData.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-					s_Render2DData.QuadVertexBufferPtr->TexIndex = textureIndex;
-					s_Render2DData.QuadVertexBufferPtr->TilingFactor = src.TillingFactor;
-					s_Render2DData.QuadVertexBufferPtr->EntityID = entityID;
-					s_Render2DData.QuadVertexBufferPtr++;
-				}
-				s_Render2DData.QuadIndexCount += 6;
-				Renderer::GetStatistics().QuadCount++;
+				textureIndex = (float)s_Render2DData.TextureSlotIndex;
+				s_Render2DData.TextureSlots[s_Render2DData.TextureSlotIndex] = texture;
+				s_Render2DData.TextureSlotIndex++;
 			}
-			else
+
+			for (size_t i = 0; i < quadVertexCount; i++)
 			{
-				DrawQuad(transform, texture, entityID, src.TillingFactor, src.Color);
+				s_Render2DData.QuadVertexBufferPtr->Position = transform * s_Render2DData.QuadVertexPositions[i];
+				s_Render2DData.QuadVertexBufferPtr->Color = src.Color;
+				s_Render2DData.QuadVertexBufferPtr->TexCoord = textureCoords[i];
+				s_Render2DData.QuadVertexBufferPtr->TexIndex = textureIndex;
+				s_Render2DData.QuadVertexBufferPtr->TilingFactor = src.TillingFactor;
+				s_Render2DData.QuadVertexBufferPtr->EntityID = entityID;
+				s_Render2DData.QuadVertexBufferPtr++;
 			}
+			s_Render2DData.QuadIndexCount += 6;
+			Renderer::GetStatistics().QuadCount++;
+		//#endif
+			//DrawQuad(transform, texture, entityID, src.TillingFactor, src.Color);
 		}
 		else
 		{

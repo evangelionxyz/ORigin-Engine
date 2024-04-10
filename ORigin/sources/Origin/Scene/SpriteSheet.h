@@ -9,7 +9,7 @@ namespace origin
 	struct SpriteSheetData
 	{
 		glm::vec2 Min = glm::vec2(0.0f);
-		glm::vec2 Max = glm::vec2(0.0f);
+		glm::vec2 Max = glm::vec2(1.0f);
 		AssetHandle TextureHandle = 0;
 	};
 
@@ -24,7 +24,7 @@ namespace origin
 		static std::shared_ptr<SpriteSheet> Create();
 		static std::shared_ptr<SpriteSheet> Create(const std::filesystem::path &filepath);
 
-		static AssetType GetStaticType() { return AssetType::SpriteSheet; }
+		static AssetType GetStaticType() { return AssetType::SpritesSheet; }
 		virtual AssetType GetType() const { return GetStaticType(); }
 
 		const AssetHandle GetTextureHandle() const { return m_TextureHandle; }

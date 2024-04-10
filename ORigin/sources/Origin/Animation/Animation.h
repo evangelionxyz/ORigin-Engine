@@ -1,78 +1,71 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
 
-#include "Origin\Renderer\Texture.h"
-#include <glm\glm.hpp>
+#include "Origin/Renderer/Texture.h"
+#include "Origin/Core/Time.h"
+#include "Origin/Core/Base.h"
+#include <glm/glm.hpp>
 #include <vector>
 
-namespace origin {
-
-	struct AnimationFrame
-	{
-		AssetHandle Handle;
-		int FrameBegin = 0;
-		int FrameEnd = 4;
-		AnimationFrame() = default;
-		AnimationFrame(AssetHandle handle)
-			: Handle(handle) {}
-	};
-
+namespace origin
+{
 	enum class AnimationType
 	{
-		None = -1,
-		SpriteSheet = 0,
-		Transform = 1
+		Sprite				= BIT(0),
+		SpritesSheet	= BIT(1),
+		Transform			= BIT(2)
 	};
 
-	static const char* AnimationTypeToString(AnimationType type)
+	static const char *AnimationTypeToString(AnimationType type)
 	{
 		switch (type)
 		{
-			case AnimationType::None: return "Invalid";
-			case AnimationType::SpriteSheet: return "Sprite";
+			case AnimationType::Sprite: return "Sprite";
+			case AnimationType::SpritesSheet: return "SpritesSheet";
 			case AnimationType::Transform: return "Transform";
 		}
-
 		return "Invalid";
 	}
 
-	class Animation
+	struct SpriteAnimationFrame
+	{
+		int FrameBegin = 0;
+		int FrameEnd = 4;
+
+		glm::vec2 Min = glm::vec2(0.0f);
+		glm::vec2 Max = glm::vec2(1.0f);
+
+		AssetHandle Handle;
+		SpriteAnimationFrame(AssetHandle handle)
+			: Handle(handle)
+		{
+		}
+	};
+
+	class SpriteAnimation
 	{
 	public:
-		Animation() = default;
-		Animation(std::string name);
-		
-		void AddFrame(AnimationFrame frame);
-		void AddFrame(AssetHandle handle);
+		SpriteAnimation() = default;
+
+		void AddFrame(SpriteAnimationFrame frame);
 		void DeleteFrame(int index);
 
-		void OnUpdateEditor();
-		void OnRuntimeUpdate();
+		void OnUpdateEditor(Timestep ts);
+		void OnUpdateRuntime(Timestep ts);
 		bool HasFrame() const { return AnimFrames.empty() == false; }
 		void Reset();
-
-		AssetHandle GetCurrentValue();
-		AssetHandle GetValue(int frame);
-
 		size_t GetTotalFrames() const { return AnimFrames.size(); }
-		AnimationFrame& GetFrame(int index);
-		const std::string GetName() { return m_Name; }
+		SpriteAnimationFrame &GetCurrentFrame();
+		SpriteAnimationFrame &GetFrame(int index);
+		std::vector<SpriteAnimationFrame> AnimFrames;
 
-		static std::shared_ptr<Animation> Create(const std::string& name);
-		std::vector<AnimationFrame> AnimFrames;
-		int CurrentFrame = 0;
 		int MaxFrame = 60;
-
+		int MinFrame = 0;
 		int FrameIndex = 0;
+		float CurrentFrame = 0.0f;
+		float Speed = 100.0f;
 
 		bool Looping = false;
 		bool Preview = false;
-
-		void SetType(AnimationType type) { m_Type = type; }
-		AnimationType GetType() { return m_Type; }
-
-	private:
-		AnimationType m_Type = AnimationType::None;
-		std::string m_Name;
 	};
 }

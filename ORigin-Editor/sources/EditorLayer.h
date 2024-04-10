@@ -79,7 +79,6 @@ namespace origin {
 		SceneHierarchyPanel m_SceneHierarchy;
 		Dockspace m_Dockspace;
 		EditorCamera m_EditorCamera;
-		AnimationTimeline m_AnimationTimeline;
     MaterialEditor m_MaterialEditor;
 		std::unique_ptr<SpriteSheetEditor> m_SpriteSheetEditor;
 		std::unique_ptr<Gizmos> m_Gizmos;

@@ -21,7 +21,7 @@ namespace origin {
 		{ ".ogg", AssetType::Audio },
 		{ ".mp3", AssetType::Audio },
 		{ ".wav", AssetType::Audio },
-		{ ".sprite", AssetType::SpriteSheet },
+		{ ".sprite", AssetType::SpritesSheet },
 	};
 
 	static AssetType GetAssetTypeFromFileExtension(const std::filesystem::path& extension)

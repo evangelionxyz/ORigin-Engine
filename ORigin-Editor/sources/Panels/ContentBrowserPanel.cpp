@@ -137,11 +137,8 @@ namespace origin
 			{
 				bool shouldBreak = false;
 
-				const bool isDirectory = std::filesystem::is_directory(Project::GetActiveAssetDirectory() / item);
 				std::string filenameStr = item.generic_string();
-
 				ImGui::PushID(filenameStr.c_str());
-
 				const std::shared_ptr<Texture2D> thumbnail = DirectoryIcons(std::filesystem::directory_entry(m_CurrentDirectory / item));
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
@@ -162,15 +159,14 @@ namespace origin
 
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
-					if (isDirectory)
+					if (std::filesystem::directory_entry(m_CurrentDirectory / item).is_directory())
 						m_CurrentDirectory /= item.filename();
 
 					if (item.extension() == ".sprite")
 					{
 						EditorLayer::Get().m_SpriteSheetEditor->SetSelectedSpriteSheet(m_TreeNodes[treeNodeIndex].Handle);
 					}
-
-					if (item.extension() == ".mat")
+					else if (item.extension() == ".mat")
 					{
 						EditorLayer::Get().m_MaterialEditor.SetSelectedMaterial(m_TreeNodes[treeNodeIndex].Handle);
 					}
