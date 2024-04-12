@@ -65,6 +65,7 @@ namespace origin {
 
 	struct Renderer2DData
 	{
+
 		// =============================================
 		// =================== Texts ===================
 		// =============================================
@@ -124,6 +125,8 @@ namespace origin {
 
 	void Renderer2D::Init()
 	{
+		PROFILER_FUNCTION();
+
 		s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), 0);
 
 		// Quads
@@ -219,11 +222,15 @@ namespace origin {
 
 	void Renderer2D::Shutdown()
 	{
+		PROFILER_FUNCTION();
+
 		delete[] s_Render2DData.QuadVertexBufferBase;
 	}
 
 	void Renderer2D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)
 	{
+		PROFILER_RENDERING();
+
 		s_CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(camTransform);
 		s_CameraBufferData.Position = camera.GetPosition();
 
@@ -235,6 +242,8 @@ namespace origin {
 
 	void Renderer2D::Begin(const EditorCamera& camera)
 	{
+		PROFILER_RENDERING();
+
 		s_CameraBufferData.ViewProjection = camera.GetViewProjection();
 		s_CameraBufferData.Position = camera.GetPosition();
 
@@ -261,6 +270,8 @@ namespace origin {
 
 	void Renderer2D::StartBatch()
 	{
+		PROFILER_RENDERING();
+
 		s_Render2DData.QuadIndexCount = 0;
 		s_Render2DData.QuadVertexBufferPtr = s_Render2DData.QuadVertexBufferBase;
 
@@ -279,6 +290,8 @@ namespace origin {
 
 	void Renderer2D::Flush()
 	{
+		PROFILER_RENDERING();
+
 		if (s_Render2DData.TextIndexCount)
 		{
 			uint32_t dataSize = (uint32_t)((uint8_t*)s_Render2DData.TextVertexBufferPtr - (uint8_t*)s_Render2DData.TextVertexBufferBase);
@@ -370,6 +383,8 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; // White Texture
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -395,6 +410,8 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, int entityID, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
+		PROFILER_RENDERING();
+
 		OGN_CORE_ASSERT(texture, "Renderer2D: Invalid texture");
 
 		constexpr size_t quadVertexCount = 4;
@@ -439,6 +456,8 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, int entityID, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
+		PROFILER_RENDERING();
+
 		constexpr int QuadVertexCount = 4;
 		const glm::vec2* textureCoords = subTexture->GetTexCoords();
 		const std::shared_ptr<Texture2D> texture = subTexture->GetTexture();
@@ -535,6 +554,8 @@ namespace origin {
 
 	void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		for (size_t i = 0; i < 4; i++)
 		{
 			s_Render2DData.CircleVertexBufferPtr->WorldPosition = transform * s_Render2DData.QuadVertexPositions[i];
@@ -552,6 +573,8 @@ namespace origin {
 
 	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, glm::vec4& color, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		if (s_Render2DData.LineVertexCount >= Renderer2DData::MaxLines)
 			NextBatch();
 
@@ -571,6 +594,8 @@ namespace origin {
 
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		const std::shared_ptr<Texture2D> &texture = AssetManager::GetAsset<Texture2D>(src.Texture);
 		if (texture)
 		{
@@ -653,6 +678,8 @@ namespace origin {
 
 	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		if (s_Render2DData.FontAtlasTextureIndex >= Renderer::s_RenderData.MaxTextureSlots)
 			NextBatch();
 		

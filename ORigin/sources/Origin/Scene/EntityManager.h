@@ -5,45 +5,6 @@
 
 namespace origin
 {
-	template <typename... Component>
-	static void CopyComponent(entt::registry &dst, entt::registry &src, const std::unordered_map<UUID, entt::entity> &enttMap)
-	{
-		([&]()
-		 {
-			 auto view = src.view<Component>();
-			 for (auto srcEntity : view)
-			 {
-				 entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
-				 auto srcComponent = src.get<Component>(srcEntity);
-				 dst.emplace_or_replace<Component>(dstEntity, srcComponent);
-			 }
-		 }(), ...);
-	}
-
-	template <typename... Component>
-	static void CopyComponent(ComponentGroup<Component...>, entt::registry &dst, entt::registry &src, const std::unordered_map<UUID, entt::entity> enttMap)
-	{
-		CopyComponent<Component...>(dst, src, enttMap);
-	}
-
-	template <typename... Component>
-	static void CopyComponentIfExists(Entity dst, Entity src)
-	{
-		([&]()
-		 {
-			 if (src.HasComponent<Component>())
-			 {
-				 dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
-			 }
-		 }(), ...);
-	}
-
-	template <typename... Component>
-	static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
-	{
-		CopyComponentIfExists<Component...>(dst, src);
-	}
-
 	class EntityManager
 	{
 	public:
@@ -64,5 +25,49 @@ namespace origin
 		static bool ParentOrGrandParentExists(UUID destinationParent, UUID source, Scene *scene);
 
 		static void DestroyEntityFromScene(Entity entity, Scene *scene);
+
+		template <typename... Component>
+		static void CopyComponent(entt::registry &dst, entt::registry &src, const std::vector<std::tuple<UUID, entt::entity>> enttStorage)
+		{
+			([&]()
+			 {
+				 auto view = src.view<Component>();
+				 for (auto srcEntity : view)
+				 {
+					 for (auto e : enttStorage)
+					 {
+						 if (std::get<0>(e) == src.get<IDComponent>(srcEntity).ID)
+						 {
+							 entt::entity dstEntity = std::get<1>(e);
+							 dst.emplace_or_replace<Component>(dstEntity, src.get<Component>(srcEntity));
+						 }
+					 }
+
+				 }
+			 }(), ...);
+		}
+
+		template <typename... Component>
+		static void CopyComponent(ComponentGroup<Component...>, entt::registry &dst, entt::registry &src, const std::vector<std::tuple<UUID, entt::entity>> enttStorage)
+		{
+			CopyComponent<Component...>(dst, src, enttStorage);
+		}
+
+		template <typename... Component>
+		static void CopyComponentIfExists(Entity dst, Entity src)
+		{
+			([&]()
+			 {
+				 if (src.HasComponent<Component>())
+					 dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+			 }(), ...);
+		}
+
+		template <typename... Component>
+		static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
+		{
+			CopyComponentIfExists<Component...>(dst, src);
+		}
+
 	};
 }

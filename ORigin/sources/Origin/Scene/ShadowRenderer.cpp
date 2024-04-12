@@ -17,6 +17,8 @@ namespace origin {
 
 	void ShadowRenderer::Invalidate(LightingType type)
 	{
+		PROFILER_RENDERING();
+
 		m_LightingType = type;
 
 		if (m_Framebuffer)
@@ -48,6 +50,8 @@ namespace origin {
 
 	void ShadowRenderer::OnAttachTexture(const std::shared_ptr<Shader> objectShader)
 	{
+		PROFILER_RENDERING();
+
 		OGN_CORE_ASSERT(m_Framebuffer, "ShadowRenderer: Invalid Framebuffer");
 		glBindTextureUnit(2, m_Framebuffer->GetDepthAttachmentRendererID());
 		objectShader->SetInt("u_ShadowMap", 2);
@@ -55,6 +59,8 @@ namespace origin {
 
 	void ShadowRenderer::BindFramebuffer()
 	{
+		PROFILER_RENDERING();
+
 		if (m_Framebuffer)
 		{
 			glEnable(GL_CULL_FACE);
@@ -67,11 +73,14 @@ namespace origin {
 
 	void ShadowRenderer::UnbindFramebuffer()
 	{
+		PROFILER_RENDERING();
 		m_Framebuffer->Unbind();
 	}
 
 	void ShadowRenderer::OnRenderBegin(const TransformComponent& tc, const glm::mat4& modelTransform)
 	{
+		PROFILER_RENDERING();
+
 		m_DepthShader->Enable();
 		if (m_LightingType == LightingType::Directional)
 		{
@@ -86,12 +95,15 @@ namespace origin {
 
 	void ShadowRenderer::OnRenderEnd()
 	{
+		PROFILER_RENDERING();
+
 		m_DepthUniformBuffer->Unbind();
 		m_DepthShader->Disable();
 	}
 
 	std::shared_ptr<ShadowRenderer> ShadowRenderer::Create(const std::shared_ptr<Shader>& depthShader, LightingType type)
 	{
+		PROFILER_RENDERING();
 		return std::make_shared<ShadowRenderer>(depthShader, type);
 	}
 }

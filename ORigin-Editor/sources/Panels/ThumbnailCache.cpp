@@ -10,6 +10,8 @@ namespace origin {
 	ThumbnailCache::ThumbnailCache(const std::shared_ptr<Project>& project)
 		: m_Project(project)
 	{
+		PROFILER_UI();
+
 		m_ThumbnailCachePath = project->GetAssetDirectory() / "Thumbnail.cache";
 	}
 
@@ -32,6 +34,8 @@ namespace origin {
 
 	void ThumbnailCache::OnUpdate()
 	{
+		PROFILER_UI();
+
 		while (!m_Queue.empty())
 		{
 			const auto& thumbnailInfo = m_Queue.front();

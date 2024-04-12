@@ -5,6 +5,8 @@ namespace origin
 {
 	static bool SequencerAddDelButton(ImDrawList *draw_list, ImVec2 pos, bool add = true)
 	{
+		PROFILER_UI();
+
 		ImGuiIO &io = ImGui::GetIO();
 		ImRect btnRect(pos, ImVec2(pos.x + 16, pos.y + 16));
 		bool overBtn = btnRect.Contains(io.MousePos);
@@ -26,6 +28,8 @@ namespace origin
 	template<typename T>
 	void Get(const std::shared_ptr<T> &anim, int index, int **start, int **end, unsigned int *color)
 	{
+		PROFILER_UI();
+
 		auto &frame = anim->GetFrame(index);
 		if (color)
 			*color = IM_COL32(230, 100, 0, 255);
@@ -37,6 +41,8 @@ namespace origin
 
 	void AnimationTimeline::DrawSpriteAnimTimeline(SpriteAnimationComponent &sa)
 	{
+		PROFILER_UI();
+
 		static int selectedEntry = -1;
 		static int firstFrame = 0;
 		static bool expanded = true;
@@ -147,6 +153,8 @@ namespace origin
 
 	bool AnimationTimeline::SpriteAnimTimeline(std::shared_ptr<SpriteAnimation> &animation, float *currentFrame, bool *expanded, int *selectedEntry, int *firstFrame, int sequenceOptions)
 	{
+		PROFILER_UI();
+
 		bool ret = false;
 
 		ImGuiIO &io = ImGui::GetIO();
@@ -164,7 +172,7 @@ namespace origin
 		int itemHeight = 20;
 
 		bool popupOpened = false;
-		int sequenceCount = animation->GetTotalFrames();
+		int sequenceCount = static_cast<int>(animation->GetTotalFrames());
 
 		ImGui::BeginGroup();
 
@@ -210,6 +218,8 @@ namespace origin
 			{
 				AssetHandle handle = *(AssetHandle *)payload->Data;
 				SpriteAnimationFrame frame(handle);
+				frame.FrameBegin += 4 * static_cast<int>(animation->GetTotalFrames());
+				frame.FrameEnd += 4 * static_cast<int>(animation->GetTotalFrames());
 				animation->AddFrame(frame);
 			}
 			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
@@ -218,6 +228,8 @@ namespace origin
 				SpriteAnimationFrame frame(data.TextureHandle);
 				frame.Min = data.Min;
 				frame.Max = data.Max;
+				frame.FrameBegin += 4 * static_cast<int>(animation->GetTotalFrames());
+				frame.FrameEnd += 4 * static_cast<int>(animation->GetTotalFrames());
 				animation->AddFrame(frame);
 			}
 			ImGui::EndDragDropTarget();
@@ -297,7 +309,8 @@ namespace origin
 		for (int i = 0; i < sequenceCount; i++)
 		{
 			ImVec2 tpos(contentMin.x + 3, contentMin.y + i * itemHeight + 2);
-			drawList->AddText(tpos, 0xFFFFFFFF, "SPRITE");
+			std::string tag = "SPRITE " + std::to_string(i);
+			drawList->AddText(tpos, 0xFFFFFFFF, tag.c_str());
 			if (sequenceOptions & SEQUENCER_DEL)
 			{
 				if (SequencerAddDelButton(drawList, ImVec2(contentMin.x + legendWidth - itemHeight + 2 - 10, tpos.y + 2), false))

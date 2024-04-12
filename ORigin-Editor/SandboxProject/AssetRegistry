@@ -1,43 +1,556 @@
 AssetRegistry:
-  - Handle: 2014741741371408179
-    Filepath: Sprites/Main Characters/Virtual Guy/Idle (32x32).sprite
-    Type: AssetType::SpritesSheet
-  - Handle: 2452532763512065933
-    Filepath: Sprites/Items/Fruits/Cherries.png
-    Type: AssetType::Texture
-  - Handle: 2704668797119576077
-    Filepath: Sprites/Items/Checkpoints/End/End (Idle).png
-    Type: AssetType::Texture
-  - Handle: 3875991619915856441
-    Filepath: Sprites/Items/Boxes/Box1/Idle.png
-    Type: AssetType::Texture
-  - Handle: 4430354893406830390
-    Filepath: Sprites/Items/Boxes/Box3/Idle.png
-    Type: AssetType::Texture
-  - Handle: 7072008334079100734
-    Filepath: Sprites/Items/Fruits/Cherries.sprite
-    Type: AssetType::SpritesSheet
-  - Handle: 8622424555671573006
+  - Handle: 124946191778498347
     Filepath: Sounds/solitude-dark-ambient-electronic-197737.mp3
     Type: AssetType::Audio
-  - Handle: 8763776668281863141
-    Filepath: Sprites/Other/Transition.png
+  - Handle: 135935803539887534
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00008.png
     Type: AssetType::Texture
-  - Handle: 9477193703314235854
-    Filepath: Sprites/Main Characters/Virtual Guy/Run (32x32).sprite
-    Type: AssetType::SpritesSheet
-  - Handle: 10561939124411563609
-    Filepath: Sprites/Other/Dust Particle.png
+  - Handle: 166154846919323012
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00003.png
     Type: AssetType::Texture
-  - Handle: 11720522658030779459
-    Filepath: Sprites/Main Characters/Virtual Guy/Run (32x32).png
+  - Handle: 179237721532445144
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00009.png
     Type: AssetType::Texture
-  - Handle: 16562962638386903553
-    Filepath: Sprites/Traps/Sand Mud Ice/Sand Particle.png
+  - Handle: 352610122268720730
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00011.png
     Type: AssetType::Texture
-  - Handle: 16707881503323011987
-    Filepath: Sprites/Main Characters/Virtual Guy/Idle (32x32).png
-    Type: AssetType::Texture
-  - Handle: 16877372621965693190
+  - Handle: 385396514750827742
     Filepath: Scenes/scene.org
     Type: AssetType::Scene
+  - Handle: 471947879401705297
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00007.png
+    Type: AssetType::Texture
+  - Handle: 650055865158184995
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00009.png
+    Type: AssetType::Texture
+  - Handle: 717714396380065210
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00008.png
+    Type: AssetType::Texture
+  - Handle: 766515984183421646
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00016.png
+    Type: AssetType::Texture
+  - Handle: 973473145379625278
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00011.png
+    Type: AssetType::Texture
+  - Handle: 1004938937109096255
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00037.png
+    Type: AssetType::Texture
+  - Handle: 1131263368688856771
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00080.png
+    Type: AssetType::Texture
+  - Handle: 1215330593426423842
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00067.png
+    Type: AssetType::Texture
+  - Handle: 1218810816273532365
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00045.png
+    Type: AssetType::Texture
+  - Handle: 1332371261899123470
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00026.png
+    Type: AssetType::Texture
+  - Handle: 1351051289591548524
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00010.png
+    Type: AssetType::Texture
+  - Handle: 1424535094411456973
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00008.png
+    Type: AssetType::Texture
+  - Handle: 1500829673213001851
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00062.png
+    Type: AssetType::Texture
+  - Handle: 1506352683972399796
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00014.png
+    Type: AssetType::Texture
+  - Handle: 1576197035360992148
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00055.png
+    Type: AssetType::Texture
+  - Handle: 1917871357779178827
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00000.png
+    Type: AssetType::Texture
+  - Handle: 2011569491340493010
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00002.png
+    Type: AssetType::Texture
+  - Handle: 2134833599991151448
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00085.png
+    Type: AssetType::Texture
+  - Handle: 2172562450143590688
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00007.png
+    Type: AssetType::Texture
+  - Handle: 2246988005049749782
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00008.png
+    Type: AssetType::Texture
+  - Handle: 2389287642870398323
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00014.png
+    Type: AssetType::Texture
+  - Handle: 2484686949417679651
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00012.png
+    Type: AssetType::Texture
+  - Handle: 2604110600084479361
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00086.png
+    Type: AssetType::Texture
+  - Handle: 2755291256594705403
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00089.png
+    Type: AssetType::Texture
+  - Handle: 2773854120198961434
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00009.png
+    Type: AssetType::Texture
+  - Handle: 3031900044830376686
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00050.png
+    Type: AssetType::Texture
+  - Handle: 3112231969625561756
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00017.png
+    Type: AssetType::Texture
+  - Handle: 3131129197036834294
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00072.png
+    Type: AssetType::Texture
+  - Handle: 3268634986516760292
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00082.png
+    Type: AssetType::Texture
+  - Handle: 3358119269157681566
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00032.png
+    Type: AssetType::Texture
+  - Handle: 3369120005023888913
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00039.png
+    Type: AssetType::Texture
+  - Handle: 3442881553086974593
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00013.png
+    Type: AssetType::Texture
+  - Handle: 3455452343523826642
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00015.png
+    Type: AssetType::Texture
+  - Handle: 3476110240059925737
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00013.png
+    Type: AssetType::Texture
+  - Handle: 3537374187533455721
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00005.png
+    Type: AssetType::Texture
+  - Handle: 3692310124782106498
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00070.png
+    Type: AssetType::Texture
+  - Handle: 3712538360005541566
+    Filepath: Sprites/Mossy Tileset/Mossy - BackgroundDecoration.sprite
+    Type: AssetType::SpritesSheet
+  - Handle: 3797603308460149435
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00010.png
+    Type: AssetType::Texture
+  - Handle: 3839047723945257682
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00003.png
+    Type: AssetType::Texture
+  - Handle: 3928313702495440480
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00000.png
+    Type: AssetType::Texture
+  - Handle: 3934599823597170524
+    Filepath: Sprites/Mossy Tileset/Mossy - FloatingPlatforms.png
+    Type: AssetType::Texture
+  - Handle: 4149255462777821972
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00029.png
+    Type: AssetType::Texture
+  - Handle: 4215911025341472202
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00041.png
+    Type: AssetType::Texture
+  - Handle: 4298720567900196653
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00015.png
+    Type: AssetType::Texture
+  - Handle: 4370851441581225761
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00001.png
+    Type: AssetType::Texture
+  - Handle: 4488667565370796078
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00017.png
+    Type: AssetType::Texture
+  - Handle: 4540923544079767787
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00056.png
+    Type: AssetType::Texture
+  - Handle: 4577082038153138444
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00060.png
+    Type: AssetType::Texture
+  - Handle: 4614068906792091967
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00018.png
+    Type: AssetType::Texture
+  - Handle: 4827799232576419390
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00066.png
+    Type: AssetType::Texture
+  - Handle: 5371214090939380011
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00005.png
+    Type: AssetType::Texture
+  - Handle: 5424828323905397245
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00021.png
+    Type: AssetType::Texture
+  - Handle: 5925042859480717013
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00087.png
+    Type: AssetType::Texture
+  - Handle: 6000081956186149131
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00006.png
+    Type: AssetType::Texture
+  - Handle: 6399744684572858953
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00078.png
+    Type: AssetType::Texture
+  - Handle: 6590685793663570286
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00006.png
+    Type: AssetType::Texture
+  - Handle: 6646289908706380991
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00015.png
+    Type: AssetType::Texture
+  - Handle: 6648865767641661267
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00022.png
+    Type: AssetType::Texture
+  - Handle: 6654342938585012636
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00076.png
+    Type: AssetType::Texture
+  - Handle: 6758363981115995697
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00025.png
+    Type: AssetType::Texture
+  - Handle: 6760257430750886251
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00017.png
+    Type: AssetType::Texture
+  - Handle: 6839422976923284524
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00002.png
+    Type: AssetType::Texture
+  - Handle: 6924264613285451809
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00018.png
+    Type: AssetType::Texture
+  - Handle: 6970804806650112084
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00001.png
+    Type: AssetType::Texture
+  - Handle: 6997869909128634583
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00010.png
+    Type: AssetType::Texture
+  - Handle: 7167574777533636772
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00004.png
+    Type: AssetType::Texture
+  - Handle: 7270273166512376308
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00024.png
+    Type: AssetType::Texture
+  - Handle: 7292747266941955045
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00035.png
+    Type: AssetType::Texture
+  - Handle: 7451677293972026887
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00028.png
+    Type: AssetType::Texture
+  - Handle: 7451955901477121260
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00044.png
+    Type: AssetType::Texture
+  - Handle: 7684279137269098559
+    Filepath: Sprites/Mossy Tileset/Mossy - FloatingPlatforms.sprite
+    Type: AssetType::SpritesSheet
+  - Handle: 8052977197193221128
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00043.png
+    Type: AssetType::Texture
+  - Handle: 8080469064303290027
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00027.png
+    Type: AssetType::Texture
+  - Handle: 8378351397108544768
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00006.png
+    Type: AssetType::Texture
+  - Handle: 8405415555642426840
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00034.png
+    Type: AssetType::Texture
+  - Handle: 8415148093766400096
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00004.png
+    Type: AssetType::Texture
+  - Handle: 8451818878276392686
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00026.png
+    Type: AssetType::Texture
+  - Handle: 8468042723212387310
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00019.png
+    Type: AssetType::Texture
+  - Handle: 8657379106223608274
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00016.png
+    Type: AssetType::Texture
+  - Handle: 8678288241606443095
+    Filepath: Sounds/long-fade-138693.mp3
+    Type: AssetType::Audio
+  - Handle: 8678751350929118565
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00024.png
+    Type: AssetType::Texture
+  - Handle: 8714636654712084545
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00004.png
+    Type: AssetType::Texture
+  - Handle: 8862920861694661143
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00006.png
+    Type: AssetType::Texture
+  - Handle: 8865743625669878861
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00031.png
+    Type: AssetType::Texture
+  - Handle: 8891646013013743771
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00005.png
+    Type: AssetType::Texture
+  - Handle: 8997054290606600228
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00059.png
+    Type: AssetType::Texture
+  - Handle: 9038347186727731221
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00046.png
+    Type: AssetType::Texture
+  - Handle: 9110420676204779014
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00030.png
+    Type: AssetType::Texture
+  - Handle: 9179122550500562713
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00014.png
+    Type: AssetType::Texture
+  - Handle: 9299424298986850345
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00000.png
+    Type: AssetType::Texture
+  - Handle: 9467822418084003620
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00019.png
+    Type: AssetType::Texture
+  - Handle: 9622306810215365453
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00058.png
+    Type: AssetType::Texture
+  - Handle: 9724066953070822040
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00049.png
+    Type: AssetType::Texture
+  - Handle: 9743785820056772631
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00008.png
+    Type: AssetType::Texture
+  - Handle: 9744028709909487738
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00023.png
+    Type: AssetType::Texture
+  - Handle: 9777924390140929552
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00047.png
+    Type: AssetType::Texture
+  - Handle: 9818633927630467048
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00013.png
+    Type: AssetType::Texture
+  - Handle: 9867493090394886301
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00015.png
+    Type: AssetType::Texture
+  - Handle: 9891481739568082962
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00004.png
+    Type: AssetType::Texture
+  - Handle: 9932631895147486376
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00005.png
+    Type: AssetType::Texture
+  - Handle: 10160262086230251116
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00088.png
+    Type: AssetType::Texture
+  - Handle: 10236646703906030637
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00009.png
+    Type: AssetType::Texture
+  - Handle: 10378851618417400593
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00003.png
+    Type: AssetType::Texture
+  - Handle: 10512758226078597523
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00012.png
+    Type: AssetType::Texture
+  - Handle: 10788692318860028174
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00007.png
+    Type: AssetType::Texture
+  - Handle: 10841446953951030679
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00016.png
+    Type: AssetType::Texture
+  - Handle: 10972704791246345326
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00018.png
+    Type: AssetType::Texture
+  - Handle: 11117094331200946949
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00015.png
+    Type: AssetType::Texture
+  - Handle: 11278011302724803221
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00020.png
+    Type: AssetType::Texture
+  - Handle: 11532887908645258953
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00006.png
+    Type: AssetType::Texture
+  - Handle: 11645406805821442745
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00011.png
+    Type: AssetType::Texture
+  - Handle: 11969688249214171976
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00017.png
+    Type: AssetType::Texture
+  - Handle: 12076135155863868445
+    Filepath: Sounds/creeping-dark-ambience-189391.mp3
+    Type: AssetType::Audio
+  - Handle: 12284368717318054208
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00014.png
+    Type: AssetType::Texture
+  - Handle: 12373047006135160767
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00001.png
+    Type: AssetType::Texture
+  - Handle: 12402584720550413746
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00068.png
+    Type: AssetType::Texture
+  - Handle: 12606183772175010428
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00020.png
+    Type: AssetType::Texture
+  - Handle: 12647465442271669644
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00019.png
+    Type: AssetType::Texture
+  - Handle: 12754590323225955597
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00069.png
+    Type: AssetType::Texture
+  - Handle: 12780735383080609520
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00010.png
+    Type: AssetType::Texture
+  - Handle: 13009628201384844275
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00074.png
+    Type: AssetType::Texture
+  - Handle: 13040275658770296200
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00001.png
+    Type: AssetType::Texture
+  - Handle: 13144989181455315358
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00036.png
+    Type: AssetType::Texture
+  - Handle: 13168005628785448917
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00040.png
+    Type: AssetType::Texture
+  - Handle: 13273598290401132474
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00084.png
+    Type: AssetType::Texture
+  - Handle: 13274518968029078363
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00028.png
+    Type: AssetType::Texture
+  - Handle: 13295910397943310582
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00083.png
+    Type: AssetType::Texture
+  - Handle: 13351507745696875515
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00071.png
+    Type: AssetType::Texture
+  - Handle: 13367899617226452268
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00075.png
+    Type: AssetType::Texture
+  - Handle: 13610021022943276774
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00022.png
+    Type: AssetType::Texture
+  - Handle: 13855748353568449408
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00061.png
+    Type: AssetType::Texture
+  - Handle: 13889175461965957783
+    Filepath: Sounds/walking-soundscape-200112.mp3
+    Type: AssetType::Audio
+  - Handle: 13906089975251679339
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00013.png
+    Type: AssetType::Texture
+  - Handle: 13930096578513178558
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00018.png
+    Type: AssetType::Texture
+  - Handle: 13991125471959146751
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00004.png
+    Type: AssetType::Texture
+  - Handle: 14050144934421510416
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00016.png
+    Type: AssetType::Texture
+  - Handle: 14198654532143467001
+    Filepath: Sprites/Mossy Tileset/Mossy - BackgroundDecoration.png
+    Type: AssetType::Texture
+  - Handle: 14208908029689598543
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00033.png
+    Type: AssetType::Texture
+  - Handle: 14313323831443321195
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00007.png
+    Type: AssetType::Texture
+  - Handle: 14353091493324365929
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00002.png
+    Type: AssetType::Texture
+  - Handle: 14427151584699523701
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00002.png
+    Type: AssetType::Texture
+  - Handle: 14624515922368971937
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00019.png
+    Type: AssetType::Texture
+  - Handle: 14848600981621098731
+    Filepath: Sounds/dark-suspense-for-trailers-and-film-156461.mp3
+    Type: AssetType::Audio
+  - Handle: 14951303933605421149
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00051.png
+    Type: AssetType::Texture
+  - Handle: 15052607108481905077
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00081.png
+    Type: AssetType::Texture
+  - Handle: 15062503241204115965
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00011.png
+    Type: AssetType::Texture
+  - Handle: 15135145468845823686
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00054.png
+    Type: AssetType::Texture
+  - Handle: 15173487407393050844
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00023.png
+    Type: AssetType::Texture
+  - Handle: 15244501355312701797
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00010.png
+    Type: AssetType::Texture
+  - Handle: 15311568144045633186
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00003.png
+    Type: AssetType::Texture
+  - Handle: 15312675673411365589
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00012.png
+    Type: AssetType::Texture
+  - Handle: 15320294929512520460
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00038.png
+    Type: AssetType::Texture
+  - Handle: 15356567395820760836
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00012.png
+    Type: AssetType::Texture
+  - Handle: 15721621270666355400
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00021.png
+    Type: AssetType::Texture
+  - Handle: 15723095865428447949
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00073.png
+    Type: AssetType::Texture
+  - Handle: 15793468258553685431
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00000.png
+    Type: AssetType::Texture
+  - Handle: 15819378367044844543
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00077.png
+    Type: AssetType::Texture
+  - Handle: 15823245449537372339
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00057.png
+    Type: AssetType::Texture
+  - Handle: 16116648981450595583
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00002.png
+    Type: AssetType::Texture
+  - Handle: 16379043214175839728
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00042.png
+    Type: AssetType::Texture
+  - Handle: 16696897994400572070
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00048.png
+    Type: AssetType::Texture
+  - Handle: 16724749971380930262
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00011.png
+    Type: AssetType::Texture
+  - Handle: 16898050666710614829
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00001.png
+    Type: AssetType::Texture
+  - Handle: 17069388792751531953
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00013.png
+    Type: AssetType::Texture
+  - Handle: 17153811701044105140
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00029.png
+    Type: AssetType::Texture
+  - Handle: 17167421571168911568
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00053.png
+    Type: AssetType::Texture
+  - Handle: 17206187017932678793
+    Filepath: Sprites/Mossy Tileset/Mossy - Hanging Plants.png
+    Type: AssetType::Texture
+  - Handle: 17372988765017255074
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00027.png
+    Type: AssetType::Texture
+  - Handle: 17460037502397042523
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00007.png
+    Type: AssetType::Texture
+  - Handle: 17516383762673300408
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00005.png
+    Type: AssetType::Texture
+  - Handle: 17854849227549002369
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00000.png
+    Type: AssetType::Texture
+  - Handle: 17878610571813546860
+    Filepath: Sprites/Mossy Tileset/Mossy - Hanging Plants.sprite
+    Type: AssetType::SpritesSheet
+  - Handle: 17997759306417435537
+    Filepath: Sprites/Plant Animations/PlantJump/JumpPlant_00014.png
+    Type: AssetType::Texture
+  - Handle: 18017383611576294220
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00003.png
+    Type: AssetType::Texture
+  - Handle: 18017797703591695327
+    Filepath: Sprites/BlueWizard/2BlueWizardWalk/Chara_BlueWalk00012.png
+    Type: AssetType::Texture
+  - Handle: 18081508796391751937
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00052.png
+    Type: AssetType::Texture
+  - Handle: 18081873325961486611
+    Filepath: Sprites/SlimeGreen/SlimeBasic_00025.png
+    Type: AssetType::Texture
+  - Handle: 18190723485300310558
+    Filepath: Sprites/Plant Animations/Plant 1/Plant1_00079.png
+    Type: AssetType::Texture
+  - Handle: 18237417322798910828
+    Filepath: Sprites/BlueWizard/2BlueWizardIdle/Chara - BlueIdle00009.png
+    Type: AssetType::Texture

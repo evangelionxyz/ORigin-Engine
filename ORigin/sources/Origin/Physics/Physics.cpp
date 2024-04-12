@@ -9,6 +9,8 @@ namespace origin {
 
 	void Physics::Init()
 	{
+		PROFILER_PHYSICS();
+
 		switch (PhysicsAPI::Current())
 		{
 		case PhysicsAPIType::Jolt: break;
@@ -22,6 +24,8 @@ namespace origin {
 
 	void Physics::Shutdown()
 	{
+		PROFILER_PHYSICS();
+
 		switch (PhysicsAPI::Current())
 		{
 		case PhysicsAPIType::Jolt: break;

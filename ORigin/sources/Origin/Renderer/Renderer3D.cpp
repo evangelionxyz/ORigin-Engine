@@ -50,6 +50,8 @@ namespace origin {
 
 	void Renderer3D::Init()
 	{
+		PROFILER_FUNCTION();
+
 		s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), 0);
 
 		//  ======== Cube ========
@@ -128,6 +130,8 @@ namespace origin {
 
 	void Renderer3D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)
 	{
+		PROFILER_RENDERING();
+
 		s_CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(camTransform);
 		s_CameraBufferData.Position = camera.GetPosition();
 
@@ -139,6 +143,8 @@ namespace origin {
 
 	void Renderer3D::Begin(const EditorCamera& camera)
 	{
+		PROFILER_RENDERING();
+
 		s_CameraBufferData.ViewProjection = camera.GetViewProjection();
 		s_CameraBufferData.Position = camera.GetPosition();
 
@@ -150,6 +156,8 @@ namespace origin {
 
 	void Renderer3D::StartBatch()
 	{
+		PROFILER_RENDERING();
+
 		s_Render3DData.CubeIndexCount = 0;
 		s_Render3DData.CubeVertexBufferPtr = s_Render3DData.CubeVertexBufferBase;
 
@@ -163,6 +171,8 @@ namespace origin {
 
 	void Renderer3D::Flush()
 	{
+		PROFILER_RENDERING();
+
 		if(s_Render3DData.CubeIndexCount)
 		{
 			uint32_t dataSize = (uint8_t*)s_Render3DData.CubeVertexBufferPtr - (uint8_t*)s_Render3DData.CubeVertexBufferBase;
@@ -179,6 +189,8 @@ namespace origin {
 
 	void Renderer3D::DrawCube(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		if (s_Render3DData.CubeIndexCount >= Renderer::s_RenderData.MaxQuadIndices)
 			NextBatch();
 
@@ -252,6 +264,8 @@ namespace origin {
 
 	void Renderer3D::DrawQuad(const glm::mat4& transform, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec4& color, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		for (size_t i = 0; i < 6; ++i)
 		{
 			s_Render3DData.CubeVertexBufferPtr->Position = transform * glm::vec4((i % 2 == 0 ? p0 : p2), 1.0f);
@@ -273,6 +287,8 @@ namespace origin {
 
 	void Renderer3D::DrawSphere(const glm::mat4& transform, const glm::vec4& color, float radius, int entityID, uint8_t segments, uint8_t stacks)
 	{
+		PROFILER_RENDERING();
+
 		if (s_Render3DData.CubeIndexCount + (segments * stacks * 6) >= Renderer::s_RenderData.MaxQuadIndices)
 			NextBatch();
 
@@ -307,6 +323,8 @@ namespace origin {
 
 	void Renderer3D::DrawCapsule(const glm::mat4& transform, const glm::vec4& color, float radius, float height, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		constexpr uint8_t segments = 20;
 		constexpr uint8_t stacks = 10;
 
@@ -342,6 +360,8 @@ namespace origin {
 
 	void Renderer3D::DrawHemisphere(const glm::mat4& transform, float radius, uint8_t segments, uint8_t stacks, const glm::vec4& color, int entityID)
 	{
+		PROFILER_RENDERING();
+
 		float stackIncrement = glm::half_pi<float>() / static_cast<float>(stacks);
 		float angleIncrement = glm::two_pi<float>() / static_cast<float>(segments);
 

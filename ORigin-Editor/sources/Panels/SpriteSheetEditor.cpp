@@ -15,6 +15,8 @@ namespace origin
 	SpriteSheetEditor::SpriteSheetEditor()
 		: m_ViewportSize(0.0f)
 	{
+		PROFILER_UI();
+
 		m_Camera.InitOrthographic(10.0f, 0.1f, 10.0f);
 		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 
@@ -34,21 +36,24 @@ namespace origin
 
 	void SpriteSheetEditor::CreateNewSpriteSheet()
 	{
+		PROFILER_UI();
+
 		m_SpriteSheet = SpriteSheet::Create();
 	}
 
 	void SpriteSheetEditor::SetSelectedSpriteSheet(AssetHandle handle)
 	{
+		PROFILER_UI();
+
 		Reset();
-
 		m_SpriteSheet = AssetManager::GetAsset<SpriteSheet>(handle);
-
 		m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
 		if (Deserialize() && !m_IsOpened)
 		{
-			m_Camera.SetOrthoSizeMax(m_Texture->GetWidth() * 1.25f);
-			m_Camera.SetOrthoSize(m_Texture->GetWidth());
+			m_Camera.SetOrthoSizeMax(m_Texture->GetHeight() * 1.25f);
+			m_Camera.SetOrthoSize(m_Texture->GetHeight());
+
 			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
 		}
@@ -56,12 +61,16 @@ namespace origin
 
 	void SpriteSheetEditor::SetMainTexture(AssetHandle handle)
 	{
+		PROFILER_UI();
+
 		if (m_SpriteSheet)
 			m_SpriteSheet->SetMainTexture(handle);
 	}
 
 	void SpriteSheetEditor::AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max)
 	{
+		PROFILER_UI();
+
 		SpriteSheetData sprite {};
 		sprite.Min = min;
 		sprite.Max = max;
@@ -70,44 +79,44 @@ namespace origin
 
 	void SpriteSheetEditor::RemoveSprite(int index)
 	{
+		PROFILER_UI();
+
 		m_SpriteSheet->Sprites.erase(m_SpriteSheet->Sprites.begin() + index);
 	}
 
 	void SpriteSheetEditor::Duplicate(int index)
 	{
+		PROFILER_UI();
+
 		m_Controls.insert(m_Controls.begin(), m_Controls[index]);
 		m_SelectedIndex = 0;
 	}
 
 	void SpriteSheetEditor::OnImGuiRender()
 	{
+		PROFILER_UI();
+
 		if (m_IsOpened)
 		{
-			ImGui::Begin("Sprite Sheet Inpector", &m_IsOpened, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
+			ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			IsFocused = ImGui::IsWindowFocused();
 			IsHovered = ImGui::IsWindowHovered();
-
 			m_Camera.SetMoveActive(IsFocused);
 			m_Camera.SetDraggingActive(IsFocused);
 			m_Camera.SetScrollingActive(IsHovered);
-
 			const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			const ImVec2 &viewportOffset = ImGui::GetWindowPos();
 			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-
 			m_ViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
-
-			const float spriteSize = 64.0f;
-
+			
+			// Framebuffer Texture
 			ImTextureID texture = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID());
 			ImGui::Image(texture, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
-
 			ImGui::End();
 
-			ImGui::Begin("Sprite Sheet Controller");
+			ImGui::Begin("Sprite Sheet Inspector");
 
 			if (m_Texture)
 			{
@@ -123,6 +132,8 @@ namespace origin
 				if (ImGui::Button("Add"))
 				{
 					SpriteSheetController control;
+					control.Size = glm::vec2(m_Camera.GetOrthoSize());
+					control.Position = glm::vec2(m_Camera.GetPosition());
 					m_MoveTranslation = control.Position;
 					m_Controls.push_back(control);
 					m_SelectedIndex = static_cast<int>(m_Controls.size()) - 1;
@@ -142,8 +153,9 @@ namespace origin
 					offset += 5;
 				}
 
+				const float thumbnailSize = 60.0f;
 				const float padding = 10.0f;
-				const float cellSize = spriteSize + padding;
+				const float cellSize = thumbnailSize + padding;
 				const float panelWidth = ImGui::GetWindowContentRegionWidth();
 				int columnCount = static_cast<int>(panelWidth / cellSize);
 				if (columnCount < 1)
@@ -151,12 +163,17 @@ namespace origin
 
 				ImGui::Columns(columnCount, nullptr, false);
 
+				// SUB SPRITE IMAGES TEXTURE 
+				float thumbnailHeight = thumbnailSize * ((float)atlasSize.y / (float)atlasSize.x);
+				float diff = (float)(thumbnailSize - thumbnailHeight);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
+
 				offset = 0;
 				for (int i = 0; i < m_Controls.size(); i++)
 				{
 					auto &control = m_Controls[i];
 					ImGui::PushID(i);
-					ImGui::ImageButton(texture, { spriteSize, spriteSize }, { control.Min.x, control.Max.y }, { control.Max.x, control.Min.y });
+					ImGui::ImageButton(texture, { thumbnailSize, thumbnailSize }, { control.Min.x, control.Max.y }, { control.Max.x, control.Min.y });
 
 					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
@@ -209,11 +226,10 @@ namespace origin
 
 	void SpriteSheetEditor::OnUpdate(Timestep ts)
 	{
+		PROFILER_UI();
+
 		if (!m_IsOpened)
-		{
-			Reset();
 			return;
-		}
 
 		m_Camera.OnUpdate(ts);
 		OnMouse(ts);
@@ -232,6 +248,8 @@ namespace origin
 
 		if (m_Texture)
 		{
+			PROFILER_UI();
+
 			Renderer2D::Begin(m_Camera);
 
 			int texX = m_Texture->GetWidth();
@@ -297,6 +315,8 @@ namespace origin
 
 	bool SpriteSheetEditor::Serialize(const std::filesystem::path &filepath)
 	{
+		PROFILER_UI();
+
 		m_CurrentFilepath = filepath;
 		m_SpriteSheet->Sprites.clear();
 		for (auto &ctrl : m_Controls)
@@ -312,8 +332,6 @@ namespace origin
 
 	bool SpriteSheetEditor::Deserialize()
 	{
-		m_SpriteSheet->Sprites.clear();
-
 		bool ret = SpriteSheetSerializer::Deserialize(m_CurrentFilepath, m_SpriteSheet);
 
 		if (ret)
@@ -337,6 +355,8 @@ namespace origin
 
 	void SpriteSheetEditor::OnEvent(Event &e)
 	{
+		PROFILER_INPUT();
+
 		m_Camera.OnEvent(e);
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditor::OnMouseButtonPressed));
@@ -345,6 +365,8 @@ namespace origin
 
 	bool SpriteSheetEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
+		PROFILER_INPUT();
+
 		if (e.GetMouseButton() == Mouse::ButtonLeft && IsHovered)
 		{
 			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
@@ -378,6 +400,8 @@ namespace origin
 
 	bool SpriteSheetEditor::OnKeyPressed(KeyPressedEvent &e)
 	{
+		PROFILER_INPUT();
+
 		if (!IsFocused)
 			return false;
 
@@ -391,6 +415,8 @@ namespace origin
 
 	void SpriteSheetEditor::OnMouse(float ts)
 	{
+		PROFILER_INPUT();
+
 		if (m_Controls.empty())
 			return;
 
@@ -424,7 +450,6 @@ namespace origin
 					default:
 						break;
 				}
-			
 			}
 			else
 			{
@@ -472,11 +497,14 @@ namespace origin
 
 	void SpriteSheetEditor::Reset()
 	{
+		PROFILER_UI();
+
 		if (m_SpriteSheet)
+		{
+			m_SpriteSheet->Sprites.clear();
 			m_SpriteSheet.reset();
+		}
 
-		if (!m_Controls.empty())
-			m_Controls.clear();
+		m_Controls.clear();
 	}
-
 }

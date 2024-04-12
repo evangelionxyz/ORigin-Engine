@@ -21,6 +21,8 @@ namespace origin {
 
 	WinWindow::WinWindow(const char* title, uint32_t width, uint32_t height, bool maximized)
 	{
+		PROFILER_FUNCTION();
+
 #if defined(OGN_DEBUG)
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
@@ -64,18 +66,24 @@ namespace origin {
 
 	void WinWindow::SetEventCallback(const std::function<void(Event&)>& callback)
 	{
+		PROFILER_FUNCTION();
+
 		m_Data.EventCallback = callback;
 		WindowCallbacks();
 	}
 
 	void WinWindow::OnUpdate()
 	{
+		PROFILER_FUNCTION();
+
 		glfwPollEvents();
 		glfwSwapBuffers(m_MainWindow);
 	}
 
 	void WinWindow::SetVSync(bool enable)
 	{
+		PROFILER_FUNCTION();
+
 		glfwSwapInterval(enable ? 1 : 0);
 		m_Data.VSync = enable;
 	}
@@ -87,6 +95,8 @@ namespace origin {
 
 	void WinWindow::SetFullscreen(bool enable)
 	{
+		PROFILER_FUNCTION();
+
 		if (enable)
 		{
 			int width, height;
@@ -102,6 +112,8 @@ namespace origin {
 
 	void WinWindow::SetIcon(const char* filepath)
 	{
+		PROFILER_FUNCTION();
+
 		stbi_set_flip_vertically_on_load(0);
 		int width, height, bpp;
 		unsigned char* data = stbi_load(filepath, &width, &height, &bpp, 0);
@@ -116,6 +128,8 @@ namespace origin {
 
 	void WinWindow::WindowCallbacks()
 	{
+		PROFILER_FUNCTION();
+
 		glfwSetWindowUserPointer(m_MainWindow, &m_Data);
 
 		glfwSetWindowMaximizeCallback(m_MainWindow, [](GLFWwindow* window, int maximized)

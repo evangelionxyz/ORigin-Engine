@@ -12,6 +12,8 @@ namespace origin
 	
 	bool MaterialSerializer::Serialize(const std::filesystem::path &filepath, const std::shared_ptr<Material> &mat)
 	{
+		PROFILER_FUNCTION();
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material";
@@ -34,6 +36,8 @@ namespace origin
 
 	bool MaterialSerializer::Deserialize(const std::filesystem::path &filepath, std::shared_ptr<Material> &material)
 	{
+		PROFILER_FUNCTION();
+
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();

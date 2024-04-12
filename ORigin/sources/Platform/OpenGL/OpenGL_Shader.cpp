@@ -19,6 +19,8 @@ namespace origin {
   namespace Utils{
     static GLenum ShaderTypeFromString(const std::string& type, const std::string& filepath = std::string())
     {
+      PROFILER_RENDERING();
+
       if (type == "vertex") return GL_VERTEX_SHADER;
       if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
       if (type == "geometry") return GL_GEOMETRY_SHADER;
@@ -34,6 +36,8 @@ namespace origin {
 
     static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
     {
+      PROFILER_RENDERING();
+
       switch (stage)
       {
         case GL_VERTEX_SHADER: return shaderc_glsl_vertex_shader;
@@ -47,6 +51,8 @@ namespace origin {
 
     static const char* GLShaderStageToString(GLenum stage)
     {
+      PROFILER_RENDERING();
+
       switch (stage)
       {
         case GL_VERTEX_SHADER:  return "GL_VERTEX_SHADER";
@@ -65,6 +71,8 @@ namespace origin {
 
     static void CreateCachedDirectoryIfNeeded()
     {
+      PROFILER_RENDERING();
+
       std::string cachedDirectory = GetCacheDirectory();
       if (!std::filesystem::exists(cachedDirectory))
         std::filesystem::create_directories(cachedDirectory);
@@ -72,6 +80,8 @@ namespace origin {
 
     static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
     {
+      PROFILER_RENDERING();
+
       switch(stage)
       {
         case GL_VERTEX_SHADER: return ".cached_opengl.vert";
@@ -85,6 +95,8 @@ namespace origin {
 
     static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
     {
+      PROFILER_RENDERING();
+
       switch (stage)
       {
         case GL_VERTEX_SHADER: return ".cached_vulkan.vert";
@@ -98,6 +110,8 @@ namespace origin {
 
     static const char* ShaderDataTypeToString(GLenum type)
     {
+      PROFILER_RENDERING();
+
       switch (type)
       {
         case GL_VERTEX_SHADER:    return "Vertex";
@@ -109,6 +123,8 @@ namespace origin {
 
     static const char* ShaderDataTypeToString(ShaderType type)
     {
+      PROFILER_RENDERING();
+
       switch (type)
       {
         case ShaderType::VERTEX:    return "VERTEX";
@@ -121,6 +137,8 @@ namespace origin {
 
 	ShaderProgramSources OpenGLShader::ParseShader(const std::string& filepath)
 	{
+    PROFILER_RENDERING();
+
 		std::ifstream stream(filepath);
 
 		std::string line;
@@ -161,6 +179,10 @@ namespace origin {
   OpenGLShader::OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv)
     : m_Filepath(filepath), m_RendererID(0), m_EnableSpirv(enableSpirv), m_RecompileSPIRV(recompileSpirv)
   {
+    PROFILER_RENDERING();
+
+    PROFILER_RENDERING();
+
     OGN_CORE_TRACE("Trying to load Shader : {}", m_Filepath);
 
     // With SPIRV
@@ -192,15 +214,19 @@ namespace origin {
     m_Name = filepath.substr(lastSlash, count);
   }
 
-  OpenGLShader::OpenGLShader(const std::string& name, const std::string& filepath)
+  OpenGLShader::OpenGLShader(const std::string &name, const std::string &filepath)
     : m_Name(name), m_Filepath(filepath), m_RendererID(0)
   {
+    PROFILER_RENDERING();
+
     m_ShaderSource = ParseShader(filepath);
     m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
   }
 
-  OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
+  OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
   {
+    PROFILER_RENDERING();
+
     std::unordered_map<GLenum, std::string> sources;
     sources[GL_VERTEX_SHADER] = vertexSrc;
     sources[GL_FRAGMENT_SHADER] = fragmentSrc;
@@ -210,9 +236,11 @@ namespace origin {
     CreateSpirvProgram();
   }
 
-  OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geomterySrc)
+  OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc, const std::string &geomterySrc)
     : m_Name(name), m_RendererID(0)
   {
+    PROFILER_RENDERING();
+
     std::unordered_map<GLenum, std::string> sources;
     sources[GL_VERTEX_SHADER] = vertexSrc;
     sources[GL_FRAGMENT_SHADER] = fragmentSrc;
@@ -225,15 +253,19 @@ namespace origin {
 
   OpenGLShader::~OpenGLShader()
   {
+    PROFILER_RENDERING();
+
     glDeleteProgram(m_RendererID);
   }
 
   void OpenGLShader::CreateSpirvProgram()
   {
+    PROFILER_RENDERING();
+
     GLuint program = glCreateProgram();
 
     std::vector<GLuint> shaderIDs;
-    for (auto&& [stage, spirv] : m_OpenGLSPIRV)
+    for (auto &&[stage, spirv] : m_OpenGLSPIRV)
     {
       GLuint shaderID = shaderIDs.emplace_back(glCreateShader(stage));
       glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
@@ -248,7 +280,7 @@ namespace origin {
     GLint isLinked;
 
     glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-    if(isLinked < 0)
+    if (isLinked < 0)
       OGN_CORE_ERROR("Shader Linked Status : {0}", isLinked);
     else
       OGN_CORE_INFO("Shader Linked Status : {0}", isLinked);
@@ -274,8 +306,10 @@ namespace origin {
     m_RendererID = program;
   }
 
-  std::string OpenGLShader::ReadFile(const std::string& filepath)
+  std::string OpenGLShader::ReadFile(const std::string &filepath)
   {
+    PROFILER_RENDERING();
+
     std::string result;
     std::ifstream in(filepath, std::ios::in | std::ios::binary);
     if (in)
@@ -300,32 +334,36 @@ namespace origin {
     return result;
   }
 
-  std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
+  std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string &source)
   {
+    PROFILER_RENDERING();
+
     std::unordered_map<GLenum, std::string> shaderSources;
 
-    const char* typeToken = "// type";
+    const char *typeToken = "// type";
     size_t typeTokenLength = strlen(typeToken);
     size_t pos = source.find(typeToken, 0);
 
     while (pos != std::string::npos)
     {
       size_t eol = source.find_first_of("\r\n", pos);
-			OGN_CORE_ASSERT(eol != std::string::npos, "Syntax error")
-			size_t begin = pos + typeTokenLength + 1;
-			std::string type = source.substr(begin, eol - begin);
-			OGN_CORE_ASSERT(Utils::ShaderTypeFromString(type, m_Filepath), "Invalid shader type specified")
+      OGN_CORE_ASSERT(eol != std::string::npos, "Syntax error")
+        size_t begin = pos + typeTokenLength + 1;
+      std::string type = source.substr(begin, eol - begin);
+      OGN_CORE_ASSERT(Utils::ShaderTypeFromString(type, m_Filepath), "Invalid shader type specified")
 
-      size_t nextLinePos = source.find_first_of("\r\n", eol);
+        size_t nextLinePos = source.find_first_of("\r\n", eol);
       OGN_CORE_ASSERT(nextLinePos != std::string::npos, "Syntax Error")
-      pos = source.find(typeToken, nextLinePos);
+        pos = source.find(typeToken, nextLinePos);
       shaderSources[Utils::ShaderTypeFromString(type, m_Filepath)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
     }
     return shaderSources;
   }
 
-  void OpenGLShader::CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources)
+  void OpenGLShader::CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string> &shaderSources)
   {
+    PROFILER_RENDERING();
+
     GLuint program = glCreateProgram();
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
@@ -335,9 +373,9 @@ namespace origin {
       options.SetOptimizationLevel(shaderc_optimization_level_performance);
     std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 
-    auto& shaderData = m_VulkanSPIRV;
+    auto &shaderData = m_VulkanSPIRV;
     shaderData.clear();
-    for (auto&& [stage, source] : shaderSources)
+    for (auto &&[stage, source] : shaderSources)
     {
       std::filesystem::path shaderFilepath = m_Filepath;
       std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
@@ -349,9 +387,9 @@ namespace origin {
         infile.seekg(0, std::ios::end);
         auto size = infile.tellg();
         infile.seekg(0, std::ios::beg);
-        auto& data = shaderData[stage];
+        auto &data = shaderData[stage];
         data.resize(size / sizeof(uint32_t));
-        infile.read((char*)data.data(), size);
+        infile.read((char *)data.data(), size);
       }
       else
       {
@@ -359,7 +397,7 @@ namespace origin {
         shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
         if (module.GetCompilationStatus() != shaderc_compilation_status_success)
         {
-          auto& message = module.GetErrorMessage();
+          auto &message = module.GetErrorMessage();
           OGN_CORE_ASSERT(false, message);
         }
 
@@ -368,20 +406,22 @@ namespace origin {
         std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
         if (out.is_open())
         {
-          auto& data = shaderData[stage];
-          out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+          auto &data = shaderData[stage];
+          out.write((char *)data.data(), data.size() * sizeof(uint32_t));
           out.flush();
           out.close();
         }
       }
     }
-    for (auto&& [stage, data] : shaderData)
+    for (auto &&[stage, data] : shaderData)
       Reflect(stage, data);
   }
 
   void OpenGLShader::CompileOrGetOpenGLBinaries()
   {
-    auto& shaderData = m_OpenGLSPIRV;
+    PROFILER_RENDERING();
+
+    auto &shaderData = m_OpenGLSPIRV;
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
     const bool optimize = true;
@@ -390,7 +430,7 @@ namespace origin {
     shaderData.clear();
 
     m_OpenGLSourceCode.clear();
-    for (auto&& [stage, spirv] : m_VulkanSPIRV)
+    for (auto &&[stage, spirv] : m_VulkanSPIRV)
     {
       std::filesystem::path shaderFilepath = m_Filepath;
       std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + Utils::GLShaderStageCachedOpenGLFileExtension(stage));
@@ -403,16 +443,16 @@ namespace origin {
         auto size = infile.tellg();
         infile.seekg(0, std::ios::beg);
 
-        auto& data = shaderData[stage];
+        auto &data = shaderData[stage];
         data.resize(size / sizeof(uint32_t));
-        infile.read((char*)data.data(), size);
+        infile.read((char *)data.data(), size);
       }
       else
       {
         OGN_CORE_WARN("Compile OpenGL {0} Shader To Binaries", Utils::ShaderDataTypeToString(stage));
         spirv_cross::CompilerGLSL glslCompiler(spirv);
         m_OpenGLSourceCode[stage] = glslCompiler.compile();
-        auto& source = m_OpenGLSourceCode[stage];
+        auto &source = m_OpenGLSourceCode[stage];
 
         shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
         if (module.GetCompilationStatus() != shaderc_compilation_status_success)
@@ -423,10 +463,10 @@ namespace origin {
 
         shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
         std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary);
-        if(outfile.is_open())
+        if (outfile.is_open())
         {
-          auto& data = shaderData[stage];
-          outfile.write((char*)data.data(), data.size() * sizeof(uint32_t));
+          auto &data = shaderData[stage];
+          outfile.write((char *)data.data(), data.size() * sizeof(uint32_t));
           outfile.flush();
           outfile.close();
         }
@@ -434,8 +474,10 @@ namespace origin {
     }
   }
 
-  void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
+  void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t> &shaderData)
   {
+    PROFILER_RENDERING();
+
     spirv_cross::Compiler compiler(shaderData);
     spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
@@ -446,13 +488,13 @@ namespace origin {
     if (resources.uniform_buffers.size())
     {
       OGN_CORE_TRACE("Uniform buffers:");
-      for (const auto& resource : resources.uniform_buffers)
+      for (const auto &resource : resources.uniform_buffers)
       {
-        const auto& bufferType = compiler.get_type(resource.base_type_id);
+        const auto &bufferType = compiler.get_type(resource.base_type_id);
         uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
         uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
         int memberCount = bufferType.member_types.size();
-        OGN_CORE_WARN ("     Name = {0}", resource.name);
+        OGN_CORE_WARN("     Name = {0}", resource.name);
         OGN_CORE_TRACE("     Size = {0}", bufferSize);
         OGN_CORE_TRACE("  Binding = {0}", binding);
         OGN_CORE_TRACE("  Members = {0}", memberCount);
@@ -460,10 +502,12 @@ namespace origin {
     }
   }
 
-  GLuint OpenGLShader::CompileShader(GLuint type, const std::string& source)
+  GLuint OpenGLShader::CompileShader(GLuint type, const std::string &source)
   {
+    PROFILER_RENDERING();
+
     GLuint shaderID = glCreateShader(type);
-    const char* src = source.c_str();
+    const char *src = source.c_str();
     glShaderSource(shaderID, 1, &src, nullptr);
     glCompileShader(shaderID);
 
@@ -473,23 +517,23 @@ namespace origin {
     if (!success)
     {
       glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
-      const char* m = "Shader: Failed to Compile ";
-      const char* shaderType{};
+      const char *m = "Shader: Failed to Compile ";
+      const char *shaderType {};
 
       switch (type)
       {
-      case GL_VERTEX_SHADER:
-        shaderType = "VERTEX TYPE";
-        break;
-      case GL_FRAGMENT_SHADER:
-        shaderType = "FRAGMENT TYPE";
-        break;
-      case GL_GEOMETRY_SHADER:
-        shaderType = "GEOMETRY TYPE";
-        break;
+        case GL_VERTEX_SHADER:
+          shaderType = "VERTEX TYPE";
+          break;
+        case GL_FRAGMENT_SHADER:
+          shaderType = "FRAGMENT TYPE";
+          break;
+        case GL_GEOMETRY_SHADER:
+          shaderType = "GEOMETRY TYPE";
+          break;
       }
       size_t len = strlen(m) + strlen(shaderType) + 1;
-      char* msg = (char*)malloc(len);
+      char *msg = (char *)malloc(len);
 
       if (msg != NULL)
       {
@@ -505,15 +549,15 @@ namespace origin {
 
     switch (type)
     {
-    case GL_VERTEX_SHADER:
-      OGN_CORE_TRACE("VERTEX Succesfully Compiled");
-      break;
-    case GL_FRAGMENT_SHADER:
-      OGN_CORE_TRACE("FRAGMENT Succesfully Compiled");
-      break;
-    case GL_GEOMETRY_SHADER:
-      OGN_CORE_TRACE("GEOMETRY Succesfully Compiled");
-      break;
+      case GL_VERTEX_SHADER:
+        OGN_CORE_TRACE("VERTEX Succesfully Compiled");
+        break;
+      case GL_FRAGMENT_SHADER:
+        OGN_CORE_TRACE("FRAGMENT Succesfully Compiled");
+        break;
+      case GL_GEOMETRY_SHADER:
+        OGN_CORE_TRACE("GEOMETRY Succesfully Compiled");
+        break;
     }
 
     return shaderID;
@@ -521,6 +565,8 @@ namespace origin {
 
   GLuint OpenGLShader::CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc)
   {
+    PROFILER_RENDERING();
+
     // Create Program
     GLuint shaderProgram = glCreateProgram();
     GLuint vShader = CompileShader(GL_VERTEX_SHADER, vertexSrc);
@@ -528,7 +574,7 @@ namespace origin {
     if (!geometrySrc.empty())
     {
       GLuint gShader = CompileShader(GL_GEOMETRY_SHADER, geometrySrc);
-		  glAttachShader(shaderProgram, gShader);
+      glAttachShader(shaderProgram, gShader);
     }
 
     // Attach and Link Shader->Program
@@ -553,157 +599,179 @@ namespace origin {
     glUseProgram(0);
   }
 
-	void OpenGLShader::SetBool(const std::string& name, bool boolean)
-	{
-    SetUniformBool(name, boolean);
-	}
-
-	void OpenGLShader::SetFloat(const std::string& name, float v0)
-	{
-    SetUniformFloat(name, v0);
-	}
-
-	void OpenGLShader::SetFloat(const std::string& name, float v0, float v1)
-	{
-    SetUniformFloat(name, v0, v1);
-	}
-
-	void OpenGLShader::SetFloat(const std::string& name, float v0, float v1, float v2)
-	{
-    SetUniformFloat(name, v0, v1, v2);
-	}
-
-	void OpenGLShader::SetFloat(const std::string& name, float v0, float v1, float v2, float v3)
-	{
-    SetUniformFloat(name, v0, v1, v2, v3);
-	}
-
-	void OpenGLShader::SetInt(const std::string& name, int v0)
-	{
-    SetUniformInt(name, v0);
-	}
-
-	void OpenGLShader::SetInt(const std::string& name, int v0, int v1)
-	{
-    SetUniformInt(name, v0, v1);
-	}
-
-	void OpenGLShader::SetInt(const std::string& name, int v0, int v1, int v2)
-	{
-    SetUniformInt(name, v0, v1, v2);
-	}
-
-	void OpenGLShader::SetInt(const std::string& name, int v0, int v1, int v2, int v3)
-	{
-    SetUniformInt(name, v0, v1, v2, v3);
-	}
-
-  void  OpenGLShader::SetIntArray(const std::string& name, int* values, uint32_t count)
+  void OpenGLShader::SetBool(const std::string &name, bool boolean)
   {
+    SetUniformBool(name, boolean);
+  }
+
+  void OpenGLShader::SetFloat(const std::string &name, float v0)
+  {
+    SetUniformFloat(name, v0);
+  }
+
+  void OpenGLShader::SetFloat(const std::string &name, float v0, float v1)
+  {
+    SetUniformFloat(name, v0, v1);
+  }
+
+  void OpenGLShader::SetFloat(const std::string &name, float v0, float v1, float v2)
+  {
+    SetUniformFloat(name, v0, v1, v2);
+  }
+
+  void OpenGLShader::SetFloat(const std::string &name, float v0, float v1, float v2, float v3)
+  {
+    SetUniformFloat(name, v0, v1, v2, v3);
+  }
+
+  void OpenGLShader::SetInt(const std::string &name, int v0)
+  {
+    SetUniformInt(name, v0);
+  }
+
+  void OpenGLShader::SetInt(const std::string &name, int v0, int v1)
+  {
+    SetUniformInt(name, v0, v1);
+  }
+
+  void OpenGLShader::SetInt(const std::string &name, int v0, int v1, int v2)
+  {
+    SetUniformInt(name, v0, v1, v2);
+  }
+
+  void OpenGLShader::SetInt(const std::string &name, int v0, int v1, int v2, int v3)
+  {
+    SetUniformInt(name, v0, v1, v2, v3);
+  }
+
+  void  OpenGLShader::SetIntArray(const std::string &name, int *values, uint32_t count)
+  {
+    PROFILER_RENDERING();
+
     SetUniformIntArray(name, values, count);
   }
 
-	void OpenGLShader::SetVector(const std::string& name, const glm::vec2& vectors)
-	{
+  void OpenGLShader::SetVector(const std::string &name, const glm::vec2 &vectors)
+  {
     SetUniformVector(name, vectors);
-	}
+  }
 
-	void OpenGLShader::SetVector(const std::string& name, const glm::vec3& vectors)
-	{
+  void OpenGLShader::SetVector(const std::string &name, const glm::vec3 &vectors)
+  {
     SetUniformVector(name, vectors);
-	}
+  }
 
-	void OpenGLShader::SetVector(const std::string& name, const glm::vec4& vectors)
-	{
+  void OpenGLShader::SetVector(const std::string &name, const glm::vec4 &vectors)
+  {
     SetUniformVector(name, vectors);
-	}
+  }
 
-	void OpenGLShader::SetMatrix(const std::string& name, const glm::mat2& matrices)
-	{
-		SetUniformMatrix(name, matrices);
-	}
-
-	void OpenGLShader::SetMatrix(const std::string& name, const glm::mat3& matrices)
-	{
+  void OpenGLShader::SetMatrix(const std::string &name, const glm::mat2 &matrices)
+  {
     SetUniformMatrix(name, matrices);
-	}
+  }
 
-	void OpenGLShader::SetMatrix(const std::string& name, const glm::mat4& matrices)
-	{
+  void OpenGLShader::SetMatrix(const std::string &name, const glm::mat3 &matrices)
+  {
     SetUniformMatrix(name, matrices);
-	}
+  }
+
+  void OpenGLShader::SetMatrix(const std::string &name, const glm::mat4 &matrices)
+  {
+    SetUniformMatrix(name, matrices);
+  }
 
 
   // private
-	// BOOLEAN UNIFORM
-  void OpenGLShader::SetUniformBool(const std::string& name, bool boolean) {
+  // BOOLEAN UNIFORM
+  void OpenGLShader::SetUniformBool(const std::string &name, bool boolean)
+  {
     glUniform1i(GetUniformLocation(name), boolean);
   }
 
   // FLOAT UNIFORM
-  void OpenGLShader::SetUniformFloat(const std::string& name, float v0) {
+  void OpenGLShader::SetUniformFloat(const std::string &name, float v0)
+  {
     glUniform1f(GetUniformLocation(name), v0);
   }
-  void OpenGLShader::SetUniformFloat(const std::string& name, float v0, float v1) {
+  void OpenGLShader::SetUniformFloat(const std::string &name, float v0, float v1)
+  {
     glUniform2f(GetUniformLocation(name), v0, v1);
   }
-  void OpenGLShader::SetUniformFloat(const std::string& name, float v0, float v1, float v2) {
+  void OpenGLShader::SetUniformFloat(const std::string &name, float v0, float v1, float v2)
+  {
     glUniform3f(GetUniformLocation(name), v0, v1, v2);
   }
-  void OpenGLShader::SetUniformFloat(const std::string& name, float v0, float v1, float v2, float v3) {
+  void OpenGLShader::SetUniformFloat(const std::string &name, float v0, float v1, float v2, float v3)
+  {
     glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
   }
   // INT UNIFORM
-  void OpenGLShader::SetUniformInt(const std::string& name, int v0) {
+  void OpenGLShader::SetUniformInt(const std::string &name, int v0)
+  {
     glUniform1i(GetUniformLocation(name), v0);
   }
 
-  void OpenGLShader::SetUniformInt(const std::string& name, int v0, int v1) {
+  void OpenGLShader::SetUniformInt(const std::string &name, int v0, int v1)
+  {
     glUniform2i(GetUniformLocation(name), v0, v1);
   }
 
-  void OpenGLShader::SetUniformInt(const std::string& name, int v0, int v1, int v2) {
+  void OpenGLShader::SetUniformInt(const std::string &name, int v0, int v1, int v2)
+  {
     glUniform3i(GetUniformLocation(name), v0, v1, v2);
   }
 
-  void OpenGLShader::SetUniformInt(const std::string& name, int v0, int v1, int v2, int v3) {
+  void OpenGLShader::SetUniformInt(const std::string &name, int v0, int v1, int v2, int v3)
+  {
     glUniform4i(GetUniformLocation(name), v0, v1, v2, v3);
   }
 
-  void OpenGLShader::SetUniformIntArray(const std::string& name, int* values, uint32_t count)
+  void OpenGLShader::SetUniformIntArray(const std::string &name, int *values, uint32_t count)
   {
+    PROFILER_RENDERING();
+
     glUniform1iv(GetUniformLocation(name), count, values);
   }
 
   // VECTOR UNIFORM
-  void OpenGLShader::SetUniformVector(const std::string& name, const glm::vec2& vector2) {
+  void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec2 &vector2)
+  {
     glUniform2fv(GetUniformLocation(name), 1, glm::value_ptr(vector2));
   }
 
-  void OpenGLShader::SetUniformVector(const std::string& name, const glm::vec3& vector3) {
+  void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec3 &vector3)
+  {
     glUniform3fv(GetUniformLocation(name), 1, glm::value_ptr(vector3));
   }
 
-  void OpenGLShader::SetUniformVector(const std::string& name, const glm::vec4& vector4) {
+  void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec4 &vector4)
+  {
     glUniform4fv(GetUniformLocation(name), 1, glm::value_ptr(vector4));
   }
 
-  void OpenGLShader::SetUniformMatrix(const std::string& name, const glm::mat2& matrices)
+  void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat2 &matrices)
   {
+    PROFILER_RENDERING();
+
     glUniformMatrix3fv(GetUniformLocation(name), 1, false, glm::value_ptr(matrices));
   }
 
   // MATRIX UNIFORM
-  void OpenGLShader::SetUniformMatrix(const std::string& name, const glm::mat3& matrices) {
+  void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat3 &matrices)
+  {
     glUniformMatrix3fv(GetUniformLocation(name), 1, false, glm::value_ptr(matrices));
   }
 
-  void OpenGLShader::SetUniformMatrix(const std::string& name, const glm::mat4& matrices) {
+  void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat4 &matrices)
+  {
     glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrices));
   }
 
-  int OpenGLShader::GetUniformLocation(const std::string& name)
+  int OpenGLShader::GetUniformLocation(const std::string &name)
   {
+    PROFILER_RENDERING();
+
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
       return m_UniformLocationCache[name];
 

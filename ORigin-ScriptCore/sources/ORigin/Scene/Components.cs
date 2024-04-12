@@ -112,22 +112,22 @@ namespace ORiginEngine
 
     public void ApplyLinearImpulse(Vector2 impulse, Vector2 worldPosition, bool wake)
     {
-      InternalCalls.Rigidbody2DComponent_ApplyLinearImpulse(Entity.ID, ref impulse, ref worldPosition, wake);
+      InternalCalls.Rigidbody2DComponent_ApplyLinearImpulse(Entity.ID, impulse, worldPosition, wake);
     }
 
     public void ApplyLinearImpulseToCenter(Vector2 impulse, bool wake)
     {
-      InternalCalls.Rigidbody2DComponent_ApplyLinearImpulseToCenter(Entity.ID, ref impulse, wake);
+      InternalCalls.Rigidbody2DComponent_ApplyLinearImpulseToCenter(Entity.ID, impulse, wake);
     }
 
     public void ApplyForce(Vector2 force, Vector2 point, bool wake)
     {
-      InternalCalls.Rigidbody2DComponent_ApplyForce(Entity.ID, ref force, ref point, wake);
+      InternalCalls.Rigidbody2DComponent_ApplyForce(Entity.ID, force, point, wake);
     }
 
     public void ApplyForceToCenter(Vector2 force, bool wake)
     {
-      InternalCalls.Rigidbody2DComponent_ApplyForceToCenter(Entity.ID, ref force, wake);
+      InternalCalls.Rigidbody2DComponent_ApplyForceToCenter(Entity.ID, force, wake);
     }
 
     public bool IsContactWithTag(string objectTag)
@@ -447,7 +447,7 @@ namespace ORiginEngine
 
     }
 
-    bool FlipX
+    public bool FlipX
     {
       get
       {
@@ -460,7 +460,7 @@ namespace ORiginEngine
       }
     }
 
-    bool FlipY
+    public bool FlipY
     {
       get
       {

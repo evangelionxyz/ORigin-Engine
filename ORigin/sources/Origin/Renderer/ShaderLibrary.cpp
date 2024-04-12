@@ -14,6 +14,8 @@ namespace origin
 	*/
 	void ShaderLibrary::Add(const std::string &name, const std::shared_ptr<Shader> &shader)
 	{
+		PROFILER_FUNCTION();
+
 		OGN_CORE_ASSERT(!Exist(name), "Shader already exists!");
 		m_ShaderMap[name] = shader;
 	}
@@ -23,12 +25,16 @@ namespace origin
 	*/
 	void ShaderLibrary::Add(const std::shared_ptr<Shader> &shader)
 	{
+		PROFILER_FUNCTION();
+
 		std::string name = shader->GetName();
 		Add(name, shader);
 	}
 
 	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string &filepath)
 	{
+		PROFILER_FUNCTION();
+
 		std::shared_ptr<Shader> shader = Shader::Create(filepath);
 
 		Add(shader);
@@ -41,6 +47,8 @@ namespace origin
 	*/
 	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string &name, const std::string &filepath)
 	{
+		PROFILER_FUNCTION();
+
 		std::shared_ptr<Shader> shader = Shader::Create(name, filepath);
 
 		Add(shader);
@@ -57,6 +65,8 @@ namespace origin
 	*/
 	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string &name, const std::string &filepath, bool enableSpirv, bool recompileSpirv)
 	{
+		PROFILER_FUNCTION();
+
 		std::shared_ptr<Shader> shader = Shader::Create(filepath, enableSpirv, recompileSpirv);
 
 		Add(name, shader);
@@ -68,6 +78,8 @@ namespace origin
 	*/
 	std::shared_ptr<Shader> ShaderLibrary::Get(const std::string &name)
 	{
+		PROFILER_FUNCTION();
+
 		OGN_CORE_ASSERT(Exist(name), "Shader not found at");
 		return m_ShaderMap.at(name);
 	}
@@ -77,6 +89,8 @@ namespace origin
 	*/
 	bool ShaderLibrary::Exist(const std::string &name)
 	{
+		PROFILER_FUNCTION();
+
 		return m_ShaderMap.find(name) != m_ShaderMap.end();
 	}
 }

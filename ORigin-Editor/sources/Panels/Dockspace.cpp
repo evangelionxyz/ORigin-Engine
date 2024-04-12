@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "Dockspace.h"
+#include "ORigin\Instrumetation\Instrumentor.h"
 #include <imgui.h>
 
 namespace origin
 {
   void Dockspace::Begin()
   {
+    PROFILER_UI();
+
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
 
@@ -45,6 +48,8 @@ namespace origin
 
   void Dockspace::End()
   {
+    PROFILER_UI();
+
     ImGui::End();
     ImGui::PopStyleVar();
   }

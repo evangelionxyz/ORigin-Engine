@@ -14,6 +14,8 @@ namespace origin
 {
 	OpenGLModel::OpenGLModel(const std::string& filepath)
 	{
+		PROFILER_RENDERING();
+
 		Assimp::Importer importer;
 
 		const aiScene *scene = importer.ReadFile(filepath.c_str(),
@@ -44,6 +46,8 @@ namespace origin
 
 	void OpenGLModel::Draw(int entityID)
 	{
+		PROFILER_RENDERING();
+
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
 			m_ModelBufferData.EntityID = entityID;
@@ -90,6 +94,8 @@ namespace origin
 
 	void OpenGLModel::Draw()
 	{
+		PROFILER_RENDERING();
+
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
 			if (m_Material)
@@ -141,11 +147,15 @@ namespace origin
 
 	void OpenGLModel::RemoveMaterial()
 	{
+		PROFILER_RENDERING();
+
 		m_Material = Renderer::GetMaterial("DefaultMesh");
 	}
 
 	void OpenGLModel::ProcessNode(aiNode *node, const aiScene *scene)
 	{
+		PROFILER_RENDERING();
+
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -160,6 +170,8 @@ namespace origin
 
 	std::shared_ptr<Mesh> OpenGLModel::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	{
+		PROFILER_RENDERING();
+
 		std::vector<MeshVertex> vertices;
 		std::vector<uint32_t> indices;
 

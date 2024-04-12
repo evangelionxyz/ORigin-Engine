@@ -66,6 +66,8 @@ namespace origin
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
+		PROFILER_FUNCTION();
+
 		OGN_CORE_ASSERT(entity.HasComponent<IDComponent>(), "");
 		auto &idc = entity.GetComponent<IDComponent>();
 		out << YAML::BeginMap; // Entity
@@ -103,29 +105,30 @@ namespace origin
 
 			auto states = ac.State->GetAnimationState();
 
-			for (auto it = states.begin(); it != states.end(); it++)
+			for (auto state : states)
 			{
-				const std::shared_ptr<SpriteAnimation> &currentAnim = it->second;
+				const std::shared_ptr<SpriteAnimation> &currentAnim = state.second;
 				out << YAML::BeginMap; // Name
-				out << YAML::Key << "Name" << it->first;
+				out << YAML::Key << "Name" << state.first;
 				out << YAML::Key << "Looping" << YAML::Value << currentAnim->Looping;
 				out << YAML::Key << "MaxFrame" << YAML::Value << currentAnim->MaxFrame;
 				out << YAML::Key << "Speed" << YAML::Value << currentAnim->Speed;
 				out << YAML::Key << "Frames" << YAML::Value;
 				out << YAML::BeginSeq; // Frames
-				for (int i = 0; i < currentAnim->GetTotalFrames(); i++)
+
+				for (auto frame : currentAnim->AnimFrames)
 				{
 					out << YAML::BeginMap; // ID
-					out << YAML::Key << "ID" << YAML::Value << currentAnim->GetFrame(i).Handle;
-					out << YAML::Key << "FrameBegin" << YAML::Value << currentAnim->GetFrame(i).FrameBegin;
-					out << YAML::Key << "FrameEnd" << YAML::Value << currentAnim->GetFrame(i).FrameEnd;
-					out << YAML::Key << "Min" << YAML::Value << currentAnim->GetFrame(i).Min;
-					out << YAML::Key << "Max" << YAML::Value << currentAnim->GetFrame(i).Max;
+					out << YAML::Key << "ID" << YAML::Value <<frame.Handle;
+					out << YAML::Key << "FrameBegin" << YAML::Value <<frame.FrameBegin;
+					out << YAML::Key << "FrameEnd" << YAML::Value <<frame.FrameEnd;
+					out << YAML::Key << "Min" << YAML::Value <<frame.Min;
+					out << YAML::Key << "Max" << YAML::Value <<frame.Max;
 					out << YAML::EndMap; //!ID
 				}
+
 				out << YAML::EndSeq; //!Frames
 				out << YAML::EndMap; // !Name
-				break;
 			}
 
 			out << YAML::EndSeq; // !States
@@ -574,6 +577,8 @@ namespace origin
 
 	bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 	{
+		PROFILER_FUNCTION();
+
 		std::ifstream stream(filepath.string());
 		std::stringstream strStream;
 		strStream << stream.rdbuf();

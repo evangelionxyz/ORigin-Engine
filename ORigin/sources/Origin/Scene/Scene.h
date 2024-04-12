@@ -42,13 +42,12 @@ namespace origin
     void OnViewportResize(const uint32_t width, const uint32_t height);
     void OnShadowRender();
 
-
     void UpdateEditorTransform();
 
     template <typename... Components>
     auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
-    std::unordered_map<UUID, entt::entity> GetEntityMap() { return m_EntityMap; }
+    std::vector<std::tuple<UUID, entt::entity>> &GetEntityMap() { return m_EntityStorage; }
 
   private:
     std::unique_ptr<PhysicsScene> m_PhysicsScene;
@@ -68,8 +67,8 @@ namespace origin
 
     glm::vec4 m_GridColor = glm::vec4(1.0f);
     int m_GridSize = 5;
-
-    std::unordered_map<UUID, entt::entity> m_EntityMap;
+   
+    std::vector<std::tuple<UUID, entt::entity>> m_EntityStorage;
 
     entt::registry m_Registry;
     uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;

@@ -8,9 +8,8 @@
 #include "ScriptableEntity.h"
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
-
+#include "Origin/Instrumetation/Instrumentor.h"
 #include "Origin/Animation/Animation.h"
-
 #include "origin/Physics/Contact2DListener.h"
 #include "Origin/Physics/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
@@ -31,6 +30,8 @@ namespace origin
 
 	Scene::Scene()
 	{
+		PROFILER_SCENE();
+
 		if (!m_PhysicsScene)
 			m_PhysicsScene = PhysicsScene::Create(this);
 
@@ -39,19 +40,22 @@ namespace origin
 
 	Scene::~Scene()
 	{
+		PROFILER_SCENE();
 		delete m_Physics2D;
 	}
 
 	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
 	{
+		PROFILER_SCENE();
+
 		auto newScene = std::make_shared<Scene>();
 
 		newScene->m_ViewportWidth = other->m_ViewportWidth;
 		newScene->m_ViewportHeight = other->m_ViewportHeight;
 
-		entt::registry& srcSceneRegistry = other->m_Registry;
-		entt::registry& dstSceneRegistry = newScene->m_Registry;
-		std::unordered_map<UUID, entt::entity> enttMap;
+		entt::registry &srcSceneRegistry = other->m_Registry;
+		entt::registry &dstSceneRegistry = newScene->m_Registry;
+		std::vector<std::tuple<UUID, entt::entity>> enttStorage;
 		auto newEntity = Entity();
 
 		// create entities in new scene
@@ -65,30 +69,36 @@ namespace origin
 			eIDC.Parent = idc.Parent;
 			eIDC.Children = idc.Children;
 
-			enttMap[idc.ID] = static_cast<entt::entity>(newEntity);
+			enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
 		}
 
-		// Copy components (except IDComponent and TagComponent) into new scene (destination)
-		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
-
+		EntityManager::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttStorage);
 		return newScene;
 	}
 
 	Entity Scene::GetEntityWithUUID(UUID uuid)
 	{
-		if (m_EntityMap.find(uuid) != m_EntityMap.end())
-			return { m_EntityMap.at(uuid), this };
+		PROFILER_SCENE();
+
+		for (auto e : m_EntityStorage)
+		{
+			if (std::get<0>(e) == uuid)
+				return { std::get<1>(e), this };
+		}
+
 		return {};
 	}
 
 	Entity Scene::FindEntityByName(std::string_view name)
 	{
+		PROFILER_SCENE();
+
 		auto view = m_Registry.view<TagComponent>();
 		for (auto entity : view)
 		{
 			const TagComponent& tc = view.get<TagComponent>(entity);
 			if (tc.Tag == name)
-				return Entity{ entity, this };
+				return { entity, this };
 		}
 
 		return {};
@@ -96,18 +106,22 @@ namespace origin
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{
+		PROFILER_SCENE();
+
 		const auto &view = m_Registry.view<CameraComponent>();
 		for (auto &entity : view)
 		{
 			const CameraComponent &camera = view.get<CameraComponent>(entity);
 			if (camera.Primary)
-				return Entity { entity, this };
+				return { entity, this };
 		}
 		return {};
 	}
 
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
+		PROFILER_SCENE();
+
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
 			// Update Scripts
@@ -120,13 +134,8 @@ namespace origin
 
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{entity, this};
-					nsc.Instance->OnCreate();
-				}
-				nsc.Instance->OnUpdate(ts);
+				if (nsc.Instance)
+					nsc.Instance->OnUpdate(ts);
 			});
 
 			// Particle Update
@@ -141,7 +150,7 @@ namespace origin
 			for (const auto entity : animView)
 			{
 				auto& ac = animView.get<SpriteAnimationComponent>(entity);
-				if (ac.State->HasAnimations())
+				if (ac.State->IsCurrentAnimationExists())
 				{
 					ac.State->OnUpdateRuntime(ts);
 				}
@@ -173,7 +182,6 @@ namespace origin
 			{
 				auto& [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
 			}
-
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
@@ -188,6 +196,7 @@ namespace origin
 			if (camera.Primary)
 			{
 				RenderScene(camera.Camera, tc);
+				UpdateEditorTransform();
 				break;
 			}
 		}
@@ -195,6 +204,8 @@ namespace origin
 
 	void Scene::OnRuntimeStart()
 	{
+		PROFILER_SCENE();
+
 		m_Running = true;
 
 		ScriptEngine::SetSceneContext(this);
@@ -204,6 +215,15 @@ namespace origin
 			Entity entity = { e, this };
 			ScriptEngine::OnCreateEntity(entity);
 		}
+
+		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto &nsc)
+		{
+			if(!nsc.Instance)
+			{
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity { entity, this };	
+			}
+		});
 
 		auto audioView = m_Registry.view<AudioComponent>();
 		for (auto& e : audioView)
@@ -220,8 +240,15 @@ namespace origin
 
 	void Scene::OnRuntimeStop()
 	{
+		PROFILER_SCENE();
+
 		m_Running = false;
 		ScriptEngine::ClearSceneContext();
+		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		{
+			nsc.DestroyScript(&nsc);
+		});
+
 		const auto& audioView = m_Registry.view<AudioComponent>();
 
 		for (auto& e : audioView)
@@ -237,33 +264,25 @@ namespace origin
 
 	void Scene::OnEditorUpdate(Timestep ts, EditorCamera& editorCamera)
 	{
+		PROFILER_RENDERING();
+
 		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
-			if (!nsc.Instance)
-			{
-				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity{entity, this};
-				nsc.Instance->OnCreate();
-			}
 			nsc.Instance->OnUpdate(ts);
 		});
 
+		m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
 		{
-			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
-			{
-				pc.Particle.OnUpdate(ts);
-			});
-		}
+			pc.Particle.OnUpdate(ts);
+		});
 
 		// Animation
 		const auto& animView = m_Registry.view<SpriteAnimationComponent>();
 		for (const auto entity : animView)
 		{
 			auto& ac = animView.get<SpriteAnimationComponent>(entity);
-			if(ac.State->HasAnimations())
-			{
+			if(ac.State->IsCurrentAnimationExists())
 				ac.State->OnUpdateEditor(ts);
-			}
 		}
 
 		// Audio Update
@@ -287,37 +306,29 @@ namespace origin
 			}
 		}
 		Renderer2D::End();
-
 		editorCamera.UpdateAudioListener(ts);
 
-		//Render
 		RenderScene(editorCamera);
 		UpdateEditorTransform();
 	}
 
 	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& editorCamera)
 	{
+		PROFILER_RENDERING();
+
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
 			// Update Scripts
+			m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& sc)
 			{
-				m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& sc)
-				{
-					Entity entity{ entityID, this };
-					ScriptEngine::OnUpdateEntity(entity, (float)ts);
-				});
+				Entity entity{ entityID, this };
+				ScriptEngine::OnUpdateEntity(entity, (float)ts);
+			});
 
-				m_Registry.view<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
-				{
-					if (!nsc.Instance)
-					{
-						nsc.Instance = nsc.InstantiateScript();
-						nsc.Instance->m_Entity = Entity{ entityID, this};
-						nsc.Instance->OnCreate();
-					}
-					nsc.Instance->OnUpdate(ts);
-				});
-			}
+			m_Registry.view<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
+			{
+				nsc.Instance->OnUpdate(ts);
+			});
 
 			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
 			{
@@ -329,7 +340,7 @@ namespace origin
 			for (auto e : animView)
 			{
 				auto ac = animView.get<SpriteAnimationComponent>(e);
-				if (ac.State->HasAnimations())
+				if (ac.State->IsCurrentAnimationExists())
 					ac.State->OnUpdateRuntime(ts);
 			}
 
@@ -371,20 +382,30 @@ namespace origin
 			m_Physics2D->Simulate(ts);
 		}
 
+		UpdateEditorTransform();
 		RenderScene(editorCamera);
 	}
 
 	void Scene::OnSimulationStart()
 	{
+		PROFILER_SCENE();
+
 		m_Running = true;
 
 		ScriptEngine::SetSceneContext(this);
-		const auto& scriptView = m_Registry.view<ScriptComponent>();
-		for (const auto e : scriptView)
+		const auto &scriptView = m_Registry.view<ScriptComponent>();
+
+		for (auto e : scriptView)
 		{
 			Entity entity = { e, this };
 			ScriptEngine::OnCreateEntity(entity);
 		}
+
+		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		{
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity { entity, this };
+		});
 
 		m_PhysicsScene->OnSimulationStart();
 		m_Physics2D->OnSimulationStart();
@@ -403,9 +424,15 @@ namespace origin
 
 	void Scene::OnSimulationStop()
 	{
+		PROFILER_SCENE();
+
 		m_Running = false;
 
 		ScriptEngine::ClearSceneContext();
+		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		{
+			nsc.DestroyScript(&nsc);
+		});
 
 		m_PhysicsScene->OnSimulationStop();
 		m_Physics2D->OnSimulationStop();
@@ -423,97 +450,89 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		Renderer2D::Begin(camera, cameraTransform.GetTransform());
-
-		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
-		for (auto entity : particles)
-		{
-			auto& [tc, pc] = particles.get<TransformComponent, ParticleComponent>(entity);
-
-			for (int i = 0; i < 5; i++)
-			{
-				pc.Particle.Emit(
-					pc,
-					glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-					tc.Scale, tc.Rotation, static_cast<int>(entity)
-				);
-			}
-			pc.Particle.OnRender();
-		}
-
-		// Sprites
-		{
-			auto& view = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
-			std::vector<entt::entity> entities(view.begin(), view.end());
-
-			std::sort(entities.begin(), entities.end(),
-				[=](const entt::entity& a, const entt::entity& b) {
-					const auto& objA = m_Registry.get<TransformComponent>(a);
-					const auto& objB = m_Registry.get<TransformComponent>(b);
-					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
-				});
-			for (const entt::entity& entity : entities)
-			{
-				auto& [tc, sc] = view.get<TransformComponent, SpriteRenderer2DComponent>(entity);
-				Renderer2D::DrawSprite(tc.GetTransform(), sc, static_cast<int>(entity));
-			}
-
-			const auto& animView = m_Registry.view<SpriteRenderer2DComponent, SpriteAnimationComponent>();
-			for (auto& entity : animView)
-			{
-				auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, SpriteAnimationComponent>(entity);
-
-				if (ac.State->HasAnimations())
-				{
-					if (ac.State->GetAnimation()->HasFrame())
-					{
-						auto &anim = ac.State->GetAnimation();
-						sc.Texture = anim->GetCurrentFrame().Handle;
-						sc.Min = anim->GetCurrentFrame().Min;
-						sc.Max = anim->GetCurrentFrame().Max;
-					}
-				}
-			}
-		}
-
-		// Circles
-		{
-			auto& view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-			std::vector<entt::entity> entities(view.begin(), view.end());
-
-			std::sort(entities.begin(), entities.end(),
-				[=](const entt::entity& a, const entt::entity& b) {
-					const auto& objA = m_Registry.get<TransformComponent>(a);
-					const auto& objB = m_Registry.get<TransformComponent>(b);
-					return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
-				});
-			for (auto& entity : entities)
-			{
-				auto [transform, circle] = view.get<TransformComponent, CircleRendererComponent>(entity);
-				Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,
-				                       static_cast<int>(entity));
-			}
-		}
-
-		// Text
-		const auto& textView = m_Registry.view<TransformComponent, TextComponent>();
-		for (const auto entity : textView)
-		{
-			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
-			Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, static_cast<int>(entity));
-		}
-
-		Renderer2D::End();
+		PROFILER_RENDERING();
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
-
-		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		for (auto& entity : meshView)
+		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
 		{
-			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+			Entity eA { std::get<1>(a), this };
+			Entity eB { std::get<1>(b), this };
+
+			float aLen = eA.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eA.GetComponent<TransformComponent>().Translation);
+			float bLen = eB.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eB.GetComponent<TransformComponent>().Translation);
+			return aLen < bLen;
+		});
+
+		Renderer2D::Begin(camera, cameraTransform.GetTransform());
+		glDisable(GL_DEPTH_TEST);
+		// Render All entities
+		for (auto e : m_EntityStorage)
+		{
+			Entity entity { std::get<1>(e), this };
+			auto &tc = entity.GetComponent<TransformComponent>();
+
+			// 2D Quads
+			if (entity.HasComponent<SpriteRenderer2DComponent>())
+			{
+				auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
+				if (entity.HasComponent<SpriteAnimationComponent>())
+				{
+					auto &ac = entity.GetComponent<SpriteAnimationComponent>();
+					if (ac.State->IsCurrentAnimationExists())
+					{
+						if (ac.State->GetAnimation()->HasFrame())
+						{
+							auto &anim = ac.State->GetAnimation();
+							src.Texture = anim->GetCurrentFrame().Handle;
+							src.Min = anim->GetCurrentFrame().Min;
+							src.Max = anim->GetCurrentFrame().Max;
+						}
+					}
+				}
+				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(std::get<1>(e)));
+			}
+
+			if (entity.HasComponent<CircleRendererComponent>())
+			{
+				auto &cc = entity.GetComponent<CircleRendererComponent>();
+				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
+															 static_cast<int>(std::get<1>(e)));
+			}
+
+			// Particles
+			if (entity.HasComponent<ParticleComponent>())
+			{
+				auto &pc = entity.GetComponent<ParticleComponent>();
+				for (int i = 0; i < 5; i++)
+				{
+					pc.Particle.Emit(pc,
+													 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
+													 tc.Scale, pc.Rotation, static_cast<int>(std::get<1>(e))
+					);
+				}
+
+				pc.Particle.OnRender();
+			}
+
+			// Text
+			if (entity.HasComponent<TextComponent>())
+			{
+				auto &text = entity.GetComponent<TextComponent>();
+				Renderer2D::DrawString(text.TextString, tc.GetTransform(), text, static_cast<int>(std::get<1>(e)));
+			}
+		}
+
+		Renderer2D::End();
+		glEnable(GL_DEPTH_TEST);
+
+		auto lightView = m_Registry.view<TransformComponent, LightComponent>();
+		auto meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+
+		for (auto entity : meshView)
+		{
+			auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
 			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
 			{
@@ -521,13 +540,13 @@ namespace origin
 
 				for (auto& light : lightView)
 				{
-					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					auto& [lTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
-					lc.Light->OnRender(lightTransform);
+					lc.Light->OnRender(lTC);
 				}
 
 				model->SetTransform(tc.GetTransform());
-				model->Draw((int)entity);
+				model->Draw(static_cast<int>(entity));
 			}
 		}
 
@@ -536,88 +555,85 @@ namespace origin
 
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
-		Renderer2D::Begin(camera);
-
-		// Particle
-		auto& particles = m_Registry.view<TransformComponent, ParticleComponent>();
-		for (auto entity : particles)
-		{
-			auto& [tc, pc] = particles.get<TransformComponent, ParticleComponent>(entity);
-
-			for (int i = 0; i < 5; i++)
-			{
-				pc.Particle.Emit(pc,
-					glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-					tc.Scale, pc.Rotation, static_cast<int>(entity)
-				);
-			}
-
-			pc.Particle.OnRender();
-		}
-
-		auto& quads = m_Registry.view<TransformComponent, SpriteRenderer2DComponent>();
-		std::vector<entt::entity> quadEntitties(quads.begin(), quads.end());
-
-		std::sort(quadEntitties.begin(), quadEntitties.end(), [=](const entt::entity& a, const entt::entity& b)
-			{
-				const auto& objA = m_Registry.get<TransformComponent>(a);
-				const auto& objB = m_Registry.get<TransformComponent>(b);
-				return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
-			});
-
-		for (const entt::entity& entity : quadEntitties)
-		{
-			auto& [tc, sprite] = quads.get<TransformComponent, SpriteRenderer2DComponent>(entity);
-			Renderer2D::DrawSprite(tc.GetTransform(), sprite, static_cast<int>(entity));
-		}
-
-		const auto& animView = m_Registry.view<SpriteRenderer2DComponent, SpriteAnimationComponent>();
-		for (auto& entity : animView)
-		{
-			auto& [sc, ac] = animView.get<SpriteRenderer2DComponent, SpriteAnimationComponent>(entity);
-			if (ac.State->HasAnimations())
-			{
-				if (ac.State->GetAnimation()->HasFrame())
-				{
-					auto &anim = ac.State->GetAnimation();
-					sc.Texture = anim->GetCurrentFrame().Handle;
-					sc.Min = anim->GetCurrentFrame().Min;
-					sc.Max = anim->GetCurrentFrame().Max;
-				}
-			}
-		}
-
-		auto& circles = m_Registry.view<TransformComponent, CircleRendererComponent>();
-		std::vector<entt::entity> circleEntities(circles.begin(), circles.end());
-
-		std::sort(circleEntities.begin(), circleEntities.end(), [=](const entt::entity& a, const entt::entity& b)
-			{
-				const auto& objA = m_Registry.get<TransformComponent>(a);
-				const auto& objB = m_Registry.get<TransformComponent>(b);
-				return glm::length(camera.GetPosition().z - objA.Translation.z) > glm::length(camera.GetPosition().z - objB.Translation.z);
-			});
-
-		for (auto& entity : circleEntities)
-		{
-			auto& [transform, circle] = circles.get<TransformComponent, CircleRendererComponent>(entity);
-			Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade,static_cast<int>(entity));
-		}
-
-		// Text
-		const auto& textView = m_Registry.view<TransformComponent, TextComponent>();
-		for (auto entity : textView)
-		{
-			auto [tc, text] = textView.get<TransformComponent, TextComponent>(entity);
-			Renderer2D::DrawString(text.TextString, tc.GetTransform(), text, static_cast<int>(entity));
-		}
-
-		Renderer2D::End();
+		PROFILER_RENDERING();
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
+		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
+		{
+			Entity eA { std::get<1>(a), this };
+			Entity eB { std::get<1>(b), this };
+
+			float aLen = eA.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eA.GetComponent<TransformComponent>().Translation);
+			float bLen = eB.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eB.GetComponent<TransformComponent>().Translation);
+			return aLen < bLen;
+		});
+
+		glDisable(GL_DEPTH_TEST);
+		Renderer2D::Begin(camera);
+
+		// Render All entities
+		for (auto e : m_EntityStorage)
+		{
+			Entity entity { std::get<1>(e), this };
+			auto &tc = entity.GetComponent<TransformComponent>();
+
+			// 2D Quads
+			if (entity.HasComponent<SpriteRenderer2DComponent>())
+			{
+				auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
+				if (entity.HasComponent<SpriteAnimationComponent>())
+				{
+					auto &ac = entity.GetComponent<SpriteAnimationComponent>();
+					if (ac.State->IsCurrentAnimationExists())
+					{
+						if (ac.State->GetAnimation()->HasFrame())
+						{
+							auto &anim = ac.State->GetAnimation();
+							src.Texture = anim->GetCurrentFrame().Handle;
+							src.Min = anim->GetCurrentFrame().Min;
+							src.Max = anim->GetCurrentFrame().Max;
+						}
+					}
+				}
+				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(std::get<1>(e)));
+			}
+
+			if (entity.HasComponent<CircleRendererComponent>())
+			{
+				auto &cc = entity.GetComponent<CircleRendererComponent>();
+				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
+															 static_cast<int>(std::get<1>(e)));
+			}
+
+			// Particles
+			if (entity.HasComponent<ParticleComponent>())
+			{
+				auto &pc = entity.GetComponent<ParticleComponent>();
+				for (int i = 0; i < 5; i++)
+				{
+					pc.Particle.Emit(pc,
+													 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
+													 tc.Scale, pc.Rotation, static_cast<int>(std::get<1>(e))
+					);
+				}
+
+				pc.Particle.OnRender();
+			}
+
+			// Text
+			if (entity.HasComponent<TextComponent>())
+			{
+				auto &text = entity.GetComponent<TextComponent>();
+				Renderer2D::DrawString(text.TextString, tc.GetTransform(), text, static_cast<int>(std::get<1>(e)));
+			}
+		}
+
+		Renderer2D::End();
+		glEnable(GL_DEPTH_TEST);
+
 		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
-		
 		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 		for (auto& entity : meshView)
 		{
@@ -644,8 +660,8 @@ namespace origin
 	
 	void Scene::OnShadowRender()
 	{
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
+		PROFILER_RENDERING();
+
 		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& light : dirLight)
 		{
@@ -669,12 +685,12 @@ namespace origin
 
 			lc.Light->GetShadow()->UnbindFramebuffer();
 		}
-		glCullFace(GL_BACK);
-		glDisable(GL_CULL_FACE);
 	}
 
 	void Scene::UpdateEditorTransform()
 	{
+		PROFILER_FUNCTION();
+
 		auto &view = m_Registry.view<IDComponent, TransformComponent>();
 		for (auto entity : view)
 		{
@@ -699,6 +715,8 @@ namespace origin
 
 	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
 	{
+		PROFILER_SCENE();
+
 		const auto& view = m_Registry.view<CameraComponent>();
 		for (auto& e : view)
 		{

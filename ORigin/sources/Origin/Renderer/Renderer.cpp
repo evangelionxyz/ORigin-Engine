@@ -31,6 +31,8 @@ namespace origin {
 
 	bool Renderer::Init()
 	{
+		PROFILER_FUNCTION();
+
 		RenderCommand::Init();
 
 		uint32_t whiteTextureData = 0xffffffff;
@@ -51,6 +53,8 @@ namespace origin {
 
 	void Renderer::Shutdown()
 	{
+		PROFILER_FUNCTION();
+
 		Renderer2D::Shutdown();
 		Renderer3D::Shutdown();
 
@@ -59,6 +63,8 @@ namespace origin {
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
+		PROFILER_FUNCTION();
+
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
@@ -85,6 +91,8 @@ namespace origin {
 
 	void Renderer::LoadShaders()
 	{
+		PROFILER_FUNCTION();
+
 		bool recompileShader = false;
 
 		s_ShaderLibrary.Load("Line2D", "Resources/Shaders/SPIR-V/Line2D.glsl", true, recompileShader);

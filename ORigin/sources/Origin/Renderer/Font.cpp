@@ -22,6 +22,8 @@ namespace origin {
 		float fontSize, const std::vector<msdf_atlas::GlyphGeometry>& glyphs,
 		const msdf_atlas::FontGeometry& fontGeometry, uint32_t widht, uint32_t height)
 	{
+		PROFILER_RENDERING();
+
 		msdf_atlas::GeneratorAttributes attributes;
 		attributes.config.overlapSupport = true;
 		attributes.scanlinePass = true;
@@ -48,6 +50,8 @@ namespace origin {
 	Font::Font(const std::filesystem::path& filepath)
 		: m_Data(new MSDFData()), m_Filepath(filepath.generic_string())
 	{
+		PROFILER_RENDERING();
+
 		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
 		OGN_CORE_ASSERT(ft, "Font: FreeTypeHandle Error");
 
@@ -142,6 +146,8 @@ namespace origin {
 	
 	std::shared_ptr<Font> Font::GetDefault()
 	{
+		PROFILER_RENDERING();
+
 		static std::shared_ptr<Font> DefaultFont;
 		if (!DefaultFont)
 			DefaultFont = std::make_shared<Font>("Resources/Fonts/segoeui.ttf");

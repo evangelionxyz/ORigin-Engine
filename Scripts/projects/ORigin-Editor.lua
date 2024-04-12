@@ -38,6 +38,7 @@ includedirs {
     "%{IncludeDir.IMGUIZMO}",
     "%{IncludeDir.GLM}",
     "%{IncludeDir.YAML_CPP}",
+    "%{IncludeDir.OPTICK}",
     "%{IncludeDir.PhysX}",
     "%{IncludeDir.JoltPhysics}",
     "%{IncludeDir.msdfgen}",

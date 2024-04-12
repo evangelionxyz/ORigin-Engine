@@ -46,34 +46,40 @@ namespace origin
 	static std::unordered_map<MonoType*, std::function<void(Entity)>> s_EntityAddComponentFuncs;
 
 	// Entity
-	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType)
+	static bool Entity_HasComponent(UUID entityID, MonoReflectionType *componentType)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+		PROFILER_LOGIC();
 
-		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		MonoType *managedType = mono_reflection_type_get_type(componentType);
 		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "ScriptGlue: Failed to process Entity_HasComponent")
-		return s_EntityHasComponentFuncs.at(managedType)(entity);
+			return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
 
-	static void Entity_AddComponent(UUID entityID, MonoReflectionType* componentType)
+	static void Entity_AddComponent(UUID entityID, MonoReflectionType *componentType)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		MonoType *managedType = mono_reflection_type_get_type(componentType);
 		OGN_CORE_ASSERT(s_EntityAddComponentFuncs.find(managedType) != s_EntityAddComponentFuncs.end(), "ScriptGlue: Failed to process AddComponent");
 		s_EntityAddComponentFuncs.at(managedType)(entity);
 	}
 
-	static uint64_t Entity_FindEntityByName(MonoString* stringName)
+	static uint64_t Entity_FindEntityByName(MonoString *stringName)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 
-		std::string name = Utils::MonoStringToString(stringName);
+			std::string name = Utils::MonoStringToString(stringName);
 		Entity entity = scene->FindEntityByName(name);
 
 		if (!entity)
@@ -86,279 +92,334 @@ namespace origin
 	}
 
 	// Logging
-	static void NativeLog(MonoString* string, int parameter)
+	static void NativeLog(MonoString *string, int parameter)
 	{
+		PROFILER_LOGIC();
+
 		std::string str = Utils::MonoStringToString(string);
 		std::cout << str << ", " << parameter << std::endl;
 	}
 
-	static void NativeLog_Vector(glm::vec3* parameter, glm::vec3* outResult)
+	static void NativeLog_Vector(glm::vec3 *parameter, glm::vec3 *outResult)
 	{
+		PROFILER_LOGIC();
+
 		*outResult = normalize(*parameter);
 	}
 
-	static float NativeLog_VectorDot(glm::vec3* parameter)
+	static float NativeLog_VectorDot(glm::vec3 *parameter)
 	{
+		PROFILER_LOGIC();
+
 		return dot(*parameter, *parameter);
 	}
 
 	// Component
-	static MonoObject* GetScriptInstance(UUID entityID)
+	static MonoObject *GetScriptInstance(UUID entityID)
 	{
+		PROFILER_LOGIC();
+
 		return ScriptEngine::GetManagedInstance(entityID);
 	}
 
-	static void TransformComponent_GetTranslation(UUID entityID, glm::vec3* outTranslation)
+	static void TransformComponent_GetTranslation(UUID entityID, glm::vec3 *outTranslation)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+		PROFILER_LOGIC();
 
-		*outTranslation = entity.GetComponent<TransformComponent>().Translation;
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		*outTranslation = entity.GetComponent<TransformComponent>().WorldTranslation;
 	}
 
 	static void TransformComponent_SetTranslation(UUID entityID, glm::vec3 translation)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<TransformComponent>().Translation = translation;
 	}
 
-	static void TransformComponent_GetRotation(UUID entityID, glm::vec3* outRotation)
+	static void TransformComponent_GetRotation(UUID entityID, glm::vec3 *outRotation)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRotation = entity.GetComponent<TransformComponent>().Rotation;
 	}
 
 	static void TransformComponent_SetRotation(UUID entityID, glm::vec3 rotation)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+		PROFILER_LOGIC();
 
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
 		entity.GetComponent<TransformComponent>().Rotation = rotation;
 	}
 
-	static void TransformComponent_GetScale(UUID entityID, glm::vec3* outScale)
+	static void TransformComponent_GetScale(UUID entityID, glm::vec3 *outScale)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outScale = entity.GetComponent<TransformComponent>().Scale;
 	}
 
 	static void TransformComponent_SetScale(UUID entityID, glm::vec3 scale)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<TransformComponent>().Scale = scale;
 	}
 
 	static void RigidbodyComponent_SetVelocity(UUID entityID, glm::vec3 velocity, bool autoWake)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		auto &rb = entity.GetComponent<RigidbodyComponent>();
 		rb.ApplyLinearVelocity(velocity, autoWake);
 	}
 
-	static void RigidbodyComponent_GetVelocity(UUID entityID, glm::vec3* velocity)
+	static void RigidbodyComponent_GetVelocity(UUID entityID, glm::vec3 *velocity)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		auto &rb = entity.GetComponent<RigidbodyComponent>();
 
-		physx::PxRigidActor* actor = (physx::PxRigidActor*)rb.Body;
-		physx::PxRigidDynamic* dActor = actor->is<physx::PxRigidDynamic>();
+		physx::PxRigidActor *actor = (physx::PxRigidActor *)rb.Body;
+		physx::PxRigidDynamic *dActor = actor->is<physx::PxRigidDynamic>();
 		*velocity = glm::vec3(dActor->getLinearVelocity().x, dActor->getLinearVelocity().y, dActor->getLinearVelocity().z);
 	}
 
 	static void RigidbodyComponent_SetVelocityForce(UUID entityID, glm::vec3 force)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		auto &rb = entity.GetComponent<RigidbodyComponent>();
 		rb.ApplyVelocityForce(force);
 	}
 
 	static void RigidbodyComponent_SetForce(UUID entityID, glm::vec3 force)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		auto &rb = entity.GetComponent<RigidbodyComponent>();
 		rb.ApplyForce(force);
 	}
 
 	static void RigidbodyComponent_SetImpulseForce(UUID entityID, glm::vec3 force)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb = entity.GetComponent<RigidbodyComponent>();
+		auto &rb = entity.GetComponent<RigidbodyComponent>();
 		rb.ApplyImpulseForce(force);
 	}
 
 	static void Rigidbody2DComponent_SetVelocity(UUID entityID, glm::vec2 velocity)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 			Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 
 		body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
 	}
 
-	static void Rigidbody2DComponent_GetVelocity(UUID entityID, glm::vec2* velocity)
+	static void Rigidbody2DComponent_GetVelocity(UUID entityID, glm::vec2 *velocity)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 		auto v = body->GetLinearVelocity();
 
 		*velocity = glm::vec2(v.x, v.y);
 	}
 
-	static bool Rigidbody2DComponent_IsContactWithTag(UUID entityID, MonoString* contactWith)
+	static bool Rigidbody2DComponent_IsContactWithTag(UUID entityID, MonoString *contactWith)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+		PROFILER_LOGIC();
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		std::string contactName = Utils::MonoStringToString(contactWith);
 
 		return rb2d.ContactWith == contactName;
 	}
 
-	static MonoString* Rigidbody2DComponent_GetContactWithTag(UUID entityID)
+	static MonoString *Rigidbody2DComponent_GetContactWithTag(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+		PROFILER_LOGIC();
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
 		return ScriptEngine::CreateString(rb2d.ContactWith.c_str());
 	}
 
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2 impulse, glm::vec2 point, bool wake)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+		PROFILER_LOGIC();
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 		body->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), b2Vec2(point.x, point.y), wake);
 	}
 
 	static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(UUID entityID, glm::vec2 impulse, bool wake)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+		PROFILER_LOGIC();
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "Invalid Scene")
+			Entity entity = scene->GetEntityWithUUID(entityID);
+
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 		body->ApplyLinearImpulseToCenter(b2Vec2(impulse.x, impulse.y), wake);
 	}
 
 	static void Rigidbody2DComponent_ApplyForce(UUID entityID, glm::vec2 force, glm::vec2 point, bool wake)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 			Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 		body->ApplyForce(b2Vec2(force.x, force.y), b2Vec2(point.x, point.y), wake);
 	}
 
 	static void Rigidbody2DComponent_ApplyForceToCenter(UUID entityID, glm::vec2 force, bool wake)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
 			Entity entity = scene->GetEntityWithUUID(entityID);
 
-		auto& rb2d = entity.GetComponent<Rigidbody2DComponent>();
-		auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+		auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+		auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 		body->ApplyForceToCenter(b2Vec2(force.x, force.y), wake);
 	}
 
-	static MonoString* AudioComponent_GetName(UUID entityID)
+	static MonoString *AudioComponent_GetName(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<AudioComponent>();
+		auto &ac = entity.GetComponent<AudioComponent>();
 		return ScriptEngine::CreateString(ac.Name.c_str());
 	}
 
-	static void AudioComponent_SetName(UUID entityID, MonoString* name)
+	static void AudioComponent_SetName(UUID entityID, MonoString *name)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<AudioComponent>();
+		auto &ac = entity.GetComponent<AudioComponent>();
 		ac.Name = Utils::MonoStringToString(name);
 	}
 
 	static void AudioComponent_Play(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<AudioComponent>();
+		auto &ac = entity.GetComponent<AudioComponent>();
 		OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
 
-		const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+		const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 		audio->Play();
 	}
 
 	static void AudioComponent_Stop(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<AudioComponent>();
+		auto &ac = entity.GetComponent<AudioComponent>();
 		OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
 
-		const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+		const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 		audio->Stop();
 	}
 
 	static void AudioComponent_SetVolume(UUID entityID, float volume)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -368,7 +429,9 @@ namespace origin
 
 	static float AudioComponent_GetVolume(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -378,7 +441,9 @@ namespace origin
 
 	static void AudioComponent_SetMinDistance(UUID entityID, float minDistance)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -388,7 +453,9 @@ namespace origin
 
 	static float AudioComponent_GetMinDistance(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -398,7 +465,9 @@ namespace origin
 
 	static void AudioComponent_SetMaxDistance(UUID entityID, float maxDistance)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -408,7 +477,9 @@ namespace origin
 
 	static float AudioComponent_GetMaxDistance(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -418,7 +489,9 @@ namespace origin
 
 	static void AudioComponent_SetPitch(UUID entityID, float pitch)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -428,7 +501,9 @@ namespace origin
 
 	static float AudioComponent_GetPitch(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -438,7 +513,9 @@ namespace origin
 
 	static void AudioComponent_SetLooping(UUID entityID, bool looping)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -448,7 +525,9 @@ namespace origin
 
 	static bool AudioComponent_IsLooping(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -458,7 +537,9 @@ namespace origin
 
 	static void AudioComponent_SetSpatial(UUID entityID, bool spatial)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -468,7 +549,9 @@ namespace origin
 
 	static bool AudioComponent_IsSpatial(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -478,7 +561,9 @@ namespace origin
 
 	static void AudioComponent_SetPlayAtStart(UUID entityID, bool playAtStart)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -488,7 +573,9 @@ namespace origin
 
 	static bool AudioComponent_IsPlayAtStart(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
@@ -496,169 +583,203 @@ namespace origin
 		return entity.GetComponent<AudioComponent>().PlayAtStart;
 	}
 
-	static MonoString* TextComponent_GetText(UUID entityID)
+	static MonoString *TextComponent_GetText(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		return ScriptEngine::CreateString(tc.TextString.c_str());
 	}
 
-	static void TextComponent_SetText(UUID entityID, MonoString* textString)
+	static void TextComponent_SetText(UUID entityID, MonoString *textString)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		tc.TextString = Utils::MonoStringToString(textString);
 	}
 
-	static void TextComponent_GetColor(UUID entityID, glm::vec4* color)
+	static void TextComponent_GetColor(UUID entityID, glm::vec4 *color)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		*color = tc.Color;
 	}
 
-	static void TextComponent_SetColor(UUID entityID, glm::vec4* color)
+	static void TextComponent_SetColor(UUID entityID, glm::vec4 *color)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		tc.Color = *color;
 	}
 
 	static float TextComponent_GetKerning(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		return tc.Kerning;
 	}
 
 	static void TextComponent_SetKerning(UUID entityID, float kerning)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		tc.Kerning = kerning;
 	}
 
 	static float TextComponent_GetLineSpacing(UUID entityID)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		return tc.LineSpacing;
 	}
 
 	static void TextComponent_SetLineSpacing(UUID entityID, float lineSpacing)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& tc = entity.GetComponent<TextComponent>();
+		auto &tc = entity.GetComponent<TextComponent>();
 		tc.LineSpacing = lineSpacing;
 	}
 
-	static void CircleRendererComponent_GetColor(UUID entityID, glm::vec4* outColor)
+	static void CircleRendererComponent_GetColor(UUID entityID, glm::vec4 *outColor)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Color = *outColor;
 	}
 
-	static void CircleRendererComponent_SetColor(UUID entityID, glm::vec4* color)
+	static void CircleRendererComponent_SetColor(UUID entityID, glm::vec4 *color)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Color = *color;
 	}
 
-	static void CircleRendererComponent_GetFade(UUID entityID, float* outFade)
+	static void CircleRendererComponent_GetFade(UUID entityID, float *outFade)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outFade = entity.GetComponent<CircleRendererComponent>().Fade;
 	}
 
-	static void CircleRendererComponent_SetFade(UUID entityID, float* fade)
+	static void CircleRendererComponent_SetFade(UUID entityID, float *fade)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Fade = *fade;
 	}
 
-	static void CircleRendererComponent_GetThickness(UUID entityID, float* outThickness)
+	static void CircleRendererComponent_GetThickness(UUID entityID, float *outThickness)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outThickness = entity.GetComponent<CircleRendererComponent>().Thickness;
 	}
 
-	static void CircleRendererComponent_SetThickness(UUID entityID, float* thickness)
+	static void CircleRendererComponent_SetThickness(UUID entityID, float *thickness)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleRendererComponent>().Thickness = *thickness;
 	}
 
-	static void SpriteRenderer2DComponent_GetColor(UUID entityID, glm::vec4* outColor)
+	static void SpriteRenderer2DComponent_GetColor(UUID entityID, glm::vec4 *outColor)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outColor = entity.GetComponent<SpriteRenderer2DComponent>().Color;
 	}
 
-	static void SpriteRenderer2DComponent_SetFlipX(UUID entityID, bool* flip)
+	static void SpriteRenderer2DComponent_SetFlipX(UUID entityID, bool *flip)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		
+
 		entity.GetComponent<SpriteRenderer2DComponent>().FlipX = *flip;
 	}
 
 	static void SpriteRenderer2DComponent_GetFlipX(UUID entityID, bool *flip)
 	{
+		PROFILER_LOGIC();
+
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 
@@ -669,6 +790,8 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_SetFlipY(UUID entityID, bool *flip)
 	{
+		PROFILER_LOGIC();
+
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 
@@ -679,6 +802,8 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_GetFlipY(UUID entityID, bool *flip)
 	{
+		PROFILER_LOGIC();
+
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 
@@ -687,271 +812,329 @@ namespace origin
 		*flip = entity.GetComponent<SpriteRenderer2DComponent>().FlipY;
 	}
 
-	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4* color)
+	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4 *color)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<SpriteRenderer2DComponent>().Color = *color;
 	}
 
-	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, glm::vec2* tilingfactor)
+	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, glm::vec2 *tilingfactor)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*tilingfactor = entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor;
 	}
 
-	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, glm::vec2* tilingfactor)
+	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, glm::vec2 *tilingfactor)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<SpriteRenderer2DComponent>().TillingFactor = *tilingfactor;
 	}
 
-	static void BoxCollider2DComponent_GetOffset(UUID entityID, glm::vec2* outOffset)
+	static void BoxCollider2DComponent_GetOffset(UUID entityID, glm::vec2 *outOffset)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
 	}
 
-	static void BoxCollider2DComponent_SetOffset(UUID entityID, glm::vec2* offset)
+	static void BoxCollider2DComponent_SetOffset(UUID entityID, glm::vec2 *offset)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
 	}
 
-	static void BoxCollider2DComponent_GetSize(UUID entityID, glm::vec2* outSize)
+	static void BoxCollider2DComponent_GetSize(UUID entityID, glm::vec2 *outSize)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
 	}
 
-	static void BoxCollider2DComponent_SetSize(UUID entityID, glm::vec2* size)
+	static void BoxCollider2DComponent_SetSize(UUID entityID, glm::vec2 *size)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Size = *size;
 	}
 
-	static void BoxCollider2DComponent_GetDensity(UUID entityID, float* outDensity)
+	static void BoxCollider2DComponent_GetDensity(UUID entityID, float *outDensity)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outDensity = entity.GetComponent<BoxCollider2DComponent>().Density;
 	}
 
-	static void BoxCollider2DComponent_SetDensity(UUID entityID, float* density)
+	static void BoxCollider2DComponent_SetDensity(UUID entityID, float *density)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Density = *density;
 	}
 
-	static void BoxCollider2DComponent_GetFriction(UUID entityID, float* outFriction)
+	static void BoxCollider2DComponent_GetFriction(UUID entityID, float *outFriction)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outFriction = entity.GetComponent<BoxCollider2DComponent>().Friction;
 	}
 
-	static void BoxCollider2DComponent_SetFriction(UUID entityID, float* friction)
+	static void BoxCollider2DComponent_SetFriction(UUID entityID, float *friction)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Friction = *friction;
 	}
 
-	static void BoxCollider2DComponent_GetRestitution(UUID entityID, float* outRestitution)
+	static void BoxCollider2DComponent_GetRestitution(UUID entityID, float *outRestitution)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestitution = entity.GetComponent<BoxCollider2DComponent>().Restitution;
 	}
 
-	static void BoxCollider2DComponent_SetRestitution(UUID entityID, float* restitution)
+	static void BoxCollider2DComponent_SetRestitution(UUID entityID, float *restitution)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().Restitution = *restitution;
 	}
 
-	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityID, float* outRestitutionThreshold)
+	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityID, float *outRestitutionThreshold)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
 	}
 
-	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityID, float* restitutionThreshold)
+	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityID, float *restitutionThreshold)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
 	}
 
-	static void CircleCollider2DComponent_GetOffset(UUID entityID, glm::vec2* outOffset)
+	static void CircleCollider2DComponent_GetOffset(UUID entityID, glm::vec2 *outOffset)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
 	}
 
-	static void CircleCollider2DComponent_SetOffset(UUID entityID, glm::vec2* offset)
+	static void CircleCollider2DComponent_SetOffset(UUID entityID, glm::vec2 *offset)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
 	}
 
-	static void CircleCollider2DComponent_GetRadius(UUID entityID, float* outRadius)
+	static void CircleCollider2DComponent_GetRadius(UUID entityID, float *outRadius)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRadius = entity.GetComponent<CircleCollider2DComponent>().Radius;
 	}
 
-	static void CircleCollider2DComponent_SetRadius(UUID entityID, float* radius)
+	static void CircleCollider2DComponent_SetRadius(UUID entityID, float *radius)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Radius = *radius;
 	}
 
-	static void CircleCollider2DComponent_GetDensity(UUID entityID, float* outDensity)
+	static void CircleCollider2DComponent_GetDensity(UUID entityID, float *outDensity)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outDensity = entity.GetComponent<CircleCollider2DComponent>().Density;
 	}
 
-	static void CircleCollider2DComponent_SetDensity(UUID entityID, float* density)
+	static void CircleCollider2DComponent_SetDensity(UUID entityID, float *density)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Density = *density;
 	}
 
-	static void CircleCollider2DComponent_GetFriction(UUID entityID, float* outFriction)
+	static void CircleCollider2DComponent_GetFriction(UUID entityID, float *outFriction)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outFriction = entity.GetComponent<CircleCollider2DComponent>().Friction;
 	}
 
-	static void CircleCollider2DComponent_SetFriction(UUID entityID, float* friction)
+	static void CircleCollider2DComponent_SetFriction(UUID entityID, float *friction)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Friction = *friction;
 	}
 
-	static void CircleCollider2DComponent_GetRestitution(UUID entityID, float* outRestituion)
+	static void CircleCollider2DComponent_GetRestitution(UUID entityID, float *outRestituion)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestituion = entity.GetComponent<CircleCollider2DComponent>().Restitution;
 	}
 
-	static void CircleCollider2DComponent_SetRestitution(UUID entityID, float* restitution)
+	static void CircleCollider2DComponent_SetRestitution(UUID entityID, float *restitution)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().Restitution = *restitution;
 	}
 
-	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityID, float* outRestitutionThreshold)
+	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityID, float *outRestitutionThreshold)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
 	}
 
-	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityID, float* restitutionThreshold)
+	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityID, float *restitutionThreshold)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
-		Entity entity = scene->GetEntityWithUUID(entityID);
+			Entity entity = scene->GetEntityWithUUID(entityID);
 
 		entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = *restitutionThreshold;
 	}
 
-	static void SpriteAnimationComponent_GetActiveState(UUID entityID, MonoString* state)
+	static void SpriteAnimationComponent_GetActiveState(UUID entityID, MonoString *state)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<SpriteAnimationComponent>();
+		auto &ac = entity.GetComponent<SpriteAnimationComponent>();
 		if (ac.State->HasAnimations())
 		{
 			state = ScriptEngine::CreateString(ac.State->GetCurrentState().c_str());
 		}
 	}
 
-	static void SpriteAnimationComponent_SetActiveState(UUID entityID, MonoString* state)
+	static void SpriteAnimationComponent_SetActiveState(UUID entityID, MonoString *state)
 	{
-		Scene* scene = ScriptEngine::GetSceneContext();
+		PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		OGN_CORE_ASSERT(entity, "ScriptGlue: Invalid Entity");
 
-		auto& ac = entity.GetComponent<SpriteAnimationComponent>();
+		auto &ac = entity.GetComponent<SpriteAnimationComponent>();
 		if (ac.State->HasAnimations())
 		{
 			ac.State->SetActiveState(Utils::MonoStringToString(state));
@@ -960,35 +1143,48 @@ namespace origin
 
 	static bool Input_IsKeyPressed(KeyCode keycode)
 	{
+		PROFILER_LOGIC();
+
 		return Input::IsKeyPressed(keycode);
+	}
+
+	static bool Input_IsKeyReleased(KeyCode keycode)
+	{
+		PROFILER_LOGIC();
+
+		return Input::IsKeyReleased(keycode);
 	}
 
 	template <typename... Component>
 	static void RegisterComponent()
 	{
+		PROFILER_LOGIC();
+
 		([]()
-		{
-			std::string_view typeName = typeid(Component).name();
-			size_t pos = typeName.find_last_of(':');
-			std::string_view structName = typeName.substr(pos + 1);
-			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
+		 {
+			 std::string_view typeName = typeid(Component).name();
+			 size_t pos = typeName.find_last_of(':');
+			 std::string_view structName = typeName.substr(pos + 1);
+			 std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 
-			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
-			if (!managedType)
-			{
-				OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
-				return;
-			}
+			 MonoType *managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
+			 if (!managedType)
+			 {
+				 OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
+				 return;
+			 }
 
-			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
-			s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
+			 s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
+			 s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
 
-		}(), ...);
+		 }(), ...);
 	}
 
 	template <typename... Component>
 	static void RegisterComponent(ComponentGroup<Component...>)
 	{
+		PROFILER_LOGIC();
+
 		RegisterComponent<Component...>();
 	}
 
@@ -1107,6 +1303,8 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(SpriteAnimationComponent_GetActiveState);
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
+
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
+		OGN_ADD_INTERNAL_CALLS(Input_IsKeyReleased);
 	}
 }

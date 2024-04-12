@@ -78,10 +78,10 @@ namespace origin
 
 			case ProjectionType::Orthographic:
 			{
-				float OrthoLeft = -m_OrthoSize * m_AspectRatio * 0.5f;
-				float OrthoRight = m_OrthoSize * m_AspectRatio * 0.5f;
-				float OrthoTop = -m_OrthoSize * 0.5f;
-				float OrthoBottom = m_OrthoSize * 0.5f;
+				float OrthoLeft = -m_OrthoSize * m_AspectRatio / 2.0f;
+				float OrthoRight = m_OrthoSize * m_AspectRatio / 2.0f;
+				float OrthoTop = -m_OrthoSize / 2.0f;
+				float OrthoBottom = m_OrthoSize / 2.0f;
 
 				m_Projection = glm::ortho(OrthoLeft, OrthoRight, OrthoTop, OrthoBottom, m_OrthoNear, m_OrthoFar);
 				break;

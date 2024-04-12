@@ -54,6 +54,8 @@ namespace origin {
   OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification& specification, Buffer data)
     : m_Spec(specification), m_Width(specification.Width), m_Height(specification.Height)
   {
+    PROFILER_RENDERING();
+
     OGN_CORE_ASSERT(m_Spec.Width == m_Width || m_Spec.Height == m_Height, "OpenGLTexture: Invalid Spec Size");
 
     m_DataFormat = Utils::ORiginImageFormatToGLDataFormat(m_Spec.Format);
@@ -80,6 +82,8 @@ namespace origin {
   OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath, const TextureSpecification& specification)
     : m_Filepath(filepath.generic_string()), m_Spec(specification), m_InternalFormat(0), m_DataFormat(0)
   {
+    PROFILER_RENDERING();
+
     OGN_CORE_WARN("TEXTURE: Trying to load {}", filepath);
 
     int width, height, bpp;
@@ -145,6 +149,8 @@ namespace origin {
 
   void OpenGLTexture2D::SetData(Buffer data)
   {
+    PROFILER_RENDERING();
+
     // Verify the actual BPP
     uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
     OGN_CORE_ASSERT(data.Size == m_Width * m_Height * bpp, "OpenGLTexture: Data must be entire texture!");
@@ -153,23 +159,31 @@ namespace origin {
 
 	void OpenGLTexture2D::Bind(uint32_t index)
   {
+    PROFILER_RENDERING();
+
     m_Index = index;
     glBindTextureUnit(index, m_RendererID); // bind texture index to renderID
   }
 
   void OpenGLTexture2D::Unbind()
   {
+    PROFILER_RENDERING();
+
     glBindTextureUnit(m_Index, 0);
   }
 
   void OpenGLTexture2D::Delete()
   {
+    PROFILER_RENDERING();
+
     glDeleteTextures(1, &m_RendererID);
     OGN_CORE_WARN("TEXTURE: \"{}\" at index {} has been deleted", m_Filepath, m_Index);
   }
 
 	void OpenGLTexture2D::ChangeSize(uint64_t newWidth, uint64_t newHeight)
 	{
+    PROFILER_RENDERING();
+
     uint32_t newTextureID;
 		glCreateTextures(GL_TEXTURE_2D, 1, &newTextureID);
 		glTextureStorage2D(newTextureID, 1, m_InternalFormat, newWidth, newHeight);
@@ -209,6 +223,8 @@ namespace origin {
   OpenGLTextureCube::OpenGLTextureCube(const std::string& filepath)
     : m_RendererID(0), m_Filepath(filepath), m_Index(0)
   {
+    PROFILER_RENDERING();
+
     std::string faces[6] =
     {
       "/right.jpg",
@@ -264,6 +280,8 @@ namespace origin {
 
   void OpenGLTextureCube::Delete()
   {
+    PROFILER_RENDERING();
+
     glBindTexture(m_Index, 0);
   }
 
@@ -284,6 +302,8 @@ namespace origin {
 
   void OpenGLTextureCube::LoadFaces(std::string& filepath, Faces faces)
   {
+    PROFILER_RENDERING();
+
     m_Filepath = filepath;
 
     int width, height, bpp;

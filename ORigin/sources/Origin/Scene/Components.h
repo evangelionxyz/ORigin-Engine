@@ -260,10 +260,10 @@ namespace origin
 		{
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nsc)
-				{
-					delete nsc->Instance;
-					nsc->Instance = nullptr;
-				};
+			{
+				delete nsc->Instance;
+				nsc->Instance = nullptr;
+			};
 		}
 	};
 

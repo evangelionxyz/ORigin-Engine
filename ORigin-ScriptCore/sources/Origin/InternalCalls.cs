@@ -56,13 +56,13 @@ namespace ORiginEngine
     internal extern static void Rigidbody2DComponent_SetVelocity(ulong entityID, Vector2 value);
 
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void Rigidbody2DComponent_ApplyLinearImpulse(ulong entityID, ref Vector2 impulse, ref Vector2 point, bool wake);
+    internal extern static void Rigidbody2DComponent_ApplyLinearImpulse(ulong entityID, Vector2 impulse, Vector2 point, bool wake);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(ulong entityID, ref Vector2 impulse, bool wake);
+    internal extern static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(ulong entityID, Vector2 impulse, bool wake);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void Rigidbody2DComponent_ApplyForce(ulong entityID, ref Vector2 force, ref Vector2 point, bool wake);
+    internal extern static void Rigidbody2DComponent_ApplyForce(ulong entityID, Vector2 force, Vector2 point, bool wake);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void Rigidbody2DComponent_ApplyForceToCenter(ulong entityID, ref Vector2 force, bool wake);
+    internal extern static void Rigidbody2DComponent_ApplyForceToCenter(ulong entityID, Vector2 force, bool wake);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static bool Rigidbody2DComponent_IsContactWithTag(ulong entityID, string contactWith);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -215,7 +215,11 @@ namespace ORiginEngine
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void SpriteAnimationComponent_SetActiveState(ulong entityID, string stateString);
 
+
+    // INPUT
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static bool Input_IsKeyPressed(KeyCode keycode);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static bool Input_IsKeyReleased(KeyCode keycode);
   }
 }

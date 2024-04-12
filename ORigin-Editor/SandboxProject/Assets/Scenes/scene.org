@@ -1,73 +1,20 @@
 Scene: scene.org
 Entities:
-  - Entity: 814932788553843695
-    Parent: 5591016593278036947
+  - Entity: 5709039450732960902
+    Parent: 10778211267950868692
     Children:
       []
     TagComponent:
-      Tag: Empty
-    AudioComponent:
-      AudioHandle: 8622424555671573006
-      Name: solitude-dark-ambient-electronic-197737.mp3
-      Volume: 0.5
-      Pitch: 1
-      Panning: 0
-      MinDistance: 10
-      MaxDistance: 20
-      Looping: true
-      Spatial: false
-      PlayAtStart: true
+      Tag: Floor
     TransformComponent:
-      Translation: [-2, 0, 0]
+      Translation: [38, -1, 0.195783257]
       Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 5591016593278036947
-    Parent: 0
-    Children:
-      - ID: 814932788553843695
-    TagComponent:
-      Tag: SOUNDS
-    TransformComponent:
-      Translation: [0, -3, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-  - Entity: 14437012448512618022
-    Parent: 0
-    Children:
-      []
-    TagComponent:
-      Tag: Chery
-    SpriteAnimationComponent:
-      States:
-        - Name: Idle
-          Looping: true
-          MaxFrame: 60
-          Speed: 30
-          Frames:
-            - ID: 2452532763512065933
-              FrameBegin: 0
-              FrameEnd: 19
-              Min: [0.190200523, 0.255339712]
-              Max: [0.219612285, 0.755339682]
-            - ID: 2452532763512065933
-              FrameBegin: 20
-              FrameEnd: 38
-              Min: [0.0147126419, 0.250005513]
-              Max: [0.0441244058, 0.750005484]
-            - ID: 2452532763512065933
-              FrameBegin: 39
-              FrameEnd: 59
-              Min: [0.425491691, 0.18818593]
-              Max: [0.454903454, 0.816551805]
-    TransformComponent:
-      Translation: [3, 0.988861442, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.74000001, 0.74000001, 0.74000001]
+      Scale: [8, 1, 1]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 2452532763512065933
-      Min: [0.190200523, 0.255339712]
-      Max: [0.219612285, 0.755339682]
+      Handle: 3934599823597170524
+      Min: [0.00848791841, 0.0132773221]
+      Max: [0.991733551, 0.243229061]
       TillingFactor: [1, 1]
       FlipX: false
       FlipY: false
@@ -89,23 +36,154 @@ Entities:
     BoxCollider2DComponent:
       Group: 1
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [0.439999998, 0.389999986]
       Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 17396602356542328739
+  - Entity: 9572226311135308748
     Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plant2
+    SpriteAnimationComponent:
+      States:
+        - Name: Basic
+          Looping: true
+          MaxFrame: 81
+          Speed: 15
+          Frames:
+            - ID: 3928313702495440480
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6970804806650112084
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14427151584699523701
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10378851618417400593
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13991125471959146751
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9932631895147486376
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8862920861694661143
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10788692318860028174
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9743785820056772631
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 650055865158184995
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15244501355312701797
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 973473145379625278
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15312675673411365589
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17069388792751531953
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17997759306417435537
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6646289908706380991
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8657379106223608274
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4488667565370796078
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10972704791246345326
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9467822418084003620
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [33.3117142, -0.118474081, -0.416459471]
+      Rotation: [0, 0, 0]
+      Scale: [4.21639967, 4.21639967, 4.21639967]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 8657379106223608274
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 9098481254268376831
+    Parent: 10778211267950868692
     Children:
       []
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [-0.0242130756, -1.97578692, 0]
-      Rotation: [0, 0, 0]
-      Scale: [15.1582727, 1, 1]
+      Translation: [31, -1, 0.195783257]
+      Rotation: [0, -0, 0]
+      Scale: [8, 1, 1]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
+      Handle: 3934599823597170524
+      Min: [0.00848791841, 0.0132773221]
+      Max: [0.991733551, 0.243229061]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
     Rigidbody2DComponent:
       BodyType: Static
       Mass: 1
@@ -124,119 +202,176 @@ Entities:
     BoxCollider2DComponent:
       Group: 1
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [0.439999998, 0.389999986]
       Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 17648302011125788142
-    Parent: 0
+  - Entity: 12823615331085326154
+    Parent: 2095414653173010088
     Children:
       []
     TagComponent:
-      Tag: Camera
+      Tag: bg2
     TransformComponent:
-      Translation: [0, 1, 8]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 1
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 8
-        OrthographicNear: -1
-        OrthographicFar: 100
-      Primary: true
-    AudioListenerComponent:
-      Enable: true
-  - Entity: 9727672079995921163
-    Parent: 0
-    Children:
-      []
-    TagComponent:
-      Tag: Player
-    SpriteAnimationComponent:
-      States:
-        - Name: Idle
-          Looping: true
-          MaxFrame: 54
-          Speed: 10
-          Frames:
-            - ID: 16707881503323011987
-              FrameBegin: 0
-              FrameEnd: 4
-              Min: [0.0118429009, -0.0130627155]
-              Max: [0.0790661871, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 5
-              FrameEnd: 9
-              Min: [0.104172446, -0.0130627155]
-              Max: [0.171395734, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 10
-              FrameEnd: 14
-              Min: [0.195081532, -0.0130627155]
-              Max: [0.262304813, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 15
-              FrameEnd: 19
-              Min: [0.285990626, -0.0130627155]
-              Max: [0.353213906, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 20
-              FrameEnd: 24
-              Min: [0.375479251, -0.0130627155]
-              Max: [0.442702562, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 25
-              FrameEnd: 29
-              Min: [0.466388345, 0.00256228447]
-              Max: [0.533611655, 0.841187716]
-            - ID: 16707881503323011987
-              FrameBegin: 30
-              FrameEnd: 34
-              Min: [0.558717906, -0.0130627155]
-              Max: [0.625941217, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 35
-              FrameEnd: 39
-              Min: [0.648206532, 0.00256228447]
-              Max: [0.715429842, 0.841187716]
-            - ID: 16707881503323011987
-              FrameBegin: 39
-              FrameEnd: 43
-              Min: [0.740536094, -0.0130627155]
-              Max: [0.807759345, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 44
-              FrameEnd: 48
-              Min: [0.831445158, -0.0130627155]
-              Max: [0.898668468, 0.825562716]
-            - ID: 16707881503323011987
-              FrameBegin: 49
-              FrameEnd: 53
-              Min: [0.920933783, 0.00256228447]
-              Max: [0.988157094, 0.841187716]
-    ScriptComponent:
-      ClassName: SandboxProject.Assets.Scripts.PlayerMovement
-      ScriptFields:
-        - Name: Speed
-          Type: Float
-          Data: 3
-        - Name: JumpHeight
-          Type: Float
-          Data: 5
-    TransformComponent:
-      Translation: [0.0167773459, -1, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [26.1474361, -2.0060904, -0.50103116]
+      Rotation: [0, -0, 0]
+      Scale: [1.92054188, 7.6149416, 0.000864151574]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 16707881503323011987
-      Min: [0.920933783, 0.00256228447]
-      Max: [0.988157094, 0.841187716]
+      Handle: 14198654532143467001
+      Min: [0.00188288093, 0.00268579228]
+      Max: [0.26302287, 0.991327524]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 4573195425640716021
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: GreenSlime
+    SpriteAnimationComponent:
+      States:
+        - Name: Basic
+          Looping: true
+          MaxFrame: 108
+          Speed: 15
+          Frames:
+            - ID: 1917871357779178827
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15311568144045633186
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9891481739568082962
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3537374187533455721
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6000081956186149131
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2172562450143590688
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2246988005049749782
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10236646703906030637
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3797603308460149435
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3797603308460149435
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16724749971380930262
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15356567395820760836
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3442881553086974593
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2389287642870398323
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12606183772175010428
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15721621270666355400
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15721621270666355400
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13610021022943276774
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9744028709909487738
+              FrameBegin: 80
+              FrameEnd: 84
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7270273166512376308
+              FrameBegin: 84
+              FrameEnd: 88
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18081873325961486611
+              FrameBegin: 88
+              FrameEnd: 92
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1332371261899123470
+              FrameBegin: 92
+              FrameEnd: 96
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8080469064303290027
+              FrameBegin: 96
+              FrameEnd: 100
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7451677293972026887
+              FrameBegin: 100
+              FrameEnd: 104
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4149255462777821972
+              FrameBegin: 104
+              FrameEnd: 108
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [21.8508015, -1.97700715, -0.200000003]
+      Rotation: [0, 0, 0]
+      Scale: [1.833619, 1.50999999, 1.50999999]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 7451677293972026887
+      Min: [0, 0]
+      Max: [1, 1]
       TillingFactor: [1, 1]
       FlipX: false
       FlipY: false
@@ -246,7 +381,7 @@ Entities:
       LinearDamping: 0
       AngularDamping: 0.00999999978
       RotationalInertia: 0
-      GravityScale: 20
+      GravityScale: 1
       MassCenter: [0, 0]
       FreezePositionX: false
       FreezePositionY: false
@@ -256,9 +391,2314 @@ Entities:
       Enabled: true
       FixedRotation: true
     BoxCollider2DComponent:
+      Group: -1
+      Offset: [0, -0.0299999993]
+      Size: [0.360000014, 0.405000001]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 14376546000169319814
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plant2
+    SpriteAnimationComponent:
+      States:
+        - Name: Basic
+          Looping: true
+          MaxFrame: 81
+          Speed: 15
+          Frames:
+            - ID: 3928313702495440480
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6970804806650112084
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14427151584699523701
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10378851618417400593
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13991125471959146751
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9932631895147486376
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8862920861694661143
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10788692318860028174
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9743785820056772631
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 650055865158184995
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15244501355312701797
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 973473145379625278
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15312675673411365589
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17069388792751531953
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17997759306417435537
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6646289908706380991
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8657379106223608274
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4488667565370796078
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10972704791246345326
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9467822418084003620
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [17.6855392, -1.94706976, -0.416459471]
+      Rotation: [0, 0, 0]
+      Scale: [4.21639967, 4.21639967, 4.21639967]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 8657379106223608274
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 8710507149105212834
+    Parent: 2095414653173010088
+    Children:
+      []
+    TagComponent:
+      Tag: bg2
+    TransformComponent:
+      Translation: [23.7263603, -2.58915448, -2.27800012]
+      Rotation: [0, -0, 0]
+      Scale: [6.85417843, 4.32268763, 1.07440007]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 14198654532143467001
+      Min: [0.58049345, 0.434340775]
+      Max: [0.996227384, 0.658724606]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 10203728731522456247
+    Parent: 2095414653173010088
+    Children:
+      []
+    TagComponent:
+      Tag: bg2
+    TransformComponent:
+      Translation: [17.9468899, -1.10777414, -2.72825599]
+      Rotation: [0, -0, 0]
+      Scale: [6.85417843, 4.32268763, 1.07440007]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 14198654532143467001
+      Min: [0.58049345, 0.434340775]
+      Max: [0.996227384, 0.658724606]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 1987997631301497874
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: GreenSlime
+    SpriteAnimationComponent:
+      States:
+        - Name: Basic
+          Looping: true
+          MaxFrame: 108
+          Speed: 15
+          Frames:
+            - ID: 1917871357779178827
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15311568144045633186
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9891481739568082962
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3537374187533455721
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6000081956186149131
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2172562450143590688
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2246988005049749782
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10236646703906030637
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3797603308460149435
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3797603308460149435
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16724749971380930262
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15356567395820760836
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3442881553086974593
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2389287642870398323
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12606183772175010428
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15721621270666355400
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15721621270666355400
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13610021022943276774
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9744028709909487738
+              FrameBegin: 80
+              FrameEnd: 84
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7270273166512376308
+              FrameBegin: 84
+              FrameEnd: 88
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18081873325961486611
+              FrameBegin: 88
+              FrameEnd: 92
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1332371261899123470
+              FrameBegin: 92
+              FrameEnd: 96
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8080469064303290027
+              FrameBegin: 96
+              FrameEnd: 100
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7451677293972026887
+              FrameBegin: 100
+              FrameEnd: 104
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4149255462777821972
+              FrameBegin: 104
+              FrameEnd: 108
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [3.02701926, -0.00283876061, -0.205144167]
+      Rotation: [0, 0, 0]
+      Scale: [1.2143172, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 7451677293972026887
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Group: -1
+      Offset: [0, -0.0299999993]
+      Size: [0.360000014, 0.405000001]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 8004108025286163826
+    Parent: 10778211267950868692
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [22.5, -3, -0.279000014]
+      Rotation: [0, -0, 0]
+      Scale: [8, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 3934599823597170524
+      Min: [0.00848791841, 0.0132773221]
+      Max: [0.991733551, 0.243229061]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
       Group: 1
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [0.439999998, 0.389999986]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 12348326963234330776
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plant1
+    SpriteAnimationComponent:
+      States:
+        - Name: Idle
+          Looping: true
+          MaxFrame: 349
+          Speed: 15
+          Frames:
+            - ID: 9299424298986850345
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13040275658770296200
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6839422976923284524
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18017383611576294220
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8415148093766400096
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17516383762673300408
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11532887908645258953
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 471947879401705297
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1424535094411456973
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 179237721532445144
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1351051289591548524
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11645406805821442745
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10512758226078597523
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3476110240059925737
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9179122550500562713
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3455452343523826642
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14050144934421510416
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6760257430750886251
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6924264613285451809
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14624515922368971937
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11278011302724803221
+              FrameBegin: 80
+              FrameEnd: 84
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 5424828323905397245
+              FrameBegin: 84
+              FrameEnd: 88
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6648865767641661267
+              FrameBegin: 88
+              FrameEnd: 92
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15173487407393050844
+              FrameBegin: 92
+              FrameEnd: 96
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8678751350929118565
+              FrameBegin: 96
+              FrameEnd: 100
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6758363981115995697
+              FrameBegin: 100
+              FrameEnd: 104
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8451818878276392686
+              FrameBegin: 104
+              FrameEnd: 108
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17372988765017255074
+              FrameBegin: 108
+              FrameEnd: 112
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13274518968029078363
+              FrameBegin: 112
+              FrameEnd: 116
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17153811701044105140
+              FrameBegin: 116
+              FrameEnd: 120
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9110420676204779014
+              FrameBegin: 120
+              FrameEnd: 124
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8865743625669878861
+              FrameBegin: 124
+              FrameEnd: 128
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3358119269157681566
+              FrameBegin: 128
+              FrameEnd: 132
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14208908029689598543
+              FrameBegin: 132
+              FrameEnd: 136
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8405415555642426840
+              FrameBegin: 136
+              FrameEnd: 140
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7292747266941955045
+              FrameBegin: 140
+              FrameEnd: 144
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13144989181455315358
+              FrameBegin: 144
+              FrameEnd: 148
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1004938937109096255
+              FrameBegin: 148
+              FrameEnd: 152
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15320294929512520460
+              FrameBegin: 152
+              FrameEnd: 156
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3369120005023888913
+              FrameBegin: 156
+              FrameEnd: 160
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13168005628785448917
+              FrameBegin: 160
+              FrameEnd: 164
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4215911025341472202
+              FrameBegin: 164
+              FrameEnd: 168
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16379043214175839728
+              FrameBegin: 168
+              FrameEnd: 172
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8052977197193221128
+              FrameBegin: 172
+              FrameEnd: 176
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7451955901477121260
+              FrameBegin: 176
+              FrameEnd: 180
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1218810816273532365
+              FrameBegin: 180
+              FrameEnd: 184
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9038347186727731221
+              FrameBegin: 184
+              FrameEnd: 188
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9777924390140929552
+              FrameBegin: 188
+              FrameEnd: 192
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16696897994400572070
+              FrameBegin: 192
+              FrameEnd: 196
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9724066953070822040
+              FrameBegin: 196
+              FrameEnd: 200
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3031900044830376686
+              FrameBegin: 200
+              FrameEnd: 204
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14951303933605421149
+              FrameBegin: 204
+              FrameEnd: 208
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18081508796391751937
+              FrameBegin: 208
+              FrameEnd: 212
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17167421571168911568
+              FrameBegin: 212
+              FrameEnd: 216
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15135145468845823686
+              FrameBegin: 216
+              FrameEnd: 220
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1576197035360992148
+              FrameBegin: 220
+              FrameEnd: 224
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4540923544079767787
+              FrameBegin: 224
+              FrameEnd: 228
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15823245449537372339
+              FrameBegin: 228
+              FrameEnd: 232
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9622306810215365453
+              FrameBegin: 232
+              FrameEnd: 236
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8997054290606600228
+              FrameBegin: 236
+              FrameEnd: 240
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4577082038153138444
+              FrameBegin: 240
+              FrameEnd: 244
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13855748353568449408
+              FrameBegin: 244
+              FrameEnd: 248
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1500829673213001851
+              FrameBegin: 248
+              FrameEnd: 252
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4827799232576419390
+              FrameBegin: 252
+              FrameEnd: 256
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1215330593426423842
+              FrameBegin: 256
+              FrameEnd: 260
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12402584720550413746
+              FrameBegin: 260
+              FrameEnd: 264
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12754590323225955597
+              FrameBegin: 264
+              FrameEnd: 268
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3692310124782106498
+              FrameBegin: 268
+              FrameEnd: 272
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13351507745696875515
+              FrameBegin: 272
+              FrameEnd: 276
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3131129197036834294
+              FrameBegin: 276
+              FrameEnd: 280
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15723095865428447949
+              FrameBegin: 280
+              FrameEnd: 284
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13009628201384844275
+              FrameBegin: 284
+              FrameEnd: 288
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13367899617226452268
+              FrameBegin: 288
+              FrameEnd: 292
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6654342938585012636
+              FrameBegin: 292
+              FrameEnd: 296
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15819378367044844543
+              FrameBegin: 296
+              FrameEnd: 300
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6399744684572858953
+              FrameBegin: 300
+              FrameEnd: 304
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18190723485300310558
+              FrameBegin: 304
+              FrameEnd: 308
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1131263368688856771
+              FrameBegin: 308
+              FrameEnd: 312
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15052607108481905077
+              FrameBegin: 312
+              FrameEnd: 316
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3268634986516760292
+              FrameBegin: 316
+              FrameEnd: 320
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13295910397943310582
+              FrameBegin: 320
+              FrameEnd: 324
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13273598290401132474
+              FrameBegin: 324
+              FrameEnd: 328
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2134833599991151448
+              FrameBegin: 328
+              FrameEnd: 332
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2604110600084479361
+              FrameBegin: 332
+              FrameEnd: 336
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 5925042859480717013
+              FrameBegin: 336
+              FrameEnd: 340
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10160262086230251116
+              FrameBegin: 340
+              FrameEnd: 344
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2755291256594705403
+              FrameBegin: 344
+              FrameEnd: 348
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [14.3858595, -2.05878901, -0.200000003]
+      Rotation: [0, 0, 0]
+      Scale: [3.40859938, 3.40859938, 3.40859938]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 6654342938585012636
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 17404695385496278295
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plant1
+    SpriteAnimationComponent:
+      States:
+        - Name: Idle
+          Looping: true
+          MaxFrame: 349
+          Speed: 15
+          Frames:
+            - ID: 9299424298986850345
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13040275658770296200
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6839422976923284524
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18017383611576294220
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8415148093766400096
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17516383762673300408
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11532887908645258953
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 471947879401705297
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1424535094411456973
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 179237721532445144
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1351051289591548524
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11645406805821442745
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10512758226078597523
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3476110240059925737
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9179122550500562713
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3455452343523826642
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14050144934421510416
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6760257430750886251
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6924264613285451809
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14624515922368971937
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11278011302724803221
+              FrameBegin: 80
+              FrameEnd: 84
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 5424828323905397245
+              FrameBegin: 84
+              FrameEnd: 88
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6648865767641661267
+              FrameBegin: 88
+              FrameEnd: 92
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15173487407393050844
+              FrameBegin: 92
+              FrameEnd: 96
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8678751350929118565
+              FrameBegin: 96
+              FrameEnd: 100
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6758363981115995697
+              FrameBegin: 100
+              FrameEnd: 104
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8451818878276392686
+              FrameBegin: 104
+              FrameEnd: 108
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17372988765017255074
+              FrameBegin: 108
+              FrameEnd: 112
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13274518968029078363
+              FrameBegin: 112
+              FrameEnd: 116
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17153811701044105140
+              FrameBegin: 116
+              FrameEnd: 120
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9110420676204779014
+              FrameBegin: 120
+              FrameEnd: 124
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8865743625669878861
+              FrameBegin: 124
+              FrameEnd: 128
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3358119269157681566
+              FrameBegin: 128
+              FrameEnd: 132
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14208908029689598543
+              FrameBegin: 132
+              FrameEnd: 136
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8405415555642426840
+              FrameBegin: 136
+              FrameEnd: 140
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7292747266941955045
+              FrameBegin: 140
+              FrameEnd: 144
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13144989181455315358
+              FrameBegin: 144
+              FrameEnd: 148
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1004938937109096255
+              FrameBegin: 148
+              FrameEnd: 152
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15320294929512520460
+              FrameBegin: 152
+              FrameEnd: 156
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3369120005023888913
+              FrameBegin: 156
+              FrameEnd: 160
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13168005628785448917
+              FrameBegin: 160
+              FrameEnd: 164
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4215911025341472202
+              FrameBegin: 164
+              FrameEnd: 168
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16379043214175839728
+              FrameBegin: 168
+              FrameEnd: 172
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8052977197193221128
+              FrameBegin: 172
+              FrameEnd: 176
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7451955901477121260
+              FrameBegin: 176
+              FrameEnd: 180
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1218810816273532365
+              FrameBegin: 180
+              FrameEnd: 184
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9038347186727731221
+              FrameBegin: 184
+              FrameEnd: 188
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9777924390140929552
+              FrameBegin: 188
+              FrameEnd: 192
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16696897994400572070
+              FrameBegin: 192
+              FrameEnd: 196
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9724066953070822040
+              FrameBegin: 196
+              FrameEnd: 200
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3031900044830376686
+              FrameBegin: 200
+              FrameEnd: 204
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14951303933605421149
+              FrameBegin: 204
+              FrameEnd: 208
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18081508796391751937
+              FrameBegin: 208
+              FrameEnd: 212
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17167421571168911568
+              FrameBegin: 212
+              FrameEnd: 216
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15135145468845823686
+              FrameBegin: 216
+              FrameEnd: 220
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1576197035360992148
+              FrameBegin: 220
+              FrameEnd: 224
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4540923544079767787
+              FrameBegin: 224
+              FrameEnd: 228
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15823245449537372339
+              FrameBegin: 228
+              FrameEnd: 232
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9622306810215365453
+              FrameBegin: 232
+              FrameEnd: 236
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8997054290606600228
+              FrameBegin: 236
+              FrameEnd: 240
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4577082038153138444
+              FrameBegin: 240
+              FrameEnd: 244
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13855748353568449408
+              FrameBegin: 244
+              FrameEnd: 248
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1500829673213001851
+              FrameBegin: 248
+              FrameEnd: 252
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4827799232576419390
+              FrameBegin: 252
+              FrameEnd: 256
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1215330593426423842
+              FrameBegin: 256
+              FrameEnd: 260
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12402584720550413746
+              FrameBegin: 260
+              FrameEnd: 264
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12754590323225955597
+              FrameBegin: 264
+              FrameEnd: 268
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3692310124782106498
+              FrameBegin: 268
+              FrameEnd: 272
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13351507745696875515
+              FrameBegin: 272
+              FrameEnd: 276
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3131129197036834294
+              FrameBegin: 276
+              FrameEnd: 280
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15723095865428447949
+              FrameBegin: 280
+              FrameEnd: 284
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13009628201384844275
+              FrameBegin: 284
+              FrameEnd: 288
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13367899617226452268
+              FrameBegin: 288
+              FrameEnd: 292
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6654342938585012636
+              FrameBegin: 292
+              FrameEnd: 296
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15819378367044844543
+              FrameBegin: 296
+              FrameEnd: 300
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6399744684572858953
+              FrameBegin: 300
+              FrameEnd: 304
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18190723485300310558
+              FrameBegin: 304
+              FrameEnd: 308
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1131263368688856771
+              FrameBegin: 308
+              FrameEnd: 312
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15052607108481905077
+              FrameBegin: 312
+              FrameEnd: 316
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3268634986516760292
+              FrameBegin: 316
+              FrameEnd: 320
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13295910397943310582
+              FrameBegin: 320
+              FrameEnd: 324
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13273598290401132474
+              FrameBegin: 324
+              FrameEnd: 328
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2134833599991151448
+              FrameBegin: 328
+              FrameEnd: 332
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2604110600084479361
+              FrameBegin: 332
+              FrameEnd: 336
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 5925042859480717013
+              FrameBegin: 336
+              FrameEnd: 340
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10160262086230251116
+              FrameBegin: 340
+              FrameEnd: 344
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2755291256594705403
+              FrameBegin: 344
+              FrameEnd: 348
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [6.05959797, -0.205603927, -0.275000006]
+      Rotation: [0, 0, 0]
+      Scale: [3.40859938, 3.40859938, 3.40859938]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 6654342938585012636
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 13784506690112982982
+    Parent: 13995465573379392905
+    Children:
+      []
+    TagComponent:
+      Tag: AGrassWalk
+    AudioComponent:
+      AudioHandle: 13889175461965957783
+      Name: walking-soundscape-200112.mp3
+      Volume: 0.400000006
+      Pitch: 1
+      Panning: 0
+      MinDistance: 10
+      MaxDistance: 20
+      Looping: false
+      Spatial: false
+      PlayAtStart: false
+    TransformComponent:
+      Translation: [0.997176647, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 14651114759249382998
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Plant1
+    SpriteAnimationComponent:
+      States:
+        - Name: Idle
+          Looping: true
+          MaxFrame: 349
+          Speed: 15
+          Frames:
+            - ID: 9299424298986850345
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13040275658770296200
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6839422976923284524
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18017383611576294220
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8415148093766400096
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17516383762673300408
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11532887908645258953
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 471947879401705297
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1424535094411456973
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 179237721532445144
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1351051289591548524
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11645406805821442745
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10512758226078597523
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3476110240059925737
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9179122550500562713
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3455452343523826642
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14050144934421510416
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6760257430750886251
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6924264613285451809
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14624515922368971937
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11278011302724803221
+              FrameBegin: 80
+              FrameEnd: 84
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 5424828323905397245
+              FrameBegin: 84
+              FrameEnd: 88
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6648865767641661267
+              FrameBegin: 88
+              FrameEnd: 92
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15173487407393050844
+              FrameBegin: 92
+              FrameEnd: 96
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8678751350929118565
+              FrameBegin: 96
+              FrameEnd: 100
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6758363981115995697
+              FrameBegin: 100
+              FrameEnd: 104
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8451818878276392686
+              FrameBegin: 104
+              FrameEnd: 108
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17372988765017255074
+              FrameBegin: 108
+              FrameEnd: 112
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13274518968029078363
+              FrameBegin: 112
+              FrameEnd: 116
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17153811701044105140
+              FrameBegin: 116
+              FrameEnd: 120
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9110420676204779014
+              FrameBegin: 120
+              FrameEnd: 124
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8865743625669878861
+              FrameBegin: 124
+              FrameEnd: 128
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3358119269157681566
+              FrameBegin: 128
+              FrameEnd: 132
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14208908029689598543
+              FrameBegin: 132
+              FrameEnd: 136
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8405415555642426840
+              FrameBegin: 136
+              FrameEnd: 140
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7292747266941955045
+              FrameBegin: 140
+              FrameEnd: 144
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13144989181455315358
+              FrameBegin: 144
+              FrameEnd: 148
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1004938937109096255
+              FrameBegin: 148
+              FrameEnd: 152
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15320294929512520460
+              FrameBegin: 152
+              FrameEnd: 156
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3369120005023888913
+              FrameBegin: 156
+              FrameEnd: 160
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13168005628785448917
+              FrameBegin: 160
+              FrameEnd: 164
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4215911025341472202
+              FrameBegin: 164
+              FrameEnd: 168
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16379043214175839728
+              FrameBegin: 168
+              FrameEnd: 172
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8052977197193221128
+              FrameBegin: 172
+              FrameEnd: 176
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7451955901477121260
+              FrameBegin: 176
+              FrameEnd: 180
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1218810816273532365
+              FrameBegin: 180
+              FrameEnd: 184
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9038347186727731221
+              FrameBegin: 184
+              FrameEnd: 188
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9777924390140929552
+              FrameBegin: 188
+              FrameEnd: 192
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16696897994400572070
+              FrameBegin: 192
+              FrameEnd: 196
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9724066953070822040
+              FrameBegin: 196
+              FrameEnd: 200
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3031900044830376686
+              FrameBegin: 200
+              FrameEnd: 204
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14951303933605421149
+              FrameBegin: 204
+              FrameEnd: 208
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18081508796391751937
+              FrameBegin: 208
+              FrameEnd: 212
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17167421571168911568
+              FrameBegin: 212
+              FrameEnd: 216
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15135145468845823686
+              FrameBegin: 216
+              FrameEnd: 220
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1576197035360992148
+              FrameBegin: 220
+              FrameEnd: 224
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4540923544079767787
+              FrameBegin: 224
+              FrameEnd: 228
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15823245449537372339
+              FrameBegin: 228
+              FrameEnd: 232
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9622306810215365453
+              FrameBegin: 232
+              FrameEnd: 236
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8997054290606600228
+              FrameBegin: 236
+              FrameEnd: 240
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4577082038153138444
+              FrameBegin: 240
+              FrameEnd: 244
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13855748353568449408
+              FrameBegin: 244
+              FrameEnd: 248
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1500829673213001851
+              FrameBegin: 248
+              FrameEnd: 252
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4827799232576419390
+              FrameBegin: 252
+              FrameEnd: 256
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1215330593426423842
+              FrameBegin: 256
+              FrameEnd: 260
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12402584720550413746
+              FrameBegin: 260
+              FrameEnd: 264
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12754590323225955597
+              FrameBegin: 264
+              FrameEnd: 268
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3692310124782106498
+              FrameBegin: 268
+              FrameEnd: 272
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13351507745696875515
+              FrameBegin: 272
+              FrameEnd: 276
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3131129197036834294
+              FrameBegin: 276
+              FrameEnd: 280
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15723095865428447949
+              FrameBegin: 280
+              FrameEnd: 284
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13009628201384844275
+              FrameBegin: 284
+              FrameEnd: 288
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13367899617226452268
+              FrameBegin: 288
+              FrameEnd: 292
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6654342938585012636
+              FrameBegin: 292
+              FrameEnd: 296
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15819378367044844543
+              FrameBegin: 296
+              FrameEnd: 300
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6399744684572858953
+              FrameBegin: 300
+              FrameEnd: 304
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18190723485300310558
+              FrameBegin: 304
+              FrameEnd: 308
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1131263368688856771
+              FrameBegin: 308
+              FrameEnd: 312
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15052607108481905077
+              FrameBegin: 312
+              FrameEnd: 316
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3268634986516760292
+              FrameBegin: 316
+              FrameEnd: 320
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13295910397943310582
+              FrameBegin: 320
+              FrameEnd: 324
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13273598290401132474
+              FrameBegin: 324
+              FrameEnd: 328
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2134833599991151448
+              FrameBegin: 328
+              FrameEnd: 332
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2604110600084479361
+              FrameBegin: 332
+              FrameEnd: 336
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 5925042859480717013
+              FrameBegin: 336
+              FrameEnd: 340
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10160262086230251116
+              FrameBegin: 340
+              FrameEnd: 344
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2755291256594705403
+              FrameBegin: 344
+              FrameEnd: 348
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [9.69252014, -0.246066466, -0.150000006]
+      Rotation: [0, 0, 0]
+      Scale: [1.69999993, 1.69999993, 1.69999993]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 6654342938585012636
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 9184892619132977482
+    Parent: 10778211267950868692
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [15.5, -3, 0.300000012]
+      Rotation: [0, 0, 0]
+      Scale: [8, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 3934599823597170524
+      Min: [0.00848791841, 0.0132773221]
+      Max: [0.991733551, 0.243229061]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.435000002, 0.389999986]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 14442027201918479279
+    Parent: 2095414653173010088
+    Children:
+      []
+    TagComponent:
+      Tag: bg2
+    TransformComponent:
+      Translation: [12.5, 2, -0.50103116]
+      Rotation: [0, -0, 0]
+      Scale: [2.40067744, 9.51867676, 0.00108018948]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 14198654532143467001
+      Min: [0.00188288093, 0.00268579228]
+      Max: [0.26302287, 0.991327524]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 4084556952922596269
+    Parent: 2095414653173010088
+    Children:
+      []
+    TagComponent:
+      Tag: bg2
+    TransformComponent:
+      Translation: [2.06899905, 0.248419523, -2.72825599]
+      Rotation: [0, -0, 0]
+      Scale: [6.85417843, 4.32268763, 1.07440007]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 14198654532143467001
+      Min: [0.58049345, 0.434340775]
+      Max: [0.996227384, 0.658724606]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 1995112003334160075
+    Parent: 2095414653173010088
+    Children:
+      []
+    TagComponent:
+      Tag: bg1
+    TransformComponent:
+      Translation: [-1.93249035, -0.244247377, -1.14589775]
+      Rotation: [0, -0, 0]
+      Scale: [5.03983688, 2.15594172, 0.790000021]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 14198654532143467001
+      Min: [0.58049345, 0.434340775]
+      Max: [0.996227384, 0.658724606]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 8781994415418087562
+    Parent: 10778211267950868692
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [9, -1.0288887, 0.300000012]
+      Rotation: [0, -0, 0]
+      Scale: [8, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 3934599823597170524
+      Min: [0.00848791841, 0.0132773221]
+      Max: [0.991733551, 0.243229061]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.465000004, 0.389999986]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 2095414653173010088
+    Parent: 0
+    Children:
+      - ID: 1995112003334160075
+      - ID: 4084556952922596269
+      - ID: 14442027201918479279
+      - ID: 10203728731522456247
+      - ID: 8710507149105212834
+      - ID: 12823615331085326154
+    TagComponent:
+      Tag: Backgrounds
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 7290421257569710045
+    Parent: 10778211267950868692
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, -1, 0.300000012]
+      Rotation: [0, 0, 0]
+      Scale: [8, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 3934599823597170524
+      Min: [0.00848791841, 0.0132773221]
+      Max: [0.991733551, 0.243229061]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.460000008, 0.389999986]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 10778211267950868692
+    Parent: 0
+    Children:
+      - ID: 7290421257569710045
+      - ID: 8781994415418087562
+      - ID: 9184892619132977482
+      - ID: 8004108025286163826
+      - ID: 9098481254268376831
+      - ID: 5709039450732960902
+    TagComponent:
+      Tag: Floors
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 1608436747317283212
+    Parent: 13995465573379392905
+    Children:
+      []
+    TagComponent:
+      Tag: ADarkAmbient
+    AudioComponent:
+      AudioHandle: 12076135155863868445
+      Name: creeping-dark-ambience-189391.mp3
+      Volume: 5
+      Pitch: 1
+      Panning: 0
+      MinDistance: 10
+      MaxDistance: 20
+      Looping: true
+      Spatial: false
+      PlayAtStart: true
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 13995465573379392905
+    Parent: 0
+    Children:
+      - ID: 1608436747317283212
+      - ID: 13784506690112982982
+    TagComponent:
+      Tag: Sounds
+    TransformComponent:
+      Translation: [0, -2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 4856163013906347728
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Camera
+    ScriptComponent:
+      ClassName: SandboxProject.CameraMovement
+      ScriptFields:
+        - Name: zoneSize
+          Type: Float
+          Data: 1
+    TransformComponent:
+      Translation: [-1.4157871, -0.326000005, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.591666639
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 100
+        OrthographicSize: 5.0999999
+        OrthographicNear: -1
+        OrthographicFar: 100
+      Primary: true
+    AudioListenerComponent:
+      Enable: true
+  - Entity: 3379793782654356143
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Player
+    SpriteAnimationComponent:
+      States:
+        - Name: Idle
+          Looping: true
+          MaxFrame: 81
+          Speed: 10
+          Frames:
+            - ID: 17854849227549002369
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12373047006135160767
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14353091493324365929
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3839047723945257682
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 7167574777533636772
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8891646013013743771
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8378351397108544768
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17460037502397042523
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 717714396380065210
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18237417322798910828
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12780735383080609520
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 352610122268720730
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2484686949417679651
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13906089975251679339
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 1506352683972399796
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4298720567900196653
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 766515984183421646
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 11969688249214171976
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4614068906792091967
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8468042723212387310
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+        - Name: Walk
+          Looping: true
+          MaxFrame: 81
+          Speed: 15
+          Frames:
+            - ID: 15793468258553685431
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 16898050666710614829
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2011569491340493010
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 166154846919323012
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8714636654712084545
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 5371214090939380011
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6590685793663570286
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14313323831443321195
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 135935803539887534
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 2773854120198961434
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6997869909128634583
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15062503241204115965
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 18017797703591695327
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9818633927630467048
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12284368717318054208
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9867493090394886301
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10841446953951030679
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 3112231969625561756
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13930096578513178558
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 12647465442271669644
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+    ScriptComponent:
+      ClassName: SandboxProject.PlayerMovement
+      ScriptFields:
+        - Name: Speed
+          Type: Float
+          Data: 3
+        - Name: JumpHeight
+          Type: Float
+          Data: 1
+    TransformComponent:
+      Translation: [-2.46775746, -0.118780449, -0.100000001]
+      Rotation: [0, 0, 0]
+      Scale: [1.65999997, 1.65999997, 1.65999997]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 8891646013013743771
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      FreezePositionX: false
+      FreezePositionY: false
+      AllowSleeping: true
+      Awake: true
+      Bullet: true
+      Enabled: true
+      FixedRotation: true
+    BoxCollider2DComponent:
+      Group: -1
+      Offset: [0, -0.00999999978]
+      Size: [0.150000006, 0.280000001]
       Density: 1
       Friction: 0.5
       Restitution: 0

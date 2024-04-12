@@ -143,6 +143,8 @@ namespace origin {
 
 	void PhysXAPI::Init()
 	{
+		PROFILER_PHYSICS();
+
 		s_Instance = this;
 
 		s_PhysXData = new PhysXData();
@@ -164,6 +166,8 @@ namespace origin {
 
 	void PhysXAPI::OnSimulationStart()
 	{
+		PROFILER_PHYSICS();
+
 		s_PhysXData->PhysXPvd = PxCreatePvd(*PhysXAPI::GetFoundation());
 
 		int port = 5425;
@@ -186,12 +190,16 @@ namespace origin {
 
 	void PhysXAPI::OnSimulationStop()
 	{
+		PROFILER_PHYSICS();
+
 		PxCloseExtensions();
 		s_PhysXData->PhysxPhysics->release();
 	}
 
 	void PhysXAPI::Shutdown()
 	{
+		PROFILER_PHYSICS();
+
 		s_PhysXData->PhysxCPUDispatcher->release();
 		s_PhysXData->PhysxFoundation->release();
 		OGN_CORE_WARN("PhysX API: Foundation Released");

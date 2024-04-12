@@ -13,6 +13,7 @@ namespace origin {
 	UUID::UUID()
 		: m_UUID(s_UniformDistribution(s_Engine))
 	{
+		PROFILER_FUNCTION();
 	}
 
 	UUID::UUID(uint64_t uuid)

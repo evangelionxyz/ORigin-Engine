@@ -38,6 +38,7 @@ includedirs {
     "%{IncludeDir.Miniaudio}",
     "%{IncludeDir.IMGUIZMO}",
     "%{IncludeDir.BOX2D}",
+    "%{IncludeDir.OPTICK}",
     "%{IncludeDir.GLAD}",
     "%{IncludeDir.GLM}",
     "%{IncludeDir.ENTT}",

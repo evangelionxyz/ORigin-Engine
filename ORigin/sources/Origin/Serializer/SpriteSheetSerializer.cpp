@@ -11,6 +11,8 @@ namespace origin
 {
 	bool SpriteSheetSerializer::Serialize(const std::filesystem::path &filepath, const std::shared_ptr<SpriteSheet> &spriteSheet)
 	{
+		PROFILER_FUNCTION();
+
 		YAML::Emitter out;
 		out << YAML::BeginMap; // SpriteSheet
 		out << YAML::Key << "SpriteSheet";
@@ -38,6 +40,8 @@ namespace origin
 
 	bool SpriteSheetSerializer::Deserialize(const std::filesystem::path &filepath, std::shared_ptr<SpriteSheet> &spriteSheet)
 	{
+		PROFILER_FUNCTION();
+
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();

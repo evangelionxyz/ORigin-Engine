@@ -1,6 +1,7 @@
 #include "MaterialEditor.h"
 #include "Origin\Serializer\MaterialSerializer.h"
 #include "Origin\Asset\AssetManager.h"
+#include "Origin\Instrumetation\Instrumentor.h"
 #include "Origin\GUI\UI.h"
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
@@ -10,6 +11,8 @@ namespace origin
 {
 	void MaterialEditor::SetSelectedMaterial(AssetHandle handle)
 	{
+		PROFILER_UI();
+
 		m_Material = AssetManager::GetAsset<Material>(handle);
 		m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
@@ -19,6 +22,8 @@ namespace origin
 
 	void MaterialEditor::OnImGuiRender()
 	{
+		PROFILER_UI();
+
 		if (m_IsOpened && m_Material)
 		{
 			ImGui::Begin("Material Editor", &m_IsOpened);

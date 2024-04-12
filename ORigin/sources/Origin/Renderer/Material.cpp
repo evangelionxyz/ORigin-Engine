@@ -8,6 +8,8 @@ namespace origin {
 
 	Material::Material()
 	{
+		PROFILER_RENDERING();
+
 		m_Shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
 		m_Shader->Enable();
 
@@ -18,6 +20,8 @@ namespace origin {
 	Material::Material(const std::shared_ptr<Shader> &shader)
 		: m_Shader(shader)
 	{
+		PROFILER_RENDERING();
+
 		OGN_CORE_ASSERT(m_Shader, "[Material] Shader is uninitialized or empty!")
 		m_Shader->Enable();
 
@@ -27,6 +31,8 @@ namespace origin {
 
 	void Material::Bind()
 	{
+		PROFILER_RENDERING();
+
 		m_UniformBuffer->Bind();
 		m_UniformBuffer->SetData(&BufferData, sizeof(MaterialBufferData));
 		m_Shader->Enable();
@@ -34,6 +40,8 @@ namespace origin {
 
 	void Material::Unbind()
 	{
+		PROFILER_RENDERING();
+
 		m_Shader->Disable();
 		m_UniformBuffer->Unbind();
 	}
@@ -45,6 +53,8 @@ namespace origin {
 
 	bool Material::RefreshShader()
 	{
+		PROFILER_RENDERING();
+
 		std::string shaderPath = m_Shader->GetFilepath();
 		bool enableSpirv = m_Shader->IsSpirvEnabled();
 		bool recompile = m_Shader->IsRecompilerSpirv();
@@ -59,10 +69,14 @@ namespace origin {
 
 	std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Material::LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type)
 	{
+		PROFILER_RENDERING();
+
 		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> textures;
 
 		for (uint32_t i = 0; i < mat->GetTextureCount(type); i++)
 		{
+			PROFILER_SCOPED("Material::LoadTextures TextureCount");
+
 			aiString str;
 
 			mat->GetTexture(type, i, &str);
@@ -79,6 +93,8 @@ namespace origin {
 
 			if (!skip)
 			{
+				PROFILER_SCOPED("Material::LoadTextures TextureCount");
+
 				auto& textureDirectory = modelFilepath.substr(0, modelFilepath.find_last_of('/'));
 				std::string textureName = std::string(str.C_Str());
 
@@ -93,6 +109,8 @@ namespace origin {
 
 	std::shared_ptr<Material> Material::Create()
 	{
+		PROFILER_RENDERING();
+
 		return std::make_shared<Material>();
 	}
 

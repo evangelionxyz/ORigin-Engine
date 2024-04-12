@@ -47,6 +47,8 @@ namespace origin
 	{
 		static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* outSize)
 		{
+			PROFILER_FUNCTION();
+
 			std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
 
 			// failed to open file
@@ -70,6 +72,8 @@ namespace origin
 
 		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath)
 		{
+			PROFILER_FUNCTION();
+
 			uint32_t fileSize = 0;
 			char* fileData = ReadBytes(filepath, &fileSize);
 
@@ -93,6 +97,8 @@ namespace origin
 
 		void PrintAssemblyTypes(MonoAssembly* assembly)
 		{
+			PROFILER_FUNCTION();
+
 			MonoImage* image = mono_assembly_get_image(assembly);
 			const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 			int32_t numTypes = mono_table_info_get_rows(typeDefinitionTable);
@@ -111,6 +117,8 @@ namespace origin
 
 		ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
 		{
+			PROFILER_LOGIC();
+
 			std::string typeName = mono_type_get_name(monoType);
 
 			auto it = s_ScriptFieldTypeMap.find(typeName);
@@ -154,6 +162,8 @@ namespace origin
 	// Scrip Engine
 	void ScriptEngine::InitMono()
 	{
+		PROFILER_LOGIC();
+
 		mono_set_assemblies_path("Lib");
 
 		MonoDomain* rootDomain = mono_jit_init("ORiginJITRuntime");
@@ -165,6 +175,8 @@ namespace origin
 
 	void ScriptEngine::ShutdownMono()
 	{
+		PROFILER_LOGIC();
+
 		if (!s_ScriptEngineData)
 			return;
 
@@ -182,6 +194,8 @@ namespace origin
 
 	void ScriptEngine::Init()
 	{
+		PROFILER_LOGIC();
+
 		std::filesystem::path appAssemblyPath = Project::GetActiveProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
 
 		if (s_ScriptEngineData)
@@ -214,6 +228,8 @@ namespace origin
 
 	void ScriptEngine::Shutdown()
 	{
+		PROFILER_LOGIC();
+
 		ShutdownMono();
 		if (!s_ScriptEngineData)
 			return;
@@ -227,6 +243,8 @@ namespace origin
 
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
+		PROFILER_LOGIC();
+
 		s_ScriptEngineData->AppDomain = mono_domain_create_appdomain("ORiginScriptRuntime", nullptr);
 		mono_domain_set(s_ScriptEngineData->AppDomain, true);
 
@@ -242,6 +260,8 @@ namespace origin
 
 	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event change_type)
 	{
+		PROFILER_LOGIC();
+
 		if (!s_ScriptEngineData->AssemblyReloadingPending && change_type == filewatch::Event::modified)
 		{
 			s_ScriptEngineData->AssemblyReloadingPending = true;
@@ -256,6 +276,8 @@ namespace origin
 
 	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
+		PROFILER_LOGIC();
+
 		s_ScriptEngineData->AppAssemblyFilepath = filepath;
 
 		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
@@ -271,6 +293,8 @@ namespace origin
 
 	void ScriptEngine::ReloadAssembly()
 	{
+		PROFILER_LOGIC();
+
 		mono_domain_set(mono_get_root_domain(), false);
 
 		mono_domain_unload(s_ScriptEngineData->AppDomain);
@@ -295,22 +319,30 @@ namespace origin
 
 	void ScriptEngine::SetSceneContext(Scene* scene)
 	{
+		PROFILER_LOGIC();
+
 		s_ScriptEngineData->SceneContext = scene;
 	}
 
 	void ScriptEngine::ClearSceneContext()
 	{
+		PROFILER_LOGIC();
+
 		s_ScriptEngineData->SceneContext = nullptr;
 		s_ScriptEngineData->EntityInstances.clear();
 	}
 
 	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
 	{
+		PROFILER_LOGIC();
+
 		return s_ScriptEngineData->EntityClasses.find(fullClassName) != s_ScriptEngineData->EntityClasses.end();
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
+		PROFILER_LOGIC();
+
 		auto& sc = entity.GetComponent<ScriptComponent>();
 		if (EntityClassExists(sc.ClassName))
 		{
@@ -334,6 +366,8 @@ namespace origin
 
 	void ScriptEngine::OnUpdateEntity(Entity entity, float time)
 	{
+		PROFILER_LOGIC();
+
 		UUID& entityID = entity.GetUUID();
 
 		auto& it = s_ScriptEngineData->EntityInstances.find(entityID);
@@ -367,6 +401,8 @@ namespace origin
 
 	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
 	{
+		PROFILER_LOGIC();
+
 		OGN_CORE_ASSERT(entity, "ScriptEngine::GetScriptFieldMap: Failed to get entity");
 
 		UUID entityID = entity.GetUUID();
@@ -380,6 +416,8 @@ namespace origin
 
 	std::shared_ptr<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
+		PROFILER_LOGIC();
+
 		auto& it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
@@ -402,6 +440,8 @@ namespace origin
 
 	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
 	{
+		PROFILER_LOGIC();
+
 		OGN_CORE_ASSERT(s_ScriptEngineData->EntityInstances.find(uuid) != s_ScriptEngineData->EntityInstances.end(),
 			"Invalid Script Instance");
 
@@ -410,6 +450,8 @@ namespace origin
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
+		PROFILER_LOGIC();
+
 		MonoObject* instance = mono_object_new(s_ScriptEngineData->AppDomain, monoClass);
 		mono_runtime_object_init(instance);
 		return instance;
@@ -417,6 +459,8 @@ namespace origin
 
 	void ScriptEngine::LoadAssemblyClasses()
 	{
+		PROFILER_LOGIC();
+
 		s_ScriptEngineData->EntityClasses.clear();
 
 		const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(s_ScriptEngineData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
@@ -499,6 +543,8 @@ namespace origin
 	ScriptInstance::ScriptInstance(std::shared_ptr<ScriptClass> scriptClass, Entity entity)
 		: m_ScriptClass(scriptClass)
 	{
+		PROFILER_LOGIC();
+
 		m_Instance = scriptClass->Instantiate();
 
 		m_OnConstructor = s_ScriptEngineData->EntityClass.GetMethod(".ctor", 1);
@@ -515,12 +561,16 @@ namespace origin
 
 	void ScriptInstance::InvokeOnCreate()
 	{
+		PROFILER_LOGIC();
+
 		if(m_OnCreateMethod)
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateMethod);
 	}
 
 	void ScriptInstance::InvokeOnUpdate(float time)
 	{
+		PROFILER_LOGIC();
+
 		if (m_OnUpdateMethod)
 		{
 			void* param = &time;
@@ -530,6 +580,8 @@ namespace origin
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& name, void* buffer)
 	{
+		PROFILER_LOGIC();
+
 		const auto& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(name);
 		if (it == fields.end())
@@ -543,6 +595,8 @@ namespace origin
 
 	bool ScriptInstance::SetFieldValueInternal(const std::string& name, const void* value)
 	{
+		PROFILER_LOGIC();
+
 		const auto& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(name);
 		if (it == fields.end())

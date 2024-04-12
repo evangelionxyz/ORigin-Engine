@@ -38,6 +38,8 @@ namespace origin {
 
   void EditorLayer::OnAttach()
   {
+		PROFILER_FUNCTION();
+
 	  // Load UI Textures
 	  m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/play_icon.png");
 	  m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/simulate_icon.png");
@@ -82,6 +84,8 @@ namespace origin {
 
   void EditorLayer::OnEvent(Event& e)
   {
+		PROFILER_INPUT();
+
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseMovedEvent));
     dispatcher.Dispatch<WindowResizeEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnWindowResize));
@@ -95,6 +99,8 @@ namespace origin {
 
 	void EditorLayer::OnUpdate(Timestep ts)
   {
+		PROFILER_RENDERING();
+
 	  Renderer::GetStatistics().Reset();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
 
@@ -148,6 +154,8 @@ namespace origin {
 
   void EditorLayer::OnDuplicateEntity()
   {
+		PROFILER_SCENE();
+
 	  if (m_SceneState != SceneState::Edit)
 		  return;
 
@@ -160,6 +168,8 @@ namespace origin {
 
   void EditorLayer::OnGuiRender()
   {
+		PROFILER_UI();
+
 	  m_Dockspace.Begin();
 
 		if (m_ContentBrowser)
@@ -179,6 +189,8 @@ namespace origin {
 
 	void EditorLayer::OnScenePlay()
 	{
+		PROFILER_SCENE();
+
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
 
@@ -191,6 +203,8 @@ namespace origin {
 
   void EditorLayer::OnScenePause()
   {
+		PROFILER_SCENE();
+
 	  if (m_SceneState == SceneState::Edit)
 		  return;
 
@@ -199,6 +213,8 @@ namespace origin {
 
   void EditorLayer::OnSceneSimulate()
   {
+		PROFILER_RENDERING();
+
 	  if (m_SceneState == SceneState::Play)
 		  OnSceneStop();
 
@@ -212,6 +228,8 @@ namespace origin {
 
   void EditorLayer::OnSceneStop()
   {
+		PROFILER_SCENE();
+
 	  ScriptEngine::ClearSceneContext();
 
 	  if (m_SceneState == SceneState::Play)
@@ -227,6 +245,8 @@ namespace origin {
 
   bool EditorLayer::NewProject()
   {
+		PROFILER_FUNCTION();
+
 	  if (Project::New())
 	  {
 		  ScriptEngine::Init();
@@ -246,6 +266,8 @@ namespace origin {
 
   bool EditorLayer::OpenProject(const std::filesystem::path& path)
   {
+		PROFILER_FUNCTION();
+
 	  if (Project::Load(path))
 	  {
 		  ScriptEngine::Init();
@@ -270,6 +292,8 @@ namespace origin {
 
   bool EditorLayer::OpenProject()
   {
+		PROFILER_FUNCTION();
+
 	  if (Project::Open())
 	  {
 		  ScriptEngine::Init();
@@ -299,6 +323,8 @@ namespace origin {
 
   void EditorLayer::NewScene()
   {
+		PROFILER_SCENE();
+
 	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 		  OnSceneStop();
 
@@ -311,6 +337,8 @@ namespace origin {
 
   void EditorLayer::SaveScene()
   {
+		PROFILER_SCENE();
+
 	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 		  OnSceneStop();
 
@@ -328,6 +356,8 @@ namespace origin {
 
   void EditorLayer::SaveSceneAs()
   {
+		PROFILER_SCENE();
+
 	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 		  OnSceneStop();
 
@@ -342,6 +372,8 @@ namespace origin {
 
   void EditorLayer::OpenScene(AssetHandle handle)
   {
+		PROFILER_SCENE();
+
 	  if (!AssetManager::IsAssetHandleValid(handle) || handle == 0)
 	  {
 		  EditorLayer::NewScene();
@@ -371,6 +403,8 @@ namespace origin {
 
   void EditorLayer::OpenScene()
   {
+		PROFILER_SCENE();
+
 	  if (m_SceneState == SceneState::Play)
 		  OnSceneStop();
 
@@ -396,11 +430,15 @@ namespace origin {
 
   void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath)
   {
+		PROFILER_SCENE();
+
     SceneImporter::SaveScene(scene, filepath);
   }
 
 	void EditorLayer::MenuBar()
 	{
+		PROFILER_UI();
+
 		ImGuiStyle& style = ImGui::GetStyle();
 		auto& window = Application::Get();
 		ImGuiIO& io = ImGui::GetIO();
@@ -470,6 +508,8 @@ namespace origin {
 
 	void EditorLayer::Draw(float deltaTime)
 	{
+		PROFILER_RENDERING();
+
 		switch (m_SceneState)
 		{
 		case SceneState::Play:
@@ -478,21 +518,25 @@ namespace origin {
 			break;
 
 		case SceneState::Edit:
-			m_Gizmos->OnRender(m_EditorCamera);
+			m_Gizmos->Draw2DVerticalGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnEditorUpdate(deltaTime, m_EditorCamera);
+			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 
 		case SceneState::Simulate:
-			m_Gizmos->OnRender(m_EditorCamera);
+			m_Gizmos->Draw2DVerticalGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
+			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 		}
 	}
 
 	void EditorLayer::SceneViewport()
 	{
+		PROFILER_UI();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
@@ -686,6 +730,8 @@ namespace origin {
 
 	void EditorLayer::SceneViewportToolbar()
 	{
+		PROFILER_UI();
+
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 		if (ImGui::Begin("Toolbar", nullptr, window_flags))
 		{
@@ -803,6 +849,8 @@ namespace origin {
 
 	void EditorLayer::SceneViewportMenu()
 	{
+		PROFILER_UI();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
 		ImGui::PopStyleVar();
@@ -900,6 +948,8 @@ namespace origin {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
+		PROFILER_INPUT();
+
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
 		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
@@ -924,6 +974,8 @@ namespace origin {
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
+		PROFILER_INPUT();
+
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
 		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
 		const glm::vec2 delta = mouse - initialPosition;
@@ -1004,6 +1056,8 @@ namespace origin {
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
+		PROFILER_INPUT();
+
 		if (!m_SceneViewportFocused && !m_SceneHierarchy.IsSceneHierarchyFocused)
 			return false;
 

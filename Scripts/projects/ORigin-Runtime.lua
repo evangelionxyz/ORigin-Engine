@@ -31,6 +31,7 @@ includedirs {
     "%{IncludeDir.ENTT}",
     "%{IncludeDir.Miniaudio}",
     "%{IncludeDir.GLM}",
+    "%{IncludeDir.OPTICK}",
     "%{IncludeDir.YAML_CPP}",
     "%{IncludeDir.PhysX}",
     "%{IncludeDir.JoltPhysics}",

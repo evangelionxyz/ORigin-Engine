@@ -20,6 +20,8 @@ namespace origin {
 
 	void GuiLayer::Init()
 	{
+		PROFILER_UI();
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
@@ -125,6 +127,8 @@ namespace origin {
 
 	void GuiLayer::Detach()
 	{
+		PROFILER_UI();
+
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -148,6 +152,8 @@ namespace origin {
 
 	void GuiLayer::Begin()
 	{
+		PROFILER_UI();
+
 		ImGui_ImplGlfw_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
@@ -156,6 +162,8 @@ namespace origin {
 
 	void GuiLayer::End()
 	{
+		PROFILER_UI();
+
 		ImGuiIO& io = ImGui::GetIO();
 
 		Application& app = Application::Get();
@@ -185,6 +193,8 @@ namespace origin {
 
 	void GuiLayer::OnEvent(Event& e)
 	{
+		PROFILER_UI();
+
 		if(m_BlockEvents)
 		{
 			ImGuiIO& io = ImGui::GetIO();

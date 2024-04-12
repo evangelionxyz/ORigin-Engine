@@ -19,6 +19,8 @@ namespace origin {
 
 	void PhysXScene::OnSimulationStart()
 	{
+		PROFILER_PHYSICS();
+
 		PhysXAPI::Get().OnSimulationStart();
 
 		physx::PxSceneDesc sceneDesc(PhysXAPI::GetPhysics()->getTolerancesScale());
@@ -52,6 +54,7 @@ namespace origin {
 
 	void PhysXScene::OnSimulationStop()
 	{
+		PROFILER_PHYSICS();
 
 		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
 		{
@@ -90,6 +93,8 @@ namespace origin {
 
 	void PhysXScene::Simulate(float deltaTime)
 	{
+		PROFILER_PHYSICS();
+
 		m_PhysXScene->simulate(deltaTime);
 		m_PhysXScene->fetchResults(true);
 
@@ -116,6 +121,8 @@ namespace origin {
 
 	physx::PxRigidActor* PhysXScene::CreateActor(RigidbodyComponent& rb, const glm::vec3& position, const glm::quat& rot)
 	{
+		PROFILER_PHYSICS();
+
 		physx::PxPhysics* physics = PhysXAPI::GetPhysics();
 
 		physx::PxTransform transform = physx::PxTransform(Utils::ToPhysXVec3(position), Utils::ToPhysXQuat(rot));

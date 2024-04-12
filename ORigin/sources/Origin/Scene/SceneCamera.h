@@ -60,7 +60,6 @@ namespace origin {
 		void SetAspectRatioType(AspectRatioType type) { m_AspecRatioType = type; }
 		AspectRatioType GetAspectRatioType() const { return m_AspecRatioType; }
 
-
 	private:
 		AspectRatioType m_AspecRatioType = AspectRatioType::Free;
 		ProjectionType m_ProjectionType = ProjectionType::Perspective;

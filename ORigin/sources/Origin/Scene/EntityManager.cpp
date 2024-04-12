@@ -53,7 +53,7 @@ namespace origin
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<TagComponent>().Tag = name;
-		scene->m_EntityMap[uuid] = entity;
+		scene->m_EntityStorage.push_back({ uuid, entity });
 		return entity;
 	}
 
@@ -66,18 +66,18 @@ namespace origin
 
 	Entity EntityManager::DuplicateEntity(Entity entity, Scene *scene)
 	{
-		// TODO: Skipped for now
-		if (entity.HasChildren())
-			return entity;
-
 		std::string name = entity.GetTag();
 		Entity newEntity = CreateEntity(name, scene);
-		CopyComponentIfExists(AllComponents{}, newEntity, entity);
+		CopyComponentIfExists(AllComponents {}, newEntity, entity);
+
+		auto &entityIDC = entity.GetComponent<IDComponent>();
+		auto &newEntityIDC = newEntity.GetComponent<IDComponent>();
+
 		if (entity.HasParent())
 		{
-			auto &entityIDC = entity.GetComponent<IDComponent>();
 			auto &parentIDC = scene->GetEntityWithUUID(entityIDC.Parent).GetComponent<IDComponent>();
 			parentIDC.Children.push_back(newEntity.GetUUID());
+			newEntityIDC.Parent = entityIDC.Parent;
 		}
 
 		return newEntity;
@@ -180,7 +180,12 @@ namespace origin
 			EntityManager::DestroyEntityFromScene(c, scene);
 		}
 
-		scene->m_EntityMap.erase(entity.GetUUID());
+		for (auto e = scene->m_EntityStorage.begin(); e != scene->m_EntityStorage.end(); e++)
+		{
+			if (std::get<0>(*e) == entity.GetUUID())
+				scene->m_EntityStorage.erase(e);
+		}
+
 		scene->m_Registry.destroy(entity);
 	}
 }

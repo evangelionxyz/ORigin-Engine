@@ -9,6 +9,8 @@ namespace origin
 	OpenGLSkybox::OpenGLSkybox(const std::string& filepath, const std::string& format)
 		: m_Filepath(filepath), m_ImageFormat(format)
 	{
+		PROFILER_RENDERING();
+
 		float vertices[] = {
 
 			 1.0f,  1.0f,  1.0f,
@@ -76,6 +78,8 @@ namespace origin
 
 	void OpenGLSkybox::Draw(const glm::mat4& viewProjection)
 	{
+		PROFILER_RENDERING();
+
 		// Disable depth testing
 		glDisable(GL_DEPTH_TEST);
 
@@ -95,11 +99,15 @@ namespace origin
 
 	void OpenGLSkybox::Draw(const SceneCamera& camera)
 	{
+		PROFILER_RENDERING();
+
 		Draw(camera.GetViewProjection());
 	}
 
 	void OpenGLSkybox::Draw(const EditorCamera& camera)
 	{
+		PROFILER_RENDERING();
+
 		Draw(camera.GetViewProjection());
 	}
 
@@ -110,6 +118,8 @@ namespace origin
 
 	void OpenGLSkybox::LoadTexture()
 	{
+		PROFILER_RENDERING();
+
 		std::vector<std::string> path
 		{
 			m_Filepath + "right" + m_ImageFormat,

@@ -14,6 +14,7 @@ namespace origin
 	public:
 		Input();
 
+		static bool IsKeyReleased(const KeyCode keycode);
 		static bool IsKeyPressed(const KeyCode keycode);
 		static bool IsMouseButtonPressed(const MouseCode button);
 		static bool IsMouseDragging();

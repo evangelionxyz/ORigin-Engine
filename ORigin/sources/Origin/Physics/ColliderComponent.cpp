@@ -15,6 +15,8 @@ namespace origin {
 
 	void BoxColliderComponent::Create(Entity entity, PhysicsScene* physxScene)
 	{
+		PROFILER_PHYSICS();
+
 		auto& tc = entity.GetComponent<TransformComponent>();
 		auto& bc = entity.GetComponent<BoxColliderComponent>();
 
@@ -52,6 +54,8 @@ namespace origin {
 
 	void BoxColliderComponent::Destroy()
 	{
+		PROFILER_PHYSICS();
+
 		physx::PxShape* shape = (physx::PxShape*)this->Shape;
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Rigidbody;
 		actor->detachShape(*shape);
@@ -61,6 +65,8 @@ namespace origin {
 
 	void SphereColliderComponent::Create(Entity entity, PhysicsScene* physxScene)
 	{
+		PROFILER_PHYSICS();
+
 		auto& tc = entity.GetComponent<TransformComponent>();
 		auto& sc = entity.GetComponent<SphereColliderComponent>();
 
@@ -99,6 +105,8 @@ namespace origin {
 
 	void SphereColliderComponent::Destroy()
 	{
+		PROFILER_PHYSICS();
+
 		physx::PxShape* shape = (physx::PxShape*)this->Shape;
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Rigidbody;
 		actor->detachShape(*shape);
@@ -159,6 +167,8 @@ namespace origin {
 
 	void CapsuleColliderComponent::Destroy()
 	{
+		PROFILER_PHYSICS();
+
 		physx::PxShape* shape = (physx::PxShape*)this->Shape;
 		physx::PxRigidActor* actor = (physx::PxRigidActor*)Rigidbody;
 		actor->detachShape(*shape);

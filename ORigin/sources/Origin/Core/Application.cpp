@@ -6,6 +6,7 @@
 #include "Origin\Audio\AudioEngine.h"
 #include "Origin\Physics\Physics.h"
 #include "Origin\Scripting\ScriptEngine.h"
+#include "Origin\Instrumetation\Instrumentor.h"
 
 #include <imgui.h>
 #include <stb_image.h>
@@ -19,6 +20,8 @@ namespace origin {
 	Application::Application(const ApplicationSpecification& spec)
 		: m_Spec(spec)
 	{
+		PROFILER_FUNCTION();
+
 		OGN_CORE_ASSERT(!s_Instance, "Application already opened!");
 		s_Instance = this;
 
@@ -61,6 +64,8 @@ namespace origin {
 
 		while (m_Window->IsLooping())
 		{
+			PROFILER_BEGIN_FRAME("MainThread");
+
 			float time = static_cast<float>(glfwGetTime());
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
@@ -69,15 +74,19 @@ namespace origin {
 
 			if (!m_Minimized) 
 			{
-				for (Layer* layer : m_LayerStack)
+				for (Layer *layer : m_LayerStack)
+				{
 					layer->OnUpdate(timestep);
+				}
 			}
 
 			if (!m_Spec.Runtime)
 			{
 				m_GuiLayer->Begin();
-				for (Layer* layer : m_LayerStack)
+				for (Layer *layer : m_LayerStack)
+				{
 					layer->OnGuiRender();
+				}
 				m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 				m_GuiLayer->End();
 			}
@@ -125,6 +134,8 @@ namespace origin {
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
+		PROFILER_FUNCTION();
+
 		m_Minimized = e.GetWidth() == 0 || e.GetHeight() == 0;
 		return false;
 	}
