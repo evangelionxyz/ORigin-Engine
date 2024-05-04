@@ -18,7 +18,7 @@ namespace origin {
 	{
 		s_AudioData.Config =	ma_engine_config_init();
 		s_AudioData.Config.channels = 2;
-		s_AudioData.Config.sampleRate = 41000;
+		s_AudioData.Config.sampleRate = 48000;
 		s_AudioData.Config.noDevice = MA_FALSE;
 
 		s_AudioData.Engine = std::make_unique<ma_engine>();

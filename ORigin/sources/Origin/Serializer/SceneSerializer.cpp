@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "SceneSerializer.h"
 
+#include "Origin\Asset\AssetImporter.h"
 #include "Origin\Scene\EntityManager.h"
 #include "Origin\Scene\Components.h"
 #include "Origin\Scene\Entity.h"
@@ -66,23 +67,13 @@ namespace origin
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		OGN_CORE_ASSERT(entity.HasComponent<IDComponent>(), "");
 		auto &idc = entity.GetComponent<IDComponent>();
 		out << YAML::BeginMap; // Entity
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 		out << YAML::Key << "Parent" << idc.Parent;
-		out << YAML::Key << "Children" << YAML::Value;
-		out << YAML::BeginSeq;
-		for (UUID uuid : idc.Children)
-		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "ID" << YAML::Value << uuid;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq; //!Children
-
 		if (entity.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent";
@@ -246,7 +237,7 @@ namespace origin
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap; // Camera
 			out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(camera.GetProjectionType());
-			//out << YAML::Key << "AspectRatioType" << YAML::Value << static_cast<int>(camera.GetAspectRatioType());
+			out << YAML::Key << "AspectRatioType" << YAML::Value << static_cast<int>(camera.GetAspectRatioType());
 
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveFov();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
@@ -358,12 +349,12 @@ namespace origin
 			out << YAML::Key << "TextComponent";
 			out << YAML::BeginMap; // TextComponent
 			const auto& textComponent = entity.GetComponent<TextComponent>();
-			out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
-			const auto& textAssetPath = relative(textComponent.FontAsset->GetFilepath(), Project::GetActiveAssetDirectory());
-			out << YAML::Key << "FontFilepath" << YAML::Value << textAssetPath.generic_string();
+			out << YAML::Key << "Handle" << YAML::Value << textComponent.FontHandle;
+			out << YAML::Key << "Text" << YAML::Value << textComponent.TextString;
 			out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
 			out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
 			out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
+			out << YAML::Key << "ScreenSpace" << YAML::Value << textComponent.ScreenSpace;
 
 			out << YAML::EndMap; // !TextComponent
 		}
@@ -552,14 +543,16 @@ namespace origin
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << filepath.filename().string();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		m_Scene->m_Registry.each([&](auto entityID)
+
+		auto view = m_Scene->m_Registry.view<IDComponent>();
+		for (auto [e, id] : view.each())
 		{
-			Entity entity = {entityID, m_Scene.get()};
+			Entity entity = { e, m_Scene.get() };
 			if (!entity)
 				return;
 
 			SerializeEntity(out, entity);
-		});
+		}
 
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -577,7 +570,7 @@ namespace origin
 
 	bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		std::ifstream stream(filepath.string());
 		std::stringstream strStream;
@@ -599,6 +592,7 @@ namespace origin
 					name = tagComponent["Tag"].as<std::string>();
 
 				Entity deserializedEntity = EntityManager::CreateEntityWithUUID(uuid, name, m_Scene.get());
+				deserializedEntity.GetComponent<IDComponent>().Parent = entity["Parent"].as<uint64_t>();
 
 				if (YAML::Node transformComponent = entity["TransformComponent"])
 				{
@@ -675,7 +669,7 @@ namespace origin
 
 					auto& cameraProps = cameraComponent["Camera"];
 					cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
-					//cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
+					cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
 
 					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
@@ -874,22 +868,19 @@ namespace origin
 
 				if (YAML::Node textComponent = entity["TextComponent"])
 				{
-					auto& text = deserializedEntity.AddComponent<TextComponent>();
-					auto filepath = textComponent["FontFilepath"].as<std::string>();
-
-					if (filepath.empty() || filepath == Font::GetDefault()->GetFilepath())
-						text.FontAsset = Font::GetDefault();
-
-					else if (!filepath.empty() && !text.FontAsset)
+					AssetHandle handle = textComponent["Handle"].as<uint64_t>();
+					if (AssetManager::IsAssetHandleValid(handle))
 					{
-						auto path = Project::GetActiveAssetFileSystemPath(filepath);
-						text.FontAsset = std::make_shared<Font>(path);
+						auto& text = deserializedEntity.AddComponent<TextComponent>();
+						text.FontHandle = handle;
+						text.TextString = textComponent["Text"].as<std::string>();
+						text.Color = textComponent["Color"].as<glm::vec4>();
+						text.Kerning = textComponent["Kerning"].as<float>();
+						text.LineSpacing = textComponent["LineSpacing"].as<float>();
+						text.ScreenSpace = textComponent["ScreenSpace"].as<bool>();
 					}
 
-					text.TextString = textComponent["TextString"].as<std::string>();
-					text.Color = textComponent["Color"].as<glm::vec4>();
-					text.Kerning = textComponent["Kerning"].as<float>();
-					text.LineSpacing = textComponent["LineSpacing"].as<float>();
+					
 				}
 
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])
@@ -917,7 +908,6 @@ namespace origin
 
 								ScriptFieldInstance& fieldInstance = entityFields[name];
 
-								OGN_CORE_ASSERT(fields.find(name) != fields.end(), "Script Fields Not Found");
 								if (fields.find(name) == fields.end())
 									continue;
 
@@ -944,22 +934,6 @@ namespace origin
 								}
 							}
 						}
-					}
-				}
-			}
-
-			for (YAML::iterator::value_type entity : entities)
-			{
-				UUID uuid = entity["Entity"].as<uint64_t>();
-				Entity newEntity = m_Scene->GetEntityWithUUID(uuid);
-				auto &idc = newEntity.GetComponent<IDComponent>();
-				idc.Parent = entity["Parent"].as<uint64_t>();
-				if (auto children = entity["Children"])
-				{
-					for (auto c : children)
-					{
-						UUID uuid = c["ID"].as<uint64_t>();
-						idc.Children.push_back(uuid);
 					}
 				}
 			}

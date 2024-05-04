@@ -12,13 +12,13 @@
 
 namespace origin
 {
-	OpenGLModel::OpenGLModel(const std::string& filepath)
+	OpenGLModel::OpenGLModel(const std::filesystem::path & filepath)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		Assimp::Importer importer;
 
-		const aiScene *scene = importer.ReadFile(filepath.c_str(),
+		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
 																						 aiProcess_Triangulate
 																						 | aiProcess_GenSmoothNormals
 																						 | aiProcess_FlipUVs
@@ -46,7 +46,7 @@ namespace origin
 
 	void OpenGLModel::Draw(int entityID)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
@@ -94,7 +94,7 @@ namespace origin
 
 	void OpenGLModel::Draw()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
 		{
@@ -147,14 +147,14 @@ namespace origin
 
 	void OpenGLModel::RemoveMaterial()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		m_Material = Renderer::GetMaterial("DefaultMesh");
 	}
 
 	void OpenGLModel::ProcessNode(aiNode *node, const aiScene *scene)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
@@ -170,7 +170,7 @@ namespace origin
 
 	std::shared_ptr<Mesh> OpenGLModel::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		std::vector<MeshVertex> vertices;
 		std::vector<uint32_t> indices;
@@ -221,9 +221,9 @@ namespace origin
 			if (mesh->mMaterialIndex > 0)
 			{
 				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_DIFFUSE);
+				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath.generic_string(), material, aiTextureType_DIFFUSE);
 				m_Textures.push_back(diffuseMaps);
-				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> specMaps = m_Material->LoadTextures(m_Filepath, material, aiTextureType_SPECULAR);
+				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> specMaps = m_Material->LoadTextures(m_Filepath.generic_string(), material, aiTextureType_SPECULAR);
 				m_Textures.push_back(specMaps);
 			}
 		}

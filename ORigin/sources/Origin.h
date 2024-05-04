@@ -4,7 +4,7 @@
 #include "Origin\Core\Application.h"
 #include "Origin\Animation\Animation.h"
 #include "Origin\Animation\AnimationState.h"
-#include "Origin\Instrumetation\Instrumentor.h"
+#include "Origin\Profiler\Profiler.h"
 #include "Origin\Math\Math.h"
 #include "Origin\Core\Input.h"
 #include "Origin\Core\KeyCodes.h"

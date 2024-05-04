@@ -9,7 +9,7 @@ namespace origin
 {
 	static GLenum ShaderDataType_OpenGL(ShaderDataType type)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		switch (type)
 		{
@@ -36,14 +36,14 @@ namespace origin
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glCreateVertexArrays(1, &m_RendererID);
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		OpenGLVertexArray::Unbind();
 		glDeleteVertexArrays(1, &m_RendererID);
@@ -51,7 +51,7 @@ namespace origin
 
 	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindVertexArray(m_RendererID);
 		vertexBuffer->Bind();
@@ -118,7 +118,7 @@ namespace origin
 	
 	void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();
@@ -128,14 +128,14 @@ namespace origin
 
 	void OpenGLVertexArray::Bind() const
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindVertexArray(m_RendererID);
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindVertexArray(0);
 	}

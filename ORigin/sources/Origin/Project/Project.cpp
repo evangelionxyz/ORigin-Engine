@@ -61,7 +61,7 @@ group ""
 
 	void Project::SetStartScene(AssetHandle handle)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		if (GetEditorAssetManager()->IsAssetHandleValid(handle))
 			m_Config.StartScene = handle;
@@ -74,7 +74,7 @@ group ""
 
 	std::shared_ptr<Project> Project::New()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Project (*.oxproj)\0*.oxproj\0");
 		if (filepath.empty())
@@ -144,7 +144,7 @@ group ""
 
 	std::shared_ptr<Project> Project::Open()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Project (*.oxproj)\0*.oxproj\0");
 		if (filepath.string().empty())
@@ -155,7 +155,7 @@ group ""
 
 	std::shared_ptr<Project> Project::Load(const std::filesystem::path& path)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		std::shared_ptr<Project> project = std::make_shared<Project>();
 
@@ -177,7 +177,7 @@ group ""
 
 	bool Project::SaveActive()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		ProjectSerializer serializer(s_ActiveProject);
 		return serializer.Serialize(s_ActiveProject->GetProjectPath());
@@ -185,7 +185,7 @@ group ""
 
 	bool Project::SaveActive(const std::filesystem::path& path)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		ProjectSerializer serializer(s_ActiveProject);
 		if (serializer.Serialize(path))
@@ -196,7 +196,4 @@ group ""
 
 		return false;
 	}
-
-	
-
 }

@@ -12,7 +12,7 @@ namespace origin
 {
 	OpenGLMesh::OpenGLMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		OGN_CORE_TRACE("VERTEX");
 		OGN_CORE_TRACE("	Size : {} bytes", sizeof(MeshVertex));
@@ -49,7 +49,7 @@ namespace origin
 
 	void OpenGLMesh::Draw()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}

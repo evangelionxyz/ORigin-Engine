@@ -20,7 +20,7 @@ namespace origin {
 
 	void GuiLayer::Init()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -101,7 +101,7 @@ namespace origin {
 
 		style.WindowRounding = 0;
 		style.ChildRounding = 0;
-		style.FrameRounding = 3;
+		style.FrameRounding = 0;
 		style.PopupRounding = 0;
 		style.ScrollbarRounding = 0;
 
@@ -118,7 +118,7 @@ namespace origin {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		io.ConfigViewportsNoDecoration = true;
 
-		float fontSize = 16.0f;
+		float fontSize = 13.0f;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 
 		ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)m_Context, true);
@@ -127,7 +127,7 @@ namespace origin {
 
 	void GuiLayer::Detach()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -152,7 +152,7 @@ namespace origin {
 
 	void GuiLayer::Begin()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGui_ImplGlfw_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
@@ -162,7 +162,7 @@ namespace origin {
 
 	void GuiLayer::End()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -193,7 +193,7 @@ namespace origin {
 
 	void GuiLayer::OnEvent(Event& e)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if(m_BlockEvents)
 		{

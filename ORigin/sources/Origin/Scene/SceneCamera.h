@@ -30,6 +30,8 @@ namespace origin {
 		const glm::mat4& GetViewMatrix() const;
 		const glm::vec3& GetPosition() const { return m_Position; }
 
+		const float GetAspectRatio() const { return m_AspectRatio; }
+
 		// Perspective
 		void SetPerspective(float verticalFov, float nearClip, float farClip);
 
@@ -61,7 +63,7 @@ namespace origin {
 		AspectRatioType GetAspectRatioType() const { return m_AspecRatioType; }
 
 	private:
-		AspectRatioType m_AspecRatioType = AspectRatioType::Free;
+		AspectRatioType m_AspecRatioType = AspectRatioType::SixteenByNine;
 		ProjectionType m_ProjectionType = ProjectionType::Perspective;
 
 		void RecalculateProjection();

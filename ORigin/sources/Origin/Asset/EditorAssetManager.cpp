@@ -14,6 +14,8 @@ namespace origin {
 		{ ".org", AssetType::Scene },
 		{ ".jpg", AssetType::Texture },
 		{ ".png", AssetType::Texture },
+		{ ".ttf", AssetType::Font },
+		{ ".otf", AssetType::Font },
 		{ ".obj", AssetType::StaticMesh },
 		{ ".gltf", AssetType::StaticMesh },
 		{ ".fbx", AssetType::StaticMesh },
@@ -90,7 +92,7 @@ namespace origin {
 		return m_AssetRegistry.at(handle).Type;
 	}
 
-	void EditorAssetManager::ImportAsset(const std::filesystem::path& filepath)
+	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path& filepath)
 	{
 		AssetHandle handle;
 		AssetMetadata metadata;
@@ -108,7 +110,10 @@ namespace origin {
 			m_AssetRegistry[handle] = metadata;
 
 			SerializeAssetRegistry();
+			return handle;
 		}
+
+		return 0;
 	}
 
 	void EditorAssetManager::RemoveAsset(AssetHandle handle)

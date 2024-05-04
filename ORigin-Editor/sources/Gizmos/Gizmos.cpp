@@ -13,7 +13,7 @@ namespace origin {
 
 	void Gizmos::Draw2DVerticalGrid(const EditorCamera &camera)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (camera.GetProjectionType() != ProjectionType::Orthographic)
 			return;
@@ -36,7 +36,7 @@ namespace origin {
 		auto nx = floor(minX / lineSpacing) * lineSpacing;
 		auto ny = floor(minY / lineSpacing) * lineSpacing;
 
-		glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.5f);
+		glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.15f);
 
 		for (float x = nx; x <= maxX; x += lineSpacing)
 			Renderer2D::DrawLine(glm::vec3(x + offset, minY, 0.0f), glm::vec3(x + offset, maxY, 0.0f), color);
@@ -49,7 +49,7 @@ namespace origin {
 
 	void Gizmos::Draw2DOverlay()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		auto &editor = EditorLayer::Get();
 
@@ -107,7 +107,7 @@ namespace origin {
 
 	void Gizmos::Draw3DOverlay(const EditorCamera &camera)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (camera.GetProjectionType() == ProjectionType::Orthographic && !EditorLayer::Get().m_VisualizeCollider)
 			return;
@@ -180,7 +180,7 @@ namespace origin {
 
 	void Gizmos::DrawIcons(const EditorCamera &camera)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		auto &textures = EditorLayer::Get().m_UITextures;
 		auto &reg = EditorLayer::Get().m_ActiveScene->m_Registry;
@@ -216,22 +216,45 @@ namespace origin {
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);
 
-				float sizeX = 0.0f;
+				glm::mat4 transform = glm::mat4(1.0f);
+				glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ? glm::vec3(tc.WorldRotation) : glm::vec3(0.0f, 0.0f, tc.WorldRotation.z);
+				float sizeX = sceneCam.GetOrthographicSize() * sceneCam.GetAspectRatioSize();
 				float sizeY = 0.0f;
 
-				if (cc.Camera.GetAspectRatioType() == SceneCamera::AspectRatioType::SixteenByNine)
+				switch (cc.Camera.GetAspectRatioType())
 				{
-					sizeX = sceneCam.GetOrthographicSize() * sceneCam.GetAspectRatioSize();
-					sizeY = sizeX / 16.0f * 9.0f;
-
-					glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-
-					glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ?
-						glm::vec3(tc.WorldRotation) : glm::vec3(0.0f, 0.0f, tc.WorldRotation.z);
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
-						* glm::toMat4(glm::qua(rotation)) * scale;
-					Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+					case SceneCamera::AspectRatioType::SixteenByNine:
+					{
+						sizeY = sizeX / 16.0f * 9.0f;
+						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
+							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
+						break;
+					}
+					case SceneCamera::AspectRatioType::FourByThree:
+					{
+						sizeY = sizeX / 4.0f * 3.0f;
+						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
+							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
+						break;
+					}
+					case SceneCamera::AspectRatioType::SixteenByTen:
+					{
+						sizeY = sizeX / 16.0f * 10.0f;
+						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
+							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
+						break;
+					}
+					case SceneCamera::AspectRatioType::TwentyOneByNine:
+					{
+						sizeY = sizeX / 21.0f * 9.0f;
+						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
+							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
+						break;
+					}
 				}
+
+				if(cc.Camera.GetAspectRatioType() != SceneCamera::AspectRatioType::Free)
+					Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 			}
 		}
 
@@ -256,7 +279,7 @@ namespace origin {
 	{
 		glDisable(GL_DEPTH_TEST);
 
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////     2D     //////////////////////////////////
@@ -305,11 +328,14 @@ namespace origin {
 		//////////////////////////////////     3D     //////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////
 		Draw3DOverlay(camera);
+
+		// Grid
+		Draw2DVerticalGrid(camera);
 	}
 
 	void Gizmos::OnEvent(Event &e)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(Gizmos::OnMouseButtonPressed));
@@ -317,7 +343,7 @@ namespace origin {
 
 	bool Gizmos::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		if (e.GetMouseButton() == Mouse::ButtonLeft)
 		{
@@ -350,7 +376,7 @@ namespace origin {
 
 	void Gizmos::SetType(GizmoType type)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		if (m_Hovered >= -1)
 			m_Type = type;
@@ -358,7 +384,7 @@ namespace origin {
 
 	void Gizmos::CalculateBoundary2DSizing(const EditorCamera &camera)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
 		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };

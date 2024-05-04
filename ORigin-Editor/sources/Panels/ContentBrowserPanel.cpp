@@ -20,7 +20,7 @@ namespace origin
 	ContentBrowserPanel::ContentBrowserPanel(const std::shared_ptr<Project>& project)
 		: m_Project(project), m_ThumbnailCache(std::make_shared<ThumbnailCache>(project)), m_BaseDirectory(m_Project->GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		m_TreeNodes.push_back(TreeNode(".", 0));
 		m_IconMap["backward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/backward_icon.png");
@@ -50,7 +50,7 @@ namespace origin
 
 	void ContentBrowserPanel::DrawNavButton()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
 		ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 30.0f), false, childFlags);
@@ -96,7 +96,7 @@ namespace origin
 
 	void ContentBrowserPanel::DrawContentBrowser()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGui::Begin("Content Browser");
 
@@ -398,7 +398,7 @@ namespace origin
 
 	void ContentBrowserPanel::RefreshAssetTree()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		const auto& assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
 		for (const auto& [handle, metadata] : assetRegistry)
@@ -427,7 +427,7 @@ namespace origin
 
 	std::shared_ptr<Texture2D> ContentBrowserPanel::DirectoryIcons(const std::filesystem::directory_entry& dirEntry)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		const std::string& fileExtension = dirEntry.path().extension().string();
 		auto relativePath = std::filesystem::relative(dirEntry.path(), Project::GetActiveAssetDirectory());

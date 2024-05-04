@@ -8,7 +8,7 @@ namespace origin {
 
 	std::unique_ptr<PhysicsScene> PhysicsScene::Create(Scene* scene)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		switch (PhysicsAPI::Current())
 		{

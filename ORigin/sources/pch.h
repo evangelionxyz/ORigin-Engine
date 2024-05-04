@@ -26,7 +26,7 @@
 #include "Origin\Core\Assert.h"
 #include "Origin\Core\Buffer.h"
 #include "Origin\Core\Log.h"
-#include "Origin\Instrumetation\Instrumentor.h"
+#include "Origin\Profiler\Profiler.h"
 
 #include <glm\glm.hpp>
 

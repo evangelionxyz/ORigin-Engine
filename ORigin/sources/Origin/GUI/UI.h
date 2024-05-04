@@ -7,8 +7,29 @@
 
 namespace origin::UI
 {
-	// static function
-	static void DrawVec3Control(const char *label, glm::vec3 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
+	static float defaultColoumnWidth = 100.0f;
+
+	static bool DrawCheckbox(const char *label, bool *value, float coloumnWidth = defaultColoumnWidth)
+	{
+		bool ret = false;
+
+		ImGui::PushID(label);
+
+		ImGui::BeginColumns(label, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
+		ImGui::SetColumnWidth(0, coloumnWidth);
+		ImGui::Text(label);
+		ImGui::NextColumn();
+
+		ret = ImGui::Checkbox("##check_box", value);
+
+		ImGui::EndColumns();
+
+		ImGui::PopID();
+
+		return ret;
+	}
+
+	static void DrawVec3Control(const char *label, glm::vec3 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defaultColoumnWidth)
 	{
 		ImGui::PushID(label);
 
@@ -21,7 +42,7 @@ namespace origin::UI
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 2));
 
 		float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = ImVec2(lineHeight + 3.0f, lineHeight);
+		ImVec2 buttonSize = ImVec2(lineHeight, lineHeight);
 
 		// ================ X ================
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.1f, 0.1f, 1.0f));
@@ -64,7 +85,7 @@ namespace origin::UI
 		ImGui::PopID();
 	}
 
-	static void DrawVec2Control(const char *label, glm::vec2 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
+	static void DrawVec2Control(const char *label, glm::vec2 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defaultColoumnWidth)
 	{
 		ImGui::PushID(label);
 
@@ -108,7 +129,7 @@ namespace origin::UI
 		ImGui::PopID();
 	}
 
-	static bool DrawVecControl(const char *label, float *values, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = 80.0f)
+	static bool DrawVecControl(const char *label, float *values, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = defaultColoumnWidth)
 	{
 		bool changed = false;
 

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
+
 #include <Origin.h>
 #include "Panels/Dockspace.h"
 #include "Panels/SceneHierarchyPanel.h"
@@ -23,17 +24,11 @@ namespace origin {
 		SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
 		inline static EditorLayer& Get() { return *s_Instance; }
 
-    bool guiDockingSpaceOpen = true;
+    bool guiStatisticWindow = true;
     bool guiMenuFullscreen = false;
     bool guiMenuStyle = false;
-    bool guiPrompt = false;
     bool guiRenderSettingsWindow = true;
-    bool guiDebugInfo = true;
     bool guiImGuiDemoWindow = false;
-    bool guiOverlay = true;
-    bool guiAudioLibraryWindow = false;
-    bool guiAudioCreationWindow = false;
-    bool guiAnimationWindow = true;
 
   private:
     void Draw(float deltaTime);
@@ -75,6 +70,9 @@ namespace origin {
 		};
 
 		static EditorLayer* s_Instance;
+
+    std::vector<ProfilerResult> m_ProfilerResults;
+
 		SceneState m_SceneState = SceneState::Edit;
 		SceneHierarchyPanel m_SceneHierarchy;
 		Dockspace m_Dockspace;

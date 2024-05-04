@@ -15,7 +15,7 @@ namespace origin
 
 	bool Input::IsKeyReleased(const KeyCode keycode)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		GLFWwindow *window = static_cast<GLFWwindow *>(Application::Get().GetWindow().GetNativeWindow());
 		int state = glfwGetKey(window, static_cast<int32_t>(keycode));
@@ -24,7 +24,7 @@ namespace origin
 
 	bool Input::IsKeyPressed(const KeyCode keycode)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		int state = glfwGetKey(window, static_cast<int32_t>(keycode));
@@ -33,7 +33,7 @@ namespace origin
 
 	bool Input::IsMouseButtonPressed(const MouseCode button)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		int state = glfwGetMouseButton(window, static_cast<int32_t>(button));
@@ -43,14 +43,14 @@ namespace origin
 
 	bool Input::IsMouseDragging()
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		return s_Instance->m_IsMouseDragging;
 	}
 
 	glm::vec2 Input::GetMousePosition()
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		double xpos, ypos;

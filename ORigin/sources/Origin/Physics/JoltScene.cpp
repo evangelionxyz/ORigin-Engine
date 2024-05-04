@@ -45,7 +45,7 @@ namespace origin {
 
 	JoltScene::JoltScene()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		m_TempAllocator = new JPH::TempAllocatorImpl(32 * 1024 * 1024);
 		m_JobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, m_MaxConcurrentJobs - 1);

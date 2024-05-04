@@ -21,7 +21,7 @@ namespace origin
 
 	void LayerStack::PushLayer(Layer* layer)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		m_Layers.emplace(m_Layers.begin() + m_LayerInsertIndex, layer);
 		m_LayerInsertIndex++;
@@ -29,14 +29,14 @@ namespace origin
 
 	void LayerStack::PushOverlay(Layer* overlay)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		m_Layers.emplace_back(overlay);
 	}
 
 	void LayerStack::PopLayer(Layer* layer)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
 		if (it != m_Layers.end())

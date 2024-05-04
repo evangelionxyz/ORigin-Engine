@@ -33,10 +33,12 @@ namespace origin {
 		inline void SetYaw(float yaw) { m_Yaw = yaw; }
 		inline void SetFov(float fov) { m_FOV = fov; UpdateProjection(); }
 		inline float GetDistance() const { return m_Distance; }
-		const glm::vec3& GetPosition() const { return m_Position; }
-		const glm::mat4& GetProjection() const;
-		const glm::mat4& GetViewMatrix() const;
-		virtual const glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
+		const glm::vec3 &GetFocalPoint() const { return m_FocalPoint; }
+		const glm::vec3 &GetPosition() const { return m_Position; }
+		const glm::vec2 GetViewportSize() const { return { m_ViewportWidth, m_ViewportHeight }; }
+		const glm::mat4 &GetProjection() const;
+		const glm::mat4 &GetViewMatrix() const;
+		const glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
 		void SetStyle(CameraStyle style) { m_CameraStyle = style; }
 		void SetDraggingActive(bool enable) { m_CanDragging = enable; }
 		void SetScrollingActive(bool enable) { m_CanScrolling = enable; }
@@ -50,7 +52,7 @@ namespace origin {
 		float GetFOV() const { return m_FOV; }
 		float GetNear() const { return m_NearClip; }
 		float GetFar() const { return m_FarClip; }
-		float GetAspectRatio() { return m_AspectRatio; }
+		float GetAspectRatio() const { return m_AspectRatio; }
 		float GetOrthoSize() const { return m_OrthoSize; }
 		float GetWidth() const { return m_ViewportWidth; }
 		float GetHeight() const { return m_ViewportHeight; }
@@ -61,6 +63,7 @@ namespace origin {
 		glm::quat GetOrientation() const;
 		const CameraStyle GetStyle() { return m_CameraStyle; }
 		const ProjectionType GetProjectionType() const { return m_ProjectionType; }
+		bool IsPerspective() const { return m_ProjectionType == ProjectionType::Perspective; }
 
 	private:
 		AudioListener m_AudioListener;

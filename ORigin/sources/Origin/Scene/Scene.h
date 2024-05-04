@@ -32,6 +32,8 @@ namespace origin
     Entity GetEntityWithUUID(UUID uuid);
     Entity FindEntityByName(std::string_view name);
 
+    void DestroyEntity(Entity entity);
+
     void OnRuntimeStart();
     void OnRuntimeStop();
     void OnUpdateRuntime(Timestep time);
@@ -47,7 +49,7 @@ namespace origin
     template <typename... Components>
     auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
-    std::vector<std::tuple<UUID, entt::entity>> &GetEntityMap() { return m_EntityStorage; }
+    std::vector<std::pair<UUID, entt::entity>> &GetEntityMap() { return m_EntityStorage; }
 
   private:
     std::unique_ptr<PhysicsScene> m_PhysicsScene;
@@ -68,7 +70,7 @@ namespace origin
     glm::vec4 m_GridColor = glm::vec4(1.0f);
     int m_GridSize = 5;
    
-    std::vector<std::tuple<UUID, entt::entity>> m_EntityStorage;
+    std::vector<std::pair<UUID, entt::entity>> m_EntityStorage;
 
     entt::registry m_Registry;
     uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;

@@ -47,7 +47,7 @@ namespace origin
 	{
 		static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* outSize)
 		{
-			PROFILER_FUNCTION();
+			OGN_PROFILER_FUNCTION();
 
 			std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
 
@@ -72,7 +72,7 @@ namespace origin
 
 		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath)
 		{
-			PROFILER_FUNCTION();
+			OGN_PROFILER_FUNCTION();
 
 			uint32_t fileSize = 0;
 			char* fileData = ReadBytes(filepath, &fileSize);
@@ -97,7 +97,7 @@ namespace origin
 
 		void PrintAssemblyTypes(MonoAssembly* assembly)
 		{
-			PROFILER_FUNCTION();
+			OGN_PROFILER_FUNCTION();
 
 			MonoImage* image = mono_assembly_get_image(assembly);
 			const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
@@ -117,7 +117,7 @@ namespace origin
 
 		ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
 		{
-			PROFILER_LOGIC();
+			OGN_PROFILER_LOGIC();
 
 			std::string typeName = mono_type_get_name(monoType);
 
@@ -162,7 +162,7 @@ namespace origin
 	// Scrip Engine
 	void ScriptEngine::InitMono()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		mono_set_assemblies_path("Lib");
 
@@ -175,7 +175,7 @@ namespace origin
 
 	void ScriptEngine::ShutdownMono()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		if (!s_ScriptEngineData)
 			return;
@@ -194,7 +194,7 @@ namespace origin
 
 	void ScriptEngine::Init()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		std::filesystem::path appAssemblyPath = Project::GetActiveProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
 
@@ -228,7 +228,7 @@ namespace origin
 
 	void ScriptEngine::Shutdown()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		ShutdownMono();
 		if (!s_ScriptEngineData)
@@ -243,7 +243,7 @@ namespace origin
 
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		s_ScriptEngineData->AppDomain = mono_domain_create_appdomain("ORiginScriptRuntime", nullptr);
 		mono_domain_set(s_ScriptEngineData->AppDomain, true);
@@ -260,7 +260,7 @@ namespace origin
 
 	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event change_type)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		if (!s_ScriptEngineData->AssemblyReloadingPending && change_type == filewatch::Event::modified)
 		{
@@ -276,7 +276,7 @@ namespace origin
 
 	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		s_ScriptEngineData->AppAssemblyFilepath = filepath;
 
@@ -293,7 +293,7 @@ namespace origin
 
 	void ScriptEngine::ReloadAssembly()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		mono_domain_set(mono_get_root_domain(), false);
 
@@ -319,14 +319,14 @@ namespace origin
 
 	void ScriptEngine::SetSceneContext(Scene* scene)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		s_ScriptEngineData->SceneContext = scene;
 	}
 
 	void ScriptEngine::ClearSceneContext()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		s_ScriptEngineData->SceneContext = nullptr;
 		s_ScriptEngineData->EntityInstances.clear();
@@ -334,14 +334,14 @@ namespace origin
 
 	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		return s_ScriptEngineData->EntityClasses.find(fullClassName) != s_ScriptEngineData->EntityClasses.end();
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		auto& sc = entity.GetComponent<ScriptComponent>();
 		if (EntityClassExists(sc.ClassName))
@@ -366,7 +366,7 @@ namespace origin
 
 	void ScriptEngine::OnUpdateEntity(Entity entity, float time)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		UUID& entityID = entity.GetUUID();
 
@@ -401,7 +401,7 @@ namespace origin
 
 	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		OGN_CORE_ASSERT(entity, "ScriptEngine::GetScriptFieldMap: Failed to get entity");
 
@@ -416,7 +416,7 @@ namespace origin
 
 	std::shared_ptr<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		auto& it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
@@ -440,7 +440,7 @@ namespace origin
 
 	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		OGN_CORE_ASSERT(s_ScriptEngineData->EntityInstances.find(uuid) != s_ScriptEngineData->EntityInstances.end(),
 			"Invalid Script Instance");
@@ -450,7 +450,7 @@ namespace origin
 
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		MonoObject* instance = mono_object_new(s_ScriptEngineData->AppDomain, monoClass);
 		mono_runtime_object_init(instance);
@@ -459,7 +459,7 @@ namespace origin
 
 	void ScriptEngine::LoadAssemblyClasses()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		s_ScriptEngineData->EntityClasses.clear();
 
@@ -543,7 +543,7 @@ namespace origin
 	ScriptInstance::ScriptInstance(std::shared_ptr<ScriptClass> scriptClass, Entity entity)
 		: m_ScriptClass(scriptClass)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		m_Instance = scriptClass->Instantiate();
 
@@ -561,7 +561,7 @@ namespace origin
 
 	void ScriptInstance::InvokeOnCreate()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		if(m_OnCreateMethod)
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateMethod);
@@ -569,7 +569,7 @@ namespace origin
 
 	void ScriptInstance::InvokeOnUpdate(float time)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		if (m_OnUpdateMethod)
 		{
@@ -580,7 +580,7 @@ namespace origin
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& name, void* buffer)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		const auto& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(name);
@@ -595,7 +595,7 @@ namespace origin
 
 	bool ScriptInstance::SetFieldValueInternal(const std::string& name, const void* value)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		const auto& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(name);

@@ -38,7 +38,7 @@ namespace origin {
 
   void EditorLayer::OnAttach()
   {
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 	  // Load UI Textures
 	  m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/play_icon.png");
@@ -65,8 +65,8 @@ namespace origin {
 	  fbSpec.Height = 720;
 	  m_Framebuffer = Framebuffer::Create(fbSpec);
 
-	  m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
 	  m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 500.0f);
+	  m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
 	  m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
 	  m_ActiveScene = std::make_shared<Scene>();
@@ -84,7 +84,7 @@ namespace origin {
 
   void EditorLayer::OnEvent(Event& e)
   {
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseMovedEvent));
@@ -99,7 +99,13 @@ namespace origin {
 
 	void EditorLayer::OnUpdate(Timestep ts)
   {
-		PROFILER_RENDERING();
+
+		ProfilerTimer timer("EditorLayer::OnUpdate", [&](ProfilerResult result)
+												{
+													m_ProfilerResults.push_back(result);
+												});
+
+		OGN_PROFILER_FUNCTION();
 
 	  Renderer::GetStatistics().Reset();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
@@ -154,7 +160,7 @@ namespace origin {
 
   void EditorLayer::OnDuplicateEntity()
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  if (m_SceneState != SceneState::Edit)
 		  return;
@@ -168,7 +174,7 @@ namespace origin {
 
   void EditorLayer::OnGuiRender()
   {
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 	  m_Dockspace.Begin();
 
@@ -189,7 +195,7 @@ namespace origin {
 
 	void EditorLayer::OnScenePlay()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		if (m_SceneState == SceneState::Simulate)
 			OnSceneStop();
@@ -203,7 +209,7 @@ namespace origin {
 
   void EditorLayer::OnScenePause()
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  if (m_SceneState == SceneState::Edit)
 		  return;
@@ -213,7 +219,7 @@ namespace origin {
 
   void EditorLayer::OnSceneSimulate()
   {
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 	  if (m_SceneState == SceneState::Play)
 		  OnSceneStop();
@@ -228,7 +234,7 @@ namespace origin {
 
   void EditorLayer::OnSceneStop()
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  ScriptEngine::ClearSceneContext();
 
@@ -245,7 +251,7 @@ namespace origin {
 
   bool EditorLayer::NewProject()
   {
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 	  if (Project::New())
 	  {
@@ -266,7 +272,7 @@ namespace origin {
 
   bool EditorLayer::OpenProject(const std::filesystem::path& path)
   {
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 	  if (Project::Load(path))
 	  {
@@ -292,7 +298,7 @@ namespace origin {
 
   bool EditorLayer::OpenProject()
   {
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 	  if (Project::Open())
 	  {
@@ -323,7 +329,7 @@ namespace origin {
 
   void EditorLayer::NewScene()
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 		  OnSceneStop();
@@ -337,7 +343,7 @@ namespace origin {
 
   void EditorLayer::SaveScene()
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 		  OnSceneStop();
@@ -356,7 +362,7 @@ namespace origin {
 
   void EditorLayer::SaveSceneAs()
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 		  OnSceneStop();
@@ -372,7 +378,7 @@ namespace origin {
 
   void EditorLayer::OpenScene(AssetHandle handle)
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  if (!AssetManager::IsAssetHandleValid(handle) || handle == 0)
 	  {
@@ -397,13 +403,11 @@ namespace origin {
 	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
-
-		//m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
   }
 
   void EditorLayer::OpenScene()
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 	  if (m_SceneState == SceneState::Play)
 		  OnSceneStop();
@@ -425,19 +429,18 @@ namespace origin {
 	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
-		//m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
   }
 
   void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath)
   {
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
     SceneImporter::SaveScene(scene, filepath);
   }
 
 	void EditorLayer::MenuBar()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		auto& window = Application::Get();
@@ -477,7 +480,7 @@ namespace origin {
 
 			if (ImGui::BeginMenu("Object"))
 			{
-				ImGui::MenuItem("Audio Library", nullptr, &guiAudioLibraryWindow);
+				if (ImGui::MenuItem("Empty Entity", nullptr, nullptr, (bool)Project::GetActive() && !m_ScenePath.empty())) m_SceneHierarchy.SetSelectedEntity(EntityManager::CreateEntityWithUUID(UUID(), "Empty", m_ActiveScene.get()));
 				ImGui::EndMenu();
 			}
 
@@ -485,7 +488,6 @@ namespace origin {
 			{
 				ImGui::MenuItem("Style Editor", nullptr, &guiMenuStyle);
 				ImGui::MenuItem("Render Settings", nullptr, &guiRenderSettingsWindow);
-				ImGui::MenuItem("Debug Info", nullptr, &guiDebugInfo);
 				ImGui::MenuItem("Demo Window", nullptr, &guiImGuiDemoWindow);
 
 				ImGui::EndMenu();
@@ -508,7 +510,13 @@ namespace origin {
 
 	void EditorLayer::Draw(float deltaTime)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
+
+		ProfilerTimer timer("EditorLayer::Draw()", [&](ProfilerResult result)
+												{
+													m_ProfilerResults.push_back(result);
+												});
+
 
 		switch (m_SceneState)
 		{
@@ -518,14 +526,12 @@ namespace origin {
 			break;
 
 		case SceneState::Edit:
-			m_Gizmos->Draw2DVerticalGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnEditorUpdate(deltaTime, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 
 		case SceneState::Simulate:
-			m_Gizmos->Draw2DVerticalGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(deltaTime);
 			m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
@@ -535,7 +541,7 @@ namespace origin {
 
 	void EditorLayer::SceneViewport()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
@@ -730,7 +736,7 @@ namespace origin {
 
 	void EditorLayer::SceneViewportToolbar()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 		if (ImGui::Begin("Toolbar", nullptr, window_flags))
@@ -849,7 +855,7 @@ namespace origin {
 
 	void EditorLayer::SceneViewportMenu()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
@@ -866,73 +872,92 @@ namespace origin {
 				AnimationTimeline::DrawSpriteAnimTimeline(ac);
 			}
 		}
-		
-		if (guiRenderSettingsWindow)
+
+
+		if (guiStatisticWindow)
 		{
-			ImGui::Begin("Render Settings", &guiRenderSettingsWindow);
-			const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
-			const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
-			ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
-
-			if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
+			ImGui::Begin("Statistics", &guiStatisticWindow);
+			if (ImGui::BeginTabBar("##Statistics"))
 			{
-				for (int i = 0; i < 2; i++)
+				if (ImGui::BeginTabItem("Render Settings"))
 				{
-					const bool isSelected = currentCMSTypeString == CMSTypeString[i];
-					if (ImGui::Selectable(CMSTypeString[i], isSelected))
+					const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
+					const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
+					ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
+					if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
 					{
-						currentCMSTypeString = CMSTypeString[i];
-						m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
+						for (int i = 0; i < 2; i++)
+						{
+							const bool isSelected = currentCMSTypeString == CMSTypeString[i];
+							if (ImGui::Selectable(CMSTypeString[i], isSelected))
+							{
+								currentCMSTypeString = CMSTypeString[i];
+								m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
 
-					} if (isSelected) ImGui::SetItemDefaultFocus();
-				} ImGui::EndCombo();
-			}
-			float fov = m_EditorCamera.GetFOV();
-			if (ImGui::DragFloat("FOV", &fov, 1.0f, 0.0f, 90.0f))
-				m_EditorCamera.SetFov(fov);
+							} if (isSelected) ImGui::SetItemDefaultFocus();
+						} ImGui::EndCombo();
+					}
+					float fov = m_EditorCamera.GetFOV();
+					if (ImGui::DragFloat("FOV", &fov, 1.0f, 0.0f, 90.0f))
+						m_EditorCamera.SetFov(fov);
 
-			ImGui::Checkbox("Visualize Collider", &m_VisualizeCollider);
+					ImGui::Checkbox("Visualize Collider", &m_VisualizeCollider);
 
-			ImGui::Separator();
+					ImGui::Separator();
 
-			const auto renderStats = Renderer::GetStatistics();
-			ImGui::Text("Total Time (s) : (%.2f s)", m_Time);
-			if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
-			ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
-			ImGui::Text("Quads: %d", renderStats.QuadCount);
-			ImGui::Text("Circles: %d", renderStats.CircleCount);
-			ImGui::Text("Lines: %d", renderStats.LineCount);
-			ImGui::Text("Cubes: %d", renderStats.CubeCount);
-			ImGui::Text("Vertices: %d", renderStats.GetTotalVertexCount());
-			ImGui::Text("Indices: %d", renderStats.GetTotalIndexCount());
-			ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
-			ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
-			ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
-			ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
-			ImGui::Text("Hovered Pixel (%d)", m_PixelData);
-			ImGui::Separator();
+					const auto renderStats = Renderer::GetStatistics();
+					ImGui::Text("Total Time (s) : (%.2f s)", m_Time);
+					if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
+					ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
+					ImGui::Text("Quads: %d", renderStats.QuadCount);
+					ImGui::Text("Circles: %d", renderStats.CircleCount);
+					ImGui::Text("Lines: %d", renderStats.LineCount);
+					ImGui::Text("Cubes: %d", renderStats.CubeCount);
+					ImGui::Text("Vertices: %d", renderStats.GetTotalVertexCount());
+					ImGui::Text("Indices: %d", renderStats.GetTotalIndexCount());
+					ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
+					ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
+					ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
+					ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
+					ImGui::Text("Hovered Pixel (%d)", m_PixelData);
+					ImGui::Separator();
 
-			ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
+					ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
 
-			const char *RTTypeString[] = { "Normal", "HDR" };
-			const char *currentRTTypeString = RTTypeString[m_RenderTarget];
+					const char *RTTypeString[] = { "Normal", "HDR" };
+					const char *currentRTTypeString = RTTypeString[m_RenderTarget];
 
-			if (ImGui::BeginCombo("Render Target", currentRTTypeString))
-			{
-				for (int i = 0; i < 2; i++)
+					if (ImGui::BeginCombo("Render Target", currentRTTypeString))
+					{
+						for (int i = 0; i < 2; i++)
+						{
+							const bool isSelected = currentRTTypeString == RTTypeString[i];
+							if (ImGui::Selectable(RTTypeString[i], isSelected))
+							{
+								currentRTTypeString = RTTypeString[i];
+								m_RenderTarget = i;
+							} if (isSelected) ImGui::SetItemDefaultFocus();
+						} ImGui::EndCombo();
+					}
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Render Time"))
 				{
-					const bool isSelected = currentRTTypeString == RTTypeString[i];
-					if (ImGui::Selectable(RTTypeString[i], isSelected))
+					for (auto r : m_ProfilerResults)
 					{
-						currentRTTypeString = RTTypeString[i];
-						m_RenderTarget = i;
-					} if (isSelected) ImGui::SetItemDefaultFocus();
-				} ImGui::EndCombo();
+						char label[50];
+						strcpy(label, "[%.3fms]   ");
+						strcat(label, r.Name);
+						ImGui::Text(label, r.Duration);
+					}
+					m_ProfilerResults.clear();
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
 			}
-
 			ImGui::End();
 		}
-
+		
 		if (guiMenuStyle)
 		{
 			ImGui::Begin("Style Editor", &guiMenuStyle);
@@ -948,7 +973,7 @@ namespace origin {
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
@@ -974,7 +999,7 @@ namespace origin {
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
 		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
@@ -1056,7 +1081,7 @@ namespace origin {
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		if (!m_SceneViewportFocused && !m_SceneHierarchy.IsSceneHierarchyFocused)
 			return false;

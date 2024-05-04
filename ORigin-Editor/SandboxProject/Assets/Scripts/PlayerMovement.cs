@@ -10,17 +10,22 @@ namespace SandboxProject
     private BoxCollider2DComponent box;
     private SpriteAnimationComponent anim;
 
-    public float jumpCooldown = 0.0f;
-    public float jumpInterval = 0.125f;
-
-    public int jumpCount = 0;
-    public bool canJump = true;
-
-    public float Speed = 8.0f;
-    public float JumpHeight = 5.0f;
+    private float jumpInterval;
+    private float jumpCooldown;
+    private int jumpCount;
+    private bool canJump;
+    private float Speed;
+    private float JumpHeight;
 
     public void OnCreate()
     {
+      jumpInterval = 0.5f;
+      jumpCooldown = jumpInterval;
+      jumpCount = 0;
+      canJump = true;
+      Speed = 3.0f;
+      JumpHeight = 3.5f;
+
       rb2d = GetComponent<Rigidbody2DComponent>();
       src = GetComponent<SpriteRenderer2DComponent>();
       box = GetComponent<BoxCollider2DComponent>();
@@ -44,7 +49,7 @@ namespace SandboxProject
         v.X += Speed;
       }
 
-      if (Input.IsKeyPressed(KeyCode.Space))
+      if (Input.IsKeyPressed(KeyCode.Space) && Translation.Y < 3.5f)
       {
         if (canJump)
         {
@@ -67,10 +72,10 @@ namespace SandboxProject
         }
       }
 
-      if (rb2d.IsContactWithTag("Floor"))
+      if (rb2d.IsContactWithTag("Floor") || rb2d.IsContactWithTag("Long Floor"))
       {
-        jumpCount = 0;
         canJump = true;
+        jumpCount = 0;
         jumpCooldown = jumpInterval;
       }
 

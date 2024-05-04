@@ -28,11 +28,10 @@ namespace origin
 	{
 	public:
 		UUID ID;
+		UUID Parent = 0;
+
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
-
-		UUID Parent = 0;
-		std::vector<UUID> Children;
 	};
 
 	class TagComponent
@@ -125,12 +124,14 @@ namespace origin
 	class TextComponent
 	{
 	public:
+		AssetHandle FontHandle = 0;
 		std::string TextString;
-		std::shared_ptr<Font> FontAsset;
 
 		glm::vec4 Color = glm::vec4(1.0f);
 		float Kerning = 0.0f;
 		float LineSpacing = 0.0f;
+
+		bool ScreenSpace = false;
 	};
 
 	class TransformComponent

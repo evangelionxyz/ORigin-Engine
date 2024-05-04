@@ -14,7 +14,7 @@ namespace origin
 
 	void OpenGLContext::Init()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		OGN_CORE_ASSERT(success, "Failed to initialize Glad!");

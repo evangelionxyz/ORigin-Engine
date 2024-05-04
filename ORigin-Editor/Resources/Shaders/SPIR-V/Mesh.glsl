@@ -138,5 +138,5 @@ vec3 calculateDirectionalLight(vec3 normal, vec3 viewDirection, vec3 diffuseText
 	float specularFactor = pow(max(dot(viewDirection, halfwayDir), 0.0), 64.0);
 	vec3 specularColor = specularFactor * Dirlight.Specular * Dirlight.Color.rgb * specularTexture;
 	float shadow = calcShadow(normal, lightDirection);
-  return (strength + (1.0 - shadow) * (diffuseColor + specularColor));
+	return (strength + (1.0 - shadow) * (diffuseColor + specularColor));
 }

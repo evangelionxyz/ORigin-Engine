@@ -22,7 +22,7 @@ namespace origin {
 		float fontSize, const std::vector<msdf_atlas::GlyphGeometry>& glyphs,
 		const msdf_atlas::FontGeometry& fontGeometry, uint32_t widht, uint32_t height)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		msdf_atlas::GeneratorAttributes attributes;
 		attributes.config.overlapSupport = true;
@@ -50,7 +50,7 @@ namespace origin {
 	Font::Font(const std::filesystem::path& filepath)
 		: m_Data(new MSDFData()), m_Filepath(filepath.generic_string())
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
 		OGN_CORE_ASSERT(ft, "Font: FreeTypeHandle Error");
@@ -144,9 +144,14 @@ namespace origin {
 		delete m_Data;
 	}
 	
+	std::shared_ptr<Font> Font::Create(const std::filesystem::path &filepath)
+	{
+		return std::make_shared<Font>(filepath);
+	}
+
 	std::shared_ptr<Font> Font::GetDefault()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		static std::shared_ptr<Font> DefaultFont;
 		if (!DefaultFont)

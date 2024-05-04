@@ -48,7 +48,7 @@ namespace origin
 	// Entity
 	static bool Entity_HasComponent(UUID entityID, MonoReflectionType *componentType)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -61,7 +61,7 @@ namespace origin
 
 	static void Entity_AddComponent(UUID entityID, MonoReflectionType *componentType)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -74,7 +74,7 @@ namespace origin
 
 	static uint64_t Entity_FindEntityByName(MonoString *stringName)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -94,7 +94,7 @@ namespace origin
 	// Logging
 	static void NativeLog(MonoString *string, int parameter)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		std::string str = Utils::MonoStringToString(string);
 		std::cout << str << ", " << parameter << std::endl;
@@ -102,14 +102,14 @@ namespace origin
 
 	static void NativeLog_Vector(glm::vec3 *parameter, glm::vec3 *outResult)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		*outResult = normalize(*parameter);
 	}
 
 	static float NativeLog_VectorDot(glm::vec3 *parameter)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		return dot(*parameter, *parameter);
 	}
@@ -117,14 +117,14 @@ namespace origin
 	// Component
 	static MonoObject *GetScriptInstance(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		return ScriptEngine::GetManagedInstance(entityID);
 	}
 
 	static void TransformComponent_GetTranslation(UUID entityID, glm::vec3 *outTranslation)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -135,7 +135,7 @@ namespace origin
 
 	static void TransformComponent_SetTranslation(UUID entityID, glm::vec3 translation)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -146,7 +146,7 @@ namespace origin
 
 	static void TransformComponent_GetRotation(UUID entityID, glm::vec3 *outRotation)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -157,7 +157,7 @@ namespace origin
 
 	static void TransformComponent_SetRotation(UUID entityID, glm::vec3 rotation)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -167,7 +167,7 @@ namespace origin
 
 	static void TransformComponent_GetScale(UUID entityID, glm::vec3 *outScale)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -178,7 +178,7 @@ namespace origin
 
 	static void TransformComponent_SetScale(UUID entityID, glm::vec3 scale)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -189,7 +189,7 @@ namespace origin
 
 	static void RigidbodyComponent_SetVelocity(UUID entityID, glm::vec3 velocity, bool autoWake)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -201,7 +201,7 @@ namespace origin
 
 	static void RigidbodyComponent_GetVelocity(UUID entityID, glm::vec3 *velocity)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -216,7 +216,7 @@ namespace origin
 
 	static void RigidbodyComponent_SetVelocityForce(UUID entityID, glm::vec3 force)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -228,7 +228,7 @@ namespace origin
 
 	static void RigidbodyComponent_SetForce(UUID entityID, glm::vec3 force)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -240,7 +240,7 @@ namespace origin
 
 	static void RigidbodyComponent_SetImpulseForce(UUID entityID, glm::vec3 force)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -252,7 +252,7 @@ namespace origin
 
 	static void Rigidbody2DComponent_SetVelocity(UUID entityID, glm::vec2 velocity)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -266,7 +266,7 @@ namespace origin
 
 	static void Rigidbody2DComponent_GetVelocity(UUID entityID, glm::vec2 *velocity)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -281,7 +281,7 @@ namespace origin
 
 	static bool Rigidbody2DComponent_IsContactWithTag(UUID entityID, MonoString *contactWith)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -295,7 +295,7 @@ namespace origin
 
 	static MonoString *Rigidbody2DComponent_GetContactWithTag(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -307,7 +307,7 @@ namespace origin
 
 	static void Rigidbody2DComponent_ApplyLinearImpulse(UUID entityID, glm::vec2 impulse, glm::vec2 point, bool wake)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -320,7 +320,7 @@ namespace origin
 
 	static void Rigidbody2DComponent_ApplyLinearImpulseToCenter(UUID entityID, glm::vec2 impulse, bool wake)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -333,7 +333,7 @@ namespace origin
 
 	static void Rigidbody2DComponent_ApplyForce(UUID entityID, glm::vec2 force, glm::vec2 point, bool wake)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -346,7 +346,7 @@ namespace origin
 
 	static void Rigidbody2DComponent_ApplyForceToCenter(UUID entityID, glm::vec2 force, bool wake)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -359,7 +359,7 @@ namespace origin
 
 	static MonoString *AudioComponent_GetName(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -372,7 +372,7 @@ namespace origin
 
 	static void AudioComponent_SetName(UUID entityID, MonoString *name)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -385,7 +385,7 @@ namespace origin
 
 	static void AudioComponent_Play(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -401,7 +401,7 @@ namespace origin
 
 	static void AudioComponent_Stop(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -417,7 +417,7 @@ namespace origin
 
 	static void AudioComponent_SetVolume(UUID entityID, float volume)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -429,7 +429,7 @@ namespace origin
 
 	static float AudioComponent_GetVolume(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -441,7 +441,7 @@ namespace origin
 
 	static void AudioComponent_SetMinDistance(UUID entityID, float minDistance)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -453,7 +453,7 @@ namespace origin
 
 	static float AudioComponent_GetMinDistance(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -465,7 +465,7 @@ namespace origin
 
 	static void AudioComponent_SetMaxDistance(UUID entityID, float maxDistance)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -477,7 +477,7 @@ namespace origin
 
 	static float AudioComponent_GetMaxDistance(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -489,7 +489,7 @@ namespace origin
 
 	static void AudioComponent_SetPitch(UUID entityID, float pitch)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -501,7 +501,7 @@ namespace origin
 
 	static float AudioComponent_GetPitch(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -513,7 +513,7 @@ namespace origin
 
 	static void AudioComponent_SetLooping(UUID entityID, bool looping)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -525,7 +525,7 @@ namespace origin
 
 	static bool AudioComponent_IsLooping(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -537,7 +537,7 @@ namespace origin
 
 	static void AudioComponent_SetSpatial(UUID entityID, bool spatial)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -549,7 +549,7 @@ namespace origin
 
 	static bool AudioComponent_IsSpatial(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -561,7 +561,7 @@ namespace origin
 
 	static void AudioComponent_SetPlayAtStart(UUID entityID, bool playAtStart)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -573,7 +573,7 @@ namespace origin
 
 	static bool AudioComponent_IsPlayAtStart(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -585,7 +585,7 @@ namespace origin
 
 	static MonoString *TextComponent_GetText(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -598,7 +598,7 @@ namespace origin
 
 	static void TextComponent_SetText(UUID entityID, MonoString *textString)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -611,7 +611,7 @@ namespace origin
 
 	static void TextComponent_GetColor(UUID entityID, glm::vec4 *color)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -624,7 +624,7 @@ namespace origin
 
 	static void TextComponent_SetColor(UUID entityID, glm::vec4 *color)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -637,7 +637,7 @@ namespace origin
 
 	static float TextComponent_GetKerning(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -650,7 +650,7 @@ namespace origin
 
 	static void TextComponent_SetKerning(UUID entityID, float kerning)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -663,7 +663,7 @@ namespace origin
 
 	static float TextComponent_GetLineSpacing(UUID entityID)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -676,7 +676,7 @@ namespace origin
 
 	static void TextComponent_SetLineSpacing(UUID entityID, float lineSpacing)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -689,7 +689,7 @@ namespace origin
 
 	static void CircleRendererComponent_GetColor(UUID entityID, glm::vec4 *outColor)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -700,7 +700,7 @@ namespace origin
 
 	static void CircleRendererComponent_SetColor(UUID entityID, glm::vec4 *color)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -711,7 +711,7 @@ namespace origin
 
 	static void CircleRendererComponent_GetFade(UUID entityID, float *outFade)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -722,7 +722,7 @@ namespace origin
 
 	static void CircleRendererComponent_SetFade(UUID entityID, float *fade)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -733,7 +733,7 @@ namespace origin
 
 	static void CircleRendererComponent_GetThickness(UUID entityID, float *outThickness)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -744,7 +744,7 @@ namespace origin
 
 	static void CircleRendererComponent_SetThickness(UUID entityID, float *thickness)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -755,7 +755,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_GetColor(UUID entityID, glm::vec4 *outColor)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -766,7 +766,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_SetFlipX(UUID entityID, bool *flip)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -778,7 +778,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_GetFlipX(UUID entityID, bool *flip)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -790,7 +790,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_SetFlipY(UUID entityID, bool *flip)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -802,7 +802,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_GetFlipY(UUID entityID, bool *flip)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
@@ -814,7 +814,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_SetColor(UUID entityID, glm::vec4 *color)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -825,7 +825,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_GetTilingFactor(UUID entityID, glm::vec2 *tilingfactor)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -836,7 +836,7 @@ namespace origin
 
 	static void SpriteRenderer2DComponent_SetTilingFactor(UUID entityID, glm::vec2 *tilingfactor)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -847,7 +847,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_GetOffset(UUID entityID, glm::vec2 *outOffset)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -858,7 +858,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_SetOffset(UUID entityID, glm::vec2 *offset)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -869,7 +869,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_GetSize(UUID entityID, glm::vec2 *outSize)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -880,7 +880,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_SetSize(UUID entityID, glm::vec2 *size)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -891,7 +891,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_GetDensity(UUID entityID, float *outDensity)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -902,7 +902,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_SetDensity(UUID entityID, float *density)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -913,7 +913,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_GetFriction(UUID entityID, float *outFriction)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -924,7 +924,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_SetFriction(UUID entityID, float *friction)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -935,7 +935,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_GetRestitution(UUID entityID, float *outRestitution)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -946,7 +946,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_SetRestitution(UUID entityID, float *restitution)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -957,7 +957,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityID, float *outRestitutionThreshold)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -968,7 +968,7 @@ namespace origin
 
 	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityID, float *restitutionThreshold)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -979,7 +979,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_GetOffset(UUID entityID, glm::vec2 *outOffset)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -990,7 +990,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_SetOffset(UUID entityID, glm::vec2 *offset)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1001,7 +1001,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_GetRadius(UUID entityID, float *outRadius)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1012,7 +1012,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_SetRadius(UUID entityID, float *radius)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1023,7 +1023,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_GetDensity(UUID entityID, float *outDensity)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1034,7 +1034,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_SetDensity(UUID entityID, float *density)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1045,7 +1045,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_GetFriction(UUID entityID, float *outFriction)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1056,7 +1056,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_SetFriction(UUID entityID, float *friction)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1067,7 +1067,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_GetRestitution(UUID entityID, float *outRestituion)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1078,7 +1078,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_SetRestitution(UUID entityID, float *restitution)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1089,7 +1089,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityID, float *outRestitutionThreshold)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1100,7 +1100,7 @@ namespace origin
 
 	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityID, float *restitutionThreshold)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "Invalid Scene")
@@ -1111,7 +1111,7 @@ namespace origin
 
 	static void SpriteAnimationComponent_GetActiveState(UUID entityID, MonoString *state)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -1127,7 +1127,7 @@ namespace origin
 
 	static void SpriteAnimationComponent_SetActiveState(UUID entityID, MonoString *state)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "ScriptGlue: Invalid Scene");
@@ -1143,14 +1143,14 @@ namespace origin
 
 	static bool Input_IsKeyPressed(KeyCode keycode)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		return Input::IsKeyPressed(keycode);
 	}
 
 	static bool Input_IsKeyReleased(KeyCode keycode)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		return Input::IsKeyReleased(keycode);
 	}
@@ -1158,7 +1158,7 @@ namespace origin
 	template <typename... Component>
 	static void RegisterComponent()
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		([]()
 		 {
@@ -1183,7 +1183,7 @@ namespace origin
 	template <typename... Component>
 	static void RegisterComponent(ComponentGroup<Component...>)
 	{
-		PROFILER_LOGIC();
+		OGN_PROFILER_LOGIC();
 
 		RegisterComponent<Component...>();
 	}

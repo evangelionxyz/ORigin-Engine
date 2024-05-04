@@ -9,6 +9,8 @@ namespace origin {
 
 	void RigidbodyComponent::ApplyForce(glm::vec3 force)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		if (!Body)
 			return;
 
@@ -19,6 +21,8 @@ namespace origin {
 
 	void RigidbodyComponent::ApplyVelocityForce(glm::vec3 force)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		if (!Body)
 			return;
 
@@ -29,6 +33,8 @@ namespace origin {
 
 	void RigidbodyComponent::ApplyAccelerationForce(glm::vec3 force)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		if (!Body)
 			return;
 
@@ -39,6 +45,8 @@ namespace origin {
 
 	void RigidbodyComponent::ApplyImpulseForce(glm::vec3 force)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		if (!Body)
 			return;
 
@@ -49,6 +57,8 @@ namespace origin {
 
 	void RigidbodyComponent::ApplyLinearVelocity(glm::vec3 velocity, bool autoWake)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		if (!Body)
 			return;
 
@@ -59,6 +69,9 @@ namespace origin {
 
 	void RigidbodyComponent::SetPosition(glm::vec3 position)
 	{
+		OGN_PROFILER_PHYSICS();
+
+
 		if (!Body)
 			return;
 
@@ -71,6 +84,8 @@ namespace origin {
 
 	void RigidbodyComponent::SetTransform(glm::vec3 position, glm::quat rotation)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		if (!Body)
 			return;
 
@@ -83,6 +98,8 @@ namespace origin {
 
 	void RigidbodyComponent::UpdateFlags(const TransformComponent& transform)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		if (!Body)
 			return;
 
@@ -115,6 +132,8 @@ namespace origin {
 
 	RigidbodyComponent::RigidbodyComponent(void* body)
 	{
+		OGN_PROFILER_PHYSICS();
+
 		this->Body = body;
 	}
 }

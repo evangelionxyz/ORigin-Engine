@@ -5,7 +5,7 @@ namespace origin
 {
 	static bool SequencerAddDelButton(ImDrawList *draw_list, ImVec2 pos, bool add = true)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGuiIO &io = ImGui::GetIO();
 		ImRect btnRect(pos, ImVec2(pos.x + 16, pos.y + 16));
@@ -28,7 +28,7 @@ namespace origin
 	template<typename T>
 	void Get(const std::shared_ptr<T> &anim, int index, int **start, int **end, unsigned int *color)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		auto &frame = anim->GetFrame(index);
 		if (color)
@@ -41,7 +41,7 @@ namespace origin
 
 	void AnimationTimeline::DrawSpriteAnimTimeline(SpriteAnimationComponent &sa)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		static int selectedEntry = -1;
 		static int firstFrame = 0;
@@ -153,7 +153,7 @@ namespace origin
 
 	bool AnimationTimeline::SpriteAnimTimeline(std::shared_ptr<SpriteAnimation> &animation, float *currentFrame, bool *expanded, int *selectedEntry, int *firstFrame, int sequenceOptions)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		bool ret = false;
 

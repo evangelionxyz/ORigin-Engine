@@ -30,7 +30,7 @@ namespace origin {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		SetContext(context);
 		s_Instance = this;
@@ -38,7 +38,7 @@ namespace origin {
 
 	SceneHierarchyPanel::~SceneHierarchyPanel()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 	}
 
 	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
@@ -56,7 +56,7 @@ namespace origin {
 
 	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context, bool reset)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if (reset)
 			m_SelectedEntity = {};
@@ -67,7 +67,7 @@ namespace origin {
 			return;
 
 		UUID entityID = m_SelectedEntity.GetUUID();
-		auto &newEntity = m_Context->GetEntityWithUUID(entityID);
+		Entity newEntity = m_Context->GetEntityWithUUID(entityID);
 
 		if (entityID == newEntity.GetUUID())
 			m_SelectedEntity = newEntity;
@@ -75,19 +75,9 @@ namespace origin {
 
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
-		PROFILER_SCENE();
-
+		OGN_PROFILER_SCENE();
 		m_SelectedEntity = {};
-
-		// delete itself from parent
-		auto &idc = entity.GetComponent<IDComponent>();
-		Entity parent = m_Context->GetEntityWithUUID(idc.Parent);
-		if(parent)
-			EntityManager::DeleteChild(parent, entity);
-
-		// destroy itself from Scene
-		// and destroy its children Scene (recusively)
-		EntityManager::DestroyEntityFromScene(entity, m_Context.get());
+		m_Context->DestroyEntity(entity);
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -98,7 +88,7 @@ namespace origin {
 
 	void SceneHierarchyPanel::EntityHierarchyPanel()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		ImGui::Begin("Hierarchy");
 		if (!m_Context)
@@ -109,11 +99,20 @@ namespace origin {
 
 		IsSceneHierarchyFocused = ImGui::IsWindowFocused();
 
-		m_Context->m_Registry.each([&](auto entityID)
+		if (ImGui::Button("+", { 12.0f, 12.0f }))
 		{
-			Entity entity{ entityID, m_Context.get() };
-			DrawEntityNode(entity);
-		});
+			if (ImGui::BeginPopup("CreateEntity"))
+			{
+				EntityContextMenu();
+				ImGui::EndPopup();
+			}
+		}
+
+
+		for (auto e : m_Context->m_EntityStorage)
+		{
+			DrawEntityNode({ e.second, m_Context.get() });
+		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
@@ -135,9 +134,9 @@ namespace origin {
 
 	void SceneHierarchyPanel::EntityPropertiesPanel()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
-		ImGui::Begin("PROPERTIES");
+		ImGui::Begin("Properties");
 		IsScenePropertiesFocused = ImGui::IsWindowFocused();
 		if (m_SelectedEntity)
 			DrawComponents(m_SelectedEntity);
@@ -146,9 +145,13 @@ namespace origin {
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
-		if (entity.HasParent() && index == 0 || !entity.GetScene())
+		auto valid = m_Context->m_Registry.valid(entity);
+		if (!valid)
+			return;
+
+		if (entity.HasParent() && index == 0)
 			return;
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
@@ -156,15 +159,18 @@ namespace origin {
 			| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
 
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
-		bool isDeleting = false;
 
+		bool isDeleting = false;
 		if (!m_Context->IsRunning())
 		{
 			if (ImGui::BeginPopupContextItem())
 			{
 				Entity e = EntityContextMenu();
 				if (e.GetScene())
+				{
 					EntityManager::AddChild(entity, e, m_Context.get());
+					m_SelectedEntity = e;
+				}
 
 				if (ImGui::MenuItem("Delete"))
 				{
@@ -177,7 +183,7 @@ namespace origin {
 
 			if (ImGui::BeginDragDropSource())
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
 				ImGui::EndDragDropSource();
@@ -185,7 +191,7 @@ namespace origin {
 
 			if (ImGui::BeginDragDropTarget())
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 				{
@@ -208,36 +214,31 @@ namespace origin {
 		{
 			if (!isDeleting)
 			{
-				for (UUID c : entity.GetComponent<IDComponent>().Children)
+				for (auto e : m_Context->m_EntityStorage)
 				{
-					Entity entt = m_Context->GetEntityWithUUID(c);
-					DrawEntityNode(entt, index + 1);
+					valid = m_Context->m_Registry.valid(e.second);
+					if (!valid)
+						break;
+
+					Entity ent = { e.second, m_Context.get() };
+					if (ent.GetComponent<IDComponent>().Parent == entity.GetUUID())
+						DrawEntityNode({ e.second, m_Context.get() }, index + 1);
 				}
 			}
-
 			ImGui::TreePop();
 		}
 
-		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 1.5f));
+		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 0.1f));
 		if (ImGui::BeginDragDropTarget())
 		{
-			PROFILER_UI();
+			OGN_PROFILER_UI();
 
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 			{
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				// the current 'entity' is the target (new parent for src)
 				if (src.HasParent())
-				{
-					auto &srcIDC = src.GetComponent<IDComponent>();
-					auto &parent = m_Context->GetEntityWithUUID(srcIDC.Parent);
-					auto &parentIDC = parent.GetComponent<IDComponent>();
-
-					auto it = std::find(parentIDC.Children.begin(), parentIDC.Children.end(), src.GetUUID());
-					parentIDC.Children.erase(it);
-					srcIDC.Parent = 0;
-				}
+					auto &srcIDC = src.GetComponent<IDComponent>().Parent = 0;
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -245,12 +246,11 @@ namespace origin {
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if (entity.HasComponent<TagComponent>())
 		{
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
-
 			char buffer[256];
 			strcpy_s(buffer, sizeof(buffer), tag.c_str());
 			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
@@ -320,7 +320,7 @@ namespace origin {
 
 		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				std::string lable = "None";
 
@@ -422,10 +422,10 @@ namespace origin {
 
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
 		{
-			PROFILER_UI();
+			OGN_PROFILER_UI();
 
 			auto& camera = component.Camera;
-			ImGui::Checkbox("Primary", &component.Primary);
+			UI::DrawCheckbox("Primary", &component.Primary);
 
 			const char* projectionType[2] = { "Perspective", "Orthographic" };
 			const char* currentProjectionType = projectionType[static_cast<int>(camera.GetProjectionType())];
@@ -504,7 +504,7 @@ namespace origin {
 
 		DrawComponent<SpriteAnimationComponent>("SPRITE ANIMATION", entity, [](auto& component)
 		{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 			for (auto anim : component.State->GetStateStorage())
 			{
@@ -514,18 +514,18 @@ namespace origin {
 
 		DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto& component)
 		{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				ImGui::Text("Use Gravity"); ImGui::SameLine();
-				ImGui::Checkbox("##UseGravity", &component.UseGravity);
+				UI::DrawCheckbox("##UseGravity", &component.UseGravity);
 
 				ImGui::Text("Rotate   "); ImGui::SameLine();
-				ImGui::Checkbox("X", &component.RotateX); ImGui::SameLine();
-				ImGui::Checkbox("Y", &component.RotateY); ImGui::SameLine();
-				ImGui::Checkbox("Z", &component.RotateZ);
+				UI::DrawCheckbox("X", &component.RotateX); ImGui::SameLine();
+				UI::DrawCheckbox("Y", &component.RotateY); ImGui::SameLine();
+				UI::DrawCheckbox("Z", &component.RotateZ);
 
 				ImGui::Text("Kinematic"); ImGui::SameLine();
-				ImGui::Checkbox("##Kinematic", &component.Kinematic);
+				UI::DrawCheckbox("##Kinematic", &component.Kinematic);
 
 				UI::DrawVecControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
 				UI::DrawVec3Control("Center Mass", component.CenterMassPosition);
@@ -534,7 +534,7 @@ namespace origin {
 
 		DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto& component)
 		{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
 				UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
@@ -545,7 +545,7 @@ namespace origin {
 
 		DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
 				UI::DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
@@ -556,9 +556,9 @@ namespace origin {
 
 		DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
-				ImGui::Checkbox("Horizontal", &component.Horizontal);
+				UI::DrawCheckbox("Horizontal", &component.Horizontal);
 				UI::DrawVec3Control("Offset", component.Offset, 0.01f, 0.0f);
 				UI::DrawVecControl("Radius", &component.Radius, 0.01f, 0.0f, 1000.0f, 0.5f);
 				UI::DrawVecControl("Height", &component.Height, 0.01f, 0.0f, 1000.0f, 1.0f);
@@ -569,7 +569,7 @@ namespace origin {
 
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				std::string label = "None";
 
@@ -632,8 +632,8 @@ namespace origin {
 						audio->SetName(name.c_str());
 					}
 
-					ImGui::Checkbox("Play At Start", &component.PlayAtStart);
-					ImGui::Checkbox("Looping", &component.Looping);
+					UI::DrawCheckbox("Play At Start", &component.PlayAtStart);
+					UI::DrawCheckbox("Looping", &component.Looping);
 					UI::DrawVecControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
 					UI::DrawVecControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
 					UI::DrawVecControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
@@ -642,7 +642,7 @@ namespace origin {
 					if (ImGui::Button("Pause", { sizeX, 0.0f })) audio->Pause();
 					if (ImGui::Button("Stop", { sizeX, 0.0f })) audio->Stop();
 					ImGui::Separator();
-					ImGui::Checkbox("Spatialize", &component.Spatializing);
+					UI::DrawCheckbox("Spatialize", &component.Spatializing);
 
 					if (component.Spatializing)
 					{
@@ -654,37 +654,40 @@ namespace origin {
 
 		DrawComponent<TextComponent>("TEXT", entity, [](auto& component) 
 			{
-				PROFILER_UI();
-
-				if(!component.FontAsset)
-					component.FontAsset = Font::GetDefault();
+				OGN_PROFILER_UI();
 
 				ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
-
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = static_cast<const wchar_t*>(payload->Data);
-						std::filesystem::path fontPath = Project::GetActiveAssetFileSystemPath(path);
-						if (fontPath.extension() == ".ttf" || fontPath.extension() == ".otf")
-						{
-							if(component.FontAsset) component.FontAsset.reset();
-							component.FontAsset = std::make_shared<Font>(fontPath);
-						}
+						AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+						if (AssetManager::GetAssetType(handle) == AssetType::Font)
+							component.FontHandle = handle;
 					}
 				}
+
+				if (component.FontHandle)
+				{
+					ImGui::SameLine();
+					if (ImGui::Button("X"))
+						component.FontHandle = 0;
+				}
 				
-				ImGui::InputTextMultiline("Text String", &component.TextString);
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-				
-				UI::DrawVecControl("Kerning", &component.Kerning, 0.01f);
-				UI::DrawVecControl("Line Spacing", &component.LineSpacing, 0.01f);
+				if (component.FontHandle != 0)
+				{
+					ImGui::InputTextMultiline("Text String", &component.TextString);
+					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+					UI::DrawVecControl("Kerning", &component.Kerning, 0.01f);
+					UI::DrawVecControl("Line Spacing", &component.LineSpacing, 0.01f);
+					UI::DrawCheckbox("Screen Space", &component.ScreenSpace);
+				}
+
 			});
 
 		DrawComponent<ParticleComponent>("PARTICLE", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				float columnWidth = 100.0f;
 
@@ -703,7 +706,7 @@ namespace origin {
 
 		DrawComponent<SpriteRenderer2DComponent>("SPRITE RENDERER 2D", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
@@ -768,16 +771,16 @@ namespace origin {
 					ImGui::Text("Flip");
 					ImGui::SameLine();
 					ImGui::PushID(1);
-					ImGui::Checkbox("X", &component.FlipX);
+					UI::DrawCheckbox("X", &component.FlipX);
 					ImGui::PopID();
 					ImGui::SameLine();
-					ImGui::Checkbox("Y", &component.FlipY);
+					UI::DrawCheckbox("Y", &component.FlipY);
 				}
 			});
 
 		DrawComponent<LightComponent>("LIGHTING", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				const char* lightTypeString[3] = { "Spot", "Point", "Directional" };
 				const char* currentLightTypeString = lightTypeString[static_cast<int>(component.Light->Type)];
@@ -852,7 +855,7 @@ namespace origin {
 
 		DrawComponent<CircleRendererComponent>("CIRCLE RENDERER", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 				ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
@@ -861,9 +864,9 @@ namespace origin {
 
 		DrawComponent<Rigidbody2DComponent>("RIGID BODY 2D", entity, [](auto& component)
 		{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
-			ImGui::Checkbox("Enabled", &component.Enabled);
+			UI::DrawCheckbox("Enabled", &component.Enabled);
 			const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic" };
 			const char* currentBodyTypeString = bodyTypeString[static_cast<int>(component.Type)];
 
@@ -891,21 +894,21 @@ namespace origin {
 
 			ImGui::Text("Freeze Position");
 			ImGui::SameLine();
-			ImGui::Checkbox("X", &component.FreezePositionX);
+			UI::DrawCheckbox("X", &component.FreezePositionX);
 			ImGui::SameLine();
-			ImGui::Checkbox("Y", &component.FreezePositionY);
+			UI::DrawCheckbox("Y", &component.FreezePositionY);
 
-			ImGui::Checkbox("Fixed Rotation", &component.FixedRotation);
-			ImGui::Checkbox("Awake", &component.Awake);
+			UI::DrawCheckbox("Fixed Rotation", &component.FixedRotation);
+			UI::DrawCheckbox("Awake", &component.Awake);
 			ImGui::SameLine();
-			ImGui::Checkbox("Allow Sleeping", &component.AllowSleeping);
-			ImGui::Checkbox("Bullet", &component.Bullet);
+			UI::DrawCheckbox("Allow Sleeping", &component.AllowSleeping);
+			UI::DrawCheckbox("Bullet", &component.Bullet);
 
 			});
 
 		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
@@ -936,7 +939,7 @@ namespace origin {
 
 		DrawComponent<CircleCollider2DComponent>("CIRCLE COLLIDER 2D", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
@@ -965,7 +968,7 @@ namespace origin {
 
 		DrawComponent<RevoluteJoint2DComponent>("REVOLUTE JOINT 2D", entity, [&](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				std::string label = "Connected Body";
 
@@ -1000,7 +1003,7 @@ namespace origin {
 				}
 
 				b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(component.Joint);
-				if (ImGui::Checkbox("Limit", &component.EnableLimit))
+				if (UI::DrawCheckbox("Limit", &component.EnableLimit))
 				{
 					if (joint)
 						joint->EnableLimit(component.EnableLimit);
@@ -1021,7 +1024,7 @@ namespace origin {
 					if (joint)
 						joint->SetMaxMotorTorque(component.MaxMotorTorque);
 				}
-				if (ImGui::Checkbox("Motor", &component.EnableMotor))
+				if (UI::DrawCheckbox("Motor", &component.EnableMotor))
 				{
 					if (joint)
 						joint->EnableMotor(component.EnableMotor);
@@ -1035,7 +1038,7 @@ namespace origin {
 
 		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto& component) mutable
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 				bool isSelected = false;
@@ -1246,15 +1249,15 @@ namespace origin {
 
 		DrawComponent<AudioListenerComponent>("AUDIO LISTENER", entity, [](auto& component)
 			{
-				PROFILER_UI();
+				OGN_PROFILER_UI();
 
-				ImGui::Checkbox("Enable", &component.Enable);
+				UI::DrawCheckbox("Enable", &component.Enable);
 			});
 	}
 
 	Entity SceneHierarchyPanel::EntityContextMenu()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		Entity entity = {};
 
@@ -1296,7 +1299,7 @@ namespace origin {
 	template<typename T>
 	bool SceneHierarchyPanel::DisplayAddComponentEntry(const std::string& entryName)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if (ImGui::MenuItem(entryName.c_str()))
 		{
@@ -1312,7 +1315,7 @@ namespace origin {
 	template<typename T, typename UIFunction>
 	void DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
 			| ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth

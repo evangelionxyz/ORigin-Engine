@@ -125,7 +125,7 @@ namespace origin {
 
 	void Renderer2D::Init()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), 0);
 
@@ -222,14 +222,14 @@ namespace origin {
 
 	void Renderer2D::Shutdown()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		delete[] s_Render2DData.QuadVertexBufferBase;
 	}
 
 	void Renderer2D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		s_CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(camTransform);
 		s_CameraBufferData.Position = camera.GetPosition();
@@ -242,7 +242,7 @@ namespace origin {
 
 	void Renderer2D::Begin(const EditorCamera& camera)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		s_CameraBufferData.ViewProjection = camera.GetViewProjection();
 		s_CameraBufferData.Position = camera.GetPosition();
@@ -270,7 +270,7 @@ namespace origin {
 
 	void Renderer2D::StartBatch()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		s_Render2DData.QuadIndexCount = 0;
 		s_Render2DData.QuadVertexBufferPtr = s_Render2DData.QuadVertexBufferBase;
@@ -290,7 +290,7 @@ namespace origin {
 
 	void Renderer2D::Flush()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (s_Render2DData.TextIndexCount)
 		{
@@ -383,7 +383,7 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; // White Texture
@@ -410,7 +410,7 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, int entityID, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		OGN_CORE_ASSERT(texture, "Renderer2D: Invalid texture");
 
@@ -456,7 +456,7 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, int entityID, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		constexpr int QuadVertexCount = 4;
 		const glm::vec2* textureCoords = subTexture->GetTexCoords();
@@ -554,7 +554,7 @@ namespace origin {
 
 	void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade, int entityID)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		for (size_t i = 0; i < 4; i++)
 		{
@@ -573,7 +573,7 @@ namespace origin {
 
 	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, glm::vec4& color, int entityID)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (s_Render2DData.LineVertexCount >= Renderer2DData::MaxLines)
 			NextBatch();
@@ -594,7 +594,7 @@ namespace origin {
 
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src, int entityID)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		const std::shared_ptr<Texture2D> &texture = AssetManager::GetAsset<Texture2D>(src.Texture);
 		if (texture)
@@ -678,7 +678,7 @@ namespace origin {
 
 	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, int entityID)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (s_Render2DData.FontAtlasTextureIndex >= Renderer::s_RenderData.MaxTextureSlots)
 			NextBatch();
@@ -822,6 +822,7 @@ namespace origin {
 
 	void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component, int entityID)
 	{
-		DrawString(string, component.FontAsset, transform, { component.Color, component.Kerning, component.LineSpacing }, entityID);
+		const std::shared_ptr<Font> &font = AssetManager::GetAsset<Font>(component.FontHandle);
+		DrawString(string, font, transform, { component.Color, component.Kerning, component.LineSpacing }, entityID);
 	}
 }

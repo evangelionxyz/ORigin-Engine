@@ -15,7 +15,7 @@ namespace origin {
 
 	void Contact2DListener::BeginContact(b2Contact* contact)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		b2Body* bodyA = contact->GetFixtureA()->GetBody();
 		b2Body* bodyB = contact->GetFixtureB()->GetBody();
@@ -32,7 +32,7 @@ namespace origin {
 
 	void Contact2DListener::EndContact(b2Contact* contact)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		b2Body* bodyA = contact->GetFixtureA()->GetBody();
 		b2Body* bodyB = contact->GetFixtureB()->GetBody();

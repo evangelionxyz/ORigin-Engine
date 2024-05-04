@@ -24,6 +24,7 @@ namespace origin {
 		{ AssetType::MeshSource, ModelImporter::Import },
 		{ AssetType::Material, MaterialImporter::Import },
 		{ AssetType::StaticMesh, ModelImporter::Import },
+		{ AssetType::Font, FontImporter::Import },
 		{ AssetType::SpritesSheet, SpriteSheetImporter::Import }
 	};
 	
@@ -40,19 +41,29 @@ namespace origin {
 		return s_AssetImportFunctions.at(metadata.Type)(handle, metadata);
 	}
 
+	std::shared_ptr<Font> FontImporter::Import(AssetHandle handle, AssetMetadata metadata)
+	{
+		return FontImporter::Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+	}
+
+	std::shared_ptr<Font> FontImporter::Load(const std::filesystem::path &filepath)
+	{
+		return Font::Create(filepath);
+	}
+
 	std::shared_ptr<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
 	{
 		return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-	std::shared_ptr<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path filepath)
+	std::shared_ptr<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
 	{
 		std::shared_ptr<AudioSource> source = AudioSource::Create();
 		source->LoadSource("Audio", filepath, false, false);
 		return source;
 	}
 
-	std::shared_ptr<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path filepath)
+	std::shared_ptr<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
 	{
 		std::shared_ptr<AudioSource> source = AudioSource::Create();
 		source->LoadStreamingSource("Streaming Audio", filepath, false, false);
@@ -146,10 +157,9 @@ namespace origin {
 		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path& path)
+	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path &filepath)
 	{
-		std::shared_ptr<Model> model = Model::Create(path.generic_string());
-		return model;
+		return Model::Create(filepath);
 	}
 
 	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
@@ -173,5 +183,7 @@ namespace origin {
 		MaterialSerializer::Deserialize(filepath, material);
 		return material;
 	}
+
+	
 
 }

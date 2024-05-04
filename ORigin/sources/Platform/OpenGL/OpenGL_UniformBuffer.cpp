@@ -9,7 +9,7 @@ namespace origin
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t bufferSize, uint32_t bindingPoint)
 		: m_BindingPoint(bindingPoint)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
@@ -19,28 +19,28 @@ namespace origin
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glDeleteBuffers(1, &m_RendererID);
 	}
 
 	void OpenGLUniformBuffer::Bind()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindBufferBase(GL_UNIFORM_BUFFER, m_BindingPoint, m_RendererID);
 	}
 
 	void OpenGLUniformBuffer::Unbind()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		// call this had any changes
 		

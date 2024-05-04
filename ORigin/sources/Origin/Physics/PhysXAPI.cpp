@@ -143,7 +143,7 @@ namespace origin {
 
 	void PhysXAPI::Init()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		s_Instance = this;
 
@@ -166,7 +166,7 @@ namespace origin {
 
 	void PhysXAPI::OnSimulationStart()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		s_PhysXData->PhysXPvd = PxCreatePvd(*PhysXAPI::GetFoundation());
 
@@ -190,7 +190,7 @@ namespace origin {
 
 	void PhysXAPI::OnSimulationStop()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		PxCloseExtensions();
 		s_PhysXData->PhysxPhysics->release();
@@ -198,7 +198,7 @@ namespace origin {
 
 	void PhysXAPI::Shutdown()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		s_PhysXData->PhysxCPUDispatcher->release();
 		s_PhysXData->PhysxFoundation->release();

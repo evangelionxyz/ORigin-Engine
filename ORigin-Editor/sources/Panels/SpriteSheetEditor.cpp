@@ -15,7 +15,7 @@ namespace origin
 	SpriteSheetEditor::SpriteSheetEditor()
 		: m_ViewportSize(0.0f)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		m_Camera.InitOrthographic(10.0f, 0.1f, 10.0f);
 		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
@@ -36,14 +36,20 @@ namespace origin
 
 	void SpriteSheetEditor::CreateNewSpriteSheet()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		m_SpriteSheet = SpriteSheet::Create();
 	}
 
 	void SpriteSheetEditor::SetSelectedSpriteSheet(AssetHandle handle)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
+
+		// Serialize before close the previous sprite
+		if (!m_CurrentFilepath.empty())
+		{
+			Serialize(m_CurrentFilepath);
+		}
 
 		Reset();
 		m_SpriteSheet = AssetManager::GetAsset<SpriteSheet>(handle);
@@ -61,7 +67,7 @@ namespace origin
 
 	void SpriteSheetEditor::SetMainTexture(AssetHandle handle)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if (m_SpriteSheet)
 			m_SpriteSheet->SetMainTexture(handle);
@@ -69,7 +75,7 @@ namespace origin
 
 	void SpriteSheetEditor::AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		SpriteSheetData sprite {};
 		sprite.Min = min;
@@ -79,14 +85,14 @@ namespace origin
 
 	void SpriteSheetEditor::RemoveSprite(int index)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		m_SpriteSheet->Sprites.erase(m_SpriteSheet->Sprites.begin() + index);
 	}
 
 	void SpriteSheetEditor::Duplicate(int index)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		m_Controls.insert(m_Controls.begin(), m_Controls[index]);
 		m_SelectedIndex = 0;
@@ -94,7 +100,7 @@ namespace origin
 
 	void SpriteSheetEditor::OnImGuiRender()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if (m_IsOpened)
 		{
@@ -226,7 +232,7 @@ namespace origin
 
 	void SpriteSheetEditor::OnUpdate(Timestep ts)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if (!m_IsOpened)
 			return;
@@ -248,7 +254,7 @@ namespace origin
 
 		if (m_Texture)
 		{
-			PROFILER_UI();
+			OGN_PROFILER_UI();
 
 			Renderer2D::Begin(m_Camera);
 
@@ -315,7 +321,7 @@ namespace origin
 
 	bool SpriteSheetEditor::Serialize(const std::filesystem::path &filepath)
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		m_CurrentFilepath = filepath;
 		m_SpriteSheet->Sprites.clear();
@@ -355,7 +361,7 @@ namespace origin
 
 	void SpriteSheetEditor::OnEvent(Event &e)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		m_Camera.OnEvent(e);
 		EventDispatcher dispatcher(e);
@@ -365,7 +371,7 @@ namespace origin
 
 	bool SpriteSheetEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		if (e.GetMouseButton() == Mouse::ButtonLeft && IsHovered)
 		{
@@ -400,7 +406,7 @@ namespace origin
 
 	bool SpriteSheetEditor::OnKeyPressed(KeyPressedEvent &e)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		if (!IsFocused)
 			return false;
@@ -415,7 +421,7 @@ namespace origin
 
 	void SpriteSheetEditor::OnMouse(float ts)
 	{
-		PROFILER_INPUT();
+		OGN_PROFILER_INPUT();
 
 		if (m_Controls.empty())
 			return;
@@ -497,7 +503,7 @@ namespace origin
 
 	void SpriteSheetEditor::Reset()
 	{
-		PROFILER_UI();
+		OGN_PROFILER_UI();
 
 		if (m_SpriteSheet)
 		{

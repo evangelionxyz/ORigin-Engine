@@ -19,15 +19,13 @@ namespace origin
 		static Entity DuplicateEntity(Entity entity, Scene *scene);
 
 		static void AddChild(Entity destination, Entity source, Scene *scene);
-		static void DeleteChild(Entity parent, Entity child);
-		static bool ChildExists(UUID destination, UUID source, Scene *scene);
-		static bool ChildOrGrandChildExists(UUID destination, UUID source, Scene *scene);
-		static bool ParentOrGrandParentExists(UUID destinationParent, UUID source, Scene *scene);
+		static bool ChildExists(Entity destination, Entity source, Scene *scene);
+		static bool IsParent(UUID destinationParent, UUID source, Scene *scene);
 
-		static void DestroyEntityFromScene(Entity entity, Scene *scene);
+		static Entity FindChild(Entity parent, UUID uuid, Scene *scene);
 
 		template <typename... Component>
-		static void CopyComponent(entt::registry &dst, entt::registry &src, const std::vector<std::tuple<UUID, entt::entity>> enttStorage)
+		static void CopyComponent(entt::registry &dst, entt::registry &src, const std::vector<std::pair<UUID, entt::entity>> enttStorage)
 		{
 			([&]()
 			 {
@@ -36,9 +34,9 @@ namespace origin
 				 {
 					 for (auto e : enttStorage)
 					 {
-						 if (std::get<0>(e) == src.get<IDComponent>(srcEntity).ID)
+						 if (e.first == src.get<IDComponent>(srcEntity).ID)
 						 {
-							 entt::entity dstEntity = std::get<1>(e);
+							 entt::entity dstEntity = e.second;
 							 dst.emplace_or_replace<Component>(dstEntity, src.get<Component>(srcEntity));
 						 }
 					 }
@@ -48,7 +46,7 @@ namespace origin
 		}
 
 		template <typename... Component>
-		static void CopyComponent(ComponentGroup<Component...>, entt::registry &dst, entt::registry &src, const std::vector<std::tuple<UUID, entt::entity>> enttStorage)
+		static void CopyComponent(ComponentGroup<Component...>, entt::registry &dst, entt::registry &src, const std::vector<std::pair<UUID, entt::entity>> enttStorage)
 		{
 			CopyComponent<Component...>(dst, src, enttStorage);
 		}

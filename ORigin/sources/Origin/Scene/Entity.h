@@ -44,7 +44,7 @@ namespace origin {
 		template<typename T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.has<T>(m_EntityHandle);
+			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
 		}
 
 		template<typename T>
@@ -80,7 +80,6 @@ namespace origin {
 		}
 
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
-		bool HasChildren() { return GetComponent<IDComponent>().Children.size() > 0; }
 
 		operator bool() const { return m_EntityHandle != entt::null && m_Scene != nullptr; }
 		operator entt::entity() const { return m_EntityHandle; }

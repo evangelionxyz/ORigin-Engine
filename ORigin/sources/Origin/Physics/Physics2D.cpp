@@ -33,12 +33,12 @@ namespace origin {
 	Physics2D::Physics2D(Scene* scene)
 		: m_Context(scene)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 	}
 
 	void Physics2D::CreateRevoluteJoint(RevoluteJoint2DComponent rjc, b2Body* body, b2Vec2 anchorPoint)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		b2RevoluteJointDef jointDef;
 
@@ -63,7 +63,7 @@ namespace origin {
 
 	void Physics2D::CreateBoxCollider(BoxCollider2DComponent bc2d, b2Body* body, b2Vec2 boxSize)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		b2PolygonShape boxShape;
 		boxShape.SetAsBox(boxSize.x, boxSize.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
@@ -82,7 +82,7 @@ namespace origin {
 
 	void Physics2D::CreateCircleCollider(CircleCollider2DComponent cc2d, b2Body* body, float radius)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		b2CircleShape circleShape;
 		circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
@@ -103,7 +103,7 @@ namespace origin {
 
 	void Physics2D::Simulate(float deltaTime)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		constexpr int32_t velocityIterations = 6;
 		constexpr int32_t positionIterations = 2;
@@ -150,7 +150,7 @@ namespace origin {
 
 	void Physics2D::OnSimulationStart()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		m_World = new b2World({ 0.0f, -9.81f });
 
@@ -231,7 +231,7 @@ namespace origin {
 
 	void Physics2D::OnSimulationStop()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		auto view = m_Context->m_Registry.view<Rigidbody2DComponent, RevoluteJoint2DComponent>();
 		for (entt::entity e : view)

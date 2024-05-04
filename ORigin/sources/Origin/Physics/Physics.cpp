@@ -9,7 +9,7 @@ namespace origin {
 
 	void Physics::Init()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		switch (PhysicsAPI::Current())
 		{
@@ -24,7 +24,7 @@ namespace origin {
 
 	void Physics::Shutdown()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		switch (PhysicsAPI::Current())
 		{

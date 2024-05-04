@@ -1,23 +1,16 @@
 Scene: scene.org
 Entities:
-  - Entity: 5709039450732960902
+  - Entity: 13882423529670346393
     Parent: 10778211267950868692
     Children:
-      []
+      - ID: 9098481254268376831
+      - ID: 5709039450732960902
     TagComponent:
-      Tag: Floor
+      Tag: Long Floor
     TransformComponent:
-      Translation: [38, -1, 0.195783257]
+      Translation: [32.3197708, -1, 0]
       Rotation: [0, -0, 0]
-      Scale: [8, 1, 1]
-    SpriteRenderer2DComponent:
-      Color: [1, 1, 1, 1]
-      Handle: 3934599823597170524
-      Min: [0.00848791841, 0.0132773221]
-      Max: [0.991733551, 0.243229061]
-      TillingFactor: [1, 1]
-      FlipX: false
-      FlipY: false
+      Scale: [1, 1, 1]
     Rigidbody2DComponent:
       BodyType: Static
       Mass: 1
@@ -35,14 +28,86 @@ Entities:
       FixedRotation: false
     BoxCollider2DComponent:
       Group: 1
-      Offset: [0, 0]
-      Size: [0.439999998, 0.389999986]
+      Offset: [3.54999995, 0]
+      Size: [7.25, 0.409999996]
       Density: 1
       Friction: 0.5
       Restitution: 0
       RestitutionThreshold: 0.5
-  - Entity: 9572226311135308748
+  - Entity: 9600531194733484133
+    Parent: 9149856302459705118
+    Children:
+      []
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [25.1273651, 2.97309494, 0.729363203]
+      Rotation: [0, -0, 0]
+      Scale: [2.05133724, 6.1540122, 2.05133724]
+    SpriteRenderer2DComponent:
+      Color: [0.54273504, 0.54273504, 0.54273504, 1]
+      Handle: 17206187017932678793
+      Min: [0.352707267, 0.0538226962]
+      Max: [0.574356556, 0.525627911]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 11067024824315809625
+    Parent: 9149856302459705118
+    Children:
+      []
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [40, 1.5, 0.449999988]
+      Rotation: [0, -0, 0]
+      Scale: [2.55580139, 7.66740465, 2.55580139]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.963620424, 0.290598273, 1]
+      Handle: 17206187017932678793
+      Min: [0.352707267, 0.0538226962]
+      Max: [0.574356556, 0.525627911]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 16679274811359657560
+    Parent: 9149856302459705118
+    Children:
+      []
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [30.1215706, 3.17659044, 0.729363203]
+      Rotation: [0, -0, 0]
+      Scale: [1.39546752, 4.1864028, 1.39546752]
+    SpriteRenderer2DComponent:
+      Color: [0.54273504, 0.54273504, 0.54273504, 1]
+      Handle: 17206187017932678793
+      Min: [0.352707267, 0.0538226962]
+      Max: [0.574356556, 0.525627911]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 9149856302459705118
     Parent: 0
+    Children:
+      - ID: 16180189091663601701
+      - ID: 9572226311135308748
+      - ID: 14376546000169319814
+      - ID: 12348326963234330776
+      - ID: 17404695385496278295
+      - ID: 14651114759249382998
+      - ID: 16679274811359657560
+      - ID: 11067024824315809625
+      - ID: 9600531194733484133
+    TagComponent:
+      Tag: Plants
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 16180189091663601701
+    Parent: 9149856302459705118
     Children:
       []
     TagComponent:
@@ -155,25 +220,25 @@ Entities:
               Min: [0, 0]
               Max: [1, 1]
     TransformComponent:
-      Translation: [33.3117142, -0.118474081, -0.416459471]
-      Rotation: [0, 0, 0]
-      Scale: [4.21639967, 4.21639967, 4.21639967]
+      Translation: [37.5072212, -0.225314617, -0.416459471]
+      Rotation: [0, -0, 0.317197382]
+      Scale: [2.78282499, 2.78282499, 2.78282356]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 8657379106223608274
+      Handle: 3928313702495440480
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]
       FlipX: false
       FlipY: false
-  - Entity: 9098481254268376831
-    Parent: 10778211267950868692
+  - Entity: 5709039450732960902
+    Parent: 13882423529670346393
     Children:
       []
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [31, -1, 0.195783257]
+      Translation: [7, -0, 0]
       Rotation: [0, -0, 0]
       Scale: [8, 1, 1]
     SpriteRenderer2DComponent:
@@ -184,29 +249,149 @@ Entities:
       TillingFactor: [1, 1]
       FlipX: false
       FlipY: false
-    Rigidbody2DComponent:
-      BodyType: Static
-      Mass: 1
-      LinearDamping: 0
-      AngularDamping: 0.00999999978
-      RotationalInertia: 0
-      GravityScale: 1
-      MassCenter: [0, 0]
-      FreezePositionX: false
-      FreezePositionY: false
-      AllowSleeping: true
-      Awake: true
-      Bullet: true
-      Enabled: true
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Group: 1
-      Offset: [0, 0]
-      Size: [0.439999998, 0.389999986]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
+  - Entity: 9572226311135308748
+    Parent: 9149856302459705118
+    Children:
+      []
+    TagComponent:
+      Tag: Plant2
+    SpriteAnimationComponent:
+      States:
+        - Name: Basic
+          Looping: true
+          MaxFrame: 81
+          Speed: 15
+          Frames:
+            - ID: 3928313702495440480
+              FrameBegin: 0
+              FrameEnd: 4
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6970804806650112084
+              FrameBegin: 4
+              FrameEnd: 8
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 14427151584699523701
+              FrameBegin: 8
+              FrameEnd: 12
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10378851618417400593
+              FrameBegin: 12
+              FrameEnd: 16
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 13991125471959146751
+              FrameBegin: 16
+              FrameEnd: 20
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9932631895147486376
+              FrameBegin: 20
+              FrameEnd: 24
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8862920861694661143
+              FrameBegin: 24
+              FrameEnd: 28
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10788692318860028174
+              FrameBegin: 28
+              FrameEnd: 32
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9743785820056772631
+              FrameBegin: 32
+              FrameEnd: 36
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 650055865158184995
+              FrameBegin: 36
+              FrameEnd: 40
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15244501355312701797
+              FrameBegin: 40
+              FrameEnd: 44
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 973473145379625278
+              FrameBegin: 44
+              FrameEnd: 48
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 15312675673411365589
+              FrameBegin: 48
+              FrameEnd: 52
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17069388792751531953
+              FrameBegin: 52
+              FrameEnd: 56
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 17997759306417435537
+              FrameBegin: 56
+              FrameEnd: 60
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 6646289908706380991
+              FrameBegin: 60
+              FrameEnd: 64
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 8657379106223608274
+              FrameBegin: 64
+              FrameEnd: 68
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 4488667565370796078
+              FrameBegin: 68
+              FrameEnd: 72
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 10972704791246345326
+              FrameBegin: 72
+              FrameEnd: 76
+              Min: [0, 0]
+              Max: [1, 1]
+            - ID: 9467822418084003620
+              FrameBegin: 76
+              FrameEnd: 80
+              Min: [0, 0]
+              Max: [1, 1]
+    TransformComponent:
+      Translation: [32.6809196, 0.0554472357, -0.075000003]
+      Rotation: [0, 0, 0]
+      Scale: [4.21639967, 4.21639967, 4.21639967]
+    SpriteRenderer2DComponent:
+      Color: [1, 0.93074733, 0.662393153, 1]
+      Handle: 3928313702495440480
+      Min: [0, 0]
+      Max: [1, 1]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
+  - Entity: 9098481254268376831
+    Parent: 13882423529670346393
+    Children:
+      []
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [8, 1, 1]
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+      Handle: 3934599823597170524
+      Min: [0.00848791841, 0.0132773221]
+      Max: [0.991733551, 0.243229061]
+      TillingFactor: [1, 1]
+      FlipX: false
+      FlipY: false
   - Entity: 12823615331085326154
     Parent: 2095414653173010088
     Children:
@@ -214,9 +399,9 @@ Entities:
     TagComponent:
       Tag: bg2
     TransformComponent:
-      Translation: [26.1474361, -2.0060904, -0.50103116]
-      Rotation: [0, -0, 0]
-      Scale: [1.92054188, 7.6149416, 0.000864151574]
+      Translation: [27.5662956, -0.701661944, -0.50103116]
+      Rotation: [0, -0, -0.43663156]
+      Scale: [3.43817234, 8.94080734, 0.000864151516]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       Handle: 14198654532143467001
@@ -369,7 +554,7 @@ Entities:
       Scale: [1.833619, 1.50999999, 1.50999999]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 7451677293972026887
+      Handle: 1917871357779178827
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]
@@ -399,7 +584,7 @@ Entities:
       Restitution: 0
       RestitutionThreshold: 0.5
   - Entity: 14376546000169319814
-    Parent: 0
+    Parent: 9149856302459705118
     Children:
       []
     TagComponent:
@@ -517,7 +702,7 @@ Entities:
       Scale: [4.21639967, 4.21639967, 4.21639967]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 8657379106223608274
+      Handle: 3928313702495440480
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]
@@ -703,7 +888,7 @@ Entities:
       Scale: [1.2143172, 1, 1]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 7451677293972026887
+      Handle: 1917871357779178827
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]
@@ -739,8 +924,8 @@ Entities:
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [22.5, -3, -0.279000014]
-      Rotation: [0, -0, 0]
+      Translation: [22.5, -3, 0]
+      Rotation: [0, 0, 0]
       Scale: [8, 1, 1]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
@@ -774,7 +959,7 @@ Entities:
       Restitution: 0
       RestitutionThreshold: 0.5
   - Entity: 12348326963234330776
-    Parent: 0
+    Parent: 9149856302459705118
     Children:
       []
     TagComponent:
@@ -1222,19 +1407,19 @@ Entities:
               Min: [0, 0]
               Max: [1, 1]
     TransformComponent:
-      Translation: [14.3858595, -2.05878901, -0.200000003]
+      Translation: [14, -2, -0.200000003]
       Rotation: [0, 0, 0]
       Scale: [3.40859938, 3.40859938, 3.40859938]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 6654342938585012636
+      Handle: 9299424298986850345
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]
       FlipX: false
       FlipY: false
   - Entity: 17404695385496278295
-    Parent: 0
+    Parent: 9149856302459705118
     Children:
       []
     TagComponent:
@@ -1682,12 +1867,12 @@ Entities:
               Min: [0, 0]
               Max: [1, 1]
     TransformComponent:
-      Translation: [6.05959797, -0.205603927, -0.275000006]
-      Rotation: [0, 0, 0]
+      Translation: [6.05959797, -0.205603957, -0.275000006]
+      Rotation: [0, -0, 0]
       Scale: [3.40859938, 3.40859938, 3.40859938]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 6654342938585012636
+      Handle: 9299424298986850345
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]
@@ -1715,7 +1900,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
   - Entity: 14651114759249382998
-    Parent: 0
+    Parent: 9149856302459705118
     Children:
       []
     TagComponent:
@@ -2163,12 +2348,12 @@ Entities:
               Min: [0, 0]
               Max: [1, 1]
     TransformComponent:
-      Translation: [9.69252014, -0.246066466, -0.150000006]
-      Rotation: [0, 0, 0]
+      Translation: [9.69252014, -0.221490502, -0.150000006]
+      Rotation: [0, -0, 0]
       Scale: [1.69999993, 1.69999993, 1.69999993]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 6654342938585012636
+      Handle: 9299424298986850345
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]
@@ -2181,7 +2366,7 @@ Entities:
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [15.5, -3, 0.300000012]
+      Translation: [15.5, -3, 0]
       Rotation: [0, 0, 0]
       Scale: [8, 1, 1]
     SpriteRenderer2DComponent:
@@ -2240,9 +2425,9 @@ Entities:
     TagComponent:
       Tag: bg2
     TransformComponent:
-      Translation: [2.06899905, 0.248419523, -2.72825599]
+      Translation: [3.34697318, 0.223843127, -2.72825599]
       Rotation: [0, -0, 0]
-      Scale: [6.85417843, 4.32268763, 1.07440007]
+      Scale: [8.5655241, 4.32268763, 1.07440007]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
       Handle: 14198654532143467001
@@ -2258,7 +2443,7 @@ Entities:
     TagComponent:
       Tag: bg1
     TransformComponent:
-      Translation: [-1.93249035, -0.244247377, -1.14589775]
+      Translation: [-1.17803907, 0.152782246, -1.14589775]
       Rotation: [0, -0, 0]
       Scale: [5.03983688, 2.15594172, 0.790000021]
     SpriteRenderer2DComponent:
@@ -2332,7 +2517,7 @@ Entities:
     TagComponent:
       Tag: Floor
     TransformComponent:
-      Translation: [0, -1, 0.300000012]
+      Translation: [0.327965021, -1.36864638, 0.300000012]
       Rotation: [0, 0, 0]
       Scale: [8, 1, 1]
     SpriteRenderer2DComponent:
@@ -2373,8 +2558,7 @@ Entities:
       - ID: 8781994415418087562
       - ID: 9184892619132977482
       - ID: 8004108025286163826
-      - ID: 9098481254268376831
-      - ID: 5709039450732960902
+      - ID: 13882423529670346393
     TagComponent:
       Tag: Floors
     TransformComponent:
@@ -2661,20 +2845,13 @@ Entities:
               Max: [1, 1]
     ScriptComponent:
       ClassName: SandboxProject.PlayerMovement
-      ScriptFields:
-        - Name: Speed
-          Type: Float
-          Data: 3
-        - Name: JumpHeight
-          Type: Float
-          Data: 1
     TransformComponent:
-      Translation: [-2.46775746, -0.118780449, -0.100000001]
+      Translation: [35.7202568, 0.834101856, 0]
       Rotation: [0, 0, 0]
-      Scale: [1.65999997, 1.65999997, 1.65999997]
+      Scale: [2.73899984, 2.73899984, 2.73899984]
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-      Handle: 8891646013013743771
+      Handle: 15793468258553685431
       Min: [0, 0]
       Max: [1, 1]
       TillingFactor: [1, 1]

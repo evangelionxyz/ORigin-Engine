@@ -231,6 +231,7 @@ namespace origin {
 					break;
 			}
 		}
+
 		else if (m_ProjectionType == ProjectionType::Orthographic)
 		{
 			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))

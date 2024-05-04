@@ -20,7 +20,7 @@ namespace origin
 	{
 	public:
 		OpenGLModel() = default;
-		OpenGLModel(const std::string& filepath);
+		OpenGLModel(const std::filesystem::path & filepath);
 
 		~OpenGLModel() override;
 		void Draw() override;
@@ -30,7 +30,7 @@ namespace origin
 		void RemoveMaterial() override;
 
 		std::shared_ptr<Material>& GetMaterial() override { return m_Material; }
-		const std::string& GetFilepath() const override { return m_Filepath; }
+		const std::filesystem::path &GetFilepath() const override { return m_Filepath; }
 
 	private:
 		struct ModelBufferData
@@ -49,7 +49,7 @@ namespace origin
 		std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
 
 		std::shared_ptr<Material> m_Material;
-		std::string m_Filepath;
+		std::filesystem::path m_Filepath;
 
 		std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>> m_Textures;
 	};

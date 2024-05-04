@@ -12,7 +12,7 @@ namespace origin
 	// OpenGL VertexBuffer
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -21,7 +21,7 @@ namespace origin
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(void *vertices, uint32_t size)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -30,7 +30,7 @@ namespace origin
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		OpenGLVertexBuffer::Unbind();
 		glDeleteBuffers(1, &m_RendererID);
@@ -38,21 +38,21 @@ namespace origin
 
 	void OpenGLVertexBuffer::Bind() const
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	}
 
 	void OpenGLVertexBuffer::Unbind() const
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	void OpenGLVertexBuffer::SetData(const void *data, uint32_t size)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
@@ -62,7 +62,7 @@ namespace origin
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t *indices, uint32_t count)
 		: m_Count(count)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
@@ -72,7 +72,7 @@ namespace origin
 	OpenGLIndexBuffer::OpenGLIndexBuffer(std::vector<uint32_t> indices)
 		: m_Count(indices.size() * sizeof(uint32_t))
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
@@ -81,7 +81,7 @@ namespace origin
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		OpenGLIndexBuffer::Unbind();
 		glDeleteBuffers(1, &m_RendererID);
@@ -89,14 +89,14 @@ namespace origin
 
 	void OpenGLIndexBuffer::Bind() const
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 	}
 
 	void OpenGLIndexBuffer::Unbind() const
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}

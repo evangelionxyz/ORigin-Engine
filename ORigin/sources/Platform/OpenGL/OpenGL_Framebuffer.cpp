@@ -29,7 +29,7 @@ namespace origin {
 
 		static void AttachColorTexture2D(uint32_t textureID, GLenum internalFormat, GLenum format, FramebufferSpecification spec, int index)
 		{
-			PROFILER_RENDERING();
+			OGN_PROFILER_RENDERING();
 
 			bool multisampled = spec.Samples > 1;
 			if (multisampled)
@@ -51,7 +51,7 @@ namespace origin {
 
 		static void AttachDepthTexture2D(uint32_t textureID, GLenum textureFormat, GLenum attachmentType, FramebufferSpecification spec)
 		{
-			PROFILER_RENDERING();
+			OGN_PROFILER_RENDERING();
 
 			bool multisampled = spec.Samples > 1;
 			if (multisampled)
@@ -91,7 +91,7 @@ namespace origin {
 
 		static void AttachDepthTextureCubeMap(uint32_t textureID, GLenum textureFormat, GLenum attachmentType, FramebufferSpecification spec)
 		{
-			PROFILER_RENDERING();
+			OGN_PROFILER_RENDERING();
 
 			for (int i = 0; i < 6; i++)
 			{
@@ -150,7 +150,7 @@ namespace origin {
 
 	OpenGL_Framebuffer::~OpenGL_Framebuffer()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glDeleteFramebuffers(1, &m_RendererID);
 		glDeleteRenderbuffers(1, &m_Renderbuffer);
@@ -160,7 +160,7 @@ namespace origin {
 
 	void OpenGL_Framebuffer::Invalidate()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (m_RendererID)
 		{
@@ -244,7 +244,7 @@ namespace origin {
 
 	void OpenGL_Framebuffer::Bind()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 		glViewport(0, 0, m_Spec.Width, m_Spec.Height);
@@ -252,14 +252,14 @@ namespace origin {
 
 	void OpenGL_Framebuffer::Unbind()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 	}
 
 	void OpenGL_Framebuffer::Resize(uint32_t width, uint32_t height)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
 		{
@@ -275,7 +275,7 @@ namespace origin {
 
 	int OpenGL_Framebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		bool check = attachmentIndex < m_ColorAttachments.size();
 		if (!check)
@@ -294,7 +294,7 @@ namespace origin {
 
 	void OpenGL_Framebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,

@@ -21,7 +21,7 @@ namespace origin {
 
 	WinWindow::WinWindow(const char* title, uint32_t width, uint32_t height, bool maximized)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 #if defined(OGN_DEBUG)
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
@@ -66,7 +66,7 @@ namespace origin {
 
 	void WinWindow::SetEventCallback(const std::function<void(Event&)>& callback)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		m_Data.EventCallback = callback;
 		WindowCallbacks();
@@ -74,7 +74,7 @@ namespace origin {
 
 	void WinWindow::OnUpdate()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		glfwPollEvents();
 		glfwSwapBuffers(m_MainWindow);
@@ -82,7 +82,7 @@ namespace origin {
 
 	void WinWindow::SetVSync(bool enable)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		glfwSwapInterval(enable ? 1 : 0);
 		m_Data.VSync = enable;
@@ -95,7 +95,7 @@ namespace origin {
 
 	void WinWindow::SetFullscreen(bool enable)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		if (enable)
 		{
@@ -112,7 +112,7 @@ namespace origin {
 
 	void WinWindow::SetIcon(const char* filepath)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		stbi_set_flip_vertically_on_load(0);
 		int width, height, bpp;
@@ -128,7 +128,7 @@ namespace origin {
 
 	void WinWindow::WindowCallbacks()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		glfwSetWindowUserPointer(m_MainWindow, &m_Data);
 

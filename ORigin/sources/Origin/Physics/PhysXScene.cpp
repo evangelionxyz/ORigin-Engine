@@ -19,7 +19,7 @@ namespace origin {
 
 	void PhysXScene::OnSimulationStart()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		PhysXAPI::Get().OnSimulationStart();
 
@@ -32,13 +32,18 @@ namespace origin {
 
 		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
 		{
+			OGN_PROFILER_SCOPE("Creating BoxColliderComponent");
+
 			Entity entity = { id, m_Context };
 			if (!entity.GetComponent<BoxColliderComponent>().Rigidbody)
 				entity.GetComponent<BoxColliderComponent>().Create(entity, this);
+
 		}
 
 		for (auto& id : m_Context->m_Registry.view<SphereColliderComponent>())
 		{
+			OGN_PROFILER_SCOPE("Creating SphereColliderComponent");
+
 			Entity entity = { id, m_Context };
 			if (!entity.GetComponent<SphereColliderComponent>().Rigidbody)
 				entity.GetComponent<SphereColliderComponent>().Create(entity, this);
@@ -46,6 +51,8 @@ namespace origin {
 
 		for (auto& id : m_Context->m_Registry.view<CapsuleColliderComponent>())
 		{
+			OGN_PROFILER_SCOPE("Creating CapsuleColliderComponent");
+
 			Entity entity = { id, m_Context };
 			if (!entity.GetComponent<CapsuleColliderComponent>().Rigidbody)
 				entity.GetComponent<CapsuleColliderComponent>().Create(entity, this);
@@ -54,28 +61,32 @@ namespace origin {
 
 	void PhysXScene::OnSimulationStop()
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
 		{
+			OGN_PROFILER_SCOPE("Destroying BoxColliderComponent");
 			Entity entity = { id, m_Context };
 			entity.GetComponent<BoxColliderComponent>().Destroy();
 		}
 
 		for (auto& id : m_Context->m_Registry.view<SphereColliderComponent>())
 		{
+			OGN_PROFILER_SCOPE("Destroying SphereColliderComponent");
 			Entity entity = { id, m_Context };
 			entity.GetComponent<SphereColliderComponent>().Destroy();
 		}
 
 		for (auto& id : m_Context->m_Registry.view<CapsuleColliderComponent>())
 		{
+			OGN_PROFILER_SCOPE("Destroying CapsuleColliderComponent");
 			Entity entity = { id, m_Context };
 			entity.GetComponent<CapsuleColliderComponent>().Destroy();
 		}
 
 		for (auto& id : m_Context->m_Registry.view<RigidbodyComponent>())
 		{
+			OGN_PROFILER_SCOPE("Destroying RigidbodyComponent");
 			Entity entity = { id, m_Context };
 			auto& body = entity.GetComponent<RigidbodyComponent>().Body;
 
@@ -93,7 +104,7 @@ namespace origin {
 
 	void PhysXScene::Simulate(float deltaTime)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		m_PhysXScene->simulate(deltaTime);
 		m_PhysXScene->fetchResults(true);
@@ -121,7 +132,7 @@ namespace origin {
 
 	physx::PxRigidActor* PhysXScene::CreateActor(RigidbodyComponent& rb, const glm::vec3& position, const glm::quat& rot)
 	{
-		PROFILER_PHYSICS();
+		OGN_PROFILER_PHYSICS();
 
 		physx::PxPhysics* physics = PhysXAPI::GetPhysics();
 

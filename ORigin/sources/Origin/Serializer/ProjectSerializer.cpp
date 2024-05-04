@@ -17,7 +17,7 @@ namespace origin
 
 	bool ProjectSerializer::Serialize(const std::filesystem::path& filepath)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		const auto& config = m_Project->GetConfig();
 
@@ -57,7 +57,7 @@ namespace origin
 
 	bool ProjectSerializer::Deserialize(const std::filesystem::path& filepath)
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		auto& config = m_Project->GetConfig();
 

@@ -16,34 +16,42 @@ namespace origin {
 		static std::shared_ptr<Asset> ImportAsset(AssetHandle handle, const AssetMetadata& metadata);
 	};
 
+	class FontImporter
+	{
+	public:
+		static std::shared_ptr<Font> Import(AssetHandle handle, AssetMetadata metadata);
+		static std::shared_ptr<Font> Load(const std::filesystem::path &filepath);
+
+	};
+
 	class AudioImporter
 	{
 	public:
 		static std::shared_ptr<AudioSource> Import(AssetHandle handle, AssetMetadata metadata);
-		static std::shared_ptr<AudioSource> LoadAudioSource(const std::filesystem::path filepath);
-		static std::shared_ptr<AudioSource> LoadStreamingSource(const std::filesystem::path filepath);
+		static std::shared_ptr<AudioSource> LoadAudioSource(const std::filesystem::path &filepath);
+		static std::shared_ptr<AudioSource> LoadStreamingSource(const std::filesystem::path &filepath);
 	};
 
 	class SceneImporter
 	{
 	public:
 		static std::shared_ptr<Scene> Import(AssetHandle handle, const AssetMetadata& metadata);
-		static std::shared_ptr<Scene> LoadScene(const std::filesystem::path& filepath);
-		static AssetHandle OpenScene(const std::filesystem::path& filepath);
-		static void SaveScene(std::shared_ptr<Scene> scene, const std::filesystem::path& path);
+		static std::shared_ptr<Scene> LoadScene(const std::filesystem::path &filepath);
+		static AssetHandle OpenScene(const std::filesystem::path &filepath);
+		static void SaveScene(std::shared_ptr<Scene> scene, const std::filesystem::path &path);
 	};
 
 	class TextureImporter
 	{
 	public:
 		static std::shared_ptr<Texture2D> ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata);
-		static std::shared_ptr<Texture2D> LoadTexture2D(const std::filesystem::path& path);
+		static std::shared_ptr<Texture2D> LoadTexture2D(const std::filesystem::path &path);
 	};
 
 	class ModelImporter
 	{
 	public:
-		static std::shared_ptr<Model> Import(AssetHandle handle, const AssetMetadata& metadata);
+		static std::shared_ptr<Model> Import(AssetHandle handle, const AssetMetadata &metadata);
 		static std::shared_ptr<Model> Load(const std::filesystem::path& path);
 	};
 

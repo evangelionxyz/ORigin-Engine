@@ -14,14 +14,14 @@ namespace origin {
 
 	ParticleSystem::ParticleSystem()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		m_ParticlePool.resize(m_PoolIndex + 1);
 	}
 
 	void ParticleSystem::OnUpdate(float deltaTime)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		for (auto& particle : m_ParticlePool)
 		{
@@ -42,7 +42,7 @@ namespace origin {
 
 	void ParticleSystem::OnRender()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		for (auto& particle : m_ParticlePool)
 		{
@@ -67,7 +67,7 @@ namespace origin {
 
 	void ParticleSystem::Emit(const ParticleProps& props)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		Particle& particle = m_ParticlePool[m_PoolIndex];
 		particle.Active = true;
@@ -94,7 +94,7 @@ namespace origin {
 
 	void ParticleSystem::Emit(ParticleComponent& component, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation, int entityID)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		m_EntityID = entityID;
 
@@ -123,7 +123,7 @@ namespace origin {
 
 	std::shared_ptr<ParticleSystem> ParticleSystem::Create()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		return std::make_shared<ParticleSystem>();
 	}

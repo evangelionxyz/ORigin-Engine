@@ -8,7 +8,7 @@
 #include "ScriptableEntity.h"
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
-#include "Origin/Instrumetation/Instrumentor.h"
+#include "Origin/Profiler/Profiler.h"
 #include "Origin/Animation/Animation.h"
 #include "origin/Physics/Contact2DListener.h"
 #include "Origin/Physics/Physics2D.h"
@@ -30,7 +30,7 @@ namespace origin
 
 	Scene::Scene()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		if (!m_PhysicsScene)
 			m_PhysicsScene = PhysicsScene::Create(this);
@@ -40,13 +40,13 @@ namespace origin
 
 	Scene::~Scene()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 		delete m_Physics2D;
 	}
 
 	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		auto newScene = std::make_shared<Scene>();
 
@@ -55,7 +55,7 @@ namespace origin
 
 		entt::registry &srcSceneRegistry = other->m_Registry;
 		entt::registry &dstSceneRegistry = newScene->m_Registry;
-		std::vector<std::tuple<UUID, entt::entity>> enttStorage;
+		std::vector<std::pair<UUID, entt::entity>> enttStorage;
 		auto newEntity = Entity();
 
 		// create entities in new scene
@@ -67,7 +67,6 @@ namespace origin
 			newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, newScene.get());
 			auto &eIDC = newEntity.GetComponent<IDComponent>();
 			eIDC.Parent = idc.Parent;
-			eIDC.Children = idc.Children;
 
 			enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
 		}
@@ -78,12 +77,12 @@ namespace origin
 
 	Entity Scene::GetEntityWithUUID(UUID uuid)
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		for (auto e : m_EntityStorage)
 		{
-			if (std::get<0>(e) == uuid)
-				return { std::get<1>(e), this };
+			if (e.first == uuid)
+				return { e.second, this };
 		}
 
 		return {};
@@ -91,7 +90,7 @@ namespace origin
 
 	Entity Scene::FindEntityByName(std::string_view name)
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		auto view = m_Registry.view<TagComponent>();
 		for (auto entity : view)
@@ -104,9 +103,26 @@ namespace origin
 		return {};
 	}
 
+	void Scene::DestroyEntity(Entity entity)
+	{
+		m_Registry.view<IDComponent>().each([&](entt::entity e, IDComponent idc)
+		{
+			if(idc.Parent == entity.GetUUID())
+				DestroyEntity({e, this});
+		});
+
+		m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
+		[&](auto e)
+		{
+			return e.first == entity.GetUUID();
+		}), m_EntityStorage.end());
+
+		m_Registry.destroy(entity);
+	}
+
 	Entity Scene::GetPrimaryCameraEntity()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		const auto &view = m_Registry.view<CameraComponent>();
 		for (auto &entity : view)
@@ -120,7 +136,7 @@ namespace origin
 
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
@@ -204,7 +220,7 @@ namespace origin
 
 	void Scene::OnRuntimeStart()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		m_Running = true;
 
@@ -240,7 +256,7 @@ namespace origin
 
 	void Scene::OnRuntimeStop()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		m_Running = false;
 		ScriptEngine::ClearSceneContext();
@@ -264,7 +280,7 @@ namespace origin
 
 	void Scene::OnEditorUpdate(Timestep ts, EditorCamera& editorCamera)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
@@ -314,7 +330,7 @@ namespace origin
 
 	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& editorCamera)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
@@ -388,7 +404,7 @@ namespace origin
 
 	void Scene::OnSimulationStart()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		m_Running = true;
 
@@ -424,7 +440,7 @@ namespace origin
 
 	void Scene::OnSimulationStop()
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		m_Running = false;
 
@@ -450,10 +466,7 @@ namespace origin
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
 	{
-		PROFILER_RENDERING();
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		OGN_PROFILER_RENDERING();
 
 		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
 		{
@@ -470,7 +483,7 @@ namespace origin
 		// Render All entities
 		for (auto e : m_EntityStorage)
 		{
-			Entity entity { std::get<1>(e), this };
+			Entity entity { e.second, this };
 			auto &tc = entity.GetComponent<TransformComponent>();
 
 			// 2D Quads
@@ -491,14 +504,14 @@ namespace origin
 						}
 					}
 				}
-				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(std::get<1>(e)));
+				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(e.second));
 			}
 
 			if (entity.HasComponent<CircleRendererComponent>())
 			{
 				auto &cc = entity.GetComponent<CircleRendererComponent>();
 				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
-															 static_cast<int>(std::get<1>(e)));
+															 static_cast<int>(e.second));
 			}
 
 			// Particles
@@ -509,7 +522,7 @@ namespace origin
 				{
 					pc.Particle.Emit(pc,
 													 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-													 tc.Scale, pc.Rotation, static_cast<int>(std::get<1>(e))
+													 tc.Scale, pc.Rotation, static_cast<int>(e.second)
 					);
 				}
 
@@ -520,7 +533,23 @@ namespace origin
 			if (entity.HasComponent<TextComponent>())
 			{
 				auto &text = entity.GetComponent<TextComponent>();
-				Renderer2D::DrawString(text.TextString, tc.GetTransform(), text, static_cast<int>(std::get<1>(e)));
+				glm::mat4 transform = glm::mat4(1.0f);
+
+				if (text.ScreenSpace)
+				{
+					const float ratio = camera.GetAspectRatio();
+					glm::vec2 scale = glm::vec2(tc.Scale.x, tc.Scale.y * ratio);
+					transform = glm::scale(tc.GetTransform(), glm::vec3(scale, 1.0f));
+					glm::mat4 invertedCamTransform = glm::inverse(camera.GetViewProjection());
+					transform = invertedCamTransform * transform;
+				}
+				else
+				{
+					transform = tc.GetTransform();
+				}
+
+				if(text.FontHandle != 0)
+					Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
 			}
 		}
 
@@ -555,10 +584,10 @@ namespace origin
 
 	void Scene::RenderScene(const EditorCamera& camera)
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
 
 		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
 		{
@@ -576,7 +605,7 @@ namespace origin
 		// Render All entities
 		for (auto e : m_EntityStorage)
 		{
-			Entity entity { std::get<1>(e), this };
+			Entity entity { e.second, this };
 			auto &tc = entity.GetComponent<TransformComponent>();
 
 			// 2D Quads
@@ -597,14 +626,14 @@ namespace origin
 						}
 					}
 				}
-				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(std::get<1>(e)));
+				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(e.second));
 			}
 
 			if (entity.HasComponent<CircleRendererComponent>())
 			{
 				auto &cc = entity.GetComponent<CircleRendererComponent>();
 				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
-															 static_cast<int>(std::get<1>(e)));
+															 static_cast<int>(e.second));
 			}
 
 			// Particles
@@ -615,7 +644,7 @@ namespace origin
 				{
 					pc.Particle.Emit(pc,
 													 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-													 tc.Scale, pc.Rotation, static_cast<int>(std::get<1>(e))
+													 tc.Scale, pc.Rotation, static_cast<int>(e.second)
 					);
 				}
 
@@ -626,7 +655,48 @@ namespace origin
 			if (entity.HasComponent<TextComponent>())
 			{
 				auto &text = entity.GetComponent<TextComponent>();
-				Renderer2D::DrawString(text.TextString, tc.GetTransform(), text, static_cast<int>(std::get<1>(e)));
+				glm::mat4 transform = glm::mat4(1.0f);
+				glm::mat4 invertedCamTransform = glm::mat4(1.0f);
+
+				if (text.ScreenSpace)
+				{
+					if (camera.IsPerspective())
+					{
+						Entity primaryCam = GetPrimaryCameraEntity();
+						if (primaryCam)
+						{
+							const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
+							const auto &ccTC = primaryCam.GetComponent<TransformComponent>();
+							const float ratio = cc.GetAspectRatio();
+
+							glm::vec2 scale = glm::vec2(tc.Scale.x, tc.Scale.y * ratio);
+
+							glm::vec3 textTranslation = glm::vec3(tc.Translation.x, tc.Translation.y, 0.0f);
+
+							transform = glm::translate(glm::mat4(1.0f), textTranslation)
+								* glm::toMat4(glm::quat(ccTC.Rotation))
+								* glm::scale(glm::mat4(1.0f), glm::vec3(scale, 0.0f));
+
+							invertedCamTransform = glm::inverse(cc.GetViewProjection());
+						}
+					}
+					else
+					{
+						const float ratio = camera.GetAspectRatio();
+						glm::vec2 scale = glm::vec2(tc.Scale.x, tc.Scale.y * ratio);
+						transform = glm::scale(tc.GetTransform(), glm::vec3(scale, 0.0f));
+						invertedCamTransform = glm::inverse(camera.GetViewProjection());
+					}
+
+					transform = invertedCamTransform * transform;
+				}
+				else
+				{
+					transform = tc.GetTransform();
+				}
+
+				if(text.FontHandle != 0)
+					Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
 			}
 		}
 
@@ -660,7 +730,7 @@ namespace origin
 	
 	void Scene::OnShadowRender()
 	{
-		PROFILER_RENDERING();
+		OGN_PROFILER_RENDERING();
 
 		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& light : dirLight)
@@ -689,14 +759,14 @@ namespace origin
 
 	void Scene::UpdateEditorTransform()
 	{
-		PROFILER_FUNCTION();
+		OGN_PROFILER_FUNCTION();
 
 		auto &view = m_Registry.view<IDComponent, TransformComponent>();
 		for (auto entity : view)
 		{
 			auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
 
-			if (idc.Parent != 0)
+			if (idc.Parent)
 			{
 				auto &ptc = GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
 				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(ptc.WorldRotation), tc.Translation);
@@ -715,7 +785,7 @@ namespace origin
 
 	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
 	{
-		PROFILER_SCENE();
+		OGN_PROFILER_SCENE();
 
 		const auto& view = m_Registry.view<CameraComponent>();
 		for (auto& e : view)

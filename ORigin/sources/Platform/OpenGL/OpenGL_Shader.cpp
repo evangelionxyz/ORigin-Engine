@@ -19,7 +19,7 @@ namespace origin {
   namespace Utils{
     static GLenum ShaderTypeFromString(const std::string& type, const std::string& filepath = std::string())
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       if (type == "vertex") return GL_VERTEX_SHADER;
       if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
@@ -36,7 +36,7 @@ namespace origin {
 
     static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       switch (stage)
       {
@@ -51,7 +51,7 @@ namespace origin {
 
     static const char* GLShaderStageToString(GLenum stage)
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       switch (stage)
       {
@@ -71,7 +71,7 @@ namespace origin {
 
     static void CreateCachedDirectoryIfNeeded()
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       std::string cachedDirectory = GetCacheDirectory();
       if (!std::filesystem::exists(cachedDirectory))
@@ -80,7 +80,7 @@ namespace origin {
 
     static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       switch(stage)
       {
@@ -95,7 +95,7 @@ namespace origin {
 
     static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       switch (stage)
       {
@@ -110,7 +110,7 @@ namespace origin {
 
     static const char* ShaderDataTypeToString(GLenum type)
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       switch (type)
       {
@@ -123,7 +123,7 @@ namespace origin {
 
     static const char* ShaderDataTypeToString(ShaderType type)
     {
-      PROFILER_RENDERING();
+      OGN_PROFILER_RENDERING();
 
       switch (type)
       {
@@ -137,7 +137,7 @@ namespace origin {
 
 	ShaderProgramSources OpenGLShader::ParseShader(const std::string& filepath)
 	{
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
 		std::ifstream stream(filepath);
 
@@ -179,9 +179,9 @@ namespace origin {
   OpenGLShader::OpenGLShader(const std::string& filepath, bool enableSpirv, bool recompileSpirv)
     : m_Filepath(filepath), m_RendererID(0), m_EnableSpirv(enableSpirv), m_RecompileSPIRV(recompileSpirv)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     OGN_CORE_TRACE("Trying to load Shader : {}", m_Filepath);
 
@@ -217,7 +217,7 @@ namespace origin {
   OpenGLShader::OpenGLShader(const std::string &name, const std::string &filepath)
     : m_Name(name), m_Filepath(filepath), m_RendererID(0)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     m_ShaderSource = ParseShader(filepath);
     m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
@@ -225,7 +225,7 @@ namespace origin {
 
   OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     std::unordered_map<GLenum, std::string> sources;
     sources[GL_VERTEX_SHADER] = vertexSrc;
@@ -239,7 +239,7 @@ namespace origin {
   OpenGLShader::OpenGLShader(const std::string &name, const std::string &vertexSrc, const std::string &fragmentSrc, const std::string &geomterySrc)
     : m_Name(name), m_RendererID(0)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     std::unordered_map<GLenum, std::string> sources;
     sources[GL_VERTEX_SHADER] = vertexSrc;
@@ -253,14 +253,14 @@ namespace origin {
 
   OpenGLShader::~OpenGLShader()
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     glDeleteProgram(m_RendererID);
   }
 
   void OpenGLShader::CreateSpirvProgram()
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     GLuint program = glCreateProgram();
 
@@ -308,7 +308,7 @@ namespace origin {
 
   std::string OpenGLShader::ReadFile(const std::string &filepath)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     std::string result;
     std::ifstream in(filepath, std::ios::in | std::ios::binary);
@@ -336,7 +336,7 @@ namespace origin {
 
   std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string &source)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     std::unordered_map<GLenum, std::string> shaderSources;
 
@@ -362,7 +362,7 @@ namespace origin {
 
   void OpenGLShader::CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string> &shaderSources)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     GLuint program = glCreateProgram();
     shaderc::Compiler compiler;
@@ -419,7 +419,7 @@ namespace origin {
 
   void OpenGLShader::CompileOrGetOpenGLBinaries()
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     auto &shaderData = m_OpenGLSPIRV;
     shaderc::Compiler compiler;
@@ -476,7 +476,7 @@ namespace origin {
 
   void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t> &shaderData)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     spirv_cross::Compiler compiler(shaderData);
     spirv_cross::ShaderResources resources = compiler.get_shader_resources();
@@ -504,7 +504,7 @@ namespace origin {
 
   GLuint OpenGLShader::CompileShader(GLuint type, const std::string &source)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     GLuint shaderID = glCreateShader(type);
     const char *src = source.c_str();
@@ -565,7 +565,7 @@ namespace origin {
 
   GLuint OpenGLShader::CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     // Create Program
     GLuint shaderProgram = glCreateProgram();
@@ -646,7 +646,7 @@ namespace origin {
 
   void  OpenGLShader::SetIntArray(const std::string &name, int *values, uint32_t count)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     SetUniformIntArray(name, values, count);
   }
@@ -729,7 +729,7 @@ namespace origin {
 
   void OpenGLShader::SetUniformIntArray(const std::string &name, int *values, uint32_t count)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     glUniform1iv(GetUniformLocation(name), count, values);
   }
@@ -752,7 +752,7 @@ namespace origin {
 
   void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat2 &matrices)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     glUniformMatrix3fv(GetUniformLocation(name), 1, false, glm::value_ptr(matrices));
   }
@@ -770,7 +770,7 @@ namespace origin {
 
   int OpenGLShader::GetUniformLocation(const std::string &name)
   {
-    PROFILER_RENDERING();
+    OGN_PROFILER_RENDERING();
 
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
       return m_UniformLocationCache[name];
