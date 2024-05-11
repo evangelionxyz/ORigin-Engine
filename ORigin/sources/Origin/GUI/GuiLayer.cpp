@@ -9,7 +9,6 @@
 #include <backends\imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
-#include "ImCurveEdit.h"
 
 namespace origin {
 
@@ -116,9 +115,9 @@ namespace origin {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		io.ConfigViewportsNoDecoration = true;
+		io.ConfigViewportsNoDecoration = false;
 
-		float fontSize = 13.0f;
+		float fontSize = 16.0f;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 
 		ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)m_Context, true);

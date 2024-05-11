@@ -17,6 +17,7 @@
 #include "Origin/Renderer/Renderer3D.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
+#include "Origin/Core/Log.h"
 #include <glm/glm.hpp>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
@@ -49,6 +50,7 @@ namespace origin
 		OGN_PROFILER_SCENE();
 
 		auto newScene = std::make_shared<Scene>();
+		newScene->m_Name = other->m_Name;
 
 		newScene->m_ViewportWidth = other->m_ViewportWidth;
 		newScene->m_ViewportHeight = other->m_ViewportHeight;
@@ -105,19 +107,26 @@ namespace origin
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		m_Registry.view<IDComponent>().each([&](entt::entity e, IDComponent idc)
+		UUID uuid = entity.GetUUID();
+		
+
+		m_Registry.view<IDComponent>().each([&](entt::entity e, auto idc)
 		{
-			if(idc.Parent == entity.GetUUID())
-				DestroyEntity({e, this});
+				
+				if (EntityManager::IsParent(idc.ID, uuid, this))
+				{
+					Entity entt = { e, this };
+					OGN_CORE_INFO("Destroying {}", entt.GetTag());
+
+					m_Registry.destroy(e);
+
+					m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
+					[&](auto e)
+					{
+						return e.first == idc.ID;
+					}), m_EntityStorage.end());
+				}
 		});
-
-		m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
-		[&](auto e)
-		{
-			return e.first == entity.GetUUID();
-		}), m_EntityStorage.end());
-
-		m_Registry.destroy(entity);
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()

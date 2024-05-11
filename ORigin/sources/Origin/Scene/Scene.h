@@ -48,10 +48,12 @@ namespace origin
 
     template <typename... Components>
     auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
-
     std::vector<std::pair<UUID, entt::entity>> &GetEntityMap() { return m_EntityStorage; }
+    const std::string &GetName() const { return m_Name; }
+    void SetName(const std::string &name) { m_Name = name; }
 
   private:
+    std::string m_Name;
     std::unique_ptr<PhysicsScene> m_PhysicsScene;
     Physics2D* m_Physics2D;
 

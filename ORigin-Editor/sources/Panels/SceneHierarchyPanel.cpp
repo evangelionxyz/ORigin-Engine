@@ -6,10 +6,6 @@
 #include "Origin\Project\Project.h"
 #include "Origin\Asset\AssetManager.h"
 #include "Origin\Asset\AssetMetaData.h"
-#include "Origin\Asset\AssetImporter.h"
-#include "Origin\Renderer\Texture.h"
-#include "Origin\Renderer\Shader.h"
-#include "Origin\Scene\Components.h"
 #include "Origin\Scene\EntityManager.h"
 #include "Origin\Audio\AudioSource.h"
 #include "Origin\Scripting\ScriptEngine.h"
@@ -18,8 +14,6 @@
 
 #include "box2d\b2_revolute_joint.h"
 #include "box2d\b2_fixture.h"
-
-#include <glm\gtc\type_ptr.hpp>
 #include <misc\cpp\imgui_stdlib.h>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
@@ -99,19 +93,67 @@ namespace origin {
 
 		IsSceneHierarchyFocused = ImGui::IsWindowFocused();
 
-		if (ImGui::Button("+", { 12.0f, 12.0f }))
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
+			| ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth
+			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+
+		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 1.2f;
+		ImGui::Separator();
+		bool open = ImGui::TreeNodeEx((void *)typeid(EditorLayer::Get().m_ActiveScene).hash_code(), treeNodeFlags, EditorLayer::Get().m_ActiveScene->GetName().c_str());
+		ImGui::PopStyleVar();
+
+		if (ImGui::BeginDragDropTarget())
 		{
-			if (ImGui::BeginPopup("CreateEntity"))
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 			{
-				EntityContextMenu();
-				ImGui::EndPopup();
+				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+				Entity src { *static_cast<entt::entity *>(payload->Data), m_Context.get() };
+				if (src.HasParent())
+					auto &srcIDC = src.GetComponent<IDComponent>().Parent = 0;
 			}
+			ImGui::EndDragDropTarget();
 		}
 
+		ImGui::SameLine(contentRegionAvailable.x - lineHeight);
+		if (ImGui::Button("+", ImVec2(lineHeight, lineHeight)))
+			ImGui::OpenPopup("CreateEntity");
 
-		for (auto e : m_Context->m_EntityStorage)
+		if (ImGui::BeginPopup("CreateEntity"))
 		{
-			DrawEntityNode({ e.second, m_Context.get() });
+			if (ImGui::MenuItem("Empty"))
+				EntityManager::CreateEntity("Empty", m_Context.get());
+
+			if (ImGui::BeginMenu("2D"))
+			{
+				if (ImGui::MenuItem("Sprite"))
+					EntityManager::CreateSprite("Sprite", m_Context.get());
+				if (ImGui::MenuItem("Circle"))
+					EntityManager::CreateCircle("Circle", m_Context.get());
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("3D"))
+			{
+				if (ImGui::MenuItem("Empty Mesh"))
+					EntityManager::CreateMesh("Empty Mesh", m_Context.get());
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::MenuItem("Camera"))
+				EntityManager::CreateCamera("Camera", m_Context.get());
+			if (ImGui::MenuItem("Lighting"))
+				EntityManager::CreateLighting("Lighting", m_Context.get());
+			ImGui::EndPopup();
+		}
+
+		if (open)
+		{
+			for (auto e : m_Context->m_EntityStorage)
+				DrawEntityNode({ e.second, m_Context.get() });
+			ImGui::TreePop();
 		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
@@ -134,8 +176,6 @@ namespace origin {
 
 	void SceneHierarchyPanel::EntityPropertiesPanel()
 	{
-		OGN_PROFILER_UI();
-
 		ImGui::Begin("Properties");
 		IsScenePropertiesFocused = ImGui::IsWindowFocused();
 		if (m_SelectedEntity)
@@ -158,7 +198,9 @@ namespace origin {
 			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
 			| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
 
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+		ImGui::PopStyleVar();
 
 		bool isDeleting = false;
 		if (!m_Context->IsRunning())
@@ -183,16 +225,12 @@ namespace origin {
 
 			if (ImGui::BeginDragDropSource())
 			{
-				OGN_PROFILER_UI();
-
 				ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
 				ImGui::EndDragDropSource();
 			}
 
 			if (ImGui::BeginDragDropTarget())
 			{
-				OGN_PROFILER_UI();
-
 				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 				{
 					OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
@@ -228,20 +266,6 @@ namespace origin {
 			ImGui::TreePop();
 		}
 
-		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 0.1f));
-		if (ImGui::BeginDragDropTarget())
-		{
-			OGN_PROFILER_UI();
-
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
-			{
-				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-				Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
-				if (src.HasParent())
-					auto &srcIDC = src.GetComponent<IDComponent>().Parent = 0;
-			}
-			ImGui::EndDragDropTarget();
-		}
 	}
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
@@ -1326,7 +1350,7 @@ namespace origin {
 			auto &component = entity.GetComponent<T>();
 			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 4, 4 });
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			ImGui::Separator();
 			bool open = ImGui::TreeNodeEx((void *)typeid(T).hash_code(), treeNodeFlags, name.c_str());
@@ -1336,11 +1360,11 @@ namespace origin {
 			if (ImGui::Button("+", ImVec2(lineHeight, lineHeight)))
 				ImGui::OpenPopup("Component Settings");
 
-			bool removeComponent = false;
+			bool componentRemoved = false;
 			if (ImGui::BeginPopup("Component Settings"))
 			{
 				if (ImGui::MenuItem("Remove component"))
-					removeComponent = true;
+					componentRemoved = true;
 
 				ImGui::EndPopup();
 			}
@@ -1351,7 +1375,7 @@ namespace origin {
 				ImGui::TreePop();
 			}
 
-			if (removeComponent)
+			if (componentRemoved)
 				entity.RemoveComponent<T>();
 		}
 	}

@@ -112,6 +112,9 @@ namespace origin
 	bool EntityManager::IsParent(UUID target, UUID source, Scene *scene)
 	{
 		Entity destEntity = scene->GetEntityWithUUID(target);
+		if (!destEntity)
+			return false;
+
 		auto &destIDC = destEntity.GetComponent<IDComponent>();
 
 		if (target == source)

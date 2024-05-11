@@ -1,22 +1,14 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.h"
-#include "Gizmos/Gizmos.h"
 #include "Origin/EntryPoint.h"
+#include "Gizmos/Gizmos.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
-#include "Origin/Renderer/Font.h"
-#include "Origin/Utils/Utils.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Scene/EntityManager.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <imgui_internal.h>
 #include <filesystem>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/compatibility.hpp>
 
 #include "Panels/AnimationTimeline.h"
 
@@ -389,7 +381,10 @@ namespace origin {
 	  if (m_SceneState != SceneState::Edit)
 		  OnSceneStop();
 
+		auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
 	  std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+		std::string name = metadata.Filepath.stem().string();
+		readOnlyScene->SetName(name);
 
 	  if (!readOnlyScene)
 	  {
@@ -418,6 +413,9 @@ namespace origin {
 		  return;
 
 	  std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+		std::string name = filepath.stem().string();
+		readOnlyScene->SetName(name);
+
 	  if (!readOnlyScene)
 	  {
 			OGN_CORE_ERROR("[EditorLayer] Invalid Scene");
