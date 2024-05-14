@@ -11,12 +11,12 @@ namespace origin
 		RecalculateProjection();
 	}
 
-	const glm::mat4& SceneCamera::GetProjection() const
+	const glm::mat4 &SceneCamera::GetProjection() const
 	{
 		return m_Projection;
 	}
 
-	const glm::mat4& SceneCamera::GetViewMatrix() const
+	const glm::mat4 &SceneCamera::GetViewMatrix() const
 	{
 		return m_View;
 	}
@@ -31,10 +31,10 @@ namespace origin
 		RecalculateProjection();
 	}
 
-	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
+	void SceneCamera::SetOrthographic(float scale, float nearClip, float farClip)
 	{
 		m_ProjectionType = ProjectionType::Orthographic;
-		m_OrthoSize = size;
+		m_OrthoScale = scale;
 		m_OrthoNear = nearClip;
 		m_OrthoFar = farClip;
 
@@ -43,27 +43,58 @@ namespace origin
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		float aspectWidth = 1.0f, aspectHeight = 1.0f;
+
 		switch (m_AspecRatioType)
 		{
-		case origin::SceneCamera::AspectRatioType::Free:
-			m_ViewportSize.x = static_cast<float>(width);
-			m_ViewportSize.y = static_cast<float>(height);
-			m_AspectRatio = m_ViewportSize.x / m_ViewportSize.y;
-			break;
 		case origin::SceneCamera::AspectRatioType::SixteenByNine:
-			m_AspectRatio = 16.0f / 9.0f;
+			aspectWidth = 16.0f;
+			aspectHeight = 9.0f;
 			break;
 		case origin::SceneCamera::AspectRatioType::SixteenByTen:
-			m_AspectRatio = 16.0f / 10.0f;
+			aspectWidth = 16.0f;
+			aspectHeight = 10.0f;
 			break;
 		case origin::SceneCamera::AspectRatioType::FourByThree:
-			m_AspectRatio = 4.0f / 3.0f;
+			aspectWidth = 4.0f;
+			aspectHeight = 3.0f;
 			break;
 		case origin::SceneCamera::AspectRatioType::TwentyOneByNine:
-			m_AspectRatio = 21.0f / 9.0f;
+			aspectWidth = 21.0f;
+			aspectHeight = 9.0f;
+			break;
+		default:
+			aspectWidth = static_cast<float>(width);
+			aspectHeight = static_cast<float>(height);
+			break;
 		}
 
-		RecalculateProjection();
+		float aspectRatio = aspectWidth / aspectHeight;
+		float currentAspectRatio = static_cast<float>(width) / static_cast<float>(height);
+
+		if (currentAspectRatio > aspectRatio)
+		{
+			m_ViewportSize.y = static_cast<float>(height);
+			m_ViewportSize.x = m_ViewportSize.y * aspectRatio;
+		}
+		else
+		{
+			m_ViewportSize.x = static_cast<float>(width);
+			m_ViewportSize.y = m_ViewportSize.x / aspectRatio;
+		}
+
+		m_AspectRatio = aspectRatio;
+
+		m_OrthoSize.x = m_OrthoScale * m_AspectRatio;
+		m_OrthoSize.y = m_OrthoSize.x / m_AspectRatio;
+	}
+
+
+	void SceneCamera::SetAspectRatioType(AspectRatioType type)
+	{
+		m_AspecRatioType = type;
+
+		SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 
 	void SceneCamera::RecalculateProjection()
@@ -71,21 +102,16 @@ namespace origin
 		switch (m_ProjectionType)
 		{
 			case ProjectionType::Perspective:
-			{
 				m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 				break;
-			}
-
 			case ProjectionType::Orthographic:
-			{
-				float OrthoLeft = -m_OrthoSize * m_AspectRatio / 2.0f;
-				float OrthoRight = m_OrthoSize * m_AspectRatio / 2.0f;
-				float OrthoTop = -m_OrthoSize / 2.0f;
-				float OrthoBottom = m_OrthoSize / 2.0f;
+				float OrthoLeft = -m_OrthoScale * m_AspectRatio / 2.0f;
+				float OrthoRight = m_OrthoScale * m_AspectRatio / 2.0f;
+				float OrthoTop = -m_OrthoScale / 2.0f;
+				float OrthoBottom = m_OrthoScale / 2.0f;
 
 				m_Projection = glm::ortho(OrthoLeft, OrthoRight, OrthoTop, OrthoBottom, m_OrthoNear, m_OrthoFar);
 				break;
-			}
 		}
 
 		m_View = glm::translate(glm::mat4(1.0f), m_Position);

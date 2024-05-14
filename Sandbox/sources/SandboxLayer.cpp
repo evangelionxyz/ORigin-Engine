@@ -11,13 +11,13 @@
 
 using namespace origin;
 
-struct UIRenderer
+struct UIRendererTest
 {
 	uint32_t vao, vbo;
 	std::shared_ptr<Texture2D> m_Texture;
 	std::shared_ptr<Shader> m_Shader;
 	
-	UIRenderer()
+	UIRendererTest()
 	{
 		float vertices[] = {
 			-1.0f, 1.0f,
@@ -35,11 +35,11 @@ struct UIRenderer
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), nullptr);
 
-		m_Shader = Shader::Create("Resources/Shaders/SPIR-V/Screen.glsl", false);
+		m_Shader = Shader::Create("Resources/Shaders/Screen.glsl", false);
 		m_Texture = Texture2D::Create("Resources/UITextures/runtime_loading_screen.png");
 	}
 
-	~UIRenderer()
+	~UIRendererTest()
 	{
 		glDeleteBuffers(1, &vbo);
 		glDeleteVertexArrays(1, &vao);
@@ -53,11 +53,11 @@ struct UIRenderer
 
 		glActiveTexture(GL_TEXTURE0);
 		m_Texture->Bind(0);
-		m_Shader->SetInt("uTexture", m_Texture->GetIndex());
+		m_Shader->SetInt("uScreeTexture", m_Texture->GetIndex());
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.9f, 0.9f, 0.0f))
 			* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
-		m_Shader->SetMatrix("uProjection", transform);
+		m_Shader->SetMatrix("uViewProjection", transform);
 
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -67,11 +67,11 @@ struct UIRenderer
 	}
 };
 
-UIRenderer *ui = nullptr;
+UIRendererTest *ui = nullptr;
 
 void SandboxLayer::OnAttach()
 {
-	ui = new UIRenderer();
+	ui = new UIRendererTest();
 
 	camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 500.0f);
 	camera.SetMoveActive(true);
@@ -89,7 +89,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	glClearColor(0.5f,0.5f, 0.5f,0.5f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	//ui->Draw();
+	ui->Draw();
 }
 
 void SandboxLayer::OnEvent(Event& e)

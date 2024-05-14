@@ -6,6 +6,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/MaterialEditor.h"
+#include "Panels/UIEditor.h"
 #include "Panels/AnimationTimeline.h"
 #include "Panels/SpriteSheetEditor.h"
 
@@ -22,7 +23,7 @@ namespace origin {
 		void OnAttach() override;
 		void OnUpdate(Timestep ts) override;
 		SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
-		inline static EditorLayer& Get() { return *s_Instance; }
+    static EditorLayer &Get();
 
     bool guiStatisticWindow = true;
     bool guiMenuFullscreen = false;
@@ -31,27 +32,23 @@ namespace origin {
     bool guiImGuiDemoWindow = false;
 
   private:
-    void Draw(float deltaTime);
+    void SystemUpdate(Timestep ts);
+    void Render(Timestep ts);
   	void SceneViewport();
     void SceneViewportToolbar();
-    void SceneViewportMenu();
     bool NewProject();
     bool OpenProject();
     bool OpenProject(const std::filesystem::path& path);
-    void SaveProject();
 	  void MenuBar();
     void NewScene();
     void SaveScene();
     void SaveSceneAs();
     void OpenScene();
     void OpenScene(AssetHandle handle);
-    void SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath);
+    void SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path &filepath);
     void OnDuplicateEntity();
+    void OnDestroyEntity();
     void OnEvent(Event& e) override;
-    bool OnWindowDrop(WindowDropEvent& e);
-    bool OnWindowResize(WindowResizeEvent& e);
-    bool OnMouseMovedEvent(MouseMovedEvent& e);
-    bool OnMouseButtonEvent(MouseButtonEvent& e);
     bool OnKeyPressed(KeyPressedEvent& e);
     bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
     void OnGuiRender() override;
@@ -69,8 +66,6 @@ namespace origin {
 			Simulate = 2
 		};
 
-		static EditorLayer* s_Instance;
-
     std::vector<ProfilerResult> m_ProfilerResults;
 
 		SceneState m_SceneState = SceneState::Edit;
@@ -79,6 +74,7 @@ namespace origin {
 		EditorCamera m_EditorCamera;
     MaterialEditor m_MaterialEditor;
 		std::unique_ptr<SpriteSheetEditor> m_SpriteSheetEditor;
+    std::unique_ptr<UIEditor> m_UIEditor;
 		std::unique_ptr<Gizmos> m_Gizmos;
 
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
@@ -105,6 +101,7 @@ namespace origin {
 		Entity m_HoveredEntity = {};
 
     friend class Gizmos;
+    friend class UIEditor;
     friend class ContentBrowserPanel;
     friend class SceneHierarchyPanel;
   };

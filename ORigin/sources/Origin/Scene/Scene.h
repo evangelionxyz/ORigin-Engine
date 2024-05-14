@@ -8,6 +8,7 @@
 #include "Origin\Scene\Components.h"
 #include "Origin\Scene\Skybox.h"
 #include "Origin\Renderer\Texture.h"
+#include "UIRenderer.h"
 #include "Origin\Core\Time.h"
 #include "entt\entt.hpp"
 
@@ -52,10 +53,13 @@ namespace origin
     const std::string &GetName() const { return m_Name; }
     void SetName(const std::string &name) { m_Name = name; }
 
+    std::shared_ptr<UIRenderer> GetUIRenderer() { return m_UIRenderer; }
+
   private:
-    std::string m_Name;
-    std::unique_ptr<PhysicsScene> m_PhysicsScene;
-    Physics2D* m_Physics2D;
+    std::string m_Name = "untitled";
+    std::shared_ptr<PhysicsScene> m_PhysicsScene;
+    std::shared_ptr<UIRenderer> m_UIRenderer;
+    std::shared_ptr<Physics2D> m_Physics2D;
 
     void RenderScene(const EditorCamera& camera);
     void RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform);

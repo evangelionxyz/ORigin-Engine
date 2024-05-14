@@ -58,7 +58,7 @@ namespace origin
 		if (Deserialize() && !m_IsOpened)
 		{
 			m_Camera.SetOrthoSizeMax(m_Texture->GetHeight() * 1.25f);
-			m_Camera.SetOrthoSize(m_Texture->GetHeight());
+			m_Camera.SetOrthoSize(static_cast<float>(m_Texture->GetHeight()));
 
 			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
@@ -110,6 +110,7 @@ namespace origin
 			m_Camera.SetMoveActive(IsFocused);
 			m_Camera.SetDraggingActive(IsFocused);
 			m_Camera.SetScrollingActive(IsHovered);
+
 			const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			const ImVec2 &viewportOffset = ImGui::GetWindowPos();
@@ -130,9 +131,7 @@ namespace origin
 				ImVec2 atlasSize { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
 				if (ImGui::Button("Save"))
-				{
 					Serialize(m_CurrentFilepath);
-				}
 
 				ImGui::SameLine();
 				if (ImGui::Button("Add"))

@@ -25,16 +25,14 @@ namespace origin
 		m_TreeNodes.push_back(TreeNode(".", 0));
 		m_IconMap["backward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/backward_icon.png");
 		m_IconMap["forward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/forward_icon.png");
-		m_IconMap["directory_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/folder_icon.png");
+		m_IconMap["directory_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_folder.png");
 		m_IconMap["asset_mode_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/asset_mode_icon.png");
 		m_IconMap["file_mode_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/file_mode_icon.png");
 		m_IconMap["unknown"] = TextureImporter::LoadTexture2D("Resources/UITextures/file_icon.png");
-		m_IconMap[".jpg"] = TextureImporter::LoadTexture2D("Resources/UITextures/jpg_file_icon.png");
-		m_IconMap[".cs"] = TextureImporter::LoadTexture2D("Resources/UITextures/script_icon.png");
-		m_IconMap[".glsl"] = TextureImporter::LoadTexture2D("Resources/UITextures/glsl_icon.png");
-		m_IconMap[".hlsl"] = TextureImporter::LoadTexture2D("Resources/UITextures/hlsl_file_icon.png");
-		m_IconMap[".org"] = TextureImporter::LoadTexture2D("Resources/UITextures/scene_icon.png");
-		m_IconMap[".mp3"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio_icon.png");
+		m_IconMap[".cs"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_csharp_script.png");
+		m_IconMap[".glsl"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_glsl.png");
+		m_IconMap[".org"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_scene.png");
+		m_IconMap[".mp3"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_audio_source.png");
 		
 		RefreshAssetTree();
 		m_Mode = Mode::Asset;

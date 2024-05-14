@@ -4,15 +4,7 @@
 #include "Origin\Scene\Scene.h"
 #include "Origin\Scene\Entity.h"
 
-#include <filesystem>
-#include <glm\glm.hpp>
-#include <glm\gtc\type_ptr.hpp>
-
-
 namespace origin {
-
-	template<typename T, typename UIFunction>
-	static void DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction);
 
 	class SceneHierarchyPanel
 	{
@@ -22,7 +14,7 @@ namespace origin {
 
 		~SceneHierarchyPanel();
 
-		static SceneHierarchyPanel& Get() { return *s_Instance; }
+		static SceneHierarchyPanel *Get();
 		std::shared_ptr<Scene> GetContext() { return m_Context; }
 
 		Entity SetSelectedEntity(Entity entity);
@@ -42,12 +34,14 @@ namespace origin {
 	private:
 		template<typename T>
 		bool DisplayAddComponentEntry(const std::string& entryName);
+		template<typename T, typename UIFunction>
+		void DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction);
+
 		void DrawEntityNode(Entity entity, int index = 0);
 		void DrawComponents(Entity entity);
 
 		Entity EntityContextMenu();
 
-		static SceneHierarchyPanel* s_Instance;
 		std::shared_ptr<Scene> m_Context;
 		std::shared_ptr<Texture2D> m_NoTextureButton;
 		Entity m_SelectedEntity;

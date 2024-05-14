@@ -7,10 +7,12 @@
 #include "Origin\Asset\AssetManager.h"
 #include "Origin\Asset\AssetMetaData.h"
 #include "Origin\Scene\EntityManager.h"
+#include "Origin\Asset\AssetImporter.h"
 #include "Origin\Audio\AudioSource.h"
 #include "Origin\Scripting\ScriptEngine.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Scene\Lighting.h"
+#include "UIEditor.h"
 
 #include "box2d\b2_revolute_joint.h"
 #include "box2d\b2_fixture.h"
@@ -20,7 +22,7 @@
 
 namespace origin {
 
-	SceneHierarchyPanel* SceneHierarchyPanel::s_Instance = nullptr;
+	static SceneHierarchyPanel* s_Instance = nullptr;
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
 	{
@@ -33,6 +35,11 @@ namespace origin {
 	SceneHierarchyPanel::~SceneHierarchyPanel()
 	{
 		OGN_PROFILER_UI();
+	}
+
+	SceneHierarchyPanel *SceneHierarchyPanel::Get()
+	{
+		return s_Instance;
 	}
 
 	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
@@ -100,7 +107,6 @@ namespace origin {
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 1.2f;
 		ImGui::Separator();
 		bool open = ImGui::TreeNodeEx((void *)typeid(EditorLayer::Get().m_ActiveScene).hash_code(), treeNodeFlags, EditorLayer::Get().m_ActiveScene->GetName().c_str());
 		ImGui::PopStyleVar();
@@ -117,8 +123,9 @@ namespace origin {
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::SameLine(contentRegionAvailable.x - lineHeight);
-		if (ImGui::Button("+", ImVec2(lineHeight, lineHeight)))
+		ImGui::SameLine(contentRegionAvailable.x - 24.0f);
+		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
+		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 			ImGui::OpenPopup("CreateEntity");
 
 		if (ImGui::BeginPopup("CreateEntity"))
@@ -195,12 +202,30 @@ namespace origin {
 			return;
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed
 			| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
 
+		ImVec4 header = entity.HasComponent<UIComponent>() ? ImVec4(0.1f, 0.1f, 0.3f, 1.0f) : ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+		ImVec4 headerHovered = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.7f, 1.0f) : ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+
+		if (m_SelectedEntity == entity)
+			header = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.9f, 1.0f) : ImVec4(0.47f, 0.47f, 0.47f, 1.0f);
+
+		ImGui::PushStyleColor(ImGuiCol_Header, header);
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, headerHovered);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
 		ImGui::PopStyleVar();
+		ImGui::PopStyleColor(2);
+
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+		{
+			if (entity.HasComponent<UIComponent>())
+			{
+				auto &ui = entity.GetComponent<UIComponent>();
+				UIEditor::Get()->SetActive(&ui);
+			}
+		}
 
 		bool isDeleting = false;
 		if (!m_Context->IsRunning())
@@ -303,6 +328,7 @@ namespace origin {
 			DisplayAddComponentEntry<CameraComponent>("CAMERA");
 			DisplayAddComponentEntry<AudioComponent>("AUDIO");
 			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
+			DisplayAddComponentEntry<UIComponent>("UI");
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("2D SPRITE RENDERER 2D");
 			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
 			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
@@ -441,7 +467,14 @@ namespace origin {
 						ImGui::PopID();
 					}
 				}
+			});
 
+			DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
+			{
+				if(ImGui::Button("Edit"))
+				{
+					UIEditor::Get()->SetActive(&component);
+				}
 			});
 
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto& component)
@@ -511,11 +544,11 @@ namespace origin {
 
 		if (component.Camera.GetProjectionType() == ProjectionType::Orthographic)
 		{
-			float orthoSize = camera.GetOrthographicSize();
-			camera.SetOrthographicSize(orthoSize);
+			float orthoScale = camera.GetOrthographicScale();
+			camera.SetOrthographicScale(orthoScale);
 
-			if (ImGui::DragFloat("Ortho Size", &orthoSize, 0.1f, 1.0f, 100.0f))
-				camera.SetOrthographicSize(orthoSize);
+			if (ImGui::DragFloat("Ortho Size", &orthoScale, 0.1f, 1.0f, 100.0f))
+				camera.SetOrthographicScale(orthoScale);
 
 			float orthoNearClip = camera.GetOrthographicNearClip();
 			if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
@@ -1337,7 +1370,7 @@ namespace origin {
 	}
 
 	template<typename T, typename UIFunction>
-	void DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
+	void SceneHierarchyPanel::DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
 	{
 		OGN_PROFILER_UI();
 
@@ -1351,13 +1384,13 @@ namespace origin {
 			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			ImGui::Separator();
 			bool open = ImGui::TreeNodeEx((void *)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
 
-			ImGui::SameLine(contentRegionAvailable.x - lineHeight);
-			if (ImGui::Button("+", ImVec2(lineHeight, lineHeight)))
+			ImGui::SameLine(contentRegionAvailable.x - 24.0f);
+			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
+			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 				ImGui::OpenPopup("Component Settings");
 
 			bool componentRemoved = false;

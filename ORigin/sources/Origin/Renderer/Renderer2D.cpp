@@ -203,6 +203,7 @@ namespace origin {
 			{ ShaderDataType::Float4, "aColor"		},
 			{ ShaderDataType::Int,    "aEntityID"}
 			});
+
 		s_Render2DData.LineVertexArray->AddVertexBuffer(s_Render2DData.LineVertexBuffer);
 		s_Render2DData.LineVertexBufferBase = new LineVertex[Renderer::s_RenderData.MaxVertices];
 

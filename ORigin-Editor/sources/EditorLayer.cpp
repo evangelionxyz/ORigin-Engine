@@ -16,9 +16,10 @@
 
 namespace origin {
 
-  EditorLayer* EditorLayer::s_Instance = nullptr;
+  static EditorLayer *s_Instance = nullptr;
 
-  EditorLayer::EditorLayer() : Layer("EditorLayer")
+  EditorLayer::EditorLayer()
+		: Layer("EditorLayer")
   {
 	  s_Instance = this;
   }
@@ -33,16 +34,20 @@ namespace origin {
 		OGN_PROFILER_FUNCTION();
 
 	  // Load UI Textures
-	  m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/play_icon.png");
-	  m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/simulate_icon.png");
-	  m_UITextures["stop"] = TextureImporter::LoadTexture2D("Resources/UITextures/stop_icon.png");
-	  m_UITextures["pause"] = TextureImporter::LoadTexture2D("Resources/UITextures/pause_icon.png");
-	  m_UITextures["stepping"] = TextureImporter::LoadTexture2D("Resources/UITextures/stepping_icon.png");
-	  m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
-	  m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
+	  m_UITextures["play"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_play.png");
+	  m_UITextures["simulate"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_simulate.png");
+	  m_UITextures["stop"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_stop.png");
+	  m_UITextures["pause"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_pause.png");
+	  m_UITextures["stepping"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_stepping.png");
+		m_UITextures["plus"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_plus.png");
+		
+		// Gizmo icons
+	  m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
 	  m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
 	  m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png");
-	  m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
+
+	  m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
+	  m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
 		m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/origin_engine.png");
 
 	  FramebufferSpecification fbSpec;
@@ -70,8 +75,9 @@ namespace origin {
 			  Application::Get().Close();
 	  }
 
-		m_Gizmos = std::make_unique<Gizmos>();
 		m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
+		m_Gizmos = std::make_unique<Gizmos>();
+		m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
   }
 
   void EditorLayer::OnEvent(Event& e)
@@ -79,40 +85,23 @@ namespace origin {
 		OGN_PROFILER_INPUT();
 
     EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseMovedEvent));
-    dispatcher.Dispatch<WindowResizeEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnWindowResize));
     dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
     dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
 
 		m_Gizmos->OnEvent(e);
 		m_EditorCamera.OnEvent(e);
 		m_SpriteSheetEditor->OnEvent(e);
+		m_UIEditor->OnEvent(e);
   }
 
 	void EditorLayer::OnUpdate(Timestep ts)
   {
-
-		ProfilerTimer timer("EditorLayer::OnUpdate", [&](ProfilerResult result)
-												{
-													m_ProfilerResults.push_back(result);
-												});
-
 		OGN_PROFILER_FUNCTION();
 
-	  Renderer::GetStatistics().Reset();
-		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
-
-	  InputProcedure(ts);
-
-	  m_Time += ts.Seconds();
-
-		m_SpriteSheetEditor->OnUpdate(ts);
-
-		m_ActiveScene->OnShadowRender();
-
-		m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput && m_SceneViewportFocused);
-		m_EditorCamera.SetDraggingActive(m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
-		m_EditorCamera.SetScrollingActive(m_SceneViewportHovered);
+		ProfilerTimer timer("EditorLayer::OnUpdate", [&](ProfilerResult result)
+		{
+			m_ProfilerResults.push_back(result);
+		});
 
 		switch (m_SceneState)
 		{
@@ -131,11 +120,19 @@ namespace origin {
 			break;
 		}
 
-	  RenderCommand::ClearColor(m_ClearColor);
+		SystemUpdate(ts);
+
+		m_ActiveScene->OnShadowRender();
+		m_ActiveScene->GetUIRenderer()->RenderFramebuffer();
+
 	  m_Framebuffer->Bind();
+	  RenderCommand::ClearColor(m_ClearColor);
 	  RenderCommand::Clear();
 	  m_Framebuffer->ClearAttachment(1, -1);
-	  Draw(ts);
+
+	  Render(ts);
+
+		m_ActiveScene->GetUIRenderer()->Render();
 
 	  auto [mx, my] = ImGui::GetMousePos();
 	  glm::vec2 mousePos = { mx, my };
@@ -150,10 +147,29 @@ namespace origin {
 	  m_Framebuffer->Unbind();
   }
 
+	EditorLayer &EditorLayer::Get()
+	{
+		return *s_Instance;
+	}
+
+	void EditorLayer::SystemUpdate(Timestep ts)
+	{
+		m_Time += ts.Seconds();
+		InputProcedure(ts);
+
+		Renderer::GetStatistics().Reset();
+		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused && !m_UIEditor->IsFocused);
+
+		m_SpriteSheetEditor->OnUpdate(ts);
+		m_UIEditor->OnUpdate(ts);
+
+		m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput && m_SceneViewportFocused);
+		m_EditorCamera.SetDraggingActive(m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
+		m_EditorCamera.SetScrollingActive(m_SceneViewportHovered);
+	}
+
   void EditorLayer::OnDuplicateEntity()
   {
-		OGN_PROFILER_SCENE();
-
 	  if (m_SceneState != SceneState::Edit)
 		  return;
 
@@ -164,7 +180,19 @@ namespace origin {
 	  }
   }
 
-  void EditorLayer::OnGuiRender()
+	void EditorLayer::OnDestroyEntity()
+	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
+		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+		{
+			m_ActiveScene->DestroyEntity(selectedEntity);
+			m_SceneHierarchy.SetSelectedEntity({ });
+		}
+	}
+
+	void EditorLayer::OnGuiRender()
   {
 		OGN_PROFILER_UI();
 
@@ -173,9 +201,11 @@ namespace origin {
 		if (m_ContentBrowser)
 			m_ContentBrowser->OnImGuiRender();
 
-		m_SceneHierarchy.OnImGuiRender();
+		m_UIEditor->OnImGuiRender();
 		m_SpriteSheetEditor->OnImGuiRender();
 		m_MaterialEditor.OnImGuiRender();
+
+		m_SceneHierarchy.OnImGuiRender();
 
 	  MenuBar();
 		SceneViewportToolbar();
@@ -314,11 +344,6 @@ namespace origin {
 	  return false;
   }
 
-  void EditorLayer::SaveProject()
-  {
-	  Project::SaveActive();
-  }
-
   void EditorLayer::NewScene()
   {
 		OGN_PROFILER_SCENE();
@@ -341,13 +366,9 @@ namespace origin {
 		  OnSceneStop();
 
 	  if (!m_ScenePath.empty())
-	  {
 		  SerializeScene(m_ActiveScene, m_ScenePath);
-	  }
 	  else
-	  {
 		  SaveSceneAs();
-	  }
 
 	  Project::GetActive()->GetEditorAssetManager()->SerializeAssetRegistry();
   }
@@ -398,6 +419,8 @@ namespace origin {
 	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+
+		m_UIEditor->SetContext(m_ActiveScene.get());
   }
 
   void EditorLayer::OpenScene()
@@ -426,10 +449,13 @@ namespace origin {
 	  m_EditorScene = Scene::Copy(readOnlyScene);
 	  m_SceneHierarchy.SetContext(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
+
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+
+		m_UIEditor->SetContext(m_ActiveScene.get());
   }
 
-  void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path filepath)
+  void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path &filepath)
   {
 		OGN_PROFILER_SCENE();
 
@@ -454,7 +480,7 @@ namespace origin {
 			{
 				if (ImGui::MenuItem("New Project")) NewProject();
 				if (ImGui::MenuItem("Open Project")) OpenProject();
-				if (ImGui::MenuItem("Save Project", "", nullptr, (bool)Project::GetActive())) SaveProject();
+				if (ImGui::MenuItem("Save Project", "", nullptr, (bool)Project::GetActive())) Project::SaveActive();
 				ImGui::Separator();
 				if (ImGui::MenuItem("New Scene", "Ctrl+N", nullptr, (bool)Project::GetActive())) NewScene();
 				if (ImGui::MenuItem("Open Scene", "Ctrl+O", nullptr, (bool)Project::GetActive()))  OpenScene();
@@ -478,7 +504,8 @@ namespace origin {
 
 			if (ImGui::BeginMenu("Object"))
 			{
-				if (ImGui::MenuItem("Empty Entity", nullptr, nullptr, (bool)Project::GetActive() && !m_ScenePath.empty())) m_SceneHierarchy.SetSelectedEntity(EntityManager::CreateEntityWithUUID(UUID(), "Empty", m_ActiveScene.get()));
+				if (ImGui::MenuItem("Empty Entity", nullptr, nullptr, (bool)Project::GetActive()
+					&& !m_ScenePath.empty())) m_SceneHierarchy.SetSelectedEntity(EntityManager::CreateEntityWithUUID(UUID(), "Empty", m_ActiveScene.get()));
 				ImGui::EndMenu();
 			}
 
@@ -494,9 +521,7 @@ namespace origin {
 			if (ImGui::BeginMenu("View"))
 			{
 				if (ImGui::MenuItem("Full Screen", "F11", &guiMenuFullscreen))
-				{
 					window.GetWindow().SetFullscreen(guiMenuFullscreen);
-				}
 				ImGui::EndMenu();
 			}
 
@@ -506,32 +531,31 @@ namespace origin {
 		}
 	}
 
-	void EditorLayer::Draw(float deltaTime)
+	void EditorLayer::Render(Timestep ts)
 	{
 		OGN_PROFILER_RENDERING();
 
 		ProfilerTimer timer("EditorLayer::Draw()", [&](ProfilerResult result)
-												{
-													m_ProfilerResults.push_back(result);
-												});
-
+		{
+			m_ProfilerResults.push_back(result);
+		});
 
 		switch (m_SceneState)
 		{
 		case SceneState::Play:
 			m_Gizmos->SetType(GizmoType::NONE);
-			m_ActiveScene->OnUpdateRuntime(deltaTime);
+			m_ActiveScene->OnUpdateRuntime(ts);
 			break;
 
 		case SceneState::Edit:
-			m_EditorCamera.OnUpdate(deltaTime);
-			m_ActiveScene->OnEditorUpdate(deltaTime, m_EditorCamera);
+			m_EditorCamera.OnUpdate(ts);
+			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 
 		case SceneState::Simulate:
-			m_EditorCamera.OnUpdate(deltaTime);
-			m_ActiveScene->OnUpdateSimulation(deltaTime, m_EditorCamera);
+			m_EditorCamera.OnUpdate(ts);
+			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 		}
@@ -545,8 +569,6 @@ namespace origin {
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
 		ImGui::Begin("Scene", nullptr, window_flags);
-
-		SceneViewportMenu();
 		
 		m_SceneViewportHovered = ImGui::IsWindowHovered();
 		m_SceneViewportFocused = ImGui::IsWindowFocused();
@@ -565,7 +587,7 @@ namespace origin {
 			auto& camView = m_ActiveScene->m_Registry.view<CameraComponent>();
 			for (auto& e : camView)
 			{
-				auto cc = camView.get<CameraComponent>(e);
+				auto &cc = camView.get<CameraComponent>(e);
 
 				if (cc.Primary)
 				{
@@ -675,7 +697,7 @@ namespace origin {
 			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
 
 			auto &tc = entity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
+			glm::mat4 &transform = tc.GetTransform();
 			auto &idc = entity.GetComponent<IDComponent>();
 			
 			const glm::mat4 &cameraProjection = m_EditorCamera.GetProjection();
@@ -724,9 +746,7 @@ namespace origin {
 		}
 
 		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
-		{
 			m_Gizmos->SetType(GizmoType::NONE);
-		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -752,6 +772,7 @@ namespace origin {
 			if (hue >= 360.0f)
 				hue -= 360.0f;
 			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);*/
+
 			uint32_t rectColor = ImColor(0.2231f, 0.44321f, 0.1f);
 			if (m_SceneState == SceneState::Play)
 				rectColor = ImColor(0.7213f, 0.2321f, 0.1f);
@@ -776,6 +797,7 @@ namespace origin {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
 			// Play Button
 			std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
 			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 25.0f, 25.0f }))
@@ -849,15 +871,6 @@ namespace origin {
 			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End(); // !Toolbar
 		}
-	}
-
-	void EditorLayer::SceneViewportMenu()
-	{
-		OGN_PROFILER_UI();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-
-		ImGui::PopStyleVar();
 	}
 
 	void EditorLayer::GUIRender()
@@ -934,8 +947,10 @@ namespace origin {
 							{
 								currentRTTypeString = RTTypeString[i];
 								m_RenderTarget = i;
-							} if (isSelected) ImGui::SetItemDefaultFocus();
-						} ImGui::EndCombo();
+							}
+							if (isSelected) ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
 					}
 					ImGui::EndTabItem();
 				}
@@ -1172,39 +1187,12 @@ namespace origin {
 
 			case Key::Delete:
 			{
-				if (Application::Get().GetGuiLayer()->GetActiveWidgetID() == 0)
-				{
-					Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-					if (selectedEntity)
-					{
-						m_SceneHierarchy.SetSelectedEntity({});
-						m_SceneHierarchy.DestroyEntity(selectedEntity);
-					}
-				}
+				if(!io.WantTextInput)
+					OnDestroyEntity();
 				break;
 			}
 		}
 
-		return false;
-	}
-
-	bool EditorLayer::OnWindowDrop(WindowDropEvent& e)
-	{
-		return true;
-	}
-
-	bool EditorLayer::OnWindowResize(WindowResizeEvent& e)
-	{
-		return false;
-	}
-
-	bool EditorLayer::OnMouseMovedEvent(MouseMovedEvent& e)
-	{
-		return false;
-	}
-
-	bool EditorLayer::OnMouseButtonEvent(MouseButtonEvent& e)
-	{
 		return false;
 	}
 }

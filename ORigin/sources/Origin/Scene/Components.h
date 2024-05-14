@@ -184,7 +184,6 @@ namespace origin
 			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 			return glm::normalize(glm::vec3(right));
 		}
-
 	};
 
 	class SpriteRenderer2DComponent
@@ -361,6 +360,33 @@ namespace origin
 		RevoluteJoint2DComponent(const RevoluteJoint2DComponent&) = default;
 	};
 
+	template<typename T>
+	struct UIData
+	{
+		enum class Anchor
+		{
+			Center,
+			Left, Right,
+			TopLeft, TopRight,
+			BottomLeft, BottomRight
+		};
+
+		std::string Name = "UI";
+		TransformComponent Transform;
+		T Component;
+		Anchor AnchorType = Anchor::Center;
+	};
+
+	class UIComponent
+	{
+	public:
+		std::vector<UIData<TextComponent>> Texts;
+		std::shared_ptr<Framebuffer> Framebuffer;
+
+		UIComponent() = default;
+		UIComponent(const UIComponent &) = default;
+	};
+
 	template <typename... Component>
 	struct ComponentGroup
 	{
@@ -371,8 +397,8 @@ namespace origin
 	class SphereColliderComponent;
 	class CapsuleColliderComponent;
 
-	using AllComponents = ComponentGroup<TransformComponent, CameraComponent, SpriteAnimationComponent,
-		AudioComponent, AudioListenerComponent, LightComponent,
+	using AllComponents = ComponentGroup<TransformComponent, CameraComponent,
+		UIComponent, SpriteAnimationComponent, AudioComponent, AudioListenerComponent, LightComponent,
 		SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent,

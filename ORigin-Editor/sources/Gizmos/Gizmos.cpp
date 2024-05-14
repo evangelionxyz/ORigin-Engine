@@ -216,13 +216,12 @@ namespace origin {
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);
 
-				glm::mat4 transform = glm::mat4(1.0f);
 				glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ? glm::vec3(tc.WorldRotation) : glm::vec3(0.0f, 0.0f, tc.WorldRotation.z);
-				float sizeX = sceneCam.GetOrthographicSize() * sceneCam.GetAspectRatioSize();
-				float sizeY = 0.0f;
+				glm::vec2 orthoSize = cc.Camera.GetOrthographicSize();
 
-				switch (cc.Camera.GetAspectRatioType())
+				/*switch (cc.Camera.GetAspectRatioType())
 				{
+
 					case SceneCamera::AspectRatioType::SixteenByNine:
 					{
 						sizeY = sizeX / 16.0f * 9.0f;
@@ -251,10 +250,15 @@ namespace origin {
 							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
 						break;
 					}
-				}
+				}*/
 
-				if(cc.Camera.GetAspectRatioType() != SceneCamera::AspectRatioType::Free)
+				if (cc.Camera.GetAspectRatioType() != SceneCamera::AspectRatioType::Free)
+				{
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
+						* glm::scale(glm::mat4(1.0f), glm::vec3(orthoSize.x, orthoSize.y, 1.0f));
+
 					Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+				}
 			}
 		}
 

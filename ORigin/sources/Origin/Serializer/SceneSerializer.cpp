@@ -96,7 +96,7 @@ namespace origin
 
 			auto states = ac.State->GetAnimationState();
 
-			for (auto state : states)
+			for (const auto &state : states)
 			{
 				const std::shared_ptr<SpriteAnimation> &currentAnim = state.second;
 				out << YAML::BeginMap; // Name
@@ -105,9 +105,9 @@ namespace origin
 				out << YAML::Key << "MaxFrame" << YAML::Value << currentAnim->MaxFrame;
 				out << YAML::Key << "Speed" << YAML::Value << currentAnim->Speed;
 				out << YAML::Key << "Frames" << YAML::Value;
-				out << YAML::BeginSeq; // Frames
 
-				for (auto frame : currentAnim->AnimFrames)
+				out << YAML::BeginSeq; // Frames
+				for (const auto &frame : currentAnim->AnimFrames)
 				{
 					out << YAML::BeginMap; // ID
 					out << YAML::Key << "ID" << YAML::Value <<frame.Handle;
@@ -117,13 +117,40 @@ namespace origin
 					out << YAML::Key << "Max" << YAML::Value <<frame.Max;
 					out << YAML::EndMap; //!ID
 				}
-
 				out << YAML::EndSeq; //!Frames
+
 				out << YAML::EndMap; // !Name
 			}
 
 			out << YAML::EndSeq; // !States
 			out << YAML::EndMap; // !SpriteAnimationComponent
+		}
+
+		if (entity.HasComponent<UIComponent>())
+		{
+			const auto &ui = entity.GetComponent<UIComponent>();
+			out << YAML::Key << "UIComponent";
+			out << YAML::BeginMap; // UIComponent
+
+			out << YAML::Key << "Texts" << YAML::BeginSeq; // Texts
+			for (auto &text : ui.Texts)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << text.Name;
+				out << YAML::Key << "Anchor" << (int)text.AnchorType;
+				out << YAML::Key << "FontHandle" << text.Component.FontHandle;
+				out << YAML::Key << "TextString" << text.Component.TextString;
+				out << YAML::Key << "LineSpacing" << text.Component.LineSpacing;
+				out << YAML::Key << "Kerning" << text.Component.Kerning;
+				out << YAML::Key << "Color" << text.Component.Color;
+				out << YAML::Key << "Translation" << text.Transform.WorldTranslation;
+				out << YAML::Key << "Rotation" << text.Transform.WorldRotation;
+				out << YAML::Key << "Scale" << text.Transform.WorldScale;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq; // !Texts
+
+			out << YAML::EndMap; // !UIComponent
 		}
 
 		if (entity.HasComponent<ScriptComponent>())
@@ -188,7 +215,6 @@ namespace origin
 			out << YAML::EndMap; // !ScriptComponent;
 		}
 
-
 		if (entity.HasComponent<AudioComponent>())
 		{
 			const auto& ac = entity.GetComponent<AudioComponent>();
@@ -242,9 +268,10 @@ namespace origin
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveFov();
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
-			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
+			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicScale();
 			out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
 			out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
+			out << YAML::Key << "ViewportSize" << YAML::Value << camera.GetViewportSize();
 			out << YAML::EndMap; // !Camera
 
 			out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
@@ -638,6 +665,28 @@ namespace origin
 					}
 				}
 
+				if (YAML::Node uiComponent = entity["UIComponent"])
+				{
+					auto &ui = deserializedEntity.AddComponent<UIComponent>();
+
+					for (const auto &txt : uiComponent["Texts"])
+					{
+						UIData<TextComponent> text;
+						text.Name = txt["Name"].as<std::string>();
+						text.AnchorType = (UIData<TextComponent>::Anchor) txt["Anchor"].as<int>();
+						text.Component.TextString = txt["TextString"].as<std::string>();
+						text.Component.Kerning = txt["Kerning"].as<float>();
+						text.Component.LineSpacing = txt["LineSpacing"].as<float>();
+						AssetHandle fontHandle = txt["FontHandle"].as<uint64_t>(); 
+						text.Component.FontHandle = fontHandle;
+						text.Component.Color = txt["Color"].as<glm::vec4>();
+						text.Transform.WorldTranslation = txt["Translation"].as<glm::vec3>();
+						text.Transform.WorldRotation= txt["Rotation"].as<glm::vec3>();
+						text.Transform.WorldScale = txt["Scale"].as<glm::vec3>();
+						ui.Texts.push_back(text);
+					}
+				}
+
 				if (YAML::Node audioComponent = entity["AudioComponent"])
 				{
 					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
@@ -668,17 +717,16 @@ namespace origin
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
 					auto& cameraProps = cameraComponent["Camera"];
+					glm::vec2 viewportSize = cameraProps["ViewportSize"].as<glm::vec2>();
+					cc.Camera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 					cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
 					cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
-
 					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
-
-					cc.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
+					cc.Camera.SetOrthographicScale(cameraProps["OrthographicSize"].as<float>());
 					cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
 					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
-
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 				}
 
@@ -879,8 +927,6 @@ namespace origin
 						text.LineSpacing = textComponent["LineSpacing"].as<float>();
 						text.ScreenSpace = textComponent["ScreenSpace"].as<bool>();
 					}
-
-					
 				}
 
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])

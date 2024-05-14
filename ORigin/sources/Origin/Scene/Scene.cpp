@@ -36,13 +36,12 @@ namespace origin
 		if (!m_PhysicsScene)
 			m_PhysicsScene = PhysicsScene::Create(this);
 
-		m_Physics2D = new Physics2D(this);
+		m_Physics2D = std::make_shared<Physics2D>(this);
+		m_UIRenderer = std::make_shared<UIRenderer>();
 	}
 
 	Scene::~Scene()
 	{
-		OGN_PROFILER_SCENE();
-		delete m_Physics2D;
 	}
 
 	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
@@ -108,11 +107,9 @@ namespace origin
 	void Scene::DestroyEntity(Entity entity)
 	{
 		UUID uuid = entity.GetUUID();
-		
 
 		m_Registry.view<IDComponent>().each([&](entt::entity e, auto idc)
 		{
-				
 				if (EntityManager::IsParent(idc.ID, uuid, this))
 				{
 					Entity entt = { e, this };
@@ -210,18 +207,18 @@ namespace origin
 			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
-		
 
 		// Rendering
 		auto& cameraView = m_Registry.view<CameraComponent, TransformComponent>();
 		for (auto entity : cameraView)
 		{
-			auto& [tc, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
+			auto& [tc, cc] = cameraView.get<TransformComponent, CameraComponent>(entity);
 
-			if (camera.Primary)
+			if (cc.Primary)
 			{
-				RenderScene(camera.Camera, tc);
 				UpdateEditorTransform();
+				RenderScene(cc.Camera, tc);
+
 				break;
 			}
 		}
@@ -261,6 +258,25 @@ namespace origin
 
 		m_PhysicsScene->OnSimulationStart();
 		m_Physics2D->OnSimulationStart();
+
+		m_Registry.view<UIComponent>().each([=](entt::entity e, UIComponent ui)
+		{
+			auto &cam = GetPrimaryCameraEntity();
+			auto &cc = cam.GetComponent<CameraComponent>();
+
+			cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
+			if (cc.Primary)
+			{
+				m_UIRenderer->AddUI(ui);
+
+				float sizeX = cc.Camera.GetViewportSize().x;
+				float sizeY = cc.Camera.GetViewportSize().y;
+
+				m_UIRenderer->CreateFramebuffer(sizeX, sizeY);
+			}
+
+		});
 	}
 
 	void Scene::OnRuntimeStop()
@@ -285,6 +301,8 @@ namespace origin
 
 		m_PhysicsScene->OnSimulationStop();
 		m_Physics2D->OnSimulationStop();
+
+		m_UIRenderer->Unload();
 	}
 
 	void Scene::OnEditorUpdate(Timestep ts, EditorCamera& editorCamera)
@@ -543,21 +561,20 @@ namespace origin
 			{
 				auto &text = entity.GetComponent<TextComponent>();
 				glm::mat4 transform = glm::mat4(1.0f);
+				glm::mat4 invertedCamTransform = glm::mat4(1.0f);
 
 				if (text.ScreenSpace)
 				{
 					const float ratio = camera.GetAspectRatio();
 					glm::vec2 scale = glm::vec2(tc.Scale.x, tc.Scale.y * ratio);
-					transform = glm::scale(tc.GetTransform(), glm::vec3(scale, 1.0f));
-					glm::mat4 invertedCamTransform = glm::inverse(camera.GetViewProjection());
+					transform = glm::scale(tc.GetTransform(), glm::vec3(scale, 0.0f));
+					invertedCamTransform = glm::inverse(camera.GetViewProjection());
 					transform = invertedCamTransform * transform;
 				}
 				else
-				{
 					transform = tc.GetTransform();
-				}
 
-				if(text.FontHandle != 0)
+				if (text.FontHandle != 0)
 					Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
 			}
 		}
@@ -796,10 +813,12 @@ namespace origin
 	{
 		OGN_PROFILER_SCENE();
 
-		const auto& view = m_Registry.view<CameraComponent>();
-		for (auto& e : view)
+		const auto &view = m_Registry.view<CameraComponent>();
+
+		for (auto &e : view)
 		{
-			auto& cc = view.get<CameraComponent>(e);
+			auto &cc = view.get<CameraComponent>(e);
+
 			if(cc.Primary)
 				cc.Camera.SetViewportSize(width, height);
 		}
@@ -825,6 +844,7 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(IDComponent)
 	OGN_REG_COMPONENT(TagComponent)
 	OGN_REG_COMPONENT(TransformComponent)
+	OGN_REG_COMPONENT(UIComponent)
 	OGN_REG_COMPONENT(AudioComponent)
 	OGN_REG_COMPONENT(AudioListenerComponent)
 	OGN_REG_COMPONENT(SpriteAnimationComponent)
