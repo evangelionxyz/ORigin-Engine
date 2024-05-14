@@ -68,6 +68,7 @@ namespace origin {
 
 	  m_ActiveScene = std::make_shared<Scene>();
 	  const auto& commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+
 	  if (commandLineArgs.Count > 1)
 	  {
 		  m_ProjectDirectoryPath = commandLineArgs[1];

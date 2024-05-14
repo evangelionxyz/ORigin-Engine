@@ -64,9 +64,20 @@ namespace origin
 		UIData<TextComponent> text;
 		text.Name = "Text";
 		text.Component.TextString = "Text";
+		text.Transform.WorldScale = glm::vec3(100.0f, 100.0f, 1.0f);
 
 		m_Component->Texts.push_back(text);
 		m_SelectedIndex = m_Component->Texts.size() - 1;
+	}
+
+	void UIEditor::CreateNewTexture()
+	{
+		UIData<SpriteRenderer2DComponent> sprite;
+		sprite.Name = "Sprite";
+		sprite.Transform.WorldScale = glm::vec3(100.0f, 100.0f, 1.0f);
+
+		m_Component->Sprites.push_back(sprite);
+		m_SelectedIndex = m_Component->Texts.size() + m_Component->Sprites.size() - 1;
 	}
 
 	void UIEditor::OnImGuiRender()
@@ -146,6 +157,98 @@ namespace origin
 						}
 					}
 				}
+				for (int i = 0; i < m_Component->Sprites.size(); i++)
+				{
+					int idx = i + m_Component->Texts.size();
+					if (m_SelectedIndex == idx)
+					{
+						auto &sprite = m_Component->Sprites[i];
+						auto &name = sprite.Name;
+
+						char buffer[256];
+						strcpy_s(buffer, sizeof(buffer), name.c_str());
+						if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+						{
+							name = std::string(buffer);
+							if (name.empty()) name = "'No Name'";
+						}
+
+						UI::DrawVec3Control("Translation", sprite.Transform.WorldTranslation, 0.5f);
+						glm::vec3 rotation = glm::degrees(sprite.Transform.WorldRotation);
+						UI::DrawVec3Control("Rotation", rotation, 0.5f);
+						sprite.Transform.Rotation = glm::radians(rotation);
+						UI::DrawVec3Control("Scale", sprite.Transform.WorldScale, 0.5f, 1.0f);
+
+						ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Component.Color));
+
+						std::string label = "None";
+						ImGui::Text("Texture");
+						ImGui::SameLine();
+						if (sprite.Component.Texture != 0)
+						{
+							if (AssetManager::IsAssetHandleValid(sprite.Component.Texture) && AssetManager::GetAssetType(sprite.Component.Texture) == AssetType::Texture)
+							{
+								const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(sprite.Component.Texture);
+								label = metadata.Filepath.filename().string();
+							}
+							else
+							{
+								label = "Invalid";
+							}
+						}
+
+						ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
+						buttonLabelSize.x += 20.0f;
+						const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
+
+						ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
+						if (ImGui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+								if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+								{
+									sprite.Component.Texture = handle;
+									sprite.Component.Min = glm::vec2(0.0f);
+									sprite.Component.Max = glm::vec2(1.0f);
+								}
+								else
+									OGN_CORE_WARN("Wrong asset type!");
+							}
+							else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
+							{
+								SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
+								sprite.Component.Texture = data.TextureHandle;
+								sprite.Component.Min = data.Min;
+								sprite.Component.Max = data.Max;
+							}
+							ImGui::EndDragDropTarget();
+						}
+
+						if (sprite.Component.Texture != 0)
+						{
+							ImGui::SameLine();
+							const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+							const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+							if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+							{
+								sprite.Component.Texture = 0;
+								sprite.Component.Min = glm::vec2(0.0f);
+								sprite.Component.Max = glm::vec2(1.0f);
+							}
+
+							UI::DrawVec2Control("Tilling Factor", sprite.Component.TillingFactor, 0.025f, 1.0f);
+							ImGui::Text("Flip");
+							ImGui::SameLine();
+							ImGui::PushID(1);
+							UI::DrawCheckbox("X", &sprite.Component.FlipX);
+							ImGui::PopID();
+							ImGui::SameLine();
+							UI::DrawCheckbox("Y", &sprite.Component.FlipY);
+						}
+					}
+				}
 			}
 
 			ImGui::End();
@@ -163,6 +266,9 @@ namespace origin
 			{
 				if (ImGui::MenuItem("Text"))
 					UIEditor::CreateNewText();
+				if (ImGui::MenuItem("Sprite"))
+					UIEditor::CreateNewTexture();
+
 				ImGui::EndPopup();
 			}
 
@@ -201,6 +307,43 @@ namespace origin
 					{
 						m_Component->Texts.erase(m_Component->Texts.begin() + i); i--;
 						OGN_CORE_TRACE("UI Text erased");
+					}
+				}
+
+				for (int i = 0; i < m_Component->Sprites.size(); i++)
+				{
+					int idx = i + m_Component->Texts.size();
+					auto &sprite = m_Component->Sprites[i];
+
+					ImGuiTreeNodeFlags flags = (m_SelectedIndex == idx ? ImGuiTreeNodeFlags_Selected : 0)
+						| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
+						| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
+					bool node_open = ImGui::TreeNodeEx((void *)&sprite, flags, sprite.Name.c_str());
+					ImGui::PopStyleVar();
+
+					bool isDeleting = false;
+					if (ImGui::BeginPopupContextItem())
+					{
+						if (ImGui::MenuItem("Delete"))
+							isDeleting = true;
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::IsItemHovered())
+					{
+						if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+							m_SelectedIndex = idx;
+					}
+
+					if (node_open)
+						ImGui::TreePop();
+
+					if (isDeleting)
+					{
+						m_Component->Sprites.erase(m_Component->Sprites.begin() + i); i--;
+						OGN_CORE_TRACE("UI Sprite erased");
 					}
 				}
 			}
@@ -254,6 +397,12 @@ namespace origin
 					
 					if (text.Component.FontHandle != 0)
 						Renderer2D::DrawString(text.Component.TextString, text.Transform.GetTransform(), text.Component, i);
+				}
+
+				for (int i = 0; i < m_Component->Sprites.size(); i++)
+				{
+					auto &sprite = m_Component->Sprites[i];
+					Renderer2D::DrawSprite(sprite.Transform.GetTransform(), sprite.Component);
 				}
 			}
 

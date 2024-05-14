@@ -67,9 +67,12 @@ namespace origin
 			for (auto &txt : ui.Texts)
 			{
 				if (txt.Component.FontHandle != 0)
-				{
 					Renderer2D::DrawString(txt.Component.TextString, txt.Transform.GetTransform(), txt.Component);
-				}
+			}
+
+			for (auto &texture : ui.Sprites)
+			{
+				Renderer2D::DrawSprite(texture.Transform.GetTransform(), texture.Component);
 			}
 
 			Renderer2D::End();

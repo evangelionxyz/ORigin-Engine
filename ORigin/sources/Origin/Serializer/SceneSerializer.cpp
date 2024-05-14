@@ -150,6 +150,26 @@ namespace origin
 			}
 			out << YAML::EndSeq; // !Texts
 
+			out << YAML::Key << "Sprites" << YAML::BeginSeq; // Sprites
+			for (auto &sprite : ui.Sprites)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << sprite.Name;
+				out << YAML::Key << "Anchor" << (int)sprite.AnchorType;
+				out << YAML::Key << "TextureHandle" << sprite.Component.Texture;
+				out << YAML::Key << "Min" << sprite.Component.Min;
+				out << YAML::Key << "Max" << sprite.Component.Max;
+				out << YAML::Key << "TillingFactor" << sprite.Component.TillingFactor;
+				out << YAML::Key << "Color" << sprite.Component.Color;
+				out << YAML::Key << "FlipX" << sprite.Component.FlipX;
+				out << YAML::Key << "FlipY" << sprite.Component.FlipY;
+				out << YAML::Key << "Translation" << sprite.Transform.WorldTranslation;
+				out << YAML::Key << "Rotation" << sprite.Transform.WorldRotation;
+				out << YAML::Key << "Scale" << sprite.Transform.WorldScale;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq; // !Sprites
+
 			out << YAML::EndMap; // !UIComponent
 		}
 
@@ -685,6 +705,25 @@ namespace origin
 						text.Transform.WorldScale = txt["Scale"].as<glm::vec3>();
 						ui.Texts.push_back(text);
 					}
+
+					for (const auto &spr : uiComponent["Sprites"])
+					{
+						UIData<SpriteRenderer2DComponent> sprite;
+						sprite.Name = spr["Name"].as<std::string>();
+						sprite.AnchorType = (UIData<SpriteRenderer2DComponent>::Anchor) spr["Anchor"].as<int>();
+						sprite.Component.Min = spr["Min"].as<glm::vec2>();
+						sprite.Component.Max = spr["Kerning"].as<glm::vec2>();
+						sprite.Component.TillingFactor = spr["TillingFactor"].as<glm::vec2>();
+						sprite.Component.FlipX = spr["FlipX"].as<bool>();
+						sprite.Component.FlipY = spr["FlipY"].as<bool>();
+						AssetHandle textureHandle = spr["TextureHandle"].as<uint64_t>();
+						sprite.Component.Texture = textureHandle;
+						sprite.Component.Color = spr["Color"].as<glm::vec4>();
+						sprite.Transform.WorldTranslation = spr["Translation"].as<glm::vec3>();
+						sprite.Transform.WorldRotation = spr["Rotation"].as<glm::vec3>();
+						sprite.Transform.WorldScale = spr["Scale"].as<glm::vec3>();
+						ui.Sprites.push_back(sprite);
+					}
 				}
 
 				if (YAML::Node audioComponent = entity["AudioComponent"])
@@ -715,10 +754,7 @@ namespace origin
 				if (YAML::Node cameraComponent = entity["CameraComponent"])
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
-
 					auto& cameraProps = cameraComponent["Camera"];
-					glm::vec2 viewportSize = cameraProps["ViewportSize"].as<glm::vec2>();
-					cc.Camera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 					cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
 					cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
 					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
@@ -727,6 +763,8 @@ namespace origin
 					cc.Camera.SetOrthographicScale(cameraProps["OrthographicSize"].as<float>());
 					cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
 					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
+					glm::vec2 viewportSize = cameraProps["ViewportSize"].as<glm::vec2>();
+					cc.Camera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 				}
 

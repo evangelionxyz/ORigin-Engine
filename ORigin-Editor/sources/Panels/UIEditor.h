@@ -16,6 +16,7 @@ namespace origin
 
 		void SetActive(UIComponent *component);
 		void CreateNewText();
+		void CreateNewTexture();
 
 		void OnUpdate(Timestep ts);
 		void OnImGuiRender();

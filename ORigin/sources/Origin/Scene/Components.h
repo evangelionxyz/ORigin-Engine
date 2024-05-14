@@ -381,6 +381,8 @@ namespace origin
 	{
 	public:
 		std::vector<UIData<TextComponent>> Texts;
+		std::vector<UIData<SpriteRenderer2DComponent>> Sprites;
+
 		std::shared_ptr<Framebuffer> Framebuffer;
 
 		UIComponent() = default;
