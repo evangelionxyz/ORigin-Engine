@@ -10,6 +10,8 @@
 
 namespace origin {
 
+	using AssetImportFunction = std::function<std::shared_ptr<Asset>(AssetHandle, const AssetMetadata &)>;
+
 	class AssetImporter
 	{
 	public:
@@ -20,8 +22,7 @@ namespace origin {
 	{
 	public:
 		static std::shared_ptr<Font> Import(AssetHandle handle, AssetMetadata metadata);
-		static std::shared_ptr<Font> Load(const std::filesystem::path &filepath);
-
+		static void LoadAsync(const std::filesystem::path &filepath);
 	};
 
 	class AudioImporter

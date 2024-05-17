@@ -49,6 +49,9 @@ namespace origin {
 		void Close() { m_Window->SetClose(true); }
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
+
+		void StartThreads();
+
 		void SubmitToMainThread(const std::function<void()>& function);
 		inline static Application& Get() { return *s_Instance; }
 		inline bool GetMinimized() { return m_Minimized; }
@@ -67,10 +70,13 @@ namespace origin {
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 		void ExecuteMainThreadQueue();
+
 		bool m_Minimized = false;
 		float m_LastFrame = 0.0f;
+
 		std::vector<std::function<void()>> m_MainThreadQueue;
 		std::mutex m_MainThreadMutex;
+
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args);

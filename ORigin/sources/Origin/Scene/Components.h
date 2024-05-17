@@ -144,6 +144,8 @@ namespace origin
 		glm::vec3 WorldRotation = glm::vec3(0.0f);
 		glm::vec3 WorldScale = glm::vec3(1.0f);
 
+		bool Visible = true;
+
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 
@@ -299,12 +301,9 @@ namespace origin
 	class BoxCollider2DComponent
 	{
 	public:
-		// All fixtures with the same group index always collide(positive index)
-		// or never collide(negative index)
-		int Group = 1;
-
 		glm::vec2 Offset = {0.0f, 0.0f};
 		glm::vec2 Size = {0.5f, 0.5f};
+
 
 		float Density = 1.0f;
 		float Friction = 0.5f;
@@ -314,6 +313,10 @@ namespace origin
 		void* RuntimeFixture = nullptr;
 		void* RuntimeBoxShape = nullptr;
 
+		// All fixtures with the same group index always collide (positive index)
+		// or never collide(negative index)
+		int Group = 1;
+
 		BoxCollider2DComponent() = default;
 		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 	};
@@ -321,9 +324,6 @@ namespace origin
 	class CircleCollider2DComponent
 	{
 	public:
-		// All fixtures with the same group index always collide(positive index)
-		// or never collide(negative index)
-		int Group = 1;
 
 		glm::vec2 Offset = {0.0f, 0.0f};
 		float Radius = 0.5f;
@@ -336,6 +336,10 @@ namespace origin
 		void* RuntimeFixture = nullptr;
 		void* RuntimeCircleShape = nullptr;
 
+		// All fixtures with the same group index always collide(positive index)
+		// or never collide(negative index)
+		int Group = 1;
+
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
@@ -343,10 +347,10 @@ namespace origin
 	class RevoluteJoint2DComponent
 	{
 	public:
-		glm::vec2 AnchorPoint;
+		glm::vec2 AnchorPoint = glm::vec2(0.0f);
 
 		// Angles in degrees 
-		// (it's it converted to radians when creating component)
+		// (it is converted to radians when creating component)
 		bool EnableLimit = true;
 		float LowerAngle = 90.0f;
 		float UpperAngle = 45.0f;
@@ -354,6 +358,7 @@ namespace origin
 		bool EnableMotor = true;
 		float MotorSpeed = 0.0f;
 		void* Joint = nullptr;
+
 		UUID ConnectedBodyID = 0;
 
 		RevoluteJoint2DComponent() = default;
@@ -374,6 +379,7 @@ namespace origin
 		std::string Name = "UI";
 		TransformComponent Transform;
 		T Component;
+
 		Anchor AnchorType = Anchor::Center;
 	};
 

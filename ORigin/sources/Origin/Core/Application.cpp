@@ -45,6 +45,8 @@ namespace origin {
 		Renderer::Init();
 		Physics::Init();
 		AudioEngine::Init();
+
+		StartThreads();
 	}
 
 	Application::~Application()
@@ -100,7 +102,11 @@ namespace origin {
 		layer->OnAttach();
 	}
 
-	void Application::PushLayer(Layer* layer)
+	void Application::StartThreads()
+	{
+	}
+
+	void Application::PushLayer(Layer *layer)
 	{
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
@@ -141,9 +147,10 @@ namespace origin {
 
 	void Application::ExecuteMainThreadQueue()
 	{
-		for (auto& func : m_MainThreadQueue)
+		for (auto &func : m_MainThreadQueue)
 			func();
 
 		m_MainThreadQueue.clear();
 	}
+
 }

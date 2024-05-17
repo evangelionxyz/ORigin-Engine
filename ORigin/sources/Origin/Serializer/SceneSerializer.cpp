@@ -268,6 +268,7 @@ namespace origin
 			out << YAML::Key << "Translation" << YAML::Value << tc.Translation;
 			out << YAML::Key << "Rotation" << YAML::Value << tc.Rotation;
 			out << YAML::Key << "Scale" << YAML::Value << tc.Scale;
+			out << YAML::Key << "Visible" << tc.Visible;
 
 			out << YAML::EndMap; // !TransformComponent
 		}
@@ -647,6 +648,7 @@ namespace origin
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
 					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
+					tc.Visible = transformComponent["Visible"].as<bool>();
 				}
 
 				if (YAML::Node audioListnerComponent = entity["AudioListenerComponent"])
@@ -712,7 +714,7 @@ namespace origin
 						sprite.Name = spr["Name"].as<std::string>();
 						sprite.AnchorType = (UIData<SpriteRenderer2DComponent>::Anchor) spr["Anchor"].as<int>();
 						sprite.Component.Min = spr["Min"].as<glm::vec2>();
-						sprite.Component.Max = spr["Kerning"].as<glm::vec2>();
+						sprite.Component.Max = spr["Max"].as<glm::vec2>();
 						sprite.Component.TillingFactor = spr["TillingFactor"].as<glm::vec2>();
 						sprite.Component.FlipX = spr["FlipX"].as<bool>();
 						sprite.Component.FlipY = spr["FlipY"].as<bool>();

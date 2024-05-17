@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "Asset.h"
 #include "AssetImporter.h"
+#include "Origin\Core\Application.h"
 #include "Origin\Project\Project.h"
 #include "Origin\Serializer\MaterialSerializer.h"
 #include "Origin\Serializer\SceneSerializer.h"
@@ -13,8 +14,6 @@
 #include "stb_image.h"
 
 namespace origin {
-
-	using AssetImportFunction = std::function<std::shared_ptr<Asset>(AssetHandle, const AssetMetadata&)>;
 
 	// Functions to Importing and Loading assets
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
@@ -43,13 +42,10 @@ namespace origin {
 
 	std::shared_ptr<Font> FontImporter::Import(AssetHandle handle, AssetMetadata metadata)
 	{
-		return FontImporter::Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+		auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
+		return std::make_shared<Font>(nullptr);
 	}
 
-	std::shared_ptr<Font> FontImporter::Load(const std::filesystem::path &filepath)
-	{
-		return Font::Create(filepath);
-	}
 
 	std::shared_ptr<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
 	{

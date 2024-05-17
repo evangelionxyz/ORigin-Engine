@@ -1,36 +1,48 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include "Origin\Asset\Asset.h"
 #include "Texture.h"
 
+#include "msdf-atlas-gen.h"
+
 namespace origin {
 
-	struct MSDFData;
+	struct FontData
+	{
+		std::vector<msdf_atlas::GlyphGeometry> Glyphs;
+		msdf_atlas::FontGeometry FontGeometry;
+		TextureSpecification TexSpec;
+		Buffer Buffer;
+		std::string Filepath;
+		int Width = 0, Height = 0;
+	};
 
 	class Font : public Asset
 	{
 	public:
-		Font(const std::filesystem::path& filepath);
+		Font(FontData *data);
 		~Font();
 
-		const MSDFData* GetMSDFData() const { return m_Data; }
-		const std::shared_ptr<Texture2D>& GetAtlasTexture() const { return m_AtlasTexture; }
-		std::string GetFilepath() const { return m_Filepath; }
-		bool IsLoaded() const { return m_Loaded; }
-		
-		static std::shared_ptr<Font> Create(const std::filesystem::path &filepath);
+		const FontData *GetData() const { return m_Data; }
+		std::string GetFilepath() const { return m_Data->Filepath; }
+		const std::shared_ptr<Texture2D> &GetAtlasTexture() const { return m_AtlasTexture; }
 
-		static std::shared_ptr<Font> GetDefault();
 		static AssetType GetStaticType() { return AssetType::Font; }
 		AssetType GetType() const override { return GetStaticType(); }
-		
-	private:
-		// TODO: Add loaded fonts for an optimization
 
-		MSDFData* m_Data;
+		static void CheckChanges();
+		
+		bool IsLoaded() const { return m_Loaded; }
+	private:
+		FontData *m_Data = nullptr;
 		std::shared_ptr<Texture2D> m_AtlasTexture;
+
 		bool m_Loaded = false;
-		std::string m_Filepath;
+	};
+
+	struct FontLoader
+	{
+		static void LoadFontAsync(std::shared_ptr<Font> *font, std::filesystem::path filepath);
 	};
 }

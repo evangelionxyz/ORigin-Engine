@@ -507,11 +507,15 @@ namespace origin
 
 		Renderer2D::Begin(camera, cameraTransform.GetTransform());
 		glDisable(GL_DEPTH_TEST);
+
 		// Render All entities
-		for (auto e : m_EntityStorage)
+		for (auto &e : m_EntityStorage)
 		{
 			Entity entity { e.second, this };
 			auto &tc = entity.GetComponent<TransformComponent>();
+
+			if(!tc.Visible)
+				continue;
 
 			// 2D Quads
 			if (entity.HasComponent<SpriteRenderer2DComponent>())
@@ -629,10 +633,13 @@ namespace origin
 		Renderer2D::Begin(camera);
 
 		// Render All entities
-		for (auto e : m_EntityStorage)
+		for (auto &e : m_EntityStorage)
 		{
 			Entity entity { e.second, this };
 			auto &tc = entity.GetComponent<TransformComponent>();
+
+			if (!tc.Visible)
+				continue;
 
 			// 2D Quads
 			if (entity.HasComponent<SpriteRenderer2DComponent>())

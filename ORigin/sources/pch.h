@@ -8,8 +8,13 @@
 #include <utility>
 #include <atomic>
 #include <thread>
+#include <future>
+#include <mutex>
+#include <shared_mutex>
+#include <queue>
 #include <algorithm>
 #include <functional>
+#include <condition_variable>
 #include <string>
 #include <sstream>
 #include <array>

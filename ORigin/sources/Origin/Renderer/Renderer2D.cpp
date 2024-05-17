@@ -3,9 +3,6 @@
 #include "pch.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\Renderer2D.h"
-
-#include "MSDFData.h"
-
 #include "Origin\Asset\AssetManager.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
@@ -681,10 +678,13 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
+		if (!font->IsLoaded() || font->GetAtlasTexture() == nullptr)
+			return;
+
 		if (s_Render2DData.FontAtlasTextureIndex >= Renderer::s_RenderData.MaxTextureSlots)
 			NextBatch();
 		
-		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
+		const auto& fontGeometry = font->GetData()->FontGeometry;
 		const auto& metrics = fontGeometry.getMetrics();
 
 		std::shared_ptr<Texture2D> fontAtlas = font->GetAtlasTexture();

@@ -32,7 +32,10 @@
 #include "Origin\Physics\RigidbodyComponent.h"
 #include "Origin\Scene\Entity.h"
 #include "Origin\Scene\ScriptableEntity.h"
-#include "Origin\Scene\Scene.h"
+
+// Scene change frequently
+// #include "Origin\Scene\Scene.h"
+
 #include "Origin\Scene\Skybox.h"
 #include "Origin\Scene\EditorCamera.h"
 #include "Origin\Scene\SceneCamera.h"

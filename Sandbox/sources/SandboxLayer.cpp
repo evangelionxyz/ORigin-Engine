@@ -11,91 +11,64 @@
 
 using namespace origin;
 
-struct UIRendererTest
-{
-	uint32_t vao, vbo;
-	std::shared_ptr<Texture2D> m_Texture;
-	std::shared_ptr<Shader> m_Shader;
-	
-	UIRendererTest()
-	{
-		float vertices[] = {
-			-1.0f, 1.0f,
-			 1.0f, 1.0f,
-			-1.0f,-1.0f,
-			 1.0f,-1.0f
-		};
-		
-		glCreateVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		
-		glCreateBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), nullptr);
-
-		m_Shader = Shader::Create("Resources/Shaders/Screen.glsl", false);
-		m_Texture = Texture2D::Create("Resources/UITextures/runtime_loading_screen.png");
-	}
-
-	~UIRendererTest()
-	{
-		glDeleteBuffers(1, &vbo);
-		glDeleteVertexArrays(1, &vao);
-	}
-
-	void Draw()
-	{
-		m_Shader->Enable();
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-		glActiveTexture(GL_TEXTURE0);
-		m_Texture->Bind(0);
-		m_Shader->SetInt("uScreeTexture", m_Texture->GetIndex());
-
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.9f, 0.9f, 0.0f))
-			* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 1.0f));
-		m_Shader->SetMatrix("uViewProjection", transform);
-
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		m_Shader->Disable();
-	}
-};
-
-UIRendererTest *ui = nullptr;
+std::vector<std::shared_ptr<Font>> Fonts;
+Renderer2D::TextParams params;
 
 void SandboxLayer::OnAttach()
 {
-	ui = new UIRendererTest();
-
-	camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 500.0f);
+	camera.InitOrthographic(10.0f, 0.0f, 200.0f);
+	camera.SetPosition(glm::vec3(0.0f, 0.0f, 8.0f));
 	camera.SetMoveActive(true);
+
+	for (int i = 0; i < 30; i++)
+	{
+		std::shared_ptr<Font> font;
+		Fonts.push_back(font);
+	}
+
+	int idx = 0;
+	for (auto &f : Fonts)
+	{
+		if (idx % 2 == 0)
+			FontLoader::LoadFontAsync(&f, "Resources/Fonts/Winter Memories.ttf");
+		else
+			FontLoader::LoadFontAsync(&f, "Resources/Fonts/segoeui.ttf");
+
+		idx++;
+	}
 }
 
 SandboxLayer::~SandboxLayer()
 {
-	delete ui;
 }
 
 void SandboxLayer::OnUpdate(Timestep ts)
 {
 	camera.OnUpdate(ts);
 
-	glClearColor(0.5f,0.5f, 0.5f,0.5f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	ui->Draw();
+
+	Renderer2D::Begin(camera);
+
+	Renderer2D::DrawQuad(glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f)), glm::vec4(1.0f));
+
+	for (int i = 0; i < Fonts.size(); i++)
+	{
+		auto f = Fonts[i];
+		if(f)
+			Renderer2D::DrawString("This is text", f, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, i * 1.1f, 0.0f)), params);
+	}
+	Renderer2D::End();
 }
 
 void SandboxLayer::OnEvent(Event& e)
 {
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowResizeEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnWindowResize));
+	dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnKeyPressedEvent));
+
+	camera.OnEvent(e);
 }
 
 bool SandboxLayer::OnWindowResize(WindowResizeEvent& e)
@@ -107,14 +80,12 @@ bool SandboxLayer::OnWindowResize(WindowResizeEvent& e)
 
 void SandboxLayer::OnGuiRender()
 {
-	ImGui::Begin("Test");
-	static bool test = false;
-	static glm::vec2 vec2Test = glm::vec2(0.0f);
-	static glm::vec3 vec3Test = glm::vec3(0.0f);
+}
 
-	UI::DrawCheckbox("Hello World", &test);
-	UI::DrawVec3Control("Position", vec3Test);
-	UI::DrawVec2Control("Size", vec2Test);
+bool SandboxLayer::OnKeyPressedEvent(KeyPressedEvent &e)
+{
+	if (e.GetKeyCode() == Key::P)
+		Font::CheckChanges();
 
-	ImGui::End();
+	return false;
 }

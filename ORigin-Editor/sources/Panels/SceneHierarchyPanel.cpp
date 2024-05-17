@@ -57,8 +57,6 @@ namespace origin {
 
 	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context, bool reset)
 	{
-		OGN_PROFILER_UI();
-
 		if (reset)
 			m_SelectedEntity = {};
 
@@ -76,7 +74,6 @@ namespace origin {
 
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
-		OGN_PROFILER_SCENE();
 		m_SelectedEntity = {};
 		m_Context->DestroyEntity(entity);
 	}
@@ -92,6 +89,7 @@ namespace origin {
 		OGN_PROFILER_UI();
 
 		ImGui::Begin("Hierarchy");
+
 		if (!m_Context)
 		{
 			ImGui::End();
@@ -100,11 +98,8 @@ namespace origin {
 
 		IsSceneHierarchyFocused = ImGui::IsWindowFocused();
 
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
-			| ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth
-			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
-		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed
+			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
 		ImGui::Separator();
@@ -123,7 +118,7 @@ namespace origin {
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::SameLine(contentRegionAvailable.x - 24.0f);
+		ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
 		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
 		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 			ImGui::OpenPopup("CreateEntity");
@@ -195,28 +190,34 @@ namespace origin {
 		OGN_PROFILER_UI();
 
 		auto valid = m_Context->m_Registry.valid(entity);
-		if (!valid)
-			return;
-
-		if (entity.HasParent() && index == 0)
+		if (!valid || (entity.HasParent() && index == 0))
 			return;
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap
 			| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
 
-		ImVec4 header = entity.HasComponent<UIComponent>() ? ImVec4(0.1f, 0.1f, 0.3f, 1.0f) : ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+		ImVec4 headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.1f, 0.1f, 0.3f, 1.0f) : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 		ImVec4 headerHovered = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.7f, 1.0f) : ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
 
 		if (m_SelectedEntity == entity)
-			header = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.9f, 1.0f) : ImVec4(0.47f, 0.47f, 0.47f, 1.0f);
+			headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.9f, 1.0f) : ImVec4(0.47f, 0.47f, 0.47f, 1.0f);
 
-		ImGui::PushStyleColor(ImGuiCol_Header, header);
+		ImGui::PushStyleColor(ImGuiCol_Header, headerActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, headerHovered);
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor(2);
+
+		auto &tc = entity.GetComponent<TransformComponent>();
+		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
+		if(!tc.Visible)
+			texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
+
+		ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
+		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
+			tc.Visible = !tc.Visible;
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 		{

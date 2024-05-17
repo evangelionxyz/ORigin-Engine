@@ -1,26 +1,24 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
+#include "Origin\Core\Application.h"
 #include "Font.h"
-
-#include "MSDFData.h"
 
 #include "GlyphGeometry.h"
 #include "FontGeometry.h"
 #include "BitmapAtlasStorage.h"
 
-#include <map>
-
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 
-	static std::map<std::string, Font> m_WindowsFontMap;
+	static std::vector<std::shared_ptr<Font> *> s_Fonts;
+	static std::vector<std::future<void>> s_Futures;
+	static std::vector<FontData *> s_FontData;
+	static std::mutex s_FontMutex;
 
 	template<typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
-	static std::shared_ptr<Texture2D> CreateAndCacheAtlas(const std::string fontName,
-		float fontSize, const std::vector<msdf_atlas::GlyphGeometry>& glyphs,
-		const msdf_atlas::FontGeometry& fontGeometry, uint32_t widht, uint32_t height)
+	static void CreateAndCacheAtlas(FontData *data)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -28,39 +26,36 @@ namespace origin {
 		attributes.config.overlapSupport = true;
 		attributes.scanlinePass = true;
 
-		msdf_atlas::ImmediateAtlasGenerator<S, N, GenFunc, msdf_atlas::BitmapAtlasStorage<T, N>> generator(widht, height);
+		msdf_atlas::ImmediateAtlasGenerator<S, N, GenFunc, msdf_atlas::BitmapAtlasStorage<T, N>> generator(data->Width, data->Height);
 		generator.setAttributes(attributes);
 		generator.setThreadCount(8);
-		generator.generate(glyphs.data(), static_cast<int>(glyphs.size()));
+		generator.generate(data->Glyphs.data(), static_cast<int>(data->Glyphs.size()));
 
 		msdfgen::BitmapConstRef<T, N> bitmap = static_cast<msdfgen::BitmapConstRef<T, N>>(generator.atlasStorage());
 
-		TextureSpecification spec;
-		spec.Width = bitmap.width;
-		spec.Height = bitmap.height;
-		spec.Format = ImageFormat::RGB8;
-		spec.GenerateMips = false;
+		Buffer b = Buffer((void *)bitmap.pixels, bitmap.width * bitmap.height * 3);
+		data->Buffer = Buffer::Copy(b);
 
-		std::shared_ptr<Texture2D> texture = Texture2D::Create(spec);
-		texture->SetData(Buffer((void*)bitmap.pixels, bitmap.width * bitmap.height * 3));
-
-		return texture;
+		data->TexSpec.Format = ImageFormat::RGB8;
+		data->TexSpec.Width = bitmap.width;
+		data->TexSpec.Height = bitmap.height;
+		data->TexSpec.GenerateMips = false;
 	};
 
-	Font::Font(const std::filesystem::path& filepath)
-		: m_Data(new MSDFData()), m_Filepath(filepath.generic_string())
+	static FontData *LoadFontData(const std::filesystem::path &filepath)
 	{
 		OGN_PROFILER_RENDERING();
 
-		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
-		OGN_CORE_ASSERT(ft, "Font: FreeTypeHandle Error");
+		FontData *data = new FontData();
+		msdfgen::FreetypeHandle *ft = msdfgen::initializeFreetype();
+		OGN_CORE_ASSERT(ft, "[Font] FreeTypeHandle Error");
 
 		std::string fileString = filepath.string();
-		msdfgen::FontHandle* font = msdfgen::loadFont(ft, fileString.c_str());
+		msdfgen::FontHandle *font = msdfgen::loadFont(ft, fileString.c_str());
 		if (!font)
 		{
-			OGN_CORE_ERROR("Failed to load font {}", fileString);
-			return;
+			OGN_CORE_ERROR("[Font] Failed to load font {}", fileString);
+			return nullptr;
 		}
 
 		struct CharsetRange
@@ -82,10 +77,10 @@ namespace origin {
 		}
 		double fontScale = 1.0;
 
-		m_Data->FontGeometry = msdf_atlas::FontGeometry(&m_Data->Glyphs);
-		int glyphsLoaded = m_Data->FontGeometry.loadCharset(font, fontScale, charset);
+		data->FontGeometry = msdf_atlas::FontGeometry(&data->Glyphs);
+		int glyphsLoaded = data->FontGeometry.loadCharset(font, fontScale, charset);
 
-		OGN_CORE_INFO("Loaded {} glyphs from font (out of {})", glyphsLoaded, charset.size());
+		OGN_CORE_INFO("[Font] Loaded {} glyphs from font (out of {})", glyphsLoaded, charset.size());
 
 		double emSize = 40.0;
 		msdf_atlas::TightAtlasPacker atlasPacker;
@@ -95,11 +90,10 @@ namespace origin {
 		atlasPacker.setPadding(0);
 		atlasPacker.setScale(emSize);
 
-		int remaining = atlasPacker.pack(m_Data->Glyphs.data(), static_cast<int>(m_Data->Glyphs.size()));
+		int remaining = atlasPacker.pack(data->Glyphs.data(), static_cast<int>(data->Glyphs.size()));
 		OGN_CORE_ASSERT(remaining == 0, "");
 
-		int widht, height;
-		atlasPacker.getDimensions(widht, height);
+		atlasPacker.getDimensions(data->Width, data->Height);
 
 		emSize = atlasPacker.getScale();
 
@@ -112,51 +106,86 @@ namespace origin {
 		bool expensiveColoring = false;
 		if (expensiveColoring)
 		{
-			msdf_atlas::Workload([&glyphs = m_Data->Glyphs, &coloringSeed](int i, int threadNo)->bool
-				{
+			msdf_atlas::Workload([&glyphs = data->Glyphs, &coloringSeed](int i, int threadNo)->bool
+			{
 				unsigned long long glyphSeed = (LCG_MULTIPLIER * (coloringSeed ^ i) + LCG_INCREMENT) * !!coloringSeed;
 				glyphs[i].edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
 				return true;
-				},
-				m_Data->Glyphs.size()).finish(THREAD_COUNT);
+			},
+				data->Glyphs.size()).finish(THREAD_COUNT);
 		}
 		else
 		{
 			unsigned long long glyphSeed = coloringSeed;
-			for (msdf_atlas::GlyphGeometry& glyph : m_Data->Glyphs)
+			for (msdf_atlas::GlyphGeometry &glyph : data->Glyphs)
 			{
 				glyphSeed *= LCG_MULTIPLIER;
 				glyph.edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
 			}
 		}
 
-		m_AtlasTexture = CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>
-		("Test", emSize, m_Data->Glyphs, m_Data->FontGeometry, widht, height);
+		CreateAndCacheAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>(data);
 
 		msdfgen::destroyFont(font);
 		msdfgen::deinitializeFreetype(ft);
 
+		return data;
+	}
+
+	static void LoadFont(std::vector<FontData *> *fontsData, std::filesystem::path filepath)
+	{
+		FontData *data = LoadFontData(filepath);
+		std::unique_lock<std::mutex> lock(s_FontMutex);
+		fontsData->push_back(data);
+
+		OGN_CORE_WARN("Thread Id: {}", std::this_thread::get_id());
+	}
+
+	void FontLoader::LoadFontAsync(std::shared_ptr<Font> *font, std::filesystem::path filepath)
+	{
+		{
+			std::unique_lock<std::mutex> lock(s_FontMutex);
+			s_Fonts.push_back(font);
+		}
+
+		s_Futures.push_back(std::async(std::launch::async, LoadFont, &s_FontData, filepath));
+	}
+
+	Font::Font(FontData *data)
+		: m_Data(data)
+	{
+		m_AtlasTexture = Texture2D::Create(m_Data->TexSpec);
+		m_AtlasTexture->SetData(m_Data->Buffer);
+
 		m_Loaded = true;
 	}
-	
+
 	Font::~Font()
 	{
-		delete m_Data;
+		if (m_Data) delete m_Data;
 	}
-	
-	std::shared_ptr<Font> Font::Create(const std::filesystem::path &filepath)
+
+	void Font::CheckChanges()
 	{
-		return std::make_shared<Font>(filepath);
+		OGN_CORE_TRACE("Total loaded fonts {}", s_Fonts.size());
+
+		for (int i = 0; i < s_FontData.size(); i++)
+		{
+			const auto &font = s_Fonts[i];
+			const auto &data = s_FontData[i];
+
+			if (data)
+			{
+				*font = std::make_shared<Font>(data);
+
+				s_FontData.erase(s_FontData.begin() + i);
+				s_Fonts.erase(s_Fonts.begin() + i);
+				s_Futures.erase(s_Futures.begin() + i);
+				i--;
+			}
+		}
+
+		OGN_CORE_TRACE("Cleared {}", s_Fonts.size());
 	}
 
-	std::shared_ptr<Font> Font::GetDefault()
-	{
-		OGN_PROFILER_RENDERING();
-
-		static std::shared_ptr<Font> DefaultFont;
-		if (!DefaultFont)
-			DefaultFont = std::make_shared<Font>("Resources/Fonts/segoeui.ttf");
-
-		return DefaultFont;
-	}
 }

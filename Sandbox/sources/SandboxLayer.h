@@ -13,7 +13,9 @@ namespace origin
     void OnUpdate(Timestep ts) override;
     void OnGuiRender() override;
     void OnEvent(Event& event) override;
+
     bool OnWindowResize(WindowResizeEvent& e);
+    bool OnKeyPressedEvent(KeyPressedEvent& e);
 
     EditorCamera camera;
   };

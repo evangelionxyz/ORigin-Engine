@@ -43,6 +43,8 @@ includedirs {
     "%{IncludeDir.GLM}",
     "%{IncludeDir.ENTT}",
     "%{IncludeDir.PhysX}",
+    "%{IncludeDir.msdf_atlas_gen}",
+    "%{IncludeDir.msdfgen}",
     "%{IncludeDir.JoltPhysics}",
     "%{IncludeDir.YAML_CPP}",
 }

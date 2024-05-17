@@ -21,7 +21,7 @@ namespace origin
 }
 
 #if OGN_RELEASE
-	#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+	//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
 int main(int argc, char** argv)
