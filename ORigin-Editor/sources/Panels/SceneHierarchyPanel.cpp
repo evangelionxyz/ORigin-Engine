@@ -210,15 +210,6 @@ namespace origin {
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor(2);
 
-		auto &tc = entity.GetComponent<TransformComponent>();
-		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
-		if(!tc.Visible)
-			texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
-
-		ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
-		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
-			tc.Visible = !tc.Visible;
-
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 		{
 			if (entity.HasComponent<UIComponent>())
@@ -292,6 +283,14 @@ namespace origin {
 			ImGui::TreePop();
 		}
 
+		auto &tc = entity.GetComponent<TransformComponent>();
+		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
+		if (!tc.Visible)
+			texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
+
+		ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
+		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
+			tc.Visible = !tc.Visible;
 	}
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)

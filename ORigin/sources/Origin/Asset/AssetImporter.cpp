@@ -15,6 +15,10 @@
 
 namespace origin {
 
+	static std::vector<std::thread> s_AssetThreads;
+	static std::mutex s_AssetMutex;
+	static std::condition_variable s_CV;
+
 	// Functions to Importing and Loading assets
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
 		{	AssetType::Audio, AudioImporter::Import },
@@ -40,13 +44,105 @@ namespace origin {
 		return s_AssetImportFunctions.at(metadata.Type)(handle, metadata);
 	}
 
-	std::shared_ptr<Font> FontImporter::Import(AssetHandle handle, AssetMetadata metadata)
+	void AssetImporter::StartThread()
 	{
-		auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
-		return std::make_shared<Font>(nullptr);
+		std::thread checker([]
+		{
+			while (true)
+			{
+				AssetImporter::CheckChanges();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+			}
+		});
+
+		checker.detach();
 	}
 
+	void AssetImporter::CheckChanges()
+	{
+		std::unique_lock<std::mutex> lock(s_AssetMutex);
+		s_CV.wait(lock, [] { return !FontImporter::FontDatas.empty()
+			&& (FontImporter::FontDatas.size() == FontImporter::Fonts.size()); });
 
+		OGN_CORE_TRACE("Total loaded fonts {}", FontImporter::Fonts.size());
+
+		std::vector<int> indicesToRemove;
+		std::vector<std::pair<std::shared_ptr<Asset> *, UUID>> fontsToUpdate;
+		std::vector<Font::Data *> dataToUpdate;
+
+		for (int i = 0; i < FontImporter::FontDatas.size(); ++i)
+		{
+			const auto &font = FontImporter::Fonts[i];
+
+			const auto &data = FontImporter::FontDatas[i];
+
+			if (data)
+			{
+				fontsToUpdate.push_back(font);
+				dataToUpdate.push_back(data);
+				indicesToRemove.push_back(i);
+			}
+		}
+		
+		if (!fontsToUpdate.empty())
+		{
+			// Submit a single task to the main thread with all the changes
+			Application::Get().SubmitToMainThread([=, indicesToRemove = std::move(indicesToRemove),
+				fontsToUpdate = std::move(fontsToUpdate), dataToUpdate = std::move(dataToUpdate)]() mutable
+			{
+				for (int i = 0; i < static_cast<int>(fontsToUpdate.size()); i++)
+				{
+					std::shared_ptr<Font> font = std::make_shared<Font>(dataToUpdate[i]);
+					*fontsToUpdate[i].first = std::static_pointer_cast<Asset>(font);
+					fontsToUpdate[i].first->get()->Handle = fontsToUpdate[i].second;
+				}
+
+				for (int i = indicesToRemove.size() - 1; i >= 0; i--)
+				{
+					int index = indicesToRemove[i];
+
+					FontImporter::FontDatas.erase(FontImporter::FontDatas.begin() + index);
+					FontImporter::Fonts.erase(FontImporter::Fonts.begin() + index);
+					s_AssetThreads.erase(s_AssetThreads.begin() + index);
+				}
+			});
+		}
+	}
+
+	std::vector<Font::Data *> FontImporter::FontDatas;
+	std::vector<std::pair<std::shared_ptr<Asset> *, UUID>> FontImporter::Fonts;
+
+	std::shared_ptr<Asset> FontImporter::Import(AssetHandle handle, AssetMetadata metadata)
+	{
+		auto filepath = /*Project::GetActiveAssetDirectory() /*/ metadata.Filepath;
+
+		std::shared_ptr<Asset> font;
+		FontImporter::LoadAsync(&font, filepath);
+
+		return font;
+	}
+
+	void FontImporter::LoadAsync(std::shared_ptr<Asset> *font, const std::filesystem::path &filepath, UUID uuid)
+	{
+		{
+			std::unique_lock<std::mutex> lock(s_AssetMutex);
+			FontImporter::Fonts.push_back({font, uuid });
+		}
+		
+		s_AssetThreads.push_back(std::thread(FontImporter::LoadFont, &FontImporter::FontDatas, filepath));
+		s_AssetThreads.back().detach();
+	}
+
+	void FontImporter::LoadFont(std::vector<Font::Data *> *fontsData, const std::filesystem::path &filepath)
+	{
+		Font::Data *data = Font::LoadFontData(filepath);
+		{
+			std::unique_lock<std::mutex> lock(s_AssetMutex);
+			fontsData->push_back(data);
+		}
+		s_CV.notify_one();
+	}
+	
 	std::shared_ptr<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
 	{
 		return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);

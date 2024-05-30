@@ -57,14 +57,24 @@ namespace origin {
 		else
 		{
 			const AssetMetadata& metadata = GetMetadata(handle);
-			asset = AssetImporter::ImportAsset(handle, metadata);
-			if (!asset)
+
+			if (metadata.Type == AssetType::Font)
 			{
-				OGN_CORE_ERROR("[EditorAssetManager] Asset Import Failed!");
+				auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
+				m_LoadedAssets[handle] = asset;
+				FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath, handle);
 			}
 			else
 			{
-				m_LoadedAssets[handle] = asset;
+				asset = AssetImporter::ImportAsset(handle, metadata);
+				if (!asset)
+				{
+					OGN_CORE_ERROR("[EditorAssetManager] Asset Import Failed!");
+				}
+				else
+				{
+					m_LoadedAssets[handle] = asset;
+				}
 			}
 		}
 
@@ -102,16 +112,34 @@ namespace origin {
 
 		OGN_CORE_ASSERT(metadata.Type != AssetType::None, "Invalid Asset Type");
 
-		std::shared_ptr<Asset> asset = AssetImporter::ImportAsset(handle, metadata);
-
-		if (asset)
+		std::shared_ptr<Asset> asset;
+		
+		if (metadata.Type == AssetType::Font)
 		{
-			asset->Handle = handle;
+			auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
+
+			OGN_CORE_TRACE(handle);
+
 			m_LoadedAssets[handle] = asset;
 			m_AssetRegistry[handle] = metadata;
 
+			FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath, handle);
+
 			SerializeAssetRegistry();
 			return handle;
+		}
+		else
+		{
+			asset = AssetImporter::ImportAsset(handle, metadata);
+			if (asset)
+			{
+				asset->Handle = handle;
+				m_LoadedAssets[handle] = asset;
+				m_AssetRegistry[handle] = metadata;
+
+				SerializeAssetRegistry();
+				return handle;
+			}
 		}
 
 		return 0;

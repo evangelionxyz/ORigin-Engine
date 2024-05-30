@@ -7,6 +7,7 @@
 #include "Time.h"
 #include "Layer.h"
 #include "LayerStack.h"
+#include "Command.h"
 
 #include "Origin\GUI\GuiLayer.h"
 #include "Origin\Renderer\Renderer.h"
@@ -52,6 +53,12 @@ namespace origin {
 
 		void StartThreads();
 
+		static CommandManager<glm::vec4> Vec4CmdManager;
+		static CommandManager<glm::vec3> Vec3CmdManager;
+		static CommandManager<glm::vec2> Vec2CmdManager;
+		static CommandManager<int> IntegerCmdManager;
+		static CommandManager<float> FloatCmdManager;
+
 		void SubmitToMainThread(const std::function<void()>& function);
 		inline static Application& Get() { return *s_Instance; }
 		inline bool GetMinimized() { return m_Minimized; }
@@ -76,7 +83,6 @@ namespace origin {
 
 		std::vector<std::function<void()>> m_MainThreadQueue;
 		std::mutex m_MainThreadMutex;
-
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args);

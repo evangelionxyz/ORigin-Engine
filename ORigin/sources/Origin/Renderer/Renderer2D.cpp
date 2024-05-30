@@ -678,7 +678,10 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		if (!font->IsLoaded() || font->GetAtlasTexture() == nullptr)
+		if (!font)
+			return;
+
+		if (!font->IsLoaded || font->GetAtlasTexture() == nullptr)
 			return;
 
 		if (s_Render2DData.FontAtlasTextureIndex >= Renderer::s_RenderData.MaxTextureSlots)

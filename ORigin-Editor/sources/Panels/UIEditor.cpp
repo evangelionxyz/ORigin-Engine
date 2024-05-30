@@ -51,8 +51,8 @@ namespace origin
 				m_MainCamSize = cc.GetViewportSize();
 				m_Component = component;
 
-				m_Camera.SetOrthoSize(m_MainCamSize.y * 1.2f);
-				m_Camera.SetOrthoSizeMax(m_MainCamSize.y * 5.0f);
+				m_Camera.SetOrthoSize(m_MainCamSize.y * 4.0f);
+				m_Camera.SetOrthoSizeMax(m_MainCamSize.y * 10.0f);
 			}
 
 			IsOpened = true;

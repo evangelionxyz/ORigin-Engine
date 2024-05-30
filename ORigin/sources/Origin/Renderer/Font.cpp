@@ -12,13 +12,8 @@
 
 namespace origin {
 
-	static std::vector<std::shared_ptr<Font> *> s_Fonts;
-	static std::vector<std::future<void>> s_Futures;
-	static std::vector<FontData *> s_FontData;
-	static std::mutex s_FontMutex;
-
 	template<typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
-	static void CreateAndCacheAtlas(FontData *data)
+	static void CreateAndCacheAtlas(Font::Data *data)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -42,11 +37,11 @@ namespace origin {
 		data->TexSpec.GenerateMips = false;
 	};
 
-	static FontData *LoadFontData(const std::filesystem::path &filepath)
+	Font::Data *Font::LoadFontData(const std::filesystem::path &filepath)
 	{
 		OGN_PROFILER_RENDERING();
 
-		FontData *data = new FontData();
+		Font::Data * data = new Font::Data();
 		msdfgen::FreetypeHandle *ft = msdfgen::initializeFreetype();
 		OGN_CORE_ASSERT(ft, "[Font] FreeTypeHandle Error");
 
@@ -132,60 +127,20 @@ namespace origin {
 		return data;
 	}
 
-	static void LoadFont(std::vector<FontData *> *fontsData, std::filesystem::path filepath)
-	{
-		FontData *data = LoadFontData(filepath);
-		std::unique_lock<std::mutex> lock(s_FontMutex);
-		fontsData->push_back(data);
-
-		OGN_CORE_WARN("Thread Id: {}", std::this_thread::get_id());
-	}
-
-	void FontLoader::LoadFontAsync(std::shared_ptr<Font> *font, std::filesystem::path filepath)
-	{
-		{
-			std::unique_lock<std::mutex> lock(s_FontMutex);
-			s_Fonts.push_back(font);
-		}
-
-		s_Futures.push_back(std::async(std::launch::async, LoadFont, &s_FontData, filepath));
-	}
-
-	Font::Font(FontData *data)
+	Font::Font(Font::Data *data)
 		: m_Data(data)
 	{
-		m_AtlasTexture = Texture2D::Create(m_Data->TexSpec);
-		m_AtlasTexture->SetData(m_Data->Buffer);
-
-		m_Loaded = true;
+		if (m_Data)
+		{
+			m_AtlasTexture = Texture2D::Create(m_Data->TexSpec);
+			m_AtlasTexture->SetData(m_Data->Buffer);
+			IsLoaded = true;
+		}
 	}
 
 	Font::~Font()
 	{
 		if (m_Data) delete m_Data;
-	}
-
-	void Font::CheckChanges()
-	{
-		OGN_CORE_TRACE("Total loaded fonts {}", s_Fonts.size());
-
-		for (int i = 0; i < s_FontData.size(); i++)
-		{
-			const auto &font = s_Fonts[i];
-			const auto &data = s_FontData[i];
-
-			if (data)
-			{
-				*font = std::make_shared<Font>(data);
-
-				s_FontData.erase(s_FontData.begin() + i);
-				s_Fonts.erase(s_Fonts.begin() + i);
-				s_Futures.erase(s_Futures.begin() + i);
-				i--;
-			}
-		}
-
-		OGN_CORE_TRACE("Cleared {}", s_Fonts.size());
 	}
 
 }

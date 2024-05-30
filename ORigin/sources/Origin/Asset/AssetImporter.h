@@ -16,13 +16,24 @@ namespace origin {
 	{
 	public:
 		static std::shared_ptr<Asset> ImportAsset(AssetHandle handle, const AssetMetadata& metadata);
+		static void StartThread();
+		static void CheckChanges();
 	};
 
 	class FontImporter
 	{
 	public:
-		static std::shared_ptr<Font> Import(AssetHandle handle, AssetMetadata metadata);
-		static void LoadAsync(const std::filesystem::path &filepath);
+		static std::shared_ptr<Asset> Import(AssetHandle handle, AssetMetadata metadata);
+		static void LoadAsync(std::shared_ptr<Asset> *font, const std::filesystem::path &filepath,  UUID uuid = 0);
+
+	private:
+		static void LoadFont(std::vector<Font::Data *> *fontsData, const std::filesystem::path &filepath);
+
+		static std::vector<Font::Data *> FontDatas;
+
+		static std::vector<std::pair<std::shared_ptr<Asset> *, UUID>> Fonts;
+
+		friend class AssetImporter;
 	};
 
 	class AudioImporter

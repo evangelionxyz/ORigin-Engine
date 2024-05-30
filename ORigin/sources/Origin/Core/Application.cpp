@@ -14,6 +14,12 @@
 
 namespace origin {
 
+	CommandManager<glm::vec4> Application::Vec4CmdManager;
+	CommandManager<glm::vec3> Application::Vec3CmdManager;
+	CommandManager<glm::vec2> Application::Vec2CmdManager;
+	CommandManager<int> Application::IntegerCmdManager;
+	CommandManager<float> Application::FloatCmdManager;
+
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const ApplicationSpecification& spec)
@@ -104,6 +110,7 @@ namespace origin {
 
 	void Application::StartThreads()
 	{
+		AssetImporter::StartThread();
 	}
 
 	void Application::PushLayer(Layer *layer)

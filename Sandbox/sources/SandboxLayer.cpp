@@ -11,31 +11,16 @@
 
 using namespace origin;
 
-std::vector<std::shared_ptr<Font>> Fonts;
+std::vector<std::shared_ptr<Asset>> Assets;
 Renderer2D::TextParams params;
 
 void SandboxLayer::OnAttach()
 {
 	camera.InitOrthographic(10.0f, 0.0f, 200.0f);
 	camera.SetPosition(glm::vec3(0.0f, 0.0f, 8.0f));
+	camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+
 	camera.SetMoveActive(true);
-
-	for (int i = 0; i < 30; i++)
-	{
-		std::shared_ptr<Font> font;
-		Fonts.push_back(font);
-	}
-
-	int idx = 0;
-	for (auto &f : Fonts)
-	{
-		if (idx % 2 == 0)
-			FontLoader::LoadFontAsync(&f, "Resources/Fonts/Winter Memories.ttf");
-		else
-			FontLoader::LoadFontAsync(&f, "Resources/Fonts/segoeui.ttf");
-
-		idx++;
-	}
 }
 
 SandboxLayer::~SandboxLayer()
@@ -51,14 +36,26 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	Renderer2D::Begin(camera);
 
-	Renderer2D::DrawQuad(glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f)), glm::vec4(1.0f));
+	static float hue = 0.0f;
+	hue += ImGui::GetIO().DeltaTime;
+	if (hue >= 360.0f)
+			hue -= 360.0f;
+	ImVec4 col = ImColor::HSV(hue, 0.5f, 1.0f).Value;
+	glm::vec4 color = glm::vec4(col.x, col.y, col.z, col.w);
+	Renderer2D::DrawQuad(glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f)), color);
 
-	for (int i = 0; i < Fonts.size(); i++)
+	int i = 0;
+	for (auto &font : Assets)
 	{
-		auto f = Fonts[i];
-		if(f)
-			Renderer2D::DrawString("This is text", f, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, i * 1.1f, 0.0f)), params);
+		if (font)
+		{
+			//Renderer2D::DrawString("This is text", font, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, i * 1.2f, 0.0f)), params);
+			Renderer2D::DrawString("This is text", std::static_pointer_cast<Font>(font), glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, i * 1.2f, 0.0f)), params);
+		}
+			
+		i++;
 	}
+
 	Renderer2D::End();
 }
 
@@ -80,12 +77,30 @@ bool SandboxLayer::OnWindowResize(WindowResizeEvent& e)
 
 void SandboxLayer::OnGuiRender()
 {
+	ImGui::Begin("Test Window");
+
+	ImGui::Text("%.3f fps %.3f", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+
+	if (ImGui::Button("Add"))
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			std::shared_ptr<Asset> asset;
+			Assets.push_back(asset);
+			
+		}
+
+		for (auto &asset : Assets)
+		{
+			FontImporter::LoadAsync(&asset, "Resources/Fonts/segoeui.ttf");
+		}
+		
+	}
+
+	ImGui::End();
 }
 
 bool SandboxLayer::OnKeyPressedEvent(KeyPressedEvent &e)
 {
-	if (e.GetKeyCode() == Key::P)
-		Font::CheckChanges();
-
 	return false;
 }
