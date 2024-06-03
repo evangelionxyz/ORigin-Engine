@@ -4,12 +4,12 @@
 #include "Window.h"
 
 #ifdef OGN_WINDOWS_PLATFORM
-	#include "Platform/Windows/Win_Window.h"
+	#include "Platform/Win32/Win32Window.h"
 #endif
 
 namespace origin
 {
-	std::unique_ptr<Window> Window::Create(const char* title,	uint32_t width,	uint32_t height, bool maximized)
+	std::shared_ptr<Window> Window::Create(const char* title,	uint32_t width,	uint32_t height, bool maximized)
 	{
 #ifdef OGN_WINDOWS_PLATFORM
 		return std::make_unique<WinWindow>(title, width, height, maximized);

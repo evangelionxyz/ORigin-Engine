@@ -4,10 +4,6 @@
 
 namespace origin
 {
-	// ///////////////
-	// Shader Library
-	// ///////////////
-
 	/*
 	* Add an existing shaders and providing
 	* the shader name into the map

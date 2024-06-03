@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "UniformBuffer.h"
 #include "Origin\Renderer\Renderer.h"
-#include "Platform\OpenGL\OpenGL_UniformBuffer.h"
+#include "Platform\OpenGL\OpenGLUniformBuffer.h"
 
 namespace origin
 {

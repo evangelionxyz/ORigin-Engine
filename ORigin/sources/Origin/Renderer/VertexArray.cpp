@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "VertexArray.h"
 #include "Origin\Renderer\Renderer.h"
-#include "Platform\OpenGL\OpenGL_VertexArray.h"
+#include "Platform\OpenGL\OpenGLVertexArray.h"
 
 namespace origin
 {

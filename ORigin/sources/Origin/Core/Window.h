@@ -1,12 +1,13 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 #include <GLFW\glfw3.h>
 #include "Event.h"
-#include "glm\glm.hpp"
 
 namespace origin {
 
+	class GraphicsContext;
+	
 	class Window
 	{
 	public:
@@ -26,7 +27,7 @@ namespace origin {
 		virtual const char* GetTitle() const = 0;
 		virtual GLFWwindow* GetNativeWindow() = 0;
 
-		static std::unique_ptr<Window> Create(const char* title, uint32_t width, uint32_t heigth, bool maximized = false);
+		static std::shared_ptr<Window> Create(const char* title, uint32_t width, uint32_t heigth, bool maximized = false);
 
 	};
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "OpenGL_Buffer.h"
+#include "OpenGLBuffer.h"
 
 #include <glad\glad.h>
 

@@ -1,13 +1,16 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
 
-namespace origin {
+#include "Origin\Core\Window.h"
+
+namespace origin 
+{
 	class GraphicsContext
 	{
 	public:
 		virtual ~GraphicsContext() = default;
-		virtual void Init() = 0;
-		static std::unique_ptr<GraphicsContext> Create();
+		virtual void Init(Window *window) = 0;
+		static std::shared_ptr<GraphicsContext> Create();
 	};
 }

@@ -28,6 +28,8 @@ project "ImGui"
         "%{wks.location}/ORigin/vendor/imgui/imgui_demo.cpp",
         "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_glfw.cpp",
         "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_opengl3.cpp",
+        "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_dx11.cpp",
+        "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_win32.cpp",
     }
 
     filter "system:windows"

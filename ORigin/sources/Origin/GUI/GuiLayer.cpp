@@ -9,11 +9,14 @@
 #include <backends\imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
+#include <backends/imgui_impl_dx11.h>
+
+#include "Platform/DX11/DX11Context.h"
 
 namespace origin {
 
-	GuiLayer::GuiLayer(void* window)
-		: Layer("Gui Layer"), m_Context(window)
+	GuiLayer::GuiLayer(const std::shared_ptr<Window> &window)
+		: Layer("Gui Layer"), m_WindowContext(window)
 	{
 	}
 
@@ -23,6 +26,8 @@ namespace origin {
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
+
+#pragma region theme_init
 
 		ImVec4* colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -119,16 +124,35 @@ namespace origin {
 
 		float fontSize = 16.0f;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
+#pragma endregion
 
-		ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)m_Context, true);
-		ImGui_ImplOpenGL3_Init("#version 450");
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::DX11:
+			{
+				ImGui_ImplGlfw_InitForOther(m_WindowContext->GetNativeWindow(), true);
+				ImGui_ImplDX11_Init(DX11Context::Get()->Device, DX11Context::Get()->DeviceContext);
+			}
+			break;
+		case RendererAPI::API::OpenGL:
+			{
+				ImGui_ImplGlfw_InitForOpenGL(m_WindowContext->GetNativeWindow(), true);
+				ImGui_ImplOpenGL3_Init("#version 450");
+			}
+			break;
+		}
 	}
 
 	void GuiLayer::Detach()
 	{
 		OGN_PROFILER_UI();
 
-		ImGui_ImplOpenGL3_Shutdown();
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::DX11: ImGui_ImplDX11_Shutdown(); break;
+		case RendererAPI::API::OpenGL: ImGui_ImplOpenGL3_Shutdown(); break;
+		}
+
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
@@ -154,12 +178,18 @@ namespace origin {
 		OGN_PROFILER_UI();
 
 		ImGui_ImplGlfw_NewFrame();
-		ImGui_ImplOpenGL3_NewFrame();
+		
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::DX11: ImGui_ImplDX11_NewFrame(); break;
+		case RendererAPI::API::OpenGL: ImGui_ImplOpenGL3_NewFrame(); break;
+		}
+		
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 	}
 
-	void GuiLayer::End()
+	void GuiLayer::End() const
 	{
 		OGN_PROFILER_UI();
 
@@ -169,7 +199,12 @@ namespace origin {
 		io.DisplaySize = ImVec2(m_Width, m_Height);
 		
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		switch(RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::DX11: ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); break;
+		case RendererAPI::API::OpenGL: ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); break;
+		}
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

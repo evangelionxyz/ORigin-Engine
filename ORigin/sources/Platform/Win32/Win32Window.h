@@ -44,7 +44,7 @@ namespace origin
 	private:
 		WindowData m_Data;
 		GLFWwindow* m_MainWindow;
-		std::unique_ptr<GraphicsContext> m_GraphicsContext;
+		std::shared_ptr<GraphicsContext> m_GraphicsContext;
 	};
 }
 

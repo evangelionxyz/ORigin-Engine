@@ -1,8 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "stb_image.h"
-#include "OpenGL_Texture.h"
+#include "OpenGLTexture.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 

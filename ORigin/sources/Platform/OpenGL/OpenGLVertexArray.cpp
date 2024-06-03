@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "OpenGL_VertexArray.h"
+#include "OpenGLVertexArray.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 

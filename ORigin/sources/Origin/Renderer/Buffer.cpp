@@ -4,7 +4,7 @@
 
 #include "Buffer.h"
 #include "Origin\Renderer\Renderer.h"
-#include "Platform\OpenGL\OpenGL_Buffer.h"
+#include "Platform\OpenGL\OpenGLBuffer.h"
 
 namespace origin
 {

@@ -10,6 +10,8 @@
 #include <imgui.h>
 #include <stb_image.h>
 
+#include "Platform/DX11/DX11Context.h"
+
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
@@ -33,6 +35,8 @@ namespace origin {
 		if (!m_Spec.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Spec.WorkingDirectory);
 
+		RendererAPI::SetAPI(RendererAPI::API::OpenGL);
+
 		Window::GLFWInit();
 
 		m_Window = Window::Create(spec.Name.c_str(),
@@ -44,7 +48,7 @@ namespace origin {
 
 		if (!spec.Runtime)
 		{
-			m_GuiLayer = new GuiLayer((void*)m_Window->GetNativeWindow());
+			m_GuiLayer = new GuiLayer(m_Window);
 			PushOverlay(m_GuiLayer);
 		}
 
@@ -94,7 +98,10 @@ namespace origin {
 				{
 					layer->OnGuiRender();
 				}
-				m_GuiLayer->SetDisplaySize((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
+				m_GuiLayer->SetDisplaySize(
+					static_cast<float>(m_Window->GetWidth()),
+					static_cast<float>(m_Window->GetHeight())
+				);
 				m_GuiLayer->End();
 			}
 			
@@ -139,7 +146,7 @@ namespace origin {
 		m_MainThreadQueue.emplace_back(function);
 	}
 
-	bool Application::OnWindowClose(WindowCloseEvent& e)
+	bool Application::OnWindowClose(WindowCloseEvent& e) const
 	{
 		return !m_Window->IsLooping();
 	}

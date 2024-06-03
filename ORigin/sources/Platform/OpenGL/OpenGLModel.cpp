@@ -1,9 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "Origin\Project\Project.h"
 #include "Origin\Renderer\Renderer.h"
-#include "OpenGL_Model.h"
-#include "OpenGL_Mesh.h"
+#include "OpenGLModel.h"
+#include "OpenGLMesh.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
 

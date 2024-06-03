@@ -8,10 +8,11 @@
 
 namespace origin
 {
+	class Window;
 	class GuiLayer : public Layer
 	{
 	public:
-		GuiLayer(void* window);
+		GuiLayer(const std::shared_ptr<Window> &window);
 		~GuiLayer();
 
 		void Init();
@@ -23,12 +24,13 @@ namespace origin
 
 		void SetDisplaySize(float width, float height);
 		void Begin();
-		void End();
+		void End() const;
 
 		uint32_t GetActiveWidgetID();
 
 	private:
-		void* m_Context = nullptr;
+		std::shared_ptr<Window> m_WindowContext;
+		
 		float m_Width = 0.0f, m_Height = 0.0f;
 		bool m_BlockEvents = false;
 		float m_Time = 0.0f;

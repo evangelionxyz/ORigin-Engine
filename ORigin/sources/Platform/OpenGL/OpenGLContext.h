@@ -9,6 +9,6 @@ namespace origin
 	{
 	public:
 		OpenGLContext();
-		void Init() override;
+		void Init(Window *window) override;
 	};
 }

@@ -1,7 +1,7 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "OpenGL_RendererAPI.h"
+#include "OpenGLRendererAPI.h"
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
 
@@ -22,22 +22,16 @@ namespace origin
 
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
-		OGN_PROFILER_RENDERING();
-
 		glViewport(x, y, width, height);
 	}
 
-	void OpenGLRendererAPI::ClearColor(glm::vec4 color)
+	void OpenGLRendererAPI::ClearColor(const glm::vec4 &color)
 	{
-		OGN_PROFILER_RENDERING();
-
 		glClearColor(color.r * color.a, color.g * color.a, color.b * color.a, color.a);
 	}
 
 	void OpenGLRendererAPI::ClearColor(float r, float g, float b, float a)
 	{
-		OGN_PROFILER_RENDERING();
-
 		glClearColor(r * a, g * a, b * a, a);
 	}
 
@@ -85,8 +79,6 @@ namespace origin
 
 	void OpenGLRendererAPI::SetLineWidth(float width)
 	{
-		OGN_PROFILER_RENDERING();
-
 		glLineWidth(width);
 	}
 

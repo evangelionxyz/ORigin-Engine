@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "OpenGL_Shader.h"
+#include "OpenGLShader.h"
 #include "Origin/Core/Time.h"
 
 #include <glad/glad.h>

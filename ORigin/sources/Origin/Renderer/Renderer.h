@@ -2,13 +2,7 @@
 
 #pragma once
 #include "RenderCommand.h"
-#include "UniformBuffer.h"
-
-#include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\SceneCamera.h"
-
 #include "Origin\Renderer\Texture.h"
-
 #include "Origin\Scene\Components.h"
 
 namespace origin {
@@ -37,7 +31,7 @@ namespace origin {
 	class Renderer
 	{
 	public:
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static bool Init();
 		static void Shutdown();

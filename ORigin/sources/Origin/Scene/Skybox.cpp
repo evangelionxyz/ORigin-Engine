@@ -1,11 +1,11 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Skybox.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\RenderCommand.h"
 
-#include "Platform\OpenGL\OpenGL_Skybox.h"
+#include "Platform\OpenGL\OpenGLSkybox.h"
 
 #include "stb_image.h"
 

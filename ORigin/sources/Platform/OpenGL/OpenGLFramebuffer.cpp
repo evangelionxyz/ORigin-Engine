@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "OpenGL_Framebuffer.h"
+#include "OpenGLFramebuffer.h"
 #include <glad/glad.h>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)

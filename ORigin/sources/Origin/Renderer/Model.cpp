@@ -2,7 +2,7 @@
 #include "Model.h"
 #include "Renderer.h"
 
-#include "Platform\OpenGL\OpenGL_Model.h"
+#include "Platform\OpenGL\OpenGLModel.h"
 
 namespace origin
 {

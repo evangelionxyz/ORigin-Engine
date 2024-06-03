@@ -60,21 +60,21 @@ namespace origin {
 		static CommandManager<float> FloatCmdManager;
 
 		void SubmitToMainThread(const std::function<void()>& function);
-		inline static Application& Get() { return *s_Instance; }
-		inline bool GetMinimized() { return m_Minimized; }
-		inline Window& GetWindow() { return *m_Window.get(); }
+		static Application& Get() { return *s_Instance; }
+		bool GetMinimized() const { return m_Minimized; }
+		Window &GetWindow() const { return *m_Window.get(); }
 		const ApplicationSpecification& GetSpecification() const { return m_Spec; }
-		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
+		GuiLayer *GetGuiLayer() { return m_GuiLayer; }
 		bool SetVSync = false;
 
 	private:
 		ApplicationSpecification m_Spec;
 		LayerStack m_LayerStack;
-		std::unique_ptr<Window> m_Window;
+		std::shared_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer, *m_SplashScreenGui;
 		std::unique_ptr<Input> m_MainInputHandle;
 		static Application* s_Instance;
-		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowClose(WindowCloseEvent& e) const;
 		bool OnWindowResize(WindowResizeEvent& e);
 		void ExecuteMainThreadQueue();
 

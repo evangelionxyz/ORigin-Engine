@@ -9,11 +9,15 @@
 #include "MaterialLibrary.h"
 #include "Origin\Asset\AssetImporter.h"
 #include "Origin\Scene\Skybox.h"
-#include "Platform\OpenGL\OpenGL_Shader.h"
+
+#include "Platform\OpenGL\OpenGLRendererAPI.h"
+#include "Platform\DX11\DX11RendererAPI.h"
 
 #include <glm\gtc\matrix_transform.hpp>
 
 namespace origin {
+
+	RendererAPI *RenderCommand::s_RendererAPI = nullptr;
 
 	static Statistics s_Statistics;
 	static ShaderLibrary s_ShaderLibrary;
@@ -33,21 +37,37 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 
+		uint32_t whiteTextureData = 0xffffffff;
+		uint32_t blackTextureData = 0xff000000;
+
+
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
+			{
+				RenderCommand::s_RendererAPI = new OpenGLRendererAPI;
+
+				WhiteTexture = Texture2D::Create(TextureSpecification());
+				WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
+				BlackTexture = Texture2D::Create(TextureSpecification());
+				BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
+
+				LoadShaders();
+				LoadMaterials();
+
+				Renderer2D::Init();
+				Renderer3D::Init();
+			}
+			break;
+		case RendererAPI::API::DX11:
+		{
+			RenderCommand::s_RendererAPI = new DX11RendererAPI;
+			break;
+		}
+		}
+
 		RenderCommand::Init();
 
-		uint32_t whiteTextureData = 0xffffffff;
-		WhiteTexture = Texture2D::Create(TextureSpecification());
-		WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
-
-		uint32_t blackTextureData = 0xff000000;
-		BlackTexture = Texture2D::Create(TextureSpecification());
-		BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
-
-		Renderer::LoadShaders();
-		Renderer::LoadMaterials();
-
-		Renderer2D::Init();
-		Renderer3D::Init();
 		return true;
 	}
 

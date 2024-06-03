@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "Origin\Utils\PlatformUtils.h"
@@ -6,6 +6,7 @@
 
 #include <commdlg.h>
 #include <GLFW\glfw3.h>
+
 #ifdef OGN_WINDOWS_PLATFORM
 #define GLFW_EXPOSE_NATIVE_WIN32
 	#include <GLFW\glfw3native.h>
@@ -32,7 +33,7 @@ namespace origin
 		if (GetOpenFileNameA(&ofn) == TRUE)
 			return ofn.lpstrFile;
 
-		return std::string();
+		return {};
 	}
 
 	std::string FileDialogs::SaveFile(const char* filter)
@@ -57,6 +58,6 @@ namespace origin
 		if (GetSaveFileNameA(&ofn) == TRUE)
 			return ofn.lpstrFile;
 
-		return std::string();
+		return {};
 	}
 }

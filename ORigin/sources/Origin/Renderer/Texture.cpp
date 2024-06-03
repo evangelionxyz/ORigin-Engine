@@ -4,7 +4,7 @@
 #include "Texture.h"
 #include "Renderer.h"
 
-#include "Platform\OpenGL\OpenGL_Texture.h"
+#include "Platform\OpenGL\OpenGLTexture.h"
 
 namespace origin {
 

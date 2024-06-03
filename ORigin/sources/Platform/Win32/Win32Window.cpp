@@ -1,9 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Win_Window.h"
+#include "Win32Window.h"
 
-#include "Origin\Core\KeyCodes.h"
 #include "Origin\Core\KeyEvent.h"
 #include "Origin\Core\MouseEvent.h"
 #include "Origin\Core\AppEvent.h"
@@ -11,8 +10,7 @@
 #include "Origin\Asset\AssetImporter.h"
 
 #include "stb_image.h"
-
-#include <glad\glad.h>
+#include "Platform/DX11/DX11Context.h"
 
 namespace origin {
 
@@ -23,19 +21,22 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::OpenGL:
 #if defined(OGN_DEBUG)
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
-		glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
-		m_MainWindow = glfwCreateWindow(width, height, title, nullptr, nullptr);
+			break;
+		}
 		
+		glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
+		m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
+			title, nullptr, nullptr);
 
 		if (!m_MainWindow)
-		{
 			glfwTerminate();
-			exit(EXIT_FAILURE);
-		}
 
 		if (!maximized)
 		{
@@ -49,12 +50,12 @@ namespace origin {
 		glfwMakeContextCurrent(m_MainWindow);
 
 		m_GraphicsContext = GraphicsContext::Create();
-		m_GraphicsContext->Init();
+		m_GraphicsContext->Init(this);
 
 		int w, h;
 		glfwGetWindowSize(m_MainWindow, &w, &h);
-		m_Data.Width = (uint32_t)w;
-		m_Data.Height = (uint32_t)h;
+		m_Data.Width = static_cast<uint32_t>(w);
+		m_Data.Height = static_cast<uint32_t>(h);
 
 		glfwGetWindowPos(m_MainWindow, &initWinPosX, &initWinPosY);
 	}
@@ -62,6 +63,7 @@ namespace origin {
 	WinWindow::~WinWindow()
 	{
 		glfwDestroyWindow(m_MainWindow);
+		glfwTerminate();
 	}
 
 	void WinWindow::SetEventCallback(const std::function<void(Event&)>& callback)
@@ -75,9 +77,18 @@ namespace origin {
 	void WinWindow::OnUpdate()
 	{
 		OGN_PROFILER_FUNCTION();
-
+		
 		glfwPollEvents();
-		glfwSwapBuffers(m_MainWindow);
+
+		if (RendererAPI::GetAPI() == RendererAPI::API::DX11)
+		{
+			auto &context = std::reinterpret_pointer_cast<DX11Context>(m_GraphicsContext);
+			context->SwapChain->Present(1u, 0u);
+		}
+		else
+		{
+			glfwSwapBuffers(m_MainWindow);
+		}
 	}
 
 	void WinWindow::SetVSync(bool enable)

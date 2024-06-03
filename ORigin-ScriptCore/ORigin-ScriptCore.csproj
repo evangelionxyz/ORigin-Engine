@@ -56,16 +56,16 @@
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="sources\ORigin\Input.cs" />
-    <Compile Include="sources\ORigin\InternalCalls.cs" />
-    <Compile Include="sources\ORigin\KeyCodes.cs" />
-    <Compile Include="sources\ORigin\Math\Math.cs" />
-    <Compile Include="sources\ORigin\Math\Vector2.cs" />
-    <Compile Include="sources\ORigin\Math\Vector3.cs" />
-    <Compile Include="sources\ORigin\Math\Vector4.cs" />
-    <Compile Include="sources\ORigin\Scene\AudioLibrary.cs" />
-    <Compile Include="sources\ORigin\Scene\Components.cs" />
-    <Compile Include="sources\ORigin\Scene\Entity.cs" />
+    <Compile Include="sources\Origin\Input.cs" />
+    <Compile Include="sources\Origin\InternalCalls.cs" />
+    <Compile Include="sources\Origin\KeyCodes.cs" />
+    <Compile Include="sources\Origin\Math\Math.cs" />
+    <Compile Include="sources\Origin\Math\Vector2.cs" />
+    <Compile Include="sources\Origin\Math\Vector3.cs" />
+    <Compile Include="sources\Origin\Math\Vector4.cs" />
+    <Compile Include="sources\Origin\Scene\AudioLibrary.cs" />
+    <Compile Include="sources\Origin\Scene\Components.cs" />
+    <Compile Include="sources\Origin\Scene\Entity.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

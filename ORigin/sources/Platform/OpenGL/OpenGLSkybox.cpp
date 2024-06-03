@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "OpenGL_Skybox.h"
+#include "OpenGLSkybox.h"
 #include "Origin\Renderer\Renderer.h"
 
 #include "stb_image.h"

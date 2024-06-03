@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stack>
+
 namespace origin
 {
 	template<typename T>
