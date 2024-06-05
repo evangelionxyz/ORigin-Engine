@@ -5,7 +5,7 @@
 
 namespace origin
 {
-	void UIRenderer::CreateFramebuffer(float width, float height)
+	void UIRenderer::CreateFramebuffer(uint32_t width, uint32_t height)
 	{
 		FramebufferSpecification spec;
 
@@ -15,8 +15,8 @@ namespace origin
 			FramebufferTextureFormat::DEPTH24STENCIL8
 		};
 
-		spec.Width = static_cast<uint32_t>(width);
-		spec.Height = static_cast<uint32_t>(height);
+		spec.Width = width;
+		spec.Height = height;
 
 		for (auto &ui : m_UIs)
 			ui.Framebuffer = Framebuffer::Create(spec);
@@ -106,5 +106,10 @@ namespace origin
 	void UIRenderer::AddUI(const UIComponent &ui)
 	{
 		m_UIs.push_back(ui);
+	}
+
+	void UIRenderer::OnResizeViewport(uint32_t width, uint32_t height)
+	{
+		for (auto &ui : m_UIs) ui.Framebuffer->Resize(width, height);
 	}
 }

@@ -7,7 +7,7 @@ namespace origin
 	class SandboxApp : public Application
 	{
 	public:
-		SandboxApp(const ApplicationSpecification spec)
+		SandboxApp(ApplicationSpecification &spec)
 			: Application(spec)
 		{
 			PushLayer(new SandboxLayer());

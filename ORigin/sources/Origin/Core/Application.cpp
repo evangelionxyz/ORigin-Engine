@@ -24,7 +24,7 @@ namespace origin {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const ApplicationSpecification& spec)
+	Application::Application(ApplicationSpecification& spec)
 		: m_Spec(spec)
 	{
 		OGN_PROFILER_FUNCTION();
@@ -36,11 +36,19 @@ namespace origin {
 			std::filesystem::current_path(m_Spec.WorkingDirectory);
 
 		RendererAPI::SetAPI(RendererAPI::API::OpenGL);
-
 		Window::GLFWInit();
 
-		m_Window = Window::Create(spec.Name.c_str(),
-			spec.Width, spec.Height, spec.Maximize);
+		switch(RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::DX11:
+			spec.Name.insert(spec.Name.size(), " <DX11>");
+			break;
+		case RendererAPI::API::OpenGL:
+			spec.Name.insert(spec.Name.size(), " <OpenGL>");
+			break;
+		}
+
+		m_Window = Window::Create(spec.Name.c_str(),spec.Width, spec.Height, spec.Maximize);
 
 		m_Window->SetIcon(spec.IconPath.c_str());
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));

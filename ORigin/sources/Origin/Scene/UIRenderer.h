@@ -9,13 +9,15 @@ namespace origin
 	public:
 		UIRenderer() = default;
 
-		void CreateFramebuffer(float width, float height);
+		void CreateFramebuffer(uint32_t width, uint32_t height);
 		void Unload();
 
 		void RenderFramebuffer();
 		void Render();
 
 		void AddUI(const UIComponent &ui);
+
+		void OnResizeViewport(uint32_t width, uint32_t height);
 		std::vector<UIComponent> &GetUIs() { return m_UIs; }
 
 	private:

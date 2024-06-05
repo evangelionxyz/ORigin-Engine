@@ -9,7 +9,7 @@ namespace origin
 	class RuntimeApp : public Application
 	{
 	public:
-		RuntimeApp(const ApplicationSpecification& spec)
+		RuntimeApp(ApplicationSpecification& spec)
 			: Application(spec)
 		{
 			PushLayer(new RuntimeLayer());

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "SceneCamera.h"
@@ -43,26 +43,27 @@ namespace origin
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		float aspectWidth = 1.0f, aspectHeight = 1.0f;
+		float aspectWidth, aspectHeight;
 
 		switch (m_AspecRatioType)
 		{
-		case origin::SceneCamera::AspectRatioType::SixteenByNine:
+		case AspectRatioType::SixteenByNine:
 			aspectWidth = 16.0f;
 			aspectHeight = 9.0f;
 			break;
-		case origin::SceneCamera::AspectRatioType::SixteenByTen:
+		case AspectRatioType::SixteenByTen:
 			aspectWidth = 16.0f;
 			aspectHeight = 10.0f;
 			break;
-		case origin::SceneCamera::AspectRatioType::FourByThree:
+		case AspectRatioType::FourByThree:
 			aspectWidth = 4.0f;
 			aspectHeight = 3.0f;
 			break;
-		case origin::SceneCamera::AspectRatioType::TwentyOneByNine:
+		case AspectRatioType::TwentyOneByNine:
 			aspectWidth = 21.0f;
 			aspectHeight = 9.0f;
 			break;
+		case AspectRatioType::Free:
 		default:
 			aspectWidth = static_cast<float>(width);
 			aspectHeight = static_cast<float>(height);
@@ -89,12 +90,10 @@ namespace origin
 		m_OrthoSize.y = m_OrthoSize.x / m_AspectRatio;
 	}
 
-
 	void SceneCamera::SetAspectRatioType(AspectRatioType type)
 	{
 		m_AspecRatioType = type;
-
-		SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		SetViewportSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
 	}
 
 	void SceneCamera::RecalculateProjection()

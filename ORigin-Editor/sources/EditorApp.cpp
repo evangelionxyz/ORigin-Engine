@@ -5,17 +5,16 @@
 
 namespace origin
 {
-  class RuntimeApp : public Application
+  class EditorApp : public Application
   {
   public:
-    RuntimeApp(const ApplicationSpecification& spec)
+    EditorApp(ApplicationSpecification& spec)
       : Application(spec)
     {
 	    PushLayer(new EditorLayer());
     }
 
-    ~RuntimeApp()
-    {}
+    ~EditorApp() {}
   };
 
   Application* CreateApplication(ApplicationCommandLineArgs args)
@@ -26,6 +25,6 @@ namespace origin
     spec.Maximize = false;
 
     OGN_CORE_INFO(spec.Name);
-    return new RuntimeApp(spec);
+    return new EditorApp(spec);
   };
 }

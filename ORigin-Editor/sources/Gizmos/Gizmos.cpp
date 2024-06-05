@@ -210,8 +210,7 @@ namespace origin {
 		for (auto &entity : cam)
 		{
 			auto &[tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
-			auto &sceneCam = cc.Camera;
-
+			
 			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);

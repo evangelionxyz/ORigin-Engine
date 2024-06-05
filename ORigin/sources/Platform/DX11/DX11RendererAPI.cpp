@@ -6,7 +6,6 @@
 
 namespace origin
 {
-
 	void DX11RendererAPI::Init()
 	{
 	}
@@ -28,7 +27,7 @@ namespace origin
 
 	void DX11RendererAPI::Clear()
 	{
-		//DX11Context::Get()->DeviceContext->OMSetRenderTargets(1, &DX11Context::Get()->RenderTargetView, nullptr);
+		DX11Context::Get()->DeviceContext->OMSetRenderTargets(1, &DX11Context::Get()->RenderTargetView, nullptr);
 	}
 
 	void DX11RendererAPI::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray, uint32_t IndexCount)
@@ -42,12 +41,10 @@ namespace origin
 
 	void DX11RendererAPI::DrawLines(const std::shared_ptr<VertexArray> &vertexArray, uint32_t vertexCount)
 	{
-
 	}
 
 	void DX11RendererAPI::SetLineWidth(float width)
 	{
-
 	}
 
 }

@@ -275,7 +275,6 @@ namespace origin
 
 				m_UIRenderer->CreateFramebuffer(sizeX, sizeY);
 			}
-
 		});
 	}
 
@@ -827,7 +826,11 @@ namespace origin
 			auto &cc = view.get<CameraComponent>(e);
 
 			if(cc.Primary)
+			{
 				cc.Camera.SetViewportSize(width, height);
+				auto &size = cc.Camera.GetViewportSize();
+				m_UIRenderer->OnResizeViewport(size.x, size.y);
+			}
 		}
 
 		m_ViewportWidth = width;

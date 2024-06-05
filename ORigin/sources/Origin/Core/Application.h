@@ -43,7 +43,7 @@ namespace origin {
 	class Application
 	{
 	public:
-		Application(const ApplicationSpecification& spec);
+		Application(ApplicationSpecification& spec);
 		virtual ~Application();
 		void OnEvent(Event& e);
 		void Run();

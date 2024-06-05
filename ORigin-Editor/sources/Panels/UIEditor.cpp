@@ -387,7 +387,7 @@ namespace origin
 			if (Entity pc = m_Scene->GetPrimaryCameraEntity())
 			{
 				auto &cc = pc.GetComponent<CameraComponent>().Camera;
-				m_MainCamSize = cc.GetViewportSize();
+				m_MainCamSize = cc.GetOrthographicSize();
 
 				Renderer2D::DrawRect(glm::vec3(0.0f), m_MainCamSize * 2.0f);
 
