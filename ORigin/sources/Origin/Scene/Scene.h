@@ -1,16 +1,13 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+#include "UIRenderer.h"
 #include "EditorCamera.h"
 #include "Origin\Asset\Asset.h"
-#include "Origin\Renderer\Framebuffer.h"
-#include "Origin\Renderer\ParticleSystem.h"
-#include "Origin\Scene\Components.h"
 #include "Origin\Scene\Skybox.h"
-#include "Origin\Renderer\Texture.h"
-#include "UIRenderer.h"
 #include "Origin\Core\Time.h"
-#include "entt\entt.hpp"
+#include "Origin\Scene\Components.h"
+#include <entt\entt.hpp>
 
 class b2World;
 
@@ -25,7 +22,7 @@ namespace origin
   public:
     Scene();
     ~Scene();
-    static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
+    static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> &other);
 		static AssetType GetStaticType() { return AssetType::Scene; }
 		AssetType GetType() const override { return GetStaticType(); }
     
@@ -40,8 +37,8 @@ namespace origin
     void OnUpdateRuntime(Timestep time);
     void OnSimulationStart();
     void OnSimulationStop();
-    void OnUpdateSimulation(Timestep time, EditorCamera& camera);
-    void OnEditorUpdate(Timestep time, EditorCamera& camera);
+    void OnUpdateSimulation(Timestep time, EditorCamera &camera);
+    void OnEditorUpdate(Timestep time, EditorCamera &camera);
     void OnViewportResize(const uint32_t width, const uint32_t height);
     void OnShadowRender();
 
@@ -61,11 +58,11 @@ namespace origin
     std::shared_ptr<UIRenderer> m_UIRenderer;
     std::shared_ptr<Physics2D> m_Physics2D;
 
-    void RenderScene(const EditorCamera& camera);
-    void RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform);
+    void RenderScene(const EditorCamera &camera);
+    void RenderScene(const SceneCamera &camera, const TransformComponent &cameraTransform);
 
     template <typename T>
-    void OnComponentAdded(Entity entity, T& component);
+    void OnComponentAdded(Entity entity, T &component);
 
     bool IsRunning() const { return m_Running; }
     bool IsPaused() const { return m_Paused; }

@@ -1,6 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -41,5 +42,3 @@
 #endif
 
 #define OGN_DISABLED_WARNINGS 4244 4312 4267 4005
-
-

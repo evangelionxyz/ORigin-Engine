@@ -3,6 +3,10 @@
 #pragma once
 #include <memory>
 
+#ifdef _WIN32
+#define OGN_PLATFORM_WINDOWS
+#endif
+
 #ifdef OGN_DEBUG
 	#define OGN_ENABLE_ASSERTS
 	#define OGN_DEBUGBREAK() __debugbreak()

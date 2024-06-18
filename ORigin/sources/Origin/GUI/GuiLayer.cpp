@@ -126,21 +126,24 @@ namespace origin {
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 #pragma endregion
 
+#ifdef OGN_PLATFORM_WINDOWS
+#else
 		switch (RendererAPI::GetAPI())
 		{
 		case RendererAPI::API::DX11:
 			{
-				ImGui_ImplGlfw_InitForOther(m_WindowContext->GetNativeWindow(), true);
+				ImGui_ImplGlfw_InitForOther((GLFWwindow *)m_WindowContext->GetNativeWindow(), true);
 				ImGui_ImplDX11_Init(DX11Context::Get()->Device, DX11Context::Get()->DeviceContext);
 			}
 			break;
 		case RendererAPI::API::OpenGL:
 			{
-				ImGui_ImplGlfw_InitForOpenGL(m_WindowContext->GetNativeWindow(), true);
+				ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *)m_WindowContext->GetNativeWindow(), true);
 				ImGui_ImplOpenGL3_Init("#version 450");
 			}
 			break;
 		}
+#endif
 	}
 
 	void GuiLayer::Detach()

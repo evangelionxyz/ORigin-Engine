@@ -8,12 +8,9 @@
 #include "Renderer3D.h"
 #include "MaterialLibrary.h"
 #include "Origin\Asset\AssetImporter.h"
-#include "Origin\Scene\Skybox.h"
 
 #include "Platform\OpenGL\OpenGLRendererAPI.h"
 #include "Platform\DX11\DX11RendererAPI.h"
-
-#include <glm\gtc\matrix_transform.hpp>
 
 namespace origin {
 
@@ -43,10 +40,10 @@ namespace origin {
 
 		switch (RendererAPI::GetAPI())
 		{
+		default:
 		case RendererAPI::API::OpenGL:
 			{
 				RenderCommand::s_RendererAPI = new OpenGLRendererAPI;
-
 				WhiteTexture = Texture2D::Create(TextureSpecification());
 				WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
 				BlackTexture = Texture2D::Create(TextureSpecification());
@@ -60,14 +57,16 @@ namespace origin {
 			}
 			break;
 		case RendererAPI::API::DX11:
-		{
-			RenderCommand::s_RendererAPI = new DX11RendererAPI;
-			break;
-		}
+			{
+				RenderCommand::s_RendererAPI = new DX11RendererAPI;
+				break;
+			}
 		}
 
+		if (!RenderCommand::s_RendererAPI)
+			return false;
+		
 		RenderCommand::Init();
-
 		return true;
 	}
 
@@ -128,5 +127,4 @@ namespace origin {
 	{
 		s_MaterialLibrary.Add("DefaultMesh", Material::Create(Renderer::GetShader("Mesh")));
 	}
-
 }

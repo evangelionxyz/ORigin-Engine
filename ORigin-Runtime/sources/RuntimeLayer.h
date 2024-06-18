@@ -1,6 +1,10 @@
 #pragma once
 #include <Origin.h>
 
+#ifdef APIENTRY
+	#undef APIENTRY
+#endif
+
 class RuntimeLayer : public origin::Layer
 {
 public:
@@ -11,7 +15,7 @@ public:
 
 	void OnAttach() override;
 	void OnUpdate(origin::Timestep ts) override;
-	void OnEvent(origin::Event &e);
+	void OnEvent(origin::Event &e) override;
 	void OnLoadingScreen(uint32_t waitingTime);
 
 	bool OpenProject(const std::filesystem::path &path);

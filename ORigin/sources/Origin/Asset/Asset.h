@@ -26,6 +26,7 @@ namespace origin {
 	class Asset
 	{
 	public:
+		virtual ~Asset() = default;
 		AssetHandle Handle;
 		virtual AssetType GetType() const = 0;
 	};

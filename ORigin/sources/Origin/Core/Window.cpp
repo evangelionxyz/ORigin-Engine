@@ -12,7 +12,7 @@ namespace origin
 	std::shared_ptr<Window> Window::Create(const char* title,	uint32_t width,	uint32_t height, bool maximized)
 	{
 #ifdef OGN_WINDOWS_PLATFORM
-		return std::make_unique<WinWindow>(title, width, height, maximized);
+		return std::make_shared<Win32Window>(title, width, height, maximized);
 #else
 		OGN_CORE_ASSERT(false, "Unkown Platform");
 		return nullptr;

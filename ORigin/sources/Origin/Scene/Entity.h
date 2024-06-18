@@ -1,15 +1,16 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Components.h"
-#include "Scene.h"
-#include "Origin\Physics\RigidbodyComponent.h"
 #include "Origin\Physics\ColliderComponent.h"
+
+#include "Components.h"
+
 #include "entt\entt.hpp"
 #include "box2d\b2_contact.h"
 
 namespace origin {
 
+	class Scene;
 	class Entity
 	{
 	public:

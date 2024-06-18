@@ -2,8 +2,8 @@
 #include "DX11Context.h"
 
 #ifdef OGN_WINDOWS_PLATFORM
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "GLFW\glfw3native.h"
+	#define GLFW_EXPOSE_NATIVE_WIN32
+	#include "GLFW\glfw3native.h"
 #endif
 
 namespace origin
@@ -36,7 +36,7 @@ namespace origin
 		sc.SampleDesc.Count = 1;
 		sc.SampleDesc.Quality = 0;
 		sc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		sc.OutputWindow = glfwGetWin32Window(window->GetNativeWindow());
+		sc.OutputWindow = glfwGetWin32Window((GLFWwindow *)window->GetNativeWindow());
 		sc.Windowed = TRUE;
 
 		constexpr D3D_FEATURE_LEVEL featureLevels[] = 
@@ -83,13 +83,13 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		ID3D11Texture2D *backBuffer = NULL;
+		ID3D11Texture2D *backBuffer = nullptr;
 		SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBuffer));
 		Device->CreateRenderTargetView(backBuffer, nullptr, &RenderTargetView);
 		backBuffer->Release();
 		
 		// Bind 1 view to RenderTargetView
-		DeviceContext->OMSetRenderTargets(1, &RenderTargetView, NULL);
+		DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
 		
 		Viewport.MinDepth = 0.0f;
 		Viewport.MaxDepth = 1.0f;
@@ -101,7 +101,7 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		if (DeviceContext) DeviceContext->OMSetRenderTargets(0, 0, 0);
+		if (DeviceContext) DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 
 		// Release all outstanding references to the swap chain's buffers.
 		if (RenderTargetView) RenderTargetView->Release();
@@ -109,12 +109,12 @@ namespace origin
 		// Preserve the existing buffer count and format
 		SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 
-		ID3D11Texture2D *backBuffer = NULL;
+		ID3D11Texture2D *backBuffer = nullptr;
 		SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBuffer));
 		Device->CreateRenderTargetView(backBuffer, nullptr, &RenderTargetView);
 		backBuffer->Release();
 
-		DeviceContext->OMSetRenderTargets(1, &RenderTargetView, NULL);
+		DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
 
 		memset(&Viewport, 0, sizeof(D3D11_VIEWPORT));
 		Viewport.Width = static_cast<FLOAT>(width);

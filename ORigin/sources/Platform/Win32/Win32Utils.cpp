@@ -7,7 +7,7 @@
 #include <commdlg.h>
 #include <GLFW\glfw3.h>
 
-#ifdef OGN_WINDOWS_PLATFORM
+#ifdef OGN_PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 	#include <GLFW\glfw3native.h>
 #endif

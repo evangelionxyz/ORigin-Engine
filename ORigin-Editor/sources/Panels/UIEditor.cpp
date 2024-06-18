@@ -1,9 +1,9 @@
 #include "UIEditor.h"
 #include "..\EditorLayer.h"
-#include "Origin\Renderer\RenderCommand.h"
 #include "Origin\Renderer\Renderer2D.h"
 #include "Origin\Asset\AssetManager.h"
 #include "Origin\GUI\UI.h"
+
 #include <imgui.h>
 #include <misc\cpp\imgui_stdlib.h>
 

@@ -53,12 +53,6 @@ namespace origin {
 
 		void StartThreads();
 
-		static CommandManager<glm::vec4> Vec4CmdManager;
-		static CommandManager<glm::vec3> Vec3CmdManager;
-		static CommandManager<glm::vec2> Vec2CmdManager;
-		static CommandManager<int> IntegerCmdManager;
-		static CommandManager<float> FloatCmdManager;
-
 		void SubmitToMainThread(const std::function<void()>& function);
 		static Application& Get() { return *s_Instance; }
 		bool GetMinimized() const { return m_Minimized; }

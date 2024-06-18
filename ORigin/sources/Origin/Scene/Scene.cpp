@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Scene.h"
-#include "Entity.h"
-#include "Lighting.h"
-#include "EntityManager.h"
-#include "ScriptableEntity.h"
+
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Profiler/Profiler.h"
@@ -14,10 +10,17 @@
 #include "Origin/Physics/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
-#include "Origin/Renderer/Renderer3D.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
+
+#include "Scene.h"
+
+#include "Entity.h"
+#include "Lighting.h"
+#include "EntityManager.h"
+#include "ScriptableEntity.h"
+
 #include <glm/glm.hpp>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
@@ -33,8 +36,7 @@ namespace origin
 	{
 		OGN_PROFILER_SCENE();
 
-		if (!m_PhysicsScene)
-			m_PhysicsScene = PhysicsScene::Create(this);
+		if (!m_PhysicsScene) m_PhysicsScene = PhysicsScene::Create(this);
 
 		m_Physics2D = std::make_shared<Physics2D>(this);
 		m_UIRenderer = std::make_shared<UIRenderer>();
@@ -44,7 +46,7 @@ namespace origin
 	{
 	}
 
-	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> other)
+	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> &other)
 	{
 		OGN_PROFILER_SCENE();
 
@@ -694,8 +696,7 @@ namespace origin
 				{
 					if (camera.IsPerspective())
 					{
-						Entity primaryCam = GetPrimaryCameraEntity();
-						if (primaryCam)
+						if (Entity primaryCam = GetPrimaryCameraEntity())
 						{
 							const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
 							const auto &ccTC = primaryCam.GetComponent<TransformComponent>();
@@ -739,7 +740,7 @@ namespace origin
 		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 		for (auto& entity : meshView)
 		{
-			auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+			const auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
 			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
 			{
@@ -747,13 +748,13 @@ namespace origin
 
 				for (auto& light : lightView)
 				{
-					auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					const auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
 					lc.Light->OnRender(lightTransform);
 				}
 
 				model->SetTransform(tc.GetTransform());
-				model->Draw((int)entity);
+				model->Draw(static_cast<int>(entity));
 			}
 		}
 
@@ -767,13 +768,13 @@ namespace origin
 		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto& light : dirLight)
 		{
-			auto& [lightTransform, lc] = dirLight.get<TransformComponent, LightComponent>(light);
+			const auto& [lightTransform, lc] = dirLight.get<TransformComponent, LightComponent>(light);
 			lc.Light->GetShadow()->BindFramebuffer();
 
 			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
 			for (auto& entity : meshView)
 			{
-				auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+				const auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
 				if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
 				{
@@ -793,14 +794,14 @@ namespace origin
 	{
 		OGN_PROFILER_FUNCTION();
 
-		auto &view = m_Registry.view<IDComponent, TransformComponent>();
+		const auto &view = m_Registry.view<IDComponent, TransformComponent>();
 		for (auto entity : view)
 		{
-			auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
+			const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
 
 			if (idc.Parent)
 			{
-				auto &ptc = GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
+				const auto &ptc = GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
 				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(ptc.WorldRotation), tc.Translation);
 				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
 				tc.WorldRotation = ptc.WorldRotation + tc.Rotation;

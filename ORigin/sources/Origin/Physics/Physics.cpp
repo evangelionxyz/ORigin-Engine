@@ -26,6 +26,9 @@ namespace origin {
 	{
 		OGN_PROFILER_PHYSICS();
 
+		if (!m_PhysicsAPI)
+			return;
+
 		switch (PhysicsAPI::Current())
 		{
 		case PhysicsAPIType::Jolt: break;
