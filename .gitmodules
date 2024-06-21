@@ -1,6 +1,3 @@
-[submodule "ORigin/vendor/glfw"]
-	path = ORigin/vendor/glfw
-	url = https://github.com/kaks-ev/glfw.git
 [submodule "ORigin/vendor/glad"]
 	path = ORigin/vendor/glad
 	url = https://github.com/kaks-ev/glad.git
@@ -38,3 +35,9 @@
 	path = ORigin/vendor/ImGui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "ORigin/vendor/origin-glfw"]
+	path = ORigin/vendor/origin-glfw
+	url = https://github.com/evangelionmanuhutu/origin-glfw.git
+[submodule "ORigin/vendor/assimp"]
+	path = ORigin/vendor/assimp
+	url = https://github.com/evangelionmanuhutu/assimp.git
