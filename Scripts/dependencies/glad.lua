@@ -1,4 +1,5 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 project "glad"
     location (vendorProjectFiles)
     kind "StaticLib"
