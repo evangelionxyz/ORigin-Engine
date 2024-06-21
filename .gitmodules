@@ -32,5 +32,6 @@
 	path = ORigin/vendor/assimp
 	url = https://github.com/evangelionmanuhutu/assimp.git
 [submodule "Origin/vendor/imgui"]
-	path = Origin/vendor/imgui
+	path = ORigin/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
+	branch = docking
