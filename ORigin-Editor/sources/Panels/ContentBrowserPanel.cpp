@@ -436,9 +436,12 @@ namespace origin
 		{
 			if (fileExtension == ".png" || fileExtension == ".jpg")
 			{
-				texture = m_ThumbnailCache->GetOrCreateThumbnail(relativePath);
-				if (!texture)
-					texture = m_IconMap.at("unknown");
+				if (std::filesystem::exists(relativePath))
+				{
+					texture = m_ThumbnailCache->GetOrCreateThumbnail(relativePath);
+					if (!texture)
+						texture = m_IconMap.at("unknown");
+				}
 			}
 			else if (m_IconMap.find(fileExtension) == m_IconMap.end())
 				texture = m_IconMap.at("unknown");

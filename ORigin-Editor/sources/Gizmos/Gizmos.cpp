@@ -1,11 +1,15 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "Gizmos.h"
+
+#include "../EditorLayer.h"
 
 #include "Origin\Scene\Components.h"
 #include "Origin\Renderer\Renderer2D.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
-#include "..\EditorLayer.h"
 
 namespace origin {
 
@@ -20,7 +24,7 @@ namespace origin {
 
 		Renderer2D::Begin(camera);
 		float orthoSize = camera.GetOrthoSize();
-		glm::vec2 cameraPosition = glm::vec2(camera.GetPosition());
+		glm::vec2 cameraPosition = { camera.GetPosition().x, camera.GetPosition().y };
 
 		float lineSpacing = 1.0f;
 		if (orthoSize >= 20.0f)
@@ -33,16 +37,63 @@ namespace origin {
 		float minY = cameraPosition.y - orthoSize - camera.GetHeight() / 10.0f;
 		float maxY = cameraPosition.y + orthoSize + camera.GetHeight() / 10.0f;
 
-		auto nx = floor(minX / lineSpacing) * lineSpacing;
-		auto ny = floor(minY / lineSpacing) * lineSpacing;
-
 		glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.15f);
 
-		for (float x = nx; x <= maxX; x += lineSpacing)
-			Renderer2D::DrawLine(glm::vec3(x + offset, minY, 0.0f), glm::vec3(x + offset, maxY, 0.0f), color);
+		auto n = floor(minX / lineSpacing) * lineSpacing;
+		for (float i = n; i <= maxX; i += lineSpacing)
+		{
+			Renderer2D::DrawLine({ i + offset, minY, 0.0f }, { i + offset, maxY, 0.0f }, color);
+			Renderer2D::DrawLine({ minX, i + offset, 0.0f }, { maxX, i + offset, 0.0f }, color);
+		}
 
-		for (float y = ny; y <= maxY; y += lineSpacing)
-			Renderer2D::DrawLine(glm::vec3(minX, y + offset, 0.0f), glm::vec3(maxX, y + offset, 0.0f), color);
+		Renderer2D::End();
+	}
+
+	void Gizmos::Draw3DGrid(const EditorCamera &camera, bool horizontal, bool vertical, int size)
+	{
+		OGN_PROFILER_RENDERING();
+
+		if (camera.GetProjectionType() != ProjectionType::Perspective)
+			return;
+
+		Renderer2D::Begin(camera);
+
+		float alphaColor = 0.3f;
+		glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, alphaColor);
+		glm::vec2 cameraPosition = { camera.GetPosition().x, camera.GetPosition().z };
+
+		if (horizontal || vertical)
+		{
+			for (int s = -size; s <= size; s++)
+			{
+				if (horizontal)
+				{
+					if (s == 0)
+					{
+						Renderer2D::DrawLine({ -size, 0.0f, s }, { size, 0.0f, s }, { 0.0f, 0.0f, 1.0f, 1.0f });
+						Renderer2D::DrawLine({ s, 0.0f, -size }, { s, 0.0f, size }, { 1.0f, 0.0f, 0.0f, 1.0f });
+					}
+					else
+					{
+						Renderer2D::DrawLine({ -size, 0.0f, s }, { size, 0.0f, s }, color);
+						Renderer2D::DrawLine({ s, 0.0f, -size }, { s, 0.0f, size }, color);
+					}	
+				}
+
+				if (vertical)
+				{
+					if (s == 0)
+					{
+						Renderer2D::DrawLine({0.0f, -size, 0.0f}, {0.0f, size, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f});
+					}
+					else
+					{
+						Renderer2D::DrawLine({ -size, s, 0.0f}, { size, s, 0.0f}, color);
+						Renderer2D::DrawLine({ s, -size, 0.0f}, { s, size, 0.0f}, color);
+					}
+				}
+			}
+		}
 
 		Renderer2D::End();
 	}
@@ -186,25 +237,25 @@ namespace origin {
 		auto &reg = EditorLayer::Get().m_ActiveScene->m_Registry;
 
 		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture, int entity)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			float scale = glm::clamp(glm::length(camera.GetPosition() - tc.WorldTranslation) * 0.05f, 1.0f, 10.0f);
+
+			switch (camera.GetProjectionType())
 			{
-				glm::mat4 transform = glm::mat4(1.0f);
-				float scale = glm::clamp(glm::length(camera.GetPosition() - tc.WorldTranslation) * 0.05f, 1.0f, 10.0f);
+			case ProjectionType::Perspective:
+				transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
+					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
+					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
+					* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
+				break;
+			case ProjectionType::Orthographic:
+				transform = translate(glm::mat4(1.0f), tc.WorldTranslation);
+				break;
+			}
 
-				switch (camera.GetProjectionType())
-				{
-					case ProjectionType::Perspective:
-						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
-							* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-							* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-							* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
-						break;
-					case ProjectionType::Orthographic:
-						transform = translate(glm::mat4(1.0f), tc.WorldTranslation);
-						break;
-				}
-
-				Renderer2D::DrawQuad(transform, texture, (int)entity, glm::vec2(1.0f), glm::vec4(1.0f));
-			};
+			Renderer2D::DrawQuad(transform, texture, (int)entity, glm::vec2(1.0f), glm::vec4(1.0f));
+		};
 
 		auto &cam = reg.view<TransformComponent, CameraComponent>();
 		for (auto &entity : cam)
@@ -218,42 +269,10 @@ namespace origin {
 				glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ? glm::vec3(tc.WorldRotation) : glm::vec3(0.0f, 0.0f, tc.WorldRotation.z);
 				glm::vec2 orthoSize = cc.Camera.GetOrthographicSize();
 
-				/*switch (cc.Camera.GetAspectRatioType())
-				{
-
-					case SceneCamera::AspectRatioType::SixteenByNine:
-					{
-						sizeY = sizeX / 16.0f * 9.0f;
-						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
-							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-						break;
-					}
-					case SceneCamera::AspectRatioType::FourByThree:
-					{
-						sizeY = sizeX / 4.0f * 3.0f;
-						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
-							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-						break;
-					}
-					case SceneCamera::AspectRatioType::SixteenByTen:
-					{
-						sizeY = sizeX / 16.0f * 10.0f;
-						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
-							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-						break;
-					}
-					case SceneCamera::AspectRatioType::TwentyOneByNine:
-					{
-						sizeY = sizeX / 21.0f * 9.0f;
-						transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
-							* glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-						break;
-					}
-				}*/
-
 				if (cc.Camera.GetAspectRatioType() != SceneCamera::AspectRatioType::Free)
 				{
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(glm::qua(rotation))
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
+						* glm::toMat4(glm::qua(rotation))
 						* glm::scale(glm::mat4(1.0f), glm::vec3(orthoSize.x, orthoSize.y, 1.0f));
 
 					Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -448,5 +467,4 @@ namespace origin {
 			}
 		}
 	}
-
 }

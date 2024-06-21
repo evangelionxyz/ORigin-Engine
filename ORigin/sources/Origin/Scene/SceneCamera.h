@@ -14,11 +14,11 @@ namespace origin {
 
 		enum class AspectRatioType
 		{
-			Free = 0,
-			SixteenByTen = 1,
-			SixteenByNine = 2,
-			TwentyOneByNine = 3,
-			FourByThree = 4
+			Free							= 0,
+			SixteenByTen			= 1,
+			SixteenByNine			= 2,
+			TwentyOneByNine		= 3,
+			FourByThree				= 4
 		};
 
 		void SetViewportSize(uint32_t width, uint32_t height);

@@ -4,7 +4,12 @@
 #include "Material.h"
 #include "Origin\Asset\AssetManager.h"
 
+#include "Renderer.h"
+
 namespace origin {
+
+#define ALBEDO_MAP		"u_AlbedoMap"
+#define SPECULAR_MAP	"u_SpecularMap"
 
 	Material::Material()
 	{
@@ -36,6 +41,38 @@ namespace origin {
 		m_UniformBuffer->Bind();
 		m_UniformBuffer->SetData(&BufferData, sizeof(MaterialBufferData));
 		m_Shader->Enable();
+
+		if (m_Textures.empty() && (m_AlbedoMap == 0 && m_MetallicMap == 0))
+		{
+			Renderer::WhiteTexture->Bind(0);
+			Renderer::WhiteTexture->Bind(1);
+		}
+
+		if (m_AlbedoMap == 0 && m_MetallicMap == 0)
+		{
+			for (auto &t : m_Textures)
+			{
+				if (t.first == aiTextureType_DIFFUSE)
+				{
+					t.second->Bind(0);
+					m_Shader->SetInt(ALBEDO_MAP, 0);
+				}
+				else if (t.first == aiTextureType_SPECULAR)
+				{
+					t.second->Bind(1);
+					m_Shader->SetInt(ALBEDO_MAP, 1);
+				}
+			}
+		}
+
+		if (m_AlbedoMap != 0)
+			AssetManager::GetAsset<Texture2D>(m_AlbedoMap)->Bind(0);
+
+		if (m_MetallicMap != 0)
+			AssetManager::GetAsset<Texture2D>(m_MetallicMap)->Bind(1);
+
+		m_Shader->SetInt(ALBEDO_MAP, 0);
+		m_Shader->SetInt(SPECULAR_MAP, 1);
 	}
 
 	void Material::Unbind()
@@ -67,44 +104,14 @@ namespace origin {
 		return true;
 	}
 
-	std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Material::LoadTextures(const std::string& modelFilepath, aiMaterial* mat, aiTextureType type)
+	void Material::SetAlbedoMap(AssetHandle handle)
 	{
-		OGN_PROFILER_RENDERING();
+		m_AlbedoMap = handle;
+	}
 
-		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> textures;
-
-		for (uint32_t i = 0; i < mat->GetTextureCount(type); i++)
-		{
-			OGN_PROFILER_SCOPE("Material::LoadTextures TextureCount");
-
-			aiString str;
-
-			mat->GetTexture(type, i, &str);
-			bool skip = false;
-			for (uint32_t j = 0; j < m_LoadedTextures.size(); j++)
-			{
-				if (std::strcmp(m_LoadedTextures[j]->GetName().c_str(), str.C_Str()) == 0)
-				{
-					textures[type] = m_LoadedTextures[j];
-					skip = true;
-					break;
-				}
-			}
-
-			if (!skip)
-			{
-				OGN_PROFILER_SCOPE("Material::LoadTextures TextureCount");
-
-				auto& textureDirectory = modelFilepath.substr(0, modelFilepath.find_last_of('/'));
-				std::string textureName = std::string(str.C_Str());
-
-				std::shared_ptr<Texture2D> newTexture = Texture2D::Create(textureDirectory + "/" + textureName);
-				textures[type] = newTexture;
-				m_LoadedTextures.push_back(newTexture);
-			}
-		}
-
-		return textures;
+	void Material::SetMetallicMap(AssetHandle handle)
+	{
+		m_MetallicMap = handle;
 	}
 
 	std::shared_ptr<Material> Material::Create()

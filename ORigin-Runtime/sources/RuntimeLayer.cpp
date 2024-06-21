@@ -11,7 +11,6 @@ using namespace origin;
 void RuntimeLayer::OnAttach()
 {
 	Application::Get().GetWindow().SetFullscreen(true);
-
 	
 	OnLoadingScreen(5);
 

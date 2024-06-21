@@ -1,3 +1,5 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #pragma once
 #include "Origin\Core\Event.h"
 #include "Origin\Scene\Entity.h"
@@ -15,6 +17,7 @@ namespace origin
 		void SetContext(Scene *scene);
 
 		void SetActive(UIComponent *component);
+		void OnCamViewportSizeChange();
 		void CreateNewText();
 		void CreateNewTexture();
 
@@ -41,12 +44,11 @@ namespace origin
 
 		std::shared_ptr<Framebuffer> m_Framebuffer;
 
-		glm::vec2 m_MainCamSize = glm::vec2(1280.0f, 720.0f);
-
-		glm::vec2 m_ViewportSize = { 1.0f, 1.0f };
-		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+		glm::vec2 m_EditorViewportSize = { 1.0f, 1.0f };
+		glm::vec2 m_EditorViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::ivec2 m_Mouse = { 0, 0 };
 		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
+		glm::ivec2 m_SceneCamViewportSize = { 0, 0 };
 
 		int m_SelectedIndex = 0;
 		int m_HoveredIndex = -1;

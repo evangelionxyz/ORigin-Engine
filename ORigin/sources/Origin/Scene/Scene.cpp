@@ -1,5 +1,4 @@
-﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
-
+﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
 #include "pch.h"
 
 #include "Origin/Audio/AudioEngine.h"
@@ -42,11 +41,7 @@ namespace origin
 		m_UIRenderer = std::make_shared<UIRenderer>();
 	}
 
-	Scene::~Scene()
-	{
-	}
-
-	std::shared_ptr<Scene> Scene::Copy(std::shared_ptr<Scene> &other)
+	std::shared_ptr<Scene> Scene::Copy(const std::shared_ptr<Scene> &other)
 	{
 		OGN_PROFILER_SCENE();
 
@@ -253,7 +248,7 @@ namespace origin
 		for (auto& e : audioView)
 		{
 			auto& ac = audioView.get<AudioComponent>(e);
-			std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+			std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 			if (ac.PlayAtStart)
 				audio->Play();
 		}
@@ -266,16 +261,12 @@ namespace origin
 			auto &cam = GetPrimaryCameraEntity();
 			auto &cc = cam.GetComponent<CameraComponent>();
 
-			cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-
 			if (cc.Primary)
 			{
 				m_UIRenderer->AddUI(ui);
-
-				float sizeX = cc.Camera.GetViewportSize().x;
-				float sizeY = cc.Camera.GetViewportSize().y;
-
-				m_UIRenderer->CreateFramebuffer(sizeX, sizeY);
+				cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+				auto &vp = cc.Camera.GetViewportSize();
+				m_UIRenderer->CreateFramebuffer(vp.x, vp.y);
 			}
 		});
 	}
@@ -492,128 +483,7 @@ namespace origin
 		}
 	}
 
-	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
-	{
-		OGN_PROFILER_RENDERING();
-
-		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
-		{
-			Entity eA { std::get<1>(a), this };
-			Entity eB { std::get<1>(b), this };
-
-			float aLen = eA.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eA.GetComponent<TransformComponent>().Translation);
-			float bLen = eB.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eB.GetComponent<TransformComponent>().Translation);
-			return aLen < bLen;
-		});
-
-		Renderer2D::Begin(camera, cameraTransform.GetTransform());
-		glDisable(GL_DEPTH_TEST);
-
-		// Render All entities
-		for (auto &e : m_EntityStorage)
-		{
-			Entity entity { e.second, this };
-			auto &tc = entity.GetComponent<TransformComponent>();
-
-			if(!tc.Visible)
-				continue;
-
-			// 2D Quads
-			if (entity.HasComponent<SpriteRenderer2DComponent>())
-			{
-				auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
-				if (entity.HasComponent<SpriteAnimationComponent>())
-				{
-					auto &ac = entity.GetComponent<SpriteAnimationComponent>();
-					if (ac.State->IsCurrentAnimationExists())
-					{
-						if (ac.State->GetAnimation()->HasFrame())
-						{
-							auto &anim = ac.State->GetAnimation();
-							src.Texture = anim->GetCurrentFrame().Handle;
-							src.Min = anim->GetCurrentFrame().Min;
-							src.Max = anim->GetCurrentFrame().Max;
-						}
-					}
-				}
-				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(e.second));
-			}
-
-			if (entity.HasComponent<CircleRendererComponent>())
-			{
-				auto &cc = entity.GetComponent<CircleRendererComponent>();
-				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
-															 static_cast<int>(e.second));
-			}
-
-			// Particles
-			if (entity.HasComponent<ParticleComponent>())
-			{
-				auto &pc = entity.GetComponent<ParticleComponent>();
-				for (int i = 0; i < 5; i++)
-				{
-					pc.Particle.Emit(pc,
-													 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
-													 tc.Scale, pc.Rotation, static_cast<int>(e.second)
-					);
-				}
-
-				pc.Particle.OnRender();
-			}
-
-			// Text
-			if (entity.HasComponent<TextComponent>())
-			{
-				auto &text = entity.GetComponent<TextComponent>();
-				glm::mat4 transform = glm::mat4(1.0f);
-				glm::mat4 invertedCamTransform = glm::mat4(1.0f);
-
-				if (text.ScreenSpace)
-				{
-					const float ratio = camera.GetAspectRatio();
-					glm::vec2 scale = glm::vec2(tc.Scale.x, tc.Scale.y * ratio);
-					transform = glm::scale(tc.GetTransform(), glm::vec3(scale, 0.0f));
-					invertedCamTransform = glm::inverse(camera.GetViewProjection());
-					transform = invertedCamTransform * transform;
-				}
-				else
-					transform = tc.GetTransform();
-
-				if (text.FontHandle != 0)
-					Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
-			}
-		}
-
-		Renderer2D::End();
-		glEnable(GL_DEPTH_TEST);
-
-		auto lightView = m_Registry.view<TransformComponent, LightComponent>();
-		auto meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-
-		for (auto entity : meshView)
-		{
-			auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
-
-			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
-			{
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
-
-				for (auto& light : lightView)
-				{
-					auto& [lTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
-					lc.Light->OnRender(lTC);
-				}
-
-				model->SetTransform(tc.GetTransform());
-				model->Draw(static_cast<int>(entity));
-			}
-		}
-
-		glDisable(GL_CULL_FACE);
-	}
-
-	void Scene::RenderScene(const EditorCamera& camera)
+	void Scene::RenderScene(const EditorCamera &camera)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -624,9 +494,8 @@ namespace origin
 		{
 			Entity eA { std::get<1>(a), this };
 			Entity eB { std::get<1>(b), this };
-
-			float aLen = eA.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eA.GetComponent<TransformComponent>().Translation);
-			float bLen = eB.GetComponent<TransformComponent>().WorldTranslation.z; //glm::length(camera.GetPosition() - eB.GetComponent<TransformComponent>().Translation);
+			float aLen = eA.GetComponent<TransformComponent>().WorldTranslation.z;
+			float bLen = eB.GetComponent<TransformComponent>().WorldTranslation.z;
 			return aLen < bLen;
 		});
 
@@ -728,7 +597,7 @@ namespace origin
 					transform = tc.GetTransform();
 				}
 
-				if(text.FontHandle != 0)
+				if (text.FontHandle != 0)
 					Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
 			}
 		}
@@ -736,27 +605,156 @@ namespace origin
 		Renderer2D::End();
 		glEnable(GL_DEPTH_TEST);
 
-		const auto& lightView = m_Registry.view<TransformComponent, LightComponent>();
-		const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		for (auto& entity : meshView)
+		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
+		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+		for (const auto entity : meshView)
 		{
-			const auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+			const auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+			if(!tc.Visible)
+				continue;
 
 			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
 			{
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
 
-				for (auto& light : lightView)
+				for (auto &light : lightView)
 				{
-					const auto& [lightTransform, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
-					lc.Light->OnRender(lightTransform);
+					lc.Light->OnRender(lightTC);
 				}
 
 				model->SetTransform(tc.GetTransform());
 				model->Draw(static_cast<int>(entity));
 			}
 		}
+
+		glDisable(GL_CULL_FACE);
+	}
+
+	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
+	{
+		OGN_PROFILER_RENDERING();
+
+		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
+		{
+			Entity eA { std::get<1>(a), this };
+			Entity eB { std::get<1>(b), this };
+
+			float aLen = eA.GetComponent<TransformComponent>().WorldTranslation.z;
+			float bLen = eB.GetComponent<TransformComponent>().WorldTranslation.z;
+			return aLen < bLen;
+		});
+
+		Renderer2D::Begin(camera, cameraTransform.GetTransform());
+		glDisable(GL_DEPTH_TEST);
+		{
+			// Render All entities
+			for (auto &e : m_EntityStorage)
+			{
+				Entity entity { e.second, this };
+				auto &tc = entity.GetComponent<TransformComponent>();
+
+				if (!tc.Visible)
+					continue;
+
+				// 2D Quads
+				if (entity.HasComponent<SpriteRenderer2DComponent>())
+				{
+					auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
+					if (entity.HasComponent<SpriteAnimationComponent>())
+					{
+						auto &ac = entity.GetComponent<SpriteAnimationComponent>();
+						if (ac.State->IsCurrentAnimationExists())
+						{
+							if (ac.State->GetAnimation()->HasFrame())
+							{
+								auto &anim = ac.State->GetAnimation();
+								src.Texture = anim->GetCurrentFrame().Handle;
+								src.Min = anim->GetCurrentFrame().Min;
+								src.Max = anim->GetCurrentFrame().Max;
+							}
+						}
+					}
+					Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(e.second));
+				}
+
+				if (entity.HasComponent<CircleRendererComponent>())
+				{
+					auto &cc = entity.GetComponent<CircleRendererComponent>();
+					Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
+																 static_cast<int>(e.second));
+				}
+
+				// Particles
+				if (entity.HasComponent<ParticleComponent>())
+				{
+					auto &pc = entity.GetComponent<ParticleComponent>();
+					for (int i = 0; i < 5; i++)
+					{
+						pc.Particle.Emit(pc,
+														 glm::vec3(tc.Translation.x, tc.Translation.y, tc.Translation.z + pc.ZAxis),
+														 tc.Scale, pc.Rotation, static_cast<int>(e.second)
+						);
+					}
+
+					pc.Particle.OnRender();
+				}
+
+				// Text
+				if (entity.HasComponent<TextComponent>())
+				{
+					auto &text = entity.GetComponent<TextComponent>();
+					glm::mat4 transform = glm::mat4(1.0f);
+					glm::mat4 invertedCamTransform = glm::mat4(1.0f);
+
+					if (text.ScreenSpace)
+					{
+						const float ratio = camera.GetAspectRatio();
+						glm::vec2 scale = glm::vec2(tc.Scale.x, tc.Scale.y * ratio);
+						transform = glm::scale(tc.GetTransform(), glm::vec3(scale, 0.0f));
+						invertedCamTransform = glm::inverse(camera.GetViewProjection());
+						transform = invertedCamTransform * transform;
+					}
+					else
+						transform = tc.GetTransform();
+
+					if (text.FontHandle != 0)
+						Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
+				}
+			}
+		}
+
+		Renderer2D::End();
+		glEnable(GL_DEPTH_TEST);
+		glCullFace(GL_FRONT);
+
+		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
+		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+		for (const auto entity : meshView)
+		{
+			auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+
+			if (!tc.Visible)
+				continue;
+
+			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
+			{
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
+
+				for (auto &light : lightView)
+				{
+					auto& [lightTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
+					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
+					lc.Light->OnRender(lightTC);
+				}
+
+				model->SetTransform(tc.GetTransform());
+				model->Draw(static_cast<int>(entity));
+			}
+		}
+
+		Renderer2D::End();
 
 		glDisable(GL_CULL_FACE);
 	}
@@ -825,13 +823,8 @@ namespace origin
 		for (auto &e : view)
 		{
 			auto &cc = view.get<CameraComponent>(e);
-
-			if(cc.Primary)
-			{
+			if (cc.Primary)
 				cc.Camera.SetViewportSize(width, height);
-				auto &size = cc.Camera.GetViewportSize();
-				m_UIRenderer->OnResizeViewport(size.x, size.y);
-			}
 		}
 
 		m_ViewportWidth = width;

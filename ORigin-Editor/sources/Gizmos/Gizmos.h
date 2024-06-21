@@ -37,6 +37,7 @@ namespace origin {
 	{
 	public:
 		Gizmos() = default;
+
 		void OnRender(const EditorCamera &camera);
 		void OnEvent(Event &e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
@@ -46,6 +47,8 @@ namespace origin {
 		GizmoType GetType() const { return m_Type; }
 
 		void Draw2DVerticalGrid(const EditorCamera &camera);
+		void Draw3DGrid(const EditorCamera &camera, bool horizontal, bool vertical, int size);
+
 		void Draw2DOverlay();
 		void Draw3DOverlay(const EditorCamera &camera);
 		void DrawIcons(const EditorCamera &camera);
@@ -54,6 +57,7 @@ namespace origin {
 	private:
 		Boundary2DCorner m_Boundary2DCorner = Boundary2DCorner::NONE;
 		GizmoType m_Type = GizmoType::NONE;
+
 		int m_Hovered = -1;
 		float m_SnapValue = 0.0f;
 	};

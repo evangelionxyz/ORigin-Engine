@@ -3,7 +3,6 @@
 -- Sandbox Project
 project "Sandbox"
 location "%{wks.location}/Sandbox"
-kind "ConsoleApp"
 language "C++"
 cppdialect "C++17"
 staticruntime "off"
@@ -61,10 +60,6 @@ linkoptions { "/ignore:4099,4006" }
 
 filter "system:windows"
     systemversion "latest"
-    postbuildcommands {
-        -- Copy 3rd Party Library
-        "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/Sandbox",
-    }
 
 filter "configurations:Debug"
     defines {
@@ -72,6 +67,7 @@ filter "configurations:Debug"
         "OGN_DEBUG",
         "_DEBUG"
     }
+    kind "ConsoleApp"
     runtime "Debug"
     symbols "On"
 
@@ -81,6 +77,7 @@ filter "configurations:Release"
         "OGN_RELEASE",
         "NDEBUG"
     }
+    kind "ConsoleApp"
     runtime "Release"
     optimize "On"
 
@@ -90,5 +87,6 @@ filter "configurations:Dist"
         "OGN_RELEASE",
         "NDEBUG"
     }
+    kind "ConsoleApp"
     runtime "Release"
     optimize "On"

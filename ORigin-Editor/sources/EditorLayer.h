@@ -91,9 +91,11 @@ namespace origin {
 
     ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
 		int m_GizmosMode = 0;
+    int m_GridSize = 30;
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;
 		float m_Time = 0.0f;
+    bool m_DrawGrid3D = true;
 		bool m_DrawLineModeActive = false;
 		bool m_VisualizeCollider = true;
 		bool m_SceneViewportHovered = false;

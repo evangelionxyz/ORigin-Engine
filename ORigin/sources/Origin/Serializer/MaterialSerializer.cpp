@@ -19,7 +19,8 @@ namespace origin
 		out << YAML::Key << "Material";
 		{
 			out << YAML::BeginMap;
-			out << YAML::Key << "AlbedoMap" << YAML::Value << mat->AlbedoMap;
+			out << YAML::Key << "AlbedoMap" << YAML::Value << mat->GetAlbedoMap();
+			out << YAML::Key << "MetallicMap" << YAML::Value << mat->GetMetallicMap();
 			out << YAML::Key << "Color" << YAML::Value << mat->BufferData.Color;
 			out << YAML::Key << "Emission" << YAML::Value << mat->BufferData.Emission;
 			out << YAML::Key << "Metallic" << YAML::Value << mat->BufferData.MetallicValue;
@@ -48,7 +49,8 @@ namespace origin
 
 		if (YAML::Node data = mat["Material"])
 		{
-			material->AlbedoMap = data["AlbedoMap"].as<uint64_t>();
+			material->SetAlbedoMap(data["AlbedoMap"].as<uint64_t>());
+			material->SetMetallicMap(data["Metallic"].as<uint64_t>());
 			material->BufferData.Color = data["Color"].as<glm::vec4>();
 			material->BufferData.Emission = data["Emission"].as<float>();
 			material->BufferData.MetallicValue = data["Metallic"].as<float>();

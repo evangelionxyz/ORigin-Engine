@@ -3,12 +3,13 @@
 #include "AssetMetadata.h"
 
 #include "Origin\Audio\AudioSource.h"
-#include "Origin\Scene\Scene.h"
 #include "Origin\Scene\SpriteSheet.h"
 #include "Origin\Renderer\Texture.h"
 #include "Origin\Renderer\Model.h"
 
 namespace origin {
+
+	class Scene;
 
 	using AssetImportFunction = std::function<std::shared_ptr<Asset>(AssetHandle, const AssetMetadata &)>;
 

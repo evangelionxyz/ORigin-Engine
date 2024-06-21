@@ -1,3 +1,5 @@
+// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+
 // type vertex
 #version 450 core
 layout (location = 0) in vec3 aPos;

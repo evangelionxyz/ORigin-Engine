@@ -8,12 +8,9 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm\gtx\quaternion.hpp>
 
-#define ALBEDO_MAP		"u_AlbedoMap"
-#define SPECULAR_MAP	"u_SpecularMap"
-
 namespace origin
 {
-	OpenGLModel::OpenGLModel(const std::filesystem::path & filepath)
+	OpenGLModel::OpenGLModel(const std::filesystem::path &filepath)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -58,30 +55,6 @@ namespace origin
 			if (m_Material)
 			{
 				m_Material->Bind();
-
-				for (auto& t : m_Textures)
-				{
-					if (t.find(aiTextureType_DIFFUSE) != t.end())
-					{
-						t.at(aiTextureType_DIFFUSE)->Bind(0);
-						m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
-					}
-
-					if (t.find(aiTextureType_SPECULAR) != t.end())
-					{
-						t.at(aiTextureType_SPECULAR)->Bind(1);
-						m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
-					}
-				}
-
-				if (m_Textures.empty())
-				{
-					Renderer::WhiteTexture->Bind(0);
-					m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
-					Renderer::WhiteTexture->Bind(1);
-					m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
-				}
-
 				mesh->Draw();
 				m_Material->Unbind();
 			}
@@ -97,35 +70,11 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
+		for (const std::shared_ptr<Mesh> &mesh : m_Meshes)
 		{
 			if (m_Material)
 			{
 				m_Material->Bind();
-
-				for (auto& t : m_Textures)
-				{
-					if (t.find(aiTextureType_DIFFUSE) != t.end())
-					{
-						t.at(aiTextureType_DIFFUSE)->Bind(0);
-						m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
-					}
-
-					if (t.find(aiTextureType_SPECULAR) != t.end())
-					{
-						t.at(aiTextureType_SPECULAR)->Bind(1);
-						m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
-					}
-				}
-
-				if (m_Textures.empty())
-				{
-					Renderer::WhiteTexture->Bind(0);
-					m_Material->m_Shader->SetInt(ALBEDO_MAP, 0);
-					Renderer::WhiteTexture->Bind(1);
-					m_Material->m_Shader->SetInt(SPECULAR_MAP, 1);
-				}
-
 				mesh->Draw();
 				m_Material->Unbind();
 			}
@@ -222,10 +171,8 @@ namespace origin
 			if (mesh->mMaterialIndex > 0)
 			{
 				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> diffuseMaps = m_Material->LoadTextures(m_Filepath.generic_string(), material, aiTextureType_DIFFUSE);
-				m_Textures.push_back(diffuseMaps);
-				std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> specMaps = m_Material->LoadTextures(m_Filepath.generic_string(), material, aiTextureType_SPECULAR);
-				m_Textures.push_back(specMaps);
+				Utils::LoadMatTextures(&m_Material->m_Textures, m_Filepath.generic_string(), material, aiTextureType_DIFFUSE);
+				Utils::LoadMatTextures(&m_Material->m_Textures, m_Filepath.generic_string(), material, aiTextureType_SPECULAR);
 			}
 		}
 

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
+﻿
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.h"
 #include "Origin/EntryPoint.h"
@@ -18,16 +19,9 @@ namespace origin {
 
   static EditorLayer *s_Instance = nullptr;
 
-  EditorLayer::EditorLayer()
-		: Layer("EditorLayer")
-  {
-	  s_Instance = this;
-  }
+  EditorLayer::EditorLayer() : Layer("EditorLayer") { s_Instance = this; }
 
-  EditorLayer::~EditorLayer()
-  {
-	  ScriptEngine::Shutdown();
-  }
+  EditorLayer::~EditorLayer() { ScriptEngine::Shutdown(); }
 
   void EditorLayer::OnAttach()
   {
@@ -80,7 +74,9 @@ namespace origin {
 
 		m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
 		m_Gizmos = std::make_unique<Gizmos>();
-		m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+
+		if(!m_UIEditor)
+			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
   }
 
   void EditorLayer::OnEvent(Event& e)
@@ -423,6 +419,9 @@ namespace origin {
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
+		if (!m_UIEditor)
+			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+
 		m_UIEditor->SetContext(m_ActiveScene.get());
   }
 
@@ -454,6 +453,9 @@ namespace origin {
 	  m_ActiveScene = m_EditorScene;
 
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+
+		if (!m_UIEditor)
+			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
 
 		m_UIEditor->SetContext(m_ActiveScene.get());
   }
@@ -554,12 +556,18 @@ namespace origin {
 			m_EditorCamera.OnUpdate(ts);
 			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
+
+			if (m_DrawGrid3D)
+				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_GridSize);
 			break;
 
 		case SceneState::Simulate:
 			m_EditorCamera.OnUpdate(ts);
 			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
+
+			if (m_DrawGrid3D)
+				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_GridSize);
 			break;
 		}
 	}
@@ -887,7 +895,6 @@ namespace origin {
 			}
 		}
 
-
 		if (guiStatisticWindow)
 		{
 			ImGui::Begin("Statistics", &guiStatisticWindow);
@@ -916,27 +923,10 @@ namespace origin {
 						m_EditorCamera.SetFov(fov);
 
 					ImGui::Checkbox("Visualize Collider", &m_VisualizeCollider);
+					ImGui::Checkbox("Grid 3D", &m_DrawGrid3D);
+					ImGui::SliderInt("Grid Size", &m_GridSize, 0, 100);
 
-					ImGui::Separator();
-
-					const auto renderStats = Renderer::GetStatistics();
-					ImGui::Text("Total Time (s) : (%.2f s)", m_Time);
-					if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
-					ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
-					ImGui::Text("Quads: %d", renderStats.QuadCount);
-					ImGui::Text("Circles: %d", renderStats.CircleCount);
-					ImGui::Text("Lines: %d", renderStats.LineCount);
-					ImGui::Text("Cubes: %d", renderStats.CubeCount);
-					ImGui::Text("Vertices: %d", renderStats.GetTotalVertexCount());
-					ImGui::Text("Indices: %d", renderStats.GetTotalIndexCount());
-					ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
-					ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
-					ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
-					ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
-					ImGui::Text("Hovered Pixel (%d)", m_PixelData);
-					ImGui::Separator();
-
-					ImGui::SameLine(0.0f, 1.5f); ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
+					ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
 
 					const char *RTTypeString[] = { "Normal", "HDR" };
 					const char *currentRTTypeString = RTTypeString[m_RenderTarget];
@@ -957,8 +947,28 @@ namespace origin {
 					}
 					ImGui::EndTabItem();
 				}
+
+				ImGui::Separator();
+				const auto renderStats = Renderer::GetStatistics();
+				
+				ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
+				ImGui::Text("Quads: %d", renderStats.QuadCount);
+				ImGui::Text("Circles: %d", renderStats.CircleCount);
+				ImGui::Text("Lines: %d", renderStats.LineCount);
+				ImGui::Text("Cubes: %d", renderStats.CubeCount);
+				ImGui::Text("Vertices: %d", renderStats.GetTotalVertexCount());
+				ImGui::Text("Indices: %d", renderStats.GetTotalIndexCount());
+				ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
+				ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
+				ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
+				ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
+				ImGui::Text("Hovered Pixel (%d)", m_PixelData);
+				ImGui::Separator();
+
 				if (ImGui::BeginTabItem("Render Time"))
 				{
+					ImGui::Text("Total Time (s) : (%.2f s)", m_Time);
+					if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
 					for (auto r : m_ProfilerResults)
 					{
 						char label[50];

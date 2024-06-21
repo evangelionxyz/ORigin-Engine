@@ -4,7 +4,7 @@ VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
 ASSIMP_SDK = os.getenv("ASSIMP_SDK")
 
 IncludeDir = {}
-IncludeDir["GLFW"] = "%{wks.location}/ORigin/vendor/glfw/include"
+IncludeDir["GLFW"] = "%{wks.location}/ORigin/vendor/origin-glfw/include"
 IncludeDir["GLAD"] = "%{wks.location}/ORigin/vendor/glad/include"
 IncludeDir["ASSIMP"] = "%{wks.location}/ORigin/vendor/assimp/include"
 IncludeDir["IMGUI"] = "%{wks.location}/ORigin/vendor/imgui"
@@ -55,7 +55,8 @@ Library["BCrypt"] = "Bcrypt.lib"
 
 -- Dependencies Lua File
 group "Dependecies"
-include "glfw.lua"
+include "assimp.lua"
+include "origin-glfw.lua"
 include "glad.lua"
 include "imgui.lua"
 include "yaml-cpp.lua"

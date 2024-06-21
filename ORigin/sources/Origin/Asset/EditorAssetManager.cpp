@@ -13,6 +13,7 @@ namespace origin {
 	static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap = {
 		{ ".org", AssetType::Scene },
 		{ ".jpg", AssetType::Texture },
+		{ ".jpeg", AssetType::Texture },
 		{ ".png", AssetType::Texture },
 		{ ".ttf", AssetType::Font },
 		{ ".otf", AssetType::Font },
@@ -26,7 +27,7 @@ namespace origin {
 		{ ".sprite", AssetType::SpritesSheet },
 	};
 
-	static AssetType GetAssetTypeFromFileExtension(const std::filesystem::path& extension)
+	static AssetType GetAssetTypeFromFileExtension(const std::string_view extension)
 	{
 		if (s_AssetExtensionMap.find(extension) == s_AssetExtensionMap.end())
 		{
@@ -108,7 +109,7 @@ namespace origin {
 		AssetMetadata metadata;
 
 		metadata.Filepath = filepath;
-		metadata.Type = GetAssetTypeFromFileExtension(filepath.extension());
+		metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
 
 		OGN_CORE_ASSERT(metadata.Type != AssetType::None, "Invalid Asset Type");
 

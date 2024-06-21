@@ -20,17 +20,7 @@ namespace origin
 	}
 }
 
-#ifdef OGN_PLATFORM_WINDOWS
-
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, INT)
-{ 
-	origin::Main(0, nullptr);
-	return 0;
-}
-
-#else
 int main(int argc, char** argv)
 {
 	origin::Main(argc, argv);
 }
-#endif

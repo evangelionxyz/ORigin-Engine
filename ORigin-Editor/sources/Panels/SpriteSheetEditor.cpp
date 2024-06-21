@@ -1,3 +1,5 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "SpriteSheetEditor.h"
 #include "Origin\Renderer\Renderer.h"
 #include "Origin\Renderer\Renderer2D.h"

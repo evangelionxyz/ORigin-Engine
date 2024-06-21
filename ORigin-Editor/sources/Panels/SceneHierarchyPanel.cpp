@@ -283,16 +283,18 @@ namespace origin {
 			ImGui::TreePop();
 		}
 
+
 		if (!isDeleting)
 		{
+			ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
 			auto &tc = entity.GetComponent<TransformComponent>();
 			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
 			if (!tc.Visible)
 				texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
-
 			ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
 			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 				tc.Visible = !tc.Visible;
+			ImGui::PopID();
 		}
 	}
 
@@ -439,6 +441,12 @@ namespace origin {
 					// Material Button
 					ImGui::Button(lable.c_str(), buttonSize);
 
+					if(model->GetMaterial())
+					if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered())
+					{
+						EditorLayer::Get().m_MaterialEditor.SetSelectedMaterial(model->GetMaterial());
+					}
+
 					if (ImGui::BeginDragDropTarget())
 					{
 						if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -520,6 +528,7 @@ namespace origin {
 				{
 					currentAspectRatioType = aspectRatioType[i];
 					camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(i));
+					EditorLayer::Get().m_UIEditor->OnCamViewportSizeChange();
 				}
 
 				if (isSelected)
@@ -576,17 +585,12 @@ namespace origin {
 		{
 				OGN_PROFILER_UI();
 
-				ImGui::Text("Use Gravity"); ImGui::SameLine();
-				UI::DrawCheckbox("##UseGravity", &component.UseGravity);
+				UI::DrawCheckbox("UseGravity", &component.UseGravity);
+				UI::DrawCheckbox("Rotate X", &component.RotateX);
+				UI::DrawCheckbox("Rotate Y", &component.RotateY);
+				UI::DrawCheckbox("Rotate Z", &component.RotateZ);
 
-				ImGui::Text("Rotate   "); ImGui::SameLine();
-				UI::DrawCheckbox("X", &component.RotateX); ImGui::SameLine();
-				UI::DrawCheckbox("Y", &component.RotateY); ImGui::SameLine();
-				UI::DrawCheckbox("Z", &component.RotateZ);
-
-				ImGui::Text("Kinematic"); ImGui::SameLine();
 				UI::DrawCheckbox("##Kinematic", &component.Kinematic);
-
 				UI::DrawVecControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
 				UI::DrawVec3Control("Center Mass", component.CenterMassPosition);
 

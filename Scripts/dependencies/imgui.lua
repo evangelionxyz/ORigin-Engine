@@ -11,7 +11,7 @@ project "ImGui"
 
     includedirs{
         "%{wks.location}/ORigin/vendor/imgui/",
-        "%{wks.location}/ORigin/vendor/glfw/include",
+        "%{wks.location}/ORigin/vendor/origin-glfw/include",
     }
 
     files{

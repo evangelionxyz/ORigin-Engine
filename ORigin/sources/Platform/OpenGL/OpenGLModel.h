@@ -16,6 +16,12 @@
 
 namespace origin
 {
+	struct ModelBufferData
+	{
+		glm::mat4 Transform;
+		int EntityID;
+	};
+
 	class OpenGLModel : public Model
 	{
 	public:
@@ -33,11 +39,6 @@ namespace origin
 		const std::filesystem::path &GetFilepath() const override { return m_Filepath; }
 
 	private:
-		struct ModelBufferData
-		{
-			glm::mat4 Transform;
-			int EntityID;
-		};
 		ModelBufferData m_ModelBufferData;
 
 		std::vector<MeshVertex> m_Vertices;
@@ -50,7 +51,5 @@ namespace origin
 
 		std::shared_ptr<Material> m_Material;
 		std::filesystem::path m_Filepath;
-
-		std::vector<std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>>> m_Textures;
 	};
 }

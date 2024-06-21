@@ -126,8 +126,6 @@ namespace origin {
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 #pragma endregion
 
-#ifdef OGN_PLATFORM_WINDOWS
-#else
 		switch (RendererAPI::GetAPI())
 		{
 		case RendererAPI::API::DX11:
@@ -143,7 +141,6 @@ namespace origin {
 			}
 			break;
 		}
-#endif
 	}
 
 	void GuiLayer::Detach()

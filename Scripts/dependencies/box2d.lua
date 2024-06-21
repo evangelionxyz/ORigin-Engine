@@ -1,6 +1,6 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-project "Box2D"
+project "box2d"
   location (vendorProjectFiles)
   kind "StaticLib"
 	language "C++"

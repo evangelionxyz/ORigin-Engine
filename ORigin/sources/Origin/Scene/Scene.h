@@ -21,8 +21,8 @@ namespace origin
   {
   public:
     Scene();
-    ~Scene();
-    static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> &other);
+    
+    static std::shared_ptr<Scene> Copy(const std::shared_ptr<Scene> &other);
 		static AssetType GetStaticType() { return AssetType::Scene; }
 		AssetType GetType() const override { return GetStaticType(); }
     

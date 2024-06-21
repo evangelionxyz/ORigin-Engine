@@ -35,17 +35,69 @@ namespace origin
 				MaterialSerializer::Serialize(m_CurrentFilepath, m_Material);
 			}
 
-			ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+			ImVec2 buttonSize = ImVec2(100.0f, 40.0f);
 
 			ImGui::ColorEdit4("Color", glm::value_ptr(m_Material->BufferData.Color));
 
 			ImGui::Button("Albedo Map", buttonSize);
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+					if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+					{
+						OGN_CORE_INFO("[MaterialEditor] AlbedoMap Applied");
+						m_Material->SetAlbedoMap(handle);
+					}
+					else
+					{
+						OGN_CORE_WARN("Wrong asset type!");
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			UI::DrawVecControl("Emission", &m_Material->BufferData.Emission);
 
 			ImGui::Button("Metallic Map", buttonSize);
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+					if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+					{
+						OGN_CORE_INFO("[MaterialEditor] AlbedoMap Applied");
+						m_Material->SetMetallicMap(handle);
+					}
+					else
+					{
+						OGN_CORE_WARN("Wrong asset type!");
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
 			UI::DrawVecControl("Metallic", &m_Material->BufferData.MetallicValue);
 
 			ImGui::Button("Roughness Map", buttonSize);
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+					if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+					{
+						// TODO: Not implemented yet
+						//m_Material->RoughnessMap = handle;
+					}
+					else
+					{
+						OGN_CORE_WARN("Wrong asset type!");
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
 			UI::DrawVecControl("Roughness", &m_Material->BufferData.RoughnessValue);
 
 			ImGui::End();

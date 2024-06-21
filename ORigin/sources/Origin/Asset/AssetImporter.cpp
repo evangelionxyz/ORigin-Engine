@@ -97,10 +97,9 @@ namespace origin {
 					fontsToUpdate[i].first->get()->Handle = fontsToUpdate[i].second;
 				}
 
-				for (int i = indicesToRemove.size() - 1; i >= 0; i--)
+				for (size_t i = indicesToRemove.size() - 1; i >= 0; i--)
 				{
 					int index = indicesToRemove[i];
-
 					FontImporter::FontDatas.erase(FontImporter::FontDatas.begin() + index);
 					FontImporter::Fonts.erase(FontImporter::Fonts.begin() + index);
 					s_AssetThreads.erase(s_AssetThreads.begin() + index);
@@ -204,7 +203,7 @@ namespace origin {
 		return LoadTexture2D(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-	std::shared_ptr<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path& filepath)
+	std::shared_ptr<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path &filepath)
 	{
 		int width, height, channels;
 
@@ -213,9 +212,11 @@ namespace origin {
 		Buffer data;
 		data.Data = stbi_load(filepath.string().c_str(), &width, &height, &channels, 0);
 
-		if (!data)
+		if (!data || channels < 3)
 		{
-			OGN_CORE_ERROR("TextureImporter::ImpprtTexture2D - Could not load texture from filepath: {}", filepath.string());
+			data.Release();
+
+			OGN_CORE_ERROR("[ImportTexture2D] Could not load texture from filepath: {}", filepath.string());
 			return nullptr;
 		}
 

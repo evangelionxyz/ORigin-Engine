@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "origin/Scene/Scene.h"
 #include "box2d/box2d.h"
 
 namespace origin {
 
+	class Scene;
 	class Contact2DListener : public b2ContactListener
 	{
 	public:

@@ -46,7 +46,7 @@ def GetUserEnvironmentVariable(name):
 def AddNewSystemPathEnvironment(new_path):
     current_path = current_path = os.environ.get('PATH', '')
     if new_path not in current_path:
-        new_path = f'{current_path}{new_path}'
+        new_path = f'{current_path};{new_path}'
         SetSystemEnvironmentVariable("Path", new_path)
         
     return new_path not in current_path

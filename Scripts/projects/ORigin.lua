@@ -16,73 +16,73 @@ pchheader "pch.h"
 pchsource "../../ORigin/sources/pch.cpp" -- don't change this
 
 files {
-    "%{prj.location}/sources/**.h",
-    "%{prj.location}/sources/**.cpp",
-    "%{wks.location}/readme.md",
-    "%{IncludeDir.STBI}/**.cpp",
-    "%{IncludeDir.STBI}/**.h",
-    "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
-    "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
-    "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
-    "%{IncludeDir.IMGUIZMO}/ImGradient.h",
-    "%{IncludeDir.IMGUIZMO}/GraphEditor.cpp",
-    "%{IncludeDir.IMGUIZMO}/GraphEditor.h",
-    "%{IncludeDir.IMGUIZMO}/ImCurveEdit.cpp",
-    "%{IncludeDir.IMGUIZMO}/ImCurveEdit.h",
-    "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
-    "%{IncludeDir.IMGUIZMO}/ImSequencer.h",
+  "%{prj.location}/sources/**.h",
+  "%{prj.location}/sources/**.cpp",
+  "%{wks.location}/readme.md",
+  "%{IncludeDir.STBI}/**.cpp",
+  "%{IncludeDir.STBI}/**.h",
+  "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
+  "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
+  "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
+  "%{IncludeDir.IMGUIZMO}/ImGradient.h",
+  "%{IncludeDir.IMGUIZMO}/GraphEditor.cpp",
+  "%{IncludeDir.IMGUIZMO}/GraphEditor.h",
+  "%{IncludeDir.IMGUIZMO}/ImCurveEdit.cpp",
+  "%{IncludeDir.IMGUIZMO}/ImCurveEdit.h",
+  "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
+  "%{IncludeDir.IMGUIZMO}/ImSequencer.h"
 }
 
 includedirs {
-    "%{prj.location}/sources",
-    "%{IncludeDir.BOX2D}",
-    "%{IncludeDir.SPDLOG}",
-    "%{IncludeDir.STBI}",
-    "%{IncludeDir.GLFW}",
-    "%{IncludeDir.IMGUI}",
-    "%{IncludeDir.IMGUIZMO}",
-    "%{IncludeDir.GLAD}",
-    "%{IncludeDir.GLM}",
-    "%{IncludeDir.Miniaudio}",
-    "%{IncludeDir.ENTT}",
-    "%{IncludeDir.MONO}",
-    "%{IncludeDir.FILEWATCHER}",
-    "%{IncludeDir.OPTICK}",
-    "%{IncludeDir.YAML_CPP}",
-    "%{IncludeDir.VulkanSDK}",
-    "%{IncludeDir.ASSIMP}",
-    "%{IncludeDir.PhysX}",
-    "%{IncludeDir.JoltPhysics}",
-    "%{IncludeDir.msdfgen}",
-    "%{IncludeDir.msdf_atlas_gen}",
+  "%{prj.location}/sources",
+  "%{IncludeDir.BOX2D}",
+  "%{IncludeDir.SPDLOG}",
+  "%{IncludeDir.STBI}",
+  "%{IncludeDir.GLFW}",
+  "%{IncludeDir.IMGUI}",
+  "%{IncludeDir.IMGUIZMO}",
+  "%{IncludeDir.GLAD}",
+  "%{IncludeDir.GLM}",
+  "%{IncludeDir.Miniaudio}",
+  "%{IncludeDir.ENTT}",
+  "%{IncludeDir.MONO}",
+  "%{IncludeDir.FILEWATCHER}",
+  "%{IncludeDir.OPTICK}",
+  "%{IncludeDir.YAML_CPP}",
+  "%{IncludeDir.VulkanSDK}",
+  "%{IncludeDir.ASSIMP}",
+  "%{IncludeDir.PhysX}",
+  "%{IncludeDir.JoltPhysics}",
+  "%{IncludeDir.msdfgen}",
+  "%{IncludeDir.msdf_atlas_gen}"
 }
 
 defines {
-    "GLFW_INCLUDE_NONE",
-    "_CRT_SECURE_NO_WARNINGS"
+  "GLFW_INCLUDE_NONE",
+  "_CRT_SECURE_NO_WARNINGS"
 }
 
 links {
-    "Box2D",
-    "glfw",
-    "glad",
-    "ImGui",
-    "Optick",
-    "msdf-atlas-gen",
-    "msdfgen",
-    "yaml-cpp",
-    "opengl32.lib",
-    "PhysX",
-    "PhysXCommon",
-    "PhysXFoundation",
-    "PhysXPvdSDK",
-    "PhysXExtensions",
-    "PhysXCooking",
-    "PhysXCharacterKinematic",
-
-    "%{Library.Vulkan}",
-    "%{Library.Assimp}",
-    "%{Library.MONO}",
+  "assimp",
+  "Box2D",
+  "origin-glfw",
+  "glad",
+  "ImGui",
+  "Optick",
+  "msdf-atlas-gen",
+  "msdfgen",
+  "yaml-cpp",
+  "opengl32.lib",
+  "PhysX",
+  "PhysXCommon",
+  "PhysXFoundation",
+  "PhysXPvdSDK",
+  "PhysXExtensions",
+  "PhysXCooking",
+  "PhysXCharacterKinematic",
+  "%{Library.Vulkan}",
+  "%{Library.Assimp}",
+  "%{Library.MONO}"
 }
 
 filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
@@ -95,58 +95,57 @@ systemversion "latest"
 defines {
   "OGN_WINDOWS_PLATFORM",
   "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
-    "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
+  "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
 }
 
-links
-{
-    "%{Library.WinSock}",
-    "%{Library.WinMM}",
-    "%{Library.WinVersion}",
-    "%{Library.BCrypt}"
+links {
+  "%{Library.WinSock}",
+  "%{Library.WinMM}",
+  "%{Library.WinVersion}",
+  "%{Library.BCrypt}"
 }
 
 filter "configurations:Debug"
-    defines {
-        "PX_PHYSX_STATIC_LIB",
-        "OGN_DEBUG",
-        "_DEBUG"
-    }
-    runtime "Debug"
-    symbols "On"
-    links
-    {
-        "%{Library.ShaderC_Debug}",
-        "%{Library.SPIRV_Cross_Debug}",
-        "%{Library.SPIRV_Cross_GLSL_Debug}",
-        "%{Library.SPIRV_Tools_Debug}",
-    }
+  defines {
+    "PX_PHYSX_STATIC_LIB",
+    "OGN_DEBUG",
+    "_DEBUG"
+  }
+  runtime "Debug"
+  symbols "On"
+  links
+  {
+    "%{Library.ShaderC_Debug}",
+    "%{Library.SPIRV_Cross_Debug}",
+    "%{Library.SPIRV_Cross_GLSL_Debug}",
+    "%{Library.SPIRV_Tools_Debug}",
+  }
 
 filter "configurations:Release"
-    defines {
-        "PX_PHYSX_STATIC_LIB",
-        "OGN_RELEASE",
-        "NDEBUG"
-    }
-    runtime "Release"
-    optimize "On"
-    links
-    {
-        "%{Library.ShaderC_Release}",
-        "%{Library.SPIRV_Cross_Release}",
-        "%{Library.SPIRV_Cross_GLSL_Release}",
-    }
+  defines {
+    "PX_PHYSX_STATIC_LIB",
+    "OGN_RELEASE",
+    "NDEBUG"
+  }
+  runtime "Release"
+  optimize "On"
+  links
+  {
+    "%{Library.ShaderC_Release}",
+    "%{Library.SPIRV_Cross_Release}",
+    "%{Library.SPIRV_Cross_GLSL_Release}",
+  }
 
 filter "configurations:Dist"
-    defines {
-        "PX_PHYSX_STATIC_LIB",
-        "OGN_RELEASE",
-        "NDEBUG"
-    }
-    runtime "Release"
-    optimize "On"
-    links {
-        "%{Library.ShaderC_Release}",
-        "%{Library.SPIRV_Cross_Release}",
-        "%{Library.SPIRV_Cross_GLSL_Release}",
-    }
+  defines {
+      "PX_PHYSX_STATIC_LIB",
+      "OGN_RELEASE",
+      "NDEBUG"
+  }
+  runtime "Release"
+  optimize "On"
+  links {
+      "%{Library.ShaderC_Release}",
+      "%{Library.SPIRV_Cross_Release}",
+      "%{Library.SPIRV_Cross_GLSL_Release}",
+  }

@@ -478,8 +478,6 @@ namespace origin
 				out << YAML::Key << "Specular" << YAML::Value << light->m_DirLightData.Specular;
 				break;
 			}
-			default:
-				break;
 			}
 
 			out << YAML::EndMap;
@@ -885,12 +883,17 @@ namespace origin
 				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
 				{
 					auto& mc = deserializedEntity.AddComponent<StaticMeshComponent>();
-					mc.Handle = staticMeshComponent["Mesh"].as<uint64_t>();
-					mc.MaterialHandle = staticMeshComponent["Material"].as<uint64_t>();
-					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mc.Handle);
-					std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(mc.MaterialHandle);
-					if(material)
-						model->SetMaterial(std::move(material));
+
+					if (staticMeshComponent["Mesh"])
+					{
+						mc.Handle = staticMeshComponent["Mesh"].as<uint64_t>();
+						mc.MaterialHandle = staticMeshComponent["Material"].as<uint64_t>();
+						std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mc.Handle);
+						std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(mc.MaterialHandle);
+						if (material)
+							model->SetMaterial(std::move(material));
+					}
+					
 				}
 
 				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])

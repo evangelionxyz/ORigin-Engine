@@ -3,11 +3,11 @@
 #include "pch.h"
 #include "Win32Window.h"
 
-#include "Origin\Core\KeyEvent.h"
-#include "Origin\Core\MouseEvent.h"
-#include "Origin\Core\AppEvent.h"
-#include "Origin\Core\Application.h"
-#include "Origin\Asset\AssetImporter.h"
+#include "Origin/Core/KeyEvent.h"
+#include "Origin/Core/MouseEvent.h"
+#include "Origin/Core/AppEvent.h"
+#include "Origin/Core/Application.h"
+#include "Origin/Asset/AssetImporter.h"
 
 #include "stb_image.h"
 #include "Platform/DX11/DX11Context.h"
@@ -17,7 +17,7 @@ namespace origin {
 	static int initWinPosX = 0;
 	static int initWinPosY = 0;
 
-	WinWindow::WinWindow(const char* title, uint32_t width, uint32_t height, bool maximized)
+	Win32Window::Win32Window(const char* title, uint32_t width, uint32_t height, bool maximized)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -25,7 +25,6 @@ namespace origin {
 		{
 		case RendererAPI::API::OpenGL:
 #if defined(OGN_DEBUG)
-			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
 			break;
@@ -36,15 +35,10 @@ namespace origin {
 			title, nullptr, nullptr);
 
 		if (!m_MainWindow)
-			glfwTerminate();
-
-		if (!maximized)
 		{
-			int mSizeX, mSizeY;
-			glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &mSizeX, &mSizeY);
-			m_Data.xPos = (mSizeX - width) / 2;
-			m_Data.yPos = (mSizeY - height) / 2;
-			glfwSetWindowPos(m_MainWindow, m_Data.xPos, m_Data.yPos);
+			glfwTerminate();
+			MessageBox(NULL, L"Failed to create window", L"Win32Window.cpp", 0);
+			exit(EXIT_FAILURE);
 		}
 
 		glfwMakeContextCurrent(m_MainWindow);
@@ -60,13 +54,13 @@ namespace origin {
 		glfwGetWindowPos(m_MainWindow, &initWinPosX, &initWinPosY);
 	}
 
-	WinWindow::~WinWindow()
+	Win32Window::~Win32Window()
 	{
 		glfwDestroyWindow(m_MainWindow);
 		glfwTerminate();
 	}
 
-	void WinWindow::SetEventCallback(const std::function<void(Event&)>& callback)
+	void Win32Window::SetEventCallback(const std::function<void(Event&)>& callback)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -74,24 +68,21 @@ namespace origin {
 		WindowCallbacks();
 	}
 
-	void WinWindow::OnUpdate()
+	void Win32Window::OnUpdate()
 	{
 		OGN_PROFILER_FUNCTION();
-		
+
 		glfwPollEvents();
 
-		if (RendererAPI::GetAPI() == RendererAPI::API::DX11)
+		switch (RendererAPI::GetAPI())
 		{
-			auto &context = std::reinterpret_pointer_cast<DX11Context>(m_GraphicsContext);
-			context->SwapChain->Present(1u, 0u);
-		}
-		else
-		{
-			glfwSwapBuffers(m_MainWindow);
+		case RendererAPI::API::DX11: std::reinterpret_pointer_cast
+			<DX11Context>(m_GraphicsContext)->SwapChain->Present(1u, 0u); break;
+		default: glfwSwapBuffers(m_MainWindow); break;
 		}
 	}
 
-	void WinWindow::SetVSync(bool enable)
+	void Win32Window::SetVSync(bool enable)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -99,12 +90,12 @@ namespace origin {
 		m_Data.VSync = enable;
 	}
 
-	void WinWindow::SetClose(bool close)
+	void Win32Window::SetClose(bool close)
 	{
 		m_Data.Close = close ? 1 : 0;
 	}
 
-	void WinWindow::SetFullscreen(bool enable)
+	void Win32Window::SetFullscreen(bool enable)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -121,7 +112,7 @@ namespace origin {
 	}
 
 
-	void WinWindow::SetIcon(const char* filepath)
+	void Win32Window::SetIcon(const char* filepath)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -137,7 +128,7 @@ namespace origin {
 		stbi_image_free(data);
 	}
 
-	void WinWindow::WindowCallbacks()
+	void Win32Window::WindowCallbacks()
 	{
 		OGN_PROFILER_FUNCTION();
 

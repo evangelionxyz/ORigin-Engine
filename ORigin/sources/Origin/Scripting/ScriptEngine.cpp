@@ -281,8 +281,11 @@ namespace origin
 		s_ScriptEngineData->AppAssemblyFilepath = filepath;
 
 		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
-		if (s_ScriptEngineData->AppAssembly == nullptr)
+		if (!s_ScriptEngineData->AppAssembly)
+		{
+			OGN_CORE_ASSERT(false, "[ScriptEngine] App Assembly is empty");
 			return false;
+		}
 
 		s_ScriptEngineData->AppAssemblyImage = mono_assembly_get_image(s_ScriptEngineData->AppAssembly);
 		s_ScriptEngineData->AppAssemblyFilewatcher = std::make_unique<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
@@ -300,21 +303,23 @@ namespace origin
 		mono_domain_unload(s_ScriptEngineData->AppDomain);
 
 		LoadAssembly(s_ScriptEngineData->CoreAssemblyFilepath);
-		LoadAppAssembly(s_ScriptEngineData->AppAssemblyFilepath);
 
-		LoadAssemblyClasses();
+		if (LoadAppAssembly(s_ScriptEngineData->AppAssemblyFilepath))
+		{
+			LoadAssemblyClasses();
 
-		// storing classes name into storage
-		s_ScriptEngineData->EntityScriptStorage.clear();
+			// storing classes name into storage
+			s_ScriptEngineData->EntityScriptStorage.clear();
 
-		for (auto& it : s_ScriptEngineData->EntityClasses)
-			s_ScriptEngineData->EntityScriptStorage.emplace_back(it.first);
+			for (auto &it : s_ScriptEngineData->EntityClasses)
+				s_ScriptEngineData->EntityScriptStorage.emplace_back(it.first);
 
-		// retrieve entity class
-		s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
-		ScriptGlue::RegisterComponents();
+			// retrieve entity class
+			s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
+			ScriptGlue::RegisterComponents();
 
-		OGN_CORE_INFO("ScriptEngine: Assembly Reloaded");
+			OGN_CORE_INFO("ScriptEngine: Assembly Reloaded");
+		}
 	}
 
 	void ScriptEngine::SetSceneContext(Scene* scene)

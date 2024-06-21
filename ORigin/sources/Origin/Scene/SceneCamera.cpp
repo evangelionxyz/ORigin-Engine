@@ -43,7 +43,7 @@ namespace origin
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		float aspectWidth, aspectHeight;
+		float aspectWidth = 0.0f, aspectHeight = 0.0f;
 
 		switch (m_AspecRatioType)
 		{
@@ -64,7 +64,6 @@ namespace origin
 			aspectHeight = 9.0f;
 			break;
 		case AspectRatioType::Free:
-		default:
 			aspectWidth = static_cast<float>(width);
 			aspectHeight = static_cast<float>(height);
 			break;
@@ -81,7 +80,7 @@ namespace origin
 		else
 		{
 			m_ViewportSize.x = static_cast<float>(width);
-			m_ViewportSize.y = m_ViewportSize.x / aspectRatio;
+			m_ViewportSize.y = m_ViewportSize.x * aspectRatio;
 		}
 
 		m_AspectRatio = aspectRatio;

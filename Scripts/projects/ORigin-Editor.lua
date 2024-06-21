@@ -81,7 +81,7 @@ filter "configurations:Release"
         "OGN_RELEASE",
         "NDEBUG"
     }
-    kind "WindowedApp"
+    kind "ConsoleApp"
     runtime "Release"
     optimize "On"
 
@@ -91,11 +91,9 @@ filter "configurations:Dist"
         "OGN_RELEASE",
         "NDEBUG"
     }
-    kind "WindowedApp"
-    runtime "Release"
+    kind "ConsoleApp"
     optimize "On"
     postbuildcommands {
-      "{COPY} %{wks.location}ORigin/vendor/Assimp/lib/x64/assimp-vc143-mt.dll %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
       "{COPY} %{prj.location}imgui.ini %{wks.location}Binaries/%{cfg.buildcfg}/ORigin",
       "{COPYDIR} %{prj.location}lib %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/lib",
       "{COPYDIR} %{prj.location}resources %{wks.location}Binaries/%{cfg.buildcfg}/ORigin/resources",

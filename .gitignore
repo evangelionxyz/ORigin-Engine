@@ -10,6 +10,7 @@
 *.idea
 *.sln
 *.cdr
+*.opt
 
 # Visual Studio extension resources
 ORigin.sln.startup.json
@@ -18,6 +19,7 @@ ORigin.sln.licenseheader
 # folders
 Binaries/
 Scripts/__pycache__
-ORigin/vendor/projectFiles
 ORigin/vendor/VulkanSDK
-ORigin-Editor/Resources/ScriptCore/
+ORigin/vendor/projectFiles
+ORigin-Editor/Resources/Cache
+ORigin-Editor/Resources/ScriptCore

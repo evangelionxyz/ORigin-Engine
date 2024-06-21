@@ -22,10 +22,8 @@ vendorOutputdir = "%{prj.location}/Binaries/%{cfg.buildcfg}/%{prj.name}"
 vendorIntOutputdir = "%{prj.location}/Binaries/Intermediates/%{cfg.buildcfg}/%{prj.name}"
 physxDir = "%{wks.location}/ORigin/vendor/PhysX"
 
-include "projects/ProjectSwitcher.lua"
-include "projects/ProjectLicenseHeader.lua"
 include "projects/VSCodeTasks.lua"
-include "dependencies/Dependencies.lua"
+include "dependencies/dependencies.lua"
 
 group "Engine"
 include "projects/ORigin.lua"

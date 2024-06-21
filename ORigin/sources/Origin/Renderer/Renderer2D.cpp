@@ -537,7 +537,7 @@ namespace origin {
 		DrawLine(p3, p0, color, entityID);
 	}
 
-	void Renderer2D::DrawRect(const glm::mat4& transform, glm::vec4& color, int entityID)
+	void Renderer2D::DrawRect(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
 		glm::vec3 lineVertices[4];
 
@@ -569,7 +569,7 @@ namespace origin {
 		Renderer::GetStatistics().CircleCount++;
 	}
 
-	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, glm::vec4& color, int entityID)
+	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4 &color, int entityID)
 	{
 		OGN_PROFILER_RENDERING();
 

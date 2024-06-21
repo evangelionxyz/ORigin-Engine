@@ -14,7 +14,9 @@ namespace origin
 	    PushLayer(new EditorLayer());
     }
 
-    ~EditorApp() {}
+    ~EditorApp()
+    {
+    }
   };
 
   Application* CreateApplication(ApplicationCommandLineArgs args)
@@ -22,7 +24,7 @@ namespace origin
     ApplicationSpecification spec;
     spec.Name = "ORigin Editor";
     spec.CommandLineArgs = args;
-    spec.Maximize = false;
+    spec.Maximize = true;
 
     OGN_CORE_INFO(spec.Name);
     return new EditorApp(spec);

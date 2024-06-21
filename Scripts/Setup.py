@@ -16,6 +16,7 @@ premakeInstalled = PremakeRequirements.Validate()
 print("\nUpdating submodules...")
 subprocess.call(["git", "submodule", "update", "--init", "--recursive"])
 
+
 def RegisterEngineVariable():
     variable_name = "ORiginEngine"
     if os.environ.get(variable_name) is None:
@@ -24,12 +25,13 @@ def RegisterEngineVariable():
       Utils.SetSystemEnvironmentVariable(variable_name, variable_path)
       print(f"Engine path is registered to {variable_path} as {variable_name}")
 
+
 def RegisterMSBuild():
     visual_studio_path = Utils.FindVisualStudioPath("Scripts/vswhere/vswhere.exe")
-    if visual_studio_path:
-        variable_path = f"{visual_studio_path}\\MSBuild\\Current\\Bin"
-        if Utils.AddNewSystemPathEnvironment(variable_path):
-            print(f"MSBuild path is registered to {variable_path}")
+    variable_path = f"{visual_studio_path}\\MSBuild\\Current\\Bin"
+    if Utils.AddNewSystemPathEnvironment(variable_path):
+        print(f"MSBuild path is registered to {variable_path}")
+
 
 if premakeInstalled:
     if platform.system() == "Windows":

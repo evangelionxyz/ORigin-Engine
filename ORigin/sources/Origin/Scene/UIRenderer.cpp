@@ -19,13 +19,15 @@ namespace origin
 		spec.Height = height;
 
 		for (auto &ui : m_UIs)
+		{
 			ui.Framebuffer = Framebuffer::Create(spec);
+		}
 
 		float vertices[] = {
-			-1.0f,  1.0f,
-			 1.0f,  1.0f,
-			-1.0f, -1.0f,
-			 1.0f, -1.0f
+			 -1.0f,  1.0f,
+				1.0f,  1.0f,
+			 -1.0f, -1.0f,
+				1.0f, -1.0f
 		};
 
 		glCreateVertexArrays(1, &m_VAO);
@@ -52,17 +54,15 @@ namespace origin
 		{
 			ui.Framebuffer->Bind();
 
-			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClearColor(0.3f, 0.3f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			float width = static_cast<float>(ui.Framebuffer->GetWidth());
-			float height = static_cast<float>(ui.Framebuffer->GetHeight());
+			float width = static_cast<float>(ui.Framebuffer->GetWidth()) * 2.0f;
+			float height = static_cast<float>(ui.Framebuffer->GetHeight()) * 2.0f;
 
-			glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-			glm::mat4 projection = glm::ortho(-width, width, -height, height, 0.0f, 2.0f);
-			glm::mat4 viewProjection = projection * view;
+			Renderer2D::Begin(glm::mat4(1.0f));
 
-			Renderer2D::Begin(viewProjection);
+			Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { width, height, 1.0f }), {0.0f, 1.0f, 0.0f, 1.0f });
 
 			for (auto &txt : ui.Texts)
 			{
@@ -108,8 +108,4 @@ namespace origin
 		m_UIs.push_back(ui);
 	}
 
-	void UIRenderer::OnResizeViewport(uint32_t width, uint32_t height)
-	{
-		for (auto &ui : m_UIs) ui.Framebuffer->Resize(width, height);
-	}
 }

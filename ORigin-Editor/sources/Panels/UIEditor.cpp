@@ -47,15 +47,25 @@ namespace origin
 		{
 			if (Entity pc = m_Scene->GetPrimaryCameraEntity())
 			{
-				auto &cc = pc.GetComponent<CameraComponent>().Camera;
-				m_MainCamSize = cc.GetViewportSize();
-				m_Component = component;
+				SceneCamera &cc = pc.GetComponent<CameraComponent>().Camera;
+				m_SceneCamViewportSize = cc.GetViewportSize();
 
-				m_Camera.SetOrthoSize(m_MainCamSize.y * 4.0f);
-				m_Camera.SetOrthoSizeMax(m_MainCamSize.y * 10.0f);
+				m_Camera.SetOrthoSize(m_SceneCamViewportSize.y * 2.0f);
+				m_Camera.SetOrthoSizeMax(m_SceneCamViewportSize.y * 6.0f);
+
+				m_Component = component;
 			}
 
 			IsOpened = true;
+		}
+	}
+
+	void UIEditor::OnCamViewportSizeChange()
+	{
+		if (Entity pc = m_Scene->GetPrimaryCameraEntity())
+		{
+			SceneCamera &cc = pc.GetComponent<CameraComponent>().Camera;
+			//m_SceneCamViewportSize = cc.GetViewportSize();
 		}
 	}
 
@@ -98,13 +108,13 @@ namespace origin
 			const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			const ImVec2 &viewportOffset = ImGui::GetWindowPos();
 
-			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-			m_ViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+			m_EditorViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+			m_EditorViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+			m_EditorViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
 			// Framebuffer Texture
 			ImTextureID texture = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID());
-			ImGui::Image(texture, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
+			ImGui::Image(texture, { m_EditorViewportSize.x, m_EditorViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 
 			ImGui::Begin("UI Inspector");
@@ -239,13 +249,8 @@ namespace origin
 							}
 
 							UI::DrawVec2Control("Tilling Factor", sprite.Component.TillingFactor, 0.025f, 1.0f);
-							ImGui::Text("Flip");
-							ImGui::SameLine();
-							ImGui::PushID(1);
-							UI::DrawCheckbox("X", &sprite.Component.FlipX);
-							ImGui::PopID();
-							ImGui::SameLine();
-							UI::DrawCheckbox("Y", &sprite.Component.FlipY);
+							UI::DrawCheckbox("Flip X", &sprite.Component.FlipX);
+							UI::DrawCheckbox("Flip Y", &sprite.Component.FlipY);
 						}
 					}
 				}
@@ -342,7 +347,8 @@ namespace origin
 
 					if (isDeleting)
 					{
-						m_Component->Sprites.erase(m_Component->Sprites.begin() + i); i--;
+						m_Component->Sprites.erase(m_Component->Sprites.begin() + i);
+						i--;
 						OGN_CORE_TRACE("UI Sprite erased");
 					}
 				}
@@ -376,27 +382,25 @@ namespace origin
 		if (m_Component)
 		{
 			if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-					m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (m_ViewportSize.x != spec.Width || m_ViewportSize.y != spec.Height))
+					m_EditorViewportSize.x > 0.0f && m_EditorViewportSize.y > 0.0f && (m_EditorViewportSize.x != spec.Width || m_EditorViewportSize.y != spec.Height))
 			{
-				m_Camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-				m_Framebuffer->Resize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
+				m_Camera.SetViewportSize(m_EditorViewportSize.x, m_EditorViewportSize.y);
+				m_Framebuffer->Resize(static_cast<uint32_t>(m_EditorViewportSize.x), static_cast<uint32_t>(m_EditorViewportSize.y));
 			}
-		
+
 			Renderer2D::Begin(m_Camera);
 
+			// Draw Camera Boundary
 			if (Entity pc = m_Scene->GetPrimaryCameraEntity())
 			{
-				auto &cc = pc.GetComponent<CameraComponent>().Camera;
-				m_MainCamSize = cc.GetOrthographicSize();
-
-				Renderer2D::DrawRect(glm::vec3(0.0f), m_MainCamSize * 2.0f);
-
+				Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { m_SceneCamViewportSize.x, m_SceneCamViewportSize.y, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
 				for (int i = 0; i < m_Component->Texts.size(); i++)
 				{
 					auto &text = m_Component->Texts[i];
-					
 					if (text.Component.FontHandle != 0)
+					{
 						Renderer2D::DrawString(text.Component.TextString, text.Transform.GetTransform(), text.Component, i);
+					}
 				}
 
 				for (int i = 0; i < m_Component->Sprites.size(); i++)
@@ -411,8 +415,8 @@ namespace origin
 
 		auto [mx, my] = ImGui::GetMousePos();
 		glm::vec2 mousePos = { mx, my };
-		mousePos -= m_ViewportBounds[0];
-		const glm::vec2 &viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		mousePos -= m_EditorViewportBounds[0];
+		const glm::vec2 &viewportSize = m_EditorViewportBounds[1] - m_EditorViewportBounds[0];
 		mousePos.y = viewportSize.y - mousePos.y;
 		mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
 		m_Mouse = { static_cast<int>(mousePos.x), static_cast<int>(mousePos.y) };
