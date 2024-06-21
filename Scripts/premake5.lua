@@ -15,7 +15,7 @@ flags{
     "MultiProcessorCompile"
 }
 
-startproject "ORigin-Editor"
+startproject "Editor"
 
 vendorProjectFiles = "%{wks.location}/ORigin/vendor/projectFiles"
 vendorOutputdir = "%{prj.location}/Binaries/%{cfg.buildcfg}/%{prj.name}"
