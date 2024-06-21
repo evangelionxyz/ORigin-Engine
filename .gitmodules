@@ -31,3 +31,6 @@
 [submodule "ORigin/vendor/assimp"]
 	path = ORigin/vendor/assimp
 	url = https://github.com/evangelionmanuhutu/assimp.git
+[submodule "Origin/vendor/imgui"]
+	path = Origin/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
