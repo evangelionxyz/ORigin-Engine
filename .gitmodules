@@ -1,6 +1,3 @@
-[submodule "ORigin/vendor/glad"]
-	path = ORigin/vendor/glad
-	url = https://github.com/kaks-ev/glad.git
 [submodule "ORigin/vendor/glm"]
 	path = ORigin/vendor/glm
 	url = https://github.com/kaks-ev/glm.git
@@ -28,10 +25,6 @@
 [submodule "ORigin/vendor/PhysX"]
 	path = ORigin/vendor/PhysX
 	url = https://github.com/kaks-ev/NVIDIA-PhysX
-[submodule "ORigin/vendor/ImGui"]
-	path = ORigin/vendor/ImGui
-	url = https://github.com/ocornut/imgui.git
-	branch = docking
 [submodule "ORigin/vendor/origin-glfw"]
 	path = ORigin/vendor/origin-glfw
 	url = https://github.com/evangelionmanuhutu/origin-glfw.git

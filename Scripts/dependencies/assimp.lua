@@ -10,31 +10,86 @@ project "assimp"
 	targetdir (vendorOutputdir)
 	objdir (vendorIntOutputdir)
 
-  files
-	{
-		"%{wks.location}/ORigin/vendor/assimp/code/**.cpp",
-		"%{wks.location}/ORigin/vendor/assimp/code/**.hpp",
-		"%{wks.location}/ORigin/vendor/assimp/code/**.h",
-		"%{wks.location}/ORigin/vendor/assimp/include/**",
-		"%{wks.location}/ORigin/vendor/assimp/contrib/pugixml/src/**.cpp",
-		"%{wks.location}/ORigin/vendor/assimp/contrib/pugixml/src/**.hpp"
+  files {
+    "%{wks.location}/ORigin/vendor/assimp/include/**",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/Assimp.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/BaseImporter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaLoader.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaParser.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/CreateAnimMesh.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Ply/PlyParser.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Ply/PlyLoader.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/BaseProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/EmbedTexturesProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ConvertToLHProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/DefaultIOStream.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/DefaultIOSystem.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/DefaultLogger.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/GenVertexNormalsProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/Importer.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/ImporterRegistry.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Material/MaterialSystem.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/PostStepRegistry.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ProcessHelper.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/scene.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/ScenePreprocessor.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ScaleProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/SGSpatialSort.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/SkeletonMeshBuilder.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/SpatialSort.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/TriangulateProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ValidateDataStructure.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/Version.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/Common/VertexTriangleAdjacency.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Obj/ObjFileImporter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Obj/ObjFileMtlImporter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXAnimation.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXBinaryTokenizer.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXConverter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXDeformer.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXDocument.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXDocumentUtil.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXImporter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXMaterial.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXMeshGeometry.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXModel.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXNodeAttribute.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXParser.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXProperties.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXTokenizer.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXExporter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXExportNode.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXExportProperty.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/FBX/FBXUtil.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Obj/ObjFileParser.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/glTF/glTFImporter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/MakeVerboseFormat.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/CalcTangentsProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ScaleProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/EmbedTexturesProcess.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/irrXML/*"
 	}
 	
 	includedirs
 	{
+		"%{wks.location}/ORigin/vendor/assimp",
 		"%{wks.location}/ORigin/vendor/assimp/code",
 		"%{wks.location}/ORigin/vendor/assimp/include",
-		"%{wks.location}/ORigin/vendor/assimp/include/irrXML",
-		"%{wks.location}/ORigin/vendor/assimp/include/zlib",
-
-		"%{wks.location}/ORigin/vendor/assimp/contrib/zlib/",
+		"%{wks.location}/ORigin/vendor/assimp/contrib",
+		"%{wks.location}/ORigin/vendor/assimp/contrib/zip",
+		"%{wks.location}/ORigin/vendor/assimp/contrib/zlib",
+		"%{wks.location}/ORigin/vendor/assimp/contrib/unzip",
 		"%{wks.location}/ORigin/vendor/assimp/contrib/pugixml/src",
-		"%{wks.location}/ORigin/vendor/assimp/contrib/rapidjson/include"
+		"%{wks.location}/ORigin/vendor/assimp/contrib/utf8cpp/source",
+		"%{wks.location}/ORigin/vendor/assimp/contrib/rapidjson/include",
+    "%{wks.location}/ORigin/vendor/assimpcontrib/openddlparser/include",
 	}
 
-	defines {
+	defines
+    {
       -- "SWIG",
-      "ASSIMP_BUILD_NO_OWN_ZLIB",
+      --"ASSIMP_BUILD_NO_OWN_ZLIB",
       "ASSIMP_BUILD_NO_X_IMPORTER",
       "ASSIMP_BUILD_NO_3DS_IMPORTER",
       "ASSIMP_BUILD_NO_MD3_IMPORTER",
@@ -42,7 +97,7 @@ project "assimp"
       "ASSIMP_BUILD_NO_MD2_IMPORTER",
       "ASSIMP_BUILD_NO_PLY_IMPORTER",
       "ASSIMP_BUILD_NO_ASE_IMPORTER",
-      "ASSIMP_BUILD_NO_OBJ_IMPORTER",
+      -- "ASSIMP_BUILD_NO_OBJ_IMPORTER",
       "ASSIMP_BUILD_NO_AMF_IMPORTER",
       "ASSIMP_BUILD_NO_HMP_IMPORTER",
       "ASSIMP_BUILD_NO_SMD_IMPORTER",
@@ -60,7 +115,7 @@ project "assimp"
       "ASSIMP_BUILD_NO_IRR_IMPORTER",
       "ASSIMP_BUILD_NO_Q3D_IMPORTER",
       "ASSIMP_BUILD_NO_B3D_IMPORTER",
-      -- "ASSIMP_BUILD_NO_COLLADA_IMPORTER",
+      "ASSIMP_BUILD_NO_COLLADA_IMPORTER",
       "ASSIMP_BUILD_NO_TERRAGEN_IMPORTER",
       "ASSIMP_BUILD_NO_CSM_IMPORTER",
       "ASSIMP_BUILD_NO_3D_IMPORTER",
@@ -74,21 +129,20 @@ project "assimp"
       "ASSIMP_BUILD_NO_NDO_IMPORTER",
       "ASSIMP_BUILD_NO_IFC_IMPORTER",
       "ASSIMP_BUILD_NO_XGL_IMPORTER",
-      -- "ASSIMP_BUILD_NO_FBX_IMPORTER",
+      --"ASSIMP_BUILD_NO_FBX_IMPORTER",
       "ASSIMP_BUILD_NO_ASSBIN_IMPORTER",
-      -- "ASSIMP_BUILD_NO_GLTF_IMPORTER",
+      "ASSIMP_BUILD_NO_GLTF_IMPORTER",
       "ASSIMP_BUILD_NO_C4D_IMPORTER",
       "ASSIMP_BUILD_NO_3MF_IMPORTER",
       "ASSIMP_BUILD_NO_X3D_IMPORTER",
       "ASSIMP_BUILD_NO_MMD_IMPORTER",
       "ASSIMP_BUILD_NO_STEP_EXPORTER",
-      "ASSIMP_BUILD_NO_SIB_IMPORTER",
-
+      "ASSIMP_BUILD_NO_SIB_IMPORTER",     
       -- "ASSIMP_BUILD_NO_MAKELEFTHANDED_PROCESS",
       -- "ASSIMP_BUILD_NO_FLIPUVS_PROCESS",
       -- "ASSIMP_BUILD_NO_FLIPWINDINGORDER_PROCESS",
       -- "ASSIMP_BUILD_NO_CALCTANGENTS_PROCESS",
-      -- "ASSIMP_BUILD_NO_JOINVERTICES_PROCESS",
+      "ASSIMP_BUILD_NO_JOINVERTICES_PROCESS",
       -- "ASSIMP_BUILD_NO_TRIANGULATE_PROCESS",
       "ASSIMP_BUILD_NO_GENFACENORMALS_PROCESS",
       -- "ASSIMP_BUILD_NO_GENVERTEXNORMALS_PROCESS",
@@ -111,8 +165,8 @@ project "assimp"
       "ASSIMP_BUILD_NO_SPLITBYBONECOUNT_PROCESS",
       "ASSIMP_BUILD_NO_DEBONE_PROCESS",
       "ASSIMP_BUILD_NO_EMBEDTEXTURES_PROCESS",
-      "ASSIMP_BUILD_NO_GLOBALSCALE_PROCESS",		
-	}
+      "ASSIMP_BUILD_NO_GLOBALSCALE_PROCESS"
+  }
 
 	filter "system:windows"
 		systemversion "latest"
