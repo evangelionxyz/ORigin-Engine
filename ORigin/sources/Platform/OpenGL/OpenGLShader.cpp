@@ -24,13 +24,7 @@ namespace origin {
       if (type == "vertex") return GL_VERTEX_SHADER;
       if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
       if (type == "geometry") return GL_GEOMETRY_SHADER;
-
-      if (!filepath.empty())
-        OGN_CORE_ERROR("Unkown Shader Type!: {}", filepath);
-      else
-        OGN_CORE_ERROR("Unkown Shader Type!");
-
-      OGN_CORE_ASSERT(false, "");
+      OGN_CORE_ASSERT(false, "Unkown Shader Type '{}'", filepath);
       return 0;
     }
 
@@ -118,7 +112,7 @@ namespace origin {
         case GL_FRAGMENT_SHADER:  return "Fragment";
         case GL_GEOMETRY_SHADER:  return "Geometry";
       }
-      return "";
+      return nullptr;
     }
 
     static const char* ShaderDataTypeToString(ShaderType type)
@@ -131,7 +125,7 @@ namespace origin {
         case ShaderType::FRAGMENT:  return "FRAGMENT";
         case ShaderType::GEOMTERY:  return "GEOMETRY";
       }
-      return "";
+      return nullptr;
     }
   }
 
@@ -180,9 +174,6 @@ namespace origin {
     : m_Filepath(filepath), m_RendererID(0), m_EnableSpirv(enableSpirv), m_RecompileSPIRV(recompileSpirv)
   {
     OGN_PROFILER_RENDERING();
-
-    OGN_PROFILER_RENDERING();
-
     OGN_CORE_TRACE("Trying to load Shader : {}", m_Filepath);
 
     // With SPIRV
@@ -395,24 +386,26 @@ namespace origin {
       {
         OGN_CORE_WARN("Compile Vulkan {0} Shader To Binaries", Utils::ShaderDataTypeToString(stage));
         shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
-        if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-        {
-          auto &message = module.GetErrorMessage();
-          OGN_CORE_ASSERT(false, message);
-        }
+        bool succsess = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
-        shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+        OGN_CORE_ASSERT(succsess, module.GetErrorMessage());
 
-        std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-        if (out.is_open())
+        if (succsess)
         {
-          auto &data = shaderData[stage];
-          out.write((char *)data.data(), data.size() * sizeof(uint32_t));
-          out.flush();
-          out.close();
+					shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+					std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+					if (out.is_open())
+					{
+						auto &data = shaderData[stage];
+						out.write((char *)data.data(), data.size() * sizeof(uint32_t));
+						out.flush();
+						out.close();
+					}
         }
       }
     }
+
     for (auto &&[stage, data] : shaderData)
       Reflect(stage, data);
   }
@@ -455,20 +448,21 @@ namespace origin {
         auto &source = m_OpenGLSourceCode[stage];
 
         shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
-        if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-        {
-          OGN_CORE_ERROR(module.GetErrorMessage());
-          OGN_CORE_ASSERT(false, "")
-        }
 
-        shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-        std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary);
-        if (outfile.is_open())
+        bool succsess = module.GetCompilationStatus() != shaderc_compilation_status_success;
+        OGN_CORE_ASSERT(succsess, module.GetErrorMessage());
+
+        if (succsess)
         {
-          auto &data = shaderData[stage];
-          outfile.write((char *)data.data(), data.size() * sizeof(uint32_t));
-          outfile.flush();
-          outfile.close();
+          shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+          std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary);
+          if (outfile.is_open())
+          {
+            auto &data = shaderData[stage];
+            outfile.write((char *)data.data(), data.size() * sizeof(uint32_t));
+            outfile.flush();
+            outfile.close();
+          }
         }
       }
     }
@@ -646,8 +640,6 @@ namespace origin {
 
   void  OpenGLShader::SetIntArray(const std::string &name, int *values, uint32_t count)
   {
-    OGN_PROFILER_RENDERING();
-
     SetUniformIntArray(name, values, count);
   }
 
@@ -729,8 +721,6 @@ namespace origin {
 
   void OpenGLShader::SetUniformIntArray(const std::string &name, int *values, uint32_t count)
   {
-    OGN_PROFILER_RENDERING();
-
     glUniform1iv(GetUniformLocation(name), count, values);
   }
 
@@ -752,8 +742,6 @@ namespace origin {
 
   void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat2 &matrices)
   {
-    OGN_PROFILER_RENDERING();
-
     glUniformMatrix3fv(GetUniformLocation(name), 1, false, glm::value_ptr(matrices));
   }
 
@@ -770,8 +758,6 @@ namespace origin {
 
   int OpenGLShader::GetUniformLocation(const std::string &name)
   {
-    OGN_PROFILER_RENDERING();
-
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
       return m_UniformLocationCache[name];
 

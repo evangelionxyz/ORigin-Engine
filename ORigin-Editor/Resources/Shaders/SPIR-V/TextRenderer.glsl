@@ -69,7 +69,7 @@ void main()
 	
 	texColor *= texture(u_FontAtlases[int(v_TexIndex)], Input.TexCoord);
 	msd = texture(u_FontAtlases[int(v_TexIndex)], Input.TexCoord).rgb;
-	screenPxDistance = screenPxRange(u_FontAtlases[int(u_FontAtlases)])*(median(msd.r, msd.g, msd.b) - 0.5);
+	screenPxDistance = screenPxRange(u_FontAtlases[int(v_TexIndex)])*(median(msd.r, msd.g, msd.b) - 0.5);
     
   float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
 	if (opacity == 0.0)

@@ -1,10 +1,13 @@
 #pragma once
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
 #include "imgui.h"
+
 #include "Origin\Animation\Animation.h"
 #include "Origin\Animation\AnimationState.h"
 #include "Origin\Scene\Entity.h"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 #include "ImCurveEdit.h"
 #include "Origin\Core\Time.h"

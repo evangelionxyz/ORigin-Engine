@@ -4,12 +4,16 @@
 #include "GuiLayer.h"
 #include "Origin\Core\Application.h"
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+
 #include <imgui.h>
-#include <backends\imgui_impl_glfw.h>
-#include <backends\imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_dx11.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
-#include <backends/imgui_impl_dx11.h>
 
 #include "Platform/DX11/DX11Context.h"
 

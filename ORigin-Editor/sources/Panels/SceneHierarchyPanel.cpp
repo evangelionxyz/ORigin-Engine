@@ -162,7 +162,7 @@ namespace origin {
 
 		if (!m_Context->IsRunning())
 		{
-			if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
+			if (ImGui::BeginPopupContextWindow(nullptr, 1))
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20.f, 20.f));
 				EntityContextMenu();
@@ -444,7 +444,7 @@ namespace origin {
 					if(model->GetMaterial())
 					if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered())
 					{
-						EditorLayer::Get().m_MaterialEditor.SetSelectedMaterial(model->GetMaterial());
+						EditorLayer::Get().m_MaterialEditor.SetSelectedMaterial(model->GetMaterial()->Handle);
 					}
 
 					if (ImGui::BeginDragDropTarget())

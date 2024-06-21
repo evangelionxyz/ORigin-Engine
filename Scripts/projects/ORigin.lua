@@ -81,7 +81,6 @@ links {
   "PhysXCooking",
   "PhysXCharacterKinematic",
   "%{Library.Vulkan}",
-  "%{Library.Assimp}",
   "%{Library.MONO}"
 }
 

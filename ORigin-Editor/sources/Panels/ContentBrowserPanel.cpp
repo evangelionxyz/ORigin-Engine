@@ -245,7 +245,9 @@ namespace origin
 				count++;
 			}
 
-			ImGuiListClipper clipper(glm::ceil((float)count / (float)columnCount));
+			ImGuiListClipper clipper;
+			clipper.Begin(glm::ceil((float)count / (float)columnCount));
+
 			bool first = true;
 			while (clipper.Step())
 			{
@@ -342,12 +344,14 @@ namespace origin
 					first = false;
 				}
 			}
+
+			clipper.End();
 		}
 
 		ImGui::Columns(1);
 
 		// Right Click Context For Window
-		if (ImGui::BeginPopupContextWindow(nullptr, 1, false))
+		if (ImGui::BeginPopupContextWindow(nullptr, 1))
 		{
 			if (ImGui::BeginMenu("CREATE"))
 			{

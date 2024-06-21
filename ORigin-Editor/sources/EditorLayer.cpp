@@ -1193,7 +1193,7 @@ namespace origin {
 
 			case Key::F11:
 			{
-				guiMenuFullscreen == false ? guiMenuFullscreen = true : guiMenuFullscreen = false;
+				guiMenuFullscreen = !guiMenuFullscreen;
 				app.GetWindow().SetFullscreen(guiMenuFullscreen);
 				break;
 			}

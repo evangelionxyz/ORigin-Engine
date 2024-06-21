@@ -163,7 +163,7 @@ namespace origin
 				const float thumbnailSize = 60.0f;
 				const float padding = 10.0f;
 				const float cellSize = thumbnailSize + padding;
-				const float panelWidth = ImGui::GetWindowContentRegionWidth();
+				const float panelWidth = ImGui::GetWindowContentRegionMax().x;
 				int columnCount = static_cast<int>(panelWidth / cellSize);
 				if (columnCount < 1)
 					columnCount = 1;
