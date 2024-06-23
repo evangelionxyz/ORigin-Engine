@@ -10,8 +10,6 @@ namespace origin {
 	ThumbnailCache::ThumbnailCache(const std::shared_ptr<Project>& project)
 		: m_Project(project)
 	{
-		OGN_PROFILER_UI();
-
 		m_ThumbnailCachePath = project->GetAssetDirectory() / "Thumbnail.cache";
 	}
 
@@ -23,7 +21,7 @@ namespace origin {
 
 		if (m_CachedImages.find(assetPath) != m_CachedImages.end())
 		{
-			auto& cachedImage = m_CachedImages.at(assetPath);
+			auto &cachedImage = m_CachedImages.at(assetPath);
 			if (cachedImage.Timestamp == timestamp)
 				return cachedImage.Image;
 		}
@@ -34,15 +32,13 @@ namespace origin {
 
 	void ThumbnailCache::OnUpdate()
 	{
-		OGN_PROFILER_UI();
-
 		while (!m_Queue.empty())
 		{
-			const auto& thumbnailInfo = m_Queue.front();
+			const auto &thumbnailInfo = m_Queue.front();
 
 			if (m_CachedImages.find(thumbnailInfo.AssetPath) != m_CachedImages.end())
 			{
-				auto& cachedImage = m_CachedImages.at(thumbnailInfo.AssetPath);
+				auto &cachedImage = m_CachedImages.at(thumbnailInfo.AssetPath);
 				if (cachedImage.Timestamp == thumbnailInfo.Timestamp)
 				{
 					m_Queue.pop();
@@ -60,7 +56,7 @@ namespace origin {
 			float thumbnailHeight = m_ThumbnailSize * ((float)texture->GetHeight() / (float)texture->GetWidth());
 			texture->ChangeSize(m_ThumbnailSize, thumbnailHeight);
 
-			auto& cachedImage = m_CachedImages[thumbnailInfo.AssetPath];
+			auto &cachedImage = m_CachedImages[thumbnailInfo.AssetPath];
 			cachedImage.Timestamp = thumbnailInfo.Timestamp;
 			cachedImage.Image = texture;
 

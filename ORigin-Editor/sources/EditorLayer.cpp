@@ -63,7 +63,7 @@ namespace origin {
 	  m_EditorCamera.SetPosition(glm::vec3(0.0f, 1.0f, 10.0f));
 
 	  m_ActiveScene = std::make_shared<Scene>();
-	  const auto& commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+	  const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 
 	  if (commandLineArgs.Count > 1)
 	  {
@@ -193,8 +193,6 @@ namespace origin {
 
 	void EditorLayer::OnGuiRender()
   {
-		OGN_PROFILER_UI();
-
 	  m_Dockspace.Begin();
 
 		if (m_ContentBrowser)
@@ -469,10 +467,8 @@ namespace origin {
 
 	void EditorLayer::MenuBar()
 	{
-		OGN_PROFILER_UI();
-
 		ImGuiStyle& style = ImGui::GetStyle();
-		auto& window = Application::Get();
+		auto &window = Application::Get();
 		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
@@ -574,8 +570,6 @@ namespace origin {
 
 	void EditorLayer::SceneViewport()
 	{
-		OGN_PROFILER_UI();
-
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
@@ -595,8 +589,8 @@ namespace origin {
 		
 		if (m_SceneState == SceneState::Play)
 		{
-			auto& camView = m_ActiveScene->m_Registry.view<CameraComponent>();
-			for (auto& e : camView)
+			auto &camView = m_ActiveScene->m_Registry.view<CameraComponent>();
+			for (auto &e : camView)
 			{
 				auto &cc = camView.get<CameraComponent>(e);
 
@@ -765,8 +759,6 @@ namespace origin {
 
 	void EditorLayer::SceneViewportToolbar()
 	{
-		OGN_PROFILER_UI();
-
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 		if (ImGui::Begin("Toolbar", nullptr, window_flags))
 		{
@@ -867,7 +859,7 @@ namespace origin {
 
 			// Projection mode
 			ImGui::SetCursorPos({ btPos.x + 175.0f, btPos.y });
-			const auto& mode = m_EditorCamera.GetProjectionType();
+			const auto &mode = m_EditorCamera.GetProjectionType();
 			icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
 			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
 			{
@@ -890,7 +882,7 @@ namespace origin {
 		{
 			if (entity.HasComponent<SpriteAnimationComponent>())
 			{
-				auto& ac = entity.GetComponent<SpriteAnimationComponent>();
+				auto &ac = entity.GetComponent<SpriteAnimationComponent>();
 				AnimationTimeline::DrawSpriteAnimTimeline(ac);
 			}
 		}
@@ -1112,7 +1104,7 @@ namespace origin {
 		if (!m_SceneViewportFocused && !m_SceneHierarchy.IsSceneHierarchyFocused)
 			return false;
 
-		auto& app = Application::Get();
+		auto &app = Application::Get();
 		const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
@@ -1139,7 +1131,7 @@ namespace origin {
 			{
 				if (selectedEntity && !io.WantTextInput)
 				{
-					const auto& tc = selectedEntity.GetComponent<TransformComponent>();
+					const auto &tc = selectedEntity.GetComponent<TransformComponent>();
 					m_EditorCamera.SetPosition(tc.Translation);
 				}
 				break;

@@ -42,7 +42,7 @@ namespace origin {
 		m_UniformBuffer->SetData(&BufferData, sizeof(MaterialBufferData));
 		m_Shader->Enable();
 
-		if (m_Textures.empty() && (m_AlbedoMap == 0 && m_MetallicMap == 0))
+		if (Textures.empty() && (m_AlbedoMap == 0 && m_MetallicMap == 0))
 		{
 			Renderer::WhiteTexture->Bind(0);
 			Renderer::WhiteTexture->Bind(1);
@@ -50,7 +50,7 @@ namespace origin {
 
 		if (m_AlbedoMap == 0 && m_MetallicMap == 0)
 		{
-			for (auto &t : m_Textures)
+			for (auto &t : Textures)
 			{
 				if (t.first == aiTextureType_DIFFUSE)
 				{

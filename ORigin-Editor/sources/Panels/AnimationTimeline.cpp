@@ -5,8 +5,6 @@ namespace origin
 {
 	static bool SequencerAddDelButton(ImDrawList *draw_list, ImVec2 pos, bool add = true)
 	{
-		OGN_PROFILER_UI();
-
 		ImGuiIO &io = ImGui::GetIO();
 		ImRect btnRect(pos, ImVec2(pos.x + 16, pos.y + 16));
 		bool overBtn = btnRect.Contains(io.MousePos);
@@ -28,8 +26,6 @@ namespace origin
 	template<typename T>
 	void Get(const std::shared_ptr<T> &anim, int index, int **start, int **end, unsigned int *color)
 	{
-		OGN_PROFILER_UI();
-
 		auto &frame = anim->GetFrame(index);
 		if (color)
 			*color = IM_COL32(230, 100, 0, 255);
@@ -41,8 +37,6 @@ namespace origin
 
 	void AnimationTimeline::DrawSpriteAnimTimeline(SpriteAnimationComponent &sa)
 	{
-		OGN_PROFILER_UI();
-
 		static int selectedEntry = -1;
 		static int firstFrame = 0;
 		static bool expanded = true;
@@ -153,8 +147,6 @@ namespace origin
 
 	bool AnimationTimeline::SpriteAnimTimeline(std::shared_ptr<SpriteAnimation> &animation, float *currentFrame, bool *expanded, int *selectedEntry, int *firstFrame, int sequenceOptions)
 	{
-		OGN_PROFILER_UI();
-
 		bool ret = false;
 
 		ImGuiIO &io = ImGui::GetIO();

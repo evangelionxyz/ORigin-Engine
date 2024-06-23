@@ -76,7 +76,6 @@ namespace origin
 	#define OGN_PROFILER_LOGIC()						OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::GameLogic, Optick::Color::DarkRed))
 	#define OGN_PROFILER_AUDIO()						OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Audio, Optick::Color::ForestGreen)
 	#define OGN_PROFILER_SCENE()						OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Scene, Optick::Color::Lavender))
-	#define OGN_PROFILER_UI()								OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::UI, Optick::Color::SeaGreen))
 #else
 	#define OGN_PROFILER_START(name)
 	#define OGN_PROFILER_STOP()
@@ -89,6 +88,5 @@ namespace origin
 	#define OGN_PROFILER_LOGIC()
 	#define OGN_PROFILER_AUDIO()
 	#define OGN_PROFILER_SCENE()
-	#define OGN_PROFILER_UI()
 #endif
 }

@@ -20,8 +20,6 @@ namespace origin
 	ContentBrowserPanel::ContentBrowserPanel(const std::shared_ptr<Project>& project)
 		: m_Project(project), m_ThumbnailCache(std::make_shared<ThumbnailCache>(project)), m_BaseDirectory(m_Project->GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory)
 	{
-		OGN_PROFILER_UI();
-
 		m_TreeNodes.push_back(TreeNode(".", 0));
 		m_IconMap["backward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/backward_icon.png");
 		m_IconMap["forward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/forward_icon.png");
@@ -48,8 +46,6 @@ namespace origin
 
 	void ContentBrowserPanel::DrawNavButton()
 	{
-		OGN_PROFILER_UI();
-
 		ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
 		ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 30.0f), false, childFlags);
 
@@ -94,8 +90,6 @@ namespace origin
 
 	void ContentBrowserPanel::DrawContentBrowser()
 	{
-		OGN_PROFILER_UI();
-
 		ImGui::Begin("Content Browser");
 
 		DrawNavButton();
@@ -127,8 +121,8 @@ namespace origin
 		if (m_Mode == Mode::Asset)
 		{
 			TreeNode* node = m_TreeNodes.data();
-			const auto& relativePath = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
-			for (const auto& path : relativePath)
+			const auto &relativePath = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
+			for (const auto &path : relativePath)
 			{
 				if (node->Path == relativePath)
 					break;
@@ -137,7 +131,7 @@ namespace origin
 					node = &m_TreeNodes[node->Children[path]];
 			}
 
-			for (const auto& [item, treeNodeIndex] : node->Children)
+			for (const auto &[item, treeNodeIndex] : node->Children)
 			{
 				bool shouldBreak = false;
 
@@ -240,7 +234,7 @@ namespace origin
 		else if(m_Mode == Mode::FileSystem)
 		{
 			uint32_t count = 0;
-			for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
+			for (auto &directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 			{
 				count++;
 			}
@@ -268,16 +262,16 @@ namespace origin
 					int c;
 					for (c = 0; c < columnCount && it != std::filesystem::directory_iterator(); c++, it++)
 					{
-						const auto& directoryEntry = *it;
+						const auto &directoryEntry = *it;
 
-						const auto& path = directoryEntry.path();
+						const auto &path = directoryEntry.path();
 						const std::string filenameStr = path.filename().string();
 
 						ImGui::PushID(filenameStr.c_str());
 
-						const auto& relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
+						const auto &relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-						auto& thumbnail = DirectoryIcons(directoryEntry);
+						auto &thumbnail = DirectoryIcons(directoryEntry);
 						float thumbnailHeight = m_ThumbnailSize * ((float)thumbnail->GetHeight() / (float)thumbnail->GetWidth());
 						float diff = (float)(m_ThumbnailSize - thumbnailHeight);
 						ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
@@ -305,8 +299,8 @@ namespace origin
 							ImGui::Separator();
 
 							bool assetImported = false;
-							const auto& assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
-							for (const auto& [handle, metadata] : assetRegistry)
+							const auto &assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
+							for (const auto &[handle, metadata] : assetRegistry)
 							{
 								if (relativePath.generic_string() == metadata.Filepath)
 								{
@@ -350,48 +344,6 @@ namespace origin
 
 		ImGui::Columns(1);
 
-		// Right Click Context For Window
-		if (ImGui::BeginPopupContextWindow(nullptr, 1))
-		{
-			if (ImGui::BeginMenu("CREATE"))
-			{
-				if (ImGui::MenuItem("New Folder", nullptr))
-				{
-					const std::filesystem::path folder = m_CurrentDirectory / "New Folder";
-					if (!std::filesystem::exists(folder))
-					{
-						std::filesystem::create_directory(folder);
-					}
-				}
-
-				if (ImGui::MenuItem("Material", nullptr))
-				{
-					std::shared_ptr<Material> material = Material::Create();
-					const std::filesystem::path materialPath = m_CurrentDirectory / "Material.mat";
-					if (!std::filesystem::exists(materialPath))
-					{
-						MaterialSerializer::Serialize(materialPath, material);
-					}
-				}
-
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Thumbnail Size"))
-			{
-				if (ImGui::MenuItem("Small"))
-					m_ThumbnailSize = 70;
-				if (ImGui::MenuItem("Medium"))
-					m_ThumbnailSize = 90;
-				if (ImGui::MenuItem("Large"))
-					m_ThumbnailSize = 110;
-
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndPopup();
-		}
-
 		ImGui::EndChild();
 
 		ImGui::End();
@@ -400,13 +352,11 @@ namespace origin
 
 	void ContentBrowserPanel::RefreshAssetTree()
 	{
-		OGN_PROFILER_UI();
-
-		const auto& assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
-		for (const auto& [handle, metadata] : assetRegistry)
+		const auto &assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
+		for (const auto &[handle, metadata] : assetRegistry)
 		{
 			uint32_t currentNodeIndex = 0;
-			for (const auto& p : metadata.Filepath)
+			for (auto p : metadata.Filepath)
 			{
 				auto it = m_TreeNodes[currentNodeIndex].Children.find(p.generic_string());
 				if (it != m_TreeNodes[currentNodeIndex].Children.end())
@@ -429,8 +379,6 @@ namespace origin
 
 	std::shared_ptr<Texture2D> ContentBrowserPanel::DirectoryIcons(const std::filesystem::directory_entry& dirEntry)
 	{
-		OGN_PROFILER_UI();
-
 		const std::string& fileExtension = dirEntry.path().extension().string();
 		auto relativePath = std::filesystem::relative(dirEntry.path(), Project::GetActiveAssetDirectory());
 
@@ -440,12 +388,9 @@ namespace origin
 		{
 			if (fileExtension == ".png" || fileExtension == ".jpg")
 			{
-				if (std::filesystem::exists(relativePath))
-				{
-					texture = m_ThumbnailCache->GetOrCreateThumbnail(relativePath);
-					if (!texture)
-						texture = m_IconMap.at("unknown");
-				}
+				texture = m_ThumbnailCache->GetOrCreateThumbnail(relativePath);
+				if (!texture)
+					texture = m_IconMap.at("unknown");
 			}
 			else if (m_IconMap.find(fileExtension) == m_IconMap.end())
 				texture = m_IconMap.at("unknown");

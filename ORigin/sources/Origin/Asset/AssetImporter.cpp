@@ -26,7 +26,7 @@ namespace origin {
 		{	AssetType::Scene, SceneImporter::Import },
 		{ AssetType::MeshSource, ModelImporter::Import },
 		{ AssetType::Material, MaterialImporter::Import },
-		{ AssetType::StaticMesh, ModelImporter::Import },
+		{ AssetType::Model, ModelImporter::Import },
 		{ AssetType::Font, FontImporter::Import },
 		{ AssetType::SpritesSheet, SpriteSheetImporter::Import }
 	};
@@ -97,7 +97,7 @@ namespace origin {
 					fontsToUpdate[i].first->get()->Handle = fontsToUpdate[i].second;
 				}
 
-				for (size_t i = indicesToRemove.size() - 1; i >= 0; i--)
+				for (int i = static_cast<int>(indicesToRemove.size()) - 1; i >= 0; i--)
 				{
 					int index = indicesToRemove[i];
 					FontImporter::FontDatas.erase(FontImporter::FontDatas.begin() + index);
@@ -180,15 +180,17 @@ namespace origin {
 
 		if (!relativePath.empty())
 		{
-			auto& assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
+			auto &assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
 			for (auto a : assetRegistry)
 			{
-				if (relativePath.generic_string() == a.second.Filepath)
+				auto assetRelativePath = std::filesystem::relative(a.second.Filepath, Project::GetActiveAssetDirectory());
+				if (relativePath == assetRelativePath)
 					return a.first;
 			}
 		}
 
-		OGN_CORE_ASSERT(false, "SceneImporter: Scene shoule be imported");
+		// You can continue the program
+		OGN_CORE_ASSERT(false, "[SceneImporter] Scene shoule be imported first via Content Browser");
 		return 0;
 	}
 
@@ -252,7 +254,7 @@ namespace origin {
 
 	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path &filepath)
 	{
-		return Model::Create(filepath);
+		return nullptr;
 	}
 
 	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)

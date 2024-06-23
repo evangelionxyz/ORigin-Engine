@@ -45,27 +45,15 @@ namespace origin
 	{
 		if (!IsOpened)
 		{
-			if (Entity pc = m_Scene->GetPrimaryCameraEntity())
+			if (Entity cam = m_Scene->GetPrimaryCameraEntity())
 			{
-				SceneCamera &cc = pc.GetComponent<CameraComponent>().Camera;
-				m_SceneCamViewportSize = cc.GetViewportSize();
-
-				m_Camera.SetOrthoSize(m_SceneCamViewportSize.y * 2.0f);
-				m_Camera.SetOrthoSizeMax(m_SceneCamViewportSize.y * 6.0f);
-
-				m_Component = component;
+				auto &cc = cam.GetComponent<CameraComponent>();
+				const float orthoSizeY = cc.Camera.GetOrthographicSize().y;
+				m_Camera.SetOrthoSize(orthoSizeY * 1.3f);
+				m_Camera.SetOrthoSizeMax(orthoSizeY * 4.0f);
 			}
-
+			m_Component = component;
 			IsOpened = true;
-		}
-	}
-
-	void UIEditor::OnCamViewportSizeChange()
-	{
-		if (Entity pc = m_Scene->GetPrimaryCameraEntity())
-		{
-			SceneCamera &cc = pc.GetComponent<CameraComponent>().Camera;
-			//m_SceneCamViewportSize = cc.GetViewportSize();
 		}
 	}
 
@@ -74,7 +62,7 @@ namespace origin
 		UIData<TextComponent> text;
 		text.Name = "Text";
 		text.Component.TextString = "Text";
-		text.Transform.WorldScale = glm::vec3(100.0f, 100.0f, 1.0f);
+		text.Transform.WorldScale = glm::vec3(1.0f);
 
 		m_Component->Texts.push_back(text);
 		m_SelectedIndex = m_Component->Texts.size() - 1;
@@ -84,7 +72,7 @@ namespace origin
 	{
 		UIData<SpriteRenderer2DComponent> sprite;
 		sprite.Name = "Sprite";
-		sprite.Transform.WorldScale = glm::vec3(100.0f, 100.0f, 1.0f);
+		sprite.Transform.WorldScale = glm::vec3(1.0f);
 
 		m_Component->Sprites.push_back(sprite);
 		m_SelectedIndex = m_Component->Texts.size() + m_Component->Sprites.size() - 1;
@@ -136,11 +124,11 @@ namespace origin
 							if (name.empty()) name = "'No Name'";
 						}
 
-						UI::DrawVec3Control("Translation", text.Transform.WorldTranslation, 0.5f);
+						UI::DrawVec3Control("Translation", text.Transform.WorldTranslation, 0.1f);
 						glm::vec3 rotation = glm::degrees(text.Transform.WorldRotation);
-						UI::DrawVec3Control("Rotation", rotation, 0.5f);
-						text.Transform.Rotation = glm::radians(rotation);
-						UI::DrawVec3Control("Scale", text.Transform.WorldScale, 0.5f, 1.0f);
+						UI::DrawVec3Control("Rotation", rotation, 0.1f);
+						text.Transform.WorldRotation = glm::radians(rotation);
+						UI::DrawVec3Control("Scale", text.Transform.WorldScale, 0.1f, 1.0f);
 
 						ImGui::Button("DROP FONT", ImVec2(80.0f, 20.0f));
 						if (ImGui::BeginDragDropTarget())
@@ -183,11 +171,11 @@ namespace origin
 							if (name.empty()) name = "'No Name'";
 						}
 
-						UI::DrawVec3Control("Translation", sprite.Transform.WorldTranslation, 0.5f);
+						UI::DrawVec3Control("Translation", sprite.Transform.WorldTranslation, 0.1f);
 						glm::vec3 rotation = glm::degrees(sprite.Transform.WorldRotation);
-						UI::DrawVec3Control("Rotation", rotation, 0.5f);
-						sprite.Transform.Rotation = glm::radians(rotation);
-						UI::DrawVec3Control("Scale", sprite.Transform.WorldScale, 0.5f, 1.0f);
+						UI::DrawVec3Control("Rotation", rotation, 0.1f);
+						sprite.Transform.WorldRotation = glm::radians(rotation);
+						UI::DrawVec3Control("Scale", sprite.Transform.WorldScale, 0.1f, 1.0f);
 
 						ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Component.Color));
 
@@ -368,8 +356,6 @@ namespace origin
 			return;
 		}
 
-		OGN_PROFILER_UI();
-
 		m_Camera.OnUpdate(ts);
 		OnMouse(ts);
 
@@ -391,9 +377,12 @@ namespace origin
 			Renderer2D::Begin(m_Camera);
 
 			// Draw Camera Boundary
-			if (Entity pc = m_Scene->GetPrimaryCameraEntity())
+			if (Entity cam = m_Scene->GetPrimaryCameraEntity())
 			{
-				Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { m_SceneCamViewportSize.x, m_SceneCamViewportSize.y, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
+				auto &cc = cam.GetComponent<CameraComponent>();
+				const glm::vec2 &orthoSize = cc.Camera.GetOrthographicSize();
+				Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { orthoSize.x, orthoSize.y, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
+
 				for (int i = 0; i < m_Component->Texts.size(); i++)
 				{
 					auto &text = m_Component->Texts[i];

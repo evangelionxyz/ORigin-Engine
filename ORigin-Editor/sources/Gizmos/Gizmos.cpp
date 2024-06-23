@@ -217,9 +217,11 @@ namespace origin {
 		for (auto e : revoluteJoint2DView)
 		{
 			auto &[tc, rjc] = revoluteJoint2DView.get<TransformComponent, RevoluteJoint2DComponent>(e);
-			glm::vec2 anchorPoint = glm::vec2(tc.WorldTranslation.x + rjc.AnchorPoint.x, tc.WorldTranslation.y + rjc.AnchorPoint.y);
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(anchorPoint,
-																					 tc.WorldTranslation.z + 0.0f))
+			glm::vec2 anchorPoint = { 
+				tc.WorldTranslation.x + rjc.AnchorPoint.x,
+				tc.WorldTranslation.y + rjc.AnchorPoint.y };
+
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f),{ anchorPoint, tc.WorldTranslation.z + 0.0f })
 				* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
 			Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);

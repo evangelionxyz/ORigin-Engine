@@ -2,9 +2,10 @@
 
 #include "pch.h"
 #include "OpenGLMesh.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Renderer\Texture.h"
-#include "Origin\Renderer\RenderCommand.h"
+#include "Origin/Renderer/Texture.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Renderer/UniformBuffer.h"
+#include "Origin/Renderer/RenderCommand.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
@@ -13,17 +14,6 @@ namespace origin
 	OpenGLMesh::OpenGLMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices)
 	{
 		OGN_PROFILER_RENDERING();
-
-		OGN_CORE_TRACE("VERTEX");
-		OGN_CORE_TRACE("	Size : {} bytes", sizeof(MeshVertex));
-
-		OGN_CORE_TRACE("VERTICES");
-		OGN_CORE_TRACE("	Count: {}", vertices.size());
-		OGN_CORE_TRACE("	Size : {} bytes", vertices.size() * sizeof(MeshVertex));
-
-		OGN_CORE_TRACE("INDICES");
-		OGN_CORE_TRACE("	Count: {}", indices.size());
-		OGN_CORE_TRACE("	Size : {} bytes", indices.size() * sizeof(uint32_t));
 
 		m_VertexArray = VertexArray::Create();
 		m_VertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(MeshVertex));
@@ -41,17 +31,24 @@ namespace origin
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
+
+		// Create uniform buffer
+		int uniformBinding = 0;
+		m_UniformBuffer = UniformBuffer::Create(sizeof(m_UniformData), uniformBinding);
 	}
 
 	OpenGLMesh::~OpenGLMesh()
 	{
 	}
 
-	void OpenGLMesh::Draw()
+	void OpenGLMesh::Draw(const glm::mat4 &transform, int entityId)
 	{
-		OGN_PROFILER_RENDERING();
+		m_UniformData.Transform = transform;
+		m_UniformData.EntityId = entityId;
 
+		m_UniformBuffer->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);
+		m_UniformBuffer->Unbind();
 	}
-
+	
 }

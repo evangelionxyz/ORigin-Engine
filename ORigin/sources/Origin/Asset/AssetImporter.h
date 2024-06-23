@@ -29,11 +29,8 @@ namespace origin {
 
 	private:
 		static void LoadFont(std::vector<Font::Data *> *fontsData, const std::filesystem::path &filepath);
-
 		static std::vector<Font::Data *> FontDatas;
-
 		static std::vector<std::pair<std::shared_ptr<Asset> *, UUID>> Fonts;
-
 		friend class AssetImporter;
 	};
 

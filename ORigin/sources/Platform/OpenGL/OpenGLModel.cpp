@@ -1,125 +1,85 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Origin\Project\Project.h"
-#include "Origin\Renderer\Renderer.h"
 #include "OpenGLModel.h"
 #include "OpenGLMesh.h"
+#include "Origin/Project/Project.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Scene/EntityManager.h"
+#include "Origin/Renderer/Renderer.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm\gtx\quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace origin
 {
-	OpenGLModel::OpenGLModel(const std::filesystem::path &filepath)
+	OpenGLModel::OpenGLModel(const std::filesystem::path &filepath, Scene *scene)
+		: m_Scene(scene), m_Filepath(filepath)
 	{
 		OGN_PROFILER_RENDERING();
 
 		Assimp::Importer importer;
-
-		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
-																						 aiProcess_Triangulate
-																						 | aiProcess_GenSmoothNormals
-																						 | aiProcess_FlipUVs
-																						 | aiProcess_JoinIdenticalVertices
+		const aiScene *aiScene = importer.ReadFile(filepath.generic_string().c_str(),
+			aiProcess_Triangulate | aiProcess_GenSmoothNormals
+			| aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
 		);
 
 		OGN_CORE_INFO("MODEL: Trying to load \"{}\"", filepath);
-		if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		if (aiScene == nullptr || aiScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !aiScene->mRootNode)
 		{
 			OGN_CORE_ERROR("MESH: ASSIMP: {}", importer.GetErrorString());
 			return;
 		}
 
-		ProcessNode(scene->mRootNode, scene);
-
-		int binding = 1;
-		m_Uniformbuffer = UniformBuffer::Create(sizeof(ModelBufferData), binding);
-
-		m_Material = Material::Create();
+		ProcessNode(aiScene->mRootNode, aiScene);
 	}
 
 	OpenGLModel::~OpenGLModel()
 	{
 	}
 
-	void OpenGLModel::Draw(int entityID)
+	void OpenGLModel::SetTransform(const glm::mat4 &transform)
 	{
-		OGN_PROFILER_RENDERING();
 
-		for (const std::shared_ptr<Mesh>& mesh : m_Meshes)
+	}
+
+	void OpenGLModel::SetMaterial(AssetHandle handle)
+	{
+		for (auto id : m_MeshEntities)
 		{
-			m_ModelBufferData.EntityID = entityID;
-			m_Uniformbuffer->Bind();
-			m_Uniformbuffer->SetData(&m_ModelBufferData, sizeof(ModelBufferData));
-
-			if (m_Material)
-			{
-				m_Material->Bind();
-				mesh->Draw();
-				m_Material->Unbind();
-			}
-			else
-			{
-				mesh->Draw();
-			}
-			m_Uniformbuffer->Unbind();
+			Entity entity = m_Scene->GetEntityWithUUID(id);
+			entity.GetComponent<StaticMeshComponent>().HMaterial = handle;
 		}
 	}
 
-	void OpenGLModel::Draw()
+	AssetHandle OpenGLModel::GetMaterial()
 	{
-		OGN_PROFILER_RENDERING();
-
-		for (const std::shared_ptr<Mesh> &mesh : m_Meshes)
-		{
-			if (m_Material)
-			{
-				m_Material->Bind();
-				mesh->Draw();
-				m_Material->Unbind();
-			}
-			else
-			{
-				mesh->Draw();
-			}
-		}
+		Entity entity = m_Scene->GetEntityWithUUID(m_MeshEntities[0]);
+		return entity.GetComponent<StaticMeshComponent>().HMaterial;
 	}
 
-	void OpenGLModel::SetTransform(const glm::mat4& transform)
-	{
-		m_ModelBufferData.Transform = transform;
-	}
-
-	void OpenGLModel::SetMaterial(std::shared_ptr<Material> mat)
-	{
-		m_Material = mat;
-	}
-
-	void OpenGLModel::RemoveMaterial()
-	{
-		OGN_PROFILER_RENDERING();
-
-		m_Material = Renderer::GetMaterial("DefaultMesh");
-	}
-
-	void OpenGLModel::ProcessNode(aiNode *node, const aiScene *scene)
+	void OpenGLModel::ProcessNode(aiNode *node, const aiScene *aiScene)
 	{
 		OGN_PROFILER_RENDERING();
 
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
-			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Meshes.push_back(ProcessMesh(mesh, scene));
+			// Get each meshes
+			aiMesh* aiMesh = aiScene->mMeshes[node->mMeshes[i]];
+			Entity entity = EntityManager::CreateEntity(node->mName.C_Str(), m_Scene);
+			StaticMeshComponent &m = entity.AddComponent<StaticMeshComponent>();
+			m.Name = node->mName.C_Str();
+			m.Mesh = ProcessMesh(aiMesh, aiScene);
+			OGN_CORE_TRACE("{}", m.Name);
+			m_MeshEntities.push_back(entity.GetUUID());
 		}
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessNode(node->mChildren[i], scene);
+			ProcessNode(node->mChildren[i], aiScene);
 		}
 	}
 
-	std::shared_ptr<Mesh> OpenGLModel::ProcessMesh(aiMesh* mesh, const aiScene* scene)
+	std::shared_ptr<Mesh> OpenGLModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -130,32 +90,15 @@ namespace origin
 		{
 			MeshVertex vertex;
 
-			vertex.Position = glm::vec3(
-				mesh->mVertices[i].x,
-				mesh->mVertices[i].y,
-				mesh->mVertices[i].z
-			);
+			vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 
 			if (mesh->HasNormals())
-			{
-				vertex.Normal = glm::vec3(
-					mesh->mNormals[i].x,
-					mesh->mNormals[i].y,
-					mesh->mNormals[i].z
-				);
-			}
+				vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 
 			if (mesh->mTextureCoords[0])
-			{
-				vertex.TexCoord = glm::vec2(
-					mesh->mTextureCoords[0][i].x,
-					mesh->mTextureCoords[0][i].y
-				);
-			}
+				vertex.TexCoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
 			else
-			{
-				vertex.TexCoord = glm::vec2(0.0f);
-			}
+				vertex.TexCoord = { 0.0f, 0.0f };
 
 			vertices.push_back(vertex);
 		}
@@ -166,14 +109,15 @@ namespace origin
 			for (uint32_t in = 0; in < face.mNumIndices; in++)
 				indices.push_back(face.mIndices[in]);
 		}
-		
-		if (m_Material)
+
+		if (this->GetMaterial())
 		{
 			if (mesh->mMaterialIndex > 0)
 			{
-				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-				Utils::LoadMatTextures(&m_Material->m_Textures, m_Filepath.generic_string(), material, aiTextureType_DIFFUSE);
-				Utils::LoadMatTextures(&m_Material->m_Textures, m_Filepath.generic_string(), material, aiTextureType_SPECULAR);
+				aiMaterial *aiMat = scene->mMaterials[mesh->mMaterialIndex];
+				std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(GetMaterial());
+				Utils::LoadMatTextures(&material->Textures, m_Filepath.generic_string(), aiMat, aiTextureType_DIFFUSE);
+				Utils::LoadMatTextures(&material->Textures, m_Filepath.generic_string(), aiMat, aiTextureType_SPECULAR);
 			}
 		}
 

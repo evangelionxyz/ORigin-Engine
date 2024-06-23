@@ -26,8 +26,6 @@ namespace origin {
 
 	void GuiLayer::Init()
 	{
-		OGN_PROFILER_UI();
-
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
@@ -149,8 +147,6 @@ namespace origin {
 
 	void GuiLayer::Detach()
 	{
-		OGN_PROFILER_UI();
-
 		switch (RendererAPI::GetAPI())
 		{
 		case RendererAPI::API::DX11: ImGui_ImplDX11_Shutdown(); break;
@@ -179,8 +175,6 @@ namespace origin {
 
 	void GuiLayer::Begin()
 	{
-		OGN_PROFILER_UI();
-
 		ImGui_ImplGlfw_NewFrame();
 		
 		switch (RendererAPI::GetAPI())
@@ -195,8 +189,6 @@ namespace origin {
 
 	void GuiLayer::End() const
 	{
-		OGN_PROFILER_UI();
-
 		ImGuiIO& io = ImGui::GetIO();
 
 		Application& app = Application::Get();
@@ -231,8 +223,6 @@ namespace origin {
 
 	void GuiLayer::OnEvent(Event& e)
 	{
-		OGN_PROFILER_UI();
-
 		if(m_BlockEvents)
 		{
 			ImGuiIO& io = ImGui::GetIO();

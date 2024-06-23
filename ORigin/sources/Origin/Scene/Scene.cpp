@@ -265,8 +265,9 @@ namespace origin
 			{
 				m_UIRenderer->AddUI(ui);
 				cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-				auto &vp = cc.Camera.GetViewportSize();
-				m_UIRenderer->CreateFramebuffer(vp.x, vp.y);
+				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
+				const glm::vec2 &ortho = cc.Camera.GetOrthographicSize();
+				m_UIRenderer->CreateFramebuffer(vp.x, vp.y, ortho.x, ortho.y);
 			}
 		});
 	}
@@ -487,8 +488,8 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 
 		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
 		{
@@ -606,26 +607,34 @@ namespace origin
 		glEnable(GL_DEPTH_TEST);
 
 		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		for (const auto entity : meshView)
+		const auto &modelView = m_Registry.view<TransformComponent, ModelComponent>();
+		for (const auto entity : modelView)
 		{
-			const auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+			const auto &[tc, mc] = modelView.get<TransformComponent, ModelComponent>(entity);
 			if(!tc.Visible)
 				continue;
 
-			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
+			if (AssetManager::GetAssetType(mc.Handle) == AssetType::Model)
 			{
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
+				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mc.Handle);
 
+#if 0
 				for (auto &light : lightView)
 				{
 					const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
 					lc.Light->OnRender(lightTC);
 				}
+#endif
 
 				model->SetTransform(tc.GetTransform());
-				model->Draw(static_cast<int>(entity));
+
+				for (auto &mesh : model->GetMeshes())
+				{
+					Entity e = GetEntityWithUUID(mesh);
+					StaticMeshComponent &sm = e.GetComponent<StaticMeshComponent>();
+					sm.Mesh->Draw(tc.GetTransform(), (int)e);
+				}
 			}
 		}
 
@@ -726,41 +735,13 @@ namespace origin
 		}
 
 		Renderer2D::End();
-		glEnable(GL_DEPTH_TEST);
-		glCullFace(GL_FRONT);
-
-		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		for (const auto entity : meshView)
-		{
-			auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
-
-			if (!tc.Visible)
-				continue;
-
-			if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
-			{
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
-
-				for (auto &light : lightView)
-				{
-					auto& [lightTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
-					lc.Light->OnRender(lightTC);
-				}
-
-				model->SetTransform(tc.GetTransform());
-				model->Draw(static_cast<int>(entity));
-			}
-		}
-
-		Renderer2D::End();
 
 		glDisable(GL_CULL_FACE);
 	}
 	
 	void Scene::OnShadowRender()
 	{
+#if 0
 		OGN_PROFILER_RENDERING();
 
 		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
@@ -774,7 +755,7 @@ namespace origin
 			{
 				const auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
-				if (AssetManager::GetAssetType(mesh.Handle) == AssetType::StaticMesh)
+				if (AssetManager::GetAssetType(mesh.Handle) == AssetType::Model)
 				{
 					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
 					lc.Light->GetShadow()->OnRenderBegin(lightTransform, tc.GetTransform());
@@ -786,6 +767,7 @@ namespace origin
 
 			lc.Light->GetShadow()->UnbindFramebuffer();
 		}
+#endif
 	}
 
 	void Scene::UpdateEditorTransform()
@@ -824,7 +806,13 @@ namespace origin
 		{
 			auto &cc = view.get<CameraComponent>(e);
 			if (cc.Primary)
+			{
 				cc.Camera.SetViewportSize(width, height);
+				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
+				const glm::vec2 &ortho = cc.Camera.GetOrthographicSize();
+				m_UIRenderer->SetViewportSize(vp.x, vp.y, ortho.x, ortho.y);
+			}
+				
 		}
 
 		m_ViewportWidth = width;
@@ -855,6 +843,7 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(SpriteRenderer2DComponent)
 	OGN_REG_COMPONENT(LightComponent)
 	OGN_REG_COMPONENT(StaticMeshComponent)
+	OGN_REG_COMPONENT(ModelComponent)
 	OGN_REG_COMPONENT(TextComponent)
 	OGN_REG_COMPONENT(CircleRendererComponent)
 	OGN_REG_COMPONENT(NativeScriptComponent)

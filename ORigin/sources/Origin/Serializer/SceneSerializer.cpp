@@ -311,6 +311,7 @@ namespace origin
 			out << YAML::EndMap; // !AudioListenerComponent
 		}
 
+#if 0
 		if (entity.HasComponent<StaticMeshComponent>())
 		{
 			out << YAML::Key << "StaticMeshComponent";
@@ -327,6 +328,7 @@ namespace origin
 			
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
+#endif
 
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
@@ -880,6 +882,7 @@ namespace origin
 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
+#if 0
 				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
 				{
 					auto& mc = deserializedEntity.AddComponent<StaticMeshComponent>();
@@ -893,8 +896,8 @@ namespace origin
 						if (material)
 							model->SetMaterial(std::move(material));
 					}
-					
 				}
+#endif
 
 				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
 				{

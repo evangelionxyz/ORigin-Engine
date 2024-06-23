@@ -17,10 +17,8 @@ namespace origin
 	SpriteSheetEditor::SpriteSheetEditor()
 		: m_ViewportSize(0.0f)
 	{
-		OGN_PROFILER_UI();
-
-		m_Camera.InitOrthographic(10.0f, 0.1f, 10.0f);
-		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
+		m_Camera.InitOrthographic(10.0f, 0.0f, 2.0f);
+		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
 
 		FramebufferSpecification spec;
 		spec.Attachments =
@@ -38,15 +36,11 @@ namespace origin
 
 	void SpriteSheetEditor::CreateNewSpriteSheet()
 	{
-		OGN_PROFILER_UI();
-
 		m_SpriteSheet = SpriteSheet::Create();
 	}
 
 	void SpriteSheetEditor::SetSelectedSpriteSheet(AssetHandle handle)
 	{
-		OGN_PROFILER_UI();
-
 		// Serialize before close the previous sprite
 		if (!m_CurrentFilepath.empty())
 		{
@@ -59,8 +53,8 @@ namespace origin
 
 		if (Deserialize() && !m_IsOpened)
 		{
-			m_Camera.SetOrthoSizeMax(m_Texture->GetHeight() * 1.25f);
 			m_Camera.SetOrthoSize(static_cast<float>(m_Texture->GetHeight()));
+			m_Camera.SetOrthoSizeMax(m_Texture->GetHeight() * 4.f);
 
 			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
@@ -69,16 +63,12 @@ namespace origin
 
 	void SpriteSheetEditor::SetMainTexture(AssetHandle handle)
 	{
-		OGN_PROFILER_UI();
-
 		if (m_SpriteSheet)
 			m_SpriteSheet->SetMainTexture(handle);
 	}
 
 	void SpriteSheetEditor::AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max)
 	{
-		OGN_PROFILER_UI();
-
 		SpriteSheetData sprite {};
 		sprite.Min = min;
 		sprite.Max = max;
@@ -87,23 +77,17 @@ namespace origin
 
 	void SpriteSheetEditor::RemoveSprite(int index)
 	{
-		OGN_PROFILER_UI();
-
 		m_SpriteSheet->Sprites.erase(m_SpriteSheet->Sprites.begin() + index);
 	}
 
 	void SpriteSheetEditor::Duplicate(int index)
 	{
-		OGN_PROFILER_UI();
-
 		m_Controls.insert(m_Controls.begin(), m_Controls[index]);
 		m_SelectedIndex = 0;
 	}
 
 	void SpriteSheetEditor::OnImGuiRender()
 	{
-		OGN_PROFILER_UI();
-
 		if (m_IsOpened)
 		{
 			ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
@@ -133,7 +117,10 @@ namespace origin
 				ImVec2 atlasSize { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
 				if (ImGui::Button("Save"))
+				{
 					Serialize(m_CurrentFilepath);
+					OGN_CORE_TRACE("[SpriteSheetEditor] Saved in {}", m_CurrentFilepath);
+				}
 
 				ImGui::SameLine();
 				if (ImGui::Button("Add"))
@@ -233,8 +220,6 @@ namespace origin
 
 	void SpriteSheetEditor::OnUpdate(Timestep ts)
 	{
-		OGN_PROFILER_UI();
-
 		if (!m_IsOpened)
 			return;
 
@@ -255,13 +240,11 @@ namespace origin
 
 		if (m_Texture)
 		{
-			OGN_PROFILER_UI();
-
 			Renderer2D::Begin(m_Camera);
 
 			int texX = m_Texture->GetWidth();
 			int texY = m_Texture->GetHeight();
-			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, 0.0f }), m_Texture);
+			Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, -0.1f }), m_Texture);
 
 			int offset = 0;
 			for (int i = 0; i < m_Controls.size(); i++)
@@ -269,13 +252,16 @@ namespace origin
 				auto &c = m_Controls[i];
 
 				bool selected = m_SelectedIndex == offset / 5;
-				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x, c.Position.y, 0.1f })
+
+				// Draw Rectangle Line
+				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x, c.Position.y, 1.0f })
 					* glm::scale(glm::mat4(1.0f), { c.Size.x, c.Size.y, 1.0f });
 				glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 				Renderer2D::DrawRect(tf, col);
 				col = { 1.0f, 1.0f, 1.0f, 0.0f };
 				Renderer2D::DrawQuad(tf, col, offset);
 
+				// Draw corner
 				if (selected)
 				{
 					float size = m_Camera.GetOrthoSize() * 0.03f;
@@ -322,8 +308,6 @@ namespace origin
 
 	bool SpriteSheetEditor::Serialize(const std::filesystem::path &filepath)
 	{
-		OGN_PROFILER_UI();
-
 		m_CurrentFilepath = filepath;
 		m_SpriteSheet->Sprites.clear();
 		for (auto &ctrl : m_Controls)
@@ -362,8 +346,6 @@ namespace origin
 
 	void SpriteSheetEditor::OnEvent(Event &e)
 	{
-		OGN_PROFILER_INPUT();
-
 		m_Camera.OnEvent(e);
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditor::OnMouseButtonPressed));
@@ -372,8 +354,6 @@ namespace origin
 
 	bool SpriteSheetEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
-		OGN_PROFILER_INPUT();
-
 		if (e.GetMouseButton() == Mouse::ButtonLeft && IsHovered)
 		{
 			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
@@ -414,8 +394,17 @@ namespace origin
 
 		bool control = Input::IsKeyPressed(Key::LeftControl);
 
-		if (control && e.GetKeyCode() == Key::D && m_SelectedIndex >= 0 && !m_Controls.empty())
-			Duplicate(m_SelectedIndex);
+		if (control)
+		{
+			if (e.GetKeyCode() == Key::D && m_SelectedIndex >= 0 && !m_Controls.empty())
+				Duplicate(m_SelectedIndex);
+			if (e.GetKeyCode() == Key::S)
+			{
+				Serialize(m_CurrentFilepath);
+				OGN_CORE_TRACE("[SpriteSheetEditor] Saved in {}", m_CurrentFilepath);
+			}
+				
+		}
 
 		return false;
 	}
@@ -453,8 +442,6 @@ namespace origin
 					case NONE:
 						c.Position.x = round(m_MoveTranslation.x / snapSize) * snapSize;
 						c.Position.y = round(m_MoveTranslation.y / snapSize) * snapSize;
-						break;
-					default:
 						break;
 				}
 			}
@@ -504,8 +491,6 @@ namespace origin
 
 	void SpriteSheetEditor::Reset()
 	{
-		OGN_PROFILER_UI();
-
 		if (m_SpriteSheet)
 		{
 			m_SpriteSheet->Sprites.clear();

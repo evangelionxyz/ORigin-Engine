@@ -9,8 +9,6 @@ namespace origin
 {
   void Dockspace::Begin()
   {
-    OGN_PROFILER_UI();
-
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse;
 
@@ -49,8 +47,6 @@ namespace origin
 
   void Dockspace::End()
   {
-    OGN_PROFILER_UI();
-
     ImGui::End();
     ImGui::PopStyleVar();
   }

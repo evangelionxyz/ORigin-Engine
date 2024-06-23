@@ -24,10 +24,10 @@ namespace origin {
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetPosition(const glm::vec3& position) { m_Position = position; }
 
-		const glm::vec2 &GetViewportSize() const { return m_ViewportSize; }
+		const glm::ivec2 &GetViewportSize() const { return m_ViewportSize; }
 		const glm::mat4 GetViewProjection() const { return (m_Projection * m_View) * glm::inverse(m_View); }
 		const glm::vec3 &GetPosition() const { return m_Position; }
-		const glm::vec2 GetOrthographicSize() { return m_OrthoSize; }
+		const glm::vec2 GetOrthographicSize() { return m_OrthoSize * 2.0f; }
 		const glm::mat4 &GetProjection() const;
 		const glm::mat4 &GetViewMatrix() const;
 
@@ -47,7 +47,7 @@ namespace origin {
 		// Orthographic
 		void SetOrthographic(float size, float nearClip, float farClip);
 
-		void SetOrthographicScale(float scale) { m_OrthoScale = scale; RecalculateProjection(); }
+		void SetOrthographicScale(float scale);
 		void SetOrthographicNearClip(float nearClip) { m_OrthoNear = nearClip; RecalculateProjection(); }
 		void SetOrthographicFarClip(float farClip) { m_OrthoFar = farClip; RecalculateProjection(); }
 
@@ -72,7 +72,7 @@ namespace origin {
 		glm::mat4 m_Projection = glm::mat4(1.0f);
 		glm::mat4 m_View = glm::mat4(1.0f);
 
-		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
+		glm::ivec2 m_ViewportSize = { 0, 0 };
 		glm::vec3 m_Position = glm::vec3(1.0f);
 		glm::vec2 m_OrthoSize = glm::vec2(1.0f);
 

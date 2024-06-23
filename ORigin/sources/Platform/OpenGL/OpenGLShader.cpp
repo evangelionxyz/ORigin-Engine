@@ -21,9 +21,9 @@ namespace origin {
     {
       OGN_PROFILER_RENDERING();
 
-      if (type == "vertex") return GL_VERTEX_SHADER;
-      if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
-      if (type == "geometry") return GL_GEOMETRY_SHADER;
+      if (type == "vertex")                       return GL_VERTEX_SHADER;
+      if (type == "fragment" || type == "pixel")  return GL_FRAGMENT_SHADER;
+      if (type == "geometry")                     return GL_GEOMETRY_SHADER;
       OGN_CORE_ASSERT(false, "Unkown Shader Type '{}'", filepath);
       return 0;
     }
@@ -34,9 +34,9 @@ namespace origin {
 
       switch (stage)
       {
-        case GL_VERTEX_SHADER: return shaderc_glsl_vertex_shader;
-        case GL_FRAGMENT_SHADER: return shaderc_glsl_fragment_shader;
-        case GL_GEOMETRY_SHADER: return shaderc_glsl_geometry_shader;
+        case GL_VERTEX_SHADER:    return shaderc_glsl_vertex_shader;
+        case GL_FRAGMENT_SHADER:  return shaderc_glsl_fragment_shader;
+        case GL_GEOMETRY_SHADER:  return shaderc_glsl_geometry_shader;
       }
 
       OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
@@ -49,9 +49,9 @@ namespace origin {
 
       switch (stage)
       {
-        case GL_VERTEX_SHADER:  return "GL_VERTEX_SHADER";
-        case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
-        case GL_GEOMETRY_SHADER: return "GL_GEOMETRY_SHADER";
+        case GL_VERTEX_SHADER:    return "GL_VERTEX_SHADER";
+        case GL_FRAGMENT_SHADER:  return "GL_FRAGMENT_SHADER";
+        case GL_GEOMETRY_SHADER:  return "GL_GEOMETRY_SHADER";
       }
 
       OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
@@ -78,9 +78,9 @@ namespace origin {
 
       switch(stage)
       {
-        case GL_VERTEX_SHADER: return ".cached_opengl.vert";
-        case GL_FRAGMENT_SHADER: return ".cached_opengl.frag";
-        case GL_GEOMETRY_SHADER: return ".cached_opengl.geom";
+        case GL_VERTEX_SHADER:    return ".cached_opengl.vert";
+        case GL_FRAGMENT_SHADER:  return ".cached_opengl.frag";
+        case GL_GEOMETRY_SHADER:  return ".cached_opengl.geom";
       }
 
       OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
@@ -93,9 +93,9 @@ namespace origin {
 
       switch (stage)
       {
-        case GL_VERTEX_SHADER: return ".cached_vulkan.vert";
-        case GL_FRAGMENT_SHADER: return ".cached_vulkan.frag";
-        case GL_GEOMETRY_SHADER: return ".cached_vulkan.geom";
+        case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
+        case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+        case GL_GEOMETRY_SHADER:  return ".cached_vulkan.geom";
       }
 
       OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
@@ -141,8 +141,8 @@ namespace origin {
 
 		while (getline(stream, line))
 		{
-			if (line.find("//type ") != std::string::npos || line.find("// type ") != std::string::npos
-				|| line.find("#type ") != std::string::npos || line.find("# type ") != std::string::npos)
+      // Finding first line for types
+			if (line.find("//type ") != std::string::npos || line.find("// type ") != std::string::npos)
 			{
 				if (line.find("vertex") != std::string::npos || line.find("Vertex") != std::string::npos)
 				{
@@ -160,9 +160,9 @@ namespace origin {
 					Utils::ShaderDataTypeToString(type);
 				}
 			}
-
 			else
 			{
+        // Fill the source code to stream
 				ss[(int)type] << line << "\n";
 			}
 		}

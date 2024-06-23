@@ -5,7 +5,7 @@
 
 namespace origin
 {
-	void UIRenderer::CreateFramebuffer(uint32_t width, uint32_t height)
+	void UIRenderer::CreateFramebuffer(uint32_t vpW, uint32_t vpH, float orthoW, float orthoH)
 	{
 		FramebufferSpecification spec;
 
@@ -15,8 +15,8 @@ namespace origin
 			FramebufferTextureFormat::DEPTH24STENCIL8
 		};
 
-		spec.Width = width;
-		spec.Height = height;
+		spec.Width = vpW;
+		spec.Height = vpH;
 
 		for (auto &ui : m_UIs)
 		{
@@ -40,6 +40,15 @@ namespace origin
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), nullptr);
 
 		m_ScreenShader = Shader::Create("Resources/Shaders/Screen.glsl", false);
+
+		m_Projection = glm::ortho(-orthoW / 2.0f, orthoW / 2.0f, -orthoH / 2.0f, orthoH / 2.0f, 0.0f, 1.0f);
+	}
+
+	void UIRenderer::SetViewportSize(uint32_t width, uint32_t height, float orthoW, float orthoH)
+	{
+		for (UIComponent &ui : m_UIs)
+			ui.Framebuffer->Resize(width, height);
+		m_Projection = glm::ortho(-orthoW / 2.0f, orthoW / 2.0f, -orthoH / 2.0f, orthoH / 2.0f, 0.0f, 1.0f);
 	}
 
 	void UIRenderer::Unload()
@@ -54,15 +63,10 @@ namespace origin
 		{
 			ui.Framebuffer->Bind();
 
-			glClearColor(0.3f, 0.3f, 0.0f, 0.0f);
+			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			float width = static_cast<float>(ui.Framebuffer->GetWidth()) * 2.0f;
-			float height = static_cast<float>(ui.Framebuffer->GetHeight()) * 2.0f;
-
-			Renderer2D::Begin(glm::mat4(1.0f));
-
-			Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { width, height, 1.0f }), {0.0f, 1.0f, 0.0f, 1.0f });
+			Renderer2D::Begin(m_Projection);
 
 			for (auto &txt : ui.Texts)
 			{
@@ -70,9 +74,9 @@ namespace origin
 					Renderer2D::DrawString(txt.Component.TextString, txt.Transform.GetTransform(), txt.Component);
 			}
 
-			for (auto &texture : ui.Sprites)
+			for (auto &tex : ui.Sprites)
 			{
-				Renderer2D::DrawSprite(texture.Transform.GetTransform(), texture.Component);
+				Renderer2D::DrawSprite(tex.Transform.GetTransform(), tex.Component);
 			}
 
 			Renderer2D::End();

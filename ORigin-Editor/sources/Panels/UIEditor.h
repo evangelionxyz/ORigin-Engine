@@ -15,9 +15,7 @@ namespace origin
 	public:
 		UIEditor(Scene *scene);
 		void SetContext(Scene *scene);
-
 		void SetActive(UIComponent *component);
-		void OnCamViewportSizeChange();
 		void CreateNewText();
 		void CreateNewTexture();
 
@@ -48,7 +46,6 @@ namespace origin
 		glm::vec2 m_EditorViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::ivec2 m_Mouse = { 0, 0 };
 		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
-		glm::ivec2 m_SceneCamViewportSize = { 0, 0 };
 
 		int m_SelectedIndex = 0;
 		int m_HoveredIndex = -1;

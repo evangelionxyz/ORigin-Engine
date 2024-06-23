@@ -24,6 +24,16 @@
 
 namespace origin
 {
+	class Mesh;
+	class Lighting;
+	class AudioSource;
+	class SpriteAnimation;
+	class ScriptableEntity;
+	class RigidbodyComponent;
+	class BoxColliderComponent;
+	class SphereColliderComponent;
+	class CapsuleColliderComponent;
+
 	class IDComponent
 	{
 	public:
@@ -44,8 +54,7 @@ namespace origin
 		{
 		}
 	};
-
-	class SpriteAnimation;
+	
 	class SpriteAnimationComponent
 	{
 	public:
@@ -70,7 +79,7 @@ namespace origin
 		AudioListenerComponent(const AudioListenerComponent&) = default;
 	};
 
-	class AudioSource;
+	
 	class AudioComponent
 	{
 	public:
@@ -115,10 +124,19 @@ namespace origin
 	class StaticMeshComponent
 	{
 	public:
-		AssetHandle Handle = 0;
-		AssetHandle MaterialHandle = 0;
+		std::string Name;
+		std::shared_ptr<Mesh> Mesh;
+		AssetHandle HMaterial = 0;
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
+	};
+
+	class ModelComponent
+	{
+	public:
+		AssetHandle Handle = 0;
+		ModelComponent() = default;
+		ModelComponent(const ModelComponent &) = default;
 	};
 
 	class TextComponent
@@ -210,7 +228,7 @@ namespace origin
 			: Color(r, g, b, a){}
 	};
 
-	class Lighting;
+	
 	class LightComponent
 	{
 	public:
@@ -248,7 +266,6 @@ namespace origin
 		ScriptComponent(const ScriptComponent&) = default;
 	};
 
-	class ScriptableEntity;
 	class NativeScriptComponent
 	{
 	public:
@@ -399,14 +416,9 @@ namespace origin
 	{
 	};
 
-	class RigidbodyComponent;
-	class BoxColliderComponent;
-	class SphereColliderComponent;
-	class CapsuleColliderComponent;
-
 	using AllComponents = ComponentGroup<TransformComponent, CameraComponent,
 		UIComponent, SpriteAnimationComponent, AudioComponent, AudioListenerComponent, LightComponent,
-		SpriteRenderer2DComponent, StaticMeshComponent, TextComponent,
+		SpriteRenderer2DComponent, StaticMeshComponent, ModelComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
 		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent,
 		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent

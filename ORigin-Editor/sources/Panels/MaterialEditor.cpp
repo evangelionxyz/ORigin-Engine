@@ -11,8 +11,6 @@ namespace origin
 {
 	void MaterialEditor::SetSelectedMaterial(AssetHandle handle)
 	{
-		OGN_PROFILER_UI();
-
 		m_Material = AssetManager::GetAsset<Material>(handle);
 		m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
@@ -22,8 +20,6 @@ namespace origin
 
 	void MaterialEditor::OnImGuiRender()
 	{
-		OGN_PROFILER_UI();
-
 		if (m_IsOpened && m_Material)
 		{
 			ImGui::Begin("Material Editor", &m_IsOpened);

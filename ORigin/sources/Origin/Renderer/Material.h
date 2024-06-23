@@ -91,12 +91,13 @@ namespace origin
 		static AssetType GetStaticType() { return AssetType::Material; }
 		virtual AssetType GetType() const { return GetStaticType(); }
 
+		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Textures;
+
 	private:
 		AssetHandle m_AlbedoMap = 0;
 		AssetHandle m_MetallicMap = 0;
 
 		std::shared_ptr<UniformBuffer> m_UniformBuffer;
-		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> m_Textures;
 		friend class OpenGLModel;
 	};
 }

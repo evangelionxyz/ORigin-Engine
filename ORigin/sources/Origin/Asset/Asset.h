@@ -13,7 +13,7 @@ namespace origin {
 		Texture,
 		Font,
 		Audio,
-		StaticMesh,
+		Model,
 		Material,
 		MeshSource,
 		Animation,

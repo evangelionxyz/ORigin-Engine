@@ -9,7 +9,6 @@ layout (std140, binding = 0) uniform CameraBuffer
 layout(std140, binding = 1) uniform ModelBuffer
 {
 	mat4 ModelTransform;
-	int EntityID;
 };
 
 layout(std140, binding = 2) uniform LightingBuffer
