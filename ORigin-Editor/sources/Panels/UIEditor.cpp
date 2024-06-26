@@ -43,9 +43,13 @@ namespace origin
 
 	void UIEditor::SetActive(UIComponent *component)
 	{
+		if (!m_Scene)
+			return;
+
 		if (!IsOpened)
 		{
-			if (Entity cam = m_Scene->GetPrimaryCameraEntity())
+			Entity cam = m_Scene->GetPrimaryCameraEntity();
+			if (cam.IsValid())
 			{
 				auto &cc = cam.GetComponent<CameraComponent>();
 				const float orthoSizeY = cc.Camera.GetOrthographicSize().y;
@@ -54,6 +58,8 @@ namespace origin
 			}
 			m_Component = component;
 			IsOpened = true;
+
+			ImGui::SetWindowFocus("UI Editor");
 		}
 	}
 
@@ -85,19 +91,15 @@ namespace origin
 			ImGui::Begin("UI Editor", &IsOpened,
 				ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-			IsFocused = ImGui::IsWindowFocused();
-			IsHovered = ImGui::IsWindowHovered();
-
-			m_Camera.SetMoveActive(IsFocused);
-			m_Camera.SetDraggingActive(IsFocused);
-			m_Camera.SetScrollingActive(IsHovered);
+			IsViewportFocused = ImGui::IsWindowFocused();
+			IsViewportHovered = ImGui::IsWindowHovered();
 
 			const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			const ImVec2 &viewportOffset = ImGui::GetWindowPos();
 
-			m_EditorViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-			m_EditorViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 			m_EditorViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
 			// Framebuffer Texture
@@ -352,9 +354,14 @@ namespace origin
 		{
 			if (m_Component)
 				m_Component = nullptr;
-
+			if (m_Scene)
+				m_Scene = nullptr;
 			return;
 		}
+
+		m_Camera.SetMoveActive(IsViewportFocused);
+		m_Camera.SetDraggingActive(IsViewportFocused);
+		m_Camera.SetScrollingActive(IsViewportHovered);
 
 		m_Camera.OnUpdate(ts);
 		OnMouse(ts);
@@ -377,7 +384,8 @@ namespace origin
 			Renderer2D::Begin(m_Camera);
 
 			// Draw Camera Boundary
-			if (Entity cam = m_Scene->GetPrimaryCameraEntity())
+			Entity cam = m_Scene->GetPrimaryCameraEntity();
+			if (cam.IsValid())
 			{
 				auto &cc = cam.GetComponent<CameraComponent>();
 				const glm::vec2 &orthoSize = cc.Camera.GetOrthographicSize();
@@ -402,14 +410,16 @@ namespace origin
 			Renderer2D::End();
 		}
 
-		auto [mx, my] = ImGui::GetMousePos();
-		glm::vec2 mousePos = { mx, my };
-		mousePos -= m_EditorViewportBounds[0];
-		const glm::vec2 &viewportSize = m_EditorViewportBounds[1] - m_EditorViewportBounds[0];
-		mousePos.y = viewportSize.y - mousePos.y;
-		mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
-		m_Mouse = { static_cast<int>(mousePos.x), static_cast<int>(mousePos.y) };
-		m_HoveredIndex = m_Framebuffer->ReadPixel(1, m_Mouse.x, m_Mouse.y);
+		if (IsViewportHovered)
+		{
+			auto [mx, my] = ImGui::GetMousePos();
+			m_Mouse = { mx, my };
+			m_Mouse -= m_ViewportBounds[0];
+			const glm::ivec2 &viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+			m_Mouse.y = viewportSize.y - m_Mouse.y;
+			m_Mouse = glm::clamp(m_Mouse, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
+			m_HoveredIndex = m_Framebuffer->ReadPixel(1, m_Mouse.x, m_Mouse.y);
+		}
 
 		m_Framebuffer->Unbind();
 	}
@@ -427,8 +437,16 @@ namespace origin
 
 	bool UIEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
-		if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
-			m_SelectedIndex = m_HoveredIndex;
+		if (e.Is(Mouse::ButtonLeft))
+		{
+			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
+				m_SelectedIndex = m_HoveredIndex;
+		}
+		
+		if (e.Is(Mouse::ButtonMiddle) && IsViewportHovered)
+		{
+			ImGui::SetWindowFocus("UI Editor");
+		}
 
 		return false;
 	}
@@ -445,6 +463,7 @@ namespace origin
 	void UIEditor::Open()
 	{
 		IsOpened = true;
+		ImGui::SetWindowFocus("UI Editor");
 	}
 
 	UIEditor *UIEditor::Get()

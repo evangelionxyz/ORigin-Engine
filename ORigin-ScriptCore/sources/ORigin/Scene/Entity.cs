@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 using System;
 
@@ -15,6 +15,7 @@ namespace ORiginEngine
 
     public readonly ulong ID;
 
+
     public Vector3 Translation
     {
       get
@@ -22,10 +23,7 @@ namespace ORiginEngine
         InternalCalls.TransformComponent_GetTranslation(ID, out Vector3 translation);
         return translation;
       }
-      set
-      {
-        InternalCalls.TransformComponent_SetTranslation(ID, ref value);
-      }
+      set => InternalCalls.TransformComponent_SetTranslation(ID, ref value);
     }
 
     public Vector3 Rotation
@@ -35,10 +33,7 @@ namespace ORiginEngine
         InternalCalls.TransformComponent_GetRotation(ID, out Vector3 rotation);
         return rotation;
       }
-      set
-      {
-        InternalCalls.TransformComponent_SetRotation(ID, ref value);
-      }
+      set => InternalCalls.TransformComponent_SetRotation(ID, ref value);
     }
 
     public Vector3 Scale
@@ -48,10 +43,7 @@ namespace ORiginEngine
         InternalCalls.TransformComponent_GetScale(ID, out Vector3 scale);
         return scale;
       }
-      set
-      {
-        InternalCalls.TransformComponent_SetScale(ID, ref value);
-      }
+      set => InternalCalls.TransformComponent_SetScale(ID, ref value);
     }
 
     public T AddComponent<T>() where T : Component, new()
@@ -87,6 +79,31 @@ namespace ORiginEngine
         return null;
 
       return new Entity(entityID);
+    }
+
+    public Entity Instantiate(Entity entity)
+    {
+      ulong entityID = InternalCalls.Entity_Instantiate(entity.ID);
+      return new Entity(entityID);
+    }
+
+    public Entity Instantiate(Entity entity, Vector3 translation)
+    {
+      ulong entityID = InternalCalls.Entity_Instantiate(entity.ID);
+      Entity newEntity = new Entity(entityID);
+      newEntity.Translation = new Vector3(translation);
+
+      return newEntity;
+    }
+
+    public void Destroy(Entity entity)
+    {
+      InternalCalls.Entity_Destroy(entity.ID);
+    }
+
+    public void Destroy()
+    {
+      InternalCalls.Entity_Destroy(ID);
     }
 
     public T As<T>() where T : Entity, new()

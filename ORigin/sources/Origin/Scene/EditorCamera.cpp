@@ -114,8 +114,8 @@ namespace origin {
 		float xFactor = 0.0f;
 		float yFactor = 0.0f;
 
-		float x = std::min(m_ViewportWidth / 1000.0f, 2.4f);
-		float y = std::min(m_ViewportHeight / 1000.0f, 2.4f);
+		float x = std::min(m_ViewportWidth * 0.01f, 1.8f);
+		float y = std::min(m_ViewportHeight * 0.01f, 1.8f);
 
 		if (m_CameraStyle == Pivot)
 		{
@@ -304,8 +304,8 @@ namespace origin {
 			
 			break;
 		case ProjectionType::Orthographic:
-			m_Position.x -= delta.x * m_OrthoSize * 0.5f;
-			m_Position.y += delta.y * m_OrthoSize * 0.5f;
+			m_Position += glm::vec3(-delta.x * (m_OrthoSize / m_ViewportHeight) * 300.0f,
+				delta.y * (m_OrthoSize / m_ViewportHeight) * 300.0f, 0.0f);
 			break;
 		}
 	}

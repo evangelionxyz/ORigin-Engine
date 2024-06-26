@@ -53,7 +53,8 @@ namespace origin {
 	class MouseButtonEvent : public Event
 	{
 	public:
-		MouseCode GetMouseButton() const { return m_Button; }
+		MouseCode GetButton() const { return m_Button; }
+		bool Is(MouseCode bt) { return m_Button == bt; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	protected:

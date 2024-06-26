@@ -14,7 +14,7 @@ namespace origin {
 	class Entity
 	{
 	public:
-		Entity() = default;
+		Entity();
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
 
@@ -82,10 +82,16 @@ namespace origin {
 
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 
-		operator bool() const { return m_EntityHandle != entt::null && m_Scene != nullptr; }
+		bool IsValid() const
+		{
+			return m_Scene != nullptr && m_EntityHandle != entt::null;
+		}
+
 		operator entt::entity() const { return m_EntityHandle; }
+		operator int() const { return static_cast<int>(m_EntityHandle); }
 		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
 		operator uintptr_t() const { return static_cast<uintptr_t>(m_EntityHandle); }
+
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
 		

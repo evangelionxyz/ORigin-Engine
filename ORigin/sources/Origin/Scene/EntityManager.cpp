@@ -64,6 +64,13 @@ namespace origin
 		return entity;
 	}
 
+	Entity EntityManager::CreateUI(const std::string &name, Scene *scene)
+	{
+		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
+		entity.AddComponent<UIComponent>();
+		return entity;
+	}
+
 	Entity EntityManager::DuplicateEntity(Entity entity, Scene *scene)
 	{
 		std::string name = entity.GetTag();
@@ -112,7 +119,7 @@ namespace origin
 	bool EntityManager::IsParent(UUID target, UUID source, Scene *scene)
 	{
 		Entity destEntity = scene->GetEntityWithUUID(target);
-		if (!destEntity)
+		if (!destEntity.IsValid())
 			return false;
 
 		auto &destIDC = destEntity.GetComponent<IDComponent>();

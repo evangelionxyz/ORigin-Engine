@@ -115,7 +115,6 @@ namespace origin {
 			auto b = std::begin(mPts[curveIndex]);
 			auto e = std::begin(mPts[curveIndex]) + GetPointCount(curveIndex);
 			std::sort(b, e, [](ImVec2 a, ImVec2 b) { return a.x < b.x; });
-
 		}
 	};
 

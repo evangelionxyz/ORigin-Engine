@@ -51,8 +51,10 @@ namespace origin
 		bool OnKeyPressed(KeyPressedEvent &e);
 		void OnMouse(float ts);
 
-		bool IsFocused = false;
-		bool IsHovered = false;
+		static SpriteSheetEditor *Get();
+
+		bool IsViewportFocused = false;
+		bool IsViewportHovered = false;
 	private:
 
 		void Reset();

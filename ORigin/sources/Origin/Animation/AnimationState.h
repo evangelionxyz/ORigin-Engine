@@ -12,7 +12,7 @@ namespace origin {
 	public:
 		AnimationState() = default;
 
-		void AnimationState<T>::AddState(std::string state)
+		void AnimationState<T>::AddState(const std::string &state)
 		{
 			if (StateExists(state))
 			{
@@ -27,10 +27,10 @@ namespace origin {
 			m_StateStorage.emplace_back(m_CurrentState);
 		}
 
-		void AnimationState<T>::AddAnimation(const std::shared_ptr<T> &anim)
+		void AnimationState<T>::AddAnimation(std::shared_ptr<T> anim)
 		{
 			OGN_CORE_ASSERT(!AnimationExists(m_CurrentState), "Animation already exist");
-			m_Animations[m_CurrentState] = std::move(anim);
+			m_Animations[m_CurrentState] = anim;
 		}
 
 		void AnimationState<T>::RemoveState(std::string state)

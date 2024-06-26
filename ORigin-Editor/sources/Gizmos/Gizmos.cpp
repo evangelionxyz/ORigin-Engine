@@ -132,7 +132,8 @@ namespace origin {
 			}
 		}
 
-		if (Entity selectedEntity = editor.m_SceneHierarchy.GetSelectedEntity())
+		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
+		if (selectedEntity.IsValid())
 		{
 			const auto &tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 rotation = glm::toMat4(glm::quat(tc.WorldRotation));
@@ -310,7 +311,8 @@ namespace origin {
 		////////////////////////////////////////////////////////////////////////////////
 		Renderer2D::Begin(camera);
 
-		if (Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
+		if (selectedEntity.IsValid())
 		{
 			if (m_Type == GizmoType::BOUNDARY2D)
 			{
@@ -347,7 +349,6 @@ namespace origin {
 		Draw2DOverlay();
 		DrawIcons(camera);
 
-
 		////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////     3D     //////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////
@@ -369,7 +370,7 @@ namespace origin {
 	{
 		OGN_PROFILER_INPUT();
 
-		if (e.GetMouseButton() == Mouse::ButtonLeft)
+		if (e.GetButton() == Mouse::ButtonLeft)
 		{
 			switch (m_Hovered)
 			{
@@ -418,14 +419,15 @@ namespace origin {
 		float orthoScale = camera.GetOrthoSize() / camera.GetHeight();
 		glm::vec3 translation = glm::vec3(delta, 0.0f);
 
-		if (Entity entity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity())
+		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
+		if (selectedEntity.IsValid())
 		{
-			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && EditorLayer::Get().m_SceneViewportHovered)
+			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && EditorLayer::Get().IsViewportHovered)
 			{
-				auto &tc = entity.GetComponent<TransformComponent>();
-				auto &idc = entity.GetComponent<IDComponent>();
+				auto &tc = selectedEntity.GetComponent<TransformComponent>();
+				auto &idc = selectedEntity.GetComponent<IDComponent>();
 
-				if (entity.HasParent())
+				if (selectedEntity.HasParent())
 				{
 					Entity parent = EditorLayer::Get().m_ActiveScene->GetEntityWithUUID(idc.Parent);
 					auto &parentTC = parent.GetComponent<TransformComponent>();

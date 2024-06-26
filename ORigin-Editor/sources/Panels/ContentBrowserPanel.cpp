@@ -179,9 +179,10 @@ namespace origin
 					{
 						if (ImGui::MenuItem("Create Sprite Sheet"))
 						{
-							EditorLayer::Get().m_SpriteSheetEditor->CreateNewSpriteSheet();
-							EditorLayer::Get().m_SpriteSheetEditor->SetMainTexture(m_TreeNodes[treeNodeIndex].Handle);
-							EditorLayer::Get().m_SpriteSheetEditor->Serialize(m_CurrentDirectory / (item.stem().string() + ".sprite"));
+							SpriteSheetEditor::Get()->CreateNewSpriteSheet();
+							SpriteSheetEditor::Get()->SetMainTexture(m_TreeNodes[treeNodeIndex].Handle);
+							SpriteSheetEditor::Get()->Serialize(m_CurrentDirectory / (item.stem().string() + ".sprite"));
+
 							RefreshAssetTree();
 						}
 					}
@@ -192,6 +193,7 @@ namespace origin
 						{
 							AssetHandle handle = m_TreeNodes[treeNodeIndex].Handle;
 							Project::GetActive()->SetStartScene(handle);
+
 							RefreshAssetTree();
 						}
 					}
@@ -216,6 +218,7 @@ namespace origin
 						}
 
 						shouldBreak = true;
+
 						RefreshAssetTree();
 					}
 
@@ -347,6 +350,7 @@ namespace origin
 		ImGui::EndChild();
 
 		ImGui::End();
+
 		m_ThumbnailCache->OnUpdate();
 	}
 

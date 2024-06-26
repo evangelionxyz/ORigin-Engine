@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 namespace ORiginEngine
 {
@@ -63,7 +63,6 @@ namespace ORiginEngine
         InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
       }
     }
-
   }
 
   public class RigidbodyComponent : Component
@@ -199,11 +198,11 @@ namespace ORiginEngine
       set => InternalCalls.TextComponent_SetText(Entity.ID, value);
     }
 
-    public Vector4 Color
+    public Vector3 Color
     {
       get
       {
-        InternalCalls.TextComponent_GetColor(Entity.ID, out Vector4 color);
+        InternalCalls.TextComponent_GetColor(Entity.ID, out Vector3 color);
         return color;
       }
       set
@@ -389,11 +388,11 @@ namespace ORiginEngine
 
   public class CircleRendererComponent : Component
   {
-    public Vector4 Color
+    public Vector3 Color
     {
       get
       {
-        InternalCalls.CircleRendererComponent_GetColor(Entity.ID, out Vector4 color);
+        InternalCalls.CircleRendererComponent_GetColor(Entity.ID, out Vector3 color);
         return color;
       }
 

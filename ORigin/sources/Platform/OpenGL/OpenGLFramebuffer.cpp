@@ -244,16 +244,12 @@ namespace origin {
 
 	void OpenGL_Framebuffer::Bind()
 	{
-		OGN_PROFILER_RENDERING();
-
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 		glViewport(0, 0, m_Spec.Width, m_Spec.Height);
 	}
 
 	void OpenGL_Framebuffer::Unbind()
 	{
-		OGN_PROFILER_RENDERING();
-
 		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 	}
 
@@ -261,7 +257,9 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
+		bool invalid = width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize;
+
+		if (invalid)
 		{
 			OGN_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
 			return;
@@ -275,27 +273,19 @@ namespace origin {
 
 	int OpenGL_Framebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	{
-		OGN_PROFILER_RENDERING();
+		bool valid = attachmentIndex < m_ColorAttachments.size();
+		OGN_CORE_ASSERT(valid, "[OpenGLFramebuffer::ReadPixel] Trying to read wrong attachments {}", attachmentIndex);
+		if (!valid)
+			return -1;
 
-		bool check = attachmentIndex < m_ColorAttachments.size();
-		if (!check)
-		{
-			OGN_CORE_WARN("attachment index : {}", attachmentIndex);
-			OGN_CORE_WARN("color attachments size : {}", m_ColorAttachments.size());
-			OGN_CORE_ASSERT(false, "Framebuffer attachment index is lower than Color Attachments size");
-		}
-
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		int pixelData;
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
-
 		return pixelData;
 	}
 
 	void OpenGL_Framebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
 	{
-		OGN_PROFILER_RENDERING();
-
 		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,
 			Utils::ORiginFBTextureFormatToGL(spec.TextureFormat), GL_INT, &value);

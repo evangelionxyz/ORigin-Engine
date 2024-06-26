@@ -31,8 +31,8 @@ namespace origin
 
 		static UIEditor *Get();
 
-		bool IsFocused = false;
-		bool IsHovered = false;
+		bool IsViewportFocused = false;
+		bool IsViewportHovered = false;
 		bool IsOpened = false;
 
 	private:
@@ -43,7 +43,7 @@ namespace origin
 		std::shared_ptr<Framebuffer> m_Framebuffer;
 
 		glm::vec2 m_EditorViewportSize = { 1.0f, 1.0f };
-		glm::vec2 m_EditorViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::ivec2 m_Mouse = { 0, 0 };
 		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
 

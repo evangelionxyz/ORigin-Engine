@@ -14,9 +14,14 @@
 
 namespace origin
 {
+
+	static SpriteSheetEditor *s_Instance = nullptr;
+
 	SpriteSheetEditor::SpriteSheetEditor()
 		: m_ViewportSize(0.0f)
 	{
+		s_Instance = this;
+
 		m_Camera.InitOrthographic(10.0f, 0.0f, 2.0f);
 		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -58,6 +63,8 @@ namespace origin
 
 			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
+
+			ImGui::SetWindowFocus("Sprite Sheet Editor");
 		}
 	}
 
@@ -77,12 +84,13 @@ namespace origin
 
 	void SpriteSheetEditor::RemoveSprite(int index)
 	{
-		m_SpriteSheet->Sprites.erase(m_SpriteSheet->Sprites.begin() + index);
+		m_Controls.erase(m_Controls.begin() + index);
+		m_SelectedIndex = !m_Controls.empty() ? m_Controls.size() - 1 : -1;
 	}
 
 	void SpriteSheetEditor::Duplicate(int index)
 	{
-		m_Controls.insert(m_Controls.begin(), m_Controls[index]);
+		m_Controls.insert(m_Controls.end(), m_Controls[index]);
 		m_SelectedIndex = 0;
 	}
 
@@ -91,15 +99,13 @@ namespace origin
 		if (m_IsOpened)
 		{
 			ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-			IsFocused = ImGui::IsWindowFocused();
-			IsHovered = ImGui::IsWindowHovered();
-			m_Camera.SetMoveActive(IsFocused);
-			m_Camera.SetDraggingActive(IsFocused);
-			m_Camera.SetScrollingActive(IsHovered);
-
+			IsViewportFocused = ImGui::IsWindowFocused();
+			IsViewportHovered = ImGui::IsWindowHovered();
+			
 			const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			const ImVec2 &viewportOffset = ImGui::GetWindowPos();
+
 			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 			m_ViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
@@ -126,7 +132,7 @@ namespace origin
 				if (ImGui::Button("Add"))
 				{
 					SpriteSheetController control;
-					control.Size = glm::vec2(m_Camera.GetOrthoSize());
+					control.Size = glm::vec2(m_Camera.GetOrthoSize() * 0.25f);
 					control.Position = glm::vec2(m_Camera.GetPosition());
 					m_MoveTranslation = control.Position;
 					m_Controls.push_back(control);
@@ -157,7 +163,7 @@ namespace origin
 
 				ImGui::Columns(columnCount, nullptr, false);
 
-				// SUB SPRITE IMAGES TEXTURE 
+				// SUB SPRITE TEXTURES
 				float thumbnailHeight = thumbnailSize * ((float)atlasSize.y / (float)atlasSize.x);
 				float diff = (float)(thumbnailSize - thumbnailHeight);
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
@@ -178,10 +184,7 @@ namespace origin
 					if (ImGui::BeginPopupContextItem("sprite_context", 1))
 					{
 						if (ImGui::MenuItem("Delete"))
-						{
-							m_Controls.erase(m_Controls.begin() + i);
-							m_SelectedIndex = !m_Controls.empty() ? i - 1 : -1;
-						}
+							RemoveSprite(i);
 
 						if (ImGui::MenuItem("Duplicate"))
 							Duplicate(i);
@@ -222,6 +225,10 @@ namespace origin
 	{
 		if (!m_IsOpened)
 			return;
+
+		m_Camera.SetMoveActive(IsViewportFocused);
+		m_Camera.SetDraggingActive(IsViewportFocused);
+		m_Camera.SetScrollingActive(IsViewportHovered);
 
 		m_Camera.OnUpdate(ts);
 		OnMouse(ts);
@@ -265,6 +272,9 @@ namespace origin
 				if (selected)
 				{
 					float size = m_Camera.GetOrthoSize() * 0.03f;
+					size = std::min(size, 5.0f);
+					size = std::max(size, 0.05f);
+
 					// bottom left corner
 					glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
 					glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
@@ -294,14 +304,16 @@ namespace origin
 			Renderer2D::End();
 		}
 
-		auto [mx, my] = ImGui::GetMousePos();
-		glm::vec2 mousePos = { mx, my };
-		mousePos -= m_ViewportBounds[0];
-		const glm::vec2 &viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-		mousePos.y = viewportSize.y - mousePos.y;
-		mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
-		m_Mouse = { static_cast<int>(mousePos.x), static_cast<int>(mousePos.y) };
-		m_HoveredIndex = m_Framebuffer->ReadPixel(1, m_Mouse.x, m_Mouse.y);
+		if (IsViewportHovered)
+		{
+			auto [mx, my] = ImGui::GetMousePos();
+			m_Mouse = { mx, my };
+			m_Mouse -= m_ViewportBounds[0];
+			const glm::ivec2 &viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+			m_Mouse.y = viewportSize.y - m_Mouse.y;
+			m_Mouse = glm::clamp(m_Mouse, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
+			m_HoveredIndex = m_Framebuffer->ReadPixel(1, m_Mouse.x, m_Mouse.y);
+		}
 
 		m_Framebuffer->Unbind();
 	}
@@ -354,7 +366,12 @@ namespace origin
 
 	bool SpriteSheetEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
-		if (e.GetMouseButton() == Mouse::ButtonLeft && IsHovered)
+		if (e.Is(Mouse::ButtonMiddle) && IsViewportHovered && !IsViewportFocused)
+		{
+			ImGui::SetWindowFocus("Sprite Sheet Editor");
+		}
+
+		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
 		{
 			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
 			{
@@ -389,7 +406,7 @@ namespace origin
 	{
 		OGN_PROFILER_INPUT();
 
-		if (!IsFocused)
+		if (!IsViewportFocused)
 			return false;
 
 		bool control = Input::IsKeyPressed(Key::LeftControl);
@@ -403,8 +420,10 @@ namespace origin
 				Serialize(m_CurrentFilepath);
 				OGN_CORE_TRACE("[SpriteSheetEditor] Saved in {}", m_CurrentFilepath);
 			}
-				
 		}
+
+		if (e.GetKeyCode() == Key::Delete && m_SelectedIndex >= 0 && !m_Controls.empty())
+			RemoveSprite(m_SelectedIndex);
 
 		return false;
 	}
@@ -421,7 +440,7 @@ namespace origin
 		const glm::vec2 delta = mouse - initialPosition;
 		initialPosition = mouse;
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsHovered && m_SelectedIndex >= 0)
+		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered && m_SelectedIndex >= 0)
 		{
 			auto &c = m_Controls[m_SelectedIndex];
 			float orthoScale = m_Camera.GetOrthoSize() / m_Camera.GetHeight();
@@ -487,6 +506,11 @@ namespace origin
 				}
 			}
 		}
+	}
+
+	SpriteSheetEditor *SpriteSheetEditor::Get()
+	{
+		return s_Instance;
 	}
 
 	void SpriteSheetEditor::Reset()

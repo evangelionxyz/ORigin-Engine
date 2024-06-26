@@ -94,7 +94,7 @@ namespace origin {
   }
 
 	void EditorLayer::OnUpdate(Timestep ts)
-  {
+	{
 		OGN_PROFILER_FUNCTION();
 
 		ProfilerTimer timer("EditorLayer::OnUpdate", [&](ProfilerResult result)
@@ -129,19 +129,22 @@ namespace origin {
 	  RenderCommand::Clear();
 	  m_Framebuffer->ClearAttachment(1, -1);
 
-	  Render(ts);
+		Render(ts);
 
 		m_ActiveScene->GetUIRenderer()->Render();
 
-	  auto [mx, my] = ImGui::GetMousePos();
-	  glm::vec2 mousePos = { mx, my };
-	  mousePos -= m_SceneViewportBounds[0];
-	  const glm::vec2& viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
-	  mousePos.y = viewportSize.y - mousePos.y;
-	  mousePos = glm::clamp(mousePos, glm::vec2(0.0f), viewportSize - glm::vec2(1.0f));
-	  m_PixelData = m_Framebuffer->ReadPixel(1, static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-	  m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-		m_Gizmos->SetHovered(m_PixelData);
+		if (IsViewportHovered)
+		{
+			auto [mx, my] = ImGui::GetMousePos();
+			glm::ivec2 mousePos = { mx, my };
+			mousePos -= m_SceneViewportBounds[0];
+			const glm::ivec2 &viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+			mousePos.y = viewportSize.y - mousePos.y;
+			mousePos = glm::clamp(mousePos, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
+			m_PixelData = m_Framebuffer->ReadPixel(1, mousePos.x, mousePos.y);
+			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+			m_Gizmos->SetHovered(m_PixelData);
+		}
 
 	  m_Framebuffer->Unbind();
   }
@@ -157,14 +160,14 @@ namespace origin {
 		InputProcedure(ts);
 
 		Renderer::GetStatistics().Reset();
-		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused && !m_UIEditor->IsFocused);
+		Application::Get().GetGuiLayer()->BlockEvents(!IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused && !m_UIEditor->IsViewportFocused);
 
 		m_SpriteSheetEditor->OnUpdate(ts);
 		m_UIEditor->OnUpdate(ts);
 
-		m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput && m_SceneViewportFocused);
-		m_EditorCamera.SetDraggingActive(m_SceneViewportFocused && !m_SpriteSheetEditor->IsFocused);
-		m_EditorCamera.SetScrollingActive(m_SceneViewportHovered);
+		m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput && IsViewportFocused);
+		m_EditorCamera.SetDraggingActive(IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused);
+		m_EditorCamera.SetScrollingActive(IsViewportHovered);
 	}
 
   void EditorLayer::OnDuplicateEntity()
@@ -172,7 +175,8 @@ namespace origin {
 	  if (m_SceneState != SceneState::Edit)
 		  return;
 
-	  if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+	  if (selectedEntity.IsValid())
 	  {
 			Entity entity = EntityManager::DuplicateEntity(selectedEntity, m_EditorScene.get());
 		  m_SceneHierarchy.SetSelectedEntity(entity);
@@ -184,7 +188,8 @@ namespace origin {
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+		if (selectedEntity.IsValid())
 		{
 			m_ActiveScene->DestroyEntity(selectedEntity);
 			m_SceneHierarchy.SetSelectedEntity({ });
@@ -223,7 +228,7 @@ namespace origin {
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
-		m_SceneHierarchy.SetContext(m_ActiveScene);
+		m_SceneHierarchy.SetActiveScene(m_ActiveScene);
 	}
 
   void EditorLayer::OnScenePause()
@@ -248,7 +253,7 @@ namespace origin {
 	  m_ActiveScene = Scene::Copy(m_EditorScene);
 	  m_ActiveScene->OnSimulationStart();
 
-	  m_SceneHierarchy.SetContext(m_ActiveScene);
+	  m_SceneHierarchy.SetActiveScene(m_ActiveScene);
   }
 
   void EditorLayer::OnSceneStop()
@@ -262,7 +267,7 @@ namespace origin {
 	  else if (m_SceneState == SceneState::Simulate)
 		  m_ActiveScene->OnSimulationStop();
 
-	  m_SceneHierarchy.SetContext(m_EditorScene);
+	  m_SceneHierarchy.SetActiveScene(m_EditorScene);
 	  m_ActiveScene = m_EditorScene;
 
 	  m_SceneState = SceneState::Edit;
@@ -349,7 +354,7 @@ namespace origin {
 		  OnSceneStop();
 
 	  m_EditorScene = std::make_shared<Scene>();
-	  m_SceneHierarchy.SetContext(m_EditorScene, true);
+	  m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
 
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = std::filesystem::path();
@@ -413,7 +418,7 @@ namespace origin {
 	  m_EditorScene = Scene::Copy(readOnlyScene);
 	  m_HoveredEntity = {};
 
-	  m_SceneHierarchy.SetContext(m_EditorScene, true);
+	  m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
@@ -447,7 +452,7 @@ namespace origin {
 
 	  m_HoveredEntity = {};
 	  m_EditorScene = Scene::Copy(readOnlyScene);
-	  m_SceneHierarchy.SetContext(m_EditorScene, true);
+	  m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
 	  m_ActiveScene = m_EditorScene;
 
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
@@ -536,7 +541,7 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		ProfilerTimer timer("EditorLayer::Draw()", [&](ProfilerResult result)
+		ProfilerTimer timer("EditorLayer::Render", [&](ProfilerResult result)
 		{
 			m_ProfilerResults.push_back(result);
 		});
@@ -575,8 +580,8 @@ namespace origin {
 
 		ImGui::Begin("Scene", nullptr, window_flags);
 		
-		m_SceneViewportHovered = ImGui::IsWindowHovered();
-		m_SceneViewportFocused = ImGui::IsWindowFocused();
+		IsViewportHovered = ImGui::IsWindowHovered();
+		IsViewportFocused = ImGui::IsWindowFocused();
 		
 		const ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		const ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -694,7 +699,7 @@ namespace origin {
 		}
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
-		if (entity && m_Gizmos->GetType() != GizmoType::NONE)
+		if (entity.IsValid() && m_Gizmos->GetType() != GizmoType::NONE)
 		{
 			// Gizmos
 			ImGuizmo::SetDrawlist();
@@ -878,7 +883,8 @@ namespace origin {
 
 	void EditorLayer::GUIRender()
 	{
-		if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
+		Entity entity = m_SceneHierarchy.GetSelectedEntity();
+		if (entity.IsValid())
 		{
 			if (entity.HasComponent<SpriteAnimationComponent>())
 			{
@@ -953,22 +959,34 @@ namespace origin {
 				ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
 				ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
 				ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
-				ImGui::Text("Viewport Hovered (%d)", m_SceneViewportHovered);
+				ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
 				ImGui::Text("Hovered Pixel (%d)", m_PixelData);
 				ImGui::Separator();
 
 				if (ImGui::BeginTabItem("Render Time"))
 				{
-					ImGui::Text("Total Time (s) : (%.2f s)", m_Time);
-					if (ImGui::Button("Reset Time")) { m_Time = 0.0f; }
+					int h = ((int)m_Time / 3600) % 60;
+					int m = ((int)m_Time / 60) % 60;
+					int s = (int)m_Time % 60;
+
+					char timer[34];
+					strcpy(timer, "Total Working Timer: %d : %d : %d");
+					ImGui::Text(timer, h, m, s);
+
+					if (ImGui::Button("Reset Time")) { 
+						m_Time = 0.0f; 
+					}
+
 					for (auto r : m_ProfilerResults)
 					{
 						char label[50];
-						strcpy(label, "[%.3fms]   ");
+						strcpy(label, "[%.3fms]\t");
 						strcat(label, r.Name);
 						ImGui::Text(label, r.Duration);
 					}
+
 					m_ProfilerResults.clear();
+
 					ImGui::EndTabItem();
 				}
 				ImGui::EndTabBar();
@@ -993,9 +1011,14 @@ namespace origin {
 	{
 		OGN_PROFILER_INPUT();
 
+		if (e.Is(Mouse::ButtonMiddle) && IsViewportHovered && !IsViewportFocused)
+		{
+			ImGui::SetWindowFocus("Scene");
+		}
+
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
-		if (e.GetMouseButton() == Mouse::ButtonLeft && m_SceneViewportHovered)
+		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
 		{
 			if (!ImGuizmo::IsOver() || m_ImGuizmoOperation == ImGuizmo::OPERATION::NONE)
 			{
@@ -1026,71 +1049,73 @@ namespace origin {
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && entity && m_SceneViewportHovered)
+		if (entity.IsValid())
 		{
-			if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
+			if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && entity.IsValid() && IsViewportHovered)
 			{
-				auto &tc = entity.GetComponent<TransformComponent>();
-				auto &idc = entity.GetComponent<IDComponent>();
-				float orthoScale = m_EditorCamera.GetOrthoSize() / m_EditorCamera.GetHeight();
-				static glm::vec3 translation = tc.Translation;
-				
-
-				if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
+				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
 				{
-					glm::vec3 velocity = glm::vec3(0.0f);
-					auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-					auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
+					auto &tc = entity.GetComponent<TransformComponent>();
+					auto &idc = entity.GetComponent<IDComponent>();
+					float orthoScale = m_EditorCamera.GetOrthoSize() / m_EditorCamera.GetHeight();
+					static glm::vec3 translation = tc.Translation;
 
-					if (entity.HasParent())
+					if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
 					{
-						Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
-						auto &parentTC = parent.GetComponent<TransformComponent>();
-						velocity += glm::inverse(glm::quat(parentTC.WorldRotation)) * glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
-					}
-					else
-					{
-						velocity += glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
-					}
-
-					body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
-				}
-				else
-				{
-					if (Input::IsKeyPressed(Key::LeftShift))
-					{
-						float snapeValue = 0.5f;
-						if (Input::IsKeyPressed(Key::LeftControl))
-							snapeValue = 0.1f;
+						glm::vec3 velocity = glm::vec3(0.0f);
+						auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+						auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 
 						if (entity.HasParent())
 						{
 							Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
 							auto &parentTC = parent.GetComponent<TransformComponent>();
-
-							translation += glm::inverse(glm::quat(parentTC.WorldRotation)) * glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+							velocity += glm::inverse(glm::quat(parentTC.WorldRotation)) * glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
 						}
 						else
 						{
-							translation += glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+							velocity += glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
 						}
 
-						tc.Translation.x = round(translation.x / snapeValue) * snapeValue;
-						tc.Translation.y = round(translation.y / snapeValue) * snapeValue;
+						body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
 					}
 					else
 					{
-						translation = glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
-
-						if (entity.HasParent())
+						if (Input::IsKeyPressed(Key::LeftShift))
 						{
-							Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
-							auto &parentTC = parent.GetComponent<TransformComponent>();
-							translation = glm::inverse(glm::quat(parentTC.WorldRotation)) * translation;
-						}
+							float snapeValue = 0.5f;
+							if (Input::IsKeyPressed(Key::LeftControl))
+								snapeValue = 0.1f;
 
-						tc.Translation += glm::vec3(glm::vec2(translation), 0.0f);
-						translation = tc.Translation;
+							if (entity.HasParent())
+							{
+								Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
+								auto &parentTC = parent.GetComponent<TransformComponent>();
+
+								translation += glm::inverse(glm::quat(parentTC.WorldRotation)) * glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+							}
+							else
+							{
+								translation += glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+							}
+
+							tc.Translation.x = round(translation.x / snapeValue) * snapeValue;
+							tc.Translation.y = round(translation.y / snapeValue) * snapeValue;
+						}
+						else
+						{
+							translation = glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+
+							if (entity.HasParent())
+							{
+								Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
+								auto &parentTC = parent.GetComponent<TransformComponent>();
+								translation = glm::inverse(glm::quat(parentTC.WorldRotation)) * translation;
+							}
+
+							tc.Translation += glm::vec3(glm::vec2(translation), 0.0f);
+							translation = tc.Translation;
+						}
 					}
 				}
 			}
@@ -1101,7 +1126,7 @@ namespace origin {
 	{
 		OGN_PROFILER_INPUT();
 
-		if (!m_SceneViewportFocused && !m_SceneHierarchy.IsSceneHierarchyFocused)
+		if (!IsViewportFocused && !m_SceneHierarchy.IsSceneHierarchyFocused)
 			return false;
 
 		auto &app = Application::Get();
@@ -1129,7 +1154,7 @@ namespace origin {
 
 			case Key::F:
 			{
-				if (selectedEntity && !io.WantTextInput)
+				if (selectedEntity.IsValid() && !io.WantTextInput)
 				{
 					const auto &tc = selectedEntity.GetComponent<TransformComponent>();
 					m_EditorCamera.SetPosition(tc.Translation);

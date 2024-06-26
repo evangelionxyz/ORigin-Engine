@@ -164,7 +164,7 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		mono_set_assemblies_path("Lib");
+		mono_set_assemblies_path("lib");
 
 		MonoDomain* rootDomain = mono_jit_init("ORiginJITRuntime");
 		OGN_CORE_ASSERT(rootDomain, "Mono Domain is NULL!");
@@ -348,7 +348,7 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		auto& sc = entity.GetComponent<ScriptComponent>();
+		auto &sc = entity.GetComponent<ScriptComponent>();
 		if (EntityClassExists(sc.ClassName))
 		{
 			UUID entityID = entity.GetUUID();
@@ -373,9 +373,9 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		UUID& entityID = entity.GetUUID();
+		UUID entityID = entity.GetUUID();
 
-		auto& it = s_ScriptEngineData->EntityInstances.find(entityID);
+		auto it = s_ScriptEngineData->EntityInstances.find(entityID);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
 			OGN_CORE_ERROR("ScriptEngine: Entity Script Instance not found!");
@@ -408,7 +408,7 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		OGN_CORE_ASSERT(entity, "ScriptEngine::GetScriptFieldMap: Failed to get entity");
+		OGN_CORE_ASSERT(entity.IsValid(), "[ScriptEngine] Failed to get entity");
 
 		UUID entityID = entity.GetUUID();
 		return s_ScriptEngineData->EntityScriptFields[entityID];
@@ -426,7 +426,7 @@ namespace origin
 		auto& it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("Script Instance: Failed to find {} ", uuid);
+			OGN_CORE_ERROR("[ScriptEngine] Failed to find {} ", uuid);
 			return nullptr;
 		}
 
@@ -448,7 +448,7 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		OGN_CORE_ASSERT(s_ScriptEngineData->EntityInstances.find(uuid) != s_ScriptEngineData->EntityInstances.end(),
-			"Invalid Script Instance");
+			"[ScriptEngine] Invalid Script Instance");
 
 		return s_ScriptEngineData->EntityInstances.at(uuid)->GetMonoObject();
 	}

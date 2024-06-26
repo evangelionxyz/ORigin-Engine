@@ -596,7 +596,7 @@ namespace origin
 		for (auto [e, id] : view.each())
 		{
 			Entity entity = { e, m_Scene.get() };
-			if (!entity)
+			if (entity.IsValid())
 				return;
 
 			SerializeEntity(out, entity);
@@ -691,7 +691,7 @@ namespace origin
 				{
 					auto &ui = deserializedEntity.AddComponent<UIComponent>();
 
-					for (const auto &txt : uiComponent["Texts"])
+					for (const auto txt : uiComponent["Texts"])
 					{
 						UIData<TextComponent> text;
 						text.Name = txt["Name"].as<std::string>();
@@ -978,7 +978,7 @@ namespace origin
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])
 				{
 					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
-					OGN_CORE_ASSERT(deserializedEntity, "SceneSerializer:  Entity is invalid");
+					OGN_CORE_ASSERT(deserializedEntity.IsValid(), "SceneSerializer:  Entity is invalid");
 
 					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 

@@ -16,6 +16,7 @@ namespace origin
 		static Entity CreateLighting(const std::string &name, Scene *scene);
 		static Entity CreateEntityWithUUID(UUID uuid, const std::string &name, Scene *scene);
 		static Entity CreateMesh(const std::string &name, Scene *scene);
+		static Entity CreateUI(const std::string &name, Scene *scene);
 		static Entity DuplicateEntity(Entity entity, Scene *scene);
 
 		static void AddChild(Entity destination, Entity source, Scene *scene);

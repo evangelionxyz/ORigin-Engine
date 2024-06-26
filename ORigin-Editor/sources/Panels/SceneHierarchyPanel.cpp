@@ -22,21 +22,13 @@
 
 namespace origin {
 
-	static SceneHierarchyPanel* s_Instance = nullptr;
-
-	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& context)
+	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& scene)
 	{
-		SetContext(context);
-		s_Instance = this;
+		SetActiveScene(scene);
 	}
 
 	SceneHierarchyPanel::~SceneHierarchyPanel()
 	{
-	}
-
-	SceneHierarchyPanel *SceneHierarchyPanel::Get()
-	{
-		return s_Instance;
 	}
 
 	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
@@ -46,33 +38,45 @@ namespace origin {
 
 	Entity SceneHierarchyPanel::GetSelectedEntity() const
 	{
-		if(m_SelectedEntity.GetScene())
-			return m_SelectedEntity;
+		if (m_SelectedEntity.IsValid())
+		{
+			Entity entity = { m_SelectedEntity, m_Scene.get() };
 
-		return {};
+			if (entity.IsValid())
+				return entity;
+		}
+
+		return Entity();
 	}
 
-	void SceneHierarchyPanel::SetContext(const std::shared_ptr<Scene>& context, bool reset)
+	void SceneHierarchyPanel::SetActiveScene(const std::shared_ptr<Scene> &scene, bool reset)
 	{
 		if (reset)
 			m_SelectedEntity = {};
 
-		m_Context = context;
+		m_Scene = scene;
 
-		if (!m_SelectedEntity)
+		if (!m_SelectedEntity.IsValid())
 			return;
 
 		UUID entityID = m_SelectedEntity.GetUUID();
-		Entity newEntity = m_Context->GetEntityWithUUID(entityID);
+		Entity newEntity = m_Scene->GetEntityWithUUID(entityID);
 
-		if (entityID == newEntity.GetUUID())
-			m_SelectedEntity = newEntity;
+		if (newEntity.IsValid())
+		{
+			if (entityID == newEntity.GetUUID())
+				m_SelectedEntity = newEntity;
+		}
+		else
+		{
+			m_SelectedEntity = Entity();
+		}
 	}
 
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
 		m_SelectedEntity = {};
-		m_Context->DestroyEntity(entity);
+		m_Scene->DestroyEntity(entity);
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -85,7 +89,7 @@ namespace origin {
 	{
 		ImGui::Begin("Hierarchy");
 
-		if (!m_Context)
+		if (!m_Scene)
 		{
 			ImGui::End();
 			return;
@@ -106,14 +110,14 @@ namespace origin {
 			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 			{
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-				Entity src { *static_cast<entt::entity *>(payload->Data), m_Context.get() };
+				Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
 				if (src.HasParent())
 					auto &srcIDC = src.GetComponent<IDComponent>().Parent = 0;
 			}
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
+		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 28.0f);
 		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
 		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 			ImGui::OpenPopup("CreateEntity");
@@ -121,35 +125,37 @@ namespace origin {
 		if (ImGui::BeginPopup("CreateEntity"))
 		{
 			if (ImGui::MenuItem("Empty"))
-				EntityManager::CreateEntity("Empty", m_Context.get());
+				SetSelectedEntity(EntityManager::CreateEntity("Empty", m_Scene.get()));
 
 			if (ImGui::BeginMenu("2D"))
 			{
 				if (ImGui::MenuItem("Sprite"))
-					EntityManager::CreateSprite("Sprite", m_Context.get());
+					SetSelectedEntity(EntityManager::CreateSprite("Sprite", m_Scene.get()));
 				if (ImGui::MenuItem("Circle"))
-					EntityManager::CreateCircle("Circle", m_Context.get());
+					SetSelectedEntity(EntityManager::CreateCircle("Circle", m_Scene.get()));
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("3D"))
 			{
 				if (ImGui::MenuItem("Empty Mesh"))
-					EntityManager::CreateMesh("Empty Mesh", m_Context.get());
+					SetSelectedEntity(EntityManager::CreateMesh("Empty Mesh", m_Scene.get()));
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::MenuItem("UI"))
+				SetSelectedEntity(EntityManager::CreateUI("UI", m_Scene.get()));
 			if (ImGui::MenuItem("Camera"))
-				EntityManager::CreateCamera("Camera", m_Context.get());
+				SetSelectedEntity(EntityManager::CreateCamera("Camera", m_Scene.get()));
 			if (ImGui::MenuItem("Lighting"))
-				EntityManager::CreateLighting("Lighting", m_Context.get());
+				SetSelectedEntity(EntityManager::CreateLighting("Lighting", m_Scene.get()));
 			ImGui::EndPopup();
 		}
 
 		if (open)
 		{
-			for (auto e : m_Context->m_EntityStorage)
-				DrawEntityNode({ e.second, m_Context.get() });
+			for (auto e : m_Scene->m_EntityStorage)
+				DrawEntityNode({ e.second, m_Scene.get() });
 			ImGui::TreePop();
 		}
 
@@ -163,14 +169,14 @@ namespace origin {
 	{
 		ImGui::Begin("Properties");
 		IsScenePropertiesFocused = ImGui::IsWindowFocused();
-		if (m_SelectedEntity)
+		if (m_SelectedEntity.IsValid())
 			DrawComponents(m_SelectedEntity);
 		ImGui::End();
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
 	{
-		auto valid = m_Context->m_Registry.valid(entity);
+		auto valid = m_Scene->m_Registry.valid(entity);
 		if (!valid || (entity.HasParent() && index == 0))
 			return;
 
@@ -196,19 +202,20 @@ namespace origin {
 			if (entity.HasComponent<UIComponent>())
 			{
 				auto &ui = entity.GetComponent<UIComponent>();
+				UIEditor::Get()->SetContext(m_Scene.get());
 				UIEditor::Get()->SetActive(&ui);
 			}
 		}
 
 		bool isDeleting = false;
-		if (!m_Context->IsRunning())
+		if (!m_Scene->IsRunning())
 		{
 			if (ImGui::BeginPopupContextItem())
 			{
 				Entity e = EntityContextMenu();
 				if (e.GetScene())
 				{
-					EntityManager::AddChild(entity, e, m_Context.get());
+					EntityManager::AddChild(entity, e, m_Scene.get());
 					m_SelectedEntity = e;
 				}
 
@@ -232,9 +239,9 @@ namespace origin {
 				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 				{
 					OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-					Entity src { *static_cast<entt::entity *>(payload->Data), m_Context.get() };
+					Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
 					// the current 'entity' is the target (new parent for src)
-					EntityManager::AddChild(entity, src, m_Context.get());
+					EntityManager::AddChild(entity, src, m_Scene.get());
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -250,15 +257,15 @@ namespace origin {
 		{
 			if (!isDeleting)
 			{
-				for (auto e : m_Context->m_EntityStorage)
+				for (auto e : m_Scene->m_EntityStorage)
 				{
-					valid = m_Context->m_Registry.valid(e.second);
+					valid = m_Scene->m_Registry.valid(e.second);
 					if (!valid)
 						break;
 
-					Entity ent = { e.second, m_Context.get() };
+					Entity ent = { e.second, m_Scene.get() };
 					if (ent.GetComponent<IDComponent>().Parent == entity.GetUUID())
-						DrawEntityNode({ e.second, m_Context.get() }, index + 1);
+						DrawEntityNode({ e.second, m_Scene.get() }, index + 1);
 				}
 			}
 			ImGui::TreePop();
@@ -272,7 +279,7 @@ namespace origin {
 			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
 			if (!tc.Visible)
 				texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
-			ImGui::SameLine(ImGui::GetWindowWidth() - 24.0f);
+			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 28.0f);
 			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 				tc.Visible = !tc.Visible;
 			ImGui::PopID();
@@ -567,7 +574,7 @@ namespace origin {
 				UI::DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
 
-		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Context](auto &component)
+		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Scene](auto &component)
 			{
 				std::string lable = "None";
 
@@ -760,12 +767,11 @@ namespace origin {
 					}
 
 					UI::DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
+
 					ImGui::Text("Flip");
-					ImGui::SameLine();
 					ImGui::PushID(1);
 					UI::DrawCheckbox("X", &component.FlipX);
 					ImGui::PopID();
-					ImGui::SameLine();
 					UI::DrawCheckbox("Y", &component.FlipY);
 				}
 			});
@@ -961,7 +967,7 @@ namespace origin {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
 					{
 						OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-						Entity src{ *static_cast<entt::entity*>(payload->Data), m_Context.get() };
+						Entity src{ *static_cast<entt::entity*>(payload->Data), m_Scene.get() };
 						if (component.ConnectedBodyID == 0)
 						{
 							UUID uuid = src.GetUUID();
@@ -1016,7 +1022,7 @@ namespace origin {
 				}
 			});
 
-		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Context](auto &component) mutable
+		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Scene](auto &component) mutable
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 				bool isSelected = false;
@@ -1238,33 +1244,33 @@ namespace origin {
 		if (ImGui::BeginMenu("CREATE"))
 		{
 			if (ImGui::MenuItem("Empty")) 
-				entity = EntityManager::CreateEntity("Empty", m_Context.get());
+				entity = EntityManager::CreateEntity("Empty", m_Scene.get());
 
 			if (ImGui::BeginMenu("2D"))
 			{
 				if (ImGui::MenuItem("Sprite")) 
-					entity = EntityManager::CreateSprite("Sprite", m_Context.get());
+					entity = EntityManager::CreateSprite("Sprite", m_Scene.get());
 				if (ImGui::MenuItem("Circle")) 
-					entity = EntityManager::CreateCircle("Circle", m_Context.get());
+					entity = EntityManager::CreateCircle("Circle", m_Scene.get());
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("3D"))
 			{
 				if (ImGui::MenuItem("Empty Mesh"))
-					entity = EntityManager::CreateMesh("Empty Mesh", m_Context.get());
+					entity = EntityManager::CreateMesh("Empty Mesh", m_Scene.get());
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::MenuItem("Camera"))
-				entity = EntityManager::CreateCamera("Camera", m_Context.get());
+				entity = EntityManager::CreateCamera("Camera", m_Scene.get());
 			if (ImGui::MenuItem("Lighting"))
-				entity = EntityManager::CreateLighting("Lighting", m_Context.get());
+				entity = EntityManager::CreateLighting("Lighting", m_Scene.get());
 
 			ImGui::EndMenu();
 		}
 
-		if (entity)
+		if (entity.IsValid())
 			m_SelectedEntity = entity;
 
 		return entity;

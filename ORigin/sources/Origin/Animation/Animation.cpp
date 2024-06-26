@@ -64,12 +64,12 @@ namespace origin {
 		CurrentFrame = 0.0f;
 	}
 
-	SpriteAnimationFrame  &SpriteAnimation::GetCurrentFrame()
+	SpriteAnimationFrame &SpriteAnimation::GetCurrentFrame()
 	{
 		return AnimFrames[FrameIndex];
 	}
 
-	SpriteAnimationFrame  &SpriteAnimation::GetFrame(int index)
+	SpriteAnimationFrame &SpriteAnimation::GetFrame(int index)
 	{
 		return AnimFrames[index];
 	}

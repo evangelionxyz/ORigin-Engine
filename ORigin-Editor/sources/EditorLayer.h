@@ -31,6 +31,9 @@ namespace origin {
     bool guiRenderSettingsWindow = true;
     bool guiImGuiDemoWindow = false;
 
+		bool IsViewportHovered = false;
+		bool IsViewportFocused = false;
+
   private:
     void SystemUpdate(Timestep ts);
     void Render(Timestep ts);
@@ -98,8 +101,6 @@ namespace origin {
     bool m_DrawGrid3D = true;
 		bool m_DrawLineModeActive = false;
 		bool m_VisualizeCollider = true;
-		bool m_SceneViewportHovered = false;
-		bool m_SceneViewportFocused = false;
 		Entity m_HoveredEntity = {};
 
     friend class Gizmos;

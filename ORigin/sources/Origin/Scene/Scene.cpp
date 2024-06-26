@@ -83,7 +83,7 @@ namespace origin
 				return { e.second, this };
 		}
 
-		return {};
+		return Entity();
 	}
 
 	Entity Scene::FindEntityByName(std::string_view name)
@@ -98,7 +98,7 @@ namespace origin
 				return { entity, this };
 		}
 
-		return {};
+		return Entity();
 	}
 
 	void Scene::DestroyEntity(Entity entity)
@@ -110,10 +110,7 @@ namespace origin
 				if (EntityManager::IsParent(idc.ID, uuid, this))
 				{
 					Entity entt = { e, this };
-					OGN_CORE_INFO("Destroying {}", entt.GetTag());
-
 					m_Registry.destroy(e);
-
 					m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
 					[&](auto e)
 					{
@@ -566,7 +563,8 @@ namespace origin
 				{
 					if (camera.IsPerspective())
 					{
-						if (Entity primaryCam = GetPrimaryCameraEntity())
+						Entity primaryCam = GetPrimaryCameraEntity();
+						if (primaryCam.IsValid())
 						{
 							const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
 							const auto &ccTC = primaryCam.GetComponent<TransformComponent>();

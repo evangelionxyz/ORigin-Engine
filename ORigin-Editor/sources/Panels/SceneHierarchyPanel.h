@@ -10,12 +10,11 @@ namespace origin {
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const std::shared_ptr<Scene>& context);
+		SceneHierarchyPanel(const std::shared_ptr<Scene> &scene);
 
 		~SceneHierarchyPanel();
 
-		static SceneHierarchyPanel *Get();
-		std::shared_ptr<Scene> GetContext() { return m_Context; }
+		std::shared_ptr<Scene> GetContext() { return m_Scene; }
 
 		Entity SetSelectedEntity(Entity entity);
 		Entity GetSelectedEntity() const;
@@ -25,7 +24,7 @@ namespace origin {
 		void EntityHierarchyPanel();
 		void EntityPropertiesPanel();
 
-		void SetContext(const std::shared_ptr<Scene>& context, bool reset = false);
+		void SetActiveScene(const std::shared_ptr<Scene> &scene, bool reset = false);
 		void DestroyEntity(Entity entity);
 
 		bool IsSceneHierarchyFocused = false;
@@ -42,8 +41,9 @@ namespace origin {
 
 		Entity EntityContextMenu();
 
-		std::shared_ptr<Scene> m_Context;
+		std::shared_ptr<Scene> m_Scene;
 		std::shared_ptr<Texture2D> m_NoTextureButton;
-		Entity m_SelectedEntity;
+
+		Entity m_SelectedEntity = Entity();
 	};
 }

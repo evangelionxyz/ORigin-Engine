@@ -12,9 +12,12 @@ namespace ORiginEngine
     internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void Entity_AddComponent(ulong entityID, Type componentType);
-
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static ulong Entity_FindEntityByName(string name);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static ulong Entity_Instantiate(ulong entityID);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static void Entity_Destroy(ulong entityID);
 
     // Script Instance
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -34,8 +37,6 @@ namespace ORiginEngine
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 value);
 
-    #region
-
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void RigidbodyComponent_SetVelocity(ulong entityID, Vector3 value, bool autoWake);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -46,8 +47,6 @@ namespace ORiginEngine
     internal extern static void RigidbodyComponent_SetVelocityForce(ulong entityID, Vector3 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void RigidbodyComponent_SetImpulseForce(ulong entityID, Vector3 value);
-
-    #endregion
 
     // Rigidbody 2D
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -113,9 +112,9 @@ namespace ORiginEngine
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void TextComponent_SetText(ulong entityID, string textString);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void TextComponent_GetColor(ulong entityID, out Vector4 color);
+    internal extern static void TextComponent_GetColor(ulong entityID, out Vector3 color);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void TextComponent_SetColor(ulong entityID, ref Vector4 color);
+    internal extern static void TextComponent_SetColor(ulong entityID, ref Vector3 color);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static float TextComponent_GetKerning(ulong entityID);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -127,9 +126,9 @@ namespace ORiginEngine
 
     // Circle Renderer
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleRendererComponent_GetColor(ulong entityID, out Vector4 result);
+    internal extern static void CircleRendererComponent_GetColor(ulong entityID, out Vector3 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleRendererComponent_SetColor(ulong entityID, ref Vector4 value);
+    internal extern static void CircleRendererComponent_SetColor(ulong entityID, ref Vector3 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleRendererComponent_GetThickness(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
