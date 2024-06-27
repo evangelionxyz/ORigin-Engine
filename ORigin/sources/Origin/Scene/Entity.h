@@ -84,6 +84,8 @@ namespace origin {
 
 		bool IsValid() const
 		{
+			if (m_Scene)
+				return m_Scene->m_Registry.valid(m_EntityHandle);
 			return m_Scene != nullptr && m_EntityHandle != entt::null;
 		}
 
