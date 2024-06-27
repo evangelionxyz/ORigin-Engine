@@ -68,8 +68,6 @@ namespace origin {
 		friend class ScriptInstance;
 	};
 
-	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
-
 	class ScriptClass
 	{
 	public:
@@ -136,6 +134,8 @@ namespace origin {
 		inline static char s_FieldValueBuffer[24];
 		friend class ScriptEngine;
 	};
+
+	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
 	class ScriptEngine
 	{

@@ -108,6 +108,7 @@ namespace origin
 		OGN_CORE_ASSERT(scene, "Invalid Scene");
 
 		Entity entity = scene->GetEntityWithUUID(entityID);
+
 		scene->DestroyEntity(entity);
 	}
 

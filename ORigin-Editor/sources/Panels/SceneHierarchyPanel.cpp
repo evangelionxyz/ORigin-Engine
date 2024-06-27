@@ -36,14 +36,16 @@ namespace origin {
 		return m_SelectedEntity = entity;
 	}
 
-	Entity SceneHierarchyPanel::GetSelectedEntity() const
+	Entity SceneHierarchyPanel::GetSelectedEntity()
 	{
 		if (m_SelectedEntity.IsValid())
 		{
 			Entity entity = { m_SelectedEntity, m_Scene.get() };
 
 			if (entity.IsValid())
+			{
 				return entity;
+			}
 		}
 
 		return Entity();
@@ -240,6 +242,7 @@ namespace origin {
 				{
 					OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 					Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
+
 					// the current 'entity' is the target (new parent for src)
 					EntityManager::AddChild(entity, src, m_Scene.get());
 				}
@@ -251,6 +254,19 @@ namespace origin {
 		{
 			if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 				m_SelectedEntity = entity;
+		}
+
+		if (!isDeleting)
+		{
+			ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
+			auto &tc = entity.GetComponent<TransformComponent>();
+			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
+			if (!tc.Visible)
+				texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
+			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 28.0f);
+			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
+				tc.Visible = !tc.Visible;
+			ImGui::PopID();
 		}
 
 		if (node_open)
@@ -269,20 +285,6 @@ namespace origin {
 				}
 			}
 			ImGui::TreePop();
-		}
-
-
-		if (!isDeleting)
-		{
-			ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
-			auto &tc = entity.GetComponent<TransformComponent>();
-			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
-			if (!tc.Visible)
-				texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
-			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 28.0f);
-			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
-				tc.Visible = !tc.Visible;
-			ImGui::PopID();
 		}
 	}
 
@@ -1059,168 +1061,162 @@ namespace origin {
 
 				// fields
 				bool isRunning = scene->IsRunning();
-				if (isRunning)
+
+				if (isRunning && !detached)
 				{
 					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-					if (scriptInstance && !detached)
-					{
-						auto &fields = scriptInstance->GetScriptClass()->GetFields();
+					auto &fields = scriptInstance->GetScriptClass()->GetFields();
 
-						for (const auto &[name, field] : fields)
+					for (const auto &[name, field] : fields)
+					{
+						if (field.Type == ScriptFieldType::Float)
 						{
+							float data = scriptInstance->GetFieldValue<float>(name);
+							if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
+							{
+								scriptInstance->SetFieldValue<float>(name, data);
+							}
+						}
+						if (field.Type == ScriptFieldType::Int)
+						{
+							int data = scriptInstance->GetFieldValue<int>(name);
+							if (ImGui::DragInt(name.c_str(), &data, 1))
+							{
+								scriptInstance->SetFieldValue<int>(name, data);
+							}
+						}
+						if (field.Type == ScriptFieldType::Vector2)
+						{
+							glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
+							if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
+							{
+								scriptInstance->SetFieldValue<glm::vec2>(name, data);
+							}
+						}
+						if (field.Type == ScriptFieldType::Vector3)
+						{
+							glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
+							if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
+							{
+								scriptInstance->SetFieldValue<glm::vec3>(name, data);
+							}
+						}
+						if (field.Type == ScriptFieldType::Vector4)
+						{
+							glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
+							if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
+							{
+								scriptInstance->SetFieldValue<glm::vec4>(name, data);
+							}
+						}
+					}
+				}
+				else if (!isRunning && scriptClassExist && !detached)
+				{
+					// !IsRunning
+
+					std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+					const auto &fields = entityClass->GetFields();
+					auto &entityFields = ScriptEngine::GetScriptFieldMap(entity);
+
+					for (const auto &[name, field] : fields)
+					{
+						if (entityFields.find(name) != entityFields.end())
+						{
+							ScriptFieldInstance &scriptField = entityFields.at(name);
+
 							if (field.Type == ScriptFieldType::Float)
 							{
-								float data = scriptInstance->GetFieldValue<float>(name);
+								float data = scriptField.GetValue<float>();
 								if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
 								{
-									scriptInstance->SetFieldValue<float>(name, data);
+									scriptField.SetValue<float>(data);
 								}
 							}
 							if (field.Type == ScriptFieldType::Int)
 							{
-								int data = scriptInstance->GetFieldValue<int>(name);
+								int data = scriptField.GetValue<int>();
 								if (ImGui::DragInt(name.c_str(), &data, 1))
 								{
-									scriptInstance->SetFieldValue<int>(name, data);
+									scriptField.SetValue<int>(data);
 								}
 							}
 							if (field.Type == ScriptFieldType::Vector2)
 							{
-								glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
+								glm::vec2 data = scriptField.GetValue<glm::vec3>();
 								if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
 								{
-									scriptInstance->SetFieldValue<glm::vec2>(name, data);
+									scriptField.SetValue<glm::vec2>(data);
 								}
 							}
 							if (field.Type == ScriptFieldType::Vector3)
 							{
-								glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
+								glm::vec3 data = scriptField.GetValue<glm::vec3>();
 								if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
 								{
-									scriptInstance->SetFieldValue<glm::vec3>(name, data);
+									scriptField.SetValue<glm::vec3>(data);
 								}
 							}
 							if (field.Type == ScriptFieldType::Vector4)
 							{
-								glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
+								glm::vec4 data = scriptField.GetValue<glm::vec4>();
 								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
 								{
-									scriptInstance->SetFieldValue<glm::vec4>(name, data);
+									scriptField.SetValue<glm::vec4>(data);
 								}
 							}
 						}
-					}
-				} // !IsRunning
-				else
-				{
-					if (scriptClassExist && !detached)
-					{
-						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
-						const auto &fields = entityClass->GetFields();
-						auto &entityFields = ScriptEngine::GetScriptFieldMap(entity);
-
-						for (const auto &[name, field] : fields)
+						else
 						{
-							if (entityFields.find(name) != entityFields.end())
+							ScriptFieldInstance &fieldInstance = entityFields[name];
+
+							if (field.Type == ScriptFieldType::Float)
 							{
-								ScriptFieldInstance& scriptField = entityFields.at(name);
+								float data = 0.0f;
+								if (ImGui::DragFloat(name.c_str(), &data))
+								{
+									fieldInstance.Field = field;
+									fieldInstance.SetValue<float>(data);
+								}
+							}
 
-								if (field.Type == ScriptFieldType::Float)
-								{
-									float data = scriptField.GetValue<float>();
-									if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
-									{
-										scriptField.SetValue<float>(data);
-									}
-								}
-								if (field.Type == ScriptFieldType::Int)
-								{
-									int data = scriptField.GetValue<int>();
-									if (ImGui::DragInt(name.c_str(), &data, 1))
-									{
-										scriptField.SetValue<int>(data);
-									}
-								}
-								if (field.Type == ScriptFieldType::Vector2)
-								{
-									glm::vec2 data = scriptField.GetValue<glm::vec3>();
-									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
-									{
-										scriptField.SetValue<glm::vec2>(data);
-					}
-				}
-								if (field.Type == ScriptFieldType::Vector3)
-								{
-									glm::vec3 data = scriptField.GetValue<glm::vec3>();
-									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
-									{
-										scriptField.SetValue<glm::vec3>(data);
-									}
-								}
-								if (field.Type == ScriptFieldType::Vector4)
-								{
-									glm::vec4 data = scriptField.GetValue<glm::vec4>();
-									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
-									{
-										scriptField.SetValue<glm::vec4>(data);
-									}
-								}
-			}
-							else
+							if (field.Type == ScriptFieldType::Int)
 							{
-								if (field.Type == ScriptFieldType::Float)
+								int data = 0;
+								if (ImGui::DragInt(name.c_str(), &data))
 								{
-									float data = 0.0f;
-									if (ImGui::DragFloat(name.c_str(), &data))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<float>(data);
-									}
+									fieldInstance.Field = field;
+									fieldInstance.SetValue<int>(data);
 								}
+							}
 
-								if (field.Type == ScriptFieldType::Int)
+							if (field.Type == ScriptFieldType::Vector2)
+							{
+								glm::vec2 data(0.0f);
+								if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data)))
 								{
-									int data = 0;
-									if (ImGui::DragInt(name.c_str(), &data))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<int>(data);
-									}
+									fieldInstance.Field = field;
+									fieldInstance.SetValue<glm::vec2>(data);
 								}
+							}
 
-								if (field.Type == ScriptFieldType::Vector2)
+							if (field.Type == ScriptFieldType::Vector3)
+							{
+								glm::vec3 data(0.0f);
+								if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data)))
 								{
-									glm::vec2 data(0.0f);
-									if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data)))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<glm::vec2>(data);
-									}
+									fieldInstance.Field = field;
+									fieldInstance.SetValue<glm::vec3>(data);
 								}
+							}
 
-								if (field.Type == ScriptFieldType::Vector3)
+							if (field.Type == ScriptFieldType::Vector4)
+							{
+								glm::vec4 data(0.0f);
+								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data)))
 								{
-									glm::vec3 data(0.0f);
-									if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data)))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<glm::vec3>(data);
-									}
-								}
-
-								if (field.Type == ScriptFieldType::Vector4)
-								{
-									glm::vec4 data(0.0f);
-									if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data)))
-									{
-										ScriptFieldInstance& fieldInstance = entityFields[name];
-										fieldInstance.Field = field;
-										fieldInstance.SetValue<glm::vec4>(data);
-									}
+									fieldInstance.Field = field;
+									fieldInstance.SetValue<glm::vec4>(data);
 								}
 							}
 						}

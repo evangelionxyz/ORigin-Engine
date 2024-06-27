@@ -522,7 +522,9 @@ namespace origin
 		auto& entityClasses = s_ScriptEngineData->EntityClasses;
 	}
 
+	// =================================
 	// Script Class
+
 	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool core)
 		: m_ClassNamespace(classNamespace), m_ClassName(className)
 	{
@@ -544,6 +546,10 @@ namespace origin
 		MonoObject* exception = nullptr;
 		return mono_runtime_invoke(method, instance, params, &exception);
 	}
+
+
+	// =================================
+	// Script Instance
 
 	ScriptInstance::ScriptInstance(std::shared_ptr<ScriptClass> scriptClass, Entity entity)
 		: m_ScriptClass(scriptClass)
@@ -568,8 +574,10 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		if(m_OnCreateMethod)
+		if (m_OnCreateMethod)
+		{
 			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateMethod);
+		}
 	}
 
 	void ScriptInstance::InvokeOnUpdate(float time)
@@ -590,7 +598,11 @@ namespace origin
 		const auto& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(name);
 		if (it == fields.end())
+		{
+			OGN_CORE_ERROR("[ScriptInstance] Failed to Get Internal Value");
 			return false;
+		}
+			
 
 		const ScriptField& field = it->second;
 		mono_field_get_value(m_Instance, field.ClassField, buffer);
@@ -605,7 +617,10 @@ namespace origin
 		const auto& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(name);
 		if (it == fields.end())
+		{
+			OGN_CORE_ERROR("[ScriptInstance] Failed to Set Field Value");
 			return false;
+		}
 
 		const ScriptField& field = it->second;
 		mono_field_set_value(m_Instance, field.ClassField, (void*)value);

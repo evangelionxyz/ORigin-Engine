@@ -17,7 +17,7 @@ namespace origin {
 		std::shared_ptr<Scene> GetContext() { return m_Scene; }
 
 		Entity SetSelectedEntity(Entity entity);
-		Entity GetSelectedEntity() const;
+		Entity GetSelectedEntity();
 
 		void OnImGuiRender();
 

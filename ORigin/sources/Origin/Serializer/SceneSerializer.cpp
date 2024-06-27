@@ -29,6 +29,7 @@ namespace origin
 					out << scriptField.GetValue<Type>();\
 					break;\
 				}
+
 #define	READ_FIELD_TYPE(FieldType, Type)\
 				case ScriptFieldType::FieldType:\
 				{\
@@ -197,7 +198,7 @@ namespace origin
 					{
 						if (entityFields.find(name) == entityFields.end())
 						{
-							OGN_CORE_ERROR("SceneSerializer: {} SCRIPT FIELDS NOT FOUND", name);
+							OGN_CORE_ERROR("[SceneSerializer] {} SCRIPT FIELDS NOT FOUND", name);
 							continue;
 						}
 
@@ -596,7 +597,7 @@ namespace origin
 		for (auto [e, id] : view.each())
 		{
 			Entity entity = { e, m_Scene.get() };
-			if (entity.IsValid())
+			if (!entity.IsValid())
 				return;
 
 			SerializeEntity(out, entity);
