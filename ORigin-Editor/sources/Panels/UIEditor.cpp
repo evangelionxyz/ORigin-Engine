@@ -410,7 +410,7 @@ namespace origin
 			Renderer2D::End();
 		}
 
-		if (IsViewportHovered)
+		if (IsViewportHovered && IsViewportFocused)
 		{
 			auto [mx, my] = ImGui::GetMousePos();
 			m_Mouse = { mx, my };

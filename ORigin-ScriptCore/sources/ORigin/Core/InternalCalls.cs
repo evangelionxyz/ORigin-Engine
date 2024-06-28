@@ -27,15 +27,15 @@ namespace ORiginEngine
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void TransformComponent_GetTranslation(ulong entityID, out Vector3 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void TransformComponent_SetTranslation(ulong entityID, ref Vector3 value);
+    internal extern static void TransformComponent_SetTranslation(ulong entityID, Vector3 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector3 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 value);
+    internal extern static void TransformComponent_SetRotation(ulong entityID, Vector3 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 value);
+    internal extern static void TransformComponent_SetScale(ulong entityID, Vector3 value);
 
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void RigidbodyComponent_SetVelocity(ulong entityID, Vector3 value, bool autoWake);
@@ -114,7 +114,7 @@ namespace ORiginEngine
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void TextComponent_GetColor(ulong entityID, out Vector3 color);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void TextComponent_SetColor(ulong entityID, ref Vector3 color);
+    internal extern static void TextComponent_SetColor(ulong entityID, Vector3 color);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static float TextComponent_GetKerning(ulong entityID);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -128,85 +128,85 @@ namespace ORiginEngine
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleRendererComponent_GetColor(ulong entityID, out Vector3 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleRendererComponent_SetColor(ulong entityID, ref Vector3 value);
+    internal extern static void CircleRendererComponent_SetColor(ulong entityID, Vector3 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleRendererComponent_GetThickness(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleRendererComponent_SetThickness(ulong entityID, ref float value);
+    internal extern static void CircleRendererComponent_SetThickness(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleRendererComponent_GetFade(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleRendererComponent_SetFade(ulong entityID, ref float value);
+    internal extern static void CircleRendererComponent_SetFade(ulong entityID, float value);
 
     // Box Collider Renderer
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void BoxCollider2DComponent_GetOffset(ulong entityID, out Vector2 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void BoxCollider2DComponent_SetOffset(ulong entityID, ref Vector2 value);
+    internal extern static void BoxCollider2DComponent_SetOffset(ulong entityID, Vector2 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void BoxCollider2DComponent_GetSize(ulong entityID, out Vector2 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void BoxCollider2DComponent_SetSize(ulong entityID, ref Vector2 value);
+    internal extern static void BoxCollider2DComponent_SetSize(ulong entityID, Vector2 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void BoxCollider2DComponent_GetDensity(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void BoxCollider2DComponent_SetDensity(ulong entityID, ref float value);
+    internal extern static void BoxCollider2DComponent_SetDensity(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void BoxCollider2DComponent_GetFriction(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void BoxCollider2DComponent_SetFriction(ulong entityID, ref float value);
+    internal extern static void BoxCollider2DComponent_SetFriction(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void BoxCollider2DComponent_GetRestitution(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void BoxCollider2DComponent_SetRestitution(ulong entityID, ref float value);
+    internal extern static void BoxCollider2DComponent_SetRestitution(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void BoxCollider2DComponent_GetRestitutionThreshold(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void BoxCollider2DComponent_SetRestitutionThreshold(ulong entityID, ref float value);
+    internal extern static void BoxCollider2DComponent_SetRestitutionThreshold(ulong entityID, float value);
 
     // Circle Collider Renderer
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleCollider2DComponent_GetOffset(ulong entityID, out Vector2 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleCollider2DComponent_SetOffset(ulong entityID, ref Vector2 value);
+    internal extern static void CircleCollider2DComponent_SetOffset(ulong entityID, Vector2 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleCollider2DComponent_GetRadius(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleCollider2DComponent_SetRadius(ulong entityID, ref float value);
+    internal extern static void CircleCollider2DComponent_SetRadius(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleCollider2DComponent_GetDensity(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleCollider2DComponent_SetDensity(ulong entityID, ref float value);
+    internal extern static void CircleCollider2DComponent_SetDensity(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleCollider2DComponent_GetFriction(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleCollider2DComponent_SetFriction(ulong entityID, ref float value);
+    internal extern static void CircleCollider2DComponent_SetFriction(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleCollider2DComponent_GetRestitution(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleCollider2DComponent_SetRestitution(ulong entityID, ref float value);
+    internal extern static void CircleCollider2DComponent_SetRestitution(ulong entityID, float value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void CircleCollider2DComponent_GetRestitutionThreshold(ulong entityID, out float result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void CircleCollider2DComponent_SetRestitutionThreshold(ulong entityID, ref float value);
+    internal extern static void CircleCollider2DComponent_SetRestitutionThreshold(ulong entityID, float value);
 
     // SpriteRenderer2DComponent
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void SpriteRenderer2DComponent_GetFlipX(ulong entityID, out bool flip);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void SpriteRenderer2DComponent_SetFlipX(ulong entityID, ref bool flip);
+    internal extern static void SpriteRenderer2DComponent_SetFlipX(ulong entityID, bool flip);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void SpriteRenderer2DComponent_GetFlipY(ulong entityID, out bool flip);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void SpriteRenderer2DComponent_SetFlipY(ulong entityID, ref bool flip);
+    internal extern static void SpriteRenderer2DComponent_SetFlipY(ulong entityID, bool flip);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void SpriteRenderer2DComponent_GetColor(ulong entityID, out Vector4 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void SpriteRenderer2DComponent_SetColor(ulong entityID, ref Vector4 value);
+    internal extern static void SpriteRenderer2DComponent_SetColor(ulong entityID, Vector4 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void SpriteRenderer2DComponent_GetTilingFactor(ulong entityID, out Vector2 result);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static void SpriteRenderer2DComponent_SetTilingFactor(ulong entityID, ref Vector2 value);
+    internal extern static void SpriteRenderer2DComponent_SetTilingFactor(ulong entityID, Vector2 value);
 
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void SpriteAnimationComponent_GetActiveState(ulong entityID, out string stateString);

@@ -34,7 +34,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.TransformComponent_SetTranslation(Entity.ID, ref value);
+        InternalCalls.TransformComponent_SetTranslation(Entity.ID, value);
       }
     }
 
@@ -47,7 +47,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
+        InternalCalls.TransformComponent_SetRotation(Entity.ID, value);
       }
     }
 
@@ -60,7 +60,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
+        InternalCalls.TransformComponent_SetScale(Entity.ID, value);
       }
     }
   }
@@ -207,7 +207,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.TextComponent_SetColor(Entity.ID, ref value);
+        InternalCalls.TextComponent_SetColor(Entity.ID, value);
       }
     }
 
@@ -235,7 +235,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.BoxCollider2DComponent_SetOffset(Entity.ID, ref value);
+        InternalCalls.BoxCollider2DComponent_SetOffset(Entity.ID, value);
       }
     }
 
@@ -248,7 +248,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.BoxCollider2DComponent_SetSize(Entity.ID, ref value);
+        InternalCalls.BoxCollider2DComponent_SetSize(Entity.ID, value);
       }
     }
 
@@ -261,7 +261,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.BoxCollider2DComponent_SetDensity(Entity.ID, ref value);
+        InternalCalls.BoxCollider2DComponent_SetDensity(Entity.ID, value);
       }
     }
 
@@ -274,7 +274,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.BoxCollider2DComponent_SetFriction(Entity.ID, ref value);
+        InternalCalls.BoxCollider2DComponent_SetFriction(Entity.ID, value);
       }
     }
 
@@ -287,7 +287,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.BoxCollider2DComponent_SetRestitution(Entity.ID, ref value);
+        InternalCalls.BoxCollider2DComponent_SetRestitution(Entity.ID, value);
       }
     }
 
@@ -300,7 +300,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.BoxCollider2DComponent_SetRestitutionThreshold(Entity.ID, ref value);
+        InternalCalls.BoxCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
       }
     }
   }
@@ -316,7 +316,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleCollider2DComponent_SetOffset(Entity.ID, ref value);
+        InternalCalls.CircleCollider2DComponent_SetOffset(Entity.ID, value);
       }
     }
 
@@ -329,7 +329,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleCollider2DComponent_SetRadius(Entity.ID, ref value);
+        InternalCalls.CircleCollider2DComponent_SetRadius(Entity.ID, value);
       }
     }
 
@@ -342,7 +342,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleCollider2DComponent_SetDensity(Entity.ID, ref value);
+        InternalCalls.CircleCollider2DComponent_SetDensity(Entity.ID, value);
       }
     }
 
@@ -355,7 +355,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleCollider2DComponent_SetFriction(Entity.ID, ref value);
+        InternalCalls.CircleCollider2DComponent_SetFriction(Entity.ID, value);
       }
     }
 
@@ -368,7 +368,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleCollider2DComponent_SetRestitution(Entity.ID, ref value);
+        InternalCalls.CircleCollider2DComponent_SetRestitution(Entity.ID, value);
       }
     }
 
@@ -381,7 +381,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Entity.ID, ref value);
+        InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
       }
     }
   }
@@ -398,7 +398,7 @@ namespace ORiginEngine
 
       set
       {
-        InternalCalls.CircleRendererComponent_SetColor(Entity.ID, ref value);
+        InternalCalls.CircleRendererComponent_SetColor(Entity.ID, value);
       }
     }
 
@@ -411,7 +411,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, ref value); ;
+        InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, value); ;
       }
 
     }
@@ -425,7 +425,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.CircleRendererComponent_SetFade(Entity.ID, ref value);
+        InternalCalls.CircleRendererComponent_SetFade(Entity.ID, value);
       }
     }
   }
@@ -441,7 +441,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.SpriteRenderer2DComponent_SetColor(Entity.ID, ref value);
+        InternalCalls.SpriteRenderer2DComponent_SetColor(Entity.ID, value);
       }
 
     }
@@ -455,7 +455,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.SpriteRenderer2DComponent_SetFlipX(Entity.ID, ref value);
+        InternalCalls.SpriteRenderer2DComponent_SetFlipX(Entity.ID, value);
       }
     }
 
@@ -468,7 +468,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.SpriteRenderer2DComponent_SetFlipY(Entity.ID, ref value);
+        InternalCalls.SpriteRenderer2DComponent_SetFlipY(Entity.ID, value);
       }
     }
 
@@ -481,7 +481,7 @@ namespace ORiginEngine
       }
       set
       {
-        InternalCalls.SpriteRenderer2DComponent_SetTilingFactor(Entity.ID, ref value);
+        InternalCalls.SpriteRenderer2DComponent_SetTilingFactor(Entity.ID, value);
       }
     }
   }

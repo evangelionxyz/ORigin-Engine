@@ -21,7 +21,7 @@ namespace ORiginEngine
         InternalCalls.TransformComponent_GetTranslation(ID, out Vector3 translation);
         return translation;
       }
-      set => InternalCalls.TransformComponent_SetTranslation(ID, ref value);
+      set => InternalCalls.TransformComponent_SetTranslation(ID, value);
     }
 
     public Vector3 Rotation
@@ -31,7 +31,7 @@ namespace ORiginEngine
         InternalCalls.TransformComponent_GetRotation(ID, out Vector3 rotation);
         return rotation;
       }
-      set => InternalCalls.TransformComponent_SetRotation(ID, ref value);
+      set => InternalCalls.TransformComponent_SetRotation(ID, value);
     }
 
     public Vector3 Scale
@@ -41,7 +41,7 @@ namespace ORiginEngine
         InternalCalls.TransformComponent_GetScale(ID, out Vector3 scale);
         return scale;
       }
-      set => InternalCalls.TransformComponent_SetScale(ID, ref value);
+      set => InternalCalls.TransformComponent_SetScale(ID, value);
     }
 
     public T AddComponent<T>() where T : Component, new()

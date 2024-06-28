@@ -133,7 +133,7 @@ namespace origin {
 
 		m_ActiveScene->GetUIRenderer()->Render();
 
-		if (IsViewportHovered)
+		if (IsViewportHovered && IsViewportFocused)
 		{
 			auto [mx, my] = ImGui::GetMousePos();
 			glm::ivec2 mousePos = { mx, my };
