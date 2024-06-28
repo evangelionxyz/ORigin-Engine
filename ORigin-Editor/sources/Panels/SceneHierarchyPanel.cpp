@@ -542,7 +542,7 @@ namespace origin {
 				UI::DrawCheckbox("Rotate Z", &component.RotateZ);
 
 				UI::DrawCheckbox("##Kinematic", &component.Kinematic);
-				UI::DrawVecControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
 				UI::DrawVec3Control("Center Mass", component.CenterMassPosition);
 
 		});
@@ -551,29 +551,29 @@ namespace origin {
 		{
 				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
 				UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
-				UI::DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 		});
 
 		DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto &component)
 			{
 				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
-				UI::DrawVecControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
-				UI::DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
+				UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
 
 		DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto &component)
 			{
 				UI::DrawCheckbox("Horizontal", &component.Horizontal);
 				UI::DrawVec3Control("Offset", component.Offset, 0.01f, 0.0f);
-				UI::DrawVecControl("Radius", &component.Radius, 0.01f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawVecControl("Height", &component.Height, 0.01f, 0.0f, 1000.0f, 1.0f);
-				UI::DrawVecControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawVecControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawVecControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+				UI::DrawFloatControl("Radius", &component.Radius, 0.01f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawFloatControl("Height", &component.Height, 0.01f, 0.0f, 1000.0f, 1.0f);
+				UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+				UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
 			});
 
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Scene](auto &component)
@@ -641,9 +641,9 @@ namespace origin {
 
 					UI::DrawCheckbox("Play At Start", &component.PlayAtStart);
 					UI::DrawCheckbox("Looping", &component.Looping);
-					UI::DrawVecControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
-					UI::DrawVecControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
-					UI::DrawVecControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
+					UI::DrawFloatControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
+					UI::DrawFloatControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
+					UI::DrawFloatControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
 					float sizeX = ImGui::GetContentRegionAvail().x;
 					if (ImGui::Button("Play", { sizeX, 0.0f })) audio->Play();
 					if (ImGui::Button("Pause", { sizeX, 0.0f })) audio->Pause();
@@ -653,8 +653,8 @@ namespace origin {
 
 					if (component.Spatializing)
 					{
-						UI::DrawVecControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
-						UI::DrawVecControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+						UI::DrawFloatControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
+						UI::DrawFloatControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
 					}
 				}
 			});
@@ -683,8 +683,8 @@ namespace origin {
 				{
 					ImGui::InputTextMultiline("Text String", &component.TextString);
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-					UI::DrawVecControl("Kerning", &component.Kerning, 0.01f);
-					UI::DrawVecControl("Line Spacing", &component.LineSpacing, 0.01f);
+					UI::DrawFloatControl("Kerning", &component.Kerning, 0.01f);
+					UI::DrawFloatControl("Line Spacing", &component.LineSpacing, 0.01f);
 					UI::DrawCheckbox("Screen Space", &component.ScreenSpace);
 				}
 
@@ -700,11 +700,11 @@ namespace origin {
 				UI::DrawVec3Control("Velocity Variation", component.VelocityVariation, 0.01f, 0.0f, columnWidth);
 				UI::DrawVec3Control("Rotation", component.Rotation, 0.01f, 0.0f, columnWidth);
 
-				UI::DrawVecControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
-				UI::DrawVecControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
-				UI::DrawVecControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
-				UI::DrawVecControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
-				UI::DrawVecControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
+				UI::DrawFloatControl("Size Begin", &component.SizeBegin, 0.01f, 0.0f, 1000.0f, 0.5f, columnWidth);
+				UI::DrawFloatControl("Size End", &component.SizeEnd, 0.01f, 0.0f, 1000.0f, 0.0f, columnWidth);
+				UI::DrawFloatControl("Size Variation", &component.SizeVariation, 0.1f, 0.0f, 1000.0f, 0.3f, columnWidth);
+				UI::DrawFloatControl("Z Axis", &component.ZAxis, 0.1f, -1000.0f, 1000.0f, 0.0f, columnWidth);
+				UI::DrawFloatControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
 			});
 
 		DrawComponent<SpriteRenderer2DComponent>("SPRITE RENDERER 2D", entity, [](auto &component)
@@ -805,12 +805,12 @@ namespace origin {
 					case LightingType::Directional:
 					{
 						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->m_DirLightData.Color));
-						UI::DrawVecControl("Strength", &component.Light->m_DirLightData.Strength, 0.01f, 0.0f, 100.0f);
-						UI::DrawVecControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
-						UI::DrawVecControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
-						UI::DrawVecControl("Far", &component.Light->GetShadow()->Far, 1.0f, -1000.0f, 1000.0f, 50.0f);
-						UI::DrawVecControl("Near", &component.Light->GetShadow()->Near, 1.0f, -1000.0f, 1000.0f, -10.0f);
-						UI::DrawVecControl("Size", &component.Light->GetShadow()->Size, 1.0f, -1000.0f, 1000.0f, 50.0f);
+						UI::DrawFloatControl("Strength", &component.Light->m_DirLightData.Strength, 0.01f, 0.0f, 100.0f);
+						UI::DrawFloatControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
+						UI::DrawFloatControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
+						UI::DrawFloatControl("Far", &component.Light->GetShadow()->Far, 1.0f, -1000.0f, 1000.0f, 50.0f);
+						UI::DrawFloatControl("Near", &component.Light->GetShadow()->Near, 1.0f, -1000.0f, 1000.0f, -10.0f);
+						UI::DrawFloatControl("Size", &component.Light->GetShadow()->Size, 1.0f, -1000.0f, 1000.0f, 50.0f);
 
 						if (component.Light->GetShadow()->GetFramebuffer())
 						{
@@ -879,11 +879,11 @@ namespace origin {
 				ImGui::EndCombo();
 			}
 
-			UI::DrawVecControl("Gravity Scale", &component.GravityScale, 0.01f);
-			UI::DrawVecControl("Rotational Inertia", &component.RotationalInertia, 0.01f);
-			UI::DrawVecControl("Linear Damping", &component.LinearDamping, 0.025f, 0.0f, 1000.0f);
-			UI::DrawVecControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
-			UI::DrawVecControl("Mass", &component.Mass, 0.01f);
+			UI::DrawFloatControl("Gravity Scale", &component.GravityScale, 0.01f);
+			UI::DrawFloatControl("Rotational Inertia", &component.RotationalInertia, 0.01f);
+			UI::DrawFloatControl("Linear Damping", &component.LinearDamping, 0.025f, 0.0f, 1000.0f);
+			UI::DrawFloatControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
+			UI::DrawFloatControl("Mass", &component.Mass, 0.01f);
 			UI::DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
 
 			ImGui::Text("Freeze Position");
@@ -911,19 +911,19 @@ namespace origin {
 
 				float width = 118.0f;
 				b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
-				if (UI::DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+				if (UI::DrawFloatControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
 				{
 					if(fixture) fixture->SetDensity(component.Density);
 				}
-				if(UI::DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
+				if(UI::DrawFloatControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if(fixture) fixture->SetFriction(component.Friction);
 				}
-				if(UI::DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
+				if(UI::DrawFloatControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if(fixture) fixture->SetRestitution(component.Restitution);
 				}
-				if(UI::DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
+				if(UI::DrawFloatControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
 				{
 					if(fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
 				}
@@ -934,23 +934,23 @@ namespace origin {
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
 				UI::DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
-				UI::DrawVecControl("Radius", &component.Radius, 0.01f, 0.5f);
+				UI::DrawFloatControl("Radius", &component.Radius, 0.01f, 0.5f);
 
 				float width = 118.0f;
 				b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
-				if (UI::DrawVecControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+				if (UI::DrawFloatControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
 				{
 					if (fixture) fixture->SetDensity(component.Density);
 				}
-				if (UI::DrawVecControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
+				if (UI::DrawFloatControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if (fixture) fixture->SetFriction(component.Friction);
 				}
-				if (UI::DrawVecControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
+				if (UI::DrawFloatControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
 				{
 					if (fixture) fixture->SetRestitution(component.Restitution);
 				}
-				if (UI::DrawVecControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
+				if (UI::DrawFloatControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
 				{
 					if (fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
 				}
@@ -997,17 +997,17 @@ namespace origin {
 						joint->EnableLimit(component.EnableLimit);
 				}
 				UI::DrawVec2Control("Anchor", component.AnchorPoint);
-				if (UI::DrawVecControl("Lower Angle", &component.LowerAngle, 0.0f))
+				if (UI::DrawFloatControl("Lower Angle", &component.LowerAngle, 0.0f))
 				{
 					if (joint)
 						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
 				}
-				if (UI::DrawVecControl("Upper Angle", &component.UpperAngle, 0.0f))
+				if (UI::DrawFloatControl("Upper Angle", &component.UpperAngle, 0.0f))
 				{
 					if (joint)
 						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
 				}
-				if (UI::DrawVecControl("Max Torque", &component.MaxMotorTorque, 0.0f))
+				if (UI::DrawFloatControl("Max Torque", &component.MaxMotorTorque, 0.0f))
 				{
 					if (joint)
 						joint->SetMaxMotorTorque(component.MaxMotorTorque);
@@ -1017,7 +1017,7 @@ namespace origin {
 					if (joint)
 						joint->EnableMotor(component.EnableMotor);
 				}
-				if (UI::DrawVecControl("Motor Speed", &component.MotorSpeed, 0.0f))
+				if (UI::DrawFloatControl("Motor Speed", &component.MotorSpeed, 0.0f))
 				{
 					if (joint)
 						joint->SetMotorSpeed(component.MotorSpeed);
@@ -1064,50 +1064,63 @@ namespace origin {
 
 				if (isRunning && !detached)
 				{
-					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+					std::shared_ptr<ScriptInstance> &scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
 					auto &fields = scriptInstance->GetScriptClass()->GetFields();
 
 					for (const auto &[name, field] : fields)
 					{
-						if (field.Type == ScriptFieldType::Float)
+						switch (field.Type)
+						{
+						case ScriptFieldType::Float:
 						{
 							float data = scriptInstance->GetFieldValue<float>(name);
-							if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
+							if (UI::DrawFloatControl(name.c_str(), &data, 0.1f))
 							{
 								scriptInstance->SetFieldValue<float>(name, data);
 							}
+							break;
 						}
-						if (field.Type == ScriptFieldType::Int)
+						case ScriptFieldType::Int:
 						{
 							int data = scriptInstance->GetFieldValue<int>(name);
-							if (ImGui::DragInt(name.c_str(), &data, 1))
+							if (UI::DrawIntControl(name.c_str(), &data, 1))
 							{
 								scriptInstance->SetFieldValue<int>(name, data);
 							}
+							break;
 						}
-						if (field.Type == ScriptFieldType::Vector2)
+						case ScriptFieldType::Vector2:
 						{
 							glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
-							if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
+							if (UI::DrawVec2Control(name.c_str(), data, 0.1f))
 							{
 								scriptInstance->SetFieldValue<glm::vec2>(name, data);
 							}
+							break;
 						}
-						if (field.Type == ScriptFieldType::Vector3)
+						case ScriptFieldType::Vector3:
 						{
 							glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
-							if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
+							if (UI::DrawVec3Control(name.c_str(), data, 0.1f))
 							{
 								scriptInstance->SetFieldValue<glm::vec3>(name, data);
 							}
+							break;
 						}
-						if (field.Type == ScriptFieldType::Vector4)
+						case ScriptFieldType::Vector4:
 						{
 							glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
-							if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
+							if (UI::DrawVec4Control(name.c_str(), data, 0.1f))
 							{
 								scriptInstance->SetFieldValue<glm::vec4>(name, data);
 							}
+							break;
+						}
+						case ScriptFieldType::Entity:
+							uint64_t uuid = scriptInstance->GetFieldValue<uint64_t>(name);
+							std::string idStr = std::to_string(uuid);
+							UI::DrawButtonWithColumn(name.c_str(), idStr.c_str());
+							break;
 						}
 					}
 				}
@@ -1115,7 +1128,7 @@ namespace origin {
 				{
 					// !IsRunning
 
-					std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+					std::shared_ptr<ScriptClass> &entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 					const auto &fields = entityClass->GetFields();
 					auto &entityFields = ScriptEngine::GetScriptFieldMap(entity);
 
@@ -1125,62 +1138,99 @@ namespace origin {
 						{
 							ScriptFieldInstance &scriptField = entityFields.at(name);
 
-							if (field.Type == ScriptFieldType::Float)
+							switch (field.Type)
+							{
+							case ScriptFieldType::Float:
 							{
 								float data = scriptField.GetValue<float>();
-								if (ImGui::DragFloat(name.c_str(), &data, 0.25f))
+								if (UI::DrawFloatControl(name.c_str(), &data, 0.1f))
 								{
 									scriptField.SetValue<float>(data);
 								}
+								break;
 							}
-							if (field.Type == ScriptFieldType::Int)
+							case ScriptFieldType::Int:
 							{
 								int data = scriptField.GetValue<int>();
-								if (ImGui::DragInt(name.c_str(), &data, 1))
+								if (UI::DrawIntControl(name.c_str(), &data))
 								{
 									scriptField.SetValue<int>(data);
 								}
+								break;
 							}
-							if (field.Type == ScriptFieldType::Vector2)
+							case ScriptFieldType::Vector2:
 							{
 								glm::vec2 data = scriptField.GetValue<glm::vec3>();
-								if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data), 0.25f))
+								if (UI::DrawVec2Control(name.c_str(), data, 0.1f))
 								{
 									scriptField.SetValue<glm::vec2>(data);
 								}
+								break;
 							}
-							if (field.Type == ScriptFieldType::Vector3)
+							case ScriptFieldType::Vector3:
 							{
 								glm::vec3 data = scriptField.GetValue<glm::vec3>();
-								if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data), 0.25f))
+								if (UI::DrawVec3Control(name.c_str(), data, 0.1f))
 								{
 									scriptField.SetValue<glm::vec3>(data);
 								}
+								break;
 							}
-							if (field.Type == ScriptFieldType::Vector4)
+							case ScriptFieldType::Vector4:
 							{
 								glm::vec4 data = scriptField.GetValue<glm::vec4>();
-								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data), 0.25f))
+								if (UI::DrawVec4Control(name.c_str(), data, 0.1f))
 								{
 									scriptField.SetValue<glm::vec4>(data);
 								}
+								break;
+							}
+							case ScriptFieldType::Entity:
+							{
+								uint64_t uuid = scriptField.GetValue<uint64_t>();
+								std::string idStr = std::to_string(uuid);
+								UI::DrawButtonWithColumn(name.c_str(), idStr.c_str(), nullptr, [&]()
+								{
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+										{
+											OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+											if (payload->DataSize == sizeof(Entity))
+											{
+												Entity src { *static_cast<entt::entity *>(payload->Data), scene.get() };
+												scriptField.SetValue<uint64_t>(src.GetUUID());
+											}
+										}
+										ImGui::EndDragDropTarget();
+									}
+
+									ImGui::SameLine();
+									if (UI::DrawButton("X"))
+									{
+										scriptField.SetValue<uint64_t>(0);
+									}
+								});
+								break;
+							}
 							}
 						}
 						else
 						{
 							ScriptFieldInstance &fieldInstance = entityFields[name];
-
-							if (field.Type == ScriptFieldType::Float)
+							switch (field.Type)
+							{
+							case ScriptFieldType::Float:
 							{
 								float data = 0.0f;
-								if (ImGui::DragFloat(name.c_str(), &data))
+								if (UI::DrawFloatControl(name.c_str(), &data, 0.1f))
 								{
 									fieldInstance.Field = field;
 									fieldInstance.SetValue<float>(data);
 								}
+								break;
 							}
-
-							if (field.Type == ScriptFieldType::Int)
+							case ScriptFieldType::Int:
 							{
 								int data = 0;
 								if (ImGui::DragInt(name.c_str(), &data))
@@ -1188,36 +1238,69 @@ namespace origin {
 									fieldInstance.Field = field;
 									fieldInstance.SetValue<int>(data);
 								}
+								break;
 							}
-
-							if (field.Type == ScriptFieldType::Vector2)
+							case ScriptFieldType::Vector2:
 							{
 								glm::vec2 data(0.0f);
-								if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(data)))
+								if (UI::DrawVec2Control(name.c_str(), data, 0.1f))
 								{
 									fieldInstance.Field = field;
 									fieldInstance.SetValue<glm::vec2>(data);
 								}
+								break;
 							}
-
-							if (field.Type == ScriptFieldType::Vector3)
+							case ScriptFieldType::Vector3:
 							{
 								glm::vec3 data(0.0f);
-								if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(data)))
+								if (UI::DrawVec3Control(name.c_str(), data, 0.1f))
 								{
 									fieldInstance.Field = field;
 									fieldInstance.SetValue<glm::vec3>(data);
 								}
+								break;
 							}
-
-							if (field.Type == ScriptFieldType::Vector4)
+							case ScriptFieldType::Vector4:
 							{
 								glm::vec4 data(0.0f);
-								if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(data)))
+								if (UI::DrawVec4Control(name.c_str(), data, 0.1f))
 								{
 									fieldInstance.Field = field;
 									fieldInstance.SetValue<glm::vec4>(data);
 								}
+								break;
+							}
+							case ScriptFieldType::Entity:
+							{
+								UI::DrawButtonWithColumn(name.c_str(), "Drag Here", nullptr, [&]()
+								{
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+										{
+											OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+											if (payload->DataSize == sizeof(Entity))
+											{
+												Entity src { *static_cast<entt::entity *>(payload->Data), scene.get() };
+												fieldInstance.Field = field;
+												fieldInstance.SetValue<uint64_t>(src.GetUUID());
+											}
+										}
+										ImGui::EndDragDropTarget();
+									}
+
+									ImGui::SameLine();
+									
+								});
+
+								ImGui::SameLine();
+								if (UI::DrawButton("X"))
+								{
+									fieldInstance.Field = field;
+									fieldInstance.SetValue<uint64_t>(0);
+								}
+								break;
+							}
 							}
 						}
 					}

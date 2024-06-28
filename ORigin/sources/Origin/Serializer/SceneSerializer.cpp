@@ -606,11 +606,11 @@ namespace origin
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(filepath.string());
+		std::ofstream fout(filepath.generic_string());
 		fout << out.c_str();
 		fout.close();
 
-		OGN_CORE_INFO("Scene Serialized in {0}", filepath.string());
+		OGN_CORE_INFO("[SeceneSerializer] Scene Serialized in {0}", filepath.generic_string());
 	}
 
 	void SceneSerializer::SerializeRuntime(const std::filesystem::path& filepath)
@@ -630,7 +630,7 @@ namespace origin
 			return false;
 
 		auto sceneName = data["Scene"].as<std::string>();
-		OGN_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+		OGN_CORE_TRACE("[SceneSerializer] Deserializing scene '{0}'", sceneName);
 		if (YAML::Node entities = data["Entities"])
 		{
 			for (YAML::iterator::value_type entity : entities)
@@ -1023,7 +1023,7 @@ namespace origin
 									READ_FIELD_TYPE(Vector2, glm::vec2);
 									READ_FIELD_TYPE(Vector3, glm::vec3);
 									READ_FIELD_TYPE(Vector4, glm::vec4);
-									READ_FIELD_TYPE(Entity, UUID);
+									READ_FIELD_TYPE(Entity, uint64_t);
 								}
 							}
 						}

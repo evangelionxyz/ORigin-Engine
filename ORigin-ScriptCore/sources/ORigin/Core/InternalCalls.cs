@@ -220,5 +220,9 @@ namespace ORiginEngine
     internal extern static bool Input_IsKeyPressed(KeyCode keycode);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static bool Input_IsKeyReleased(KeyCode keycode);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static bool Input_IsMouseDown(MouseCode code);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static bool Input_IsMouseUp(MouseCode code);
   }
 }

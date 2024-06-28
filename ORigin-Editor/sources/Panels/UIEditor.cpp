@@ -152,8 +152,8 @@ namespace origin
 						{
 							ImGui::InputTextMultiline("Text String", &text.Component.TextString);
 							ImGui::ColorEdit4("Color", glm::value_ptr(text.Component.Color));
-							UI::DrawVecControl("Kerning", &text.Component.Kerning, 0.01f);
-							UI::DrawVecControl("Line Spacing", &text.Component.LineSpacing, 0.01f);
+							UI::DrawFloatControl("Kerning", &text.Component.Kerning, 0.01f);
+							UI::DrawFloatControl("Line Spacing", &text.Component.LineSpacing, 0.01f);
 						}
 					}
 				}

@@ -6,15 +6,13 @@ namespace ORiginEngine
 {
   public class Entity
   {
-    protected Entity() { ID = 0; }
-
     internal Entity(ulong id)
     {
       ID = id;
     }
 
     public readonly ulong ID;
-
+    protected Entity() { ID = 0; }
 
     public Vector3 Translation
     {
@@ -66,7 +64,7 @@ namespace ORiginEngine
     public T GetComponent<T>() where T : Component, new()
     {
       if (!HasComponent<T>())
-        return null;
+        return AddComponent<T>();
 
       T component = new T() { Entity = this };
       return component;

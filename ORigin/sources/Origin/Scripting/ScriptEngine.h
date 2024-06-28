@@ -77,8 +77,7 @@ namespace origin {
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount = 0);
 		MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
-
-		const std::unordered_map<std::string, ScriptField> GetFields() const { return m_Fields; }
+		std::unordered_map<std::string, ScriptField> GetFields() const { return m_Fields; }
 
 	private:
 		MonoClass* m_MonoClass = nullptr;
@@ -145,9 +144,7 @@ namespace origin {
 
 		static bool LoadAssembly(const std::filesystem::path& filepath);
 		static bool LoadAppAssembly(const std::filesystem::path& filepath);
-
 		static void ReloadAssembly();
-
 		static void SetSceneContext(Scene* scene);
 		static void ClearSceneContext();
 
@@ -164,18 +161,15 @@ namespace origin {
 
 		static std::shared_ptr<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 		static std::vector<std::string> GetScriptClassStorage();
-
 		static Scene* GetSceneContext();
 		static MonoImage* GetCoreAssemblyImage();
-
 		static MonoObject* GetManagedInstance(UUID uuid);
-
 
 	private:
 		static void InitMono();
 		static void ShutdownMono();
 
-		static MonoObject* InstantiateClass(MonoClass* monoClass);
+		static MonoObject* InstantiateObject(MonoClass* monoClass);
 		static void LoadAssemblyClasses();
 
 		friend class ScriptClass;

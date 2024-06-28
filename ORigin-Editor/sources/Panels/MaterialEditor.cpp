@@ -54,7 +54,7 @@ namespace origin
 				ImGui::EndDragDropTarget();
 			}
 
-			UI::DrawVecControl("Emission", &m_Material->BufferData.Emission);
+			UI::DrawFloatControl("Emission", &m_Material->BufferData.Emission);
 
 			ImGui::Button("Metallic Map", buttonSize);
 			if (ImGui::BeginDragDropTarget())
@@ -74,7 +74,7 @@ namespace origin
 				}
 				ImGui::EndDragDropTarget();
 			}
-			UI::DrawVecControl("Metallic", &m_Material->BufferData.MetallicValue);
+			UI::DrawFloatControl("Metallic", &m_Material->BufferData.MetallicValue);
 
 			ImGui::Button("Roughness Map", buttonSize);
 			if (ImGui::BeginDragDropTarget())
@@ -94,7 +94,7 @@ namespace origin
 				}
 				ImGui::EndDragDropTarget();
 			}
-			UI::DrawVecControl("Roughness", &m_Material->BufferData.RoughnessValue);
+			UI::DrawFloatControl("Roughness", &m_Material->BufferData.RoughnessValue);
 
 			ImGui::End();
 		}

@@ -265,7 +265,7 @@ namespace origin {
 		{
 			auto &[tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
 			
-			if (camera.GetOrthoSize() > 10.0f || camera.GetProjectionType() == ProjectionType::Perspective)
+			if (camera.GetOrthoSize() > 15.0f || camera.GetProjectionType() == ProjectionType::Perspective)
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);
 
