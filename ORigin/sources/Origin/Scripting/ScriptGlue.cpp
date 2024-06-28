@@ -444,6 +444,8 @@ namespace origin
 			auto &ac = entity.GetComponent<AudioComponent>();
 			return ScriptEngine::CreateString(ac.Name.c_str());
 		}
+		OGN_CORE_ERROR("[ScriptGlue]: Invalid Entity");
+		return nullptr;
 	}
 
 	static void AudioComponent_SetName(UUID entityID, MonoString *name)
@@ -546,6 +548,8 @@ namespace origin
 		{
 			return entity.GetComponent<AudioComponent>().MinDistance;
 		}
+		OGN_CORE_ERROR("[ScriptGlue]: Invalid Entity");
+		return 0.0f;
 	}
 
 	static void AudioComponent_SetMaxDistance(UUID entityID, float maxDistance)
@@ -573,6 +577,8 @@ namespace origin
 		{
 			return entity.GetComponent<AudioComponent>().MaxDistance;
 		}
+		OGN_CORE_ERROR("[ScriptGlue]: Invalid Entity");
+		return 0.0f;
 	}
 
 	static void AudioComponent_SetPitch(UUID entityID, float pitch)
