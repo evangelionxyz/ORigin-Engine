@@ -43,8 +43,8 @@ namespace origin {
 		void SetDraggingActive(bool enable) { m_CanDragging = enable; }
 		void SetScrollingActive(bool enable) { m_CanScrolling = enable; }
 		void SetMoveActive(bool enable) { m_CanMoving = enable; }
-		void SetOrthoSize(float size) { m_OrthoSize = size; }
-		void SetOrthoSizeMax(float size) { m_MaxOrthoSize = size; }
+		void SetOrthoScale(float size) { m_OrthoScale = size; }
+		void SetOrthoScaleMax(float size) { m_MaxOrthoScale = size; }
 
 		float GetYaw() const { return m_Yaw; }
 		float GetPitch() const { return m_Pitch; }
@@ -53,10 +53,10 @@ namespace origin {
 		float GetNear() const { return m_NearClip; }
 		float GetFar() const { return m_FarClip; }
 		float GetAspectRatio() const { return m_AspectRatio; }
-		float GetOrthoSize() const { return m_OrthoSize; }
+		float GetOrthoScale() const { return m_OrthoScale; }
 		float GetWidth() const { return m_ViewportWidth; }
 		float GetHeight() const { return m_ViewportHeight; }
-		void UpdateAudioListener(Timestep deltaTime);
+		void UpdateAudioListener(Timestep ts);
 		glm::vec3 GetUpDirection() const;
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;
@@ -96,7 +96,7 @@ namespace origin {
 		float m_FarClip = 5000.0f;
 		float m_OrthoNearClip = -1.0f;
 		float m_OrthoFarClip = 100.0f;
-		float m_OrthoSize = 10.0f;
-		float m_MaxOrthoSize = 100.0f;
+		float m_OrthoScale = 10.0f;
+		float m_MaxOrthoScale = 100.0f;
 	};
 }

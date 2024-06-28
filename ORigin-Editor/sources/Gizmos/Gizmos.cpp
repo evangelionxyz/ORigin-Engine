@@ -23,7 +23,7 @@ namespace origin {
 			return;
 
 		Renderer2D::Begin(camera);
-		float orthoSize = camera.GetOrthoSize();
+		float orthoSize = camera.GetOrthoScale();
 		glm::vec2 cameraPosition = { camera.GetPosition().x, camera.GetPosition().y };
 
 		float lineSpacing = 1.0f;
@@ -265,7 +265,7 @@ namespace origin {
 		{
 			auto &[tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
 			
-			if (camera.GetOrthoSize() > 15.0f || camera.GetProjectionType() == ProjectionType::Perspective)
+			if (camera.GetOrthoScale() > 15.0f || camera.GetProjectionType() == ProjectionType::Perspective)
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);
 
@@ -318,7 +318,7 @@ namespace origin {
 			{
 				CalculateBoundary2DSizing(camera);
 
-				float size = camera.GetOrthoSize() * 0.03f;
+				float size = camera.GetOrthoScale() * 0.03f;
 				auto &tc = selectedEntity.GetComponent<TransformComponent>();
 
 				// bottom left corner
@@ -416,7 +416,7 @@ namespace origin {
 		const glm::vec2 delta { mouse - initialPosition };
 		initialPosition = mouse;
 
-		float orthoScale = camera.GetOrthoSize() / camera.GetHeight();
+		float orthoScale = camera.GetOrthoScale() / camera.GetHeight();
 		glm::vec3 translation = glm::vec3(delta, 0.0f);
 
 		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();

@@ -53,8 +53,8 @@ namespace origin
 			{
 				auto &cc = cam.GetComponent<CameraComponent>();
 				const float orthoSizeY = cc.Camera.GetOrthographicSize().y;
-				m_Camera.SetOrthoSize(orthoSizeY * 1.3f);
-				m_Camera.SetOrthoSizeMax(orthoSizeY * 4.0f);
+				m_Camera.SetOrthoScale(orthoSizeY * 1.3f);
+				m_Camera.SetOrthoScaleMax(orthoSizeY * 4.0f);
 			}
 			m_Component = component;
 			IsOpened = true;

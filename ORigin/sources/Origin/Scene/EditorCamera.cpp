@@ -34,7 +34,7 @@ namespace origin {
 	void EditorCamera::InitOrthographic(float size, float nearClip, float farClip)
 	{
 		m_ProjectionType = ProjectionType::Orthographic;
-		m_OrthoSize = size;
+		m_OrthoScale = size;
 		m_OrthoNearClip = nearClip;
 		m_OrthoFarClip = farClip;
 
@@ -57,10 +57,10 @@ namespace origin {
 			break;
 
 		case ProjectionType::Orthographic:
-			float OrthoLeft = -m_OrthoSize * m_AspectRatio * 0.5f;
-			float OrthoRight = m_OrthoSize * m_AspectRatio * 0.5f;
-			float OrthoTop = -m_OrthoSize * 0.5f;
-			float OrthoBottom = m_OrthoSize * 0.5f;
+			float OrthoLeft = -m_OrthoScale * m_AspectRatio * 0.5f;
+			float OrthoRight = m_OrthoScale * m_AspectRatio * 0.5f;
+			float OrthoTop = -m_OrthoScale * 0.5f;
+			float OrthoBottom = m_OrthoScale * 0.5f;
 			m_Projection = glm::ortho(OrthoLeft, OrthoRight, OrthoTop, OrthoBottom, m_OrthoNearClip, m_OrthoFarClip);
 			break;
 		}
@@ -79,7 +79,7 @@ namespace origin {
 			speed = std::min(speed, 100.0f);
 			break;
 		case ProjectionType::Orthographic:
-			speed = m_OrthoSize * 0.5f;
+			speed = m_OrthoScale * 0.5f;
 		}
 		
 		return speed;
@@ -304,8 +304,8 @@ namespace origin {
 			
 			break;
 		case ProjectionType::Orthographic:
-			m_Position += glm::vec3(-delta.x * (m_OrthoSize / m_ViewportHeight) * 300.0f,
-				delta.y * (m_OrthoSize / m_ViewportHeight) * 300.0f, 0.0f);
+			m_Position += glm::vec3(-delta.x * (m_OrthoScale / m_ViewportHeight) * 300.0f,
+				delta.y * (m_OrthoScale / m_ViewportHeight) * 300.0f, 0.0f);
 			break;
 		}
 	}
@@ -333,9 +333,9 @@ namespace origin {
 			}
 			break;
 		case ProjectionType::Orthographic:
-			m_OrthoSize -= delta * ZoomSpeed();
-			m_OrthoSize = std::max(m_OrthoSize, 1.0f);
-			m_OrthoSize = std::min(m_OrthoSize, m_MaxOrthoSize);
+			m_OrthoScale -= delta * ZoomSpeed();
+			m_OrthoScale = std::max(m_OrthoScale, 1.0f);
+			m_OrthoScale = std::min(m_OrthoScale, m_MaxOrthoScale);
 			break;
 		}
 	}

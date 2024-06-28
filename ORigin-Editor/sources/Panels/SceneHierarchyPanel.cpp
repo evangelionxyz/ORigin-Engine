@@ -233,6 +233,11 @@ namespace origin {
 			if (ImGui::BeginDragDropSource())
 			{
 				ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
+
+				ImGui::BeginTooltip();
+				ImGui::Text("%s %llu", entity.GetTag().c_str(), entity.GetUUID());
+				ImGui::EndTooltip();
+
 				ImGui::EndDragDropSource();
 			}
 
@@ -712,8 +717,6 @@ namespace origin {
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
 				std::string label = "None";
-				ImGui::Text("Texture");
-				ImGui::SameLine();
 				if (component.Texture != 0)
 				{
 					if (AssetManager::IsAssetHandleValid(component.Texture) && AssetManager::GetAssetType(component.Texture) == AssetType::Texture)
@@ -727,54 +730,49 @@ namespace origin {
 					}
 				}
 
-				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
-				buttonLabelSize.x += 20.0f;
-				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
-
-				ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
-				if (ImGui::BeginDragDropTarget())
+				UI::DrawButtonWithColumn("Texture", label.c_str(), nullptr, [&]()
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					if (ImGui::BeginDragDropTarget())
 					{
-						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
-						if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+						if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 						{
-							component.Texture = handle;
+							AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+							if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+							{
+								component.Texture = handle;
+								component.Min = glm::vec2(0.0f);
+								component.Max = glm::vec2(1.0f);
+							}
+							else
+								OGN_CORE_WARN("Wrong asset type!");
+						}
+						else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
+						{
+							SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
+							component.Texture = data.TextureHandle;
+							component.Min = data.Min;
+							component.Max = data.Max;
+						}
+						ImGui::EndDragDropTarget();
+					}
+
+					if (component.Texture != 0)
+					{
+						ImGui::SameLine();
+						if (UI::DrawButton("X"))
+						{
+							component.Texture = 0;
 							component.Min = glm::vec2(0.0f);
 							component.Max = glm::vec2(1.0f);
 						}
-						else
-							OGN_CORE_WARN("Wrong asset type!");
 					}
-					else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
-					{
-						SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-						component.Texture = data.TextureHandle;
-						component.Min = data.Min;
-						component.Max = data.Max;
-					}
-					ImGui::EndDragDropTarget();
-				}
+				});
 
 				if (component.Texture != 0)
 				{
-					ImGui::SameLine();
-					const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
-					const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-					if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
-					{
-						component.Texture = 0;
-						component.Min = glm::vec2(0.0f);
-						component.Max = glm::vec2(1.0f);
-					}
-
-					UI::DrawVec2Control("Tilling Factor", component.TillingFactor, 0.025f, 1.0f);
-
-					ImGui::Text("Flip");
-					ImGui::PushID(1);
-					UI::DrawCheckbox("X", &component.FlipX);
-					ImGui::PopID();
-					UI::DrawCheckbox("Y", &component.FlipY);
+					UI::DrawVec2Control("Tilling", component.TillingFactor, 0.025f, 1.0f);
+					UI::DrawCheckbox("Flip X", &component.FlipX);
+					UI::DrawCheckbox("Flip Y", &component.FlipY);
 				}
 			});
 
@@ -1118,8 +1116,16 @@ namespace origin {
 						}
 						case ScriptFieldType::Entity:
 							uint64_t uuid = scriptInstance->GetFieldValue<uint64_t>(name);
-							std::string idStr = std::to_string(uuid);
-							UI::DrawButtonWithColumn(name.c_str(), idStr.c_str());
+							std::string lable = scene->GetEntityWithUUID(uuid).GetTag();
+							UI::DrawButtonWithColumn(name.c_str(), lable.c_str(), nullptr, [&]()
+							{
+								if (ImGui::IsItemHovered())
+								{
+									ImGui::BeginTooltip();
+									ImGui::Text("%llu", uuid);
+									ImGui::EndTooltip();
+								}
+							});
 							break;
 						}
 					}
@@ -1188,8 +1194,8 @@ namespace origin {
 							case ScriptFieldType::Entity:
 							{
 								uint64_t uuid = scriptField.GetValue<uint64_t>();
-								std::string idStr = std::to_string(uuid);
-								UI::DrawButtonWithColumn(name.c_str(), idStr.c_str(), nullptr, [&]()
+								std::string lable = uuid != 0 ? scene->GetEntityWithUUID(uuid).GetTag() : "Drag Here";
+								UI::DrawButtonWithColumn(name.c_str(), lable.c_str(), nullptr, [&]()
 								{
 									if (ImGui::BeginDragDropTarget())
 									{
@@ -1203,6 +1209,18 @@ namespace origin {
 											}
 										}
 										ImGui::EndDragDropTarget();
+									}
+
+									if (ImGui::IsItemHovered())
+									{
+										ImGui::BeginTooltip();
+
+										if(uuid)
+											ImGui::Text("%llu", uuid);
+										else
+											ImGui::Text("Null Entity!");
+
+										ImGui::EndTooltip();
 									}
 
 									ImGui::SameLine();
@@ -1289,16 +1307,20 @@ namespace origin {
 										ImGui::EndDragDropTarget();
 									}
 
-									ImGui::SameLine();
-									
-								});
+									if (ImGui::IsItemHovered())
+									{
+										ImGui::BeginTooltip();
+										ImGui::Text("Null Entity!");
+										ImGui::EndTooltip();
+									}
 
-								ImGui::SameLine();
-								if (UI::DrawButton("X"))
-								{
-									fieldInstance.Field = field;
-									fieldInstance.SetValue<uint64_t>(0);
-								}
+									ImGui::SameLine();
+									if (UI::DrawButton("X"))
+									{
+										fieldInstance.Field = field;
+										fieldInstance.SetValue<uint64_t>(0);
+									}
+								});
 								break;
 							}
 							}

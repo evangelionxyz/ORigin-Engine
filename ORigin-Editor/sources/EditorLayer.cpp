@@ -1057,7 +1057,18 @@ namespace origin {
 				{
 					auto &tc = entity.GetComponent<TransformComponent>();
 					auto &idc = entity.GetComponent<IDComponent>();
-					float orthoScale = m_EditorCamera.GetOrthoSize() / m_EditorCamera.GetHeight();
+
+					float orthoScale = m_EditorCamera.GetOrthoScale() / m_EditorCamera.GetHeight();
+					if (m_SceneState == SceneState::Play)
+					{
+						Entity cam = m_ActiveScene->GetPrimaryCameraEntity();
+						if (cam.IsValid())
+						{
+							CameraComponent &cc = cam.GetComponent<CameraComponent>();
+							orthoScale = cc.Camera.GetOrthographicScale() / cc.Camera.GetViewportSize().y;
+						}
+					}
+
 					static glm::vec3 translation = tc.Translation;
 
 					if (entity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)

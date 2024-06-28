@@ -569,7 +569,13 @@ namespace origin {
 		Renderer::GetStatistics().CircleCount++;
 	}
 
-	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4 &color, int entityID)
+	void Renderer2D::DrawCircle(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 &color, float thickness, float fade, int entityID)
+	{
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
+		DrawCircle(transform, color, thickness, fade, entityID);
+	}
+
+	void Renderer2D::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color, int entityID)
 	{
 		OGN_PROFILER_RENDERING();
 

@@ -58,8 +58,8 @@ namespace origin
 
 		if (Deserialize() && !m_IsOpened)
 		{
-			m_Camera.SetOrthoSize(static_cast<float>(m_Texture->GetHeight()));
-			m_Camera.SetOrthoSizeMax(m_Texture->GetHeight() * 4.f);
+			m_Camera.SetOrthoScale(static_cast<float>(m_Texture->GetHeight()));
+			m_Camera.SetOrthoScaleMax(m_Texture->GetHeight() * 4.f);
 
 			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
@@ -132,7 +132,7 @@ namespace origin
 				if (ImGui::Button("Add"))
 				{
 					SpriteSheetController control;
-					control.Size = glm::vec2(m_Camera.GetOrthoSize() * 0.25f);
+					control.Size = glm::vec2(m_Camera.GetOrthoScale() * 0.25f);
 					control.Position = glm::vec2(m_Camera.GetPosition());
 					m_MoveTranslation = control.Position;
 					m_Controls.push_back(control);
@@ -271,7 +271,7 @@ namespace origin
 				// Draw corner
 				if (selected)
 				{
-					float size = m_Camera.GetOrthoSize() * 0.03f;
+					float size = m_Camera.GetOrthoScale() * 0.03f;
 					size = std::min(size, 5.0f);
 					size = std::max(size, 0.05f);
 
@@ -443,7 +443,7 @@ namespace origin
 		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered && m_SelectedIndex >= 0)
 		{
 			auto &c = m_Controls[m_SelectedIndex];
-			float orthoScale = m_Camera.GetOrthoSize() / m_Camera.GetHeight();
+			float orthoScale = m_Camera.GetOrthoScale() / m_Camera.GetHeight();
 
 			glm::vec2 atlasSize = { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
