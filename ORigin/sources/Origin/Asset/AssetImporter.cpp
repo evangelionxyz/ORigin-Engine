@@ -254,6 +254,7 @@ namespace origin {
 
 	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path &filepath)
 	{
+		OGN_CORE_ERROR("[ModelImporter] Not implemented");
 		return nullptr;
 	}
 

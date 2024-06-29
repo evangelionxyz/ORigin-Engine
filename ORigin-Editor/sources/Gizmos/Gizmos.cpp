@@ -15,7 +15,7 @@ namespace origin {
 
 #define BOUNDARY2D_ID -2
 
-	void Gizmos::Draw2DVerticalGrid(const EditorCamera &camera)
+	void Gizmos::Draw2DGrid(const EditorCamera &camera)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -41,10 +41,11 @@ namespace origin {
 
 		auto n = floor(minX / lineSpacing) * lineSpacing;
 		for (float i = n; i <= maxX; i += lineSpacing)
-		{
 			Renderer2D::DrawLine({ i + offset, minY, 0.0f }, { i + offset, maxY, 0.0f }, color);
+
+		n = floor(minY / lineSpacing) * lineSpacing;
+		for (float i = n; i <= maxY; i += lineSpacing)
 			Renderer2D::DrawLine({ minX, i + offset, 0.0f }, { maxX, i + offset, 0.0f }, color);
-		}
 
 		Renderer2D::End();
 	}
@@ -265,7 +266,7 @@ namespace origin {
 		{
 			auto &[tc, cc] = cam.get<TransformComponent, CameraComponent>(entity);
 			
-			if (camera.GetOrthoScale() > 15.0f || camera.GetProjectionType() == ProjectionType::Perspective)
+			if (camera.GetOrthoScale() >= 20.0f || camera.GetProjectionType() == ProjectionType::Perspective)
 			{
 				drawIcon(tc, textures.at("camera"), (int)entity);
 
@@ -353,9 +354,6 @@ namespace origin {
 		//////////////////////////////////     3D     //////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////
 		Draw3DOverlay(camera);
-
-		// Grid
-		Draw2DVerticalGrid(camera);
 	}
 
 	void Gizmos::OnEvent(Event &e)

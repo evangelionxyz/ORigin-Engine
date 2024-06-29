@@ -49,8 +49,9 @@ namespace origin
     std::vector<std::pair<UUID, entt::entity>> &GetEntityMap() { return m_EntityStorage; }
     const std::string &GetName() const { return m_Name; }
     void SetName(const std::string &name) { m_Name = name; }
-
     std::shared_ptr<UIRenderer> GetUIRenderer() { return m_UIRenderer; }
+
+    const std::shared_ptr<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
 
   private:
     std::string m_Name = "untitled";

@@ -129,47 +129,51 @@ namespace origin
 
 		if (entity.HasComponent<UIComponent>())
 		{
-			const auto &ui = entity.GetComponent<UIComponent>();
+			auto &ui = entity.GetComponent<UIComponent>();
 			out << YAML::Key << "UIComponent";
 			out << YAML::BeginMap; // UIComponent
 
-			out << YAML::Key << "Texts" << YAML::BeginSeq; // Texts
-			for (auto &text : ui.Texts)
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "Name" << text.Name;
-				out << YAML::Key << "Anchor" << (int)text.AnchorType;
-				out << YAML::Key << "FontHandle" << text.Component.FontHandle;
-				out << YAML::Key << "TextString" << text.Component.TextString;
-				out << YAML::Key << "LineSpacing" << text.Component.LineSpacing;
-				out << YAML::Key << "Kerning" << text.Component.Kerning;
-				out << YAML::Key << "Color" << text.Component.Color;
-				out << YAML::Key << "Translation" << text.Transform.WorldTranslation;
-				out << YAML::Key << "Rotation" << text.Transform.WorldRotation;
-				out << YAML::Key << "Scale" << text.Transform.WorldScale;
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq; // !Texts
+			out << YAML::Key << "Components" << YAML::BeginSeq; // Components
 
-			out << YAML::Key << "Sprites" << YAML::BeginSeq; // Sprites
-			for (auto &sprite : ui.Sprites)
+			for (auto &[key, value] : ui.Components)
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "Name" << sprite.Name;
-				out << YAML::Key << "Anchor" << (int)sprite.AnchorType;
-				out << YAML::Key << "TextureHandle" << sprite.Component.Texture;
-				out << YAML::Key << "Min" << sprite.Component.Min;
-				out << YAML::Key << "Max" << sprite.Component.Max;
-				out << YAML::Key << "TillingFactor" << sprite.Component.TillingFactor;
-				out << YAML::Key << "Color" << sprite.Component.Color;
-				out << YAML::Key << "FlipX" << sprite.Component.FlipX;
-				out << YAML::Key << "FlipY" << sprite.Component.FlipY;
-				out << YAML::Key << "Translation" << sprite.Transform.WorldTranslation;
-				out << YAML::Key << "Rotation" << sprite.Transform.WorldRotation;
-				out << YAML::Key << "Scale" << sprite.Transform.WorldScale;
+				if (ui.Is<TextComponent>(key))
+				{
+					UIData<TextComponent> *text = ui.GetComponent<TextComponent>(key);
+					out << YAML::Key << "Type" << "TextComponent";
+					out << YAML::Key << "Name" << key;
+					out << YAML::Key << "Anchor" << (int)text->AnchorType;
+					out << YAML::Key << "FontHandle" << text->Component.FontHandle;
+					out << YAML::Key << "TextString" << text->Component.TextString;
+					out << YAML::Key << "LineSpacing" << text->Component.LineSpacing;
+					out << YAML::Key << "Kerning" << text->Component.Kerning;
+					out << YAML::Key << "Color" << text->Component.Color;
+					out << YAML::Key << "Translation" << text->Transform.WorldTranslation;
+					out << YAML::Key << "Rotation" << text->Transform.WorldRotation;
+					out << YAML::Key << "Scale" << text->Transform.WorldScale;
+				}
+				else if (ui.Is<SpriteRenderer2DComponent>(key))
+				{
+					UIData<SpriteRenderer2DComponent> *sprite = ui.GetComponent<SpriteRenderer2DComponent>(key);
+					out << YAML::Key << "Type" << "SpriteRenderer2DComponent";
+					out << YAML::Key << "Name" << key;
+					out << YAML::Key << "Anchor" << (int)sprite->AnchorType;
+					out << YAML::Key << "TextureHandle" << sprite->Component.Texture;
+					out << YAML::Key << "Min" << sprite->Component.Min;
+					out << YAML::Key << "Max" << sprite->Component.Max;
+					out << YAML::Key << "TillingFactor" << sprite->Component.TillingFactor;
+					out << YAML::Key << "Color" << sprite->Component.Color;
+					out << YAML::Key << "FlipX" << sprite->Component.FlipX;
+					out << YAML::Key << "FlipY" << sprite->Component.FlipY;
+					out << YAML::Key << "Translation" << sprite->Transform.WorldTranslation;
+					out << YAML::Key << "Rotation" << sprite->Transform.WorldRotation;
+					out << YAML::Key << "Scale" << sprite->Transform.WorldScale;
+				}
 				out << YAML::EndMap;
 			}
-			out << YAML::EndSeq; // !Sprites
+
+			out << YAML::EndSeq; // !Components
 
 			out << YAML::EndMap; // !UIComponent
 		}
@@ -692,40 +696,45 @@ namespace origin
 				{
 					auto &ui = deserializedEntity.AddComponent<UIComponent>();
 
-					for (const auto txt : uiComponent["Texts"])
+					for (auto comp : uiComponent["Components"])
 					{
-						UIData<TextComponent> text;
-						text.Name = txt["Name"].as<std::string>();
-						text.AnchorType = (UIData<TextComponent>::Anchor) txt["Anchor"].as<int>();
-						text.Component.TextString = txt["TextString"].as<std::string>();
-						text.Component.Kerning = txt["Kerning"].as<float>();
-						text.Component.LineSpacing = txt["LineSpacing"].as<float>();
-						AssetHandle fontHandle = txt["FontHandle"].as<uint64_t>(); 
-						text.Component.FontHandle = fontHandle;
-						text.Component.Color = txt["Color"].as<glm::vec4>();
-						text.Transform.WorldTranslation = txt["Translation"].as<glm::vec3>();
-						text.Transform.WorldRotation= txt["Rotation"].as<glm::vec3>();
-						text.Transform.WorldScale = txt["Scale"].as<glm::vec3>();
-						ui.Texts.push_back(text);
-					}
+						std::string types = comp["Type"].as<std::string>();
+						if (types == "TextComponent")
+						{
+							UIData<TextComponent> component;
+							component.AnchorType = (UIData<TextComponent>::Anchor) comp["Anchor"].as<int>();
+							component.Component.TextString = comp["TextString"].as<std::string>();
+							component.Component.Kerning = comp["Kerning"].as<float>();
+							component.Component.LineSpacing = comp["LineSpacing"].as<float>();
+							AssetHandle fontHandle = comp["FontHandle"].as<uint64_t>();
+							component.Component.FontHandle = fontHandle;
+							component.Component.Color = comp["Color"].as<glm::vec4>();
+							component.Transform.WorldTranslation = comp["Translation"].as<glm::vec3>();
+							component.Transform.WorldRotation = comp["Rotation"].as<glm::vec3>();
+							component.Transform.WorldScale = comp["Scale"].as<glm::vec3>();
 
-					for (const auto &spr : uiComponent["Sprites"])
-					{
-						UIData<SpriteRenderer2DComponent> sprite;
-						sprite.Name = spr["Name"].as<std::string>();
-						sprite.AnchorType = (UIData<SpriteRenderer2DComponent>::Anchor) spr["Anchor"].as<int>();
-						sprite.Component.Min = spr["Min"].as<glm::vec2>();
-						sprite.Component.Max = spr["Max"].as<glm::vec2>();
-						sprite.Component.TillingFactor = spr["TillingFactor"].as<glm::vec2>();
-						sprite.Component.FlipX = spr["FlipX"].as<bool>();
-						sprite.Component.FlipY = spr["FlipY"].as<bool>();
-						AssetHandle textureHandle = spr["TextureHandle"].as<uint64_t>();
-						sprite.Component.Texture = textureHandle;
-						sprite.Component.Color = spr["Color"].as<glm::vec4>();
-						sprite.Transform.WorldTranslation = spr["Translation"].as<glm::vec3>();
-						sprite.Transform.WorldRotation = spr["Rotation"].as<glm::vec3>();
-						sprite.Transform.WorldScale = spr["Scale"].as<glm::vec3>();
-						ui.Sprites.push_back(sprite);
+							std::string name = comp["Name"].as<std::string>();
+							ui.AddComponent<TextComponent>(name, component);
+						}
+						else if (types == "SpriteRenderer2DComponent")
+						{
+							UIData<SpriteRenderer2DComponent> component;
+							component.AnchorType = (UIData<SpriteRenderer2DComponent>::Anchor) comp["Anchor"].as<int>();
+							component.Component.Min = comp["Min"].as<glm::vec2>();
+							component.Component.Max = comp["Max"].as<glm::vec2>();
+							component.Component.TillingFactor = comp["TillingFactor"].as<glm::vec2>();
+							component.Component.FlipX = comp["FlipX"].as<bool>();
+							component.Component.FlipY = comp["FlipY"].as<bool>();
+							AssetHandle textureHandle = comp["TextureHandle"].as<uint64_t>();
+							component.Component.Texture = textureHandle;
+							component.Component.Color = comp["Color"].as<glm::vec4>();
+							component.Transform.WorldTranslation = comp["Translation"].as<glm::vec3>();
+							component.Transform.WorldRotation = comp["Rotation"].as<glm::vec3>();
+							component.Transform.WorldScale = comp["Scale"].as<glm::vec3>();
+
+							std::string name = comp["Name"].as<std::string>();
+							ui.AddComponent<SpriteRenderer2DComponent>(name, component);
+						}
 					}
 				}
 

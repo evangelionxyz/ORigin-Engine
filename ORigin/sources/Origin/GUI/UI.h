@@ -480,7 +480,7 @@ namespace origin::UI
 		return changed;
 	}
 
-	static bool DrawIntControl(const char *lable, int *value, float speed = 0.025f, int minValue = 0, int maxValue = 1, int resetValue = 0, float coloumnWidth = defColWidth)
+	static bool DrawIntControl(const char *lable, int *value, float speed = 1.0f, int minValue = 0, int maxValue = INT_MAX, int resetValue = 0, float coloumnWidth = defColWidth)
 	{
 		bool changed = false;
 

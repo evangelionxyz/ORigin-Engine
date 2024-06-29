@@ -81,13 +81,13 @@ namespace ORiginEngine
 
     public Entity Instantiate(Entity entity)
     {
-      ulong entityID = InternalCalls.Entity_Instantiate(entity.ID);
+      ulong entityID = InternalCalls.Entity_Instantiate(entity.ID, entity.Translation);
       return new Entity(entityID);
     }
 
     public Entity Instantiate(Entity entity, Vector3 translation)
     {
-      ulong entityID = InternalCalls.Entity_Instantiate(entity.ID);
+      ulong entityID = InternalCalls.Entity_Instantiate(entity.ID, translation);
       Entity newEntity = new Entity(entityID);
       newEntity.Translation = new Vector3(translation);
 

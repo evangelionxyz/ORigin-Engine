@@ -46,7 +46,7 @@ namespace origin {
 		void SetType(GizmoType type);
 		GizmoType GetType() const { return m_Type; }
 
-		void Draw2DVerticalGrid(const EditorCamera &camera);
+		void Draw2DGrid(const EditorCamera &camera);
 		void Draw3DGrid(const EditorCamera &camera, bool horizontal, bool vertical, int size);
 
 		void Draw2DOverlay();

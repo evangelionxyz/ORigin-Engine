@@ -18,6 +18,7 @@ namespace origin
 		void SetActive(UIComponent *component);
 		void CreateNewText();
 		void CreateNewTexture();
+		bool RenameComponent(const std::string &oldKey, const std::string &newKeyBase);
 
 		void OnUpdate(Timestep ts);
 		void OnImGuiRender();
@@ -36,9 +37,12 @@ namespace origin
 		bool IsOpened = false;
 
 	private:
+		void DrawInspector();
+		void DrawHierarchy();
+
 		Scene *m_Scene = nullptr;
 		EditorCamera m_Camera;
-		UIComponent *m_Component = nullptr;
+		UIComponent *m_UICompHandler = nullptr;
 
 		std::shared_ptr<Framebuffer> m_Framebuffer;
 

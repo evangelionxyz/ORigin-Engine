@@ -47,7 +47,9 @@ namespace origin
 	void UIRenderer::SetViewportSize(uint32_t width, uint32_t height, float orthoW, float orthoH)
 	{
 		for (UIComponent &ui : m_UIs)
+		{
 			ui.Framebuffer->Resize(width, height);
+		}
 		m_Projection = glm::ortho(-orthoW / 2.0f, orthoW / 2.0f, -orthoH / 2.0f, orthoH / 2.0f, 0.0f, 1.0f);
 	}
 
@@ -68,15 +70,18 @@ namespace origin
 
 			Renderer2D::Begin(m_Projection);
 
-			for (auto &txt : ui.Texts)
+			for (auto &[key, value] : ui.Components)
 			{
-				if (txt.Component.FontHandle != 0)
-					Renderer2D::DrawString(txt.Component.TextString, txt.Transform.GetTransform(), txt.Component);
-			}
-
-			for (auto &tex : ui.Sprites)
-			{
-				Renderer2D::DrawSprite(tex.Transform.GetTransform(), tex.Component);
+				if (ui.Is<TextComponent>(key))
+				{
+					UIData<TextComponent> *comp = ui.GetComponent<TextComponent>(key);
+					Renderer2D::DrawString(comp->Component.TextString, comp->Transform.GetTransform(), comp->Component);
+				}
+				else if (ui.Is<SpriteRenderer2DComponent>(key))
+				{
+					UIData<SpriteRenderer2DComponent> *comp = ui.GetComponent<SpriteRenderer2DComponent>(key);
+					Renderer2D::DrawSprite(comp->Transform.GetTransform(), comp->Component);
+				}
 			}
 
 			Renderer2D::End();

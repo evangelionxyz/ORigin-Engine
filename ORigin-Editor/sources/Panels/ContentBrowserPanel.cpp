@@ -99,16 +99,6 @@ namespace origin
 
 		ImGui::BeginChild("item_browser", canvasSize, false);
 
-	#if 0
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-		ImVec2 posMin = ImVec2(canvasPos);
-		ImVec2 posMax = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
-		uint32_t rectColor = IM_COL32(40, 30, 20, 255);
-		uint32_t rectTransparentColor = IM_COL32(0, 0, 0, 0);
-		drawList->AddRectFilledMultiColor(posMin, posMax, rectTransparentColor, rectTransparentColor, rectColor, rectColor);
-	#endif
-
 		static float padding = 10.0f;
 		const float cellSize = m_ThumbnailSize + padding;
 		const float panelWidth = ImGui::GetContentRegionAvail().x;

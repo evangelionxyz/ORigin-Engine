@@ -20,7 +20,6 @@ namespace origin {
 
 		virtual void Simulate(float deltaTime) override;
 		virtual physx::PxRigidActor* CreateActor(RigidbodyComponent& rb, const glm::vec3& position, const glm::quat& rot) override;
-
 		virtual physx::PxScene* GetScene() override { return m_PhysXScene; }
 
 	private:
@@ -28,7 +27,7 @@ namespace origin {
 		physx::PxScene* m_PhysXScene = nullptr;
 		physx::PxMaterial* m_Material = nullptr;
 
-		Scene* m_Context = nullptr;
+		Scene* m_Scene = nullptr;
 	};
 
 }

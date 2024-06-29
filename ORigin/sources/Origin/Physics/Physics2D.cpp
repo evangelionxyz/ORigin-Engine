@@ -31,7 +31,7 @@ namespace origin {
 	}
 
 	Physics2D::Physics2D(Scene* scene)
-		: m_Context(scene)
+		: m_Scene(scene)
 	{
 		OGN_PROFILER_PHYSICS();
 	}
@@ -42,7 +42,7 @@ namespace origin {
 
 		b2RevoluteJointDef jointDef;
 
-		Entity connectedEntity = m_Context->GetEntityWithUUID(rjc.ConnectedBodyID);
+		Entity connectedEntity = m_Scene->GetEntityWithUUID(rjc.ConnectedBodyID);
 		auto& rb2d = connectedEntity.GetComponent<Rigidbody2DComponent>();
 		b2Body* connectedBody = static_cast<b2Body*>(rb2d.RuntimeBody);
 
@@ -111,10 +111,10 @@ namespace origin {
 		m_World->Step(deltaTime, velocityIterations, positionIterations);
 
 		// Retrieve transform from Box2D
-		auto rb2dView = m_Context->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
+		auto rb2dView = m_Scene->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
 		for (entt::entity e : rb2dView)
 		{
-			Entity entity{ e, m_Context };
+			Entity entity{ e, m_Scene };
 			auto& [tc, rb2d] = rb2dView.get<TransformComponent, Rigidbody2DComponent>(e);
 			auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
@@ -130,15 +130,15 @@ namespace origin {
 			}
 		}
 
-		auto view = m_Context->m_Registry.view<IDComponent, TransformComponent>();
+		auto view = m_Scene->m_Registry.view<IDComponent, TransformComponent>();
 		for (entt::entity e : view)
 		{
 			auto &[idc, tc] = view.get<IDComponent, TransformComponent>(e);
-			Entity entity { e, m_Context };
+			Entity entity { e, m_Scene };
 
 			if (!entity.HasComponent<Rigidbody2DComponent>() && idc.Parent != 0)
 			{
-				auto &parentTC = m_Context->GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
+				auto &parentTC = m_Scene->GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
 				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(parentTC.WorldRotation), tc.Translation);
 				tc.WorldTranslation = rotatedLocalPos + parentTC.WorldTranslation;
 				tc.WorldRotation = parentTC.WorldRotation + tc.Rotation;
@@ -154,13 +154,13 @@ namespace origin {
 
 		m_World = new b2World({ 0.0f, -9.81f });
 
-		m_ContactListener = new Contact2DListener(m_Context);
+		m_ContactListener = new Contact2DListener(m_Scene);
 		m_World->SetContactListener(m_ContactListener);
 
-		auto view = m_Context->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
+		auto view = m_Scene->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
 		for (entt::entity e : view)
 		{
-			Entity entity = { e, m_Context };
+			Entity entity = { e, m_Scene };
 			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
 
 			b2BodyDef bodyDef;
@@ -214,7 +214,7 @@ namespace origin {
 
 		for (entt::entity e : view)
 		{
-			Entity entity = { e, m_Context };
+			Entity entity = { e, m_Scene };
 			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
 			b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
@@ -224,7 +224,101 @@ namespace origin {
 				b2Vec2 pos = body->GetPosition();
 				b2Vec2 anchorPoint = b2Vec2(pos.x + rjc.AnchorPoint.x, pos.y + rjc.AnchorPoint.y);
 				if (rjc.ConnectedBodyID != 0)
+				{
 					CreateRevoluteJoint(rjc, body, anchorPoint);
+				}
+			}
+		}
+	}
+
+	void Physics2D::OnInstantiateScriptEntity(Entity entity)
+	{
+		if (entity.HasComponent<Rigidbody2DComponent>())
+		{
+			TransformComponent &tc = entity.GetComponent<TransformComponent>();
+			Rigidbody2DComponent &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+
+			b2BodyDef bodyDef;
+			bodyDef.userData.pointer = static_cast<uintptr_t>(entity);
+			bodyDef.type = Box2DBodyType(rb2d.Type);
+			bodyDef.linearDamping = rb2d.LinearDamping;
+			bodyDef.angularDamping = rb2d.AngularDamping;
+			bodyDef.allowSleep = rb2d.AllowSleeping;
+			bodyDef.awake = rb2d.Awake;
+			bodyDef.bullet = rb2d.Bullet;
+			bodyDef.enabled = rb2d.Enabled;
+			bodyDef.linearVelocity.SetZero();
+
+			float xPos = tc.WorldTranslation.x;
+			float yPos = tc.WorldTranslation.y;
+
+			if (rb2d.FreezePositionX)
+				xPos = bodyDef.position.x;
+			if (rb2d.FreezePositionY)
+				yPos = bodyDef.position.y;
+
+			bodyDef.position.Set(xPos, yPos);
+			bodyDef.angle = tc.WorldRotation.z;
+			bodyDef.gravityScale = rb2d.GravityScale;
+
+			b2Body *body = m_World->CreateBody(&bodyDef);
+
+			rb2d.RuntimeBody = body;
+
+			body->SetFixedRotation(rb2d.FixedRotation);
+
+			b2MassData massData;
+			massData.center = b2Vec2(rb2d.MassCenter.x, rb2d.MassCenter.y);
+			massData.I = rb2d.RotationalInertia;
+			massData.mass = rb2d.Mass;
+			body->SetMassData(&massData);
+
+			if (entity.HasComponent<BoxCollider2DComponent>())
+			{
+				auto &bc2d = entity.GetComponent<BoxCollider2DComponent>();
+				CreateBoxCollider(bc2d, body, b2Vec2(bc2d.Size.x * tc.WorldScale.x, bc2d.Size.y * tc.WorldScale.y));
+			}
+
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				auto &cc2d = entity.GetComponent<CircleCollider2DComponent>();
+				float radius = tc.WorldScale.x * cc2d.Radius;
+				CreateCircleCollider(cc2d, body, radius);
+			}
+
+			if (entity.HasComponent<RevoluteJoint2DComponent>())
+			{
+				auto &rjc = entity.GetComponent<RevoluteJoint2DComponent>();
+				b2Vec2 pos = body->GetPosition();
+				b2Vec2 anchorPoint = b2Vec2(pos.x + rjc.AnchorPoint.x, pos.y + rjc.AnchorPoint.y);
+				if (rjc.ConnectedBodyID != 0)
+				{
+					CreateRevoluteJoint(rjc, body, anchorPoint);
+				}
+			}
+		}
+	}
+
+	void Physics2D::OnDestroyScriptEntity(Entity entity)
+	{
+		if (entity.HasComponent<Rigidbody2DComponent>())
+		{
+			Rigidbody2DComponent &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+			b2Body *body = static_cast<b2Body *>(rb2d.RuntimeBody);
+			if (body)
+			{
+				m_World->DestroyBody(body);
+				body = nullptr;
+			}
+
+			if (entity.HasComponent<RevoluteJoint2DComponent>())
+			{
+				RevoluteJoint2DComponent &rjc = entity.GetComponent<RevoluteJoint2DComponent>();
+				if (rjc.Joint)
+				{
+					m_World->DestroyJoint((b2RevoluteJoint *)rjc.Joint);
+					rjc.Joint = nullptr;
+				}
 			}
 		}
 	}
@@ -233,21 +327,21 @@ namespace origin {
 	{
 		OGN_PROFILER_PHYSICS();
 
-		auto view = m_Context->m_Registry.view<Rigidbody2DComponent, RevoluteJoint2DComponent>();
+		auto &view = m_Scene->m_Registry.view<Rigidbody2DComponent, RevoluteJoint2DComponent>();
 		for (entt::entity e : view)
 		{
-			auto& rb2d = view.get<Rigidbody2DComponent>(e);
-			b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
+			Rigidbody2DComponent & rb2d = view.get<Rigidbody2DComponent>(e);
+			b2Body *body = static_cast<b2Body *>(rb2d.RuntimeBody);
 			if (body)
 			{
 				m_World->DestroyBody(body);
 				body = nullptr;
 			}
 
-			auto& rjc = view.get<RevoluteJoint2DComponent>(e);
+			RevoluteJoint2DComponent &rjc = view.get<RevoluteJoint2DComponent>(e);
 			if (rjc.Joint)
 			{
-				m_World->DestroyJoint((b2RevoluteJoint*)rjc.Joint);
+				m_World->DestroyJoint((b2RevoluteJoint *)rjc.Joint);
 				rjc.Joint = nullptr;
 			}
 		}

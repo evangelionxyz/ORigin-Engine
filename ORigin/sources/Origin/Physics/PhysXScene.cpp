@@ -8,13 +8,13 @@
 namespace origin {
 
 	PhysXScene::PhysXScene(Scene* scene)
-		: m_Context(scene)
+		: m_Scene(scene)
 	{
 	}
 
 	PhysXScene::~PhysXScene()
 	{
-		m_Context = nullptr;
+		m_Scene = nullptr;
 	}
 
 	void PhysXScene::OnSimulationStart()
@@ -30,32 +30,36 @@ namespace origin {
 		m_PhysXScene = PhysXAPI::GetPhysics()->createScene(sceneDesc);
 
 
-		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
+		for (auto& id : m_Scene->m_Registry.view<BoxColliderComponent>())
 		{
 			OGN_PROFILER_SCOPE("Creating BoxColliderComponent");
 
-			Entity entity = { id, m_Context };
-			if (!entity.GetComponent<BoxColliderComponent>().Rigidbody)
-				entity.GetComponent<BoxColliderComponent>().Create(entity, this);
-
+			Entity entity = { id, m_Scene };
+			if (entity.IsValid())
+			{
+				if (!entity.GetComponent<BoxColliderComponent>().Rigidbody)
+					entity.GetComponent<BoxColliderComponent>().Create(entity, this);
+			}
 		}
 
-		for (auto& id : m_Context->m_Registry.view<SphereColliderComponent>())
+		for (auto &id : m_Scene->m_Registry.view<SphereColliderComponent>())
 		{
-			OGN_PROFILER_SCOPE("Creating SphereColliderComponent");
-
-			Entity entity = { id, m_Context };
-			if (!entity.GetComponent<SphereColliderComponent>().Rigidbody)
-				entity.GetComponent<SphereColliderComponent>().Create(entity, this);
+			Entity entity = { id, m_Scene };
+			if (entity.IsValid())
+			{
+				if (!entity.GetComponent<SphereColliderComponent>().Rigidbody)
+					entity.GetComponent<SphereColliderComponent>().Create(entity, this);
+			}
 		}
 
-		for (auto& id : m_Context->m_Registry.view<CapsuleColliderComponent>())
+		for (auto& id : m_Scene->m_Registry.view<CapsuleColliderComponent>())
 		{
-			OGN_PROFILER_SCOPE("Creating CapsuleColliderComponent");
-
-			Entity entity = { id, m_Context };
-			if (!entity.GetComponent<CapsuleColliderComponent>().Rigidbody)
-				entity.GetComponent<CapsuleColliderComponent>().Create(entity, this);
+			Entity entity = { id, m_Scene };
+			if (entity.IsValid())
+			{
+				if (!entity.GetComponent<CapsuleColliderComponent>().Rigidbody)
+					entity.GetComponent<CapsuleColliderComponent>().Create(entity, this);
+			}
 		}
 	}
 
@@ -63,38 +67,45 @@ namespace origin {
 	{
 		OGN_PROFILER_PHYSICS();
 
-		for (auto& id : m_Context->m_Registry.view<BoxColliderComponent>())
+		for (auto& id : m_Scene->m_Registry.view<BoxColliderComponent>())
 		{
-			OGN_PROFILER_SCOPE("Destroying BoxColliderComponent");
-			Entity entity = { id, m_Context };
-			entity.GetComponent<BoxColliderComponent>().Destroy();
-		}
-
-		for (auto& id : m_Context->m_Registry.view<SphereColliderComponent>())
-		{
-			OGN_PROFILER_SCOPE("Destroying SphereColliderComponent");
-			Entity entity = { id, m_Context };
-			entity.GetComponent<SphereColliderComponent>().Destroy();
-		}
-
-		for (auto& id : m_Context->m_Registry.view<CapsuleColliderComponent>())
-		{
-			OGN_PROFILER_SCOPE("Destroying CapsuleColliderComponent");
-			Entity entity = { id, m_Context };
-			entity.GetComponent<CapsuleColliderComponent>().Destroy();
-		}
-
-		for (auto& id : m_Context->m_Registry.view<RigidbodyComponent>())
-		{
-			OGN_PROFILER_SCOPE("Destroying RigidbodyComponent");
-			Entity entity = { id, m_Context };
-			auto& body = entity.GetComponent<RigidbodyComponent>().Body;
-
-			if (body)
+			Entity entity = { id, m_Scene };
+			if (entity.IsValid())
 			{
-				m_PhysXScene->removeActor(*((physx::PxActor*)body), false);
-				((physx::PxActor*)body)->isReleasable() ? ((physx::PxActor*)body)->release() : 0;
-				body = nullptr;
+				entity.GetComponent<BoxColliderComponent>().Destroy();
+			}
+		}
+
+		for (auto &id : m_Scene->m_Registry.view<SphereColliderComponent>())
+		{
+			Entity entity = { id, m_Scene };
+			if (entity.IsValid())
+			{
+				entity.GetComponent<SphereColliderComponent>().Destroy();
+			}
+		}
+
+		for (auto& id : m_Scene->m_Registry.view<CapsuleColliderComponent>())
+		{
+			Entity entity = { id, m_Scene };
+			if (entity.IsValid())
+			{
+				entity.GetComponent<CapsuleColliderComponent>().Destroy();
+			}
+		}
+
+		for (auto &id : m_Scene->m_Registry.view<RigidbodyComponent>())
+		{
+			Entity entity = { id, m_Scene };
+			if (entity.IsValid())
+			{
+				auto &body = entity.GetComponent<RigidbodyComponent>().Body;
+				if (body)
+				{
+					m_PhysXScene->removeActor(*((physx::PxActor *)body), false);
+					((physx::PxActor *)body)->isReleasable() ? ((physx::PxActor *)body)->release() : 0;
+					body = nullptr;
+				}
 			}
 		}
 
@@ -109,24 +120,27 @@ namespace origin {
 		m_PhysXScene->simulate(deltaTime);
 		m_PhysXScene->fetchResults(true);
 
-		auto view = m_Context->m_Registry.view<RigidbodyComponent>();
+		auto view = m_Scene->m_Registry.view<RigidbodyComponent>();
 		for (auto id : view)
 		{
-			Entity entity = { id, m_Context };
+			Entity entity = { id, m_Scene };
 
-			auto& rb = entity.GetComponent<RigidbodyComponent>();
-			auto& tc = entity.GetComponent<TransformComponent>();
+			if (entity.IsValid())
+			{
+				auto &rb = entity.GetComponent<RigidbodyComponent>();
+				auto &tc = entity.GetComponent<TransformComponent>();
 
-			if (rb.Body == nullptr)
-				continue;
+				if (rb.Body == nullptr)
+					continue;
 
-			physx::PxRigidActor* actor = (physx::PxRigidActor*)rb.Body;
-			physx::PxTransform tr = actor->getGlobalPose();
-			glm::vec3 pos = Utils::FromPhysXVec3(tr.p);
-			glm::quat rot = glm::quat(tr.q.w, tr.q.x, tr.q.y, tr.q.z);
+				physx::PxRigidActor *actor = (physx::PxRigidActor *)rb.Body;
+				physx::PxTransform tr = actor->getGlobalPose();
+				glm::vec3 pos = Utils::FromPhysXVec3(tr.p);
+				glm::quat rot = glm::quat(tr.q.w, tr.q.x, tr.q.y, tr.q.z);
 
-			tc.Translation = pos;
-			tc.Rotation = glm::eulerAngles(rot);
+				tc.Translation = pos;
+				tc.Rotation = glm::eulerAngles(rot);
+			}
 		}
 	}
 

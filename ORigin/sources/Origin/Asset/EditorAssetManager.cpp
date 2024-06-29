@@ -111,7 +111,11 @@ namespace origin {
 		metadata.Filepath = filepath;
 		metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
 
-		OGN_CORE_ASSERT(metadata.Type != AssetType::None, "Invalid Asset Type");
+		if (metadata.Type == AssetType::None)
+		{
+			OGN_CORE_ERROR("[EditorAssetManager] Invalid Asset Type");
+			return 0;
+		}
 
 		std::shared_ptr<Asset> asset;
 		

@@ -184,7 +184,7 @@ namespace origin {
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap
-			| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
 
 		ImVec4 headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.1f, 0.1f, 0.3f, 1.0f) : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 		ImVec4 headerHovered = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.7f, 1.0f) : ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
@@ -545,11 +545,9 @@ namespace origin {
 				UI::DrawCheckbox("Rotate X", &component.RotateX);
 				UI::DrawCheckbox("Rotate Y", &component.RotateY);
 				UI::DrawCheckbox("Rotate Z", &component.RotateZ);
-
-				UI::DrawCheckbox("##Kinematic", &component.Kinematic);
+				UI::DrawCheckbox("Kinematic", &component.Kinematic);
 				UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
 				UI::DrawVec3Control("Center Mass", component.CenterMassPosition);
-
 		});
 
 		DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
@@ -883,16 +881,10 @@ namespace origin {
 			UI::DrawFloatControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
 			UI::DrawFloatControl("Mass", &component.Mass, 0.01f);
 			UI::DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
-
-			ImGui::Text("Freeze Position");
-			ImGui::SameLine();
-			UI::DrawCheckbox("X", &component.FreezePositionX);
-			ImGui::SameLine();
-			UI::DrawCheckbox("Y", &component.FreezePositionY);
-
+			UI::DrawCheckbox("Freeze Pos X", &component.FreezePositionX);
+			UI::DrawCheckbox("Freeze Pos Y", &component.FreezePositionY);
 			UI::DrawCheckbox("Fixed Rotation", &component.FixedRotation);
 			UI::DrawCheckbox("Awake", &component.Awake);
-			ImGui::SameLine();
 			UI::DrawCheckbox("Allow Sleeping", &component.AllowSleeping);
 			UI::DrawCheckbox("Bullet", &component.Bullet);
 

@@ -9,6 +9,7 @@
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Scene/EntityManager.h"
+#include "Origin/GUI/UI.h"
 #include <filesystem>
 
 #include "Panels/AnimationTimeline.h"
@@ -558,8 +559,10 @@ namespace origin {
 			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
 
-			if (m_DrawGrid3D)
-				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_GridSize);
+			if (m_Draw3DGrid)
+				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
+			if (m_Draw2DGrid)
+				m_Gizmos->Draw2DGrid(m_EditorCamera);
 			break;
 
 		case SceneState::Simulate:
@@ -567,8 +570,10 @@ namespace origin {
 			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
 
-			if (m_DrawGrid3D)
-				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_GridSize);
+			if (m_Draw3DGrid)
+				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
+			if (m_Draw2DGrid)
+				m_Gizmos->Draw2DGrid(m_EditorCamera);
 			break;
 		}
 	}
@@ -900,29 +905,42 @@ namespace origin {
 			{
 				if (ImGui::BeginTabItem("Render Settings"))
 				{
-					const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
-					const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
-					ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
-					if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
+					UI::DrawCheckbox("Visualize Collider", &m_VisualizeCollider);
+
+					switch (m_EditorCamera.GetProjectionType())
 					{
-						for (int i = 0; i < 2; i++)
+					case ProjectionType::Perspective:
+					{
+						const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
+						const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
+						ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
+						if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
 						{
-							const bool isSelected = currentCMSTypeString == CMSTypeString[i];
-							if (ImGui::Selectable(CMSTypeString[i], isSelected))
+							for (int i = 0; i < 2; i++)
 							{
-								currentCMSTypeString = CMSTypeString[i];
-								m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
+								const bool isSelected = currentCMSTypeString == CMSTypeString[i];
+								if (ImGui::Selectable(CMSTypeString[i], isSelected))
+								{
+									currentCMSTypeString = CMSTypeString[i];
+									m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
 
-							} if (isSelected) ImGui::SetItemDefaultFocus();
-						} ImGui::EndCombo();
+								} if (isSelected) ImGui::SetItemDefaultFocus();
+							} ImGui::EndCombo();
+						}
+
+						float fov = m_EditorCamera.GetFOV();
+						if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
+							m_EditorCamera.SetFov(fov);
+
+						UI::DrawCheckbox("Grid 3D", &m_Draw3DGrid);
+						if (m_Draw3DGrid)
+							UI::DrawIntControl("Grid Size", &m_3DGridSize, 1.0f);
+						break;
 					}
-					float fov = m_EditorCamera.GetFOV();
-					if (ImGui::DragFloat("FOV", &fov, 1.0f, 0.0f, 90.0f))
-						m_EditorCamera.SetFov(fov);
-
-					ImGui::Checkbox("Visualize Collider", &m_VisualizeCollider);
-					ImGui::Checkbox("Grid 3D", &m_DrawGrid3D);
-					ImGui::SliderInt("Grid Size", &m_GridSize, 0, 100);
+					case ProjectionType::Orthographic:
+						UI::DrawCheckbox("Grid 2D", &m_Draw2DGrid);
+						break;
+					}
 
 					ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
 
@@ -1168,7 +1186,15 @@ namespace origin {
 				if (selectedEntity.IsValid() && !io.WantTextInput)
 				{
 					const auto &tc = selectedEntity.GetComponent<TransformComponent>();
-					m_EditorCamera.SetPosition(tc.Translation);
+					if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic)
+					{
+						m_EditorCamera.SetPosition({ tc.WorldTranslation.x, tc.WorldTranslation.y, m_EditorCamera.GetPosition().z });
+					}
+					else
+					{
+						m_EditorCamera.SetPosition({ tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z });
+					}
+					
 				}
 				break;
 			}

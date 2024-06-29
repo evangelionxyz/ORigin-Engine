@@ -1,11 +1,15 @@
 #pragma once
-#include "Origin\Scene\Components.h"
-#include "Origin\Scene\Scene.h"
-#include "box2d\b2_body.h"
+#include "Origin/Scene/Entity.h"
+#include "Origin/Scene/Components.h"
+#include "box2d/b2_body.h"
+
+class b2World;
 
 namespace origin {
 
+	class Scene;
 	class Contact2DListener;
+
 	class Physics2D
 	{
 	public:
@@ -17,12 +21,14 @@ namespace origin {
 
 		void Simulate(float deltaTime);
 		void OnSimulationStart();
+		void OnInstantiateScriptEntity(Entity entity);
+		void OnDestroyScriptEntity(Entity entity);
 		void OnSimulationStop();
 		
 	private:
-		Scene* m_Context = nullptr;
+		Scene* m_Scene = nullptr;
 		b2World* m_World = nullptr;
-		Contact2DListener* m_ContactListener;
+		Contact2DListener* m_ContactListener = nullptr;
 	};
 }
 

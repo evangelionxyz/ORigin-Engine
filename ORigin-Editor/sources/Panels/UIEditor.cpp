@@ -35,8 +35,10 @@ namespace origin
 
 	void UIEditor::SetContext(Scene *scene)
 	{
-		if (m_Component)
-			m_Component = nullptr;
+		if (m_UICompHandler)
+		{
+			m_UICompHandler = nullptr;
+		}
 
 		m_Scene = scene;
 	}
@@ -56,7 +58,7 @@ namespace origin
 				m_Camera.SetOrthoScale(orthoSizeY * 1.3f);
 				m_Camera.SetOrthoScaleMax(orthoSizeY * 4.0f);
 			}
-			m_Component = component;
+			m_UICompHandler = component;
 			IsOpened = true;
 
 			ImGui::SetWindowFocus("UI Editor");
@@ -65,23 +67,31 @@ namespace origin
 
 	void UIEditor::CreateNewText()
 	{
-		UIData<TextComponent> text;
-		text.Name = "Text";
-		text.Component.TextString = "Text";
-		text.Transform.WorldScale = glm::vec3(1.0f);
+		if (!m_UICompHandler)
+			return;
 
-		m_Component->Texts.push_back(text);
-		m_SelectedIndex = m_Component->Texts.size() - 1;
+		UIData<TextComponent> component;
+		component.Component.TextString = "This is text component";
+		std::string defaultName = "Text";
+		m_UICompHandler->AddComponent<TextComponent>(defaultName, component);
+		m_SelectedIndex = m_UICompHandler->Components.size() - 1;
 	}
 
 	void UIEditor::CreateNewTexture()
 	{
-		UIData<SpriteRenderer2DComponent> sprite;
-		sprite.Name = "Sprite";
-		sprite.Transform.WorldScale = glm::vec3(1.0f);
+		if (!m_UICompHandler)
+			return;
 
-		m_Component->Sprites.push_back(sprite);
-		m_SelectedIndex = m_Component->Texts.size() + m_Component->Sprites.size() - 1;
+		UIData<SpriteRenderer2DComponent> component;
+		m_UICompHandler->AddComponent<SpriteRenderer2DComponent>("Sprite", component);
+		m_SelectedIndex = m_UICompHandler->Components.size() - 1;
+	}
+
+	bool UIEditor::RenameComponent(const std::string &oldKey, const std::string &newKeyBase)
+	{
+		if (m_UICompHandler)
+			return m_UICompHandler->RenameComponent(oldKey, newKeyBase);
+		return false;
 	}
 
 	void UIEditor::OnImGuiRender()
@@ -107,255 +117,302 @@ namespace origin
 			ImGui::Image(texture, { m_EditorViewportSize.x, m_EditorViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 
-			ImGui::Begin("UI Inspector");
+			DrawInspector();
+			DrawHierarchy();
+		}
+	}
 
-			if (m_Component)
+	void UIEditor::DrawInspector()
+	{
+		ImGui::Begin("UI Inspector");
+
+		if (m_UICompHandler)
+		{
+			int i = 0;
+			for (auto &[key, ui] : m_UICompHandler->Components)
 			{
-				for (int i = 0; i < m_Component->Texts.size(); i++)
+				if (m_SelectedIndex == i)
 				{
-					if (m_SelectedIndex == i)
+					if (m_UICompHandler->Is<TextComponent>(key))
 					{
-						auto &text = m_Component->Texts[i];
-						auto &name = text.Name;
+						UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(key);
+						std::string nameBuffer = key;
+						auto &name = nameBuffer;
 
 						char buffer[256];
 						strcpy_s(buffer, sizeof(buffer), name.c_str());
 						if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 						{
-							name = std::string(buffer);
-							if (name.empty()) name = "'No Name'";
+							//name = std::string(buffer);
+							//if (name.empty())
+							//  name = "'No Name'";
 						}
 
-						UI::DrawVec3Control("Translation", text.Transform.WorldTranslation, 0.1f);
-						glm::vec3 rotation = glm::degrees(text.Transform.WorldRotation);
+						UI::DrawVec3Control("Translation", text->Transform.WorldTranslation, 0.1f);
+						glm::vec3 rotation = glm::degrees(text->Transform.WorldRotation);
 						UI::DrawVec3Control("Rotation", rotation, 0.1f);
-						text.Transform.WorldRotation = glm::radians(rotation);
-						UI::DrawVec3Control("Scale", text.Transform.WorldScale, 0.1f, 1.0f);
+						text->Transform.WorldRotation = glm::radians(rotation);
+						UI::DrawVec3Control("Scale", text->Transform.WorldScale, 0.1f, 1.0f);
 
-						ImGui::Button("DROP FONT", ImVec2(80.0f, 20.0f));
-						if (ImGui::BeginDragDropTarget())
+						UI::DrawButtonWithColumn("Font", "Drag Here", nullptr, [&]()
 						{
-							if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							if (ImGui::BeginDragDropTarget())
 							{
-								AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-								if (AssetManager::GetAssetType(handle) == AssetType::Font) text.Component.FontHandle = handle;
+								if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+								{
+									AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+									if (AssetManager::GetAssetType(handle) == AssetType::Font)
+									{
+										text->Component.FontHandle = handle;
+									}
+									else
+									{
+										OGN_CORE_WARN("[UIEditor] Wrong asset type!");
+									}
+								}
 							}
-						}
 
-						if (text.Component.FontHandle)
-						{
-							ImGui::SameLine();
-							if (ImGui::Button("X")) text.Component.FontHandle = 0;
-						}
+							if (text->Component.FontHandle)
+							{
+								if (UI::DrawButton("X"))
+								{
+									text->Component.FontHandle = 0;
+								}
+							}
+						});
 
-						if (text.Component.FontHandle != 0)
+
+						if (text->Component.FontHandle)
 						{
-							ImGui::InputTextMultiline("Text String", &text.Component.TextString);
-							ImGui::ColorEdit4("Color", glm::value_ptr(text.Component.Color));
-							UI::DrawFloatControl("Kerning", &text.Component.Kerning, 0.01f);
-							UI::DrawFloatControl("Line Spacing", &text.Component.LineSpacing, 0.01f);
+							ImGui::InputTextMultiline("Text String", &text->Component.TextString);
+							ImGui::ColorEdit4("Color", glm::value_ptr(text->Component.Color));
+							UI::DrawFloatControl("Kerning", &text->Component.Kerning, 0.01f);
+							UI::DrawFloatControl("Line Spacing", &text->Component.LineSpacing, 0.01f);
 						}
 					}
-				}
-				for (int i = 0; i < m_Component->Sprites.size(); i++)
-				{
-					int idx = i + m_Component->Texts.size();
-					if (m_SelectedIndex == idx)
+					else if (m_UICompHandler->Is<SpriteRenderer2DComponent>(key))
 					{
-						auto &sprite = m_Component->Sprites[i];
-						auto &name = sprite.Name;
+						UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(key);
+						std::string nameBuffer = key;
+						auto &name = nameBuffer;
 
 						char buffer[256];
 						strcpy_s(buffer, sizeof(buffer), name.c_str());
 						if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 						{
-							name = std::string(buffer);
-							if (name.empty()) name = "'No Name'";
+							// name = std::string(buffer);
+							// if (name.empty())
+							//	name = "'No Name'";
 						}
 
-						UI::DrawVec3Control("Translation", sprite.Transform.WorldTranslation, 0.1f);
-						glm::vec3 rotation = glm::degrees(sprite.Transform.WorldRotation);
+						UI::DrawVec3Control("Translation", sprite->Transform.WorldTranslation, 0.1f);
+						glm::vec3 rotation = glm::degrees(sprite->Transform.WorldRotation);
 						UI::DrawVec3Control("Rotation", rotation, 0.1f);
-						sprite.Transform.WorldRotation = glm::radians(rotation);
-						UI::DrawVec3Control("Scale", sprite.Transform.WorldScale, 0.1f, 1.0f);
+						sprite->Transform.WorldRotation = glm::radians(rotation);
+						UI::DrawVec3Control("Scale", sprite->Transform.WorldScale, 0.1f, 1.0f);
 
-						ImGui::ColorEdit4("Color", glm::value_ptr(sprite.Component.Color));
+						ImGui::ColorEdit4("Color", glm::value_ptr(sprite->Component.Color));
 
-						std::string label = "None";
-						ImGui::Text("Texture");
-						ImGui::SameLine();
-						if (sprite.Component.Texture != 0)
+						std::string lable = "None";
+						if (sprite->Component.Texture != 0)
 						{
-							if (AssetManager::IsAssetHandleValid(sprite.Component.Texture) && AssetManager::GetAssetType(sprite.Component.Texture) == AssetType::Texture)
+							if (AssetManager::IsAssetHandleValid(sprite->Component.Texture) && AssetManager::GetAssetType(sprite->Component.Texture) == AssetType::Texture)
 							{
-								const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(sprite.Component.Texture);
-								label = metadata.Filepath.filename().string();
+								const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(sprite->Component.Texture);
+								lable = metadata.Filepath.filename().string();
 							}
 							else
 							{
-								label = "Invalid";
+								lable = "Invalid";
 							}
 						}
 
-						ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
-						buttonLabelSize.x += 20.0f;
-						const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
-
-						ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
-						if (ImGui::BeginDragDropTarget())
+						UI::DrawButtonWithColumn(lable.c_str(), "Texture", nullptr, [&]()
 						{
-							if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							if (ImGui::BeginDragDropTarget())
 							{
-								AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-								if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+								if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 								{
-									sprite.Component.Texture = handle;
-									sprite.Component.Min = glm::vec2(0.0f);
-									sprite.Component.Max = glm::vec2(1.0f);
+									AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+									if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+									{
+										sprite->Component.Texture = handle;
+										sprite->Component.Min = glm::vec2(0.0f);
+										sprite->Component.Max = glm::vec2(1.0f);
+									}
+									else
+									{
+										OGN_CORE_WARN("[UIEditor] Wrong asset type!");
+									}
 								}
-								else
-									OGN_CORE_WARN("Wrong asset type!");
+								else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
+								{
+									SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
+									sprite->Component.Texture = data.TextureHandle;
+									sprite->Component.Min = data.Min;
+									sprite->Component.Max = data.Max;
+								}
+								ImGui::EndDragDropTarget();
 							}
-							else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
+							if (sprite->Component.Texture)
 							{
-								SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-								sprite.Component.Texture = data.TextureHandle;
-								sprite.Component.Min = data.Min;
-								sprite.Component.Max = data.Max;
+								if (UI::DrawButton("X"))
+								{
+									sprite->Component.Texture = 0;
+									sprite->Component.Min = glm::vec2(0.0f);
+									sprite->Component.Max = glm::vec2(1.0f);
+								}
 							}
-							ImGui::EndDragDropTarget();
-						}
+						});
 
-						if (sprite.Component.Texture != 0)
+						if (sprite->Component.Texture)
 						{
-							ImGui::SameLine();
-							const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
-							const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-							if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
-							{
-								sprite.Component.Texture = 0;
-								sprite.Component.Min = glm::vec2(0.0f);
-								sprite.Component.Max = glm::vec2(1.0f);
-							}
-
-							UI::DrawVec2Control("Tilling Factor", sprite.Component.TillingFactor, 0.025f, 1.0f);
-							UI::DrawCheckbox("Flip X", &sprite.Component.FlipX);
-							UI::DrawCheckbox("Flip Y", &sprite.Component.FlipY);
+							UI::DrawVec2Control("Tilling Factor", sprite->Component.TillingFactor, 0.025f, 1.0f);
+							UI::DrawCheckbox("Flip X", &sprite->Component.FlipX);
+							UI::DrawCheckbox("Flip Y", &sprite->Component.FlipY);
 						}
 					}
 				}
+				i++;
 			}
-
-			ImGui::End();
-
-			ImGui::Begin("UI Hierarchy");
-
-			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
-			ImGui::SameLine(contentRegionAvailable.x - 24.0f);
-			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
-
-			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
-				ImGui::OpenPopup("CreateUI");
-
-			if (ImGui::BeginPopup("CreateUI"))
-			{
-				if (ImGui::MenuItem("Text"))
-					UIEditor::CreateNewText();
-				if (ImGui::MenuItem("Sprite"))
-					UIEditor::CreateNewTexture();
-
-				ImGui::EndPopup();
-			}
-
-			if (m_Component)
-			{
-				for (int i = 0; i < m_Component->Texts.size(); i++)
-				{
-					auto &text = m_Component->Texts[i];
-
-					ImGuiTreeNodeFlags flags = (m_SelectedIndex == i ? ImGuiTreeNodeFlags_Selected : 0)
-						| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
-						| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-					bool node_open = ImGui::TreeNodeEx((void *)&text, flags, text.Name.c_str());
-					ImGui::PopStyleVar();
-
-					bool isDeleting = false;
-					if (ImGui::BeginPopupContextItem())
-					{
-						if (ImGui::MenuItem("Delete"))
-							isDeleting = true;
-						ImGui::EndPopup();
-					}
-
-					if (ImGui::IsItemHovered())
-					{
-						if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-							m_SelectedIndex = i;
-					}
-
-					if (node_open)
-						ImGui::TreePop();
-
-					if (isDeleting)
-					{
-						m_Component->Texts.erase(m_Component->Texts.begin() + i); i--;
-						OGN_CORE_TRACE("UI Text erased");
-					}
-				}
-
-				for (int i = 0; i < m_Component->Sprites.size(); i++)
-				{
-					int idx = i + m_Component->Texts.size();
-					auto &sprite = m_Component->Sprites[i];
-
-					ImGuiTreeNodeFlags flags = (m_SelectedIndex == idx ? ImGuiTreeNodeFlags_Selected : 0)
-						| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
-						| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-
-					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-					bool node_open = ImGui::TreeNodeEx((void *)&sprite, flags, sprite.Name.c_str());
-					ImGui::PopStyleVar();
-
-					bool isDeleting = false;
-					if (ImGui::BeginPopupContextItem())
-					{
-						if (ImGui::MenuItem("Delete"))
-							isDeleting = true;
-						ImGui::EndPopup();
-					}
-
-					if (ImGui::IsItemHovered())
-					{
-						if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-							m_SelectedIndex = idx;
-					}
-
-					if (node_open)
-						ImGui::TreePop();
-
-					if (isDeleting)
-					{
-						m_Component->Sprites.erase(m_Component->Sprites.begin() + i);
-						i--;
-						OGN_CORE_TRACE("UI Sprite erased");
-					}
-				}
-			}
-
-			ImGui::End();
 		}
+
+		ImGui::End();
+	}
+
+	void UIEditor::DrawHierarchy()
+	{
+		ImGui::Begin("UI Hierarchy");
+
+		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+		ImGui::SameLine(contentRegionAvailable.x - 24.0f);
+		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
+
+		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
+			ImGui::OpenPopup("CreateUI");
+
+		if (ImGui::BeginPopup("CreateUI"))
+		{
+			if (ImGui::MenuItem("Text"))
+				UIEditor::CreateNewText();
+			if (ImGui::MenuItem("Sprite"))
+				UIEditor::CreateNewTexture();
+
+			ImGui::EndPopup();
+		}
+
+		if (m_UICompHandler)
+		{
+			int i = 0;
+			for (auto &[key, value] : m_UICompHandler->Components)
+			{
+				ImGuiTreeNodeFlags flags = (m_SelectedIndex == i ? ImGuiTreeNodeFlags_Selected : 0)
+					| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
+					| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+
+				if (m_UICompHandler->Is<TextComponent>(key))
+				{
+					ImGui::PushID(key.c_str());
+
+					UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(key);
+
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
+					bool node_open = ImGui::TreeNodeEx((void *)&text, flags, key.c_str());
+					ImGui::PopStyleVar();
+
+					bool isDeleting = false;
+					if (ImGui::BeginPopupContextItem())
+					{
+						if (ImGui::MenuItem("Delete"))
+						{
+							isDeleting = true;
+						}
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::IsItemHovered())
+					{
+						if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+						{
+							m_SelectedIndex = i;
+						}
+					}
+
+					if (node_open)
+					{
+						ImGui::TreePop();
+					}
+
+					if (isDeleting)
+					{
+						m_UICompHandler->RemoveComponent(key);
+						break;
+					}
+					ImGui::PopID();
+				}
+				else if (m_UICompHandler->Is<SpriteRenderer2DComponent>(key))
+				{
+					ImGui::PushID(key.c_str());
+
+					UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(key);
+					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
+					bool node_open = ImGui::TreeNodeEx((void *)&sprite, flags, key.c_str());
+					ImGui::PopStyleVar();
+
+					bool isDeleting = false;
+					if (ImGui::BeginPopupContextItem())
+					{
+
+						if (ImGui::MenuItem("Delete"))
+						{
+							isDeleting = true;
+						}
+
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::IsItemHovered())
+					{
+						if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+						{
+							m_SelectedIndex = i;
+						}
+					}
+
+					if (node_open)
+					{
+						ImGui::TreePop();
+					}
+
+					if (isDeleting)
+					{
+						m_UICompHandler->RemoveComponent(key);
+						break;
+					}
+
+					ImGui::PopID();
+				}
+
+				i++;
+			}
+		}
+
+		ImGui::End();
 	}
 
 	void UIEditor::OnUpdate(Timestep ts)
 	{
 		if (!IsOpened)
 		{
-			if (m_Component)
-				m_Component = nullptr;
+			if (m_UICompHandler)
+			{
+				m_UICompHandler = nullptr;
+			}
 			if (m_Scene)
+			{
 				m_Scene = nullptr;
+			}
+
 			return;
 		}
 
@@ -372,7 +429,7 @@ namespace origin
 
 		m_Framebuffer->ClearAttachment(1, -1);
 
-		if (m_Component)
+		if (m_UICompHandler != nullptr)
 		{
 			if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 					m_EditorViewportSize.x > 0.0f && m_EditorViewportSize.y > 0.0f && (m_EditorViewportSize.x != spec.Width || m_EditorViewportSize.y != spec.Height))
@@ -391,19 +448,24 @@ namespace origin
 				const glm::vec2 &orthoSize = cc.Camera.GetOrthographicSize();
 				Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { orthoSize.x, orthoSize.y, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
 
-				for (int i = 0; i < m_Component->Texts.size(); i++)
+				int i = 0;
+				for (auto &[key, value] : m_UICompHandler->Components)
 				{
-					auto &text = m_Component->Texts[i];
-					if (text.Component.FontHandle != 0)
+					if (m_UICompHandler->Is<TextComponent>(key))
 					{
-						Renderer2D::DrawString(text.Component.TextString, text.Transform.GetTransform(), text.Component, i);
+						UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(key);
+						if (text->Component.FontHandle)
+						{
+							Renderer2D::DrawString(text->Component.TextString, text->Transform.GetTransform(), text->Component, i);
+						}
 					}
-				}
+					else if (m_UICompHandler->Is<SpriteRenderer2DComponent>(key))
+					{
+						UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(key);
+						Renderer2D::DrawSprite(sprite->Transform.GetTransform(), sprite->Component, i);
+					}
 
-				for (int i = 0; i < m_Component->Sprites.size(); i++)
-				{
-					auto &sprite = m_Component->Sprites[i];
-					Renderer2D::DrawSprite(sprite.Transform.GetTransform(), sprite.Component);
+					i++;
 				}
 			}
 

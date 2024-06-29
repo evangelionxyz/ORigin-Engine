@@ -556,11 +556,10 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		UUID entityID = entity.GetUUID();
-
-		auto it = s_ScriptEngineData->EntityInstances.find(entityID);
+		auto &it = s_ScriptEngineData->EntityInstances.find(entityID);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("ScriptEngine: Entity Script Instance not found!");
+			OGN_CORE_ERROR("[ScriptEngine] Entity script instance is not attached! {0} {1}", entity.GetTag(), entityID);
 			return;
 		}
 

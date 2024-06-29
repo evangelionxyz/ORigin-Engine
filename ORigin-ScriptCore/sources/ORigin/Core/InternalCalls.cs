@@ -15,7 +15,7 @@ namespace ORiginEngine
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static ulong Entity_FindEntityByName(string name);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
-    internal extern static ulong Entity_Instantiate(ulong entityID);
+    internal extern static ulong Entity_Instantiate(ulong entityID, Vector3 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void Entity_Destroy(ulong entityID);
 

@@ -11,6 +11,7 @@
 #include "Origin/Scene/EntityManager.h"
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Core/Input.h"
+#include "Origin/Physics/Physics2D.h"
 
 #include "mono/metadata/object.h"
 #include "mono/metadata/reflection.h"
@@ -87,7 +88,7 @@ namespace origin
 		return entity.GetUUID();
 	}
 
-	static uint64_t Entity_Instantiate(UUID entityID)
+	static uint64_t Entity_Instantiate(UUID entityID, glm::vec3 translation)
 	{
 		OGN_PROFILER_LOGIC();
 
@@ -98,6 +99,8 @@ namespace origin
 		if (entity.IsValid())
 		{
 			Entity copyEntity = EntityManager::DuplicateEntity(entity, scene);
+			copyEntity.GetComponent<TransformComponent>().WorldTranslation = translation;
+			scene->GetPhysics2D()->OnInstantiateScriptEntity(copyEntity);
 			return copyEntity.GetUUID();
 		}
 		
@@ -112,7 +115,11 @@ namespace origin
 		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
 
 		Entity entity = scene->GetEntityWithUUID(entityID);
-		scene->DestroyEntity(entity);
+		if (entity.IsValid())
+		{
+			scene->GetPhysics2D()->OnDestroyScriptEntity(entity);
+			scene->DestroyEntity(entity);
+		}
 	}
 
 	// ==============================================
