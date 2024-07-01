@@ -42,20 +42,21 @@ namespace origin {
 		return s_AssetImportFunctions.at(metadata.Type)(handle, metadata);
 	}
 
-	void AssetImporter::SyncToMainThread()
+	void AssetImporter::SyncToMainThread(Timestep ts)
 	{
-		s_AssetTaskWorker.Update();
+		s_AssetTaskWorker.Update(ts);
 	}
 
-	void AssetTaskWorker::Update()
+	void AssetTaskWorker::Update(Timestep ts)
 	{
-		while (!TaskQueue.empty())
+		while (!TaskQueue.empty() && this->Timer <= 0.0f)
 		{
 			auto &taskPtr = TaskQueue.front();
 			if (taskPtr && taskPtr->Execute())
 			{
-				// Pop if already finish
+				// Pop if already loaded
 				TaskQueue.pop();
+				this->Timer = 0.1f;
 			}
 			else
 			{
@@ -65,6 +66,9 @@ namespace origin {
 			}
 			break;
 		}
+
+		if (!TaskQueue.empty())
+			this->Timer -= ts;
 	}
 
 	std::shared_ptr<Font> FontImporter::Import(AssetHandle handle, AssetMetadata metadata)

@@ -26,5 +26,6 @@ public:
 
 	float X, Y;
 	float Width, Height;
+	bool fullScreen = true;
 };
 

@@ -145,7 +145,7 @@ namespace origin
 	{
 	public:
 		AssetHandle FontHandle = 0;
-		std::string TextString;
+		std::string TextString = "This is text component";
 
 		glm::vec4 Color = glm::vec4(1.0f);
 		float Kerning = 0.0f;

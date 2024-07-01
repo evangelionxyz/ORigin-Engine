@@ -82,17 +82,17 @@ namespace origin {
 			OGN_PROFILER_BEGIN_FRAME("MainThread");
 
 			float time = static_cast<float>(glfwGetTime());
-			Timestep timestep = time - m_LastFrame;
+			Timestep ts = time - m_LastFrame;
 			m_LastFrame = time;
 
-			AssetImporter::SyncToMainThread();
+			AssetImporter::SyncToMainThread(ts);
 			ExecuteMainThreadQueue();
 
 			if (!m_Minimized)
 			{
 				for (Layer *layer : m_LayerStack)
 				{
-					layer->OnUpdate(timestep);
+					layer->OnUpdate(ts);
 				}
 			}
 

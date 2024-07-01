@@ -79,16 +79,17 @@ namespace origin
 		}
 
 		// update this on main thread
-		void Update();
+		void Update(Timestep ts);
 
 		std::queue<std::unique_ptr<AssetTaskBase>> TaskQueue;
+		float Timer = 0.0f;
 	};
 
 	class AssetImporter
 	{
 	public:
 		static std::shared_ptr<Asset> ImportAsset(AssetHandle handle, const AssetMetadata& metadata);
-		static void SyncToMainThread();
+		static void SyncToMainThread(Timestep ts);
 	};
 
 	class FontImporter

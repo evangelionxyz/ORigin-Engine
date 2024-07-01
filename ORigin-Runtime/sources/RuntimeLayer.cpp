@@ -10,7 +10,7 @@ RuntimeLayer::~RuntimeLayer() { if(m_ActiveScene) ScriptEngine::Shutdown(); }
 
 void RuntimeLayer::OnAttach()
 {
-	OnLoadingScreen(15.0f);
+	OnLoadingScreen(13.0f);
 }
 
 void RuntimeLayer::OnUpdate(Timestep ts)
@@ -44,6 +44,12 @@ bool RuntimeLayer::OnKeyPressed(origin::KeyPressedEvent &e)
 	if (e.GetKeyCode() == Key::Escape)
 	{
 		Application::Get().Close();
+	}
+
+	if (e.GetKeyCode() == Key::F11)
+	{
+		fullScreen = !fullScreen;
+		Application::Get().GetWindow().SetFullscreen(fullScreen);
 	}
 
 	return false;
@@ -92,6 +98,7 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
 
 	m_ScreenTexture = TextureImporter::LoadTexture2D("Resources/UITextures/runtime_loading_screen.png");
 	auto &app = Application::Get();
+	app.GetWindow().SetFullscreen(fullScreen);
 	float elapsedTime = 0.0f;
 	auto start = std::chrono::high_resolution_clock::now();
 	float lastFrame = 0.0f;
