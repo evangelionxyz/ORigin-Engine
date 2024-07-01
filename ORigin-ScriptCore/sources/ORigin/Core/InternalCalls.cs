@@ -18,6 +18,10 @@ namespace ORiginEngine
     internal extern static ulong Entity_Instantiate(ulong entityID, Vector3 value);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void Entity_Destroy(ulong entityID);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static void Entity_SetVisibility(ulong entityID, bool value);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static void Entity_GetVisibility(ulong entityID, out bool result);
 
     // Script Instance
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -123,6 +127,14 @@ namespace ORiginEngine
     internal extern static float TextComponent_GetLineSpacing(ulong entityID);
     [MethodImplAttribute(MethodImplOptions.InternalCall)]
     internal extern static void TextComponent_SetLineSpacing(ulong entityID, float lineSpacing);
+
+
+    // UIComponent
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static string UIComponent_TextComponent_GetText(ulong entityID, string name);
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    internal extern static void UIComponent_TextComponent_SetText(ulong entityID, string name, string textString);
+
 
     // Circle Renderer
     [MethodImplAttribute(MethodImplOptions.InternalCall)]

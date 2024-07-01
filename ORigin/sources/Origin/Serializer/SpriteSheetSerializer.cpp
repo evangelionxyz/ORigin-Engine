@@ -57,7 +57,7 @@ namespace origin
 
 			if (YAML::Node sprites = data["Sprites"])
 			{
-				for (auto &s : sprites)
+				for (auto s : sprites)
 				{
 					SpriteSheetData sprite {};
 					sprite.Min = s["Min"].as<glm::vec2>();

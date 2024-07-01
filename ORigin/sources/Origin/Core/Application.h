@@ -50,8 +50,7 @@ namespace origin {
 		void Close() { m_Window->SetClose(true); }
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
-
-		void StartThreads();
+		float GetTime();
 
 		void SubmitToMainThread(const std::function<void()>& function);
 		static Application& Get() { return *s_Instance; }

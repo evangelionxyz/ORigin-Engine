@@ -34,19 +34,13 @@ namespace origin
 				Stop();
 		}
 
-		const std::vector<ProfilerResult> &GetData() const { return m_Data; }
-
 		void Stop()
 		{
 			auto endTimePoint = std::chrono::high_resolution_clock::now();
 			auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimePoint).time_since_epoch().count();
 			auto end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimePoint).time_since_epoch().count();
-
-			m_Stopped = true;
-
 			float duration = (end - start) * 0.001f;
-			//int threadID = std::this_thread::get_id();
-
+			m_Stopped = true;
 			m_Func({ m_Name, duration, 0 });
 		}
 

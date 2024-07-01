@@ -264,7 +264,7 @@ namespace origin
 
 						const auto &relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
 						ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-						auto &thumbnail = DirectoryIcons(directoryEntry);
+						auto thumbnail = DirectoryIcons(directoryEntry);
 						float thumbnailHeight = m_ThumbnailSize * ((float)thumbnail->GetHeight() / (float)thumbnail->GetWidth());
 						float diff = (float)(m_ThumbnailSize - thumbnailHeight);
 						ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);

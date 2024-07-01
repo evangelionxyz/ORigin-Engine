@@ -4,7 +4,7 @@
 project "Sandbox"
 location "%{wks.location}/Sandbox"
 language "C++"
-cppdialect "C++17"
+cppdialect "C++20"
 staticruntime "off"
 
 links "ORigin"

@@ -109,5 +109,16 @@ namespace ORiginEngine
       object instance = InternalCalls.GetScriptInstance(ID);
       return instance as T;
     }
+
+    public bool Visible
+    {
+      get
+      {
+        InternalCalls.Entity_GetVisibility(ID, out bool result);
+        return result;
+      }
+
+      set => InternalCalls.Entity_SetVisibility(ID, value);
+    }
   }
 }

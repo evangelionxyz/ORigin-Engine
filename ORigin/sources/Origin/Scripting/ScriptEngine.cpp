@@ -15,7 +15,7 @@
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-gc.h>
-
+#include <cstdlib>
 #include <FileWatch.hpp>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
@@ -181,10 +181,11 @@ namespace origin
 		return mono_class_get_method_from_name(m_MonoClass, name.c_str(), parameterCount);
 	}
 
-	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
+	MonoObject* ScriptClass::InvokeMethod(MonoObject* classInstance, MonoMethod* method, void** params)
 	{
-		MonoObject *exception = nullptr;
-		return mono_runtime_invoke(method, instance, params, &exception);
+		MonoObject *result = mono_runtime_invoke(method, classInstance, params, NULL);
+		//mono_object_unbox(result);
+		return result;
 	}
 
 	// =================================
@@ -388,7 +389,11 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		s_ScriptEngineData->AppDomain = mono_domain_create_appdomain("ORiginScriptRuntime", nullptr);
+		char *domain_name = new char[20];
+		strcpy(domain_name, "ORiginScriptRuntime");
+		s_ScriptEngineData->AppDomain = mono_domain_create_appdomain(domain_name, nullptr);
+		delete[] domain_name;
+
 		mono_domain_set(s_ScriptEngineData->AppDomain, true);
 
 		s_ScriptEngineData->CoreAssemblyFilepath = filepath;
@@ -556,7 +561,7 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		UUID entityID = entity.GetUUID();
-		auto &it = s_ScriptEngineData->EntityInstances.find(entityID);
+		const auto &it = s_ScriptEngineData->EntityInstances.find(entityID);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
 			OGN_CORE_ERROR("[ScriptEngine] Entity script instance is not attached! {0} {1}", entity.GetTag(), entityID);
@@ -604,7 +609,7 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		auto &it = s_ScriptEngineData->EntityInstances.find(uuid);
+		const auto &it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
 			OGN_CORE_ERROR("[ScriptEngine] Failed to find {} ", uuid);

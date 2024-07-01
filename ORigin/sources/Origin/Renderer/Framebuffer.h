@@ -47,10 +47,8 @@ namespace origin
 		FramebufferAttachmentSpecification Attachments;
 		uint32_t Width = 0, Height = 0;
 		uint32_t Samples = 1;
-
 		GLenum WrapMode = GL_CLAMP_TO_EDGE;
 		GLenum FilterMode = GL_NEAREST;
-
 		bool ReadBuffer = true;
 		bool SwapChainTarget = false;
 	};

@@ -27,7 +27,7 @@ namespace origin {
 		const glm::ivec2 &GetViewportSize() const { return m_ViewportSize; }
 		const glm::mat4 GetViewProjection() const { return (m_Projection * m_View) * glm::inverse(m_View); }
 		const glm::vec3 &GetPosition() const { return m_Position; }
-		const glm::vec2 GetOrthographicSize() { return m_OrthoSize * 2.0f; }
+		const glm::vec2 GetOrthographicSize() { return m_OrthoSize; }
 		const glm::mat4 &GetProjection() const;
 		const glm::mat4 &GetViewMatrix() const;
 

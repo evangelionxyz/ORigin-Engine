@@ -47,16 +47,16 @@ namespace origin {
 	  m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
 		m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/origin_engine.png");
 
-	  FramebufferSpecification fbSpec;
-	  fbSpec.Attachments =
+		FramebufferSpecification fbSpec;
+		fbSpec.Attachments =
 	  {
 		  FramebufferTextureFormat::RGBA8,
 		  FramebufferTextureFormat::RED_INTEGER,
 		  FramebufferTextureFormat::DEPTH24STENCIL8
 	  };
 
-	  fbSpec.Width = 1280;
-	  fbSpec.Height = 720;
+		fbSpec.Width = 1280;
+		fbSpec.Height = 720;
 	  m_Framebuffer = Framebuffer::Create(fbSpec);
 
 	  m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 500.0f);
@@ -107,22 +107,36 @@ namespace origin {
 		{
 		case SceneState::Edit:
 		case SceneState::Simulate:
-			if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-				m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f && (m_SceneViewportSize.x != spec.Width || m_SceneViewportSize.y != spec.Height))
+		{
+			const auto &fbSpec = m_Framebuffer->GetSpecification();
+			if (m_SceneViewportSize.x != fbSpec.Width || m_SceneViewportSize.y != fbSpec.Height)
 			{
-				m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-				m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-				m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+				if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
+				{
+					m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+					m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+					m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+				}
+
 			}
 			break;
+		}
 		case SceneState::Play:
-			m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-			break;
+			uint32_t width = m_ActiveScene->GetWidth();
+			uint32_t height = m_ActiveScene->GetHeight();
+			if (m_SceneViewportSize.x != width && m_SceneViewportSize.y != height)
+			{
+				if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
+				{
+					m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+				}
+				break;
+			}
 		}
 
 		SystemUpdate(ts);
 
-		m_ActiveScene->OnShadowRender();
+		// m_ActiveScene->OnShadowRender();
 		m_ActiveScene->GetUIRenderer()->RenderFramebuffer();
 
 	  m_Framebuffer->Bind();
@@ -158,17 +172,21 @@ namespace origin {
 	void EditorLayer::SystemUpdate(Timestep ts)
 	{
 		m_Time += ts.Seconds();
-		InputProcedure(ts);
 
 		Renderer::GetStatistics().Reset();
 		Application::Get().GetGuiLayer()->BlockEvents(!IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused && !m_UIEditor->IsViewportFocused);
-
+		
 		m_SpriteSheetEditor->OnUpdate(ts);
 		m_UIEditor->OnUpdate(ts);
 
-		m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput && IsViewportFocused);
-		m_EditorCamera.SetDraggingActive(IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused);
-		m_EditorCamera.SetScrollingActive(IsViewportHovered);
+		if (m_SceneState != SceneState::Play)
+		{
+			InputProcedure(ts);
+
+			m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput && IsViewportFocused);
+			m_EditorCamera.SetDraggingActive(IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused);
+			m_EditorCamera.SetScrollingActive(IsViewportHovered);
+		}
 	}
 
   void EditorLayer::OnDuplicateEntity()
@@ -424,7 +442,9 @@ namespace origin {
 	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
 		if (!m_UIEditor)
+		{
 			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+		}
 
 		m_UIEditor->SetContext(m_ActiveScene.get());
   }
@@ -555,25 +575,25 @@ namespace origin {
 			break;
 
 		case SceneState::Edit:
+			if (m_Draw3DGrid)
+				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
+			if (m_Draw2DGrid)
+				m_Gizmos->Draw2DGrid(m_EditorCamera);
+
 			m_EditorCamera.OnUpdate(ts);
 			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera);
-
-			if (m_Draw3DGrid)
-				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
-			if (m_Draw2DGrid)
-				m_Gizmos->Draw2DGrid(m_EditorCamera);
 			break;
 
 		case SceneState::Simulate:
-			m_EditorCamera.OnUpdate(ts);
-			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
-			m_Gizmos->OnRender(m_EditorCamera);
-
 			if (m_Draw3DGrid)
 				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid)
 				m_Gizmos->Draw2DGrid(m_EditorCamera);
+
+			m_EditorCamera.OnUpdate(ts);
+			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
+			m_Gizmos->OnRender(m_EditorCamera);
 			break;
 		}
 	}
@@ -594,12 +614,12 @@ namespace origin {
 		m_SceneViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_SceneViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-		ImVec2& viewportPanelSize = ImGui::GetContentRegionAvail();
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 		
 		if (m_SceneState == SceneState::Play)
 		{
-			auto &camView = m_ActiveScene->m_Registry.view<CameraComponent>();
+			auto camView = m_ActiveScene->m_Registry.view<CameraComponent>();
 			for (auto &e : camView)
 			{
 				auto &cc = camView.get<CameraComponent>(e);
@@ -712,7 +732,7 @@ namespace origin {
 			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
 
 			auto &tc = entity.GetComponent<TransformComponent>();
-			glm::mat4 &transform = tc.GetTransform();
+			glm::mat4 transform = tc.GetTransform();
 			auto &idc = entity.GetComponent<IDComponent>();
 			
 			const glm::mat4 &cameraProjection = m_EditorCamera.GetProjection();

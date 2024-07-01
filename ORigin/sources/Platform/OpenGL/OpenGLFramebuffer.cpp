@@ -240,6 +240,8 @@ namespace origin {
 			glDrawBuffer(GL_NONE);
 		if (m_Spec.ReadBuffer == false)
 			glReadBuffer(GL_NONE);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void OpenGL_Framebuffer::Bind()
@@ -267,7 +269,6 @@ namespace origin {
 
 		m_Spec.Width = width;
 		m_Spec.Height = height;
-		
 		Invalidate();
 	}
 

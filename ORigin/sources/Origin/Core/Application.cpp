@@ -61,16 +61,14 @@ namespace origin {
 		Renderer::Init();
 		Physics::Init();
 		AudioEngine::Init();
-
-		StartThreads();
 	}
 
 	Application::~Application()
 	{
-		Window::GLFWShutdown();
 		AudioEngine::Shutdown();
 		Physics::Shutdown();
 		Renderer::Shutdown();
+		Window::GLFWShutdown();
 
 		s_Instance = nullptr;
 	}
@@ -87,6 +85,7 @@ namespace origin {
 			Timestep timestep = time - m_LastFrame;
 			m_LastFrame = time;
 
+			AssetImporter::SyncToMainThread();
 			ExecuteMainThreadQueue();
 
 			if (!m_Minimized)
@@ -121,9 +120,9 @@ namespace origin {
 		layer->OnAttach();
 	}
 
-	void Application::StartThreads()
+	float Application::GetTime()
 	{
-		AssetImporter::StartThread();
+		return static_cast<float>(glfwGetTime());
 	}
 
 	void Application::PushLayer(Layer *layer)

@@ -41,8 +41,10 @@ namespace origin
 		UUID Parent = 0;
 
 		IDComponent() = default;
-		IDComponent(const IDComponent&) = default;
+		IDComponent(const IDComponent &) = default;
+		IDComponent(UUID id, UUID parent = 0) : ID(id), Parent(parent) { }
 	};
+
 
 	class TagComponent
 	{
@@ -150,6 +152,9 @@ namespace origin
 		float LineSpacing = 0.0f;
 
 		bool ScreenSpace = false;
+
+		TextComponent() = default;
+		TextComponent(const TextComponent &) = default;
 	};
 
 	class TransformComponent
@@ -221,9 +226,6 @@ namespace origin
 
 		SpriteRenderer2DComponent() = default;
 		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&) = default;
-		SpriteRenderer2DComponent(const SpriteRenderer2DComponent&, glm::vec4 color)
-			: Color(color) {}
-
 		SpriteRenderer2DComponent(float r, float g, float b, float a)
 			: Color(r, g, b, a){}
 	};
@@ -384,11 +386,7 @@ namespace origin
 	struct BaseUIData
 	{
 		virtual ~BaseUIData() = default;
-	};
 
-	template<typename T>
-	struct UIData : public BaseUIData
-	{
 		enum class Anchor
 		{
 			Center,
@@ -397,107 +395,139 @@ namespace origin
 			BottomLeft, BottomRight
 		};
 
-		Anchor AnchorType = Anchor::Center;
+		std::string Name;
+		Anchor AnchorType;
 		TransformComponent Transform;
+	};
+
+	template<typename T>
+	struct UIData : public BaseUIData
+	{
 		T Component;
 
-		enum class Type
-		{
-
-		};
-
 		UIData() = default;
-		UIData(const UIData &) = default;
-		UIData(const TransformComponent &transform, const T &component, Anchor anchorType = Anchor::Center)
-			: Transform(transform), Component(component), AnchorType(anchorType)
-		{
-		}
+
+		UIData(const std::string &name, const T &component, Anchor anchorType = Anchor::Center)
+			: Name(name), Component(component), AnchorType(anchorType) {}
 	};
 
 	class UIComponent
 	{
 	public:
-		
-
 		UIComponent() = default;
-		UIComponent(const UIComponent &) = default;
 
 		template<typename T>
-		void AddComponent(const std::string &baseKey, const UIData<T> &component)
+		void AddComponent(const std::string &name, UIData<T> component)
 		{
-			std::string key = GenerateUniqueKey(baseKey);
-			Components[key] = std::make_shared<UIData<T>>(component);
+			component.Name = GenerateUniqueKey(name);
+			Components.push_back(std::make_shared<UIData<T>>(component));
 		}
 
 		template<typename T>
-		UIData<T> *GetComponent(const std::string &key)
+		UIData<T> *GetComponent(const std::string &name)
 		{
-			auto it = Components.find(key);
-			if (it != Components.end())
+			for (auto &c : Components)
 			{
-				return dynamic_cast<UIData<T>*>(it->second.get());
+				if (name == c->Name)
+					return dynamic_cast<UIData<T>*>(c.get());
 			}
 			return nullptr;
 		}
 
-		template<typename T>
-		bool Is(const std::string &key)
+		bool RenameComponent(int index, const std::string &newName)
 		{
-			auto it = Components.find(key);
-			if (it != Components.end())
+			if (newName.empty())
+				return false;
+
+			bool foundSameName = false;
+			for (auto &d : Components)
 			{
-				if (dynamic_cast<UIData<T>*>(Components[key].get()) != nullptr)
-					return true;
+				foundSameName = d->Name == newName;
+				if (foundSameName)
+					break;
 			}
-			return false;
-		}
 
-		bool RenameComponent(const std::string &oldKey, const std::string &newKeyBase)
-		{
-			auto it = Components.find(oldKey);
-			if (it != Components.end())
+			if (foundSameName)
 			{
-				std::string newKey = GenerateUniqueKey(newKeyBase, false);
-				if (newKey == newKeyBase)
-				{
-					Components[newKey] = it->second;
-					Components.erase(it);
-				}
-				else
-				{
-					Components[newKey] = it->second;
-					Components.erase(it);
-				}
-				return true;
+				Components[index]->Name = GenerateUniqueKey(newName);
 			}
-			return false;
+			else
+			{
+				Components[index]->Name = newName;
+			}
+
+			return true;
 		}
 
-		void RemoveComponent(const std::string &key)
+		void RemoveComponent(int index)
 		{
-			Components.erase(key);
+			Components.erase(Components.begin() + index);
 		}
 
-		std::unordered_map<std::string, std::shared_ptr<BaseUIData>> Components;
+		std::vector<std::shared_ptr<BaseUIData>> Components;
 		std::unordered_map<std::string, int> ComponentCounters;
 		std::shared_ptr<Framebuffer> Framebuffer;
 
 	private:
-		std::string GenerateUniqueKey(const std::string &baseKey, bool incrementIfExists = true)
+		std::string GenerateUniqueKey(const std::string &name)
 		{
-			if (Components.find(baseKey) == Components.end())
-				return baseKey;
-			int counter = ComponentCounters[baseKey];
-			std::string uniqueKey = baseKey + std::to_string(counter + 1);
-			if (incrementIfExists)
+			// check if the name already exists
+			bool found = false;
+			for (auto &c : Components)
 			{
-				while (Components.find(uniqueKey) != Components.end())
+				if (c->Name == name)
 				{
-					counter++;
-					uniqueKey = baseKey + std::to_string(counter);
+					found = true;
+					break;
 				}
-				ComponentCounters[baseKey] = counter + 1;
 			}
+
+			// if the name does not exist, return it as the unique key
+			if (!found)
+				return name;
+
+			// generate a unique key if the name already exists
+			int counter = 1;
+			std::string uniqueKey;
+			bool unique = false;
+
+			while (!unique)
+			{
+				uniqueKey = name + std::to_string(counter);
+				unique = true;
+				for (auto &c : Components)
+				{
+					if (c->Name == uniqueKey)
+					{
+						unique = false;
+						break;
+					}
+				}
+				counter++;
+			}
+
+			// update the counter to reflect the highest number used
+			ComponentCounters[name] = counter - 1;
+
+			// clean up counters for names that no longer exist in Components
+			for (auto it = ComponentCounters.begin(); it != ComponentCounters.end();)
+			{
+				bool exists = false;
+				for (auto &c : Components)
+				{
+					if (c->Name.find(it->first) == 0)
+					{
+						exists = true;
+						break;
+					}
+				}
+
+				if (!exists)
+					it = ComponentCounters.erase(it);
+				else
+					++it;
+			}
+
 			return uniqueKey;
 		}
 	};

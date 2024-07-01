@@ -4,7 +4,7 @@
 project "Runtime"
 location "%{wks.location}/ORigin-Runtime"
 language "C++"
-cppdialect "C++17"
+cppdialect "C++20"
 staticruntime "off"
 
 links "ORigin"
@@ -14,15 +14,12 @@ objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
 files {
   "%{prj.location}/sources/**.h",
-  "%{prj.location}/sources/**.cpp",
-  "%{prj.location}/**.h",
-  "%{prj.location}/**.rc",
-  "%{prj.location}/**.aps",
+  "%{prj.location}/sources/**.cpp"
 }
 
 includedirs {
-  "%{wks.location}/ORigin/sources",
   "%{wks.location}/sources",
+  "%{wks.location}/ORigin/sources",
   "%{IncludeDir.SPDLOG}",
   "%{IncludeDir.ASSIMP}",
   "%{IncludeDir.GLFW}",
@@ -30,9 +27,11 @@ includedirs {
   "%{IncludeDir.BOX2D}",
   "%{IncludeDir.ENTT}",
   "%{IncludeDir.Miniaudio}",
+  "%{IncludeDir.IMGUI}",
+  "%{IncludeDir.IMGUIZMO}",
   "%{IncludeDir.GLM}",
-  "%{IncludeDir.OPTICK}",
   "%{IncludeDir.YAML_CPP}",
+  "%{IncludeDir.OPTICK}",
   "%{IncludeDir.PhysX}",
   "%{IncludeDir.JoltPhysics}",
   "%{IncludeDir.msdfgen}",
@@ -40,14 +39,12 @@ includedirs {
 }
 
 defines {
-  "NV_USE_STATIC_WINCRT",
-  "GLFW_INCLUDE_NONE",
-  "_CRT_SECURE_NO_WARNINGS",
-  "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
-  "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
+    "NV_USE_STATIC_WINCRT",
+    "GLFW_INCLUDE_NONE",
+    "_CRT_SECURE_NO_WARNINGS",
+    "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
+    "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
 }
-
-linkoptions { "/ignore:4099,4006" }
 
 filter "system:windows"
     systemversion "latest"

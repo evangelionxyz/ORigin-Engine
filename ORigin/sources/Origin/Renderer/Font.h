@@ -8,31 +8,31 @@
 
 namespace origin {
 
-	
+	struct FontData
+	{
+		std::vector<msdf_atlas::GlyphGeometry> Glyphs;
+		msdf_atlas::FontGeometry FontGeometry;
+		TextureSpecification TexSpec;
+		Buffer Buffer;
+		std::string Filepath;
+		int Width = 0, Height = 0;
+	};
 
 	class Font : public Asset
 	{
 	public:
-		struct Data
-		{
-			std::vector<msdf_atlas::GlyphGeometry> Glyphs;
-			msdf_atlas::FontGeometry FontGeometry;
-			TextureSpecification TexSpec;
-			Buffer Buffer;
-			std::string Filepath;
-			int Width = 0, Height = 0;
-		};
 
-		Font() = default;
-		Font(Font::Data *data);
+		Font();
+		Font(FontData *data);
+
 		~Font();
 
-		const Data *GetData() const { return m_Data; }
+		static std::shared_ptr<Font> Create(FontData *data);
+		static FontData *LoadGlyphs(const std::filesystem::path &filepath);
+
+		const FontData *GetData() const { return m_Data; }
 		std::string GetFilepath() const { return m_Data->Filepath; }
 		const std::shared_ptr<Texture2D> &GetAtlasTexture() const { return m_AtlasTexture; }
-
-		static void LoadFont(std::vector<Data *> *fontsData, std::filesystem::path filepath);
-		static Data *LoadFontData(const std::filesystem::path &filepath);
 		
 		bool IsLoaded = false;
 
@@ -40,7 +40,8 @@ namespace origin {
 		AssetType GetType() const override { return GetStaticType(); }
 
 	private:
-		Data *m_Data = nullptr;
+
+		FontData *m_Data = nullptr;
 		std::shared_ptr<Texture2D> m_AtlasTexture;
 	};
 }

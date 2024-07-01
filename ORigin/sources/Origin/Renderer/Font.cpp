@@ -13,7 +13,7 @@
 namespace origin {
 
 	template<typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
-	static void CreateAndCacheAtlas(Font::Data *data)
+	static void CreateAndCacheAtlas(FontData *data)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -37,13 +37,33 @@ namespace origin {
 		data->TexSpec.GenerateMips = false;
 	};
 
-	Font::Data *Font::LoadFontData(const std::filesystem::path &filepath)
+	Font::Font(FontData *data)
+		: m_Data(data)
+	{
+		if (m_Data)
+		{
+			if (m_Data->Buffer.Data)
+			{
+				m_AtlasTexture = Texture2D::Create(m_Data->TexSpec);
+				m_AtlasTexture->SetData(m_Data->Buffer);
+				IsLoaded = true;
+			}
+		}
+	}
+
+	Font::~Font()
+	{
+		if (m_Data)
+			delete m_Data;
+	}
+
+	FontData *Font::LoadGlyphs(const std::filesystem::path &filepath)
 	{
 		OGN_PROFILER_RENDERING();
 
-		Font::Data * data = new Font::Data();
+		FontData *data = new FontData();
 		msdfgen::FreetypeHandle *ft = msdfgen::initializeFreetype();
-		OGN_CORE_ASSERT(ft, "[Font] FreeTypeHandle Error");
+		OGN_CORE_ASSERT(ft, "[Font] FreeTypeHandle is null");
 
 		std::string fileString = filepath.string();
 		msdfgen::FontHandle *font = msdfgen::loadFont(ft, fileString.c_str());
@@ -127,20 +147,9 @@ namespace origin {
 		return data;
 	}
 
-	Font::Font(Font::Data *data)
-		: m_Data(data)
+	std::shared_ptr<Font> Font::Create(FontData *data)
 	{
-		if (m_Data)
-		{
-			m_AtlasTexture = Texture2D::Create(m_Data->TexSpec);
-			m_AtlasTexture->SetData(m_Data->Buffer);
-			IsLoaded = true;
-		}
-	}
-
-	Font::~Font()
-	{
-		if (m_Data) delete m_Data;
+		return std::make_shared<Font>(data);
 	}
 
 }

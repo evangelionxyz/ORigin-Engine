@@ -82,13 +82,13 @@ group ""
 
 		std::string projectName = filepath.stem().string();
 
-		auto& assetDirectoryPath = filepath.parent_path() / "Assets";
+		const auto &assetDirectoryPath = filepath.parent_path() / "Assets";
 		if(!std::filesystem::exists(assetDirectoryPath))
 			std::filesystem::create_directory(assetDirectoryPath);
 
 		std::fstream outfile;
 
-		auto& premakeFilepath = filepath.parent_path() / "premake5.lua";
+		const auto &premakeFilepath = filepath.parent_path() / "premake5.lua";
 		outfile = std::fstream(premakeFilepath, std::ios::out);
 		if (outfile.is_open())
 		{
@@ -99,7 +99,7 @@ group ""
 			outfile.close();
 		}
 
-		auto& winGenFilepath = filepath.parent_path() / "WinGen.bat";
+		const auto &winGenFilepath = filepath.parent_path() / "WinGen.bat";
 		outfile = std::fstream(winGenFilepath, std::ios::out);
 		if (outfile.is_open())
 		{

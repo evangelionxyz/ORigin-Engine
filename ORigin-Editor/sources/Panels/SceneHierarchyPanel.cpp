@@ -300,10 +300,13 @@ namespace origin {
 			auto &tag = entity.GetComponent<TagComponent>().Tag;
 			char buffer[256];
 			strcpy_s(buffer, sizeof(buffer), tag.c_str());
-			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+			if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				tag = std::string(buffer);
-				if (tag.empty()) tag = "'No Name'";
+				if (tag.empty())
+				{
+					tag = "'No Name'";
+				}
 			}
 		}
 
@@ -1022,7 +1025,7 @@ namespace origin {
 				if (!scriptClassExist)
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
 
-				auto &scriptStorage = ScriptEngine::GetScriptClassStorage();
+				auto scriptStorage = ScriptEngine::GetScriptClassStorage();
 				std::string currentScriptClasses = component.ClassName;
 
 				// drop-down
@@ -1054,8 +1057,8 @@ namespace origin {
 
 				if (isRunning && !detached)
 				{
-					std::shared_ptr<ScriptInstance> &scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-					auto &fields = scriptInstance->GetScriptClass()->GetFields();
+					std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+					auto fields = scriptInstance->GetScriptClass()->GetFields();
 
 					for (const auto &[name, field] : fields)
 					{
@@ -1108,16 +1111,20 @@ namespace origin {
 						}
 						case ScriptFieldType::Entity:
 							uint64_t uuid = scriptInstance->GetFieldValue<uint64_t>(name);
-							std::string lable = scene->GetEntityWithUUID(uuid).GetTag();
-							UI::DrawButtonWithColumn(name.c_str(), lable.c_str(), nullptr, [&]()
+							Entity e = scene->GetEntityWithUUID(uuid);
+							if (e.IsValid())
 							{
-								if (ImGui::IsItemHovered())
+								UI::DrawButtonWithColumn(name.c_str(), e.GetTag().c_str(), nullptr, [&]()
 								{
-									ImGui::BeginTooltip();
-									ImGui::Text("%llu", uuid);
-									ImGui::EndTooltip();
-								}
-							});
+									if (ImGui::IsItemHovered())
+									{
+										ImGui::BeginTooltip();
+										ImGui::Text("%llu", uuid);
+										ImGui::EndTooltip();
+									}
+								});
+							}
+							
 							break;
 						}
 					}
@@ -1126,7 +1133,7 @@ namespace origin {
 				{
 					// !IsRunning
 
-					std::shared_ptr<ScriptClass> &entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+					std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
 					const auto &fields = entityClass->GetFields();
 					auto &entityFields = ScriptEngine::GetScriptFieldMap(entity);
 
@@ -1186,7 +1193,16 @@ namespace origin {
 							case ScriptFieldType::Entity:
 							{
 								uint64_t uuid = scriptField.GetValue<uint64_t>();
-								std::string lable = uuid != 0 ? scene->GetEntityWithUUID(uuid).GetTag() : "Drag Here";
+								std::string lable = "Drag Here";
+								if (uuid)
+								{
+									Entity e = scene->GetEntityWithUUID(uuid);
+									if (e.IsValid())
+									{
+										lable = e.GetTag();
+									}
+								}
+
 								UI::DrawButtonWithColumn(name.c_str(), lable.c_str(), nullptr, [&]()
 								{
 									if (ImGui::BeginDragDropTarget())

@@ -42,7 +42,7 @@ namespace origin::Utils
 			{
 				OGN_PROFILER_SCOPE("Material::LoadTextures TextureCount");
 
-				auto &textureDirectory = modelFilepath.substr(0, modelFilepath.find_last_of('/'));
+				auto textureDirectory = modelFilepath.substr(0, modelFilepath.find_last_of('/'));
 				std::string textureName = std::string(str.C_Str());
 
 				std::shared_ptr<Texture2D> newTexture = Texture2D::Create(textureDirectory + "/" + textureName);

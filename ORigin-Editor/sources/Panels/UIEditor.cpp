@@ -1,11 +1,11 @@
 #include "UIEditor.h"
-#include "..\EditorLayer.h"
-#include "Origin\Renderer\Renderer2D.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\GUI\UI.h"
-
+#include "../EditorLayer.h"
+#include "Origin/GUI/UI.h"
+#include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Scene/Components.h"
 #include <imgui.h>
-#include <misc\cpp\imgui_stdlib.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 namespace origin
 {
@@ -40,6 +40,9 @@ namespace origin
 			m_UICompHandler = nullptr;
 		}
 
+		if (IsOpened)
+			IsOpened = false;
+
 		m_Scene = scene;
 	}
 
@@ -54,7 +57,7 @@ namespace origin
 			if (cam.IsValid())
 			{
 				auto &cc = cam.GetComponent<CameraComponent>();
-				const float orthoSizeY = cc.Camera.GetOrthographicSize().y;
+				const float orthoSizeY = cc.Camera.GetOrthographicSize().y * 2.0f;
 				m_Camera.SetOrthoScale(orthoSizeY * 1.3f);
 				m_Camera.SetOrthoScaleMax(orthoSizeY * 4.0f);
 			}
@@ -87,10 +90,10 @@ namespace origin
 		m_SelectedIndex = m_UICompHandler->Components.size() - 1;
 	}
 
-	bool UIEditor::RenameComponent(const std::string &oldKey, const std::string &newKeyBase)
+	bool UIEditor::RenameComponent(int index, const std::string &newName)
 	{
 		if (m_UICompHandler)
-			return m_UICompHandler->RenameComponent(oldKey, newKeyBase);
+			return m_UICompHandler->RenameComponent(index, newName);
 		return false;
 	}
 
@@ -128,24 +131,23 @@ namespace origin
 
 		if (m_UICompHandler)
 		{
-			int i = 0;
-			for (auto &[key, ui] : m_UICompHandler->Components)
+			for (int i = 0; i < m_UICompHandler->Components.size(); i++)
 			{
 				if (m_SelectedIndex == i)
 				{
-					if (m_UICompHandler->Is<TextComponent>(key))
+					if (UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(m_UICompHandler->Components[i]->Name))
 					{
-						UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(key);
-						std::string nameBuffer = key;
-						auto &name = nameBuffer;
+						std::string name = text->Name;
 
 						char buffer[256];
 						strcpy_s(buffer, sizeof(buffer), name.c_str());
-						if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+						if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 						{
-							//name = std::string(buffer);
-							//if (name.empty())
-							//  name = "'No Name'";
+							std::string newName(buffer);
+							if (!newName.empty() && newName != name)
+							{
+								m_UICompHandler->RenameComponent(m_SelectedIndex, newName);
+							}
 						}
 
 						UI::DrawVec3Control("Translation", text->Transform.WorldTranslation, 0.1f);
@@ -174,6 +176,7 @@ namespace origin
 
 							if (text->Component.FontHandle)
 							{
+								ImGui::SameLine();
 								if (UI::DrawButton("X"))
 								{
 									text->Component.FontHandle = 0;
@@ -190,19 +193,19 @@ namespace origin
 							UI::DrawFloatControl("Line Spacing", &text->Component.LineSpacing, 0.01f);
 						}
 					}
-					else if (m_UICompHandler->Is<SpriteRenderer2DComponent>(key))
+					else if (UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(m_UICompHandler->Components[i]->Name))
 					{
-						UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(key);
-						std::string nameBuffer = key;
-						auto &name = nameBuffer;
+						std::string name = sprite->Name;
 
 						char buffer[256];
 						strcpy_s(buffer, sizeof(buffer), name.c_str());
-						if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+						if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 						{
-							// name = std::string(buffer);
-							// if (name.empty())
-							//	name = "'No Name'";
+							std::string newName(buffer);
+							if (!newName.empty() && newName != name)
+							{
+								m_UICompHandler->RenameComponent(m_SelectedIndex, newName);
+							}
 						}
 
 						UI::DrawVec3Control("Translation", sprite->Transform.WorldTranslation, 0.1f);
@@ -256,6 +259,7 @@ namespace origin
 							}
 							if (sprite->Component.Texture)
 							{
+								ImGui::SameLine();
 								if (UI::DrawButton("X"))
 								{
 									sprite->Component.Texture = 0;
@@ -273,7 +277,6 @@ namespace origin
 						}
 					}
 				}
-				i++;
 			}
 		}
 
@@ -303,21 +306,18 @@ namespace origin
 
 		if (m_UICompHandler)
 		{
-			int i = 0;
-			for (auto &[key, value] : m_UICompHandler->Components)
+			for (int i = 0; i < m_UICompHandler->Components.size(); i++)
 			{
 				ImGuiTreeNodeFlags flags = (m_SelectedIndex == i ? ImGuiTreeNodeFlags_Selected : 0)
 					| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
 					| ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
 
-				if (m_UICompHandler->Is<TextComponent>(key))
+				if (UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(m_UICompHandler->Components[i]->Name))
 				{
-					ImGui::PushID(key.c_str());
-
-					UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(key);
+					ImGui::PushID(text->Name.c_str());
 
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-					bool node_open = ImGui::TreeNodeEx((void *)&text, flags, key.c_str());
+					bool node_open = ImGui::TreeNodeEx((void *)&text, flags, text->Name.c_str());
 					ImGui::PopStyleVar();
 
 					bool isDeleting = false;
@@ -345,29 +345,29 @@ namespace origin
 
 					if (isDeleting)
 					{
-						m_UICompHandler->RemoveComponent(key);
-						break;
+						m_UICompHandler->RemoveComponent(i);
+						i--;
 					}
-					ImGui::PopID();
-				}
-				else if (m_UICompHandler->Is<SpriteRenderer2DComponent>(key))
-				{
-					ImGui::PushID(key.c_str());
 
-					UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(key);
+					ImGui::PopID();
+
+				}
+
+				else if (UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(m_UICompHandler->Components[i]->Name))
+				{
+					ImGui::PushID(sprite->Name.c_str());
+
 					ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-					bool node_open = ImGui::TreeNodeEx((void *)&sprite, flags, key.c_str());
+					bool node_open = ImGui::TreeNodeEx((void *)&sprite, flags, sprite->Name.c_str());
 					ImGui::PopStyleVar();
 
 					bool isDeleting = false;
 					if (ImGui::BeginPopupContextItem())
 					{
-
 						if (ImGui::MenuItem("Delete"))
 						{
 							isDeleting = true;
 						}
-
 						ImGui::EndPopup();
 					}
 
@@ -386,14 +386,12 @@ namespace origin
 
 					if (isDeleting)
 					{
-						m_UICompHandler->RemoveComponent(key);
-						break;
+						m_UICompHandler->RemoveComponent(i);
+						i--;
 					}
 
 					ImGui::PopID();
 				}
-
-				i++;
 			}
 		}
 
@@ -446,30 +444,31 @@ namespace origin
 			{
 				auto &cc = cam.GetComponent<CameraComponent>();
 				const glm::vec2 &orthoSize = cc.Camera.GetOrthographicSize();
-				Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { orthoSize.x, orthoSize.y, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
+				Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { orthoSize.x * 2.0f, orthoSize.y * 2.0f, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
 
-				int i = 0;
-				for (auto &[key, value] : m_UICompHandler->Components)
+				for (int i = 0; i < m_UICompHandler->Components.size(); i++)
 				{
-					if (m_UICompHandler->Is<TextComponent>(key))
+					if (UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(m_UICompHandler->Components[i]->Name))
 					{
-						UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(key);
 						if (text->Component.FontHandle)
 						{
 							Renderer2D::DrawString(text->Component.TextString, text->Transform.GetTransform(), text->Component, i);
 						}
 					}
-					else if (m_UICompHandler->Is<SpriteRenderer2DComponent>(key))
+					else if (UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(m_UICompHandler->Components[i]->Name))
 					{
-						UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(key);
 						Renderer2D::DrawSprite(sprite->Transform.GetTransform(), sprite->Component, i);
+						if (m_SelectedIndex == i)
+						{
+							glLineWidth(2.0f);
+							Renderer2D::DrawRect(sprite->Transform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+						}
 					}
-
-					i++;
 				}
 			}
 
 			Renderer2D::End();
+			glLineWidth(1.0);
 		}
 
 		if (IsViewportHovered && IsViewportFocused)
@@ -499,10 +498,16 @@ namespace origin
 
 	bool UIEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
-		if (e.Is(Mouse::ButtonLeft))
+		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
 		{
 			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
+			{
 				m_SelectedIndex = m_HoveredIndex;
+			}
+			else if (m_HoveredIndex <= -1)
+			{
+				m_SelectedIndex = -1;
+			}
 		}
 		
 		if (e.Is(Mouse::ButtonMiddle) && IsViewportHovered)
@@ -520,6 +525,44 @@ namespace origin
 
 	void UIEditor::OnMouse(float ts)
 	{
+		static glm::vec2 initialPosition = { 0.0f, 0.0f };
+		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
+		const glm::vec2 delta = mouse - initialPosition;
+		initialPosition = mouse;
+
+		if (!m_UICompHandler)
+			return;
+
+		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered)
+		{
+			for (int i = 0; i < m_UICompHandler->Components.size(); i++)
+			{
+				if (m_SelectedIndex == i)
+				{
+					auto &tc = m_UICompHandler->Components[m_SelectedIndex]->Transform;
+					float orthoScale = m_Camera.GetOrthoScale() / m_Camera.GetHeight();
+
+					static glm::vec3 translation = tc.Translation;
+
+					if (Input::IsKeyPressed(Key::LeftShift))
+					{
+						float snapeValue = 0.5f;
+						if (Input::IsKeyPressed(Key::LeftControl))
+							snapeValue = 0.1f;
+
+						translation += glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+						tc.WorldTranslation.x = round(translation.x / snapeValue) * snapeValue;
+						tc.WorldTranslation.y = round(translation.y / snapeValue) * snapeValue;
+					}
+					else
+					{
+						translation = glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+						tc.WorldTranslation += glm::vec3(glm::vec2(translation), 0.0f);
+						translation = tc.WorldTranslation;
+					}
+				}
+			}
+		}
 	}
 
 	void UIEditor::Open()

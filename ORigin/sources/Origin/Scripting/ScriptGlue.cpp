@@ -52,11 +52,15 @@ namespace origin
 
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-			Entity entity = scene->GetEntityWithUUID(entityID);
-
-		MonoType *managedType = mono_reflection_type_get_type(componentType);
-		OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "ScriptGlue: Failed to process Entity_HasComponent")
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		if (entity.IsValid())
+		{
+			MonoType *managedType = mono_reflection_type_get_type(componentType);
+			OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "ScriptGlue: Failed to process Entity_HasComponent");
 			return s_EntityHasComponentFuncs.at(managedType)(entity);
+		}
+
+		return false;
 	}
 
 	static void Entity_AddComponent(UUID entityID, MonoReflectionType *componentType)
@@ -66,10 +70,12 @@ namespace origin
 		Scene *scene = ScriptEngine::GetSceneContext();
 		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
 		Entity entity = scene->GetEntityWithUUID(entityID);
-
-		MonoType *managedType = mono_reflection_type_get_type(componentType);
-		OGN_CORE_ASSERT(s_EntityAddComponentFuncs.find(managedType) != s_EntityAddComponentFuncs.end(), "ScriptGlue: Failed to process AddComponent");
-		s_EntityAddComponentFuncs.at(managedType)(entity);
+		if (entity.IsValid())
+		{
+			MonoType *managedType = mono_reflection_type_get_type(componentType);
+			OGN_CORE_ASSERT(s_EntityAddComponentFuncs.find(managedType) != s_EntityAddComponentFuncs.end(), "ScriptGlue: Failed to process AddComponent");
+			s_EntityAddComponentFuncs.at(managedType)(entity);
+		}
 	}
 
 	static uint64_t Entity_FindEntityByName(MonoString *stringName)
@@ -86,6 +92,36 @@ namespace origin
 			return 0;
 
 		return entity.GetUUID();
+	}
+
+	static void Entity_SetVisibility(UUID entityID, bool value)
+	{
+		OGN_PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		if (!entity.IsValid())
+		{
+			entity.GetComponent<TransformComponent>().Visible = value;
+		}
+	}
+
+	static void Entity_GetVisibility(UUID entityID, bool *value)
+	{
+		OGN_PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+
+		Entity entity = scene->GetEntityWithUUID(entityID);
+
+		if (!entity.IsValid())
+		{
+			*value = entity.GetComponent<TransformComponent>().Visible;
+		}
 	}
 
 	static uint64_t Entity_Instantiate(UUID entityID, glm::vec3 translation)
@@ -702,6 +738,42 @@ namespace origin
 
 		OGN_CORE_ERROR("[ScriptGlue]: Invalid Entity");
 		return false;
+	}
+
+	static MonoString *UIComponent_TextComponent_GetText(UUID entityID, MonoString *name)
+	{
+		OGN_PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		if (entity.IsValid())
+		{
+			auto &ui = entity.GetComponent<UIComponent>();
+			if (UIData<TextComponent> *text = ui.GetComponent<TextComponent>(Utils::MonoStringToString(name)))
+			{
+				return ScriptEngine::CreateString(text->Component.TextString.c_str());
+			}
+		}
+		OGN_CORE_ERROR("[ScriptGlue]: Invalid Entity");
+		return nullptr;
+	}
+
+	static void UIComponent_TextComponent_SetText(UUID entityID, MonoString *name, MonoString *textString)
+	{
+		OGN_PROFILER_LOGIC();
+
+		Scene *scene = ScriptEngine::GetSceneContext();
+		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+		Entity entity = scene->GetEntityWithUUID(entityID);
+		if (entity.IsValid())
+		{
+			auto &ui = entity.GetComponent<UIComponent>();
+			if (UIData<TextComponent> *text = ui.GetComponent<TextComponent>(Utils::MonoStringToString(name)))
+			{
+				text->Component.TextString = Utils::MonoStringToString(textString);
+			}
+		}
 	}
 
 	static MonoString *TextComponent_GetText(UUID entityID)
@@ -1404,6 +1476,8 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(Entity_FindEntityByName);
 		OGN_ADD_INTERNAL_CALLS(Entity_AddComponent);
 		OGN_ADD_INTERNAL_CALLS(Entity_HasComponent);
+		OGN_ADD_INTERNAL_CALLS(Entity_SetVisibility);
+		OGN_ADD_INTERNAL_CALLS(Entity_GetVisibility);
 		OGN_ADD_INTERNAL_CALLS(Entity_Instantiate);
 		OGN_ADD_INTERNAL_CALLS(Entity_Destroy);
 
@@ -1453,6 +1527,9 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsSpatial);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetPlayAtStart);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_IsPlayAtStart);
+
+		OGN_ADD_INTERNAL_CALLS(UIComponent_TextComponent_GetText);
+		OGN_ADD_INTERNAL_CALLS(UIComponent_TextComponent_SetText);
 
 		OGN_ADD_INTERNAL_CALLS(TextComponent_GetText);
 		OGN_ADD_INTERNAL_CALLS(TextComponent_SetText);

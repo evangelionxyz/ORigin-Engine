@@ -101,7 +101,7 @@ namespace origin {
 	class PhysXErrorCallback : public physx::PxErrorCallback
 	{
 	public:
-		virtual void PhysXErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override
+		virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line) override
 		{
 			const char* errorMessage = NULL;
 

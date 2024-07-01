@@ -212,7 +212,7 @@ namespace origin {
 		Renderer::GetStatistics().CubeCount++;
 	}
 
-	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color, int entityID)
+	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, int entityID)
 	{
 		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
 		glm::vec3 p1 = glm::vec3(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -225,7 +225,7 @@ namespace origin {
 		Renderer2D::DrawLine(p3, p0, color);
 	}
 
-	void Renderer3D::DrawRect(const glm::mat4& transform, glm::vec4& color, int entityID)
+	void Renderer3D::DrawRect(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
 		glm::vec3 lineVertices[24];
 		for (size_t i = 0; i < 24; i++)

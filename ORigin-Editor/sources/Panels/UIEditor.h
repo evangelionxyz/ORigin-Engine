@@ -5,11 +5,11 @@
 #include "Origin\Scene\Entity.h"
 #include "Origin\Core\KeyEvent.h"
 #include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\Components.h"
 #include "Origin\Scene\Scene.h"
 
 namespace origin
 {
+	class UIComponent;
 	class UIEditor
 	{
 	public:
@@ -18,7 +18,7 @@ namespace origin
 		void SetActive(UIComponent *component);
 		void CreateNewText();
 		void CreateNewTexture();
-		bool RenameComponent(const std::string &oldKey, const std::string &newKeyBase);
+		bool RenameComponent(int index, const std::string &newName);
 
 		void OnUpdate(Timestep ts);
 		void OnImGuiRender();

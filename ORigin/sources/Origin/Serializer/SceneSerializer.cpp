@@ -129,20 +129,19 @@ namespace origin
 
 		if (entity.HasComponent<UIComponent>())
 		{
-			auto &ui = entity.GetComponent<UIComponent>();
+			auto ui = entity.GetComponent<UIComponent>();
 			out << YAML::Key << "UIComponent";
 			out << YAML::BeginMap; // UIComponent
 
 			out << YAML::Key << "Components" << YAML::BeginSeq; // Components
 
-			for (auto &[key, value] : ui.Components)
+			for (int i = 0; i < ui.Components.size(); i++)
 			{
 				out << YAML::BeginMap;
-				if (ui.Is<TextComponent>(key))
+				if (UIData<TextComponent> *text = ui.GetComponent<TextComponent>(ui.Components[i]->Name))
 				{
-					UIData<TextComponent> *text = ui.GetComponent<TextComponent>(key);
 					out << YAML::Key << "Type" << "TextComponent";
-					out << YAML::Key << "Name" << key;
+					out << YAML::Key << "Name" << text->Name;
 					out << YAML::Key << "Anchor" << (int)text->AnchorType;
 					out << YAML::Key << "FontHandle" << text->Component.FontHandle;
 					out << YAML::Key << "TextString" << text->Component.TextString;
@@ -153,11 +152,10 @@ namespace origin
 					out << YAML::Key << "Rotation" << text->Transform.WorldRotation;
 					out << YAML::Key << "Scale" << text->Transform.WorldScale;
 				}
-				else if (ui.Is<SpriteRenderer2DComponent>(key))
+				else if (UIData<SpriteRenderer2DComponent> *sprite = ui.GetComponent<SpriteRenderer2DComponent>(ui.Components[i]->Name))
 				{
-					UIData<SpriteRenderer2DComponent> *sprite = ui.GetComponent<SpriteRenderer2DComponent>(key);
 					out << YAML::Key << "Type" << "SpriteRenderer2DComponent";
-					out << YAML::Key << "Name" << key;
+					out << YAML::Key << "Name" << sprite->Name;
 					out << YAML::Key << "Anchor" << (int)sprite->AnchorType;
 					out << YAML::Key << "TextureHandle" << sprite->Component.Texture;
 					out << YAML::Key << "Min" << sprite->Component.Min;
@@ -649,7 +647,7 @@ namespace origin
 
 				if (YAML::Node transformComponent = entity["TransformComponent"])
 				{
-					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
+					TransformComponent &tc = deserializedEntity.GetComponent<TransformComponent>();
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
 					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
@@ -658,13 +656,13 @@ namespace origin
 
 				if (YAML::Node audioListnerComponent = entity["AudioListenerComponent"])
 				{
-					auto& al = deserializedEntity.AddComponent<AudioListenerComponent>();
+					AudioListenerComponent &al = deserializedEntity.AddComponent<AudioListenerComponent>();
 					al.Enable = audioListnerComponent["Enable"].as<bool>();
 				}
 
 				if (YAML::Node spriteAnimationComponent = entity["SpriteAnimationComponent"])
 				{
-					auto& ac = deserializedEntity.AddComponent<SpriteAnimationComponent>();
+					SpriteAnimationComponent &ac = deserializedEntity.AddComponent<SpriteAnimationComponent>();
 					if (auto states = spriteAnimationComponent["States"])
 					{
 						for (auto state : states)
@@ -694,7 +692,7 @@ namespace origin
 
 				if (YAML::Node uiComponent = entity["UIComponent"])
 				{
-					auto &ui = deserializedEntity.AddComponent<UIComponent>();
+					UIComponent &ui = deserializedEntity.AddComponent<UIComponent>();
 
 					for (auto comp : uiComponent["Components"])
 					{
@@ -702,12 +700,16 @@ namespace origin
 						if (types == "TextComponent")
 						{
 							UIData<TextComponent> component;
-							component.AnchorType = (UIData<TextComponent>::Anchor) comp["Anchor"].as<int>();
+							component.AnchorType = (BaseUIData::Anchor) comp["Anchor"].as<int>();
 							component.Component.TextString = comp["TextString"].as<std::string>();
 							component.Component.Kerning = comp["Kerning"].as<float>();
 							component.Component.LineSpacing = comp["LineSpacing"].as<float>();
 							AssetHandle fontHandle = comp["FontHandle"].as<uint64_t>();
 							component.Component.FontHandle = fontHandle;
+							if (fontHandle)
+							{
+								AssetManager::GetAsset<Font>(fontHandle);
+							}
 							component.Component.Color = comp["Color"].as<glm::vec4>();
 							component.Transform.WorldTranslation = comp["Translation"].as<glm::vec3>();
 							component.Transform.WorldRotation = comp["Rotation"].as<glm::vec3>();
@@ -719,7 +721,7 @@ namespace origin
 						else if (types == "SpriteRenderer2DComponent")
 						{
 							UIData<SpriteRenderer2DComponent> component;
-							component.AnchorType = (UIData<SpriteRenderer2DComponent>::Anchor) comp["Anchor"].as<int>();
+							component.AnchorType = (BaseUIData::Anchor) comp["Anchor"].as<int>();
 							component.Component.Min = comp["Min"].as<glm::vec2>();
 							component.Component.Max = comp["Max"].as<glm::vec2>();
 							component.Component.TillingFactor = comp["TillingFactor"].as<glm::vec2>();
@@ -740,7 +742,7 @@ namespace origin
 
 				if (YAML::Node audioComponent = entity["AudioComponent"])
 				{
-					auto& ac = deserializedEntity.AddComponent<AudioComponent>();
+					AudioComponent &ac = deserializedEntity.AddComponent<AudioComponent>();
 
 					if (audioComponent["AudioHandle"])
 					{
@@ -754,7 +756,7 @@ namespace origin
 						ac.Looping = audioComponent["Looping"].as<bool>();
 						ac.Spatializing = audioComponent["Spatial"].as<bool>();
 						ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
-						auto& audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+						std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 						audio->SetVolume(ac.Volume);
 						audio->SetLoop(ac.Looping);
 						audio->SetPitch(ac.Pitch);
@@ -765,8 +767,8 @@ namespace origin
 
 				if (YAML::Node cameraComponent = entity["CameraComponent"])
 				{
-					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
-					auto& cameraProps = cameraComponent["Camera"];
+					CameraComponent &cc = deserializedEntity.AddComponent<CameraComponent>();
+					const auto& cameraProps = cameraComponent["Camera"];
 					cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
 					cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
 					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
@@ -782,7 +784,7 @@ namespace origin
 
 				if (YAML::Node particleComponent = entity["ParticleComponent"])
 				{
-					auto& pc = deserializedEntity.AddComponent<ParticleComponent>();
+					ParticleComponent &pc = deserializedEntity.AddComponent<ParticleComponent>();
 					pc.Velocity = particleComponent["Velocity"].as<glm::vec3>();
 					pc.VelocityVariation = particleComponent["VelocityVariation"].as<glm::vec3>();
 					pc.Rotation = particleComponent["Rotation"].as<glm::vec3>();
@@ -797,7 +799,7 @@ namespace origin
 
 				if (YAML::Node spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])
 				{
-					auto& src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
+					SpriteRenderer2DComponent &src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
 					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
 					if(spriteRenderer2DComponent["Handle"])
 					{
@@ -843,7 +845,7 @@ namespace origin
 
 				if (YAML::Node circleRendererComponent = entity["CircleRendererComponent"])
 				{
-					auto& src = deserializedEntity.AddComponent<CircleRendererComponent>();
+					CircleRendererComponent &src = deserializedEntity.AddComponent<CircleRendererComponent>();
 					src.Color = circleRendererComponent["Color"].as<glm::vec4>();
 					src.Fade = circleRendererComponent["Fade"].as<float>();
 					src.Thickness = circleRendererComponent["Thickness"].as<float>();
@@ -851,7 +853,7 @@ namespace origin
 
 				if (YAML::Node rigidbody2DComponent = entity["Rigidbody2DComponent"])
 				{
-					auto& rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
+					Rigidbody2DComponent &rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
 					rb2d.Type = Rigidbody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
 					rb2d.Mass = rigidbody2DComponent["Mass"].as<float>();
 					rb2d.LinearDamping = rigidbody2DComponent["LinearDamping"].as<float>();
@@ -870,7 +872,7 @@ namespace origin
 
 				if (YAML::Node boxCollider2DComponent = entity["BoxCollider2DComponent"])
 				{
-					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
+					BoxCollider2DComponent &bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
 					bc2d.Group = boxCollider2DComponent["Group"].as<int>();
 					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
 					bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
@@ -882,7 +884,7 @@ namespace origin
 
 				if (YAML::Node circleCollider2DComponent = entity["CircleCollider2DComponent"])
 				{
-					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
+					CircleCollider2DComponent &cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
 					cc2d.Group = circleCollider2DComponent["Group"].as<int>();
 					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
 					cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
@@ -911,7 +913,7 @@ namespace origin
 
 				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
 				{
-					auto& boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
+					BoxColliderComponent &boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
 					boxCollider.Size = boxColliderComponent["Size"].as<glm::vec3>();
 					boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
 					boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
@@ -921,7 +923,7 @@ namespace origin
 
 				if (YAML::Node sphereColliderComponent = entity["SphereColliderComponent"])
 				{
-					auto& sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
+					SphereColliderComponent &sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
 					sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
 					sphereCollider.Offset = sphereColliderComponent["Offset"].as<glm::vec3>();
 					sphereCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
@@ -931,7 +933,7 @@ namespace origin
 
 				if (YAML::Node capsueColliderComponent = entity["CapsuleColliderComponent"])
 				{
-					auto& capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
+					CapsuleColliderComponent &capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
 					capsuleCollider.Radius = capsueColliderComponent["Radius"].as<float>();
 					capsuleCollider.Height = capsueColliderComponent["Height"].as<float>();
 					capsuleCollider.Offset = capsueColliderComponent["Offset"].as<glm::vec3>();
@@ -942,7 +944,7 @@ namespace origin
 
 				if (YAML::Node rigidbodyComponent = entity["RigidbodyComponent"])
 				{
-					auto& rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
+					RigidbodyComponent &rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
 					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
 					rigidbody.CenterMassPosition = rigidbodyComponent["CenterMassPosition"].as<glm::vec3>();
 					rigidbody.UseGravity = rigidbodyComponent["UseGravity"].as<bool>();
@@ -959,7 +961,7 @@ namespace origin
 
 				if (YAML::Node revoluteJoint2DComponent = entity["RevoluteJoint2DComponent"])
 				{
-					auto& rjc = deserializedEntity.AddComponent<RevoluteJoint2DComponent>();
+					RevoluteJoint2DComponent &rjc = deserializedEntity.AddComponent<RevoluteJoint2DComponent>();
 					rjc.ConnectedBodyID = revoluteJoint2DComponent["Connected Body ID"].as<uint64_t>();
 					rjc.AnchorPoint = revoluteJoint2DComponent["Anchor"].as<glm::vec2>();
 					rjc.EnableLimit = revoluteJoint2DComponent["EnableLimit"].as<bool>();
@@ -975,24 +977,28 @@ namespace origin
 					AssetHandle handle = textComponent["Handle"].as<uint64_t>();
 					if (AssetManager::IsAssetHandleValid(handle))
 					{
-						auto& text = deserializedEntity.AddComponent<TextComponent>();
-						text.FontHandle = handle;
-						text.TextString = textComponent["Text"].as<std::string>();
-						text.Color = textComponent["Color"].as<glm::vec4>();
-						text.Kerning = textComponent["Kerning"].as<float>();
-						text.LineSpacing = textComponent["LineSpacing"].as<float>();
-						text.ScreenSpace = textComponent["ScreenSpace"].as<bool>();
+						TextComponent &tc = deserializedEntity.AddComponent<TextComponent>();
+						tc.FontHandle = handle;
+						if (handle)
+						{
+							AssetManager::GetAsset<Font>(handle);
+						}
+						tc.TextString = textComponent["Text"].as<std::string>();
+						tc.Color = textComponent["Color"].as<glm::vec4>();
+						tc.Kerning = textComponent["Kerning"].as<float>();
+						tc.LineSpacing = textComponent["LineSpacing"].as<float>();
+						tc.ScreenSpace = textComponent["ScreenSpace"].as<bool>();
 					}
 				}
 
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])
 				{
-					auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+					ScriptComponent & sc = deserializedEntity.AddComponent<ScriptComponent>();
 					OGN_CORE_ASSERT(deserializedEntity.IsValid(), "SceneSerializer:  Entity is invalid");
 
 					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 
-					if (auto scriptFields = scriptComponent["ScriptFields"])
+					if (YAML::Node scriptFields = scriptComponent["ScriptFields"])
 					{
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
 						OGN_CORE_ASSERT(entityClass, "SceneSerializer: Entity Class is Invalid");
@@ -1000,7 +1006,7 @@ namespace origin
 						if (entityClass)
 						{
 							const auto& fields = entityClass->GetFields();
-							auto& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
+							ScriptFieldMap& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
 
 							for (auto scriptField : scriptFields)
 							{

@@ -1,12 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Physics\ColliderComponent.h"
-
-#include "Components.h"
-
 #include "entt\entt.hpp"
 #include "box2d\b2_contact.h"
+
+#include "Components.h"
+#include "Origin\Physics\ColliderComponent.h"
 
 namespace origin {
 
@@ -21,7 +20,7 @@ namespace origin {
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			OGN_CORE_ASSERT(!HasComponent<T>(), "[Entity::AddComponent] already has component!");
+			OGN_CORE_ASSERT(!HasComponent<T>(), "[Entity - AddComponent] Entity already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;

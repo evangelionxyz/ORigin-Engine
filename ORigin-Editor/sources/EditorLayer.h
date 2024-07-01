@@ -2,13 +2,14 @@
 #pragma once
 
 #include <Origin.h>
-#include "Panels/Dockspace.h"
-#include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/MaterialEditor.h"
+#include "Gizmos/Gizmos.h"
 #include "Panels/UIEditor.h"
+#include "Panels/Dockspace.h"
+#include "Panels/MaterialEditor.h"
 #include "Panels/AnimationTimeline.h"
 #include "Panels/SpriteSheetEditor.h"
+#include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 
 #include <ImGuizmo.h>
 

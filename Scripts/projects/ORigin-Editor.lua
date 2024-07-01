@@ -4,7 +4,7 @@
 project "Editor"
 location "%{wks.location}/ORigin-Editor"
 language "C++"
-cppdialect "C++17"
+cppdialect "C++20"
 staticruntime "off"
 
 links "ORigin"
@@ -27,6 +27,7 @@ files {
 
 includedirs {
     "%{wks.location}/ORigin/sources",
+    "%{wks.location}/sources",
     "%{IncludeDir.SPDLOG}",
     "%{IncludeDir.ASSIMP}",
     "%{IncludeDir.GLFW}",
@@ -53,11 +54,8 @@ defines {
     "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
 }
 
-linkoptions { "/ignore:4099,4006" }
-
 filter "system:windows"
     systemversion "latest"
-    
 
 filter "configurations:Debug"
     defines {

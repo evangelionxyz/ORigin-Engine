@@ -524,7 +524,7 @@ namespace origin {
 		DrawQuad(transform, texture, -1, tilingFactor, tintColor);
 	}
 
-	void Renderer2D::DrawRect(const glm::vec3& position, const glm::vec2& size, glm::vec4& color, int entityID)
+	void Renderer2D::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, int entityID)
 	{
 		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
 		glm::vec3 p1 = glm::vec3(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -832,7 +832,7 @@ namespace origin {
 
 	void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component, int entityID)
 	{
-		const std::shared_ptr<Font> &font = AssetManager::GetAsset<Font>(component.FontHandle);
+		std::shared_ptr<Font> font = AssetManager::GetAsset<Font>(component.FontHandle);
 		DrawString(string, font, transform, { component.Color, component.Kerning, component.LineSpacing }, entityID);
 	}
 }

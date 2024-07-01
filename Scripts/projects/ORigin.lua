@@ -4,7 +4,7 @@
 project "ORigin"
 kind "StaticLib"
 language "C++"
-cppdialect "C++17"
+cppdialect "C++20"
 staticruntime "off"
 location "%{wks.location}/ORigin"
 
@@ -22,7 +22,7 @@ files {
   "%{IncludeDir.STBI}/**.cpp",
   "%{IncludeDir.STBI}/**.h",
   "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
-  "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
+  "%{IncludeDir.IMGUIZMO}/ImGuizmo.h",
   "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
   "%{IncludeDir.IMGUIZMO}/ImGradient.h",
   "%{IncludeDir.IMGUIZMO}/GraphEditor.cpp",

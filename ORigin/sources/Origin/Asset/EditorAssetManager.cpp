@@ -63,7 +63,7 @@ namespace origin {
 			{
 				auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
 				m_LoadedAssets[handle] = asset;
-				FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath, handle);
+				FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
 			}
 			else
 			{
@@ -124,11 +124,9 @@ namespace origin {
 			auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
 
 			OGN_CORE_TRACE(handle);
-
 			m_LoadedAssets[handle] = asset;
 			m_AssetRegistry[handle] = metadata;
-
-			FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath, handle);
+			FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
 
 			SerializeAssetRegistry();
 			return handle;

@@ -8,23 +8,23 @@
 class RuntimeLayer : public origin::Layer
 {
 public:
-	RuntimeLayer()
-		: Layer("Runtime Layer")
-	{
-	}
+	RuntimeLayer();
+	~RuntimeLayer();
 
 	void OnAttach() override;
 	void OnUpdate(origin::Timestep ts) override;
 	void OnEvent(origin::Event &e) override;
-	void OnLoadingScreen(uint32_t waitingTime);
-
-	bool OpenProject(const std::filesystem::path &path);
-	void OpenScene(origin::AssetHandle handle);
-
-	bool OnResize(origin::FramebufferResizeEvent &e);
+	void OnLoadingScreen(float endTime);
+	bool OnWindowResized(origin::WindowResizeEvent &e);
 	bool OnKeyPressed(origin::KeyPressedEvent &e);
-	std::shared_ptr<origin::Texture2D> m_LoadingScreenImage;
+	void Resize(uint32_t width, uint32_t height);
+	bool OpenProject(const std::filesystem::path &path);
+
+	std::shared_ptr<origin::AudioSource> m_LoadingSound;
+	std::shared_ptr<origin::Texture2D> m_ScreenTexture;
 	std::shared_ptr<origin::Scene> m_ActiveScene;
-	bool IsLoaded = false;
+
+	float X, Y;
+	float Width, Height;
 };
 

@@ -286,7 +286,7 @@ namespace origin {
 		if (!m_CanDragging)
 			return;
 
-		auto &[xSpeed, ySpeed] = PanSpeed();
+		auto [xSpeed, ySpeed] = PanSpeed();
 
 		switch (m_ProjectionType)
 		{

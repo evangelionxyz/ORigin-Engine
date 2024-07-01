@@ -125,7 +125,8 @@ namespace origin {
 
 		glm::quat quatRotation = glm::quat(transform.WorldRotation);
 
-		physx::PxRigidBodyExt::updateMassAndInertia(*dActor, Mass, &Utils::ToPhysXVec3(CenterMassPosition));
+		physx::PxVec3 centerMassLocalPos = Utils::ToPhysXVec3(CenterMassPosition);
+		physx::PxRigidBodyExt::updateMassAndInertia(*dActor, Mass, &centerMassLocalPos);
 		actor->is<physx::PxRigidDynamic>()->setGlobalPose(physx::PxTransform(
 			Utils::ToPhysXVec3(transform.WorldTranslation), 
 			Utils::ToPhysXQuat(quatRotation))

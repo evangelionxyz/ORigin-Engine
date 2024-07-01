@@ -14,10 +14,6 @@ namespace origin
 		{
 			PushLayer(new RuntimeLayer());
 		}
-
-		~RuntimeApp()
-		{
-		}
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)

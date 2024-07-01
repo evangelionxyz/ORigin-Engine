@@ -485,4 +485,18 @@ namespace ORiginEngine
       }
     }
   }
+
+
+  public class UIComponent : Component
+  {
+    public string GetTextString(string name)
+    {
+      return InternalCalls.UIComponent_TextComponent_GetText(Entity.ID, name);
+    }
+
+    public void SetTextString(string name, string text)
+    {
+      InternalCalls.UIComponent_TextComponent_SetText(Entity.ID, name, text);
+    }
+  }
 }

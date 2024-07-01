@@ -60,7 +60,7 @@ namespace origin
 				command->Undo();
 				m_RedoStack.push(std::move(command));
 			}
-			else OGN_CORE_WARN("[CommandManager] No actions to redo")
+			else OGN_CORE_WARN("[CommandManager] No actions to redo");
 		}
 
 		void redo()
@@ -72,7 +72,7 @@ namespace origin
 				command->Execute();
 				m_UndoStack.push(std::move(command));
 			}
-			else OGN_CORE_WARN("[CommandManager] No actions to redo")
+			else OGN_CORE_WARN("[CommandManager] No actions to redo");
 		}
 
 	private:

@@ -30,6 +30,8 @@ namespace origin
     Entity GetEntityWithUUID(UUID uuid);
     Entity FindEntityByName(std::string_view name);
 
+    void UpdateRuntime(Timestep ts);
+
     void DestroyEntity(Entity entity);
 
     void OnRuntimeStart();
@@ -42,7 +44,7 @@ namespace origin
     void OnViewportResize(const uint32_t width, const uint32_t height);
     void OnShadowRender();
 
-    void UpdateEditorTransform();
+    void UpdateTransform();
 
     template <typename... Components>
     auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
@@ -52,6 +54,9 @@ namespace origin
     std::shared_ptr<UIRenderer> GetUIRenderer() { return m_UIRenderer; }
 
     const std::shared_ptr<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
+
+    uint32_t GetWidth() { return m_ViewportWidth; }
+    uint32_t GetHeight() { return m_ViewportHeight; }
 
   private:
     std::string m_Name = "untitled";

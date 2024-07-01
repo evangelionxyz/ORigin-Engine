@@ -115,7 +115,7 @@ namespace origin {
 		for (entt::entity e : rb2dView)
 		{
 			Entity entity{ e, m_Scene };
-			auto& [tc, rb2d] = rb2dView.get<TransformComponent, Rigidbody2DComponent>(e);
+			auto [tc, rb2d] = rb2dView.get<TransformComponent, Rigidbody2DComponent>(e);
 			auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
 			if (body)
@@ -133,7 +133,7 @@ namespace origin {
 		auto view = m_Scene->m_Registry.view<IDComponent, TransformComponent>();
 		for (entt::entity e : view)
 		{
-			auto &[idc, tc] = view.get<IDComponent, TransformComponent>(e);
+			auto [idc, tc] = view.get<IDComponent, TransformComponent>(e);
 			Entity entity { e, m_Scene };
 
 			if (!entity.HasComponent<Rigidbody2DComponent>() && idc.Parent != 0)
@@ -161,7 +161,7 @@ namespace origin {
 		for (entt::entity e : view)
 		{
 			Entity entity = { e, m_Scene };
-			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
+			auto [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
 
 			b2BodyDef bodyDef;
 			bodyDef.userData.pointer = static_cast<uintptr_t>(e);
@@ -215,7 +215,7 @@ namespace origin {
 		for (entt::entity e : view)
 		{
 			Entity entity = { e, m_Scene };
-			auto& [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
+			auto [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
 			b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
 			if(entity.HasComponent<RevoluteJoint2DComponent>())
@@ -327,7 +327,7 @@ namespace origin {
 	{
 		OGN_PROFILER_PHYSICS();
 
-		auto &view = m_Scene->m_Registry.view<Rigidbody2DComponent, RevoluteJoint2DComponent>();
+		auto view = m_Scene->m_Registry.view<Rigidbody2DComponent, RevoluteJoint2DComponent>();
 		for (entt::entity e : view)
 		{
 			Rigidbody2DComponent & rb2d = view.get<Rigidbody2DComponent>(e);

@@ -102,9 +102,15 @@ namespace origin {
 				auto &body = entity.GetComponent<RigidbodyComponent>().Body;
 				if (body)
 				{
-					m_PhysXScene->removeActor(*((physx::PxActor *)body), false);
-					((physx::PxActor *)body)->isReleasable() ? ((physx::PxActor *)body)->release() : 0;
-					body = nullptr;
+					physx::PxActor *actor = (physx::PxActor *)body;
+					m_PhysXScene->removeActor(*actor, false);
+					if (actor->isReleasable())
+					{
+						actor->release();
+					}
+
+					if(body)
+						body = nullptr;
 				}
 			}
 		}
@@ -174,7 +180,8 @@ namespace origin {
 		dActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, !rb.MoveY);
 		dActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, !rb.MoveZ);
 
-		physx::PxRigidBodyExt::updateMassAndInertia(*dActor, rb.Mass, &Utils::ToPhysXVec3(rb.CenterMassPosition));
+		physx::PxVec3 centerMassLocalPos = Utils::ToPhysXVec3(rb.CenterMassPosition);
+		physx::PxRigidBodyExt::updateMassAndInertia(*dActor, rb.Mass, &centerMassLocalPos);
 		rb.Body = (void*)actor;
 
 		return actor;
