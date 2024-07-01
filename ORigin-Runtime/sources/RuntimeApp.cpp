@@ -20,7 +20,7 @@ namespace origin
 	{
 		ApplicationSpecification spec;
 		spec.Name = "Runtime";
-		spec.WorkingDirectory = "../ORigin-Editor/";
+		//spec.WorkingDirectory = "../ORigin-Editor/";
 		spec.CommandLineArgs = args;
 		spec.Width = 1280;
 		spec.Height = 640;

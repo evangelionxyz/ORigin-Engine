@@ -10,7 +10,7 @@ RuntimeLayer::~RuntimeLayer() { if(m_ActiveScene) ScriptEngine::Shutdown(); }
 
 void RuntimeLayer::OnAttach()
 {
-	OnLoadingScreen(13.0f);
+	OnLoadingScreen(10.0f);
 }
 
 void RuntimeLayer::OnUpdate(Timestep ts)
@@ -108,8 +108,11 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
 	{
 		if (!isLoaded)
 		{
-			OpenProject("D:/Dev/ORiginProjects/Game/Game.oxproj");
-			isLoaded = true;
+			const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+			if (commandLineArgs.Count > 1)
+				isLoaded = OpenProject(commandLineArgs[1]);
+			else
+				isLoaded = OpenProject("Game/Game.oxproj");
 		}
 
 		float time = app.GetTime();
@@ -177,18 +180,22 @@ bool RuntimeLayer::OpenProject(const std::filesystem::path &path)
 		AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
 		if (!AssetManager::IsAssetHandleValid(handle) || handle == 0)
 		{
-			MessageBox(0, L"Invalid handle", L"Opening Scene", 0);
-			exit(EXIT_FAILURE);
+			OGN_CORE_ERROR("[Runtime OpenProject] Invalid Scene");
 			return false;
 		}
 
 		m_ActiveScene = AssetManager::GetAsset<Scene>(handle);
+
 		if (!m_ActiveScene)
 		{
-			MessageBox(0, L"Failed to load scene", L"Opening Scene", 0);
-			exit(EXIT_FAILURE);
+			OGN_CORE_ERROR("[Runtime OpenProject] Invalid Scene with handle {}", handle);
 			return false;
 		}
+
+		auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
+		std::string name = metadata.Filepath.stem().string();
+		m_ActiveScene->SetName(name);
+
 		return true;
 	}
 	return false;
