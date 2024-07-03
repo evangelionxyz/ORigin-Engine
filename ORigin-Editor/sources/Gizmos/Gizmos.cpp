@@ -4,8 +4,8 @@
 
 #include "../EditorLayer.h"
 
-#include "Origin\Scene\Components.h"
-#include "Origin\Renderer\Renderer2D.h"
+#include "Origin/Scene/Components.h"
+#include "Origin/Renderer/Renderer2D.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>

@@ -3,11 +3,11 @@
 #pragma once
 
 #define GLM_ENABLE_EXEPERIMENTAL
-#include <glm\gtx\string_cast.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #pragma warning(push, 0)
-#include "spdlog\spdlog.h"
-#include "spdlog\fmt\ostr.h"
+#include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h"
 #pragma warning(pop)
 
 namespace origin {

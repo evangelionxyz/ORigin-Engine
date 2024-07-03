@@ -57,7 +57,7 @@ defines {
 
 links {
 	"FastXML",
-	"PhysX",
+	--"PhysX",
 	"PhysXCommon",
 	"PhysXFoundation",
 	"PhysXPvdSDK",

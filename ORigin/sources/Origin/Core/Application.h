@@ -9,9 +9,9 @@
 #include "LayerStack.h"
 #include "Command.h"
 
-#include "Origin\GUI\GuiLayer.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Renderer\GraphicsContext.h"
+#include "Origin/GUI/GuiLayer.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Renderer/GraphicsContext.h"
 
 #include <mutex>
 
@@ -23,7 +23,7 @@ namespace origin {
 		char** Args = nullptr;
 
 		const char* operator[](int index) const {
-			if (index > Count) __debugbreak();
+			OGN_CORE_ASSERT(index < Count, "Invalid index");
 			return Args[index];
 		}
 	};

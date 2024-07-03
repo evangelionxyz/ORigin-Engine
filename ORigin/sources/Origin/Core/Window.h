@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include <GLFW\glfw3.h>
+#include <GLFW/glfw3.h>
 #include "Event.h"
 
 #ifdef OGN_PLATFORM_WINDOWS

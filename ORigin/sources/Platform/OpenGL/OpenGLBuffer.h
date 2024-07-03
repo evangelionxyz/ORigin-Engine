@@ -3,7 +3,7 @@
 #pragma once
 
 #include "pch.h"
-#include "Origin\Renderer\Buffer.h"
+#include "Origin/Renderer/Buffer.h"
 
 namespace origin
 {

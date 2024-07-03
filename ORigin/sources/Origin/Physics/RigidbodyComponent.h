@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
 namespace origin {
 
 	class TransformComponent;

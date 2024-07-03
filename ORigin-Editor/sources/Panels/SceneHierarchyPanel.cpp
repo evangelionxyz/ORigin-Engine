@@ -2,21 +2,21 @@
 
 #include "SceneHierarchyPanel.h"
 #include "../EditorLayer.h"
-#include "Origin\GUI\UI.h"
-#include "Origin\Project\Project.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\Asset\AssetMetaData.h"
-#include "Origin\Scene\EntityManager.h"
-#include "Origin\Asset\AssetImporter.h"
-#include "Origin\Audio\AudioSource.h"
-#include "Origin\Scripting\ScriptEngine.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Scene\Lighting.h"
+#include "Origin/GUI/UI.h"
+#include "Origin/Project/Project.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Asset/AssetMetadata.h"
+#include "Origin/Scene/EntityManager.h"
+#include "Origin/Asset/AssetImporter.h"
+#include "Origin/Audio/AudioSource.h"
+#include "Origin/Scripting/ScriptEngine.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Scene/Lighting.h"
 #include "UIEditor.h"
 
-#include "box2d\b2_revolute_joint.h"
-#include "box2d\b2_fixture.h"
-#include <misc\cpp\imgui_stdlib.h>
+#include "box2d/b2_revolute_joint.h"
+#include "box2d/b2_fixture.h"
+#include <misc/cpp/imgui_stdlib.h>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
@@ -299,7 +299,7 @@ namespace origin {
 		{
 			auto &tag = entity.GetComponent<TagComponent>().Tag;
 			char buffer[256];
-			strcpy_s(buffer, sizeof(buffer), tag.c_str());
+			strncpy(buffer, tag.c_str(), sizeof(buffer));
 			if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				tag = std::string(buffer);
@@ -321,7 +321,7 @@ namespace origin {
 		{
 			std::string search = "Search Component";
 			char searchBuffer[256];
-			strcpy_s(searchBuffer, sizeof(searchBuffer), search.c_str());
+			strncpy(searchBuffer, search.c_str(), sizeof(searchBuffer) - 1);
 			if (ImGui::InputText("##SearchComponent", searchBuffer, sizeof(searchBuffer)))
 				search = std::string(searchBuffer);
 
@@ -383,7 +383,7 @@ namespace origin {
 						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
 						if (AssetManager::GetAssetType(handle) == AssetType::Model)
 						{
-							//component.Mesh = AssetManager::GetAsset<Mesh>(handle);
+							//component.OMesh = AssetManager::GetAsset<Mesh>(handle);
 						}
 						else
 						{
@@ -396,14 +396,14 @@ namespace origin {
 				const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
 				const float xSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
 
-				if (component.Mesh)
+				if (component.OMesh)
 				{
 					// model x button
 					{
 						ImGui::SameLine();
 						ImGui::PushID("model_delete");
 						if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
-							component.Mesh = 0;
+							component.OMesh = 0;
 						ImGui::PopID();
 
 						if (component.HMaterial != 0)
@@ -638,7 +638,7 @@ namespace origin {
 					char buffer[256];
 					ImGui::Text("Name");
 					ImGui::SameLine();
-					strcpy_s(buffer, sizeof(buffer), name.c_str());
+					strncpy(buffer, name.c_str(), sizeof(buffer) - 1);
 					if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 					{
 						name = std::string(buffer);

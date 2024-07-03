@@ -4,13 +4,13 @@
 #endif
 #include "imgui.h"
 
-#include "Origin\Animation\Animation.h"
-#include "Origin\Animation\AnimationState.h"
-#include "Origin\Scene\Entity.h"
+#include "Origin/Animation/Animation.h"
+#include "Origin/Animation/AnimationState.h"
+#include "Origin/Scene/Entity.h"
 
 #include "imgui_internal.h"
 #include "ImCurveEdit.h"
-#include "Origin\Core\Time.h"
+#include "Origin/Core/Time.h"
 #include <math.h>
 #include <vector>
 #include <algorithm>

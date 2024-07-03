@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "Input.h"
-#include "Origin\Core\Application.h"
+#include "Origin/Core/Application.h"
 
 namespace origin
 {

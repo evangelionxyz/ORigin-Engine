@@ -16,13 +16,6 @@ files {
     "%{prj.location}/sources/**.h",
     "%{prj.location}/sources/**.cpp",
     "%{prj.location}/**.h",
-    "%{prj.location}/**.rc",
-    "%{prj.location}/**.aps",
-    "%{prj.location}/Resources/Shaders/**.glsl",
-    "%{prj.location}/Resources/UITextures/**.png",
-    "%{prj.location}/Resources/UITextures/**.jpg",
-    "%{prj.location}/**.ico",
-    "%{prj.location}/**.png",
 }
 
 includedirs {
@@ -66,12 +59,6 @@ filter "configurations:Debug"
     kind "ConsoleApp"
     runtime "Debug"
     symbols "On"
-    links  {
-        "%{Library.ShaderC_Debug}",
-        "%{Library.SPIRV_Cross_Debug}",
-        "%{Library.SPIRV_Cross_GLSL_Debug}",
-        "%{Library.SPIRV_Tools_Debug}",
-    }
 
 filter "configurations:Release"
    defines {

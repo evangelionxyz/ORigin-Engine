@@ -2,20 +2,23 @@
 
 #include "pch.h"
 #include "GuiLayer.h"
-#include "Origin\Core\Application.h"
+#include "Origin/Core/Application.h"
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
+	#define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 
 #include <imgui.h>
+
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <backends/imgui_impl_dx11.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
 
-#include "Platform/DX11/DX11Context.h"
+#ifdef OGN_PLATFORM_WINDOWS
+	#include <backends/imgui_impl_dx11.h>
+	#include "Platform/DX11/DX11Context.h"
+#endif
 
 namespace origin {
 
@@ -130,12 +133,14 @@ namespace origin {
 
 		switch (RendererAPI::GetAPI())
 		{
+#ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11:
 			{
 				ImGui_ImplGlfw_InitForOther((GLFWwindow *)m_WindowContext->GetNativeWindow(), true);
 				ImGui_ImplDX11_Init(DX11Context::Get()->Device, DX11Context::Get()->DeviceContext);
 			}
 			break;
+#endif
 		case RendererAPI::API::OpenGL:
 			{
 				ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *)m_WindowContext->GetNativeWindow(), true);
@@ -149,7 +154,9 @@ namespace origin {
 	{
 		switch (RendererAPI::GetAPI())
 		{
+#ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11: ImGui_ImplDX11_Shutdown(); break;
+#endif
 		case RendererAPI::API::OpenGL: ImGui_ImplOpenGL3_Shutdown(); break;
 		}
 
@@ -179,7 +186,9 @@ namespace origin {
 		
 		switch (RendererAPI::GetAPI())
 		{
+#ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11: ImGui_ImplDX11_NewFrame(); break;
+#endif
 		case RendererAPI::API::OpenGL: ImGui_ImplOpenGL3_NewFrame(); break;
 		}
 		
@@ -198,7 +207,9 @@ namespace origin {
 
 		switch(RendererAPI::GetAPI())
 		{
+#ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11: ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); break;
+#endif
 		case RendererAPI::API::OpenGL: ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); break;
 		}
 

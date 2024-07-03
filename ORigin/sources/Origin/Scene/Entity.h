@@ -1,11 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "entt\entt.hpp"
-#include "box2d\b2_contact.h"
+#include "entt/entt.hpp"
+#include "box2d/b2_contact.h"
 
 #include "Components.h"
-#include "Origin\Physics\ColliderComponent.h"
+#include "Origin/Physics/ColliderComponent.h"
 
 namespace origin {
 
@@ -66,20 +66,15 @@ namespace origin {
 			return rb2d.ContactWith == objName;
 		}
 
-		std::string& GetContactTag()
+		std::string GetContactTag()
 		{
-			std::string objName;
-
 			if (!HasComponent<Rigidbody2DComponent>())
-				objName = "";
+				return "";
 
-			auto& rb2d = GetComponent<Rigidbody2DComponent>();
-			objName = rb2d.ContactWith;
-
-			return objName;
+			const auto &rb2d = GetComponent<Rigidbody2DComponent>();
+			return rb2d.ContactWith;
 		}
-
-		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
+		bool HasParent() { return GetComponent<IDComponent>().Parent != UUID::NullID; }
 
 		bool IsValid() const
 		{

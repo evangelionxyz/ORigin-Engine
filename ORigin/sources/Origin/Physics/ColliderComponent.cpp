@@ -5,7 +5,7 @@
 
 #include "PxRigidActor.h"
 
-#include "Origin\Scene\Entity.h"
+#include "Origin/Scene/Entity.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>

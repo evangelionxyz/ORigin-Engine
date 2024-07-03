@@ -3,11 +3,11 @@
 #pragma once
 #include "UIRenderer.h"
 #include "EditorCamera.h"
-#include "Origin\Asset\Asset.h"
-#include "Origin\Scene\Skybox.h"
-#include "Origin\Core\Time.h"
-#include "Origin\Scene\Components.h"
-#include <entt\entt.hpp>
+#include "Origin/Asset/Asset.h"
+#include "Origin/Scene/Skybox.h"
+#include "Origin/Core/Time.h"
+#include "Origin/Scene/Components.h"
+#include <entt/entt.hpp>
 
 class b2World;
 

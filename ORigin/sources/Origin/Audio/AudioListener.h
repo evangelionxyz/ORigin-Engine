@@ -1,5 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
+#include <glm/glm.hpp>
 
 namespace origin
 {

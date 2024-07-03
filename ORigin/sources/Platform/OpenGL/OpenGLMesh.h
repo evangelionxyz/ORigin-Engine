@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 #pragma once
-#include "Origin\Renderer\Mesh.h"
-#include "Origin\Renderer\VertexArray.h"
-#include "Origin\Renderer\Buffer.h"
+#include "Origin/Renderer/Mesh.h"
+#include "Origin/Renderer/VertexArray.h"
+#include "Origin/Renderer/Buffer.h"
 
 #include <vector>
 

@@ -1,11 +1,10 @@
 #pragma once
-#include "Origin\Renderer\VertexArray.h"
-#include "Origin\Renderer\Buffer.h"
-#include "Origin\Renderer\RenderCommand.h"
-#include "Origin\Scene\Skybox.h"
+#include "Origin/Renderer/VertexArray.h"
+#include "Origin/Renderer/Buffer.h"
+#include "Origin/Renderer/RenderCommand.h"
+#include "Origin/Scene/Skybox.h"
 
-#include "glm\glm.hpp"
-
+#include <glm/glm.hpp>
 #include <string>
 
 namespace origin

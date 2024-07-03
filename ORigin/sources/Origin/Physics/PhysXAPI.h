@@ -5,7 +5,7 @@
 
 #include "PhysicsScene.h"
 
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 namespace origin {
 

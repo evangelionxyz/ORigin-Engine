@@ -2,18 +2,17 @@
 
 #include "pch.h"
 #include "Application.h"
-#include "Origin\Asset\AssetImporter.h"
-#include "Origin\Audio\AudioEngine.h"
-#include "Origin\Physics\Physics.h"
-#include "Origin\Scripting\ScriptEngine.h"
+#include "Origin/Asset/AssetImporter.h"
+#include "Origin/Audio/AudioEngine.h"
+#include "Origin/Physics/Physics.h"
+#include "Origin/Scripting/ScriptEngine.h"
 
 #include <imgui.h>
 #include <stb_image.h>
 
-#include "Platform/DX11/DX11Context.h"
-
 #ifdef OGN_PLATFORM_WINDOWS
-	#include "Platform\Win32\Win32Window.h"
+	#include "Platform/Win32/Win32Window.h"
+	#include "Platform/DX11/DX11Context.h"
 #endif
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)

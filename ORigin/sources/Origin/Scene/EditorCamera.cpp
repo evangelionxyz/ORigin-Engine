@@ -2,18 +2,16 @@
 
 #include "pch.h"
 #include "EditorCamera.h"
-#include "Origin\Core\Application.h"
-#include "Origin\Core\Input.h"
-#include "Origin\Core\KeyCodes.h"
-#include "Origin\Core\MouseCodes.h"
-#include "Origin\Scene\Components.h"
-#include "Origin\Scene\Entity.h"
-
-#include <glfw\glfw3.h>
-
+#include "Origin/Core/Application.h"
+#include "Origin/Core/Input.h"
+#include "Origin/Core/KeyCodes.h"
+#include "Origin/Core/MouseCodes.h"
+#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Entity.h"
+#include <GLFW/glfw3.h>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm\gtx\quaternion.hpp>
-#include <glm\gtx\compatibility.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
 #include <algorithm>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
@@ -80,6 +78,7 @@ namespace origin {
 			break;
 		case ProjectionType::Orthographic:
 			speed = m_OrthoScale * 0.5f;
+			break;
 		}
 		
 		return speed;
@@ -98,8 +97,7 @@ namespace origin {
 		switch (m_ProjectionType)
 		{
 		case ProjectionType::Perspective:
-			const glm::quat orientation = GetOrientation();
-			m_View = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
+			m_View = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(GetOrientation());
 			m_View = glm::inverse(m_View);
 			break;
 		case ProjectionType::Orthographic:

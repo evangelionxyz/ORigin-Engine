@@ -37,7 +37,7 @@ namespace origin
 		const glm::vec3 GetPosition() const;
 
 		const char *GetName() { return m_Name; }
-		const std::filesystem::path &GetFilepath() { return m_Filepath; }
+		const char *GetFilepath() { return m_Filepath; }
 
 		static AssetType GetStaticType() { return AssetType::Audio; }
 		virtual AssetType GetType() const { return GetStaticType(); }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Jolt\Jolt.h"
-#include "Jolt\Physics\PhysicsSystem.h"
-#include "Jolt\Physics\Collision\ContactListener.h"
-#include "Jolt\Physics\PhysicsSettings.h"
+#include "Jolt/Jolt.h"
+#include "Jolt/Physics/PhysicsSystem.h"
+#include "Jolt/Physics/Collision/ContactListener.h"
+#include "Jolt/Physics/PhysicsSettings.h"
 
 namespace JPH {
 	class JobSystem;

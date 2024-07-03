@@ -21,19 +21,15 @@ project "ImGui"
     "%{wks.location}/ORigin/vendor/imgui/imstb_textedit.h",
     "%{wks.location}/ORigin/vendor/imgui/imstb_truetype.h",
     "%{wks.location}/ORigin/vendor/imgui/imgui_demo.cpp",
-    "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_glfw.cpp",
-    "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_opengl3.cpp",
-    "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_dx11.cpp",
-    "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_win32.cpp"
-  }
-
-  includedirs {
-    "%{wks.location}/ORigin/vendor/imgui",
-    "%{wks.location}/ORigin/vendor/origin-glfw/include"
   }
 
   filter "system:windows"
-	systemversion "latest"
+    systemversion "latest"
+    files {
+      "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_glfw.cpp",
+      "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_opengl3.cpp",
+    }
+
 
 	filter "configurations:Debug"
 		runtime "Debug"

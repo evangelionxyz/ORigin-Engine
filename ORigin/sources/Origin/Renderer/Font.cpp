@@ -1,12 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Origin\Core\Application.h"
 #include "Font.h"
-
 #include "GlyphGeometry.h"
 #include "FontGeometry.h"
 #include "BitmapAtlasStorage.h"
+#include "Origin/Core/Application.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 
@@ -29,7 +28,7 @@ namespace origin {
 		msdfgen::BitmapConstRef<T, N> bitmap = static_cast<msdfgen::BitmapConstRef<T, N>>(generator.atlasStorage());
 
 		Buffer b = Buffer((void *)bitmap.pixels, bitmap.width * bitmap.height * 3);
-		data->Buffer = Buffer::Copy(b);
+		data->BufferData = Buffer::Copy(b);
 
 		data->TexSpec.Format = ImageFormat::RGB8;
 		data->TexSpec.Width = bitmap.width;
@@ -42,10 +41,10 @@ namespace origin {
 	{
 		if (m_Data)
 		{
-			if (m_Data->Buffer.Data)
+			if (m_Data->BufferData.Data)
 			{
 				m_AtlasTexture = Texture2D::Create(m_Data->TexSpec);
-				m_AtlasTexture->SetData(m_Data->Buffer);
+				m_AtlasTexture->SetData(m_Data->BufferData);
 				IsLoaded = true;
 			}
 		}

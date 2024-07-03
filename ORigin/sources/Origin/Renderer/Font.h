@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Asset\Asset.h"
+#include "Origin/Asset/Asset.h"
 #include "Texture.h"
 
 #include "msdf-atlas-gen.h"
@@ -13,7 +13,7 @@ namespace origin {
 		std::vector<msdf_atlas::GlyphGeometry> Glyphs;
 		msdf_atlas::FontGeometry FontGeometry;
 		TextureSpecification TexSpec;
-		Buffer Buffer;
+		Buffer BufferData;
 		std::string Filepath;
 		int Width = 0, Height = 0;
 	};

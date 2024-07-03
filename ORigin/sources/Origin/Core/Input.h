@@ -5,7 +5,7 @@
 #include "KeyCodes.h"
 #include "MouseCodes.h"
 
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 namespace origin
 {

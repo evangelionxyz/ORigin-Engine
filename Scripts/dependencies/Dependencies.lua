@@ -15,10 +15,9 @@ IncludeDir["SPDLOG"] = "%{wks.location}/ORigin/vendor/spdlog/include"
 IncludeDir["GLM"] = "%{wks.location}/ORigin/vendor/glm"
 IncludeDir["ENTT"] = "%{wks.location}/ORigin/vendor/entt/"
 IncludeDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/include"
-IncludeDir["Miniaudio"] = "%{wks.location}/ORigin/vendor/Miniaudio"
+IncludeDir["Miniaudio"] = "%{wks.location}/ORigin/vendor/miniaudio"
 IncludeDir["FILEWATCHER"] = "%{wks.location}/ORigin/vendor/Filewatcher/include"
 IncludeDir["YAML_CPP"] = "%{wks.location}/ORigin/vendor/yaml-cpp/include"
-IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["msdf_atlas_gen"] = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen"
 IncludeDir["msdfgen"] = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["PhysX"] = "%{wks.location}/ORigin/vendor/PhysX/physx/include"
@@ -26,28 +25,42 @@ IncludeDir["JoltPhysics"] = "%{wks.location}/ORigin/vendor/JoltPhysics"
 IncludeDir["OPTICK"] = "%{wks.location}/ORigin/vendor/Optick/src/"
 
 LibraryDir = {}
-LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
-LibraryDir["FMOD"] = "%{wks.location}/ORigin/vendor/FMOD/lib"
-LibraryDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
-LibraryDir["AssimpSDK"] = "%{wks.location}/ORigin/vendor/Assimp/lib/x64"
-
 Library = {}
-Library["FMOD"] = "%{LibraryDir.FMOD}/fmod_vc.lib"
-Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
-Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
-Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
-Library["SPIRV_Cross_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"
-Library["SPIRV_Cross_GLSL_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsld.lib"
-Library["SPIRV_Tools_Debug"] = "%{LibraryDir.VulkanSDK}/SPIRV-Toolsd.lib"
-Library["ShaderC_Release"] = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
-Library["SPIRV_Cross_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
-Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+LibraryDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
 
--- Windows-Only
+Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
+
+-- Windows
+IncludeDir["WindowsVulkanSDK"] = "%{VULKAN_SDK}/Include" -- includes
+LibraryDir["WindowsVulkanSDK"] = "%{VULKAN_SDK}/Lib" -- library
+
 Library["WinSock"] = "Ws2_32.lib"
 Library["WinMM"] = "Winmm.lib"
 Library["WinVersion"] = "Version.lib"
 Library["BCrypt"] = "Bcrypt.lib"
+Library["WVulkan"] = "%{LibraryDir.WindowsVulkanSDK}/vulkan-1.lib"
+Library["WShaderC_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/shaderc_sharedd.lib"
+Library["WSPIRV_Cross_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-cored.lib"
+Library["WSPIRV_Cross_GLSL_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-glsld.lib"
+Library["WSPIRV_Tools_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/SPIRV-Toolsd.lib"
+
+Library["WShaderC_Release"] = "%{LibraryDir.WindowsVulkanSDK}/shaderc_shared.lib"
+Library["WSPIRV_Cross_Release"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-core.lib"
+Library["WSPIRV_Cross_GLSL_Release"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-glsl.lib"
+
+-- Linux
+IncludeDir["LinuxVulkanSDK"] = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/include" -- includes
+LibraryDir["LinuxVulkanSDK"] = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/lib" -- library
+
+Library["LVulkan"] = "%{LibraryDir.LinuxVulkanSDK}/libvulkan.so"
+Library["LShaderC_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libshaderc_sharedd.a"
+Library["LSPIRV_Cross_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-cored.a"
+Library["LSPIRV_Cross_GLSL_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-glsld.a"
+Library["LSPIRV_Tools_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libSPIRV-Toolsd.a"
+
+Library["LShaderC_Release"] = "%{LibraryDir.LinuxVulkanSDK}/libshaderc.so"
+Library["LSPIRV_Cross_Release"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-core.a"
+Library["LSPIRV_Cross_GLSL_Release"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-glsl.a"
 
 -- Dependencies Lua File
 group "Dependecies"

@@ -2,7 +2,7 @@
 #pragma once
 #include "AssetManagerBase.h"
 
-#include "Origin\Project\Project.h"
+#include "Origin/Project/Project.h"
 
 namespace origin {
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "ShadowRenderer.h"
-#include "Origin\Renderer\UniformBuffer.h"
+#include "Origin/Renderer/UniformBuffer.h"
 #include "Components.h"
 
 namespace origin {

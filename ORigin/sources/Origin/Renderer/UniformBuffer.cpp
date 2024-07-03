@@ -2,8 +2,8 @@
 
 #include "pch.h"
 #include "UniformBuffer.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Platform\OpenGL\OpenGLUniformBuffer.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Platform/OpenGL/OpenGLUniformBuffer.h"
 
 namespace origin
 {

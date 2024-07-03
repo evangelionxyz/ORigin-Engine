@@ -7,6 +7,8 @@
 
 #include "PxPhysicsAPI.h"
 
+#include <glm/glm.hpp>
+
 namespace origin {
 
 	namespace Utils {

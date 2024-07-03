@@ -2,7 +2,7 @@
 
 #pragma once
 #include "pch.h"
-#include "Origin\Renderer\Shader.h"
+#include "Origin/Renderer/Shader.h"
 
 namespace origin
 {

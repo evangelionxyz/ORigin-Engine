@@ -5,7 +5,7 @@
 #include "PxPhysicsAPI.h"
 
 #include "RigidbodyComponent.h"
-#include "Origin\Scene\Scene.h"
+#include "Origin/Scene/Scene.h"
 
 namespace origin {
 

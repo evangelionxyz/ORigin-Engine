@@ -29,16 +29,8 @@
 #include <chrono>
 #include <filesystem>
 
-#include "Origin\Core\Base.h"
-#include "Origin\Core\Assert.h"
-#include "Origin\Core\Buffer.h"
-#include "Origin\Core\Log.h"
-#include "Origin\Profiler\Profiler.h"
-
-#include <glm\glm.hpp>
-
-#ifdef OGN_WINDOWS_PLATFORM
+#ifdef OGN_PLATFORM_WINDOWS
 	#include <Windows.h>
+	#define OGN_DISABLED_WARNINGS 4244 4312 4267 4005
 #endif
 
-#define OGN_DISABLED_WARNINGS 4244 4312 4267 4005

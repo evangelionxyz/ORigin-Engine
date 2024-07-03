@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "OpenGLBuffer.h"
 
-#include <glad\glad.h>
+#include <glad/glad.h>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 

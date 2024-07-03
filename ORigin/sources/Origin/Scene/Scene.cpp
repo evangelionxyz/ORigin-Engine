@@ -5,7 +5,7 @@
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Animation/Animation.h"
-#include "origin/Physics/Contact2DListener.h"
+#include "Origin/Physics/Contact2DListener.h"
 #include "Origin/Physics/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
@@ -117,16 +117,16 @@ namespace origin
 				}
 			}
 
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto &nsc)
+			m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto &nsc)
 			{
 				if (nsc.Instance)
-					nsc.Instance->OnUpdate(ts);
+					nsc.Instance->OnUpdate(time);
 			});
 
 			// Particle Update
-			m_Registry.view<ParticleComponent>().each([=](auto entity, auto &pc)
+			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto &pc)
 			{
-				pc.Particle.OnUpdate(ts);
+				pc.Particle.OnUpdate(time);
 			});
 
 
@@ -250,7 +250,7 @@ namespace origin
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto &nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
 		{
 			if(!nsc.Instance)
 			{
@@ -271,7 +271,7 @@ namespace origin
 		m_PhysicsScene->OnSimulationStart();
 		m_Physics2D->OnSimulationStart();
 
-		m_Registry.view<UIComponent>().each([=](entt::entity e, UIComponent ui)
+		m_Registry.view<UIComponent>().each([this](entt::entity e, UIComponent ui)
 		{
 			auto cam = GetPrimaryCameraEntity();
 			auto cc = cam.GetComponent<CameraComponent>();
@@ -293,7 +293,7 @@ namespace origin
 
 		m_Running = false;
 		ScriptEngine::ClearSceneContext();
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
 		{
 			nsc.DestroyScript(&nsc);
 		});
@@ -317,14 +317,14 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto& nsc)
 		{
-			nsc.Instance->OnUpdate(ts);
+			nsc.Instance->OnUpdate(time);
 		});
 
-		m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
+		m_Registry.view<ParticleComponent>().each([time = ts](auto entity, auto& pc)
 		{
-			pc.Particle.OnUpdate(ts);
+			pc.Particle.OnUpdate(time);
 		});
 
 		// Animation
@@ -370,20 +370,20 @@ namespace origin
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
 			// Update Scripts
-			m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& sc)
+			m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto& sc)
 			{
 				Entity entity{ entityID, this };
-				ScriptEngine::OnUpdateEntity(entity, (float)ts);
+				ScriptEngine::OnUpdateEntity(entity, time);
 			});
 
-			m_Registry.view<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
+			m_Registry.view<NativeScriptComponent>().each([this, time = ts](auto entityID, auto& nsc)
 			{
-				nsc.Instance->OnUpdate(ts);
+				nsc.Instance->OnUpdate(time);
 			});
 
-			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
+			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto& pc)
 			{
-				pc.Particle.OnUpdate(ts);
+				pc.Particle.OnUpdate(time);
 			});
 
 			// Animation
@@ -452,7 +452,7 @@ namespace origin
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
 		{
 				nsc.Instance = nsc.InstantiateScript();
 				nsc.Instance->m_Entity = Entity { entity, this };
@@ -479,7 +479,7 @@ namespace origin
 		m_Running = false;
 
 		ScriptEngine::ClearSceneContext();
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
 		{
 			nsc.DestroyScript(&nsc);
 		});
@@ -644,7 +644,7 @@ namespace origin
 				{
 					Entity e = GetEntityWithUUID(mesh);
 					StaticMeshComponent &sm = e.GetComponent<StaticMeshComponent>();
-					sm.Mesh->Draw(tc.GetTransform(), (int)e);
+					sm.OMesh->Draw(tc.GetTransform(), (int)e);
 				}
 			}
 		}

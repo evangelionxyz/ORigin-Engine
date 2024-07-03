@@ -1,10 +1,10 @@
 #include "MaterialEditor.h"
-#include "Origin\Serializer\MaterialSerializer.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\Profiler\Profiler.h"
-#include "Origin\GUI\UI.h"
-#include <glm\glm.hpp>
-#include <glm\gtc\type_ptr.hpp>
+#include "Origin/Serializer/MaterialSerializer.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Profiler/Profiler.h"
+#include "Origin/GUI/UI.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 
 namespace origin

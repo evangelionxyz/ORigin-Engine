@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "ThumbnailCache.h"
-#include "Origin\Asset\AssetImporter.h"
+#include "Origin/Asset/AssetImporter.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 

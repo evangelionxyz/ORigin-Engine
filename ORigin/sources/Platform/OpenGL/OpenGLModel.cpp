@@ -68,7 +68,7 @@ namespace origin
 			Entity entity = EntityManager::CreateEntity(node->mName.C_Str(), m_Scene);
 			StaticMeshComponent &m = entity.AddComponent<StaticMeshComponent>();
 			m.Name = node->mName.C_Str();
-			m.Mesh = ProcessMesh(aiMesh, aiScene);
+			m.OMesh = ProcessMesh(aiMesh, aiScene);
 			OGN_CORE_TRACE("{}", m.Name);
 			m_MeshEntities.push_back(entity.GetUUID());
 		}

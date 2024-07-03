@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\GraphicsContext.h"
+#include "Origin/Renderer/GraphicsContext.h"
 
 namespace origin
 {

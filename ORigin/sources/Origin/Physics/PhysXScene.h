@@ -5,6 +5,8 @@
 #include "PhysicsScene.h"
 #include "PxPhysicsAPI.h"
 
+#include <glm/glm.hpp>
+
 namespace origin {
 
 	class RigidbodyComponent;

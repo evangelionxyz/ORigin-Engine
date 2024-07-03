@@ -3,23 +3,23 @@
 #include "pch.h"
 #include "SceneSerializer.h"
 
-#include "Origin\Asset\AssetImporter.h"
-#include "Origin\Scene\EntityManager.h"
-#include "Origin\Scene\Components.h"
-#include "Origin\Scene\Entity.h"
-#include "Origin\Scene\Lighting.h"
-#include "Origin\Scripting\ScriptEngine.h"
-#include "Origin\Project\Project.h"
-#include "Origin\Renderer\Model.h"
-#include "Origin\Renderer\Shader.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Audio\AudioSource.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\Serializer\Serializer.h"
+#include "Origin/Asset/AssetImporter.h"
+#include "Origin/Scene/EntityManager.h"
+#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Entity.h"
+#include "Origin/Scene/Lighting.h"
+#include "Origin/Scripting/ScriptEngine.h"
+#include "Origin/Project/Project.h"
+#include "Origin/Renderer/Model.h"
+#include "Origin/Renderer/Shader.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Audio/AudioSource.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Serializer/Serializer.h"
 
 #include <fstream>
-#include <yaml-cpp\yaml.h>
+#include <yaml-cpp/yaml.h>
 
 namespace origin
 {

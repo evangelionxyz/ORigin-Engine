@@ -1,8 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\RendererAPI.h"
-#include <glm\glm.hpp>
+#include "Origin/Renderer/RendererAPI.h"
+#include <glm/glm.hpp>
 
 namespace origin
 {

@@ -1,16 +1,16 @@
 project "SimulationController"
-kind "StaticLib"
-language "C++"
-cppdialect "C++17"
-staticruntime "off"
-location (vendorProjectFiles)
-targetdir (vendorOutputdir)
-objdir (vendorIntOutputdir)
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "off"
+	location (vendorProjectFiles)
+	targetdir (vendorOutputdir)
+	objdir (vendorIntOutputdir)
 
 	includedirs {
 		"%{physxDir}/physx/include",
 		"%{physxDir}/physx/source/Common/src/windows",
-		"%{physxDir}/physx/source/LowLevel/windows/include",
+		"%{physxDir}/physx/source/lowlevel/windows/include",
 		"%{physxDir}/physx/source/foundation/include",
 		"%{physxDir}/physx/source/common/include",
 		"%{physxDir}/physx/source/common/src",
@@ -57,14 +57,9 @@ objdir (vendorIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		--removefiles { "%{physxDir}/physx/source/physxcooking/src/windows/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/unix" }
-		
+
 	filter "system:windows"
 		systemversion "latest"
-		--removefiles { "%{physxDir}/physx/source/foundation/src/unix/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/windows" }
-
 
 	filter "configurations:Debug"
 		runtime "Debug"

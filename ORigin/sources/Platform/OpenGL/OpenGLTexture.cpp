@@ -1,11 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#ifndef STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#endif
 
-#include "stb_image.h"
+#define STBI_NO_SIMD
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 #include "OpenGLTexture.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)

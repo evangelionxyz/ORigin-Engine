@@ -9,7 +9,6 @@ objdir (vendorIntOutputdir)
 
 	includedirs {
 		"%{physxDir}/physx/include",
-		"%{physxDir}/physx/source/common/src/windows",
 		"%{physxDir}/physx/source/common/include",
 		"%{physxDir}/physx/source/common/src",
 		"%{physxDir}/physx/source/geomutils/include",
@@ -28,21 +27,12 @@ objdir (vendorIntOutputdir)
 		"%{physxDir}/physx/source/physxgpu/include",
 		"%{physxDir}/physx/source/foundation/include",
 	}
-	files { 
-		"%{physxDir}/physx/source/common/**.cpp",
-		"%{physxDir}/physx/source/geomutils/**.cpp",
-	} 
 	
 	links {
 		"PhysXFoundation",
 	}
 	
 	defines {
-		"WIN32",
-		"WIN64",
-		"_CRT_SECURE_NO_DEPRECATE",
-		"_CRT_NONSTDC_NO_DEPRECATE",
-		"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 		"PX_PHYSX_STATIC_LIB",
 		"PX_SUPPORT_PVD=1"
@@ -51,14 +41,40 @@ objdir (vendorIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		removefiles { "%{physxDir}/physx/source/common/src/windows/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/unix" }
+		files { 
+			"%{physxDir}/physx/source/common/src/CmCollection.cpp",
+			"%{physxDir}/physx/source/common/src/CmPtrTable.cpp",
+			"%{physxDir}/physx/source/common/src/CmRadixSort.cpp",
+			"%{physxDir}/physx/source/common/src/CmSerialize.cpp",
+			"%{physxDir}/physx/source/common/src/CmVisualization.cpp",
+			"%{physxDir}/physx/source/geomutils/**.cpp",
+		} 
+		includedirs {	
+
+		}
 		
 	filter "system:windows"
 		systemversion "latest"
-		--removefiles { "%{physxDir}/physx/source/foundation/src/unix/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/windows" }
-
+		files { 
+			"%{physxDir}/physx/source/common/src/CmCollection.cpp",
+			"%{physxDir}/physx/source/common/src/CmPtrTable.cpp",
+			"%{physxDir}/physx/source/common/src/CmRadixSort.cpp",
+			"%{physxDir}/physx/source/common/src/CmSerialize.cpp",
+			"%{physxDir}/physx/source/common/src/CmVisualization.cpp",
+			"%{physxDir}/physx/source/common/src/windows/CmWindowsDelayHook.cpp",
+			"%{physxDir}/physx/source/common/src/windows/CmWindowsModuleUpdateLoader.cpp",
+			"%{physxDir}/physx/source/geomutils/**.cpp",
+		} 
+		includedirs {
+			"%{physxDir}/physx/source/common/include/windows",
+			
+		}
+		defines {
+			"WIN64",
+			"_CRT_SECURE_NO_DEPRECATE",
+			"_CRT_NONSTDC_NO_DEPRECATE",
+			"_WINSOCK_DEPRECATED_NO_WARNINGS",
+		}
 
 	filter "configurations:Debug"
 		runtime "Debug"

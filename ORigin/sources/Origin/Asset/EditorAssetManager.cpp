@@ -4,7 +4,7 @@
 #include "EditorAssetManager.h"
 
 #include "AssetImporter.h"
-#include "Origin\Project\Project.h"
+#include "Origin/Project/Project.h"
 
 #include <yaml-cpp/yaml.h>
 

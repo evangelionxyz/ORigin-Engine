@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\Texture.h"
+#include "Origin/Renderer/Texture.h"
 #include "ThumbnailCache.h"
 
 #include <string>

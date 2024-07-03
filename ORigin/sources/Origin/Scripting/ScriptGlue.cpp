@@ -26,7 +26,7 @@
 
 namespace origin
 {
-#define OGN_ADD_INTERNAL_CALLS(Name) mono_add_internal_call("ORiginEngine.InternalCalls::"#Name, Name)
+#define OGN_ADD_INTERNAL_CALLS(method) mono_add_internal_call("ORiginEngine.InternalCalls::"#method, reinterpret_cast<const void*>(method))
 
 	namespace Utils
 	{

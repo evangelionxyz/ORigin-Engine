@@ -3,8 +3,8 @@
 #include "pch.h"
 
 #include "Buffer.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Platform\OpenGL\OpenGLBuffer.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Platform/OpenGL/OpenGLBuffer.h"
 
 namespace origin
 {

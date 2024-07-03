@@ -4,11 +4,11 @@
 #include "ParticleSystem.h"
 
 #include "Renderer2D.h"
-#include "Origin\Core\Random.h"
+#include "Origin/Core/Random.h"
 
-#include <glm\gtc\constants.hpp>
+#include <glm/gtc/constants.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm\gtx\compatibility.hpp>
+#include <glm/gtx/compatibility.hpp>
 
 namespace origin {
 

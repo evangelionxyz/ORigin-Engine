@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Components.h"
-#include "Origin\Renderer\Framebuffer.h"
-#include "Origin\Renderer\UniformBuffer.h"
+#include "Origin/Renderer/Framebuffer.h"
+#include "Origin/Renderer/UniformBuffer.h"
 
 namespace origin 
 {

@@ -7,10 +7,10 @@
 #include "Renderer2D.h"
 #include "Renderer3D.h"
 #include "MaterialLibrary.h"
-#include "Origin\Asset\AssetImporter.h"
+#include "Origin/Asset/AssetImporter.h"
 
-#include "Platform\OpenGL\OpenGLRendererAPI.h"
-#include "Platform\DX11\DX11RendererAPI.h"
+#include "Platform/OpenGL/OpenGLRendererAPI.h"
+#include "Platform/DX11/DX11RendererAPI.h"
 
 namespace origin {
 

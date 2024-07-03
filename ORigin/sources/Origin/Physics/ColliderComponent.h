@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PhysXScene.h"
+#include <glm/glm.hpp>
 
 namespace origin {
 

@@ -1,11 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Core\Event.h"
-#include "Origin\Scene\Entity.h"
-#include "Origin\Core\KeyEvent.h"
-#include "Origin\Scene\EditorCamera.h"
-#include "Origin\Scene\Scene.h"
+#include "Origin/Core/Event.h"
+#include "Origin/Scene/Entity.h"
+#include "Origin/Core/KeyEvent.h"
+#include "Origin/Scene/EditorCamera.h"
+#include "Origin/Scene/Scene.h"
 
 namespace origin
 {

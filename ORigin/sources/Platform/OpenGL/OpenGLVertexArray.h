@@ -1,8 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\VertexArray.h"
-#include <glad\glad.h>
+#include "Origin/Renderer/VertexArray.h"
+#include <glad/glad.h>
 
 namespace origin
 {

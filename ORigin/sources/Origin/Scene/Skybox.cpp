@@ -2,10 +2,10 @@
 
 #include "pch.h"
 #include "Skybox.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Renderer\RenderCommand.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Renderer/RenderCommand.h"
 
-#include "Platform\OpenGL\OpenGLSkybox.h"
+#include "Platform/OpenGL/OpenGLSkybox.h"
 
 #include "stb_image.h"
 

@@ -9,6 +9,7 @@ objdir (vendorIntOutputdir)
 	includedirs {
 		"%{physxDir}/physx/include"
 	}
+	
 	files { 
 		"%{physxDir}/physx/source/foundation/FdAllocator.cpp",
 		"%{physxDir}/physx/source/foundation/FdAssert.cpp",
@@ -32,10 +33,16 @@ objdir (vendorIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		files {"%{physxDir}/physx/source/foundation/src/source/**.cpp"}
-		includedirs { "%{physxDir}/physx/source/foundation/include/unix" }
+		files {
+			"%{physxDir}/physx/source/foundation/unix/FdUnixAtomic.cpp",
+			"%{physxDir}/physx/source/foundation/unix/FdUnixMutex.cpp",
+			"%{physxDir}/physx/source/foundation/unix/FdUnixSList.cpp",
+			"%{physxDir}/physx/source/foundation/unix/FdUnixSocket.cpp",
+			"%{physxDir}/physx/source/foundation/unix/FdUnixSync.cpp",
+			"%{physxDir}/physx/source/foundation/unix/FdUnixThread.cpp",
+		}
 		
-	filter "system:Windows"
+	filter "system:windows"
 		systemversion "latest"
 		files {
 			"%{physxDir}/physx/source/foundation/windows/FdWindowsAtomic.cpp",
@@ -48,9 +55,6 @@ objdir (vendorIntOutputdir)
 			"%{physxDir}/physx/source/foundation/windows/FdWindowsThread.cpp",
 			"%{physxDir}/physx/source/foundation/windows/FdWindowsTime.cpp",
 		}
-
-		includedirs { "%{physxDir}/physx/source/foundation/include/windows" }
-
 
 	filter "configurations:Debug"
 		runtime "Debug"

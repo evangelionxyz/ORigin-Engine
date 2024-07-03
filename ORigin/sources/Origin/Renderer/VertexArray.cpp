@@ -2,8 +2,8 @@
 
 #include "pch.h"
 #include "VertexArray.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Platform\OpenGL\OpenGLVertexArray.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Platform/OpenGL/OpenGLVertexArray.h"
 
 namespace origin
 {

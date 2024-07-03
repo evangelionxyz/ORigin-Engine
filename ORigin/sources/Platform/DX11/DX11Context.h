@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\GraphicsContext.h"
+#include "Origin/Renderer/GraphicsContext.h"
 #include <d3d11.h>
 
 #pragma comment(lib, "d3d11.lib")

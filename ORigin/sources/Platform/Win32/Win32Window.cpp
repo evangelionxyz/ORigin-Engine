@@ -10,12 +10,12 @@
 #include "Origin/Asset/AssetImporter.h"
 
 #include "stb_image.h"
-#include "Platform/DX11/DX11Context.h"
+
+#ifdef OGN_PLATFORM_WINDOWS
+	#include "Platform/DX11/DX11Context.h"
+#endif
 
 namespace origin {
-
-	static int initWinPosX = 0;
-	static int initWinPosY = 0;
 
 	Win32Window::Win32Window(const char* title, uint32_t width, uint32_t height, bool maximized)
 	{
@@ -51,7 +51,7 @@ namespace origin {
 		m_Data.Width = static_cast<uint32_t>(w);
 		m_Data.Height = static_cast<uint32_t>(h);
 
-		glfwGetWindowPos(m_MainWindow, &initWinPosX, &initWinPosY);
+		glfwGetWindowPos(m_MainWindow, &m_Data.xPos, &m_Data.yPos);
 	}
 
 	Win32Window::~Win32Window()
@@ -107,7 +107,7 @@ namespace origin {
 		}
 		else
 		{
-			glfwSetWindowMonitor(m_MainWindow, nullptr, initWinPosX, initWinPosY, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
+			glfwSetWindowMonitor(m_MainWindow, nullptr, m_Data.xPos, m_Data.yPos, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
 		}
 	}
 

@@ -6,7 +6,7 @@
 #include "Renderer2D.h"
 #include "UniformBuffer.h"
 
-#include "Origin\Asset\AssetManager.h"
+#include "Origin/Asset/AssetManager.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 

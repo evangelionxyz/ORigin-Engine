@@ -48,7 +48,8 @@ namespace origin
 		ImGui::SameLine();
 		static std::string stateName;
 		char buffer[256];
-		strcpy_s(buffer, sizeof(buffer), stateName.c_str());
+		strncpy(buffer, stateName.c_str(), sizeof(buffer) - 1);
+		buffer[sizeof(buffer) - 1] = '\0'; // Ensure null termination
 		if (ImGui::InputText("##anim_name", buffer, sizeof(buffer)))
 			stateName = std::string(buffer);
 

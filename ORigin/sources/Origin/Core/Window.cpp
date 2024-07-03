@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "Window.h"
 
-#ifdef OGN_WINDOWS_PLATFORM
+#ifdef OGN_PLATFORM_WINDOWS
 	#include "Platform/Win32/Win32Window.h"
 #endif
 
@@ -11,7 +11,7 @@ namespace origin
 {
 	std::shared_ptr<Window> Window::Create(const char* title,	uint32_t width,	uint32_t height, bool maximized)
 	{
-#ifdef OGN_WINDOWS_PLATFORM
+#ifdef OGN_PLATFORM_WINDOWS
 		return std::make_shared<Win32Window>(title, width, height, maximized);
 #else
 		OGN_CORE_ASSERT(false, "Unkown Platform");

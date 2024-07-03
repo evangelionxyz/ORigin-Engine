@@ -1,14 +1,14 @@
 #pragma once
-#include "Origin\Core\UUID.h"
-#include "Origin\Core\Event.h"
-#include "Origin\Core\KeyEvent.h"
-#include "Origin\Scene\SpriteSheet.h"
-#include "Origin\Scene\Entity.h"
-#include "Origin\Renderer\Texture.h"
-#include "Origin\Renderer\Framebuffer.h"
-#include "Origin\Scene\EditorCamera.h"
+#include "Origin/Core/UUID.h"
+#include "Origin/Core/Event.h"
+#include "Origin/Core/KeyEvent.h"
+#include "Origin/Scene/SpriteSheet.h"
+#include "Origin/Scene/Entity.h"
+#include "Origin/Renderer/Texture.h"
+#include "Origin/Renderer/Framebuffer.h"
+#include "Origin/Scene/EditorCamera.h"
 
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 namespace origin
 {

@@ -30,16 +30,9 @@ objdir (vendorIntOutputdir)
 		"%{physxDir}/physx/source/physxgpu/include",
 		"%{physxDir}/physx/source/foundation/include",
 	}
-	files { 
-		"%{physxDir}/physx/source/physxcooking/**.cpp",
-	} 
+	
 	
 	defines {
-		"WIN32",
-		"WIN64",
-		"_CRT_SECURE_NO_DEPRECATE",
-		"_CRT_NONSTDC_NO_DEPRECATE",
-		"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 		"PX_PHYSX_STATIC_LIB",
 		"PX_SUPPORT_PVD=1",
@@ -54,13 +47,23 @@ objdir (vendorIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		removefiles { "%{physxDir}/physx/source/physxcooking/src/windows/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/unix" }
+		files {
+			"%{physxDir}/physx/source/physxcooking/src/Cooking.cpp"
+		}
 		
 	filter "system:windows"
 		systemversion "latest"
-		--removefiles { "%{physxDir}/physx/source/foundation/src/unix/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/windows" }
+		files { 
+			"%{physxDir}/physx/source/physxcooking/src/Cooking.cpp",
+			"%{physxDir}/physx/source/physxcooking/src/windows/WindowsCookingDelayLoadHook.cpp"
+		} 
+		defines {
+			"WIN32",
+			"WIN64",
+			"_CRT_SECURE_NO_DEPRECATE",
+			"_CRT_NONSTDC_NO_DEPRECATE",
+			"_WINSOCK_DEPRECATED_NO_WARNINGS",
+		}
 
 
 	filter "configurations:Debug"
