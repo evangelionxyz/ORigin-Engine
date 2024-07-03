@@ -22,9 +22,6 @@
 [submodule "ORigin/vendor/Optick"]
 	path = ORigin/vendor/Optick
 	url = https://github.com/bombomby/optick.git
-[submodule "ORigin/vendor/PhysX"]
-	path = ORigin/vendor/PhysX
-	url = https://github.com/kaks-ev/NVIDIA-PhysX
 [submodule "ORigin/vendor/origin-glfw"]
 	path = ORigin/vendor/origin-glfw
 	url = https://github.com/evangelionmanuhutu/origin-glfw.git
