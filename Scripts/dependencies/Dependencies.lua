@@ -26,38 +26,31 @@ IncludeDir["OPTICK"] = "%{wks.location}/ORigin/vendor/Optick/src/"
 
 LibraryDir = {}
 Library = {}
-LibraryDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
-Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
 
 -- Windows
-IncludeDir["WindowsVulkanSDK"] = "%{VULKAN_SDK}/Include" -- includes
-LibraryDir["WindowsVulkanSDK"] = "%{VULKAN_SDK}/Lib" -- library
+Library["WindowsMONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}/libmono-static-sgen.lib"
 
-Library["WinSock"] = "Ws2_32.lib"
-Library["WinMM"] = "Winmm.lib"
-Library["WinVersion"] = "Version.lib"
-Library["BCrypt"] = "Bcrypt.lib"
+IncludeDir["WindowsVulkanSDK"] = "%{VULKAN_SDK}/include" -- includes
+LibraryDir["WindowsVulkanSDK"] = "%{VULKAN_SDK}/lib" -- library
 Library["WVulkan"] = "%{LibraryDir.WindowsVulkanSDK}/vulkan-1.lib"
 Library["WShaderC_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/shaderc_sharedd.lib"
 Library["WSPIRV_Cross_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-cored.lib"
 Library["WSPIRV_Cross_GLSL_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-glsld.lib"
 Library["WSPIRV_Tools_Debug"] = "%{LibraryDir.WindowsVulkanSDK}/SPIRV-Toolsd.lib"
-
 Library["WShaderC_Release"] = "%{LibraryDir.WindowsVulkanSDK}/shaderc_shared.lib"
 Library["WSPIRV_Cross_Release"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-core.lib"
 Library["WSPIRV_Cross_GLSL_Release"] = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-glsl.lib"
+Library["WinSock"] = "Ws2_32.lib"
+Library["WinMM"] = "Winmm.lib"
+Library["WinVersion"] = "Version.lib"
+Library["BCrypt"] = "Bcrypt.lib"
 
 -- Linux
+Library["LinuxMONO"] = "%{wks.location}/ORigin/vendor/mono/lib/Linux/libmonosgen.a"
 IncludeDir["LinuxVulkanSDK"] = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/include" -- includes
 LibraryDir["LinuxVulkanSDK"] = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/lib" -- library
-
 Library["LVulkan"] = "%{LibraryDir.LinuxVulkanSDK}/libvulkan.so"
-Library["LShaderC_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libshaderc_sharedd.a"
-Library["LSPIRV_Cross_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-cored.a"
-Library["LSPIRV_Cross_GLSL_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-glsld.a"
-Library["LSPIRV_Tools_Debug"] = "%{LibraryDir.LinuxVulkanSDK}/libSPIRV-Toolsd.a"
-
-Library["LShaderC_Release"] = "%{LibraryDir.LinuxVulkanSDK}/libshaderc.so"
+Library["LShaderC_Release"] = "%{LibraryDir.LinuxVulkanSDK}/libshaderc.a"
 Library["LSPIRV_Cross_Release"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-core.a"
 Library["LSPIRV_Cross_GLSL_Release"] = "%{LibraryDir.LinuxVulkanSDK}/libspirv-cross-glsl.a"
 

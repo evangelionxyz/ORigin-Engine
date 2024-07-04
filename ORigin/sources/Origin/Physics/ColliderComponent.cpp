@@ -1,10 +1,7 @@
 
-#include "ColliderComponent.h"
-
 #include "PhysXAPI.h"
-
 #include "PxRigidActor.h"
-
+#include "ColliderComponent.h"
 #include "Origin/Scene/Entity.h"
 
 #define GLM_ENABLE_EXPERIMENTAL

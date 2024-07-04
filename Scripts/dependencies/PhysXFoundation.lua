@@ -1,15 +1,11 @@
 project "PhysXFoundation"
-kind "StaticLib"
-language "C++"
-staticruntime "off"
-location (vendorProjectFiles)
-targetdir (vendorOutputdir)
-objdir (vendorIntOutputdir)
+	kind "StaticLib"
+	language "C++"
+	staticruntime "off"
+	location (vendorProjectFiles)
+	targetdir (vendorOutputdir)
+	objdir (vendorIntOutputdir)
 
-	includedirs {
-		"%{physxDir}/physx/include"
-	}
-	
 	files { 
 		"%{physxDir}/physx/source/foundation/FdAllocator.cpp",
 		"%{physxDir}/physx/source/foundation/FdAssert.cpp",
@@ -18,14 +14,9 @@ objdir (vendorIntOutputdir)
 		"%{physxDir}/physx/source/foundation/FdString.cpp",
 		"%{physxDir}/physx/source/foundation/FdTempAllocator.cpp",
 	} 
-	
+	includedirs { "%{physxDir}/physx/include" }
+
 	defines {
-		"WIN32",
-		"WIN64",
-		"_CRT_SECURE_NO_DEPRECATE",
-		"_CRT_NONSTDC_NO_DEPRECATE",
-		"_WINSOCK_DEPRECATED_NO_WARNINGS",
-		"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 		"PX_PHYSX_STATIC_LIB",
 		"PX_SUPPORT_PVD=1"
 	}
@@ -56,6 +47,16 @@ objdir (vendorIntOutputdir)
 			"%{physxDir}/physx/source/foundation/windows/FdWindowsTime.cpp",
 		}
 
+		defines {
+			"WIN32",
+			"WIN64",
+			"_CRT_SECURE_NO_DEPRECATE",
+			"_CRT_NONSTDC_NO_DEPRECATE",
+			"_WINSOCK_DEPRECATED_NO_WARNINGS",
+			"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
+		}
+
+	-- Default
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "on"

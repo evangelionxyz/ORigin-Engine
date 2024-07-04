@@ -1,11 +1,11 @@
 project "PhysXCooking"
-kind "StaticLib"
-language "C++"
-cppdialect "C++17"
-staticruntime "off"
-location (vendorProjectFiles)
-targetdir (vendorOutputdir)
-objdir (vendorIntOutputdir)
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "off"
+	location (vendorProjectFiles)
+	targetdir (vendorOutputdir)
+	objdir (vendorIntOutputdir)
 
 	includedirs {
 		"%{physxDir}/physx/include",
@@ -31,41 +31,40 @@ objdir (vendorIntOutputdir)
 		"%{physxDir}/physx/source/foundation/include",
 	}
 	
+	files {
+		"%{physxDir}/physx/source/physxcooking/src/Cooking.cpp"
+	}
 	
 	defines {
-		"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 		"PX_PHYSX_STATIC_LIB",
 		"PX_SUPPORT_PVD=1",
 		"PX_COOKING"
 	}
 
 	links {
-		"PhysXCommon",
-		"PhysXFoundation",
+		--"PhysXCommon",
+		--"PhysXFoundation",
 	}
 
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		files {
-			"%{physxDir}/physx/source/physxcooking/src/Cooking.cpp"
-		}
 		
 	filter "system:windows"
 		systemversion "latest"
 		files { 
-			"%{physxDir}/physx/source/physxcooking/src/Cooking.cpp",
 			"%{physxDir}/physx/source/physxcooking/src/windows/WindowsCookingDelayLoadHook.cpp"
 		} 
 		defines {
 			"WIN32",
 			"WIN64",
+			"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 			"_CRT_SECURE_NO_DEPRECATE",
 			"_CRT_NONSTDC_NO_DEPRECATE",
 			"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		}
 
-
+	-- Default
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "on"

@@ -169,7 +169,7 @@ namespace origin {
 	{
 		OGN_PROFILER_PHYSICS();
 
-		s_PhysXData->PhysXPvd = PxCreatePvd(*PhysXAPI::GetFoundation());
+		s_PhysXData->PhysXPvd = physx::PxCreatePvd(*PhysXAPI::GetFoundation());
 
 		int port = 5425;
 		int timeoutMS = 10;

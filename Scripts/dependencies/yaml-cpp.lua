@@ -1,7 +1,7 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "yaml-cpp"
-   location (vendorProjectFiles)
+	location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"

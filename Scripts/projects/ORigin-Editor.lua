@@ -5,6 +5,10 @@ project "Editor"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
+    kind "ConsoleApp"
+
+    targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
+    objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
     links {
         "ORigin",
@@ -18,9 +22,6 @@ project "Editor"
         "msdfgen",
         "yaml-cpp"
     }
-
-    targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
-    objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
     files {
         "%{prj.location}/sources/**.cpp",
@@ -48,47 +49,53 @@ project "Editor"
         "%{IncludeDir.msdfgen}",
         "%{IncludeDir.msdf_atlas_gen}",
     }
+    
+    links {
+		"LowLevel",
+		"LowLevelAABB",
+		"LowLevelDynamics",
+		"PhysXCommon",
+		"PhysXFoundation",
+		"PhysXExtensions",
+		"PhysXPvdSDK",
+		"PhysXTask",
+	}
 
     defines {
-        "NV_USE_STATIC_WINCRT",
         "GLFW_INCLUDE_NONE",
         "_CRT_SECURE_NO_WARNINGS",
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
-        "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
     }
-
 
     filter "system:linux"
         pic "On"
 
     filter "system:windows"
         systemversion "latest"
+        defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
 
+    -- //////////////////////////////
+    -- Default
     filter "configurations:Debug"
-        defines {
-            "PHYSX_CXX_FLAGS_DEBUG",
-            "OGN_DEBUG",
-            "_DEBUG"
-        }
-        kind "ConsoleApp"
         runtime "Debug"
         symbols "On"
+        defines {
+            "PHYSX_CXX_FLAGS_DEBUG",
+            "OGN_DEBUG", "_DEBUG"
+        }
 
     filter "configurations:Release"
-    defines {
-            "PX_PHYSX_STATIC_LIB",
-            "OGN_RELEASE",
-            "NDEBUG"
-        }
-        kind "ConsoleApp"
-        runtime "Release"
         optimize "On"
-
-    filter "configurations:Dist"
+        runtime "Release"
         defines {
             "PX_PHYSX_STATIC_LIB",
-            "OGN_RELEASE",
-            "NDEBUG"
+            "OGN_RELEASE", "NDEBUG"
         }
-        kind "ConsoleApp"
+
+    filter "configurations:Dist"
         optimize "On"
+        runtime "Release"
+        defines {
+            "PX_PHYSX_STATIC_LIB",
+            "OGN_RELEASE", "NDEBUG"
+        }

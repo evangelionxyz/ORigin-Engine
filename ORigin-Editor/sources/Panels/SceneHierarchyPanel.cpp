@@ -1119,7 +1119,7 @@ namespace origin {
 									if (ImGui::IsItemHovered())
 									{
 										ImGui::BeginTooltip();
-										ImGui::Text("%llu", uuid);
+										ImGui::Text("%lu", uuid);
 										ImGui::EndTooltip();
 									}
 								});
@@ -1224,7 +1224,7 @@ namespace origin {
 										ImGui::BeginTooltip();
 
 										if(uuid)
-											ImGui::Text("%llu", uuid);
+											ImGui::Text("%lu", uuid);
 										else
 											ImGui::Text("Null Entity!");
 

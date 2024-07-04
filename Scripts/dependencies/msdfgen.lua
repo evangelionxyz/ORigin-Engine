@@ -1,18 +1,14 @@
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 project "freetype"
 	location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C"
 	staticruntime "off"
-
 	targetdir (vendorOutputdir)
 	objdir (vendorIntOutputdir)
 
 	files {
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include/ft2build.h",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include/freetype/**.h",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include/freetype/config/**.h",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include/freetype/internal/**.h",
-
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/autofit/autofit.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftbase.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/base/ftbbox.c",
@@ -54,7 +50,6 @@ project "freetype"
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/truetype/truetype.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/type1/type1.c",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/type42/type42.c",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/winfonts/winfnt.c"
 	}
 
 	includedirs {
@@ -67,8 +62,14 @@ project "freetype"
 		"_CRT_NONSTDC_NO_WARNINGS"
 	}
 
+	filter "system:linux"
+		pic "On"
+
 	filter "system:windows"
 		systemversion "latest"
+		files {
+			"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/winfonts/winfnt.c"
+		}
 
 	filter "configurations:Debug"
 		runtime "Debug"
@@ -82,33 +83,53 @@ project "msdfgen"
 	location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C++"
-	cppdialect "c++17"
+	cppdialect "c++11"
 	staticruntime "off"
+	links "freetype"
 
 	targetdir (vendorOutputdir)
 	objdir (vendorIntOutputdir)
 
 	files {
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/**.h",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/**.hpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/**.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/**.h",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/**.hpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/**.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/lib/**.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/include/**.h"
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/contour-combiners.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/edge-coloring.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/EdgeHolder.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/edge-segments.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/edge-selectors.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/equation-solver.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/msdf-error-correction.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/MSDFErrorCorrection.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/msdfgen.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Projection.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/rasterization.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/render-sdf.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/save-bmp.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/save-tiff.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Scanline.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/sdf-error-estimation.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Shape.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/shape-description.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/SignedDistance.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Vector2.cpp",
+
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/import-font.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/import-svg.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/resolve-shape-geometry.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/save-png.cpp",
+
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/lib/lodepng.cpp",
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/lib/tinyxml2.cpp",
 	}
 
-	includedirs{
+	includedirs {
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/include",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include"
 	}
 
-	defines {
-		"MSDF_USE_CPP11"
-	}
+	defines { "MSDF_USE_CPP11" }
 
-	links "freetype"
+	filter "system:linux"
+		pic "On"
 
 	filter "system:windows"
 		systemversion "latest"

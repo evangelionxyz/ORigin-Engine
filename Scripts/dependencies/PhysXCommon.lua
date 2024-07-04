@@ -1,11 +1,11 @@
 project "PhysXCommon"
-kind "StaticLib"
-language "C++"
-cppdialect "C++17"
-staticruntime "off"
-location (vendorProjectFiles)
-targetdir (vendorOutputdir)
-objdir (vendorIntOutputdir)
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "off"
+	location (vendorProjectFiles)
+	targetdir (vendorOutputdir)
+	objdir (vendorIntOutputdir)
 
 	includedirs {
 		"%{physxDir}/physx/include",
@@ -27,9 +27,18 @@ objdir (vendorIntOutputdir)
 		"%{physxDir}/physx/source/physxgpu/include",
 		"%{physxDir}/physx/source/foundation/include",
 	}
+
+	files {
+		"%{physxDir}/physx/source/common/src/CmCollection.cpp",
+		"%{physxDir}/physx/source/common/src/CmPtrTable.cpp",
+		"%{physxDir}/physx/source/common/src/CmRadixSort.cpp",
+		"%{physxDir}/physx/source/common/src/CmSerialize.cpp",
+		"%{physxDir}/physx/source/common/src/CmVisualization.cpp",
+		"%{physxDir}/physx/source/geomutils/**.cpp",
+}
 	
 	links {
-		"PhysXFoundation",
+		--"PhysXFoundation",
 	}
 	
 	defines {
@@ -41,30 +50,13 @@ objdir (vendorIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		files { 
-			"%{physxDir}/physx/source/common/src/CmCollection.cpp",
-			"%{physxDir}/physx/source/common/src/CmPtrTable.cpp",
-			"%{physxDir}/physx/source/common/src/CmRadixSort.cpp",
-			"%{physxDir}/physx/source/common/src/CmSerialize.cpp",
-			"%{physxDir}/physx/source/common/src/CmVisualization.cpp",
-			"%{physxDir}/physx/source/geomutils/**.cpp",
-		} 
-		includedirs {	
-
-		}
 		
 	filter "system:windows"
 		systemversion "latest"
 		files { 
-			"%{physxDir}/physx/source/common/src/CmCollection.cpp",
-			"%{physxDir}/physx/source/common/src/CmPtrTable.cpp",
-			"%{physxDir}/physx/source/common/src/CmRadixSort.cpp",
-			"%{physxDir}/physx/source/common/src/CmSerialize.cpp",
-			"%{physxDir}/physx/source/common/src/CmVisualization.cpp",
 			"%{physxDir}/physx/source/common/src/windows/CmWindowsDelayHook.cpp",
 			"%{physxDir}/physx/source/common/src/windows/CmWindowsModuleUpdateLoader.cpp",
-			"%{physxDir}/physx/source/geomutils/**.cpp",
-		} 
+		}
 		includedirs {
 			"%{physxDir}/physx/source/common/include/windows",
 			
@@ -76,6 +68,7 @@ objdir (vendorIntOutputdir)
 			"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		}
 
+	-- Default
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "on"

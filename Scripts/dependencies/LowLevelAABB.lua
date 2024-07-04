@@ -22,21 +22,26 @@ project "LowLevelAABB"
 		"%{physxDir}/physx/source/lowlevel/common/include/utils",
 		"%{physxDir}/physx/source/lowlevel/common/include/pipeline",
 		"%{physxDir}/physx/source/lowlevelaabb/include",
-		"%{physxDir}/physx/source/lowlevelaabb/src",
 	}
 	files { 
 		"%{physxDir}/physx/source/lowlevelaabb/**.cpp",
 	} 
 		
 	defines {
-		"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 		"PX_PHYSX_STATIC_LIB",
 		"PX_SUPPORT_PVD=1"
 	}
 
+	-- ///////////////////////////////
+	-- Linux
 	filter "system:linux"
 		pic "On"
-			
+
+	-- ///////////////////////////////
+
+
+	-- ///////////////////////////////
+	-- Windows
 	filter "system:windows"
 		systemversion "latest"
 		defines {
@@ -46,8 +51,6 @@ project "LowLevelAABB"
 			"_CRT_NONSTDC_NO_DEPRECATE",
 			"_WINSOCK_DEPRECATED_NO_WARNINGS",
 			"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
-			"PX_PHYSX_STATIC_LIB",
-			"PX_SUPPORT_PVD=1"
 		}
 
 

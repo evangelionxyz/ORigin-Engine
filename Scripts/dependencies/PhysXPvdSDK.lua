@@ -1,10 +1,10 @@
 project "PhysXPvdSDK"
-kind "StaticLib"
-language "C++"
-staticruntime "off"
-location (vendorProjectFiles)
-targetdir (vendorOutputdir)
-objdir (vendorIntOutputdir)
+	kind "StaticLib"
+	language "C++"
+	staticruntime "off"
+	location (vendorProjectFiles)
+	targetdir (vendorOutputdir)
+	objdir (vendorIntOutputdir)
 
 	includedirs {
 		"%{physxDir}/physx/include",
@@ -12,17 +12,21 @@ objdir (vendorIntOutputdir)
 		"%{physxDir}/physx/source/filebuf/include",
 		"%{physxDir}/physx/source/foundation/include",
 	}
+
 	files { 
-		"%{physxDir}/physx/source/pvd/**.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxProfileEventImpl.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdDataStream.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdDefaultFileTransport.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdDefaultSocketTransport.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdImpl.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdMemClient.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdObjectModelMetaData.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdObjectRegistrar.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdProfileZoneClient.cpp",
+		"%{physxDir}/physx/source/pvd/src/PxPvdUserRenderer.cpp",
 	} 
 	
 	defines {
-		"WIN32",
-		"WIN64",
-		"_CRT_SECURE_NO_DEPRECATE",
-		"_CRT_NONSTDC_NO_DEPRECATE",
-		"_WINSOCK_DEPRECATED_NO_WARNINGS",
-		"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 		"PX_PHYSX_STATIC_LIB",
 		"PX_SUPPORT_PVD=1"
 	}
@@ -30,13 +34,17 @@ objdir (vendorIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		--removefiles { "%{physxDir}/physx/source/physxcooking/src/windows/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/unix" }
 		
 	filter "system:windows"
 		systemversion "latest"
-		--removefiles { "%{physxDir}/physx/source/foundation/src/unix/**.cpp" } 
-		--includedirs { "%{physxDir}/physx/source/foundation/include/windows" }
+		defines {
+			"WIN32",
+			"WIN64",
+			"_CRT_SECURE_NO_DEPRECATE",
+			"_CRT_NONSTDC_NO_DEPRECATE",
+			"_WINSOCK_DEPRECATED_NO_WARNINGS",
+			"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
+		}
 
 
 	filter "configurations:Debug"

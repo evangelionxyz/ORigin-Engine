@@ -44,12 +44,6 @@ project "SimulationController"
 	} 
 	
 	defines {
-		"WIN32",
-		"WIN64",
-		"_CRT_SECURE_NO_DEPRECATE",
-		"_CRT_NONSTDC_NO_DEPRECATE",
-		"_WINSOCK_DEPRECATED_NO_WARNINGS",
-		"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
 		"PX_PHYSX_STATIC_LIB",
 		"PX_SUPPORT_PVD=1"
 	}
@@ -60,6 +54,14 @@ project "SimulationController"
 
 	filter "system:windows"
 		systemversion "latest"
+		defines {
+			"WIN32",
+			"WIN64",
+			"_CRT_SECURE_NO_DEPRECATE",
+			"_CRT_NONSTDC_NO_DEPRECATE",
+			"_WINSOCK_DEPRECATED_NO_WARNINGS",
+			"PX_PHYSX_GPU_SHARED_LIB_NAME=PhysXGpu_64.dll",
+		}
 
 	filter "configurations:Debug"
 		runtime "Debug"
