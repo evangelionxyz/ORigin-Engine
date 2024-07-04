@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "ShadowRenderer.h"
 #include "Origin/Renderer/Renderer.h"
 

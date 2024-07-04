@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "pch.h"
+
 #include "Mesh.h"
 
 #include "Origin/Core/Assert.h"

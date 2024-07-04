@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "Mesh.h"
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLMesh.h"

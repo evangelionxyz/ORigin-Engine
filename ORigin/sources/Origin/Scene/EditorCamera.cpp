@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "EditorCamera.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Core/Input.h"

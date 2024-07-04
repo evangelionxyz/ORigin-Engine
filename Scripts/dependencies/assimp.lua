@@ -64,8 +64,7 @@ project "assimp"
     "%{wks.location}/ORigin/vendor/assimp/contrib/irrXML/*"
 	}
 	
-	includedirs
-	{
+	includedirs {
 		"%{wks.location}/ORigin/vendor/assimp",
 		"%{wks.location}/ORigin/vendor/assimp/code",
 		"%{wks.location}/ORigin/vendor/assimp/include",
@@ -79,8 +78,7 @@ project "assimp"
     "%{wks.location}/ORigin/vendor/assimpcontrib/openddlparser/include",
 	}
 
-	defines
-    {
+	defines {
       -- "SWIG",
       --"ASSIMP_BUILD_NO_OWN_ZLIB",
       "ASSIMP_BUILD_NO_X_IMPORTER",
@@ -160,6 +158,9 @@ project "assimp"
       "ASSIMP_BUILD_NO_EMBEDTEXTURES_PROCESS",
       "ASSIMP_BUILD_NO_GLOBALSCALE_PROCESS"
   }
+
+  filter "system:linux"
+        pic "On"
 
 	filter "system:windows"
 		systemversion "latest"

@@ -1,6 +1,6 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
@@ -163,9 +163,7 @@ namespace origin
 	static void NativeLog(MonoString *string, int parameter)
 	{
 		OGN_PROFILER_LOGIC();
-
 		std::string str = Utils::MonoStringToString(string);
-		std::cout << str << ", " << parameter << std::endl;
 	}
 
 	static void NativeLog_Vector(glm::vec3 *parameter, glm::vec3 *outResult)

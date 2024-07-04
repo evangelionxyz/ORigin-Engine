@@ -27,10 +27,6 @@ objdir (vendorIntOutputdir)
 		"PX_SUPPORT_PVD=1"
 	}
 	
-	links {
-		"PhysXFoundation",
-	}
-
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"

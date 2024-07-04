@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "Origin/Renderer/Renderer.h"
 #include "Lighting.h"
 

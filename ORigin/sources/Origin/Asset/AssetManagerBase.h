@@ -3,6 +3,7 @@
 #pragma once
 #include "Asset.h"
 
+#include <memory>
 #include <map>
 
 namespace origin {

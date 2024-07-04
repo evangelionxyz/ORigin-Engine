@@ -5,7 +5,6 @@
 
 #include "Origin/Asset/Asset.h"
 #include "Origin/Asset/EditorAssetManager.h"
-#include "Origin/Asset/RuntimeAssetManager.h"
 
 #include <string>
 #include <filesystem>
@@ -66,7 +65,6 @@ namespace origin
 		ProjectConfig& GetConfig() { return m_Config; }
 		std::shared_ptr<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
 		std::shared_ptr<EditorAssetManager> GetEditorAssetManager() { return std::static_pointer_cast<EditorAssetManager>(m_AssetManager); }
-		std::shared_ptr<RuntimeAssetManager> GetRuntimeAssetManager() { return std::static_pointer_cast<RuntimeAssetManager>(m_AssetManager); }
 
 		static std::shared_ptr<Project> New();
 		static std::shared_ptr<Project> Open();

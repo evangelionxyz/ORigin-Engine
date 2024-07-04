@@ -27,7 +27,6 @@ IncludeDir["OPTICK"] = "%{wks.location}/ORigin/vendor/Optick/src/"
 LibraryDir = {}
 Library = {}
 LibraryDir["MONO"] = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}"
-
 Library["MONO"] = "%{LibraryDir.MONO}/libmono-static-sgen.lib"
 
 -- Windows

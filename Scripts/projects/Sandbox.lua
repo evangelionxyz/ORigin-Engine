@@ -13,17 +13,9 @@ targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/Sandbox")
 objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/Sandbox")
 
 files {
-    "%{prj.location}/sources/**.h",
     "%{prj.location}/sources/**.cpp",
-
-    "%{prj.location}/assets/shaders/**.glsl",
-    "%{prj.location}/assets/shaders/**.hlsl",
-    "%{prj.location}/assets/shaders/**.vert",
-    "%{prj.location}/assets/shaders/**.frag",
-
-    "%{prj.location}/assets/textures/**.png",
-    "%{prj.location}/assets/textures/**.jpg",
 }
+
 includedirs {
     "%{wks.location}/ORigin/sources",
     "%{prj.location}/sources",

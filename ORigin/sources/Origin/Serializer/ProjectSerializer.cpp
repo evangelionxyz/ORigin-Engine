@@ -1,8 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "ProjectSerializer.h"
 #include "Origin/Asset/AssetManager.h"
+#include "Origin/Core/Assert.h"
+#include "Origin/Profiler/Profiler.h"
 
 #include <stdint.h>
 #include <fstream>

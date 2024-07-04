@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Skybox.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/RenderCommand.h"

@@ -1,6 +1,4 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
-#include "pch.h"
 #include "Asset.h"
 #include "AssetImporter.h"
 #include "Origin/Core/Application.h"
@@ -10,7 +8,6 @@
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Renderer.h"
-
 #include "stb_image.h"
 
 namespace origin {

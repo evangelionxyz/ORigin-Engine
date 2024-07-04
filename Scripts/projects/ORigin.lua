@@ -11,10 +11,6 @@ project "ORigin"
   targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
   objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
-  pchheader "pch.h"
-  -- (pchsource) Under Windows, it must be a path relative to 'premake5.lua' (default premake file)
-  pchsource "../../ORigin/sources/pch.cpp" -- don't change this
-
   files {
     "%{prj.location}/sources/Origin/**.cpp",
     "%{prj.location}/sources/Platform/OpenGL/**.cpp",
@@ -61,142 +57,155 @@ project "ORigin"
     "_CRT_SECURE_NO_WARNINGS"
   }
 
-  links {
-    "assimp",
-    "Box2D",
-    "origin-glfw",
-    "glad",
-    "ImGui",
-    "Optick",
-    "msdf-atlas-gen",
-    "msdfgen",
-    "yaml-cpp",
-    "opengl32.lib",
-    "PhysX",
-    "PhysXCommon",
-    "PhysXFoundation",
-    "PhysXPvdSDK",
-    "PhysXExtensions",
-    "PhysXCooking",
-    "PhysXCharacterKinematic",
-    "%{Library.Vulkan}",
-    "%{Library.MONO}"
-  }
-
-  filter "files:../../ORigin/vendor/ImGuizmo/**.cpp"
-  flags { "NoPCH" }
-
-
   -- Windows
-filter "system:windows"
-  systemversion "latest"
-  files {
-    "%{prj.location}/sources/DX11/**.cpp",
-    "%{prj.location}/sources/Win32/**.cpp",
-  }
-
-  includedirs {
-    "%{IncludeDir.WindowsVulkanSDK}",
-  }
-
-  defines {
-    "OGN_PLATFORM_WINDOWS",
-    "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
-    "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
-  }
-
-  links {
-    "%{Library.WinSock}",
-    "%{Library.WinMM}",
-    "%{Library.WinVersion}",
-    "%{Library.BCrypt}"
-  }
-
-  filter "configurations:Debug"
-    runtime "Debug"
-    symbols "On"
-    defines {
-      "OGN_DEBUG",
-      "_DEBUG"
+  filter "system:windows"
+    systemversion "latest"
+    files {
+      "%{prj.location}/sources/DX11/**.cpp",
+      "%{prj.location}/sources/Win32/**.cpp",
     }
+
+    includedirs {
+      "%{IncludeDir.WindowsVulkanSDK}",
+    }
+
+    defines {
+      "OGN_PLATFORM_WINDOWS",
+      "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
+      "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
+    }
+
     links {
-      "%{Library.WSPIRV_Cross_Debug}",
-      "%{Library.WSPIRV_Cross_GLSL_Debug}",
-      "%{Library.WSPIRV_Tools_Debug}",
+      "assimp",
+      "Box2D",
+      "origin-glfw",
+      "glad",
+      "ImGui",
+      "Optick",
+      "msdf-atlas-gen",
+      "msdfgen",
+      "yaml-cpp",
+      "opengl32.lib",
+      "PhysX",
+      "PhysXCommon",
+      "PhysXFoundation",
+      "PhysXPvdSDK",
+      "PhysXExtensions",
+      "PhysXCooking",
+      "PhysXCharacterKinematic",
+      "%{Library.WVulkan}",
+      "%{Library.MONO}",
+      "%{Library.WinSock}",
+      "%{Library.WinMM}",
+      "%{Library.WinVersion}",
+      "%{Library.BCrypt}"
     }
 
-    filter "configurations:Release"
-    runtime "Release"
-    optimize "On"
-    defines {
-      "OGN_RELEASE",
-      "NDEBUG"
-    }
-    links {
-      "%{Library.WShaderC_Release}",
-      "%{Library.WSPIRV_Cross_Release}",
-      "%{Library.WSPIRV_Cross_GLSL_Release}",
-    }
+    filter "configurations:Debug"
+      runtime "Debug"
+      symbols "On"
+      defines {
+        "OGN_DEBUG",
+        "_DEBUG"
+      }
+      links {
+        "%{Library.WSPIRV_Cross_Debug}",
+        "%{Library.WSPIRV_Cross_GLSL_Debug}",
+        "%{Library.WSPIRV_Tools_Debug}",
+      }
 
-    filter "configurations:Dist"
-    runtime "Release"
-    optimize "On"
-    defines {
+      filter "configurations:Release"
+      runtime "Release"
+      optimize "On"
+      defines {
         "OGN_RELEASE",
         "NDEBUG"
-    }
-    links {
+      }
+      links {
         "%{Library.WShaderC_Release}",
         "%{Library.WSPIRV_Cross_Release}",
         "%{Library.WSPIRV_Cross_GLSL_Release}",
+      }
+
+      filter "configurations:Dist"
+      runtime "Release"
+      optimize "On"
+      defines {
+          "OGN_RELEASE",
+          "NDEBUG"
+      }
+    
+  
+
+  -- Linux
+  filter "system:linux"
+      pic "On"
+    includedirs {
+      "%{IncludeDir.LinuxVulkanSDK}",
     }
 
--- Linux
-filter "system:linux"
-  includedirs {
-    "%{IncludeDir.LinuxVulkanSDK}",
-  }
-  defines {
-    "OGN_PLATFORM_LINUX",
-  }
-
-  filter "configurations:Debug"
-    runtime "Debug"
-    symbols "On"
     defines {
-      "OGN_DEBUG",
-      "_DEBUG"
+      "OGN_PLATFORM_LINUX",
     }
 
     links {
-      "%{Library.LSPIRV_Cross_Debug}",
-      "%{Library.LSPIRV_Cross_GLSL_Debug}",
-      "%{Library.LSPIRV_Tools_Debug}",
+      "assimp",
+      "Box2D",
+      "origin-glfw",
+      "glad",
+      "ImGui",
+      "Optick",
+      "msdf-atlas-gen",
+      "msdfgen",
+      "yaml-cpp",
+      "opengl32.lib",
+      "PhysX",
+      "PhysXCommon",
+      "PhysXFoundation",
+      "PhysXPvdSDK",
+      "PhysXExtensions",
+      "PhysXCooking",
+      "PhysXCharacterKinematic",
+      "%{Library.LVulkan}",
     }
 
-    filter "configurations:Release"
-    runtime "Release"
-    optimize "On"
-    defines {
-      "OGN_RELEASE",
-      "NDEBUG"
-    }
-    links {
-      "%{Library.WShaderC_Release}",
-      "%{Library.LSPIRV_Cross_Release}",
-      "%{Library.LSPIRV_Cross_GLSL_Release}",
-    }
+    filter "configurations:Debug"
+      runtime "Debug"
+      symbols "On"
+      defines {
+        "OGN_DEBUG",
+        "_DEBUG"
+      }
 
-    filter "configurations:Dist"
-    runtime "Release"
-    optimize "On"
-    defines {
+      links {
+        "%{Library.LSPIRV_Cross_Debug}",
+        "%{Library.LSPIRV_Cross_GLSL_Debug}",
+        "%{Library.LSPIRV_Tools_Debug}",
+      }
+
+      filter "configurations:Release"
+      runtime "Release"
+      optimize "On"
+      defines {
         "OGN_RELEASE",
         "NDEBUG"
-    }
-    links {
-        "%{Library.LShaderC_Release}",
+      }
+      links {
+        "%{Library.WShaderC_Release}",
         "%{Library.LSPIRV_Cross_Release}",
         "%{Library.LSPIRV_Cross_GLSL_Release}",
-    }
+      }
 
+      filter "configurations:Dist"
+      runtime "Release"
+      optimize "On"
+      defines {
+          "OGN_RELEASE",
+          "NDEBUG"
+      }
+      links {
+        "%{Library.WShaderC_Release}",
+        "%{Library.LSPIRV_Cross_Release}",
+        "%{Library.LSPIRV_Cross_GLSL_Release}",
+      }
+  

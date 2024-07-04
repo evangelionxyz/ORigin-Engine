@@ -19,6 +19,9 @@ project "glad"
 
     flags { 'NoPCH' }
 
+    filter "system:linux"
+        pic "On"
+
     filter "system:windows"
         systemversion "latest"
 

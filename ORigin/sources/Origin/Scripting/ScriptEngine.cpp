@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
 #include "Origin/Scene/Components.h"

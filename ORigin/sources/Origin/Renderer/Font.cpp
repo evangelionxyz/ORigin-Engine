@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Font.h"
 #include "GlyphGeometry.h"
 #include "FontGeometry.h"

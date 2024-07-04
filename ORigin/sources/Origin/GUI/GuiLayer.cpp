@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "GuiLayer.h"
 #include "Origin/Core/Application.h"
 
@@ -9,7 +9,6 @@
 #endif
 
 #include <imgui.h>
-
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui_internal.h>

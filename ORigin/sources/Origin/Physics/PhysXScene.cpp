@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "PhysXScene.h"
 #include "PhysXAPI.h"
 #include "PxActor.h"

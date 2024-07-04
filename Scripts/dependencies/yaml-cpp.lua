@@ -24,11 +24,10 @@ project "yaml-cpp"
         "%{wks.location}/ORigin/vendor/yaml-cpp/include/"
     }
 
-	filter "system:windows"
-		systemversion "latest"
-
 	filter "system:linux"
 		pic "On"
+
+	filter "system:windows"
 		systemversion "latest"
 
 	filter "configurations:Debug"

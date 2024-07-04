@@ -1,8 +1,9 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Serializer.h"
 #include "SpriteSheetSerializer.h"
+#include "Origin/Profiler/Profiler.h"
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>

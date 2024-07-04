@@ -30,10 +30,18 @@ project "origin-glfw"
 		"%{wks.location}/ORigin/vendor/origin-glfw/src/window.c",
 	}
 
+	filter "system:linux"
+		pic "On"
+		files {
+			"%{wks.location}/ORigin/vendor/origin-glfw/src/posix_time.c",
+			"%{wks.location}/ORigin/vendor/origin-glfw/src/posix_thread.c",
+			"%{wks.location}/ORigin/vendor/origin-glfw/src/posix_poll.c",
+			"%{wks.location}/ORigin/vendor/origin-glfw/src/posix_module.c",
+		}
+
 	filter "system:windows"
 		systemversion "latest"
-		files
-		{
+		files {
 			"%{wks.location}/ORigin/vendor/origin-glfw/src/win32_init.c",
 			"%{wks.location}/ORigin/vendor/origin-glfw/src/win32_joystick.c",
 			"%{wks.location}/ORigin/vendor/origin-glfw/src/win32_module.c",

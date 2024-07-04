@@ -1,6 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+#include <cstdint>
 
 namespace origin
 {

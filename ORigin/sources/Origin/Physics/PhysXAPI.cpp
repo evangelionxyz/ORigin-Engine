@@ -1,10 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
-
 #include "PhysXAPI.h"
 #include "PhysXScene.h"
-
 #include "PxPhysicsAPI.h"
 
 #include <glm/glm.hpp>

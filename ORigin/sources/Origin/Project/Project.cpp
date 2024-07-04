@@ -1,7 +1,10 @@
-#include <pch.h>	
+	
 #include "Project.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Serializer/ProjectSerializer.h"
+#include "Origin/Profiler/Profiler.h"
+
+#include <fstream>
 #include <yaml-cpp/yaml.h>
 
 namespace origin {

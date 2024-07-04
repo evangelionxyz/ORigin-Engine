@@ -1,8 +1,5 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
-#include "pch.h"
 #include "Asset.h"
-
 #include "Origin/Core/Assert.h"
 
 namespace origin {

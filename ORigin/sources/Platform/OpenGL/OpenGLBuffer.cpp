@@ -1,8 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
-#include "OpenGLBuffer.h"
 
+#include "OpenGLBuffer.h"
+#include "Origin/Profiler/Profiler.h"
 #include <glad/glad.h>
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)

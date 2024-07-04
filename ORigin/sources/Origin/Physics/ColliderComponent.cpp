@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "ColliderComponent.h"
 
 #include "PhysXAPI.h"

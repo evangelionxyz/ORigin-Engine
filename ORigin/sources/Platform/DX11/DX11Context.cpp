@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "DX11Context.h"
 
 #ifdef OGN_PLATFORM_WINDOWS

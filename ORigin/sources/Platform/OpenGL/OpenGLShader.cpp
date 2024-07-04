@@ -1,13 +1,14 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "OpenGLShader.h"
 #include "Origin/Core/Time.h"
+#include "Origin/Core/Assert.h"
+#include "Origin/Profiler/Profiler.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>

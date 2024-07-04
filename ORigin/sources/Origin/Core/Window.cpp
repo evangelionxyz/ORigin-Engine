@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Window.h"
 
 #ifdef OGN_PLATFORM_WINDOWS

@@ -1,10 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <glm/glm.hpp>
 
+#include <glm/glm.hpp>
 #include <functional>
 
 namespace origin::UI

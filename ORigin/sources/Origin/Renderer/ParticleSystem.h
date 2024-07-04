@@ -3,6 +3,8 @@
 #pragma once
 #include "Shader.h"
 
+#include <vector>
+
 namespace origin {
 
 	struct ParticleProps

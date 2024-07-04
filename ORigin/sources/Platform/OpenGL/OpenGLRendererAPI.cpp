@@ -1,7 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "OpenGLRendererAPI.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -9,15 +10,10 @@ namespace origin
 {
 	void OpenGLRendererAPI::Init()
 	{
-		OGN_PROFILER_RENDERING();
-
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LINE_SMOOTH);
-
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glEnable(GL_MULTISAMPLE);
 	}
 
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -37,15 +33,11 @@ namespace origin
 
 	void OpenGLRendererAPI::Clear()
 	{
-		OGN_PROFILER_RENDERING();
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount)
 	{
-		OGN_PROFILER_RENDERING();
-
 		if (vertexArray)
 		{
 			vertexArray->Bind();
@@ -56,8 +48,6 @@ namespace origin
 
 	void OpenGLRendererAPI::DrawArrays(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount)
 	{
-		OGN_PROFILER_RENDERING();
-
 		m_DrawLineMode ? glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) : glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if (vertexArray)
 		{
@@ -68,8 +58,6 @@ namespace origin
 
 	void OpenGLRendererAPI::DrawLines(const std::shared_ptr<VertexArray>& vertexArray, uint32_t vertexCount)
 	{
-		OGN_PROFILER_RENDERING();
-
 		if (vertexArray)
 		{
 			vertexArray->Bind();
@@ -81,5 +69,4 @@ namespace origin
 	{
 		glLineWidth(width);
 	}
-
 }

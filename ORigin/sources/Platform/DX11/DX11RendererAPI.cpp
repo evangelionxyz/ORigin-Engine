@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "DX11Context.h"
 #include "DX11RendererAPI.h"
 

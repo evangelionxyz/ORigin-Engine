@@ -1,7 +1,4 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
-#include "pch.h"
-
 #define MINIAUDIO_IMPLEMENTATION
 #include "AudioEngine.h"
 

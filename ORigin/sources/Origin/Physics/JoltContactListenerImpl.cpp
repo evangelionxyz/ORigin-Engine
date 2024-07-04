@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "JoltContactListenerImpl.h"
 
 namespace origin {

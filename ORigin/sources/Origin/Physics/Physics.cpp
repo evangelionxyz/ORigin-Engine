@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 
 #include "Physics.h"
 #include "PhysXAPI.h"

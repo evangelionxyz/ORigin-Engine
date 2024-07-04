@@ -1,8 +1,12 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "pch.h"
+
 #include "Origin/Renderer/Shader.h"
+
+#include <cstdint>
+#include <fstream>
+#include <vector>
 
 namespace origin
 {

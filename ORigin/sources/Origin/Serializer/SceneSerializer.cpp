@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "SceneSerializer.h"
 
 #include "Origin/Asset/AssetImporter.h"

@@ -1,13 +1,14 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "OpenGLModel.h"
 #include "OpenGLMesh.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Scene/EntityManager.h"
 #include "Origin/Renderer/Renderer.h"
-
+#include "Origin/Core/Assert.h"
+#include "Origin/Profiler/Profiler.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace origin

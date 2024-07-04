@@ -1,7 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "OpenGLUniformBuffer.h"
+#include "Origin/Core/Assert.h"
+#include "Origin/Profiler/Profiler.h"
+
 #include <glad/glad.h>
 
 namespace origin

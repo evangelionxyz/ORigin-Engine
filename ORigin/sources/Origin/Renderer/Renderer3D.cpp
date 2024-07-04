@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Renderer.h"
 #include "Renderer3D.h"
 #include "Renderer2D.h"

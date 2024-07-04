@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "Physics2D.h"
 
 #include "Origin/Scene/Entity.h"

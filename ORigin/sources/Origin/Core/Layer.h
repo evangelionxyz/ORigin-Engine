@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "pch.h"
+
 #include "Event.h"
 
 #include "Time.h"

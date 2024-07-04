@@ -26,8 +26,6 @@ namespace origin
 	private:
 		uint64_t m_UUID;
 	};
-
-	const UUID UUID::NullID = UUID(0);
 }
 
 namespace std
