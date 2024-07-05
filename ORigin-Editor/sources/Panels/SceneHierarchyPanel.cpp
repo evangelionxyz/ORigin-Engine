@@ -349,10 +349,6 @@ namespace origin {
 				if (!lc.Light)
 					lc.Light = Lighting::Create(LightingType::Directional);
 			}
-			DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
-			DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
-			DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
-			DisplayAddComponentEntry<CapsuleColliderComponent>("CAPSULE COLLIDER");
 
 			ImGui::EndPopup();
 		}
@@ -541,46 +537,6 @@ namespace origin {
 				ImGui::Text(anim.c_str());
 			}
 		});
-
-		DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto &component)
-		{
-				UI::DrawCheckbox("UseGravity", &component.UseGravity);
-				UI::DrawCheckbox("Rotate X", &component.RotateX);
-				UI::DrawCheckbox("Rotate Y", &component.RotateY);
-				UI::DrawCheckbox("Rotate Z", &component.RotateZ);
-				UI::DrawCheckbox("Kinematic", &component.Kinematic);
-				UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
-				UI::DrawVec3Control("Center Mass", component.CenterMassPosition);
-		});
-
-		DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
-		{
-				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
-				UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
-				UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
-		});
-
-		DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto &component)
-			{
-				UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f);
-				UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
-				UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
-			});
-
-		DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto &component)
-			{
-				UI::DrawCheckbox("Horizontal", &component.Horizontal);
-				UI::DrawVec3Control("Offset", component.Offset, 0.01f, 0.0f);
-				UI::DrawFloatControl("Radius", &component.Radius, 0.01f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawFloatControl("Height", &component.Height, 0.01f, 0.0f, 1000.0f, 1.0f);
-				UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-				UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
-			});
 
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Scene](auto &component)
 			{

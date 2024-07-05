@@ -20,7 +20,8 @@ project "Editor"
         "Optick",
         "msdf-atlas-gen",
         "msdfgen",
-        "yaml-cpp"
+        "freetype",
+        "yaml-cpp",
     }
 
     files {
@@ -44,31 +45,26 @@ project "Editor"
         "%{IncludeDir.GLM}",
         "%{IncludeDir.YAML_CPP}",
         "%{IncludeDir.OPTICK}",
-        "%{IncludeDir.PhysX}",
         "%{IncludeDir.JoltPhysics}",
         "%{IncludeDir.msdfgen}",
         "%{IncludeDir.msdf_atlas_gen}",
     }
-    
-    links {
-		"LowLevel",
-		"LowLevelAABB",
-		"LowLevelDynamics",
-		"PhysXCommon",
-		"PhysXFoundation",
-		"PhysXExtensions",
-		"PhysXPvdSDK",
-		"PhysXTask",
-	}
 
     defines {
-        "GLFW_INCLUDE_NONE",
         "_CRT_SECURE_NO_WARNINGS",
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
 
     filter "system:linux"
         pic "On"
+        links {
+            "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
+            "monosgen-2.0", "pthread", "dl", "m", "rt"
+        }
+        defines {
+            "_GLFW_WAYLAND",
+            "GLFW_INCLUDE_VULKAN"
+        }
 
     filter "system:windows"
         systemversion "latest"
@@ -80,15 +76,14 @@ project "Editor"
         runtime "Debug"
         symbols "On"
         defines {
-            "PHYSX_CXX_FLAGS_DEBUG",
-            "OGN_DEBUG", "_DEBUG"
+            "OGN_DEBUG", "_DEBUG",
+            "GLFW_INCLUDE_NONE"
         }
 
     filter "configurations:Release"
         optimize "On"
         runtime "Release"
         defines {
-            "PX_PHYSX_STATIC_LIB",
             "OGN_RELEASE", "NDEBUG"
         }
 
@@ -96,6 +91,5 @@ project "Editor"
         optimize "On"
         runtime "Release"
         defines {
-            "PX_PHYSX_STATIC_LIB",
             "OGN_RELEASE", "NDEBUG"
         }

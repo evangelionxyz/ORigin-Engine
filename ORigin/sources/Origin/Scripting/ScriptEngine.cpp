@@ -1,20 +1,18 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
-
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
 #include "Origin/Scene/Components.h"
 #include "Origin/Project/Project.h"
-
 #include "Origin/Core/Application.h"
 
-#include "mono/jit/jit.h"
-#include "mono/metadata/assembly.h"
-#include "mono/metadata/object.h"
-#include "mono/metadata/tabledefs.h"
+#include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/object.h>
+#include <mono/metadata/tabledefs.h>
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-gc.h>
+
 #include <cstdlib>
 #include <FileWatch.hpp>
 
@@ -308,7 +306,11 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
+#ifdef OGN_PLATFORM_WINDOWS
 		mono_set_assemblies_path("lib");
+#elif OGN_PLATFORM_LINUX
+		mono_set_assemblies_path("/usr/lib");
+#endif
 
 		MonoDomain *rootDomain = mono_jit_init("ORiginJITRuntime");
 		OGN_CORE_ASSERT(rootDomain, "[ScriptEngine] Mono Domain is NULL!");

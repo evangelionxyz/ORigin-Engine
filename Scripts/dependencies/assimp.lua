@@ -61,7 +61,22 @@ project "assimp"
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/CalcTangentsProcess.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ScaleProcess.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/EmbedTexturesProcess.cpp",
-    "%{wks.location}/ORigin/vendor/assimp/contrib/irrXML/*"
+
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/adler32.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/compress.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/crc32.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/deflate.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/gzclose.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/gzlib.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/gzread.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/gzwrite.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/infback.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/inffast.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/inflate.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/inftrees.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/trees.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/uncompr.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/zutil.c",
 	}
 	
 	includedirs {
@@ -136,7 +151,7 @@ project "assimp"
       "ASSIMP_BUILD_NO_JOINVERTICES_PROCESS",
       -- "ASSIMP_BUILD_NO_TRIANGULATE_PROCESS",
       "ASSIMP_BUILD_NO_GENFACENORMALS_PROCESS",
-      -- "ASSIMP_BUILD_NO_GENVERTEXNORMALS_PROCESS",
+      -- "ASSIMP_BUILD_NO_GENVERTEXNORMALS_PROCESS",/home/evangelion/Dev/ORigin-Engine/ORigin/vendor/assimp/CMakeLists.txt
       "ASSIMP_BUILD_NO_REMOVEVC_PROCESS",
       "ASSIMP_BUILD_NO_SPLITLARGEMESHES_PROCESS",
       "ASSIMP_BUILD_NO_PRETRANSFORMVERTICES_PROCESS",

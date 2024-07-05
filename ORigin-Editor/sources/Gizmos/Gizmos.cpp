@@ -1,9 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "Gizmos.h"
-
 #include "../EditorLayer.h"
-
 #include "Origin/Scene/Components.h"
 #include "Origin/Renderer/Renderer2D.h"
 
@@ -145,14 +143,27 @@ namespace origin {
 					* rotation * glm::scale(glm::mat4(1.0f), tc.WorldScale);
 				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 			}
-
-			if (selectedEntity.HasComponent<CircleRendererComponent>())
+			else if (selectedEntity.HasComponent<CircleRendererComponent>())
 			{
 				glm::vec3 translation = tc.WorldTranslation + glm::vec3(0.0f, 0.0f, 0.5f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
 					* rotation * glm::scale(glm::mat4(1.0f), tc.WorldScale);
 
 				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
+			}
+
+			if(selectedEntity.HasComponent<RevoluteJoint2DComponent>())
+			{
+
+				auto &rjc = selectedEntity.GetComponent<RevoluteJoint2DComponent>();
+				glm::vec2 anchorPoint = { 
+					tc.WorldTranslation.x + rjc.AnchorPoint.x,
+					tc.WorldTranslation.y + rjc.AnchorPoint.y };
+
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f),{ anchorPoint, tc.WorldTranslation.z + 0.0f })
+					* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+
+				Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);
 			}
 		}
 		Renderer2D::End();
@@ -169,6 +180,7 @@ namespace origin {
 		auto &scene = EditorLayer::Get().m_ActiveScene;
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#if 0
 		const auto &box = scene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
 		for (auto entity : box)
 		{
@@ -180,6 +192,7 @@ namespace origin {
 
 			Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)entity);
 		}
+
 
 		const auto &sphere = scene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
 		for (auto entity : sphere)
@@ -210,25 +223,7 @@ namespace origin {
 		}
 
 		Renderer3D::End();
-
-		Renderer2D::Begin(camera);
-
-		const auto &revoluteJoint2DView = scene->m_Registry.view<TransformComponent, RevoluteJoint2DComponent>();
-		for (auto e : revoluteJoint2DView)
-		{
-			auto [tc, rjc] = revoluteJoint2DView.get<TransformComponent, RevoluteJoint2DComponent>(e);
-			glm::vec2 anchorPoint = { 
-				tc.WorldTranslation.x + rjc.AnchorPoint.x,
-				tc.WorldTranslation.y + rjc.AnchorPoint.y };
-
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f),{ anchorPoint, tc.WorldTranslation.z + 0.0f })
-				* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
-
-			Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);
-		}
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		Renderer2D::End();
+#endif
 	}
 
 	void Gizmos::DrawIcons(const EditorCamera &camera)

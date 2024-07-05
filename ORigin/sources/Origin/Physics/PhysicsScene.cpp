@@ -1,10 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
 #include "PhysicsScene.h"
-
 #include "PhysicsAPI.h"
-#include "PhysXScene.h"
 
 namespace origin {
 
@@ -15,12 +12,8 @@ namespace origin {
 		switch (PhysicsAPI::Current())
 		{
 		default:
-		case PhysicsAPIType::PhysX: return std::make_unique<PhysXScene>(scene);
-			break;
-		case PhysicsAPIType::Jolt:
-			break;
-		case PhysicsAPIType::None:
-			break;
+		case PhysicsAPIType::Jolt: break;
+		case PhysicsAPIType::None: break;
 		}
 
 		OGN_CORE_ASSERT(false, "PhysicScene : Invalid Physics API");

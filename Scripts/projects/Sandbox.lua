@@ -7,7 +7,19 @@ project "Sandbox"
     staticruntime "off"
     kind "ConsoleApp"
 
-    links "ORigin"
+    links {
+        "ORigin",
+        "assimp",
+        "Box2D",
+        "origin-glfw",
+        "glad",
+        "ImGui",
+        "Optick",
+        "msdf-atlas-gen",
+        "msdfgen",
+        "freetype",
+        "yaml-cpp",
+    }
 
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/Sandbox")
     objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/Sandbox")
@@ -31,7 +43,6 @@ project "Sandbox"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.PhysX}",
         "%{IncludeDir.msdf_atlas_gen}",
         "%{IncludeDir.msdfgen}",
         "%{IncludeDir.JoltPhysics}",
@@ -46,6 +57,10 @@ project "Sandbox"
 
     filter "system:linux"
         pic "On"
+        links {
+            "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
+            "monosgen-2.0", "pthread", "dl", "m", "rt"
+        }
 
     filter "system:windows"
         systemversion "latest"
@@ -57,7 +72,6 @@ project "Sandbox"
         runtime "Debug"
         symbols "On"
         defines {
-            "PHYSX_CXX_FLAGS_DEBUG",
             "OGN_DEBUG", "_DEBUG"
         }
 
@@ -65,7 +79,6 @@ project "Sandbox"
         optimize "On"
         runtime "Release"
         defines {
-            "PX_PHYSX_STATIC_LIB",
             "OGN_RELEASE", "NDEBUG"
         }
 
@@ -73,6 +86,5 @@ project "Sandbox"
         optimize "On"
         runtime "Release"
         defines {
-            "PX_PHYSX_STATIC_LIB",
             "OGN_RELEASE", "NDEBUG"
         }

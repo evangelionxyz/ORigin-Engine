@@ -1,6 +1,4 @@
 ﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
-
-
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Profiler/Profiler.h"
@@ -12,9 +10,7 @@
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
-
 #include "Scene.h"
-
 #include "Entity.h"
 #include "Lighting.h"
 #include "EntityManager.h"
@@ -26,18 +22,11 @@
 
 namespace origin
 {
-	class BoxColliderComponent;
-	class RigidbodyComponent;
-	class SphereColliderComponent;
-	class CapsuleColliderComponent;
 	class LightComponent;
 
 	Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
-
-		if (!m_PhysicsScene) m_PhysicsScene = PhysicsScene::Create(this);
-
 		m_Physics2D = std::make_shared<Physics2D>(this);
 		m_UIRenderer = std::make_shared<UIRenderer>();
 	}
@@ -170,7 +159,6 @@ namespace origin
 					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
 			}
 
-			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
 
@@ -268,7 +256,6 @@ namespace origin
 				audio->Play();
 		}
 
-		m_PhysicsScene->OnSimulationStart();
 		m_Physics2D->OnSimulationStart();
 
 		m_Registry.view<UIComponent>().each([this](entt::entity e, UIComponent ui)
@@ -307,7 +294,6 @@ namespace origin
 				audio->Stop();
 		}
 
-		m_PhysicsScene->OnSimulationStop();
 		m_Physics2D->OnSimulationStop();
 
 		m_UIRenderer->Unload();
@@ -429,7 +415,6 @@ namespace origin
 			if(!isMainCameraListening)
 				editorCamera.UpdateAudioListener(ts);
 
-			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
 
@@ -458,7 +443,6 @@ namespace origin
 				nsc.Instance->m_Entity = Entity { entity, this };
 		});
 
-		m_PhysicsScene->OnSimulationStart();
 		m_Physics2D->OnSimulationStart();
 
 		// Audio
@@ -484,7 +468,6 @@ namespace origin
 			nsc.DestroyScript(&nsc);
 		});
 
-		m_PhysicsScene->OnSimulationStop();
 		m_Physics2D->OnSimulationStop();
 
 		// Audio
@@ -860,9 +843,6 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(RevoluteJoint2DComponent)
 	OGN_REG_COMPONENT(ParticleComponent)
 	OGN_REG_COMPONENT(RigidbodyComponent)
-	OGN_REG_COMPONENT(BoxColliderComponent)
-	OGN_REG_COMPONENT(SphereColliderComponent)
-	OGN_REG_COMPONENT(CapsuleColliderComponent)
 
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)

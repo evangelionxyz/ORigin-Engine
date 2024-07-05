@@ -7,7 +7,19 @@ project "Runtime"
     staticruntime "off"
     kind "ConsoleApp"
 
-    links "ORigin"
+    links {
+        "ORigin",
+        "assimp",
+        "Box2D",
+        "origin-glfw",
+        "glad",
+        "ImGui",
+        "Optick",
+        "msdf-atlas-gen",
+        "msdfgen",
+        "freetype",
+        "yaml-cpp",
+    }
 
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
     objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
@@ -32,7 +44,6 @@ project "Runtime"
         "%{IncludeDir.GLM}",
         "%{IncludeDir.YAML_CPP}",
         "%{IncludeDir.OPTICK}",
-        "%{IncludeDir.PhysX}",
         "%{IncludeDir.JoltPhysics}",
         "%{IncludeDir.msdfgen}",
         "%{IncludeDir.msdf_atlas_gen}",
@@ -45,6 +56,10 @@ project "Runtime"
 
     filter "system:linux"
         pic "On"
+        links {
+            "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
+            "monosgen-2.0", "pthread", "dl", "m", "rt"
+        }
 
     filter "system:windows"
         systemversion "latest"
@@ -56,7 +71,6 @@ project "Runtime"
         runtime "Debug"
         symbols "On"
         defines {
-            "PHYSX_CXX_FLAGS_DEBUG",
             "OGN_DEBUG", "_DEBUG"
         }
 
@@ -64,7 +78,6 @@ project "Runtime"
         optimize "On"
         runtime "Release"
         defines {
-            "PX_PHYSX_STATIC_LIB",
             "OGN_RELEASE", "NDEBUG"
         }
 
@@ -72,6 +85,5 @@ project "Runtime"
         optimize "On"
         runtime "Release"
         defines {
-            "PX_PHYSX_STATIC_LIB",
             "OGN_RELEASE", "NDEBUG"
         }

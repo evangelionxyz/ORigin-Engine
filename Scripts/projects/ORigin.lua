@@ -37,7 +37,6 @@ project "ORigin"
         "%{IncludeDir.GLM}",
         "%{IncludeDir.Miniaudio}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.MONO}",
         "%{IncludeDir.FILEWATCHER}",
         "%{IncludeDir.OPTICK}",
         "%{IncludeDir.YAML_CPP}",
@@ -45,7 +44,8 @@ project "ORigin"
         "%{IncludeDir.PhysX}",
         "%{IncludeDir.JoltPhysics}",
         "%{IncludeDir.msdfgen}",
-        "%{IncludeDir.msdf_atlas_gen}"
+        "%{IncludeDir.msdf_atlas_gen}",
+        "%{IncludeDir.MONO}"
     }
 
     links {
@@ -57,19 +57,10 @@ project "ORigin"
         "Optick",
         "msdf-atlas-gen",
         "msdfgen",
+        "freetype",
         "yaml-cpp",
-
-        "PhysX",
-        "PhysXCommon",
-        "PhysXCooking",
-        "PhysXExtensions",
-        "PhysXFoundation",
-        "PhysXPvdSDK",
-        "PhysXVehicle",
-        "PhysXTask",
-        "PhysXCharacterKinematic",
     }
-
+    
     defines {
         "GLFW_INCLUDE_NONE",
         "_CRT_SECURE_NO_WARNINGS"
@@ -83,7 +74,7 @@ project "ORigin"
         "%{prj.location}/sources/Platform/DX11/**.cpp",
         "%{prj.location}/sources/Platform/Win32/**.cpp",
     }
-    includedirs { "%{IncludeDir.WindowsVulkanSDK}", }
+    includedirs { "%{IncludeDir.WindowsVulkanSDK}" }
 
     defines {
         "OGN_PLATFORM_WINDOWS",
@@ -133,20 +124,17 @@ project "ORigin"
     -- Linux
     filter "system:linux"
         pic "On"
-        files { "%{prj.location}/sources/Platform/Unix/**.cpp" }
-        includedirs { "%{IncludeDir.LinuxVulkanSDK}" }
-        defines { "OGN_PLATFORM_LINUX", }
-
-        links {
-            "%{Library.LinuxMONO}",
+        files { "%{prj.location}/sources/Platform/Linux/**.cpp" }
+        includedirs { 
+            "%{IncludeDir.LinuxVulkanSDK}"
         }
+        defines { "OGN_PLATFORM_LINUX" }
 
+        libdirs { "/usr/lib" }
         links {
             "GL",
-            "%{Library.LVulkan}",
-            "%{Library.LShaderC_Release}",
-            "%{Library.LSPIRV_Cross_Release}",
-            "%{Library.LSPIRV_Cross_GLSL_Release}",
+            "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
+            "monosgen-2.0", "pthread", "dl", "m", "rt", "glib-2.0"
         }
 
         filter "configurations:Debug"

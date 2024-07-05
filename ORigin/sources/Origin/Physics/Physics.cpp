@@ -1,9 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
-
 #include "Physics.h"
-#include "PhysXAPI.h"
 
 namespace origin {
 
@@ -16,10 +13,6 @@ namespace origin {
 		switch (PhysicsAPI::Current())
 		{
 		case PhysicsAPIType::Jolt: break;
-		case PhysicsAPIType::PhysX: 
-			m_PhysicsAPI = std::make_unique<PhysXAPI>();
-			m_PhysicsAPI->Init();
-			break;
 		case PhysicsAPIType::None: break;
 		}
 	}
@@ -34,9 +27,6 @@ namespace origin {
 		switch (PhysicsAPI::Current())
 		{
 		case PhysicsAPIType::Jolt: break;
-		case PhysicsAPIType::PhysX:
-			m_PhysicsAPI->Shutdown();
-			break;
 		case PhysicsAPIType::None: break;
 		}
 	}

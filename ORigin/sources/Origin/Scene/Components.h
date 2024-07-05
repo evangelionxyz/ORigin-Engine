@@ -30,9 +30,6 @@ namespace origin
 	class SpriteAnimation;
 	class ScriptableEntity;
 	class RigidbodyComponent;
-	class BoxColliderComponent;
-	class SphereColliderComponent;
-	class CapsuleColliderComponent;
 
 	class IDComponent
 	{
@@ -548,7 +545,5 @@ namespace origin
 		UIComponent, SpriteAnimationComponent, AudioComponent, AudioListenerComponent, LightComponent,
 		SpriteRenderer2DComponent, StaticMeshComponent, ModelComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
-		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent,
-		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent
-	>;
+		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent>;
 }

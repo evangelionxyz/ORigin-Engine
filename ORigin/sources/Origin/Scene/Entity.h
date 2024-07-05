@@ -3,9 +3,8 @@
 #pragma once
 #include "entt/entt.hpp"
 #include "box2d/b2_contact.h"
-
+#include "Scene.h"
 #include "Components.h"
-#include "Origin/Physics/ColliderComponent.h"
 
 namespace origin {
 

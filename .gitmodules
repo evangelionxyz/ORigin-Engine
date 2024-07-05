@@ -32,6 +32,3 @@
 	path = ORigin/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "Origin/vendor/PhysX"]
-	path = ORigin/vendor/PhysX
-	url = https://github.com/NVIDIA-Omniverse/PhysX.git
