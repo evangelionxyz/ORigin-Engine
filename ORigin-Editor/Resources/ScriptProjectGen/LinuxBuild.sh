@@ -12,11 +12,8 @@ fi
 
 # Push the script directory to the stack
 pushd "$script_dir" > /dev/null
-
-# Run the premake5 command
 "$engine_path/Scripts/premake/premake5" gmake
-
-# Pop the directory from the stack
+make
 popd > /dev/null
 
 set -x

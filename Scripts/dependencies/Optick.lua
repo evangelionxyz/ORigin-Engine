@@ -1,8 +1,8 @@
 -- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 project "Optick"
-  location (vendorProjectFiles)
-  kind "StaticLib"
+	location (vendorProjectFiles)
+	kind "StaticLib"
 	language "C++"
 	cppdialect "C++20"
 	staticruntime "off"
@@ -10,14 +10,12 @@ project "Optick"
 	targetdir (vendorOutputdir)
 	objdir (vendorIntOutputdir)
 
-   files
-	{
+	files {
 		"%{wks.location}/ORigin/vendor/Optick/src/**.h",
 		"%{wks.location}/ORigin/vendor/Optick/src/**.cpp",
 	}
 
-	includedirs
-	{
+	includedirs{
 		"%{wks.location}/ORigin/vendor/Optick/src",
 		"%{IncludeDir.VulkanSDK}",
 	}

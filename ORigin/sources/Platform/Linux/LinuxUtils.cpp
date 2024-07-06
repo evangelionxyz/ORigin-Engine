@@ -21,7 +21,7 @@ namespace origin
         {
             result += buffer.data();
         }
-        // Remove the trailing newline character
+
         if (!result.empty() && result[result.length() - 1] == '\n') 
         {
             result.erase(result.length() - 1);

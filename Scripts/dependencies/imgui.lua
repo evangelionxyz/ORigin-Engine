@@ -42,10 +42,10 @@ project "ImGui"
       "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_win32.cpp",
     }
 
-	filter "configurations:Debug"
-		runtime "Debug"
-		symbols "on"
+  filter "configurations:Debug"
+    runtime "Debug"
+    symbols "on"
 
-	filter "configurations:Release"
-		runtime "Release"
-		optimize "on"
+  filter "configurations:Release"
+    runtime "Release"
+    optimize "on"

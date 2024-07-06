@@ -11,8 +11,10 @@ import platform
 if platform.system() == "Windows":
     import winreg
 
+
 from zipfile import ZipFile
 
+# Windows
 def FindVisualStudioPath(vswhere_path):
     try:
         result = subprocess.run([vswhere_path, '-products', '*', '-latest', '-format', 'json'], capture_output=True, text=True)
@@ -28,32 +30,73 @@ def FindVisualStudioPath(vswhere_path):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def SetSystemEnvironmentVariable(variable_name, directory_path):
+def SetWindowsSystemEnvironmentVariable(variable_name, directory_path):
     key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment", 0, winreg.KEY_SET_VALUE)
     winreg.SetValueEx(key, variable_name, 0, winreg.REG_EXPAND_SZ, directory_path)
     winreg.CloseKey(key)
 
-def GetSystemEnvironmentVariable(name):
+def GetWindowsSystemEnvironmentVariable(name):
     key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, r"System\CurrentControlSet\Control\Session Manage\Environment")
     try:
         return winreg.QueryValueEx(key, name)[0]
     except:
         return None
 
-def GetUserEnvironmentVariable(name):
+def GetWindowsUserEnvironmentVariable(name):
     key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r"Environment")
     try:
         return winreg.QueryValueEx(key, name)[0]
     except:
         return None
     
-def AddNewSystemPathEnvironment(new_path):
+def AddNewWindowsSystemPathEnvironment(new_path):
     current_path = current_path = os.environ.get('PATH', '')
     if new_path not in current_path:
         new_path = f'{current_path};{new_path}'
-        SetSystemEnvironmentVariable("Path", new_path)
+        SetWindowsSystemEnvironmentVariable("Path", new_path)
         
     return new_path not in current_path
+# !Windows
+
+# Linux
+def SetLinuxSystemEnvironmentVariable(variable_name, directory_path):
+    os.environ[variable_name] = directory_path
+
+    with open('/etc/environment', 'a') as file:
+        file.write(f'\n{variable_name}="{directory_path}"\n')
+
+
+def GetLinuxSystemEnviromentVariable(name):
+    value = os.environ.get(name)
+    if value is not None:
+        return True
+    
+    try:
+        with open('/etc/environment', 'r') as file:
+            for line in file:
+                if line.startswith(f'{name}='):
+                    return line.split('=', 1)[1].strip().strip('"')
+    except FileNotFoundError:
+        pass
+
+    return None
+
+def GetLinuxUserEnvironmentVariable(name):
+    return os.environ.get(name)
+
+def AddNeLinuxSystemPathEnvironment(new_path):
+    current_path = os.environ.get('PATH', '')
+    if new_path not in current_path.split(':'):
+        new_path = f'{current_path}:{new_path}'
+
+        os.environ['PATH'] = new_path
+
+        with open('/etc/environment', 'a') as file:
+            file.write(f'\nPATH="{new_path}"\n')
+
+        return True
+    return False
+# !Linux
 
 
 def DownloadFile(url, filepath):

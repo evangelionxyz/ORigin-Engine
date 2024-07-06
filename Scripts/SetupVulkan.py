@@ -12,42 +12,42 @@ class VulkanConfiguration:
     @classmethod
     def Validate(cls):
         if not cls.CheckVulkanSDK():
-            print("Vulkan SDK not installed correctly.")
+            print(">> Vulkan SDK not installed correctly.")
             return
 
         if not cls.CheckVulkanSDKDebugLibs():
-            print("\nNo Vulkan SDK debug libs found. Install Vulkan SDK with debug libs.")
-            print("Debug configuration disabled.")
+            print(">> No Vulkan SDK debug libs found. Install Vulkan SDK with debug libs.")
+            print(">> Debug configuration disabled.")
 
     @classmethod
     def CheckVulkanSDK(cls):
         if platform.system() == "Windows":
             vulkanSDK = os.environ.get("VULKAN_SDK")
             if vulkanSDK is None:
-                print("\nYou don't have the Vulkan SDK installed!")
+                print(">> You don't have the Vulkan SDK installed!")
                 cls.__InstallVulkanSDK()
                 return False
             else:
-                print(f"\nLocated Vulkan SDK at {vulkanSDK}")
+                print(f">> Located Vulkan SDK at {vulkanSDK}")
                 if (cls.requiredVulkanVersion not in vulkanSDK):
-                    print(f"You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
+                    print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
                     cls.__InstallVulkanSDK()
                     return False
         elif platform.system() == "Linux":
             vulkanSDK = os.path.abspath(f"ORigin/vendor/VulkanSDK/{cls.installVulkanVersion}/vulkansdk")
             if not os.path.exists(vulkanSDK):
-                print("\nYou don't have the Vulkan SDK installed!")
+                print(">> You don't have the Vulkan SDK installed!")
                 cls.__InstallVulkanSDK()
                 return False
             else:
-                print(f"\nLocated Vulkan SDK at {vulkanSDK}")
+                print(f">> Located Vulkan SDK at {vulkanSDK}")
                 if (cls.requiredVulkanVersion not in vulkanSDK):
-                    print(f"You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
+                    print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
                     cls.__InstallVulkanSDK()
                     return False
 
 
-        print(f"Correct Vulkan SDK located at {vulkanSDK}")
+        print(f">> Correct Vulkan SDK located at {vulkanSDK}")
         return True
 
     @classmethod
@@ -67,7 +67,7 @@ class VulkanConfiguration:
         if not os.path.exists(vulkanDownloadFilepath):
             permissionGranted = False
             while not permissionGranted:
-                reply = str(input("Would you like to install VulkanSDK {0:s}? [Y/N]: ".format(cls.installVulkanVersion))).lower().strip()[:1]
+                reply = str(input(">> Would you like to install VulkanSDK {0:s}? [Y/N]: ".format(cls.installVulkanVersion))).lower().strip()[:1]
                 if reply == 'n':
                     return
                 permissionGranted = (reply == 'y')
@@ -76,17 +76,17 @@ class VulkanConfiguration:
             print("Please Wait...")
             Utils.DownloadFile(vulkanInstallURL, vulkanDownloadFilepath)
         else:
-            print("Vulkan already downloaded.")
+            print(">> Vulkan already downloaded.")
 
         # execute
         if platform.system() == "Windows":
-            print("Running Vulkan SDK installer...")
+            print(">> Running Vulkan SDK installer...")
             os.startfile(os.path.abspath(vulkanDownloadFilepath))
-            print("Re-run this script after installation!")
+            print(">> Re-run this script after installation!")
             
         elif platform.system() == "Linux":
             Utils.ExtractArchiveFile(vulkanDownloadFilepath, deleteArchiveFile = False)
-            print("Re-run this script after completely extracted !")
+            print(">> Re-run this script after completely extracted !")
             
         quit()
 

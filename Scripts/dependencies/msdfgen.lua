@@ -7,10 +7,13 @@ project "msdfgen"
 	cppdialect "c++11"
 	staticruntime "off"
 
+	links "freetype"
+
 	targetdir (vendorOutputdir)
 	objdir (vendorIntOutputdir)
 
 	files {
+		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Contour.cpp",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/contour-combiners.cpp",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/edge-coloring.cpp",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/EdgeHolder.cpp",
@@ -45,14 +48,6 @@ project "msdfgen"
 	}
 
 	defines { "MSDF_USE_CPP11" }
-
-	links "freetype"
-
-	filter "system:linux"
-		pic "On"
-
-	filter "system:windows"
-		systemversion "latest"
 
 	filter "configurations:Debug"
 		runtime "Debug"

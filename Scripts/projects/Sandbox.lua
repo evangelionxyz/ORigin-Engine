@@ -66,12 +66,13 @@ project "Sandbox"
         systemversion "latest"
         defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
 
-    -- //////////////////////////////
+   -- //////////////////////////////
     -- Default
     filter "configurations:Debug"
         runtime "Debug"
         symbols "On"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_DEBUG", "_DEBUG"
         }
 
@@ -79,6 +80,7 @@ project "Sandbox"
         optimize "On"
         runtime "Release"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }
 
@@ -86,5 +88,6 @@ project "Sandbox"
         optimize "On"
         runtime "Release"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }

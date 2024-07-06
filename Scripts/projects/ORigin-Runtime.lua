@@ -7,6 +7,9 @@ project "Runtime"
     staticruntime "off"
     kind "ConsoleApp"
 
+    targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
+    objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
+
     links {
         "ORigin",
         "assimp",
@@ -20,9 +23,6 @@ project "Runtime"
         "freetype",
         "yaml-cpp",
     }
-
-    targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
-    objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
     files {
         "%{prj.location}/sources/**.h",
@@ -65,12 +65,13 @@ project "Runtime"
         systemversion "latest"
         defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
 
-    -- //////////////////////////////
+   -- //////////////////////////////
     -- Default
     filter "configurations:Debug"
         runtime "Debug"
         symbols "On"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_DEBUG", "_DEBUG"
         }
 
@@ -78,6 +79,7 @@ project "Runtime"
         optimize "On"
         runtime "Release"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }
 
@@ -85,5 +87,6 @@ project "Runtime"
         optimize "On"
         runtime "Release"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }

@@ -505,11 +505,24 @@ namespace origin
 		out << YAML::EndMap; // !Entity
 	}
 
-	void SceneSerializer::Serialize(const std::filesystem::path& filepath)
+	void SceneSerializer::Serialize(const std::filesystem::path &path)
 	{
+		std::string filepath = path.string();
+		size_t pos = filepath.find_last_of(".");
+		if (pos != std::string::npos)
+		{
+			std::string extension = filepath.substr(pos);
+			if (extension == ".org")
+			{
+				filepath.erase(pos);
+			}
+		}
+
+		filepath += ".org";
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << filepath.filename().string();
+		out << YAML::Key << "Scene" << YAML::Value << path.filename();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		auto view = m_Scene->m_Registry.view<IDComponent>();
@@ -525,11 +538,10 @@ namespace origin
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(filepath.generic_string());
+		std::ofstream fout(filepath);
 		fout << out.c_str();
 		fout.close();
-
-		OGN_CORE_INFO("[SeceneSerializer] Scene Serialized in {0}", filepath.generic_string());
+		OGN_CORE_INFO("[SeceneSerializer] Scene Serialized in {0}", filepath);
 	}
 
 	void SceneSerializer::SerializeRuntime(const std::filesystem::path& filepath)

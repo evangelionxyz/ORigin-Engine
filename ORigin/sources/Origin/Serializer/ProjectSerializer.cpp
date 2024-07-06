@@ -22,7 +22,6 @@ namespace origin
 		OGN_PROFILER_FUNCTION();
 
 		const auto& config = m_Project->GetConfig();
-
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		{
@@ -51,9 +50,12 @@ namespace origin
 		fout << out.c_str();
 
 		// Serialized the updated AssetRegistry
-		if(m_Project->GetAssetManager() != nullptr)
+		if(m_Project->GetAssetManager())
+		{
 			m_Project->GetEditorAssetManager()->SerializeAssetRegistry();
+		}
 
+		OGN_CORE_INFO("[ProjectSerialzier] Project serialized in {0}", filepath.string());
 		return true;
 	}
 

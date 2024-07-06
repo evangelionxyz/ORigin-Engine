@@ -305,18 +305,19 @@ namespace origin
 	void ScriptEngine::InitMono()
 	{
 		OGN_PROFILER_LOGIC();
-
-#ifdef OGN_PLATFORM_WINDOWS
-		mono_set_assemblies_path("lib");
-#elif OGN_PLATFORM_LINUX
-		mono_set_assemblies_path("/usr/lib");
+#ifdef _WIN32
+    	mono_set_assemblies_path("lib");
+#elif __linux__
+    	mono_set_assemblies_path("/usr/lib");
+		mono_set_dirs("/usr/lib", "/etc/mono");
+		setenv("LD_LIBRARY_PATH", "/usr/lib", 1);
 #endif
-
 		MonoDomain *rootDomain = mono_jit_init("ORiginJITRuntime");
 		OGN_CORE_ASSERT(rootDomain, "[ScriptEngine] Mono Domain is NULL!");
-
 		s_ScriptEngineData->RootDomain = rootDomain;
-		OGN_CORE_INFO("[ScriptEngine]: MONO Initialized");
+		OGN_CORE_INFO("[ScriptEngine] MONO Initialized");
+		const char *mono_version = mono_get_runtime_build_info();
+		OGN_CORE_INFO("[ScriptEngine] MONO Version: {0}", mono_version);
 	}
 
 	void ScriptEngine::ShutdownMono()
@@ -335,7 +336,7 @@ namespace origin
 		mono_jit_cleanup(s_ScriptEngineData->RootDomain);
 		s_ScriptEngineData->RootDomain = nullptr;
 
-		OGN_CORE_INFO("MONO: Shutdown");
+		OGN_CORE_INFO("[Script Engine] Mono  Shutdown");
 	}
 
 	void ScriptEngine::Init()
@@ -358,6 +359,7 @@ namespace origin
 		ScriptGlue::RegisterFunctions();
 
 		// Script Core Assembly
+		OGN_CORE_ASSERT(std::filesystem::exists("Resources/ScriptCore/ORigin-ScriptCore.dll"), "[ScriptEngine] Script core assembly not found!");
 		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
 		LoadAppAssembly(appAssemblyPath);
 		LoadAssemblyClasses();
@@ -433,7 +435,7 @@ namespace origin
 		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		if (!s_ScriptEngineData->AppAssembly)
 		{
-			OGN_CORE_ASSERT(false, "[ScriptEngine] App Assembly is empty");
+			OGN_CORE_ASSERT(false, "[ScriptEngine] App Assembly is empty {0}", filepath);
 			return false;
 		}
 
@@ -451,7 +453,6 @@ namespace origin
 		mono_domain_set(mono_get_root_domain(), false);
 
 		mono_domain_unload(s_ScriptEngineData->AppDomain);
-
 		LoadAssembly(s_ScriptEngineData->CoreAssemblyFilepath);
 
 		if (LoadAppAssembly(s_ScriptEngineData->AppAssemblyFilepath))
@@ -490,8 +491,11 @@ namespace origin
 	bool ScriptEngine::EntityClassExists(const std::string &fullClassName)
 	{
 		OGN_PROFILER_LOGIC();
-
-		return s_ScriptEngineData->EntityClasses.find(fullClassName) != s_ScriptEngineData->EntityClasses.end();
+		if(s_ScriptEngineData)
+		{
+			return s_ScriptEngineData->EntityClasses.find(fullClassName) != s_ScriptEngineData->EntityClasses.end();
+		}
+		return false;		
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)

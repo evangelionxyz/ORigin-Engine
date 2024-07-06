@@ -55,16 +55,11 @@ project "freetype"
         "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/src/winfonts/winfnt.c"
     }
 
-    includedirs {
-        "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include"
-    }
-
+    includedirs { "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include"}
     defines { "FT2_BUILD_LIBRARY" }
-
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"
-
     filter "configurations:Release"
         runtime "Release"
         optimize "on"

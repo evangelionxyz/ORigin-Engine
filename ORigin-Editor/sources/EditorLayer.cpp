@@ -364,20 +364,18 @@ namespace origin {
 
 	  return false;
   }
-
-  void EditorLayer::NewScene()
-  {
+	
+	void EditorLayer::NewScene()
+	{
 		OGN_PROFILER_SCENE();
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+			OnSceneStop();
 
-	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
-		  OnSceneStop();
-
-	  m_EditorScene = std::make_shared<Scene>();
-	  m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
-
-	  m_ActiveScene = m_EditorScene;
-	  m_ScenePath = std::filesystem::path();
-  }
+		m_EditorScene = std::make_shared<Scene>();
+		m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
+		m_ActiveScene = m_EditorScene;
+		m_ScenePath = std::filesystem::path();
+	}
 
   void EditorLayer::SaveScene()
   {
@@ -394,21 +392,24 @@ namespace origin {
 	  Project::GetActive()->GetEditorAssetManager()->SerializeAssetRegistry();
   }
 
-  void EditorLayer::SaveSceneAs()
-  {
+	void EditorLayer::SaveSceneAs()
+	{
 		OGN_PROFILER_SCENE();
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+			OnSceneStop();
+	#ifdef _WIN32
+		std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Scene (*.org)\0*.org\0");
+	#elif __linux__
+		std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Scene | *.org");
+	#endif
 
-	  if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
-		  OnSceneStop();
-
-	  std::filesystem::path filepath = FileDialogs::SaveFile("ORigin Scene (*.org,*.origin)\0*.org\0");
-
-	  if (!filepath.empty())
-	  {
-		  SerializeScene(m_ActiveScene, filepath);
-		  m_ScenePath = filepath;
-	  }
-  }
+		if (!filepath.empty())
+		{
+		OGN_CORE_INFO("[Scene Scene As]{0}", filepath);
+		SerializeScene(m_ActiveScene, filepath);
+		m_ScenePath = filepath;
+		}
+	}
 
   void EditorLayer::OpenScene(AssetHandle handle)
   {
@@ -424,7 +425,7 @@ namespace origin {
 		  OnSceneStop();
 
 		auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
-	  std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+	  	std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
 		std::string name = metadata.Filepath.stem().string();
 		readOnlyScene->SetName(name);
 
@@ -447,49 +448,56 @@ namespace origin {
 		}
 
 		m_UIEditor->SetContext(m_ActiveScene.get());
-  }
+  	}
 
-  void EditorLayer::OpenScene()
-  {
+  	void EditorLayer::OpenScene()
+	{
 		OGN_PROFILER_SCENE();
 
-	  if (m_SceneState == SceneState::Play)
-		  OnSceneStop();
+	  	if (m_SceneState == SceneState::Play)
+			OnSceneStop();
 
-	  std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene (*.org,*.origin)\0*.org\0");
-	  AssetHandle handle = SceneImporter::OpenScene(filepath);
+#ifdef _WIN32
+	  	std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene (*.org)\0*.org\0");
+#elif __linux__
+		std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Scene | *.org");
+#endif
+
+	  	if(filepath.empty())
+	  	return;
+
+	  	AssetHandle handle = SceneImporter::OpenScene(filepath);
 		if (handle == 0 || filepath.empty())
 		  return;
 
-	  std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+	  	std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
 		std::string name = filepath.stem().string();
 		readOnlyScene->SetName(name);
 
-	  if (!readOnlyScene)
-	  {
+	  	if (!readOnlyScene)
+	  	{
 			OGN_CORE_ERROR("[EditorLayer] Invalid Scene");
-		  return;
-	  }
+			return;
+	  	}
 
-	  m_HoveredEntity = {};
-	  m_EditorScene = Scene::Copy(readOnlyScene);
-	  m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
-	  m_ActiveScene = m_EditorScene;
+		m_HoveredEntity = {};
+		m_EditorScene = Scene::Copy(readOnlyScene);
+		m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
+		m_ActiveScene = m_EditorScene;
 
-	  m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+		m_ScenePath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
 		if (!m_UIEditor)
 			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
 
 		m_UIEditor->SetContext(m_ActiveScene.get());
-  }
+  	}
 
-  void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path &filepath)
-  {
+	void EditorLayer::SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path &filepath)
+	{
 		OGN_PROFILER_SCENE();
-
-    SceneImporter::SaveScene(scene, filepath);
-  }
+		SceneImporter::SaveScene(scene, filepath);
+	}
 
 	void EditorLayer::MenuBar()
 	{

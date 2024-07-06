@@ -430,7 +430,6 @@ namespace origin
 
 		ScriptEngine::SetSceneContext(this);
 		const auto &scriptView = m_Registry.view<ScriptComponent>();
-
 		for (auto e : scriptView)
 		{
 			Entity entity = { e, this };

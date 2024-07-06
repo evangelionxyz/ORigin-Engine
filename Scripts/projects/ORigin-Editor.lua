@@ -21,7 +21,7 @@ project "Editor"
         "msdf-atlas-gen",
         "msdfgen",
         "freetype",
-        "yaml-cpp",
+        "yaml-cpp"
     }
 
     files {
@@ -55,8 +55,13 @@ project "Editor"
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
 
+    filter "system:windows"
+        systemversion "latest"
+        defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
+
     filter "system:linux"
         pic "On"
+        libdirs { "/usr/lib" }
         links {
             "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
             "monosgen-2.0", "pthread", "dl", "m", "rt"
@@ -66,24 +71,21 @@ project "Editor"
             "GLFW_INCLUDE_VULKAN"
         }
 
-    filter "system:windows"
-        systemversion "latest"
-        defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
-
     -- //////////////////////////////
     -- Default
     filter "configurations:Debug"
         runtime "Debug"
         symbols "On"
         defines {
-            "OGN_DEBUG", "_DEBUG",
-            "GLFW_INCLUDE_NONE"
+            "GLFW_INCLUDE_NONE",
+            "OGN_DEBUG", "_DEBUG"
         }
 
     filter "configurations:Release"
         optimize "On"
         runtime "Release"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }
 
@@ -91,5 +93,6 @@ project "Editor"
         optimize "On"
         runtime "Release"
         defines {
+            "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }

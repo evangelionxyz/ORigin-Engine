@@ -46,9 +46,10 @@ namespace origin
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
 		OGN_PROFILER_RENDERING();
-
-		OpenGLVertexArray::Unbind();
-		glDeleteVertexArrays(1, &m_RendererID);
+		if(m_RendererID)
+		{
+			glDeleteVertexArrays(1, &m_RendererID);
+		}
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
@@ -138,7 +139,6 @@ namespace origin
 	void OpenGLVertexArray::Unbind() const
 	{
 		OGN_PROFILER_RENDERING();
-
-		glBindVertexArray(0);
+		glBindVertexArray(NULL);
 	}
 }

@@ -388,7 +388,7 @@ namespace origin {
 
 	void Renderer3D::Shutdown()
 	{
-		delete s_Render3DData.CubeVertexBufferBase;
+		delete[] s_Render3DData.CubeVertexBufferBase;
 	}
 
 	void Renderer3D::NextBatch()

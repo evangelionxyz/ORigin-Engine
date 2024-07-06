@@ -224,6 +224,7 @@ namespace origin {
 
 		Renderer3D::End();
 #endif
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 	void Gizmos::DrawIcons(const EditorCamera &camera)

@@ -13,16 +13,20 @@ VulkanRequirements.Validate()
 from SetupPremake import PremakeConfiguration as PremakeRequirements
 premakeInstalled = PremakeRequirements.Validate()
 
-print("\nUpdating submodules...")
+print(">> Updating submodules...")
 subprocess.call(["git", "submodule", "update", "--init", "--recursive"])
 
-def RegisterEngineVariable():
+def RegisterEngineEnvVariable():
     variable_name = "ORiginEngine"
+    variable_path = os.getcwd()
     if os.environ.get(variable_name) is None:
-      print("Registering Origin Engine path...")
-      variable_path = os.getcwd()
-      Utils.SetSystemEnvironmentVariable(variable_name, variable_path)
-      print(f"Engine path is registered to {variable_path} as {variable_name}")
+        print(">> Registering Origin Engine path...")
+        if platform.system() == "Windows":
+            Utils.SetWindowsSystemEnvironmentVariable(variable_name, variable_path)
+        elif platform.system() == "Linux":
+            Utils.SetLinuxSystemEnvironmentVariable(variable_name, variable_path)
+
+    print(f">> Engine path is registered to {variable_path} as {variable_name}")
 
 
 # Windows Only
@@ -34,26 +38,26 @@ def RegisterMSBuild():
 
     visual_studio_path = Utils.FindVisualStudioPath("vswherePath")
     variable_path = f"{visual_studio_path}\\MSBuild\\Current\\Bin"
-    if Utils.AddNewSystemPathEnvironment(variable_path):
-        print(f"MSBuild path is registered to {variable_path}")
+    if Utils.AddNewWindowsSystemPathEnvironment(variable_path):
+        print(f">> MSBuild path is registered to {variable_path}")
 
 
 if premakeInstalled:
+    RegisterEngineEnvVariable()
     if platform.system() == "Windows":
-        print("\nGenerating OR1.sln...")
+        print("\n>> Generating OR1.sln...")
         premake_path = os.path.abspath("./Scripts/premake5.bat")
         subprocess.call([premake_path, "nopause"])
-        RegisterEngineVariable()
         RegisterMSBuild()
 
     elif platform.system() == "Linux":
-        print("\nGenerating GNU Makefiles...")
+        print("\n>> Generating GNU Makefiles...")
         premake_path = os.path.abspath("./Scripts/premake5.sh")
         os.chmod(premake_path, 0o755)
         subprocess.call([premake_path])
     else:
-        print("Unsupported platform.")
+        print(">> Unsupported platform.")
 
-    print("Setup Completed!")
+    print(">> Setup Completed!")
 else:
-    print("ORigin requires Premake to generate project file.")
+    print(">> ORigin requires Premake to generate project file.")

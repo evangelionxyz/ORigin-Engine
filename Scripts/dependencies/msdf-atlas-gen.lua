@@ -5,24 +5,18 @@ project "msdf-atlas-gen"
 	cppdialect "c++17"
 	staticruntime "off"
 
+	links "msdfgen"
+
 	targetdir (vendorOutputdir)
 	objdir (vendorIntOutputdir)
 
-	files {
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen/**.cpp",
-	}
+	files { "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen/**.cpp" }
 
 	includedirs {
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen",
 		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/include"
 	}
-
-	defines {
-		"_CRT_SECURE_NO_WARNINGS"
-	}
-
-	links "msdfgen"
 
 	filter "configurations:Debug"
 		runtime "Debug"

@@ -14,12 +14,15 @@
 
 #include <mono/metadata/object.h>
 #include <mono/metadata/reflection.h>
-
 #include <box2d/b2_body.h>
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
 #include <box2d/b2_circle_shape.h>
+
+#ifdef __linux
+	#include <cxxabi.h>
+#endif
 
 namespace origin
 {
@@ -1358,23 +1361,42 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		([]()
-		 {
-			 std::string_view typeName = typeid(Component).name();
-			 size_t pos = typeName.find_last_of(':');
-			 std::string_view structName = typeName.substr(pos + 1);
-			 std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
+		{
+			std::string_view typeName = typeid(Component).name();
+			
+#if defined(__GNUG__)
+			int status = 0;
+			char* demangledName = abi::__cxa_demangle(typeName.data(), nullptr, nullptr, &status);
+			if (status == 0 && demangledName != nullptr)
+			{
+				typeName = demangledName;
+			}
+			else
+			{
+				OGN_CORE_ERROR("Could not demangle type name: {}", typeName);
+				return;
+			}
+#endif
 
-			 MonoType *managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
-			 if (!managedType)
-			 {
-				 OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
-				 return;
-			 }
+			size_t pos = typeName.find_last_of(':');
+			std::string_view structName = (pos == std::string_view::npos) ? typeName : typeName.substr(pos + 1);
+			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 
-			 s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
-			 s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
+			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
+			if (!managedType)
+			{
+				OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
+				return;
+			}
 
-		 }(), ...);
+			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
+			s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
+
+#if defined(__GNUG__)
+			free(demangledName);
+#endif
+
+		}(), ...);
 	}
 
 	template <typename... Component>

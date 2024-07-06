@@ -9,14 +9,8 @@ project "glad"
     targetdir (vendorOutputdir)
     objdir (vendorIntOutputdir)
 
-    files {
-        "%{wks.location}/ORigin/vendor/glad/src/glad.c"
-    }
-
-    includedirs {
-        "%{IncludeDir.GLAD}"
-    }
-
+    files { "%{wks.location}/ORigin/vendor/glad/src/glad.c"}
+    includedirs { "%{IncludeDir.GLAD}" }
     flags { 'NoPCH' }
 
     filter "system:linux"
