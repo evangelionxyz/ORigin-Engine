@@ -1,8 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "pch.h"
-#include "Origin\Core\Base.h"
+
+#include "Origin/Core/Base.h"
 
 namespace origin {
 

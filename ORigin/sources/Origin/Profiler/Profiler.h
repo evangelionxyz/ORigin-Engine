@@ -2,7 +2,7 @@
 
 #pragma once
 #include "optick.h"
-#include "Origin\Core\Time.h"
+#include "Origin/Core/Time.h"
 
 #include <vector>
 #include <chrono>
@@ -48,7 +48,8 @@ namespace origin
 		const char *m_Name;
 		bool m_Stopped = false;
 		Fn m_Func;
-		std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
+		std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTimePoint;
+		//std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
 	};
 
 

@@ -1,5 +1,5 @@
-#include "pch.h"
-#include "Origin\Renderer\Renderer.h"
+
+#include "Origin/Renderer/Renderer.h"
 #include "Lighting.h"
 
 namespace origin {

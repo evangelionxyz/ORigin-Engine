@@ -1,8 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Project\Project.h"
-#include "Origin\Renderer\Texture.h"
+#include "Origin/Project/Project.h"
+#include "Origin/Renderer/Texture.h"
 
 #include <queue>
 

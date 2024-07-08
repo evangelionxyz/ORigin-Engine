@@ -1,11 +1,13 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "OpenGLMesh.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/UniformBuffer.h"
 #include "Origin/Renderer/RenderCommand.h"
+
+#include "Origin/Profiler/Profiler.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 

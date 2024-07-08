@@ -1,16 +1,19 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Renderer.h"
 #include "RenderCommand.h"
 #include "ShaderLibrary.h"
 #include "Renderer2D.h"
 #include "Renderer3D.h"
 #include "MaterialLibrary.h"
-#include "Origin\Asset\AssetImporter.h"
+#include "Origin/Asset/AssetImporter.h"
 
-#include "Platform\OpenGL\OpenGLRendererAPI.h"
-#include "Platform\DX11\DX11RendererAPI.h"
+#ifdef OGN_PLATFORM_WINDOWS
+	#include "Platform/DX11/DX11RendererAPI.h"
+#endif
+
+#include "Platform/OpenGL/OpenGLRendererAPI.h"
 
 namespace origin {
 
@@ -37,7 +40,6 @@ namespace origin {
 		uint32_t whiteTextureData = 0xffffffff;
 		uint32_t blackTextureData = 0xff000000;
 
-
 		switch (RendererAPI::GetAPI())
 		{
 		default:
@@ -56,11 +58,13 @@ namespace origin {
 				Renderer3D::Init();
 			}
 			break;
+#ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11:
 			{
 				RenderCommand::s_RendererAPI = new DX11RendererAPI;
 				break;
 			}
+#endif
 		}
 
 		if (!RenderCommand::s_RendererAPI)

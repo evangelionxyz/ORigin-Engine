@@ -1,7 +1,7 @@
-#include "pch.h"
+
 #include "UIRenderer.h"
-#include "Origin\Renderer\Framebuffer.h"
-#include "Origin\Renderer\Renderer2D.h"
+#include "Origin/Renderer/Framebuffer.h"
+#include "Origin/Renderer/Renderer2D.h"
 
 namespace origin
 {
@@ -14,7 +14,7 @@ namespace origin
 
 		for (auto &ui : m_UIs)
 		{
-			ui.Framebuffer = Framebuffer::Create(spec);
+			ui.OFramebuffer = Framebuffer::Create(spec);
 		}
 
 		float vertices[] =
@@ -43,7 +43,7 @@ namespace origin
 	{
 		for (UIComponent &ui : m_UIs)
 		{
-			ui.Framebuffer->Resize(width, height);
+			ui.OFramebuffer->Resize(width, height);
 		}
 		m_Projection = glm::ortho(-orthoW, orthoW, -orthoH, orthoH, 0.0f, 2.0f);
 	}
@@ -58,7 +58,7 @@ namespace origin
 	{
 		for (auto &ui : m_UIs)
 		{
-			ui.Framebuffer->Bind();
+			ui.OFramebuffer->Bind();
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -75,7 +75,7 @@ namespace origin
 				}
 			}
 			Renderer2D::End();
-			ui.Framebuffer->Unbind();
+			ui.OFramebuffer->Unbind();
 		}
 	}
 
@@ -89,7 +89,7 @@ namespace origin
 			glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTextureUnit(0, ui.Framebuffer->GetColorAttachmentRendererID());
+			glBindTextureUnit(0, ui.OFramebuffer->GetColorAttachmentRendererID());
 			m_ScreenShader->SetInt("uScreenTexture", 0);
 			m_ScreenShader->SetMatrix("uViewProjection", glm::translate(glm::mat4(1.0f), {0.0f, 0.0f, 1.0f}));
 

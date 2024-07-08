@@ -140,7 +140,7 @@ namespace origin
 						std::string name = text->Name;
 
 						char buffer[256];
-						strcpy_s(buffer, sizeof(buffer), name.c_str());
+						strncpy(buffer, name.c_str(), sizeof(buffer));
 						if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 						{
 							std::string newName(buffer);
@@ -198,7 +198,7 @@ namespace origin
 						std::string name = sprite->Name;
 
 						char buffer[256];
-						strcpy_s(buffer, sizeof(buffer), name.c_str());
+						strncpy(buffer, name.c_str(), sizeof(buffer));
 						if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 						{
 							std::string newName(buffer);

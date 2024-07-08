@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\UniformBuffer.h"
+#include "Origin/Renderer/UniformBuffer.h"
 
 namespace origin
 {

@@ -1,7 +1,12 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include <GLFW\glfw3.h>
+
+#ifdef __linux__
+	#define _GLFW_X11
+#endif
+
+#include <GLFW/glfw3.h>
 #include "Event.h"
 
 #ifdef OGN_PLATFORM_WINDOWS

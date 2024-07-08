@@ -1,25 +1,25 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "SceneSerializer.h"
 
-#include "Origin\Asset\AssetImporter.h"
-#include "Origin\Scene\EntityManager.h"
-#include "Origin\Scene\Components.h"
-#include "Origin\Scene\Entity.h"
-#include "Origin\Scene\Lighting.h"
-#include "Origin\Scripting\ScriptEngine.h"
-#include "Origin\Project\Project.h"
-#include "Origin\Renderer\Model.h"
-#include "Origin\Renderer\Shader.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Audio\AudioSource.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\Serializer\Serializer.h"
+#include "Origin/Asset/AssetImporter.h"
+#include "Origin/Scene/EntityManager.h"
+#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Entity.h"
+#include "Origin/Scene/Lighting.h"
+#include "Origin/Scripting/ScriptEngine.h"
+#include "Origin/Project/Project.h"
+#include "Origin/Renderer/Model.h"
+#include "Origin/Renderer/Shader.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Audio/AudioSource.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Serializer/Serializer.h"
 
 #include <fstream>
-#include <yaml-cpp\yaml.h>
+#include <yaml-cpp/yaml.h>
 
 namespace origin
 {
@@ -314,89 +314,6 @@ namespace origin
 			out << YAML::EndMap; // !AudioListenerComponent
 		}
 
-#if 0
-		if (entity.HasComponent<StaticMeshComponent>())
-		{
-			out << YAML::Key << "StaticMeshComponent";
-			out << YAML::BeginMap; // StaticMeshComponent
-
-			const auto& sMesh = entity.GetComponent<StaticMeshComponent>();
-
-			if (sMesh.Handle != 0)
-			{
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(sMesh.Handle);
-				out << YAML::Key << "Mesh" << YAML::Value << sMesh.Handle;
-				out << YAML::Key << "Material" << YAML::Value << sMesh.MaterialHandle;
-			}
-			
-			out << YAML::EndMap; // !StaticMeshComponent
-		}
-#endif
-
-		if (entity.HasComponent<BoxColliderComponent>())
-		{
-			out << YAML::Key << "BoxColliderComponent";
-			out << YAML::BeginMap; // BoxColliderComponent
-			const auto& bc = entity.GetComponent<BoxColliderComponent>();
-			out << YAML::Key << "Size" << YAML::Value << bc.Size;
-			out << YAML::Key << "Offset" << YAML::Value << bc.Offset;
-			out << YAML::Key << "Restitution" << YAML::Value << bc.Restitution;
-			out << YAML::Key << "StaticFriction" << YAML::Value << bc.StaticFriction;
-			out << YAML::Key << "DynamicFriction" << YAML::Value << bc.DynamicFriction;
-
-			out << YAML::EndMap; // !BoxColliderComponent
-		}
-
-		if (entity.HasComponent<SphereColliderComponent>())
-		{
-			out << YAML::Key << "SphereColliderComponent";
-			out << YAML::BeginMap;
-			const auto& sc = entity.GetComponent<SphereColliderComponent>();
-			out << YAML::Key << "Radius" << sc.Radius;
-			out << YAML::Key << "Offset" << sc.Offset;
-			out << YAML::Key << "Restitution" << sc.Restitution;
-			out << YAML::Key << "StaticFriction" << YAML::Value << sc.StaticFriction;
-			out << YAML::Key << "DynamicFriction" << YAML::Value << sc.DynamicFriction;
-			out << YAML::EndMap;
-		}
-
-		if (entity.HasComponent<CapsuleColliderComponent>())
-		{
-			out << YAML::Key << "CapsuleColliderComponent";
-			out << YAML::BeginMap; // CapsuleColliderComponent
-			const auto& cc = entity.GetComponent<CapsuleColliderComponent>();
-			out << YAML::Key << "Radius" << YAML::Value << cc.Radius;
-			out << YAML::Key << "Height" << YAML::Value << cc.Height;
-			out << YAML::Key << "Offset" << YAML::Value << cc.Offset;
-			out << YAML::Key << "Restitution" << YAML::Value << cc.Restitution;
-			out << YAML::Key << "StaticFriction" << YAML::Value << cc.StaticFriction;
-			out << YAML::Key << "DynamicFriction" << YAML::Value << cc.DynamicFriction;
-
-			out << YAML::EndMap; // !CapsuleColliderComponent
-		}
-
-		if (entity.HasComponent<RigidbodyComponent>())
-		{
-			out << YAML::Key << "RigidbodyComponent";
-			out << YAML::BeginMap; // RigidbodyComponent
-			const auto& rigidbody = entity.GetComponent<RigidbodyComponent>();
-
-			out << YAML::Key << "Mass" << YAML::Value << rigidbody.Mass;
-			out << YAML::Key << "CenterMassPosition" << YAML::Value << rigidbody.CenterMassPosition;
-
-			out << YAML::Key << "UseGravity" << YAML::Value << rigidbody.UseGravity;
-			out << YAML::Key << "RotateX" << YAML::Value << rigidbody.RotateX;
-			out << YAML::Key << "RotateY" << YAML::Value << rigidbody.RotateY;
-			out << YAML::Key << "RotateZ" << YAML::Value << rigidbody.RotateZ;
-			out << YAML::Key << "MoveX" << YAML::Value << rigidbody.MoveX;
-			out << YAML::Key << "MoveY" << YAML::Value << rigidbody.MoveY;
-			out << YAML::Key << "MoveZ" << YAML::Value << rigidbody.MoveZ;
-			out << YAML::Key << "Kinematic" << YAML::Value << rigidbody.Kinematic;
-			out << YAML::Key << "RetainAcceleration" << YAML::Value << rigidbody.RetainAcceleration;
-
-			out << YAML::EndMap; // !Rigidbody
-		}
-
 		if (entity.HasComponent<TextComponent>())
 		{
 			out << YAML::Key << "TextComponent";
@@ -588,11 +505,24 @@ namespace origin
 		out << YAML::EndMap; // !Entity
 	}
 
-	void SceneSerializer::Serialize(const std::filesystem::path& filepath)
+	void SceneSerializer::Serialize(const std::filesystem::path &path)
 	{
+		std::string filepath = path.string();
+		size_t pos = filepath.find_last_of(".");
+		if (pos != std::string::npos)
+		{
+			std::string extension = filepath.substr(pos);
+			if (extension == ".org")
+			{
+				filepath.erase(pos);
+			}
+		}
+
+		filepath += ".org";
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << filepath.filename().string();
+		out << YAML::Key << "Scene" << YAML::Value << path.filename();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		auto view = m_Scene->m_Registry.view<IDComponent>();
@@ -608,11 +538,10 @@ namespace origin
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(filepath.generic_string());
+		std::ofstream fout(filepath);
 		fout << out.c_str();
 		fout.close();
-
-		OGN_CORE_INFO("[SeceneSerializer] Scene Serialized in {0}", filepath.generic_string());
+		OGN_CORE_INFO("[SeceneSerializer] Scene Serialized in {0}", filepath);
 	}
 
 	void SceneSerializer::SerializeRuntime(const std::filesystem::path& filepath)
@@ -892,71 +821,6 @@ namespace origin
 					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
 					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
-				}
-
-#if 0
-				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
-				{
-					auto& mc = deserializedEntity.AddComponent<StaticMeshComponent>();
-
-					if (staticMeshComponent["Mesh"])
-					{
-						mc.Handle = staticMeshComponent["Mesh"].as<uint64_t>();
-						mc.MaterialHandle = staticMeshComponent["Material"].as<uint64_t>();
-						std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mc.Handle);
-						std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(mc.MaterialHandle);
-						if (material)
-							model->SetMaterial(std::move(material));
-					}
-				}
-#endif
-
-				if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
-				{
-					BoxColliderComponent &boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
-					boxCollider.Size = boxColliderComponent["Size"].as<glm::vec3>();
-					boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
-					boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
-					boxCollider.StaticFriction = boxColliderComponent["StaticFriction"].as<float>();
-					boxCollider.DynamicFriction = boxColliderComponent["DynamicFriction"].as<float>();
-				}
-
-				if (YAML::Node sphereColliderComponent = entity["SphereColliderComponent"])
-				{
-					SphereColliderComponent &sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
-					sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
-					sphereCollider.Offset = sphereColliderComponent["Offset"].as<glm::vec3>();
-					sphereCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
-					sphereCollider.StaticFriction = sphereColliderComponent["StaticFriction"].as<float>();
-					sphereCollider.DynamicFriction = sphereColliderComponent["DynamicFriction"].as<float>();
-				}
-
-				if (YAML::Node capsueColliderComponent = entity["CapsuleColliderComponent"])
-				{
-					CapsuleColliderComponent &capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
-					capsuleCollider.Radius = capsueColliderComponent["Radius"].as<float>();
-					capsuleCollider.Height = capsueColliderComponent["Height"].as<float>();
-					capsuleCollider.Offset = capsueColliderComponent["Offset"].as<glm::vec3>();
-					capsuleCollider.Restitution = capsueColliderComponent["Restitution"].as<float>();
-					capsuleCollider.StaticFriction = capsueColliderComponent["StaticFriction"].as<float>();
-					capsuleCollider.DynamicFriction = capsueColliderComponent["DynamicFriction"].as<float>();
-				}
-
-				if (YAML::Node rigidbodyComponent = entity["RigidbodyComponent"])
-				{
-					RigidbodyComponent &rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
-					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
-					rigidbody.CenterMassPosition = rigidbodyComponent["CenterMassPosition"].as<glm::vec3>();
-					rigidbody.UseGravity = rigidbodyComponent["UseGravity"].as<bool>();
-					rigidbody.RotateX = rigidbodyComponent["RotateX"].as<bool>();
-					rigidbody.RotateY = rigidbodyComponent["RotateY"].as<bool>();
-					rigidbody.RotateZ = rigidbodyComponent["RotateZ"].as<bool>();
-					rigidbody.MoveX = rigidbodyComponent["MoveX"].as<bool>();
-					rigidbody.MoveY = rigidbodyComponent["MoveY"].as<bool>();
-					rigidbody.MoveZ = rigidbodyComponent["MoveZ"].as<bool>();
-					rigidbody.Kinematic = rigidbodyComponent["Kinematic"].as<bool>();
-					rigidbody.RetainAcceleration = rigidbodyComponent["RetainAcceleration"].as<bool>();
-
 				}
 
 				if (YAML::Node revoluteJoint2DComponent = entity["RevoluteJoint2DComponent"])

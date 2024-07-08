@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include <cstdint>
+#include <memory>
+
 namespace origin
 {
 	class UniformBuffer
 	{
 	public:
-		virtual ~UniformBuffer() {}
+        virtual ~UniformBuffer() {}
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void Bind() = 0;

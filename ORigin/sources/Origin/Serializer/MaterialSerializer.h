@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Renderer\Material.h"
+#include "Origin/Renderer/Material.h"
 #include <filesystem>
 
 namespace origin

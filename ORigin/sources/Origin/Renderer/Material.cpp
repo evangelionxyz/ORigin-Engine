@@ -1,8 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Material.h"
-#include "Origin\Asset\AssetManager.h"
+#include "Origin/Asset/AssetManager.h"
 
 #include "Renderer.h"
 

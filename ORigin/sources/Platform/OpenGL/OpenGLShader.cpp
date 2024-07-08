@@ -1,13 +1,14 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "OpenGLShader.h"
 #include "Origin/Core/Time.h"
+#include "Origin/Core/Assert.h"
+#include "Origin/Profiler/Profiler.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
@@ -442,15 +443,13 @@ namespace origin {
       }
       else
       {
+        OGN_CORE_WARN("{0}", m_Filepath);
         OGN_CORE_WARN("Compile OpenGL {0} Shader To Binaries", Utils::ShaderDataTypeToString(stage));
         spirv_cross::CompilerGLSL glslCompiler(spirv);
         m_OpenGLSourceCode[stage] = glslCompiler.compile();
         auto &source = m_OpenGLSourceCode[stage];
-
         shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
-
-        bool succsess = module.GetCompilationStatus() != shaderc_compilation_status_success;
-        OGN_CORE_ASSERT(succsess, module.GetErrorMessage());
+        bool succsess = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
         if (succsess)
         {

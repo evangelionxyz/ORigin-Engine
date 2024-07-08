@@ -5,8 +5,8 @@
 #include <string>
 #include <memory>
 
-#include "Origin\Asset\Asset.h"
-#include "Origin\Core\Buffer.h"
+#include "Origin/Asset/Asset.h"
+#include "Origin/Core/Buffer.h"
 
 #include <filesystem>
 

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "Dockspace.h"
-#include "Origin\Profiler\Profiler.h"
+#include "Origin/Profiler/Profiler.h"
 
 #include <imgui.h>
 

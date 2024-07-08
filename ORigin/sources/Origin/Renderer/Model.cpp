@@ -1,8 +1,8 @@
-#include "pch.h"
+
 #include "Model.h"
 #include "Renderer.h"
 
-#include "Platform\OpenGL\OpenGLModel.h"
+#include "Platform/OpenGL/OpenGLModel.h"
 
 namespace origin
 {

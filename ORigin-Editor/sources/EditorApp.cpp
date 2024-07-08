@@ -22,9 +22,11 @@ namespace origin
   Application* CreateApplication(ApplicationCommandLineArgs args)
   {
     ApplicationSpecification spec;
+    spec.Width = 1640;
+    spec.Height = 980;
     spec.Name = "ORigin Editor";
     spec.CommandLineArgs = args;
-    spec.Maximize = true;
+    spec.Maximize = false;
 
     OGN_CORE_INFO(spec.Name);
     return new EditorApp(spec);

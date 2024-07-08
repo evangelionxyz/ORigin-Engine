@@ -1,8 +1,7 @@
 #pragma once
-#include "Origin\Core\UUID.h"
-
-#include <yaml-cpp\yaml.h>
-#include <glm\glm.hpp>
+#include "Origin/Core/UUID.h"
+#include <yaml-cpp/yaml.h>
+#include <glm/glm.hpp>
 
 namespace YAML
 {

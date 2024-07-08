@@ -30,19 +30,16 @@ namespace origin
 	class SpriteAnimation;
 	class ScriptableEntity;
 	class RigidbodyComponent;
-	class BoxColliderComponent;
-	class SphereColliderComponent;
-	class CapsuleColliderComponent;
 
 	class IDComponent
 	{
 	public:
 		UUID ID;
-		UUID Parent = 0;
+		UUID Parent = UUID(0);
 
 		IDComponent() = default;
 		IDComponent(const IDComponent &) = default;
-		IDComponent(UUID id, UUID parent = 0) : ID(id), Parent(parent) { }
+		IDComponent(UUID id, UUID parent = UUID(0)) : ID(id), Parent(parent) { }
 	};
 
 
@@ -85,7 +82,7 @@ namespace origin
 	class AudioComponent
 	{
 	public:
-		AssetHandle Audio = 0;
+		AssetHandle Audio = UUID(0);
 		std::string Name;
 		float Volume = 1.0f;
 		float Panning = 0.0f;
@@ -127,8 +124,8 @@ namespace origin
 	{
 	public:
 		std::string Name;
-		std::shared_ptr<Mesh> Mesh;
-		AssetHandle HMaterial = 0;
+		std::shared_ptr<Mesh> OMesh;
+		AssetHandle HMaterial = UUID(0);
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
@@ -136,7 +133,7 @@ namespace origin
 	class ModelComponent
 	{
 	public:
-		AssetHandle Handle = 0;
+		AssetHandle Handle = UUID(0);
 		ModelComponent() = default;
 		ModelComponent(const ModelComponent &) = default;
 	};
@@ -144,7 +141,7 @@ namespace origin
 	class TextComponent
 	{
 	public:
-		AssetHandle FontHandle = 0;
+		AssetHandle FontHandle = UUID(0);
 		std::string TextString = "This is text component";
 
 		glm::vec4 Color = glm::vec4(1.0f);
@@ -214,7 +211,7 @@ namespace origin
 	class SpriteRenderer2DComponent
 	{
 	public:
-		AssetHandle Texture = 0;
+		AssetHandle Texture = UUID(0);
 
 		glm::vec4 Color = glm::vec4(1.0f);
 		glm::vec2 Min = glm::vec2(0.0f, 0.0f);
@@ -386,7 +383,6 @@ namespace origin
 	struct BaseUIData
 	{
 		virtual ~BaseUIData() = default;
-
 		enum class Anchor
 		{
 			Center,
@@ -398,6 +394,13 @@ namespace origin
 		std::string Name;
 		Anchor AnchorType;
 		TransformComponent Transform;
+
+		BaseUIData() = default;
+		BaseUIData(const std::string &name, Anchor anchorType = Anchor::Center)
+			: Name(name), AnchorType(anchorType)
+		{
+		}
+
 	};
 
 	template<typename T>
@@ -406,9 +409,10 @@ namespace origin
 		T Component;
 
 		UIData() = default;
-
-		UIData(const std::string &name, const T &component, Anchor anchorType = Anchor::Center)
-			: Name(name), Component(component), AnchorType(anchorType) {}
+		UIData(const std::string &name, const T &component, BaseUIData::Anchor anchorType = BaseUIData::Anchor::Center)
+			: BaseUIData(name, anchorType), Component(component)
+		{
+		}
 	};
 
 	class UIComponent
@@ -466,7 +470,7 @@ namespace origin
 
 		std::vector<std::shared_ptr<BaseUIData>> Components;
 		std::unordered_map<std::string, int> ComponentCounters;
-		std::shared_ptr<Framebuffer> Framebuffer;
+		std::shared_ptr<Framebuffer> OFramebuffer;
 
 	private:
 		std::string GenerateUniqueKey(const std::string &name)
@@ -541,7 +545,5 @@ namespace origin
 		UIComponent, SpriteAnimationComponent, AudioComponent, AudioListenerComponent, LightComponent,
 		SpriteRenderer2DComponent, StaticMeshComponent, ModelComponent, TextComponent,
 		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
-		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent,
-		RigidbodyComponent, BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent
-	>;
+		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent>;
 }

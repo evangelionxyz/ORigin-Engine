@@ -1,10 +1,10 @@
-#include "pch.h"
+
 #include "ShadowRenderer.h"
-#include "Origin\Renderer\Renderer.h"
+#include "Origin/Renderer/Renderer.h"
 
 #include "Lighting.h"
 
-#include "glm\glm.hpp"
+#include <glm/glm.hpp>
 
 namespace origin {
 

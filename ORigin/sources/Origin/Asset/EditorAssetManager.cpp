@@ -1,11 +1,9 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
-#include "pch.h"
 #include "EditorAssetManager.h"
-
 #include "AssetImporter.h"
-#include "Origin\Project\Project.h"
+#include "Origin/Project/Project.h"
 
+#include <fstream>
 #include <yaml-cpp/yaml.h>
 
 namespace origin {
@@ -184,6 +182,8 @@ namespace origin {
 	{
 		auto path = Project::GetActiveAssetRegistryPath();
 
+		OGN_CORE_INFO("[EditorAssetManager] Serialize Registry {0}", path.string());
+
 		YAML::Emitter out;
 		{
 			out << YAML::BeginMap; // Root
@@ -215,7 +215,7 @@ namespace origin {
 
 		if (!std::filesystem::exists(path))
 		{
-			OGN_CORE_ASSERT(false, "EditorAssetManager: Failed to deserialize AssetRegistry");
+			OGN_CORE_ASSERT(false, "[EditorAssetManager] Failed to deserialize AssetRegistry");
 			return false;
 		}
 
@@ -226,7 +226,7 @@ namespace origin {
 		}
 		catch (YAML::ParserException e) 
 		{
-			OGN_CORE_ASSERT(false, "Failed to load project file: {0}\n\t{1}", path, e.what());
+			OGN_CORE_ASSERT(false, "[EditorAssetManager] Failed to load project file: {0}\n\t{1}", path, e.what());
 			return false;
 		}
 

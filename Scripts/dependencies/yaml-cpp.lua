@@ -1,7 +1,7 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "yaml-cpp"
-   location (vendorProjectFiles)
+	location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"
@@ -24,11 +24,10 @@ project "yaml-cpp"
         "%{wks.location}/ORigin/vendor/yaml-cpp/include/"
     }
 
-	filter "system:windows"
-		systemversion "latest"
-
 	filter "system:linux"
 		pic "On"
+
+	filter "system:windows"
 		systemversion "latest"
 
 	filter "configurations:Debug"

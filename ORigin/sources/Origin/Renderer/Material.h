@@ -94,8 +94,8 @@ namespace origin
 		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Textures;
 
 	private:
-		AssetHandle m_AlbedoMap = 0;
-		AssetHandle m_MetallicMap = 0;
+		AssetHandle m_AlbedoMap = UUID(0);
+		AssetHandle m_MetallicMap = UUID(0);
 
 		std::shared_ptr<UniformBuffer> m_UniformBuffer;
 		friend class OpenGLModel;

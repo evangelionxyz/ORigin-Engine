@@ -3,18 +3,17 @@
 #pragma once
 #include "UIRenderer.h"
 #include "EditorCamera.h"
-#include "Origin\Asset\Asset.h"
-#include "Origin\Scene\Skybox.h"
-#include "Origin\Core\Time.h"
-#include "Origin\Scene\Components.h"
-#include <entt\entt.hpp>
+#include "Origin/Asset/Asset.h"
+#include "Origin/Scene/Skybox.h"
+#include "Origin/Core/Time.h"
+#include "Origin/Scene/Components.h"
+#include <entt/entt.hpp>
 
 class b2World;
 
 namespace origin
 {
   class Entity;
-  class PhysicsScene;
   class Physics2D;
 
   class Scene : public Asset
@@ -60,7 +59,6 @@ namespace origin
 
   private:
     std::string m_Name = "untitled";
-    std::shared_ptr<PhysicsScene> m_PhysicsScene;
     std::shared_ptr<UIRenderer> m_UIRenderer;
     std::shared_ptr<Physics2D> m_Physics2D;
 

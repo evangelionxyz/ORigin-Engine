@@ -1,8 +1,8 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
+
 #include "Input.h"
-#include "Origin\Core\Application.h"
+#include "Origin/Core/Application.h"
 
 namespace origin
 {

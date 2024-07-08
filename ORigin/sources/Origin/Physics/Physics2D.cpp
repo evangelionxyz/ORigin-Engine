@@ -1,15 +1,15 @@
-#include "pch.h"
+
 #include "Physics2D.h"
 
-#include "Origin\Scene\Entity.h"
-#include "Origin\Scene\Components.h"
+#include "Origin/Scene/Entity.h"
+#include "Origin/Scene/Components.h"
 
-#include "box2d\box2d.h"
-#include "box2d\b2_world.h"
-#include "box2d\b2_fixture.h"
-#include "box2d\b2_polygon_shape.h"
-#include "box2d\b2_circle_shape.h"
-#include "box2d\b2_joint.h"
+#include "box2d/box2d.h"
+#include "box2d/b2_world.h"
+#include "box2d/b2_fixture.h"
+#include "box2d/b2_polygon_shape.h"
+#include "box2d/b2_circle_shape.h"
+#include "box2d/b2_joint.h"
 
 #include "Contact2DListener.h"
 

@@ -1,10 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <glm\glm.hpp>
 
+#include <glm/glm.hpp>
 #include <functional>
 
 namespace origin::UI
@@ -105,7 +106,7 @@ namespace origin::UI
 	{
 		bool ret = false;
 
-		ImGui::PushID((void *)(uint32_t)&text);
+		ImGui::PushID((void *)&text);
 
 		float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		float lineWidth = GImGui->FontSize + GImGui->Style.FramePadding.x * (ImGui::CalcTextSize(text).x / 4.0f);

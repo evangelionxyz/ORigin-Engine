@@ -1,8 +1,8 @@
 #pragma once
-#include "Origin\Asset\Asset.h"
+#include "Origin/Asset/Asset.h"
 
 #include <filesystem>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 namespace origin
 {
@@ -10,7 +10,7 @@ namespace origin
 	{
 		glm::vec2 Min = glm::vec2(0.0f);
 		glm::vec2 Max = glm::vec2(1.0f);
-		AssetHandle TextureHandle = 0;
+		AssetHandle TextureHandle = UUID(0);
 	};
 
 	class SpriteSheet : public Asset

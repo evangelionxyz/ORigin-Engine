@@ -1,11 +1,11 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "pch.h"
+
 #include "KeyCodes.h"
 #include "MouseCodes.h"
 
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 namespace origin
 {

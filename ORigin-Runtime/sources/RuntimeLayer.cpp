@@ -1,8 +1,8 @@
 #include "RuntimeLayer.h"
-#include <Origin/EntryPoint.h>;
-#include <origin/Asset/AssetManager.h>
+#include <Origin/EntryPoint.h>
+#include <Origin/Asset/AssetManager.h>
 #include <Origin/Asset/AssetImporter.h>
-#include <origin/Scripting/ScriptEngine.h>
+#include <Origin/Scripting/ScriptEngine.h>
 using namespace origin;
 
 RuntimeLayer::RuntimeLayer() : Layer("Runtime Layer") {}

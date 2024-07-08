@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Origin\Core\Window.h"
+#include "Origin/Core/Window.h"
 
 namespace origin 
 {

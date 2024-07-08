@@ -1,11 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
-#include "Origin\Utils\PlatformUtils.h"
-#include "Origin\Core\Application.h"
+
+#include "Origin/Utils/PlatformUtils.h"
+#include "Origin/Core/Application.h"
 
 #include <commdlg.h>
-#include <GLFW\glfw3.h>
+#include <GLFW/glfw3.h>
 
 #ifdef OGN_PLATFORM_WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32

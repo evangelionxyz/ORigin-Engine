@@ -1,37 +1,34 @@
-[submodule "ORigin/vendor/glm"]
+[submodule "Origin/vendor/glm"]
 	path = ORigin/vendor/glm
 	url = https://github.com/kaks-ev/glm.git
-[submodule "ORigin/vendor/ImGuizmo"]
+[submodule "Origin/vendor/ImGuizmo"]
 	path = ORigin/vendor/ImGuizmo
 	url = https://github.com/kaks-ev/ImGuizmo.git
-[submodule "ORigin/vendor/Box2D"]
+[submodule "Origin/vendor/Box2D"]
 	path = ORigin/vendor/Box2D
 	url = https://github.com/erincatto/box2d.git
-[submodule "ORigin/vendor/yaml-cpp"]
+[submodule "Origin/vendor/yaml-cpp"]
 	path = ORigin/vendor/yaml-cpp
 	url = https://github.com/kaks-ev/yaml-cpp.git
-[submodule "ORigin/vendor/mono"]
+[submodule "Origin/vendor/mono"]
 	path = ORigin/vendor/mono
 	url = https://github.com/kaks-ev/mono.git
-[submodule "ORigin/vendor/msdf-atlas-gen"]
+[submodule "Origin/vendor/msdf-atlas-gen"]
 	path = ORigin/vendor/msdf-atlas-gen
 	url = https://github.com/kaks-ev/msdf-atlas-gen.git
-[submodule "ORigin/vendor/JoltPhysics"]
+[submodule "Origin/vendor/JoltPhysics"]
 	path = ORigin/vendor/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "ORigin/vendor/Optick"]
+[submodule "Origin/vendor/Optick"]
 	path = ORigin/vendor/Optick
 	url = https://github.com/bombomby/optick.git
-[submodule "ORigin/vendor/PhysX"]
-	path = ORigin/vendor/PhysX
-	url = https://github.com/kaks-ev/NVIDIA-PhysX
-[submodule "ORigin/vendor/origin-glfw"]
+[submodule "Origin/vendor/origin-glfw"]
 	path = ORigin/vendor/origin-glfw
 	url = https://github.com/evangelionmanuhutu/origin-glfw.git
-[submodule "ORigin/vendor/assimp"]
+[submodule "Origin/vendor/assimp"]
 	path = ORigin/vendor/assimp
 	url = https://github.com/evangelionmanuhutu/assimp.git
-[submodule "ORigin/vendor/imgui"]
+[submodule "Origin/vendor/imgui"]
 	path = ORigin/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking

@@ -1,10 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
 #pragma once
+
 #include <string>
 #include "miniaudio.h"
-#include "Origin\Asset\Asset.h"
-#include "Origin\Scene\Components.h"
+#include "Origin/Asset/Asset.h"
+#include "Origin/Scene/Components.h"
 
 namespace origin {
 

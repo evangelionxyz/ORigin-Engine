@@ -1,9 +1,9 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Renderer\Renderer2D.h"
-#include "Origin\Asset\AssetManager.h"
+
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Asset/AssetManager.h"
 
 #pragma warning(disable : OGN_DISABLED_WARNINGS)
 

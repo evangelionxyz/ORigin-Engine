@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "JoltScene.h"
 
 #include <Jolt/Core/JobSystemThreadPool.h>
@@ -35,6 +35,8 @@
 #include <Jolt/Physics/Constraints/DistanceConstraint.h>
 #include <Jolt/Physics/Constraints/PulleyConstraint.h>
 #include <Jolt/Physics/Character/CharacterVirtual.h>
+
+#include "Origin/Profiler/Profiler.h"
 
 namespace origin {
 

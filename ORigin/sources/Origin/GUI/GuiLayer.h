@@ -1,10 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Core\Layer.h"
-#include "Origin\Core\AppEvent.h"
-#include "Origin\Core\KeyEvent.h"
-#include "Origin\Core\MouseEvent.h"
+#include "Origin/Core/Layer.h"
+#include "Origin/Core/AppEvent.h"
+#include "Origin/Core/KeyEvent.h"
+#include "Origin/Core/MouseEvent.h"
 
 namespace origin
 {

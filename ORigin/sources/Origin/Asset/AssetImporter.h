@@ -6,6 +6,7 @@
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Model.h"
 
+#include <queue>
 #include <future>
 
 namespace origin

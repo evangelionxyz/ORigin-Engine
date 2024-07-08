@@ -3,8 +3,8 @@
 
 #include "Shader.h"
 #include "Texture.h"
-#include <glm\glm.hpp>
-#include <assimp\material.h>
+#include <glm/glm.hpp>
+#include <assimp/material.h>
 
 #define MAX_BONE_INFLUENCE 4
 

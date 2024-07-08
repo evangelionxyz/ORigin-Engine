@@ -1,8 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Origin\Core\Window.h"
-#include "Origin\Renderer\GraphicsContext.h"
+#include "Origin/Core/Window.h"
+#include "Origin/Renderer/GraphicsContext.h"
 
 #include <string>
 
@@ -11,7 +11,6 @@ namespace origin
 	class Win32Window : public Window
 	{
 	public:
-
 		Win32Window(const char* title, uint32_t width, uint32_t height, bool maximized);
 		virtual ~Win32Window() override;
 		void OnUpdate() override;

@@ -1,19 +1,27 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include <xhash>
+
+#ifdef OGN_PLATFORM_WINDOWS
+	#include <xhash>
+#else
+	#include <functional>
+#endif
+
+#include <cstdint>
 
 namespace origin
 {
 	class UUID
 	{
 	public:
-		// UUID id = 0
 		UUID();
 		UUID(uint64_t uuid);
-		UUID(const UUID& uuid) = default;
+		UUID(const UUID &uuid) = default;
 
 		operator uint64_t() const { return m_UUID; }
+
+		static const UUID NullID;
 
 	private:
 		uint64_t m_UUID;

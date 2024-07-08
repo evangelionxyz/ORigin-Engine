@@ -9,7 +9,7 @@
 
 #include <memory>
 #include <string>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 namespace origin
 {

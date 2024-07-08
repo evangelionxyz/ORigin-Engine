@@ -3,11 +3,11 @@
 #include "ContentBrowserPanel.h"
 #include "../EditorLayer.h"
 
-#include "Origin\Serializer\MaterialSerializer.h"
-#include "Origin\Asset\AssetImporter.h"
-#include "Origin\Project\Project.h"
-#include "Origin\Utils\Utils.h"
-#include "Origin\Utils\StringUtils.h"
+#include "Origin/Serializer/MaterialSerializer.h"
+#include "Origin/Asset/AssetImporter.h"
+#include "Origin/Project/Project.h"
+#include "Origin/Utils/Utils.h"
+#include "Origin/Utils/StringUtils.h"
 
 #include <imgui.h>
 

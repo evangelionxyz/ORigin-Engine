@@ -1,7 +1,5 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
-
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
@@ -11,22 +9,24 @@
 #include "Origin/Scene/EntityManager.h"
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Core/Input.h"
+#include "Origin/Audio/AudioSource.h"
 #include "Origin/Physics/Physics2D.h"
 
-#include "mono/metadata/object.h"
-#include "mono/metadata/reflection.h"
+#include <mono/metadata/object.h>
+#include <mono/metadata/reflection.h>
+#include <box2d/b2_body.h>
+#include <box2d/b2_body.h>
+#include <box2d/b2_fixture.h>
+#include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_circle_shape.h>
 
-#include "box2d/b2_body.h"
-#include "box2d/b2_body.h"
-#include "box2d/b2_fixture.h"
-#include "box2d/b2_polygon_shape.h"
-#include "box2d/b2_circle_shape.h"
-
-#include "Origin/Audio/AudioSource.h"
+#ifdef __linux
+	#include <cxxabi.h>
+#endif
 
 namespace origin
 {
-#define OGN_ADD_INTERNAL_CALLS(Name) mono_add_internal_call("ORiginEngine.InternalCalls::"#Name, Name)
+#define OGN_ADD_INTERNAL_CALLS(method) mono_add_internal_call("ORiginEngine.InternalCalls::"#method, reinterpret_cast<const void*>(method))
 
 	namespace Utils
 	{
@@ -163,9 +163,7 @@ namespace origin
 	static void NativeLog(MonoString *string, int parameter)
 	{
 		OGN_PROFILER_LOGIC();
-
 		std::string str = Utils::MonoStringToString(string);
-		std::cout << str << ", " << parameter << std::endl;
 	}
 
 	static void NativeLog_Vector(glm::vec3 *parameter, glm::vec3 *outResult)
@@ -269,80 +267,6 @@ namespace origin
 		if (entity.IsValid())
 		{
 			entity.GetComponent<TransformComponent>().Scale = scale;
-		}
-	}
-
-	static void RigidbodyComponent_SetVelocity(UUID entityID, glm::vec3 velocity, bool autoWake)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			auto &rb = entity.GetComponent<RigidbodyComponent>();
-			rb.ApplyLinearVelocity(velocity, autoWake);
-		}
-	}
-
-	static void RigidbodyComponent_GetVelocity(UUID entityID, glm::vec3 *velocity)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			auto &rb = entity.GetComponent<RigidbodyComponent>();
-
-			physx::PxRigidActor *actor = (physx::PxRigidActor *)rb.Body;
-			physx::PxRigidDynamic *dActor = actor->is<physx::PxRigidDynamic>();
-			*velocity = glm::vec3(dActor->getLinearVelocity().x, dActor->getLinearVelocity().y, dActor->getLinearVelocity().z);
-		}
-
-	}
-
-	static void RigidbodyComponent_SetVelocityForce(UUID entityID, glm::vec3 force)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			auto &rb = entity.GetComponent<RigidbodyComponent>();
-			rb.ApplyVelocityForce(force);
-		}
-	}
-
-	static void RigidbodyComponent_SetForce(UUID entityID, glm::vec3 force)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			auto &rb = entity.GetComponent<RigidbodyComponent>();
-			rb.ApplyForce(force);
-		}
-	}
-
-	static void RigidbodyComponent_SetImpulseForce(UUID entityID, glm::vec3 force)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			auto &rb = entity.GetComponent<RigidbodyComponent>();
-			rb.ApplyImpulseForce(force);
 		}
 	}
 
@@ -1437,23 +1361,42 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		([]()
-		 {
-			 std::string_view typeName = typeid(Component).name();
-			 size_t pos = typeName.find_last_of(':');
-			 std::string_view structName = typeName.substr(pos + 1);
-			 std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
+		{
+			std::string_view typeName = typeid(Component).name();
+			
+#if defined(__GNUG__)
+			int status = 0;
+			char* demangledName = abi::__cxa_demangle(typeName.data(), nullptr, nullptr, &status);
+			if (status == 0 && demangledName != nullptr)
+			{
+				typeName = demangledName;
+			}
+			else
+			{
+				OGN_CORE_ERROR("Could not demangle type name: {}", typeName);
+				return;
+			}
+#endif
 
-			 MonoType *managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
-			 if (!managedType)
-			 {
-				 OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
-				 return;
-			 }
+			size_t pos = typeName.find_last_of(':');
+			std::string_view structName = (pos == std::string_view::npos) ? typeName : typeName.substr(pos + 1);
+			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 
-			 s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
-			 s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
+			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
+			if (!managedType)
+			{
+				OGN_CORE_ERROR("SCRIPT GLUE: Could not find component type {}", managedTypename);
+				return;
+			}
 
-		 }(), ...);
+			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
+			s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
+
+#if defined(__GNUG__)
+			free(demangledName);
+#endif
+
+		}(), ...);
 	}
 
 	template <typename... Component>
@@ -1493,12 +1436,6 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRotation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetScale);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetScale);
-
-		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetVelocity);
-		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetForce);
-		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetVelocityForce);
-		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetImpulseForce);
-		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetVelocity);
 
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_GetVelocity);
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_SetVelocity);

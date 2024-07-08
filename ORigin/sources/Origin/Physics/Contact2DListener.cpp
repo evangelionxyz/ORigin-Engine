@@ -1,8 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
-#include "pch.h"
 #include "Contact2DListener.h"
-#include "origin/Scene/Entity.h"
+#include "Origin/Scene/Entity.h"
 
 #include <glm/glm.hpp>
 

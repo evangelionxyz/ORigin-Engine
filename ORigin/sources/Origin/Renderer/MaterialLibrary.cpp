@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-#include "pch.h"
+
 #include "MaterialLibrary.h"
+
+#include "Origin/Core/Assert.h"
 
 namespace origin
 {

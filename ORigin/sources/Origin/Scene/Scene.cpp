@@ -1,20 +1,16 @@
 ﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
-#include "pch.h"
-
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Animation/Animation.h"
-#include "origin/Physics/Contact2DListener.h"
+#include "Origin/Physics/Contact2DListener.h"
 #include "Origin/Physics/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
-
 #include "Scene.h"
-
 #include "Entity.h"
 #include "Lighting.h"
 #include "EntityManager.h"
@@ -26,18 +22,11 @@
 
 namespace origin
 {
-	class BoxColliderComponent;
-	class RigidbodyComponent;
-	class SphereColliderComponent;
-	class CapsuleColliderComponent;
 	class LightComponent;
 
 	Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
-
-		if (!m_PhysicsScene) m_PhysicsScene = PhysicsScene::Create(this);
-
 		m_Physics2D = std::make_shared<Physics2D>(this);
 		m_UIRenderer = std::make_shared<UIRenderer>();
 	}
@@ -117,16 +106,16 @@ namespace origin
 				}
 			}
 
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto &nsc)
+			m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto &nsc)
 			{
 				if (nsc.Instance)
-					nsc.Instance->OnUpdate(ts);
+					nsc.Instance->OnUpdate(time);
 			});
 
 			// Particle Update
-			m_Registry.view<ParticleComponent>().each([=](auto entity, auto &pc)
+			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto &pc)
 			{
-				pc.Particle.OnUpdate(ts);
+				pc.Particle.OnUpdate(time);
 			});
 
 
@@ -170,7 +159,6 @@ namespace origin
 					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
 			}
 
-			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
 
@@ -250,7 +238,7 @@ namespace origin
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto &nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
 		{
 			if(!nsc.Instance)
 			{
@@ -268,10 +256,9 @@ namespace origin
 				audio->Play();
 		}
 
-		m_PhysicsScene->OnSimulationStart();
 		m_Physics2D->OnSimulationStart();
 
-		m_Registry.view<UIComponent>().each([=](entt::entity e, UIComponent ui)
+		m_Registry.view<UIComponent>().each([this](entt::entity e, UIComponent ui)
 		{
 			auto cam = GetPrimaryCameraEntity();
 			auto cc = cam.GetComponent<CameraComponent>();
@@ -293,7 +280,7 @@ namespace origin
 
 		m_Running = false;
 		ScriptEngine::ClearSceneContext();
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
 		{
 			nsc.DestroyScript(&nsc);
 		});
@@ -307,7 +294,6 @@ namespace origin
 				audio->Stop();
 		}
 
-		m_PhysicsScene->OnSimulationStop();
 		m_Physics2D->OnSimulationStop();
 
 		m_UIRenderer->Unload();
@@ -317,14 +303,14 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto& nsc)
 		{
-			nsc.Instance->OnUpdate(ts);
+			nsc.Instance->OnUpdate(time);
 		});
 
-		m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
+		m_Registry.view<ParticleComponent>().each([time = ts](auto entity, auto& pc)
 		{
-			pc.Particle.OnUpdate(ts);
+			pc.Particle.OnUpdate(time);
 		});
 
 		// Animation
@@ -370,20 +356,20 @@ namespace origin
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
 			// Update Scripts
-			m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& sc)
+			m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto& sc)
 			{
 				Entity entity{ entityID, this };
-				ScriptEngine::OnUpdateEntity(entity, (float)ts);
+				ScriptEngine::OnUpdateEntity(entity, time);
 			});
 
-			m_Registry.view<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
+			m_Registry.view<NativeScriptComponent>().each([this, time = ts](auto entityID, auto& nsc)
 			{
-				nsc.Instance->OnUpdate(ts);
+				nsc.Instance->OnUpdate(time);
 			});
 
-			m_Registry.view<ParticleComponent>().each([=](auto entity, auto& pc)
+			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto& pc)
 			{
-				pc.Particle.OnUpdate(ts);
+				pc.Particle.OnUpdate(time);
 			});
 
 			// Animation
@@ -429,7 +415,6 @@ namespace origin
 			if(!isMainCameraListening)
 				editorCamera.UpdateAudioListener(ts);
 
-			m_PhysicsScene->Simulate(ts);
 			m_Physics2D->Simulate(ts);
 		}
 
@@ -445,20 +430,18 @@ namespace origin
 
 		ScriptEngine::SetSceneContext(this);
 		const auto &scriptView = m_Registry.view<ScriptComponent>();
-
 		for (auto e : scriptView)
 		{
 			Entity entity = { e, this };
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
 		{
 				nsc.Instance = nsc.InstantiateScript();
 				nsc.Instance->m_Entity = Entity { entity, this };
 		});
 
-		m_PhysicsScene->OnSimulationStart();
 		m_Physics2D->OnSimulationStart();
 
 		// Audio
@@ -479,12 +462,11 @@ namespace origin
 		m_Running = false;
 
 		ScriptEngine::ClearSceneContext();
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
 		{
 			nsc.DestroyScript(&nsc);
 		});
 
-		m_PhysicsScene->OnSimulationStop();
 		m_Physics2D->OnSimulationStop();
 
 		// Audio
@@ -644,7 +626,7 @@ namespace origin
 				{
 					Entity e = GetEntityWithUUID(mesh);
 					StaticMeshComponent &sm = e.GetComponent<StaticMeshComponent>();
-					sm.Mesh->Draw(tc.GetTransform(), (int)e);
+					sm.OMesh->Draw(tc.GetTransform(), (int)e);
 				}
 			}
 		}
@@ -860,9 +842,6 @@ void Scene::OnComponentAdded<components>(Entity entity, components& component){}
 	OGN_REG_COMPONENT(RevoluteJoint2DComponent)
 	OGN_REG_COMPONENT(ParticleComponent)
 	OGN_REG_COMPONENT(RigidbodyComponent)
-	OGN_REG_COMPONENT(BoxColliderComponent)
-	OGN_REG_COMPONENT(SphereColliderComponent)
-	OGN_REG_COMPONENT(CapsuleColliderComponent)
 
 	template <>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)

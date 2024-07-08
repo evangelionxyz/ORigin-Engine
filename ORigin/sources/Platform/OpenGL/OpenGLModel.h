@@ -6,7 +6,7 @@
 #include "Origin/Renderer/UniformBuffer.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Material.h"
-#include "ORigin/Scene/Components.h"
+#include "Origin/Scene/Components.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

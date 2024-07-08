@@ -4,6 +4,8 @@
 
 #include "ProjectionType.h"
 
+#include <glm/glm.hpp>
+
 namespace origin {
 
 	class SceneCamera

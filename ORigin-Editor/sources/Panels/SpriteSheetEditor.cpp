@@ -1,15 +1,15 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "SpriteSheetEditor.h"
-#include "Origin\Renderer\Renderer.h"
-#include "Origin\Renderer\Renderer2D.h"
-#include "Origin\Serializer\SpriteSheetSerializer.h"
-#include "Origin\Asset\AssetManager.h"
-#include "Origin\Scene\EntityManager.h"
-#include "Origin\Core\Input.h"
+#include "Origin/Renderer/Renderer.h"
+#include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Serializer/SpriteSheetSerializer.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Scene/EntityManager.h"
+#include "Origin/Core/Input.h"
 
-#include <glm\gtc\type_ptr.hpp>
-#include <yaml-cpp\yaml.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <yaml-cpp/yaml.h>
 #include <imgui.h>
 
 namespace origin

@@ -1,7 +1,7 @@
 #pragma once
 #include "Entity.h"
-#include "Origin\Core\UUID.h"
-#include "entt\entt.hpp"
+#include "Origin/Core/UUID.h"
+#include "entt/entt.hpp"
 
 namespace origin
 {

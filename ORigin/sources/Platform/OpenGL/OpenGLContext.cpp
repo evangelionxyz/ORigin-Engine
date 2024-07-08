@@ -1,9 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "pch.h"
-#include "OpenGLContext.h"
-#include <glad/glad.h>
 
+#include "OpenGLContext.h"
+#include "Origin/Profiler/Profiler.h"
+
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 namespace origin

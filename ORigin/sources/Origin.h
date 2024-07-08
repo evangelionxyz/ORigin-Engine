@@ -30,14 +30,8 @@
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/SubTexture2D.h"
 #include "Origin/Renderer/Framebuffer.h"
-#include "Origin/Physics/ColliderComponent.h"
-#include "Origin/Physics/RigidbodyComponent.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/ScriptableEntity.h"
-
-// Scene change frequently
-// #include "Origin/Scene/Scene.h"
-
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/SceneCamera.h"

@@ -10,11 +10,8 @@ project "box2d"
 	targetdir (vendorOutputdir)
 	objdir (vendorIntOutputdir)
 
-   files
-	{
-		"%{wks.location}/ORigin/vendor/Box2D/src/**.h",
+   files {
 		"%{wks.location}/ORigin/vendor/Box2D/src/**.cpp",
-		"%{wks.location}/ORigin/vendor/Box2D/include/**.h"
 	}
 
 	includedirs
@@ -22,6 +19,9 @@ project "box2d"
 		"%{wks.location}/ORigin/vendor/Box2D/include",
 		"%{wks.location}/ORigin/vendor/Box2D/src"
 	}
+
+	filter "system:linux"
+        pic "On"
 
 	filter "system:windows"
 		systemversion "latest"

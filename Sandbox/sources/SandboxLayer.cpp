@@ -1,9 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "Origin\EntryPoint.h"
-#include "Platform\DX11\DX11Context.h"
-#include "Origin\Asset\AssetImporter.h"
-#include "Origin\GUI\UI.h"
+#include "Origin/EntryPoint.h"
+#include "Origin/Asset/AssetImporter.h"
+#include "Origin/GUI/UI.h"
 #include "SandboxLayer.h"
 #include <imgui.h>
 

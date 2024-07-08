@@ -11,6 +11,7 @@
 *.sln
 *.cdr
 *.opt
+*.codelite
 
 # Visual Studio extension resources
 ORigin.sln.startup.json
@@ -18,8 +19,14 @@ ORigin.sln.licenseheader
 
 # folders
 Binaries/
+Makefile
 Scripts/__pycache__
+Scripts/premake
 ORigin/vendor/VulkanSDK
+ORigin/Makefile
 ORigin/vendor/projectFiles
+ORigin-Editor/Makefile
 ORigin-Editor/Resources/Cache
 ORigin-Editor/Resources/ScriptCore
+ORigin-Runtime/Makefile
+Sandbox/Makefile
