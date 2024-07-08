@@ -1,17 +1,16 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
-
-#define STBI_NO_SIMD
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
+#include "pch.h"
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
-
 #include "OpenGLTexture.h"
 
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
+#ifdef OGN_PLATFORM_LINUX
+#define STBI_NO_SIMD
+#endif
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 namespace origin {
 
@@ -63,7 +62,7 @@ namespace origin {
   {
     OGN_PROFILER_RENDERING();
 
-    OGN_CORE_ASSERT(m_Spec.Width == m_Width || m_Spec.Height == m_Height, "OpenGLTexture: Invalid Spec Size");
+    OGN_CORE_ASSERT(m_Spec.Width == m_Width || m_Spec.Height == m_Height, "OpenGLTexture: Invalid Specification Size");
 
     m_DataFormat = Utils::ORiginImageFormatToGLDataFormat(m_Spec.Format);
     m_InternalFormat = Utils::ORiginImageFormatToGLInternalFormat(m_Spec.Format);

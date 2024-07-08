@@ -1,9 +1,9 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+#include "pch.h"
+
 #include "EditorAssetManager.h"
 #include "AssetImporter.h"
 #include "Origin/Project/Project.h"
-
-#include <fstream>
 #include <yaml-cpp/yaml.h>
 
 namespace origin {

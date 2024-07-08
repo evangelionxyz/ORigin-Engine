@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
+#include "pch.h"
 #include "Application.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Audio/AudioEngine.h"
@@ -14,8 +14,6 @@
 	#include "Platform/Win32/Win32Window.h"
 	#include "Platform/DX11/DX11Context.h"
 #endif
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 

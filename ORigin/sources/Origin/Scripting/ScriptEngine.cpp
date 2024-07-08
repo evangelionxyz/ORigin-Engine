@@ -1,4 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+
+#include "pch.h"
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
 #include "Origin/Scene/Components.h"
@@ -12,11 +14,8 @@
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-gc.h>
-
 #include <cstdlib>
 #include <FileWatch.hpp>
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin
 {

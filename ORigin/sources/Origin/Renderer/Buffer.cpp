@@ -1,7 +1,6 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
-
+#include "pch.h"
 #include "Buffer.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"

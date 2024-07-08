@@ -21,4 +21,3 @@ call premake\premake5.exe %build_system%
 popd
 
 endlocal
-pause

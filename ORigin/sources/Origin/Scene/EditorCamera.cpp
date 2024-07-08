@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
+#include "pch.h"
 #include "EditorCamera.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Core/Input.h"
@@ -13,8 +13,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
 #include <algorithm>
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 

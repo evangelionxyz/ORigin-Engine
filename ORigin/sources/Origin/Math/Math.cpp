@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
+#include "pch.h"
 #include "Math.h"
 
 #define GLM_ENABLE_EXPERIMENTAL

@@ -18,8 +18,6 @@
 #include "box2d/b2_fixture.h"
 #include <misc/cpp/imgui_stdlib.h>
 
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
-
 namespace origin {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& scene)

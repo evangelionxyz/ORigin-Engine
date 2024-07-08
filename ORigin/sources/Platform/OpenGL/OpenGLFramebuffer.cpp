@@ -1,13 +1,12 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
+#include "pch.h"
 
 #include "OpenGLFramebuffer.h"
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
 
 #include <glad/glad.h>
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 

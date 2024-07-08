@@ -1,5 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
+#include "pch.h"
+
 #include "ShaderLibrary.h"
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"

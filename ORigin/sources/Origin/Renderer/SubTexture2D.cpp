@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
+#include "pch.h"
 #include "SubTexture2D.h"
 
 namespace origin {

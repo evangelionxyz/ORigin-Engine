@@ -1,5 +1,6 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
+#include "pch.h"
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"

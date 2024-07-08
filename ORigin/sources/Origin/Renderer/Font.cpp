@@ -1,13 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
+#include "pch.h"
 #include "Font.h"
 #include "GlyphGeometry.h"
 #include "FontGeometry.h"
 #include "BitmapAtlasStorage.h"
 #include "Origin/Core/Application.h"
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 

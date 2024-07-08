@@ -1,11 +1,10 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
-ASSIMP_SDK = os.getenv("ASSIMP_SDK")
-
 IncludeDir = {}
 LibraryDir = {}
 Library = {}
+
+VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
 
 IncludeDir["GLFW"]                      = "%{wks.location}/ORigin/vendor/origin-glfw/include"
 IncludeDir["GLAD"]                      = "%{wks.location}/ORigin/vendor/glad/include"
@@ -25,23 +24,27 @@ IncludeDir["msdf_atlas_gen"]            = "%{wks.location}/ORigin/vendor/msdf-at
 IncludeDir["msdfgen"]                   = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["JoltPhysics"]               = "%{wks.location}/ORigin/vendor/JoltPhysics"
 IncludeDir["OPTICK"]                    = "%{wks.location}/ORigin/vendor/Optick/src/"
+IncludeDir["PhysX"]                     = "%{wks.location}/ORigin/vendor/PhysX/physx/include"
 
 -- Windows
-Library["WindowsMONO"]                  = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}/libmono-static-sgen.lib"
-IncludeDir["WindowsVulkanSDK"]          = "%{VULKAN_SDK}/include" -- includes
-LibraryDir["WindowsVulkanSDK"]          = "%{VULKAN_SDK}/lib" -- library
-Library["WVulkan"]                      = "%{LibraryDir.WindowsVulkanSDK}/vulkan-1.lib"
-Library["WShaderC_Debug"]               = "%{LibraryDir.WindowsVulkanSDK}/shaderc_sharedd.lib"
-Library["WSPIRV_Cross_Debug"]           = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-cored.lib"
-Library["WSPIRV_Cross_GLSL_Debug"]      = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-glsld.lib"
-Library["WSPIRV_Tools_Debug"]           = "%{LibraryDir.WindowsVulkanSDK}/SPIRV-Toolsd.lib"
-Library["WShaderC_Release"]             = "%{LibraryDir.WindowsVulkanSDK}/shaderc_shared.lib"
-Library["WSPIRV_Cross_Release"]         = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-core.lib"
-Library["WSPIRV_Cross_GLSL_Release"]    = "%{LibraryDir.WindowsVulkanSDK}/spirv-cross-glsl.lib"
-Library["WinSock"]                      = "Ws2_32.lib"
-Library["WinMM"]                        = "Winmm.lib"
-Library["WinVersion"]                   = "Version.lib"
-Library["BCrypt"]                       = "Bcrypt.lib"
+Library["MONO"]												 = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}/libmono-static-sgen.lib"
+IncludeDir["VulkanSDK"]								 = "%{VULKAN_SDK}/Include" -- includes
+LibraryDir["VulkanSDK"]								 = "%{VULKAN_SDK}/Lib" -- library
+Library["Vulkan"]                      = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
+
+Library["ShaderC_Debug"]               = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
+Library["SPIRV_Cross_Debug"]           = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"
+Library["SPIRV_Cross_GLSL_Debug"]      = "%{LibraryDir.VulkanSDK}/spirv-cross-glsld.lib"
+Library["SPIRV_Tools_Debug"]           = "%{LibraryDir.VulkanSDK}/SPIRV-Toolsd.lib"
+
+Library["ShaderC_Release"]             = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
+Library["SPIRV_Cross_Release"]         = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
+Library["SPIRV_Cross_GLSL_Release"]    = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+
+Library["WinSock"]                     = "Ws2_32.lib"
+Library["WinMM"]                       = "Winmm.lib"
+Library["WinVersion"]                  = "Version.lib"
+Library["BCrypt"]                      = "Bcrypt.lib"
 
 -- Dependencies Lua File
 group "Dependecies"
@@ -56,4 +59,23 @@ include "msdfgen.lua"
 include "freetype.lua"
 include "JoltPhysics.lua"
 include "Optick.lua"
+group ""
+
+group "PhysX"
+include "FastXml.lua"
+include "LowLevel.lua"
+include "LowLevelAABB.lua"
+include "LowLevelDynamics.lua"
+include "PhysX.lua"
+include "PhysXCharacterKinematic.lua"
+include "PhysXCommon.lua"
+include "PhysXCooking.lua"
+include "PhysXExtensions.lua"
+include "PhysXFoundation.lua"
+include "PhysXPvdSDK.lua"
+include "PhysXTask.lua"
+include "PhysXVehicle.lua"
+include "PhysXVehicle2.lua"
+include "SceneQuery.lua"
+include "SimulationController.lua"
 group ""

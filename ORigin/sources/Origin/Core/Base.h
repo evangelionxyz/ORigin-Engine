@@ -4,7 +4,7 @@
 #include <memory>
 
 #ifdef _WIN32
-	#ifndef OGN_PLATFORM_LINUX
+	#ifndef OGN_PLATFORM_WINDOWS
 		#define OGN_PLATFORM_WINDOWS
 	#endif
 #elif __linux__

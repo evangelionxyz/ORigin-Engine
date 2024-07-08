@@ -6,8 +6,6 @@
 #include "SandboxLayer.h"
 #include <imgui.h>
 
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
-
 using namespace origin;
 
 void SandboxLayer::OnAttach()

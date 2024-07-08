@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
+#include "pch.h"
 #include "SceneSerializer.h"
 
 #include "Origin/Asset/AssetImporter.h"
@@ -522,7 +522,7 @@ namespace origin
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << path.filename();
+		out << YAML::Key << "Scene" << YAML::Value << path.filename().string();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		auto view = m_Scene->m_Registry.view<IDComponent>();

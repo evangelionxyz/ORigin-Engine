@@ -1,14 +1,12 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-
+#include "pch.h"
 #include "Renderer.h"
 #include "Renderer3D.h"
 #include "Renderer2D.h"
 #include "UniformBuffer.h"
 
 #include "Origin/Asset/AssetManager.h"
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin {
 

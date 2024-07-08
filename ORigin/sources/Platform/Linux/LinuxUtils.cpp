@@ -1,3 +1,6 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
+#include "pch.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Core/Application.h"
 

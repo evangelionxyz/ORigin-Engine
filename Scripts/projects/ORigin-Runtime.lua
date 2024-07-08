@@ -22,11 +22,12 @@ project "Runtime"
         "msdfgen",
         "freetype",
         "yaml-cpp",
+        "PhysX"
     }
 
     files {
-        "%{prj.location}/sources/**.h",
-        "%{prj.location}/sources/**.cpp"
+        "%{prj.location}/sources/**.cpp",
+        "%{prj.location}/sources/**.h"
     }
 
     includedirs {

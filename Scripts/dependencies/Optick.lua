@@ -17,11 +17,13 @@ project "Optick"
 
 	includedirs{
 		"%{wks.location}/ORigin/vendor/Optick/src",
-		"%{IncludeDir.VulkanSDK}",
 	}
 
 	filter "system:windows"
 		systemversion "latest"
+		includedirs {
+			"%{IncludeDir.VulkanSDK}",
+		}
 
 	filter "configurations:Debug"
 		runtime "Debug"

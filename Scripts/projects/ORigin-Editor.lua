@@ -21,7 +21,8 @@ project "Editor"
         "msdf-atlas-gen",
         "msdfgen",
         "freetype",
-        "yaml-cpp"
+        "yaml-cpp",
+        "PhysX"
     }
 
     files {
@@ -55,10 +56,14 @@ project "Editor"
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
 
+    -- ///////////////////////////////////////////
+    -- Windows
     filter "system:windows"
         systemversion "latest"
         defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
 
+    -- ///////////////////////////////////////////
+    -- Linux
     filter "system:linux"
         pic "On"
         libdirs { "/usr/lib" }

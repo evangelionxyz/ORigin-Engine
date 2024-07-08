@@ -31,12 +31,13 @@ def RegisterEngineEnvVariable():
 
 # Windows Only
 def RegisterMSBuild():
-    vswherePath = "Scripts/vswhere/vswhere.exe"
-    if os.path.exists(vswherePath):
+    vswherePath = "./Scripts/vswhere/vswhere.exe"
+    if not os.path.exists(vswherePath):
+        print(">> Downloading VSWhere")
         vswhereLink = "https://github.com/microsoft/vswhere/releases/download/3.1.7/vswhere.exe"
-        Utils.DownloadFile(vswhereLink)
+        Utils.DownloadFile(vswhereLink, vswherePath)
 
-    visual_studio_path = Utils.FindVisualStudioPath("vswherePath")
+    visual_studio_path = Utils.FindVisualStudioPath(vswherePath)
     variable_path = f"{visual_studio_path}\\MSBuild\\Current\\Bin"
     if Utils.AddNewWindowsSystemPathEnvironment(variable_path):
         print(f">> MSBuild path is registered to {variable_path}")

@@ -1,5 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
+#include "pch.h"
 #include "Project.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Serializer/ProjectSerializer.h"
@@ -9,89 +10,93 @@
 
 namespace origin {
 
-	static std::string GetEnvironment(const char *var)
+	namespace Utils
 	{
-		const char *value = std::getenv(var);
-		if(!value)
+		std::string GetEnvironment(const char *var)
 		{
-			OGN_CORE_ASSERT(false, "[Project] Engine environment variable not found!");
-			return "";
-		}
-		return std::string(value);
-	}
-
-	static std::string ReadFile(const std::string &filepath)
-	{
-		std::ifstream file(filepath);
-		if (!file.is_open())
-		{
-			OGN_CORE_ASSERT(false, "[Project] Failed to open file! {0}", filepath);
-			return "";
-		}
-		std::stringstream stream;
-		stream << file.rdbuf();
-		return stream.str();
-	}
-
-	static bool WriteFile(const std::string &filepath, const std::string &content)
-	{
-		std::ofstream file(filepath);
-		if(!file.is_open())
-		{
-			OGN_CORE_ASSERT(false, "[Project] Failed to open file! {0}", filepath);
-			return false;
+			const char *value = std::getenv(var);
+			if (!value)
+			{
+				OGN_CORE_ASSERT(false, "[Project] Engine environment variable not found!");
+				return "";
+			}
+			return std::string(value);
 		}
 
-		file << content;
-		return true;
-	}
-
-	void ReplaceAll(std::string &str, const std::string &from, const std::string &to)
-	{
-		size_t startPos = 0;
-		while ((startPos = str.find(from, startPos)) != std::string::npos)
+		std::string ReadFile(const std::string &filepath)
 		{
-			str.replace(startPos, from.length(), to);
-			startPos += to.length();
-		}
-	}
-
-	static void GeneratePremakeFile(const std::string &templatePath, const std::string &outputPath, const std::string &projectName)
-	{
-		std::string content = ReadFile(templatePath);
-		if(content.empty())
-		{
-			OGN_CORE_ERROR("[Project] Not content file!");
-			return;
+			std::ifstream file(filepath);
+			if (!file.is_open())
+			{
+				OGN_CORE_ASSERT(false, "[Project] Failed to open file! {0}", filepath);
+				return "";
+			}
+			std::stringstream stream;
+			stream << file.rdbuf();
+			return stream.str();
 		}
 
-		ReplaceAll(content, "{PROJECT_NAME}", projectName);
-		if(!WriteFile(outputPath, content))
+		bool WriteFile(const std::string &filepath, const std::string &content)
 		{
-			OGN_CORE_ASSERT(false, "[Project] Failed to write file! {0}", outputPath);	
+			std::ofstream file(filepath);
+			if (!file.is_open())
+			{
+				OGN_CORE_ASSERT(false, "[Project] Failed to open file! {0}", filepath);
+				return false;
+			}
+
+			file << content;
+			return true;
 		}
-	}
 
-	static void CopyFile(const std::string &scrPath, const std::string &dstPath)
-	{
-		OGN_CORE_ASSERT(std::filesystem::exists(scrPath), "[Project Copy File] Failed to copy file! {0}", scrPath);
-		std::filesystem::copy_file(scrPath, dstPath, std::filesystem::copy_options::overwrite_existing);
-	}
-
-	void ExecuteScript(const std::string &scriptPath)
-	{
-		if(std::filesystem::exists(scriptPath))
+		void ReplaceAll(std::string &str, const std::string &from, const std::string &to)
 		{
-			std::string absolutePath = std::filesystem::absolute(scriptPath).string();
+			size_t startPos = 0;
+			while ((startPos = str.find(from, startPos)) != std::string::npos)
+			{
+				str.replace(startPos, from.length(), to);
+				startPos += to.length();
+			}
+		}
+
+		void GeneratePremakeFile(const std::string &templatePath, const std::string &outputPath, const std::string &projectName)
+		{
+			std::string content = ReadFile(templatePath);
+			if (content.empty())
+			{
+				OGN_CORE_ERROR("[Project] Not content file!");
+				return;
+			}
+
+			ReplaceAll(content, "{PROJECT_NAME}", projectName);
+			if (!WriteFile(outputPath, content))
+			{
+				OGN_CORE_ASSERT(false, "[Project] Failed to write file! {0}", outputPath);
+			}
+		}
+
+		void CopyFile(const std::string &scrPath, const std::string &dstPath)
+		{
+			OGN_CORE_ASSERT(std::filesystem::exists(scrPath), "[Project Copy File] Failed to copy file! {0}", scrPath);
+			std::filesystem::copy_file(scrPath, dstPath, std::filesystem::copy_options::overwrite_existing);
+		}
+
+		void ExecuteScript(const std::string &scriptPath)
+		{
+			if (std::filesystem::exists(scriptPath))
+			{
+				std::string absolutePath = std::filesystem::absolute(scriptPath).string();
 #ifdef _WIN32
-			std::string expandedCmd = "\"" + absolutePath + "\"";
+				std::string expandedCmd = "\"" + absolutePath + "\"";
 #elif __linux__
-			std::string command ="bash " + absolutePath;
+				std::string expandedCmd = "bash " + absolutePath;
 #endif
-			std::system(command.c_str());
+				std::system(expandedCmd.c_str());
+			}
 		}
-		
 	}
+
+	
 
 	void Project::SetStartScene(AssetHandle handle)
 	{
@@ -116,13 +121,15 @@ namespace origin {
 		std::filesystem::path projectFilepath = FileDialogs::SaveFile("ORigin Project | *.oxproj");
 		projectFilepath = projectFilepath.string() + ".oxproj";
 #endif
+
 		if (projectFilepath.empty())
 			return nullptr;
-		
+
 		OGN_CORE_INFO("[Project New] {0}", projectFilepath.string());
 		std::string projectName = projectFilepath.stem().string();
 		std::filesystem::path filepath = projectFilepath.parent_path();
 		
+		// Creating Project Folders
 		std::filesystem::path assetDir = filepath / "Assets";
 		if(!std::filesystem::exists(assetDir))
 		{
@@ -133,41 +140,27 @@ namespace origin {
 				std::filesystem::create_directory(scriptDir);
 			}
 		}
-		
-#ifdef _WIN32
-		std::fstream outfile;
-		std::filesystem::path premakeGenFilepath;
-		std::string winGenerateFile = "call %ORiginEngine%\\Scripts\\premake\\premake5.exe vs2022";
-		premakeGenFilepath = filepath / "WinGen.bat";
 
-		outfile = std::fstream(premakeGenFilepath, std::ios::out);
-		if (outfile.is_open())
-		{
-			outfile << "cd /d %~dp0" << std::endl;
-			outfile << premakeGenFilepath << std::endl;
-			outfile << "call MSBuild " << projectName << ".sln";
-			outfile.close();
-		}
-
-		ExecuteScript(premakeGenFilepath);
-
-#elif __linux__
 		// Get premake5.lua template
-		std::string enginePath = GetEnvironment("ORiginEngine");
+		std::string enginePath = Utils::GetEnvironment("ORiginEngine");
 		std::string premakeFilepath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/premake_template.lua").generic_string();
-		std::string newPremakeFilepath = std::string(filepath) + "/premake5.lua";
-		OGN_CORE_ERROR("{0}", newPremakeFilepath);
-		GeneratePremakeFile(premakeFilepath, newPremakeFilepath, projectName);
+		std::string projectPremakeLocation = filepath.string() + "/premake5.lua";
+		OGN_CORE_ERROR("{0}", projectPremakeLocation);
+		Utils::GeneratePremakeFile(premakeFilepath, projectPremakeLocation, projectName);
+		
 
-		// Copying the LinuxBuild.sh
-		std::string linuxBuildFilepath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/LinuxBuild.sh").generic_string();
-		std::string newLinuxBuildFilepath = std::string(filepath) + "/LinuxBuild.sh";
-		
-		CopyFile(linuxBuildFilepath, newLinuxBuildFilepath);
-		
-		// Check if the shell file exists and execute it to build makefile
-		ExecuteScript(newLinuxBuildFilepath);
+#ifdef _WIN32
+		// Copying the build.bat
+		std::string buildScriptPath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/build.bat").generic_string();
+		std::string projectBuildScriptPath = filepath.string() + "/build.bat";
+		Utils::CopyFile(buildScriptPath, projectBuildScriptPath);
+#elif __linux__
+		// Copying the build.sh
+		std::string buildScriptPath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/build.sh").generic_string();
+		std::string projectBuildScriptPath = filepath.string() + "/build.sh";
+		Utils::CopyFile(buildScriptPath, projectBuildScriptPath);
 #endif
+		Utils::ExecuteScript(projectBuildScriptPath);
 
 		std::shared_ptr<Project> newProject = std::make_shared<Project>();
 

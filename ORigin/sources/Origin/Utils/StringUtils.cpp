@@ -1,4 +1,6 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
+#include "pch.h"
 #include "StringUtils.h"
 
 namespace origin::Utils

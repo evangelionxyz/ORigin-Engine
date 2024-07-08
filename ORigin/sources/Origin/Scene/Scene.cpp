@@ -1,4 +1,6 @@
-﻿// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
+#include "pch.h"
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Profiler/Profiler.h"
@@ -17,8 +19,6 @@
 #include "ScriptableEntity.h"
 
 #include <glm/glm.hpp>
-
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
 
 namespace origin
 {

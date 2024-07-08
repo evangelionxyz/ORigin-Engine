@@ -19,6 +19,7 @@ project "Sandbox"
         "msdfgen",
         "freetype",
         "yaml-cpp",
+        "PhysX"
     }
 
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/Sandbox")
@@ -26,6 +27,7 @@ project "Sandbox"
 
     files {
         "%{prj.location}/sources/**.cpp",
+        "%{prj.location}/sources/**.h"
     }
 
     includedirs {

@@ -1,7 +1,10 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
+#include "pch.h"
 #include "JoltContactListenerImpl.h"
 
-namespace origin {
+namespace origin 
+{
 
 	JPH::ValidateResult JoltContactListenerImpl::OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult& inCollisionResult)
 	{

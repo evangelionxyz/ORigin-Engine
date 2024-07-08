@@ -7,12 +7,21 @@ project "ORigin"
     staticruntime "off"
     location "%{wks.location}/ORigin"
 
+    pchheader "pch.h"
+    pchsource "%{prj.location}/sources/pch.cpp"
+
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
     objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
     files {
+        "%{prj.location}/sources/pch.cpp",
+        "%{prj.location}/sources/pch.h",
         "%{prj.location}/sources/Origin/**.cpp",
+        "%{prj.location}/sources/Origin/**.h",
+
         "%{prj.location}/sources/Platform/OpenGL/**.cpp",
+        "%{prj.location}/sources/Platform/OpenGL/**.h",
+
         "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
         "%{IncludeDir.IMGUIZMO}/ImGuizmo.h",
         "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
@@ -59,6 +68,7 @@ project "ORigin"
         "msdfgen",
         "freetype",
         "yaml-cpp",
+        "PhysX"
     }
     
     defines { "GLFW_INCLUDE_NONE", "_CRT_SECURE_NO_WARNINGS" }
@@ -67,11 +77,24 @@ project "ORigin"
     -- Windows
     filter "system:windows"
         systemversion "latest"
+        links {
+            "opengl32.lib",
+            "%{Library.Vulkan}",
+            "%{Library.MONO}",
+            "%{Library.WinSock}",
+            "%{Library.WinMM}",
+            "%{Library.WinVersion}",
+            "%{Library.BCrypt}"
+        }
         files {
             "%{prj.location}/sources/Platform/DX11/**.cpp",
+            "%{prj.location}/sources/Platform/DX11/**.h",
             "%{prj.location}/sources/Platform/Win32/**.cpp",
+            "%{prj.location}/sources/Platform/Win32/**.h",
         }
-        includedirs { "%{IncludeDir.WindowsVulkanSDK}" }
+        includedirs { 
+          "%{IncludeDir.VulkanSDK}"
+        }
 
         defines {
             "OGN_PLATFORM_WINDOWS",
@@ -79,24 +102,15 @@ project "ORigin"
             "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
         }
 
-        links {
-            "opengl32.lib",
-            "%{Library.WVulkan}",
-            "%{Library.WindowsMONO}",
-            "%{Library.WinSock}",
-            "%{Library.WinMM}",
-            "%{Library.WinVersion}",
-            "%{Library.BCrypt}"
-        }
-
         filter "configurations:Debug"
             runtime "Debug"
             symbols "On"
             defines { "OGN_DEBUG", "_DEBUG" }
-                links {
-                "%{Library.WSPIRV_Cross_Debug}",
-                "%{Library.WSPIRV_Cross_GLSL_Debug}",
-                "%{Library.WSPIRV_Tools_Debug}",
+            links {
+                "%{Library.ShaderC_Debug}",
+                "%{Library.SPIRV_Cross_Debug}",
+                "%{Library.SPIRV_Cross_GLSL_Debug}",
+                "%{Library.SPIRV_Tools_Debug}",
             }
 
         filter "configurations:Release"
@@ -104,15 +118,20 @@ project "ORigin"
             optimize "On"
             defines { "OGN_RELEASE", "NDEBUG" }
             links {
-                "%{Library.WShaderC_Release}",
-                "%{Library.WSPIRV_Cross_Release}",
-                "%{Library.WSPIRV_Cross_GLSL_Release}",
+                "%{Library.ShaderC_Release}",
+                "%{Library.SPIRV_Cross_Release}",
+                "%{Library.SPIRV_Cross_GLSL_Release}",
             }
 
         filter "configurations:Dist"
             runtime "Release"
             optimize "On"
             defines { "OGN_RELEASE", "NDEBUG" }
+            links {
+                "%{Library.ShaderC_Release}",
+                "%{Library.SPIRV_Cross_Release}",
+                "%{Library.SPIRV_Cross_GLSL_Release}",
+            }
     -- !Windows
     -- ////////////////////////////////
 
