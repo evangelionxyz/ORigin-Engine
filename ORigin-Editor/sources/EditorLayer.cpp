@@ -16,6 +16,49 @@
 
 #include "Panels/AnimationTimeline.h"
 
+
+glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
+{
+	float x = (2.0f * mouse.x) / screen.x - 1;
+	float y = 1.0f - (2.0f * mouse.y) / screen.y;
+	return glm::vec2(x, y);
+}
+
+glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc)
+{
+	return glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
+}
+
+glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
+{
+	glm::mat4 inverseProjection = glm::inverse(projectionMatrix);
+	glm::vec4 eyeCoords = inverseProjection * clipCoords;
+	return glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+}
+
+glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
+{
+	glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
+	return glm::normalize(glm::vec3(worldCoords));
+}
+
+bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)
+{
+    glm::vec3 oc = rayOrigin - sphereCenter;
+    float a = glm::dot(rayDirection, rayDirection);
+    float b = 2.0f * glm::dot(oc, rayDirection);
+    float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
+    float discriminant = b * b - 4 * a * c;
+    return (discriminant > 0);
+}
+
+void DrawRay(const glm::vec3 &orgn, const glm::vec3 &direction, float length, const glm::vec4 &color)
+{
+    glm::vec3 end = orgn + glm::normalize(direction) * length;
+    origin::Renderer2D::DrawLine(orgn, end, color);
+}
+
+
 namespace origin
 {
 	static EditorLayer *s_Instance = nullptr;
@@ -49,17 +92,17 @@ namespace origin
 
 		FramebufferSpecification fbSpec;
 		fbSpec.Attachments =
-	  {
-			FramebufferTextureFormat::RGBA8,
-			FramebufferTextureFormat::RED_INTEGER,
-			FramebufferTextureFormat::DEPTH24STENCIL8
+		{
+			  FramebufferTextureFormat::RGBA8,
+			  FramebufferTextureFormat::RED_INTEGER,
+			  FramebufferTextureFormat::DEPTH24STENCIL8
 		};
 
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
-		//m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 500.0f);
+		m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 500.0f);
 		m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
 		m_EditorCamera.SetPosition({0.0f, 1.0f, 10.0f});
 
@@ -152,21 +195,58 @@ namespace origin
 		Render(ts);
 		m_ActiveScene->GetUIRenderer()->Render();
 
-		if (IsViewportHovered && IsViewportFocused)
+		//if (IsViewportHovered && IsViewportFocused)
 		{
 			auto [mx, my] = ImGui::GetMousePos();
-			glm::ivec2 mousePos = { mx, my };
-			mousePos -= m_SceneViewportBounds[0];
+			m_ViewportMousePos = { mx, my };
+			// m_SceneViewportBounds[0] = top left (based on screen coordinate)
+			// m_SceneViewportBounds[1] = bottom right (based on screen coordinate)
+			m_ViewportMousePos -= m_SceneViewportBounds[0];
 			const glm::ivec2 &viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
-			mousePos.y = viewportSize.y - mousePos.y;
-			mousePos = glm::clamp(mousePos, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
-			m_PixelData = m_Framebuffer->ReadPixel(1, mousePos.x, mousePos.y);
+			m_ViewportMousePos.y = viewportSize.y - m_ViewportMousePos.y;
+			m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
+			m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
 			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
 			m_Gizmos->SetHovered(m_PixelData);
+			
+			glm::vec2 ndc = GetNormalizedDeviceCoord(m_ViewportMousePos, viewportSize);
+			glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
+			glm::vec4 eye = GetEyeCoord(hmc, m_EditorCamera.GetProjection());
+			glm::vec3 worldRay = GetWorldCoord(eye, m_EditorCamera.GetViewMatrix());
+
+			glm::vec3 rayOrigin = m_EditorCamera.GetPosition();
+			glm::vec3 rayDirection = worldRay;
+            glm::vec3 sphereCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+			glm::vec3 sphere2Center = glm::vec3(5.0f, 0.0f, 10.0f);
+            float sphereRadius = 1.0f;
+
+			Renderer2D::Begin(m_EditorCamera);
+
+			Renderer2D::DrawLine(glm::vec3(0.0f), rayDirection * 150.0f);
+			
+			Renderer2D::End();
+
+			Renderer3D::Begin(m_EditorCamera);
+            // Draw the ray
+            //DrawRay(rayOrigin, rayDirection, 100.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			glm::mat4 t = glm::translate(glm::mat4(1.0f), sphereCenter);
+            Renderer3D::DrawSphere(t, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), sphereRadius);
+
+            if (RayIntersectsSphere(rayOrigin, rayDirection, sphereCenter, sphereRadius))
+            {
+				OGN_CORE_INFO("I am here Eye: {0} world: {0}", eye, worldRay);
+            }
+			t = glm::translate(glm::mat4(1.0f), sphere2Center);
+			Renderer3D::DrawSphere(t, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), sphereRadius);
+            if (RayIntersectsSphere(rayOrigin, rayDirection, sphere2Center, sphereRadius))
+            {
+                OGN_CORE_INFO("I am here Eye: {0} world: {0}", eye, worldRay);
+            }
+
+			Renderer3D::End();
 		}
 
 		InputProcedure(ts);
-
 		m_Framebuffer->Unbind();
 	}
 

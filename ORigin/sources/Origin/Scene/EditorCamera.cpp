@@ -302,8 +302,7 @@ namespace origin {
 			
 			break;
 		case ProjectionType::Orthographic:
-			m_Position += glm::vec3(-delta.x * (m_OrthoScale / m_ViewportHeight) * 300.0f,
-				delta.y * (m_OrthoScale / m_ViewportHeight) * 300.0f, 0.0f);
+			m_Position += glm::vec3(-delta.x * (m_OrthoScale / m_ViewportHeight) * 300.0f, delta.y * (m_OrthoScale / m_ViewportHeight) * 300.0f, 0.0f);
 			break;
 		}
 	}
