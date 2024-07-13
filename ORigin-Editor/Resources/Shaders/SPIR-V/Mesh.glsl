@@ -95,7 +95,7 @@ void main()
 
 	vec3 finalColor = totalLight * Material.Color.rgb;
 
-	oColor = vec4(finalColor, 1.0);
+	oColor = vec4(1.0, 0.0, 0.0, 1.0);
 	oEntityID = EntityID;
 }
 

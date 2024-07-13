@@ -36,6 +36,7 @@ project "Editor"
         "%{wks.location}/sources",
         "%{IncludeDir.SPDLOG}",
         "%{IncludeDir.ASSIMP}",
+        "%{IncludeDir.STBI}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.BOX2D}",
@@ -60,7 +61,13 @@ project "Editor"
     -- Windows
     filter "system:windows"
         systemversion "latest"
-        defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
+        files {
+          "%{prj.location}/Editor.rc",
+        }
+        defines {
+          "NV_USE_STATIC_WINCRT",
+          "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
+        }
 
     -- ///////////////////////////////////////////
     -- Linux

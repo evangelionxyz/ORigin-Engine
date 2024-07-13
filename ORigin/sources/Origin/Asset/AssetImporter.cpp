@@ -198,13 +198,12 @@ namespace origin {
 
 	std::shared_ptr<Model> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
 	{
-		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath, nullptr);
 	}
 
-	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path &filepath)
+	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path &filepath, Scene *scene)
 	{
-		OGN_CORE_ERROR("[ModelImporter] Not implemented");
-		return nullptr;
+		return Model::Create(filepath.string().c_str(), scene);
 	}
 
 	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)

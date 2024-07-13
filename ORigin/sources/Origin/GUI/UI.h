@@ -121,19 +121,19 @@ namespace origin::UI
 		return ret;
 	}
 
-	static bool DrawButtonWithColumn(const char *lable, const char *text, bool *value = nullptr, std::function<void()> func = std::function<void()>(), float coloumnWidth = defColWidth)
+	static bool DrawButtonWithColumn(const char *label, const char *text, bool *value = nullptr, std::function<void()> func = std::function<void()>(), float coloumnWidth = defColWidth)
 	{
 		bool ret = false;
 
-		ImGui::PushID(lable);
+		ImGui::PushID(label);
 
 		float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		float lineWidth = GImGui->FontSize + GImGui->Style.FramePadding.x * (ImGui::CalcTextSize(text).x / 4.0f);
 		ImVec2 btSize = ImVec2(lineWidth, lineHeight);
 
-		ImGui::BeginColumns(lable, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
+		ImGui::BeginColumns(label, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(lable);
+		ImGui::Text(label);
 		ImGui::NextColumn();
 
 		ret = ImGui::Button(text, btSize);
@@ -150,15 +150,15 @@ namespace origin::UI
 		return ret;
 	}
 
-	static bool DrawCheckbox(const char *lable, bool *value, float coloumnWidth = defColWidth)
+	static bool DrawCheckbox(const char *label, bool *value, float coloumnWidth = defColWidth)
 	{
 		bool ret = false;
 
-		ImGui::PushID(lable);
+		ImGui::PushID(label);
 
-		ImGui::BeginColumns(lable, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
+		ImGui::BeginColumns(label, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(lable);
+		ImGui::Text(label);
 		ImGui::NextColumn();
 
 		ret = ImGui::Checkbox("##check_box", value);
@@ -168,14 +168,14 @@ namespace origin::UI
 		return ret;
 	}
 
-	static bool DrawVec4Control(const char *lable, glm::vec4 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+	static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
 	{
 		bool changed = false;
-		ImGui::PushID(lable);
+		ImGui::PushID(label);
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(lable);
+		ImGui::Text(label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
@@ -279,15 +279,15 @@ namespace origin::UI
 		return changed;
 	}
 
-	static bool DrawVec3Control(const char *lable, glm::vec3 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+	static bool DrawVec3Control(const char *label, glm::vec3 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
 	{
 		bool changed = false;
 
-		ImGui::PushID(lable);
+		ImGui::PushID(label);
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(lable);
+		ImGui::Text(label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
@@ -370,15 +370,15 @@ namespace origin::UI
 		return changed;
 	}
 
-	static bool DrawVec2Control(const char *lable, glm::vec2 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+	static bool DrawVec2Control(const char *label, glm::vec2 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
 	{
 		bool changed = false;
 
-		ImGui::PushID(lable);
+		ImGui::PushID(label);
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(lable);
+		ImGui::Text(label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
@@ -439,15 +439,15 @@ namespace origin::UI
 		return changed;
 	}
 
-	static bool DrawFloatControl(const char *lable, float *value, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+	static bool DrawFloatControl(const char *label, float *value, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
 	{
 		bool changed = false;
 
-		ImGui::PushID(lable);
+		ImGui::PushID(label);
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(lable);
+		ImGui::Text(label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
@@ -481,15 +481,15 @@ namespace origin::UI
 		return changed;
 	}
 
-	static bool DrawIntControl(const char *lable, int *value, float speed = 1.0f, int minValue = 0, int maxValue = INT_MAX, int resetValue = 0, float coloumnWidth = defColWidth)
+	static bool DrawIntControl(const char *label, int *value, float speed = 1.0f, int minValue = 0, int maxValue = INT_MAX, int resetValue = 0, float coloumnWidth = defColWidth)
 	{
 		bool changed = false;
 
-		ImGui::PushID(lable);
+		ImGui::PushID(label);
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(lable);
+		ImGui::Text(label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());

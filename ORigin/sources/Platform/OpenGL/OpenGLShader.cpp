@@ -7,7 +7,6 @@
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <shaderc/shaderc.hpp>
@@ -182,8 +181,9 @@ namespace origin {
       Utils::CreateCachedDirectoryIfNeeded();
 
       std::string source = ReadFile(filepath);
-      auto shaderSources = PreProcess(source);
       {
+        auto shaderSources = PreProcess(source);
+        
         Timer timer;
         CompileOrGetVulkanBinaries(shaderSources);
         CompileOrGetOpenGLBinaries();
@@ -253,12 +253,12 @@ namespace origin {
   {
     OGN_PROFILER_RENDERING();
 
-    GLuint program = glCreateProgram();
+    uint32_t program = glCreateProgram();
 
-    std::vector<GLuint> shaderIDs;
+    std::vector<uint32_t> shaderIDs;
     for (auto &&[stage, spirv] : m_OpenGLSPIRV)
     {
-      GLuint shaderID = shaderIDs.emplace_back(glCreateShader(stage));
+      uint32_t shaderID = shaderIDs.emplace_back(glCreateShader(stage));
       glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
       glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
       glAttachShader(program, shaderID);
@@ -268,7 +268,7 @@ namespace origin {
     glLinkProgram(program);
     glValidateProgram(program);
 
-    GLint isLinked;
+    int isLinked;
 
     glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
     if (isLinked < 0)
@@ -278,7 +278,7 @@ namespace origin {
 
     if (isLinked == GL_FALSE)
     {
-      GLint maxLength;
+      int maxLength;
       glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
       std::vector<GLchar> infolog(maxLength);
       glGetProgramInfoLog(program, maxLength, &maxLength, infolog.data());
@@ -355,7 +355,7 @@ namespace origin {
   {
     OGN_PROFILER_RENDERING();
 
-    GLuint program = glCreateProgram();
+    uint32_t program = glCreateProgram();
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
     options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
@@ -494,11 +494,11 @@ namespace origin {
     }
   }
 
-  GLuint OpenGLShader::CompileShader(GLuint type, const std::string &source)
+  uint32_t OpenGLShader::CompileShader(uint32_t type, const std::string &source)
   {
     OGN_PROFILER_RENDERING();
 
-    GLuint shaderID = glCreateShader(type);
+    uint32_t shaderID = glCreateShader(type);
     const char *src = source.c_str();
     glShaderSource(shaderID, 1, &src, nullptr);
     glCompileShader(shaderID);
@@ -509,7 +509,7 @@ namespace origin {
     if (!success)
     {
       glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
-      const char *m = "Shader: Failed to Compile ";
+      const char *m = "[OpenGLShader] Failed to Compile ";
       const char *shaderType {};
 
       switch (type)
@@ -535,7 +535,7 @@ namespace origin {
         free(msg);
       }
 
-      OGN_CORE_ASSERT(false, infoLog);
+      OGN_CORE_ASSERT(false, "[OpenGLShader] {0}", infoLog);
       return 0;
     }
 
@@ -555,17 +555,17 @@ namespace origin {
     return shaderID;
   }
 
-  GLuint OpenGLShader::CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc)
+  uint32_t OpenGLShader::CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc)
   {
     OGN_PROFILER_RENDERING();
 
     // Create Program
-    GLuint shaderProgram = glCreateProgram();
-    GLuint vShader = CompileShader(GL_VERTEX_SHADER, vertexSrc);
-    GLuint fShader = CompileShader(GL_FRAGMENT_SHADER, fragmentSrc);
+    uint32_t shaderProgram = glCreateProgram();
+    uint32_t vShader = CompileShader(GL_VERTEX_SHADER, vertexSrc);
+    uint32_t fShader = CompileShader(GL_FRAGMENT_SHADER, fragmentSrc);
     if (!geometrySrc.empty())
     {
-      GLuint gShader = CompileShader(GL_GEOMETRY_SHADER, geometrySrc);
+      uint32_t gShader = CompileShader(GL_GEOMETRY_SHADER, geometrySrc);
       glAttachShader(shaderProgram, gShader);
     }
 
@@ -589,6 +589,11 @@ namespace origin {
   void OpenGLShader::Disable() const
   {
     glUseProgram(0);
+  }
+
+  void OpenGLShader::Reload()
+  {
+    OGN_CORE_ASSERT(false, "[OpenGLShader] Not implemented");
   }
 
   void OpenGLShader::SetBool(const std::string &name, bool boolean)

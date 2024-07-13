@@ -1,10 +1,10 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Texture.h"
+#include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/Components.h"
+
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 namespace origin
 {

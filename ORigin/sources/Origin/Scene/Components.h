@@ -124,7 +124,7 @@ namespace origin
 	{
 	public:
 		std::string Name;
-		std::shared_ptr<Mesh> OMesh;
+		std::shared_ptr<Mesh> HMesh;
 		AssetHandle HMaterial = UUID(0);
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;

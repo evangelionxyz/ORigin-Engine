@@ -6,7 +6,8 @@
 #include "Origin/Project/Project.h"
 #include <yaml-cpp/yaml.h>
 
-namespace origin {
+namespace origin
+{
 
 	static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap = {
 		{ ".org", AssetType::Scene },
@@ -36,7 +37,7 @@ namespace origin {
 		return s_AssetExtensionMap.at(extension);
 	}
 
-	YAML::Emitter& operator<<(YAML::Emitter& out, const std::string_view& v)
+	YAML::Emitter &operator<<(YAML::Emitter &out, const std::string_view &v)
 	{
 		out << std::string(v.data(), v.size());
 		return out;
@@ -55,7 +56,7 @@ namespace origin {
 		}
 		else
 		{
-			const AssetMetadata& metadata = GetMetadata(handle);
+			const AssetMetadata &metadata = GetMetadata(handle);
 
 			if (metadata.Type == AssetType::Font)
 			{
@@ -101,7 +102,7 @@ namespace origin {
 		return m_AssetRegistry.at(handle).Type;
 	}
 
-	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path& filepath)
+	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepath)
 	{
 		AssetHandle handle;
 		AssetMetadata metadata;
@@ -116,7 +117,7 @@ namespace origin {
 		}
 
 		std::shared_ptr<Asset> asset;
-		
+
 		if (metadata.Type == AssetType::Font)
 		{
 			auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
@@ -163,7 +164,7 @@ namespace origin {
 			m_LoadedAssets.erase(handle);
 	}
 
-	const origin::AssetMetadata& EditorAssetManager::GetMetadata(AssetHandle handle) const
+	const origin::AssetMetadata &EditorAssetManager::GetMetadata(AssetHandle handle) const
 	{
 		static AssetMetadata s_NullMetadata;
 		auto it = m_AssetRegistry.find(handle);
@@ -173,7 +174,7 @@ namespace origin {
 		return it->second;
 	}
 
-	const std::filesystem::path& EditorAssetManager::GetFilepath(AssetHandle handle)
+	const std::filesystem::path &EditorAssetManager::GetFilepath(AssetHandle handle)
 	{
 		return GetMetadata(handle).Filepath;
 	}
@@ -188,9 +189,9 @@ namespace origin {
 		{
 			out << YAML::BeginMap; // Root
 			out << YAML::Key << "AssetRegistry" << YAML::Value;
-			
+
 			out << YAML::BeginSeq;
-			for (const auto& [handle, metadata] : m_AssetRegistry)
+			for (const auto &[handle, metadata] : m_AssetRegistry)
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "Handle" << YAML::Value << handle;
@@ -220,11 +221,10 @@ namespace origin {
 		}
 
 		YAML::Node data;
-		try 
+		try
 		{
 			data = YAML::LoadFile(path.generic_string());
-		}
-		catch (YAML::ParserException e) 
+		} catch (YAML::ParserException e)
 		{
 			OGN_CORE_ASSERT(false, "[EditorAssetManager] Failed to load project file: {0}\n\t{1}", path, e.what());
 			return false;
@@ -234,10 +234,10 @@ namespace origin {
 		if (!rootNode)
 			return false;
 
-		for (const auto& node : rootNode)
+		for (const auto &node : rootNode)
 		{
 			AssetHandle handle = node["Handle"].as<uint64_t>();
-			auto& metadata = m_AssetRegistry[handle];
+			auto &metadata = m_AssetRegistry[handle];
 			metadata.Filepath = node["Filepath"].as<std::string>();
 			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());
 		}

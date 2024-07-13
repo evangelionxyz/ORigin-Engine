@@ -16,7 +16,7 @@ if %choice%==1 (
     goto menu
 )
 
-pushd %~dp0\..\scripts
+pushd %~dp0\..\Scripts
 call premake\premake5.exe %build_system%
 popd
 

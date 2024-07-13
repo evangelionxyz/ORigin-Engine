@@ -1,3 +1,5 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "AnimationTimeline.h"
 #include "Origin/Scene/Components.h"
 

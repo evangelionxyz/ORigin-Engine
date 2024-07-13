@@ -1,8 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-
-
 #include "Origin/Renderer/Buffer.h"
 
 namespace origin
@@ -32,7 +30,7 @@ namespace origin
 	{
 	public:
 		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
-		OpenGLIndexBuffer(std::vector<uint32_t> indices);
+		OpenGLIndexBuffer(const std::vector<uint32_t> &indices);
 
 		virtual ~OpenGLIndexBuffer();
 

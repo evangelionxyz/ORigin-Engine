@@ -26,7 +26,7 @@ void main()
 	  vertex.TexCoord = aTexCoord;
 
     vertex.LightSpacePosition = uLightSpaceMatrix * vec4(vertex.Position, 1.0);
-	gl_Position = uViewProjection * vec4(vertex.Position, 1.0);
+	  gl_Position = uViewProjection * vec4(vertex.Position, 1.0);
 }
 
 // type fragment

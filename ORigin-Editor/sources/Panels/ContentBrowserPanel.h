@@ -44,7 +44,7 @@ namespace origin
 
 		std::vector<TreeNode> m_TreeNodes;
 		std::map<std::filesystem::path, std::vector<std::filesystem::path>> m_AssetTree;
-		int m_ThumbnailSize = 90;
+		int m_ThumbnailSize = 64;
 
 		enum class Mode
 		{

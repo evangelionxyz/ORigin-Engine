@@ -15,26 +15,26 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		m_VertexArray = VertexArray::Create();
-		m_VertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(MeshVertex));
+		VertexArray = VertexArray::Create();
+		VertexBuffer = VertexBuffer::Create((void*)vertices.data(), vertices.size() * sizeof(MeshVertex));
 
-		m_VertexBuffer->SetLayout
+		VertexBuffer->SetLayout
 		({
 			{ ShaderDataType::Float3, "aPosition"		},
 			{ ShaderDataType::Float3, "aNormal"			},
 			{	ShaderDataType::Float2,	"aTexCoord"		}
 		});
 
-		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+		VertexArray->AddVertexBuffer(VertexBuffer);
 
 		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(indices);
-		m_VertexArray->SetIndexBuffer(indexBuffer);
+		VertexArray->SetIndexBuffer(indexBuffer);
 
 		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
 
 		// Create uniform buffer
 		int uniformBinding = 0;
-		m_UniformBuffer = UniformBuffer::Create(sizeof(m_UniformData), uniformBinding);
+		UniformBuffer = UniformBuffer::Create(sizeof(UniformData), uniformBinding);
 	}
 
 	OpenGLMesh::~OpenGLMesh()
@@ -43,12 +43,12 @@ namespace origin
 
 	void OpenGLMesh::Draw(const glm::mat4 &transform, int entityId)
 	{
-		m_UniformData.Transform = transform;
-		m_UniformData.EntityId = entityId;
+		UniformData.Transform = transform;
+		UniformData.EntityId = entityId;
 
-		m_UniformBuffer->Bind();
-		RenderCommand::DrawIndexed(m_VertexArray);
-		m_UniformBuffer->Unbind();
+		VertexBuffer->Bind();
+		UniformBuffer->Bind();
+		RenderCommand::DrawIndexed(VertexArray);
+		UniformBuffer->Unbind();
 	}
-	
 }

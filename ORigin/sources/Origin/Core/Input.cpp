@@ -41,13 +41,6 @@ namespace origin
 		return state == GLFW_PRESS;
 	}
 
-	bool Input::IsMouseDragging()
-	{
-		OGN_PROFILER_INPUT();
-
-		return s_Instance->m_IsMouseDragging;
-	}
-
 	glm::vec2 Input::GetMousePosition()
 	{
 		OGN_PROFILER_INPUT();

@@ -1,7 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "SceneHierarchyPanel.h"
 #include "../EditorLayer.h"
+
+#include "UIEditor.h"
+#include "SceneHierarchyPanel.h"
+#include "ModelLoaderPanel.h"
+
 #include "Origin/GUI/UI.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Asset/AssetManager.h"
@@ -12,15 +16,14 @@
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Scene/Lighting.h"
-#include "UIEditor.h"
 
-#include "box2d/b2_revolute_joint.h"
-#include "box2d/b2_fixture.h"
+#include <box2d/b2_revolute_joint.h>
+#include <box2d/b2_fixture.h>
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace origin {
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene>& scene)
+	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene> &scene)
 	{
 		SetActiveScene(scene);
 	}
@@ -100,7 +103,7 @@ namespace origin {
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed
 			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 1.6f });
 		ImGui::Separator();
 		bool open = ImGui::TreeNodeEx((void *)typeid(EditorLayer::Get().m_ActiveScene).hash_code(), treeNodeFlags, EditorLayer::Get().m_ActiveScene->GetName().c_str());
 		ImGui::PopStyleVar();
@@ -184,11 +187,13 @@ namespace origin {
 			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap
 			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
 
-		ImVec4 headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.1f, 0.1f, 0.3f, 1.0f) : ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+		ImVec4 headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.1f, 0.1f, 0.3f, 1.0f) : ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
 		ImVec4 headerHovered = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.7f, 1.0f) : ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
 
 		if (m_SelectedEntity == entity)
+		{
 			headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.9f, 1.0f) : ImVec4(0.47f, 0.47f, 0.47f, 1.0f);
+		}
 
 		ImGui::PushStyleColor(ImGuiCol_Header, headerActive);
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, headerHovered);
@@ -334,11 +339,8 @@ namespace origin {
 			DisplayAddComponentEntry<RevoluteJoint2DComponent>("2D REVOLUTE JOINT");
 			DisplayAddComponentEntry<SpriteAnimationComponent>("2D SPRITE ANIMATION");
 			DisplayAddComponentEntry<CircleRendererComponent>("2D CIRCLE RENDERER 2D");
-			if (!m_SelectedEntity.HasComponent<Rigidbody2DComponent>())
-			{
-				DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
-			}
-			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH COMPONENT");
+			DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
+			DisplayAddComponentEntry<ModelComponent>("MODEL");
 			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
 			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
 			if (DisplayAddComponentEntry<LightComponent>("LIGHTING"))
@@ -363,83 +365,110 @@ namespace origin {
 			UI::DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 		});
 
-		DrawComponent<StaticMeshComponent>("STATIC MESH", entity, [](auto &component)
-			{
-				std::string lable = "None";
+		DrawComponent<ModelComponent>("MODEL", entity, [&, scene = m_Scene](auto &component)
+		{
+			std::string label = "None";
 
-				ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
-				// Model Button
-				ImGui::Button(lable.c_str(), buttonSize);
-				if (ImGui::BeginDragDropTarget())
+			ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+			// Model Button
+			ImGui::Button(label.c_str(), buttonSize);
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+					if (AssetManager::GetAssetType(handle) == AssetType::Model)
 					{
-						AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
-						if (AssetManager::GetAssetType(handle) == AssetType::Model)
+						component.Handle = handle;
+						UUID uuid = entity.GetUUID();
+						ModelLoaderPanel::Show(uuid, &component, handle, scene.get());
+					}
+					else
+					{
+						OGN_CORE_WARN("Wrong asset type!");
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
+			const float xSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
+
+			if (component.Handle)
+			{
+				// model x button
+				{
+					ImGui::SameLine();
+					ImGui::PushID("model_delete");
+
+					if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
+					{
+						component.Handle = UUID(0);
+						UUID uuid = entity.GetUUID();
+
+						// TODO: Fix the removing itself
+						m_Scene->m_Registry.view<IDComponent>().each([&](entt::entity e, auto idc)
 						{
-							//component.OMesh = AssetManager::GetAsset<Mesh>(handle);
+							if (EntityManager::IsParent(idc.ID, uuid, m_Scene.get()))
+							{
+								Entity entt = { e, m_Scene.get() };
+								m_Scene->m_Registry.destroy(e);
+								m_Scene->m_EntityStorage.erase(std::remove_if(m_Scene->m_EntityStorage.begin(), m_Scene->m_EntityStorage.end(),
+									[&](auto e)
+								{
+									return e.first == idc.ID;
+								}), m_Scene->m_EntityStorage.end());
+							}
+						});
+					}
+							
+					ImGui::PopID();
+
+#if 0
+					if (component.HMaterial != 0)
+					{
+						if (AssetManager::IsAssetHandleValid(component.HMaterial) && AssetManager::GetAssetType(component.HMaterial) == AssetType::Material)
+						{
+							const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.HMaterial);
+							label = metadata.Filepath.filename().string();
 						}
 						else
 						{
-							OGN_CORE_WARN("Wrong asset type!");
+							label = "Default";
 						}
 					}
-					ImGui::EndDragDropTarget();
+#endif
 				}
 
-				const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
-				const float xSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-
-				if (component.OMesh)
+					
+#if 0
 				{
-					// model x button
+					// Material Button
+					ImGui::Button(label.c_str(), buttonSize);
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+							if (AssetManager::GetAssetType(handle) == AssetType::Material)
+								component.HMaterial = handle;
+							else
+								OGN_CORE_WARN("Wrong asset type!");
+						}
+						ImGui::EndDragDropTarget();
+					}
+
+					if (component.HMaterial)
 					{
 						ImGui::SameLine();
-						ImGui::PushID("model_delete");
+						ImGui::PushID("material_delete");
 						if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
-							component.OMesh = 0;
+							component.HMaterial = 0;
 						ImGui::PopID();
-
-						if (component.HMaterial != 0)
-						{
-							if (AssetManager::IsAssetHandleValid(component.HMaterial) && AssetManager::GetAssetType(component.HMaterial) == AssetType::Material)
-							{
-								const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.HMaterial);
-								lable = metadata.Filepath.filename().string();
-							}
-							else
-							{
-								lable = "Default";
-							}
-						}
-					}
-
-					// Material Button
-					{
-						ImGui::Button(lable.c_str(), buttonSize);
-						if (ImGui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-								if (AssetManager::GetAssetType(handle) == AssetType::Material)
-									component.HMaterial = handle;
-								else
-									OGN_CORE_WARN("Wrong asset type!");
-							}
-							ImGui::EndDragDropTarget();
-						}
-
-						if (component.HMaterial)
-						{
-							ImGui::SameLine();
-							ImGui::PushID("material_delete");
-							if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
-								component.HMaterial = 0;
-							ImGui::PopID();
-						}
 					}
 				}
+#endif
+			}
 			});
 
 			DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
@@ -538,7 +567,7 @@ namespace origin {
 
 		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Scene](auto &component)
 			{
-				std::string lable = "None";
+				std::string label = "None";
 
 				bool isAudioValid = false;
 				ImGui::Text("Audio Source");
@@ -548,20 +577,20 @@ namespace origin {
 					if (AssetManager::IsAssetHandleValid(component.Audio) && AssetManager::GetAssetType(component.Audio) == AssetType::Audio)
 					{
 						const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Audio);
-						lable = metadata.Filepath.filename().string();
+						label = metadata.Filepath.filename().string();
 						isAudioValid = true;
 					}
 					else
 					{
-						lable = "Invalid";
+						label = "Invalid";
 					}
 				}
 
-				ImVec2 buttonLabelSize = ImGui::CalcTextSize(lable.c_str());
+				ImVec2 buttonLabelSize = ImGui::CalcTextSize(label.c_str());
 				buttonLabelSize.x += 20.0f;
 				const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
 
-				ImGui::Button(lable.c_str(), ImVec2(buttonLabelWidth, 0.0f));
+				ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -1073,7 +1102,7 @@ namespace origin {
 									if (ImGui::IsItemHovered())
 									{
 										ImGui::BeginTooltip();
-										ImGui::Text("%lu", uuid);
+										ImGui::Text("%llu", uuid);
 										ImGui::EndTooltip();
 									}
 								});
@@ -1147,17 +1176,17 @@ namespace origin {
 							case ScriptFieldType::Entity:
 							{
 								uint64_t uuid = scriptField.GetValue<uint64_t>();
-								std::string lable = "Drag Here";
+								std::string label = "Drag Here";
 								if (uuid)
 								{
 									Entity e = scene->GetEntityWithUUID(uuid);
 									if (e.IsValid())
 									{
-										lable = e.GetTag();
+										label = e.GetTag();
 									}
 								}
 
-								UI::DrawButtonWithColumn(name.c_str(), lable.c_str(), nullptr, [&]()
+								UI::DrawButtonWithColumn(name.c_str(), label.c_str(), nullptr, [&]()
 								{
 									if (ImGui::BeginDragDropTarget())
 									{
@@ -1178,7 +1207,7 @@ namespace origin {
 										ImGui::BeginTooltip();
 
 										if(uuid)
-											ImGui::Text("%lu", uuid);
+											ImGui::Text("%llu", uuid);
 										else
 											ImGui::Text("Null Entity!");
 
@@ -1285,6 +1314,8 @@ namespace origin {
 								});
 								break;
 							}
+							default:
+								break;
 							}
 						}
 					}
@@ -1334,7 +1365,9 @@ namespace origin {
 		}
 
 		if (entity.IsValid())
+		{
 			m_SelectedEntity = entity;
+		}
 
 		return entity;
 	}
@@ -1344,33 +1377,31 @@ namespace origin {
 	{
 		if (ImGui::MenuItem(entryName.c_str()))
 		{
-			m_SelectedEntity.AddComponent<T>();
+			m_SelectedEntity.AddOrReplaceComponent<T>();
 			ImGui::CloseCurrentPopup();
-
 			return true;
 		}
-
 		return false;
 	}
 
 	template<typename T, typename UIFunction>
 	void SceneHierarchyPanel::DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
+		constexpr ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
 			| ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		if (entity.HasComponent<T>())
 		{
 			auto &component = entity.GetComponent<T>();
-			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+			ImVec2 contentRegionAvailabel = ImGui::GetContentRegionAvail();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
 			ImGui::Separator();
 			bool open = ImGui::TreeNodeEx((void *)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
 
-			ImGui::SameLine(contentRegionAvailable.x - 24.0f);
+			ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
 			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
 			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 				ImGui::OpenPopup("Component Settings");
@@ -1379,7 +1410,9 @@ namespace origin {
 			if (ImGui::BeginPopup("Component Settings"))
 			{
 				if (ImGui::MenuItem("Remove component"))
+				{
 					componentRemoved = true;
+				}
 
 				ImGui::EndPopup();
 			}
@@ -1391,7 +1424,9 @@ namespace origin {
 			}
 
 			if (componentRemoved)
+			{
 				entity.RemoveComponent<T>();
+			}
 		}
 	}
 }

@@ -1,4 +1,5 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #pragma once
 #include "AssetMetadata.h"
 #include "Origin/Audio/AudioSource.h"
@@ -17,7 +18,7 @@ namespace origin
 	class AssetTaskBase
 	{
 	public:
-		virtual ~AssetTaskBase() { };
+		virtual ~AssetTaskBase() = default;
 		virtual bool Execute() = 0;
 	};
 
@@ -40,7 +41,7 @@ namespace origin
 			: Value(std::move(other.Value)), Future(std::move(other.Future))
 		{}
 
-		// this is should be executed in main thread
+		// this should be executed in main thread
 		virtual bool Execute() override
 		{
 			if (Future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
@@ -131,7 +132,7 @@ namespace origin
 	{
 	public:
 		static std::shared_ptr<Model> Import(AssetHandle handle, const AssetMetadata &metadata);
-		static std::shared_ptr<Model> Load(const std::filesystem::path& path);
+		static std::shared_ptr<Model> Load(const std::filesystem::path& path, Scene *scene);
 	};
 
 	class SpriteSheetImporter

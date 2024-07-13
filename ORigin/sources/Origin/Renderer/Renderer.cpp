@@ -71,6 +71,8 @@ namespace origin {
 			return false;
 		
 		RenderCommand::Init();
+
+		OGN_CORE_TRACE("[Renderer] Initalized");
 		return true;
 	}
 
@@ -81,7 +83,7 @@ namespace origin {
 		Renderer2D::Shutdown();
 		Renderer3D::Shutdown();
 
-		OGN_CORE_WARN("Renderer Shutdown");
+		OGN_CORE_TRACE("[Renderer] Shutdown");
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)

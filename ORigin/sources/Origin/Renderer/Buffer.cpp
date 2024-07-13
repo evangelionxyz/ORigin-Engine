@@ -41,7 +41,7 @@ namespace origin
 		return nullptr;
 	}
 
-	std::shared_ptr<IndexBuffer> IndexBuffer::Create(std::vector<uint32_t> indices)
+	std::shared_ptr<IndexBuffer> IndexBuffer::Create(const std::vector<uint32_t> &indices)
 	{
 		switch (Renderer::GetAPI())
 		{

@@ -13,55 +13,54 @@
 
 #include <ImGuizmo.h>
 
-namespace origin {
-
-  class EditorLayer : public Layer
-  {
-  public:
+namespace origin
+{
+	class EditorLayer : public Layer
+	{
+	public:
 		EditorLayer();
 		~EditorLayer();
 
 		void OnAttach() override;
 		void OnUpdate(Timestep ts) override;
 		SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
-    static EditorLayer &Get();
+		static EditorLayer &Get();
 
-    bool guiStatisticWindow = true;
-    bool guiMenuFullscreen = false;
-    bool guiMenuStyle = false;
-    bool guiRenderSettingsWindow = true;
-    bool guiImGuiDemoWindow = false;
-
+		bool guiStatisticWindow = true;
+		bool guiMenuFullscreen = false;
+		bool guiMenuStyle = false;
+		bool guiRenderSettingsWindow = true;
+		bool guiImGuiDemoWindow = false;
 		bool IsViewportHovered = false;
 		bool IsViewportFocused = false;
 
-  private:
-    void SystemUpdate(Timestep ts);
-    void Render(Timestep ts);
-  	void SceneViewport();
-    void SceneViewportToolbar();
-    bool NewProject();
-    bool OpenProject();
-    bool OpenProject(const std::filesystem::path& path);
-	  void MenuBar();
-    void NewScene();
-    void SaveScene();
-    void SaveSceneAs();
-    void OpenScene();
-    void OpenScene(AssetHandle handle);
-    void SerializeScene(std::shared_ptr<Scene> scene, const std::filesystem::path &filepath);
-    void OnDuplicateEntity();
-    void OnDestroyEntity();
-    void OnEvent(Event& e) override;
-    bool OnKeyPressed(KeyPressedEvent& e);
-    bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
-    void OnGuiRender() override;
-    void OnScenePlay();
-    void OnScenePause();
-    void OnSceneSimulate();
-    void OnSceneStop();
-    void InputProcedure(Timestep time);
-    void GUIRender();
+	private:
+		void SystemUpdate(Timestep ts);
+		void Render(Timestep ts);
+		void SceneViewport();
+		void SceneViewportToolbar();
+		bool NewProject();
+		bool OpenProject();
+		bool OpenProject(const std::filesystem::path& path);
+		void MenuBar();
+		void NewScene();
+		void SaveScene();
+		void SaveSceneAs();
+		void OpenScene();
+		void OpenScene(AssetHandle handle);
+		void SerializeScene(const std::shared_ptr<Scene> &scene, const std::filesystem::path &filepath);
+		void OnDuplicateEntity();
+		void OnDestroyEntity();
+		void OnEvent(Event& e) override;
+		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		void OnGuiRender() override;
+		void OnScenePlay();
+		void OnScenePause();
+		void OnSceneSimulate();
+		void OnSceneStop();
+		void InputProcedure(Timestep time);
+		void GUIRender();
 
 		enum class SceneState
 		{
@@ -70,15 +69,15 @@ namespace origin {
 			Simulate = 2
 		};
 
-    std::vector<ProfilerResult> m_ProfilerResults;
+		std::vector<ProfilerResult> m_ProfilerResults;
 
 		SceneState m_SceneState = SceneState::Edit;
 		SceneHierarchyPanel m_SceneHierarchy;
 		Dockspace m_Dockspace;
 		EditorCamera m_EditorCamera;
-    MaterialEditor m_MaterialEditor;
+		MaterialEditor m_MaterialEditor;
 		std::unique_ptr<SpriteSheetEditor> m_SpriteSheetEditor;
-    std::unique_ptr<UIEditor> m_UIEditor;
+		std::unique_ptr<UIEditor> m_UIEditor;
 		std::unique_ptr<Gizmos> m_Gizmos;
 
 		std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
@@ -93,21 +92,21 @@ namespace origin {
 		glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_SceneViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
 
-    ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
+		ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
 		int m_GizmosMode = 0;
-    int m_3DGridSize = 30;
+		int m_3DGridSize = 30;
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;
 		float m_Time = 0.0f;
-    bool m_Draw3DGrid = true;
-    bool m_Draw2DGrid = true;
+		bool m_Draw3DGrid = true;
+		bool m_Draw2DGrid = true;
 		bool m_DrawLineModeActive = false;
 		bool m_VisualizeCollider = true;
 		Entity m_HoveredEntity = {};
 
-    friend class Gizmos;
-    friend class UIEditor;
-    friend class ContentBrowserPanel;
-    friend class SceneHierarchyPanel;
-  };
+		friend class Gizmos;
+		friend class UIEditor;
+		friend class ContentBrowserPanel;
+		friend class SceneHierarchyPanel;
+	};
 }

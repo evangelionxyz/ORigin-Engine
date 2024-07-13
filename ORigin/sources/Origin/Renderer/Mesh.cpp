@@ -11,7 +11,7 @@ namespace origin
 	{
 		switch (RendererAPI::GetAPI())
 		{
-		case RendererAPI::API::None:			return nullptr;
+		case RendererAPI::API::None:		return nullptr;
 		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLMesh>(vertices, indices);
 		}
 

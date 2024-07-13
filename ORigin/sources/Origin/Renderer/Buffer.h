@@ -150,6 +150,6 @@ namespace origin
 		virtual uint32_t GetCount() const = 0;
 
 		static std::shared_ptr<IndexBuffer> Create(uint32_t* indices, uint32_t count);
-		static std::shared_ptr<IndexBuffer> Create(std::vector<uint32_t> indices);
+		static std::shared_ptr<IndexBuffer> Create(const std::vector<uint32_t> &indices);
 	};
 }

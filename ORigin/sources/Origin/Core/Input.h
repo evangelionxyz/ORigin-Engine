@@ -17,8 +17,6 @@ namespace origin
 		static bool IsKeyReleased(const KeyCode keycode);
 		static bool IsKeyPressed(const KeyCode keycode);
 		static bool IsMouseButtonPressed(const MouseCode button);
-		static bool IsMouseDragging();
-
 		static glm::vec2 GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();

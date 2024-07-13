@@ -109,7 +109,7 @@ namespace origin
 				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 
-				OGN_CORE_INFO("{}.{}", nameSpace, name);
+				OGN_CORE_TRACE("{0}.{1}", nameSpace, name);
 			}
 		}
 
@@ -312,11 +312,11 @@ namespace origin
 		setenv("LD_LIBRARY_PATH", "/usr/lib", 1);
 #endif
 		MonoDomain *rootDomain = mono_jit_init("ORiginJITRuntime");
-		OGN_CORE_ASSERT(rootDomain, "[ScriptEngine] Mono Domain is NULL!");
+		OGN_CORE_ASSERT(rootDomain, "[Script Engine] Mono Domain is NULL!");
 		s_ScriptEngineData->RootDomain = rootDomain;
-		OGN_CORE_INFO("[ScriptEngine] MONO Initialized");
+		OGN_CORE_TRACE("[Script Engine] MONO Initialized");
 		const char *mono_version = mono_get_runtime_build_info();
-		OGN_CORE_INFO("[ScriptEngine] MONO Version: {0}", mono_version);
+		OGN_CORE_TRACE("[Script Engine] MONO Version: {0}", mono_version);
 	}
 
 	void ScriptEngine::ShutdownMono()
@@ -335,7 +335,7 @@ namespace origin
 		mono_jit_cleanup(s_ScriptEngineData->RootDomain);
 		s_ScriptEngineData->RootDomain = nullptr;
 
-		OGN_CORE_INFO("[Script Engine] Mono  Shutdown");
+		OGN_CORE_TRACE("[Script Engine] Mono  Shutdown");
 	}
 
 	void ScriptEngine::Init()
@@ -358,7 +358,7 @@ namespace origin
 		ScriptGlue::RegisterFunctions();
 
 		// Script Core Assembly
-		OGN_CORE_ASSERT(std::filesystem::exists("Resources/ScriptCore/ORigin-ScriptCore.dll"), "[ScriptEngine] Script core assembly not found!");
+		OGN_CORE_ASSERT(std::filesystem::exists("Resources/ScriptCore/ORigin-ScriptCore.dll"), "[Script Engine] Script core assembly not found!");
 		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
 		LoadAppAssembly(appAssemblyPath);
 		LoadAssemblyClasses();
@@ -370,7 +370,7 @@ namespace origin
 		s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 		ScriptGlue::RegisterComponents();
 
-		OGN_CORE_INFO("[ScriptEngine]: Initialized");
+		OGN_CORE_TRACE("[Script Engine]: Initialized");
 	}
 
 	void ScriptEngine::Shutdown()
@@ -385,7 +385,7 @@ namespace origin
 
 		delete s_ScriptEngineData;
 
-		OGN_CORE_WARN("SCRIPT ENGINE: Shutdown");
+		OGN_CORE_TRACE("[Script Engine] Shutdown");
 	}
 
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path &filepath)
@@ -434,7 +434,7 @@ namespace origin
 		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		if (!s_ScriptEngineData->AppAssembly)
 		{
-			OGN_CORE_ASSERT(false, "[ScriptEngine] App Assembly is empty {0}", filepath);
+			OGN_CORE_ASSERT(false, "[Script Engine] App Assembly is empty {0}", filepath);
 			return false;
 		}
 
@@ -468,7 +468,7 @@ namespace origin
 			s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 			ScriptGlue::RegisterComponents();
 
-			OGN_CORE_INFO("ScriptEngine: Assembly Reloaded");
+			OGN_CORE_TRACE("[ScriptEngine] Assembly Reloaded");
 		}
 	}
 
@@ -522,14 +522,14 @@ namespace origin
 						uint64_t uuid = *(uint64_t *)fieldInstance.m_Buffer;
 						if (uuid == 0)
 						{
-							OGN_CORE_ERROR("[ScriptEngine] Field '{0}' (Entity class) is not assigned yet", name);
+							OGN_CORE_ERROR("[Script Engine] Field '{0}' (Entity class) is not assigned yet", name);
 							continue;
 						}
 
 						MonoMethod *ctorMethod = s_ScriptEngineData->EntityClass.GetMethod(".ctor", 1);
 						if (!ctorMethod)
 						{
-							OGN_CORE_ERROR("[ScriptEngine] Failed to find constructor.");
+							OGN_CORE_ERROR("[Script Engine] Failed to find constructor.");
 							continue;
 						}
 
@@ -537,7 +537,7 @@ namespace origin
 						MonoObject *entityInstance = ScriptEngine::InstantiateObject(s_ScriptEngineData->EntityClass.m_MonoClass);
 						if (!entityInstance)
 						{
-							OGN_CORE_ERROR("[ScriptEngine] Failed to create Entity instance.");
+							OGN_CORE_ERROR("[Script Engine] Failed to create Entity instance.");
 							continue;
 						}
 
@@ -569,7 +569,7 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(entityID);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[ScriptEngine] Entity script instance is not attached! {0} {1}", entity.GetTag(), entityID);
+			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0} {1}", entity.GetTag(), entityID);
 			return;
 		}
 
@@ -599,7 +599,7 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		OGN_CORE_ASSERT(entity.IsValid(), "[ScriptEngine] Failed to get entity");
+		OGN_CORE_ASSERT(entity.IsValid(), "[Script Engine] Failed to get entity");
 
 		UUID entityID = entity.GetUUID();
 		return s_ScriptEngineData->EntityScriptFields[entityID];
@@ -617,7 +617,7 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[ScriptEngine] Failed to find {} ", uuid);
+			OGN_CORE_ERROR("[Script Engine] Failed to find {} ", uuid);
 			return nullptr;
 		}
 
@@ -639,7 +639,7 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		OGN_CORE_ASSERT(s_ScriptEngineData->EntityInstances.find(uuid) != s_ScriptEngineData->EntityInstances.end(),
-			"[ScriptEngine] Invalid Script Instance");
+			"[Script Engine] Invalid Script Instance");
 
 		return s_ScriptEngineData->EntityInstances.at(uuid)->GetMonoObject();
 	}

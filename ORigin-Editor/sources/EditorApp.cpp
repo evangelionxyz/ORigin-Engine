@@ -5,30 +5,29 @@
 
 namespace origin
 {
-  class EditorApp : public Application
-  {
-  public:
-    EditorApp(ApplicationSpecification& spec)
-      : Application(spec)
+    class EditorApp : public Application
     {
-	    PushLayer(new EditorLayer());
-    }
+    public:
+        EditorApp(ApplicationSpecification &spec)
+            : Application(spec)
+        {
+            PushLayer(new EditorLayer());
+        }
 
-    ~EditorApp()
+        ~EditorApp()
+        { }
+    };
+
+    Application *CreateApplication(ApplicationCommandLineArgs args)
     {
-    }
-  };
+        ApplicationSpecification spec;
+        spec.Width = 1640;
+        spec.Height = 860;
+        spec.Name = "Editor";
+        spec.CommandLineArgs = args;
+        spec.Maximize = false;
 
-  Application* CreateApplication(ApplicationCommandLineArgs args)
-  {
-    ApplicationSpecification spec;
-    spec.Width = 1640;
-    spec.Height = 980;
-    spec.Name = "ORigin Editor";
-    spec.CommandLineArgs = args;
-    spec.Maximize = false;
-
-    OGN_CORE_INFO(spec.Name);
-    return new EditorApp(spec);
-  };
+        OGN_CORE_INFO(spec.Name);
+        return new EditorApp(spec);
+    };
 }

@@ -18,10 +18,7 @@ namespace origin
 		UUID();
 		UUID(uint64_t uuid);
 		UUID(const UUID &uuid) = default;
-
 		operator uint64_t() const { return m_UUID; }
-
-		static const UUID NullID;
 
 	private:
 		uint64_t m_UUID;

@@ -5,8 +5,6 @@
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
 
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
-
 namespace origin
 {
 	static GLenum ShaderDataType_OpenGL(ShaderDataType type)
@@ -38,18 +36,12 @@ namespace origin
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		OGN_PROFILER_RENDERING();
-
 		glCreateVertexArrays(1, &m_RendererID);
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		OGN_PROFILER_RENDERING();
-		if(m_RendererID)
-		{
-			glDeleteVertexArrays(1, &m_RendererID);
-		}
+		glDeleteVertexArrays(1, &m_RendererID);
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
@@ -121,24 +113,18 @@ namespace origin
 	
 	void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
 	{
-		OGN_PROFILER_RENDERING();
-
-		glBindVertexArray(m_RendererID);
+		Bind();
 		indexBuffer->Bind();
-
 		m_IndexBuffer = indexBuffer;
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
-		OGN_PROFILER_RENDERING();
-
 		glBindVertexArray(m_RendererID);
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
-		OGN_PROFILER_RENDERING();
-		glBindVertexArray(NULL);
+		glBindVertexArray(0);
 	}
 }

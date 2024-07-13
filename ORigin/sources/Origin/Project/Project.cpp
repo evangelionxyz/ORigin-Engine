@@ -59,7 +59,7 @@ namespace origin {
 			}
 		}
 
-		void GeneratePremakeFile(const std::string &templatePath, const std::string &outputPath, const std::string &projectName)
+		void GenerateFile(const std::string &templatePath, const std::string &outputPath, const std::string &projectName)
 		{
 			std::string content = ReadFile(templatePath);
 			if (content.empty())
@@ -145,15 +145,14 @@ namespace origin {
 		std::string enginePath = Utils::GetEnvironment("ORiginEngine");
 		std::string premakeFilepath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/premake_template.lua").generic_string();
 		std::string projectPremakeLocation = filepath.string() + "/premake5.lua";
-		OGN_CORE_ERROR("{0}", projectPremakeLocation);
-		Utils::GeneratePremakeFile(premakeFilepath, projectPremakeLocation, projectName);
-		
+		Utils::GenerateFile(premakeFilepath, projectPremakeLocation, projectName);
 
 #ifdef _WIN32
 		// Copying the build.bat
 		std::string buildScriptPath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/build.bat").generic_string();
 		std::string projectBuildScriptPath = filepath.string() + "/build.bat";
-		Utils::CopyFile(buildScriptPath, projectBuildScriptPath);
+		Utils::GenerateFile(buildScriptPath, projectBuildScriptPath, projectName);
+		
 #elif __linux__
 		// Copying the build.sh
 		std::string buildScriptPath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/build.sh").generic_string();

@@ -25,6 +25,7 @@ namespace origin {
 		m_FarClip = farClip;
 
 		UpdateView();
+		UpdateProjection();
 	}
 
 	void EditorCamera::InitOrthographic(float size, float nearClip, float farClip)
@@ -35,6 +36,7 @@ namespace origin {
 		m_OrthoFarClip = farClip;
 
 		UpdateView();
+		UpdateProjection();
 	}
 
 	void EditorCamera::UpdateAudioListener(Timestep ts)

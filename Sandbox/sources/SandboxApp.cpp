@@ -20,8 +20,8 @@ namespace origin
 	{
 		ApplicationSpecification spec;
 		spec.Name = "Sandbox";
-		spec.Width = 800;
-		spec.Height = 520;
+		spec.Width = 1280;
+		spec.Height = 820;
 		spec.WorkingDirectory = "../ORigin-Editor";
 		spec.CommandLineArgs = args;
 

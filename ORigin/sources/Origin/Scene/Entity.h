@@ -73,7 +73,7 @@ namespace origin {
 			const auto &rb2d = GetComponent<Rigidbody2DComponent>();
 			return rb2d.ContactWith;
 		}
-		bool HasParent() { return GetComponent<IDComponent>().Parent != UUID::NullID; }
+		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 
 		bool IsValid() const
 		{

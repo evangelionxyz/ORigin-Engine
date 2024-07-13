@@ -216,7 +216,6 @@ namespace origin
 			{
 				UpdateTransform();
 				RenderScene(cc.Camera, tc);
-
 				break;
 			}
 		}
@@ -227,9 +226,7 @@ namespace origin
 		OGN_PROFILER_SCENE();
 
 		m_Running = true;
-
 		UpdateTransform();
-
 		ScriptEngine::SetSceneContext(this);
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		for (auto e : scriptView)
@@ -599,6 +596,17 @@ namespace origin
 		// 3D Scene
 		glEnable(GL_DEPTH_TEST);
 
+		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+		for(auto e : meshView)
+		{
+			const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
+			if(!tc.Visible)
+				continue;
+			
+			mc.HMesh->Draw(tc.GetTransform(), (int)e);
+		}
+		
+#if 0
 		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
 		const auto &modelView = m_Registry.view<TransformComponent, ModelComponent>();
 		for (const auto entity : modelView)
@@ -610,26 +618,20 @@ namespace origin
 			if (AssetManager::GetAssetType(mc.Handle) == AssetType::Model)
 			{
 				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mc.Handle);
-
-#if 0
 				for (auto &light : lightView)
 				{
 					const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
 					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
 					lc.Light->OnRender(lightTC);
 				}
-#endif
-
 				model->SetTransform(tc.GetTransform());
-
 				for (auto &mesh : model->GetMeshes())
 				{
-					Entity e = GetEntityWithUUID(mesh);
-					StaticMeshComponent &sm = e.GetComponent<StaticMeshComponent>();
-					sm.OMesh->Draw(tc.GetTransform(), (int)e);
+					mesh.HMesh->Draw(tc.GetTransform(), (int)e);
 				}
 			}
 		}
+#endif
 	}
 
 	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)

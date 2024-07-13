@@ -85,11 +85,16 @@ namespace origin
 			RefreshAssetTree();
 		}
 		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		ImGui::SliderInt("Thumbnail Size", &m_ThumbnailSize, 24, 256);
+
 		ImGui::EndChild();
 	}
 
 	void ContentBrowserPanel::DrawContentBrowser()
 	{
+
 		ImGui::Begin("Content Browser");
 
 		DrawNavButton();
@@ -140,6 +145,11 @@ namespace origin
 				{
 					AssetHandle handle = m_TreeNodes[treeNodeIndex].Handle;
 					ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", &handle, sizeof(AssetHandle));
+
+					ImGui::BeginTooltip();
+					ImGui::Text("%llu", handle);
+					ImGui::EndTooltip();
+
 					ImGui::EndDragDropSource();
 				}
 
