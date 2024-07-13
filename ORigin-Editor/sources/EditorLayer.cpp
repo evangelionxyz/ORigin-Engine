@@ -211,36 +211,41 @@ namespace origin
 			
 			glm::vec2 ndc = GetNormalizedDeviceCoord(m_ViewportMousePos, viewportSize);
 			glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
-			glm::vec4 eye = GetEyeCoord(hmc, m_EditorCamera.GetProjection());
-			glm::vec3 worldRay = GetWorldCoord(eye, m_EditorCamera.GetViewMatrix());
+            glm::vec3 rayOrigin;
+            glm::vec3 rayDirection;
 
-			glm::vec3 rayOrigin = m_EditorCamera.GetPosition();
-			glm::vec3 rayDirection = worldRay;
+            if (m_EditorCamera.GetProjectionType() == ProjectionType::Perspective)
+            {
+                glm::vec4 eye = GetEyeCoord(hmc, m_EditorCamera.GetProjection());
+                glm::vec3 worldRay = GetWorldCoord(eye, m_EditorCamera.GetViewMatrix());
+				rayOrigin = m_EditorCamera.GetPosition();
+                rayDirection = worldRay;
+            }
+            else if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic)
+            {
+                // calculate ray origin and direction for orthographic projection
+                glm::mat4 invViewProj = glm::inverse(m_EditorCamera.GetProjection() * m_EditorCamera.GetViewMatrix());
+
+                // ray origin (on near plane)
+				rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
+				rayOrigin /= 1.0f;
+                rayDirection = -glm::normalize(m_EditorCamera.GetForwardDirection());
+
+				Renderer2D::Begin(m_EditorCamera);
+				Renderer2D::DrawCircle(rayOrigin, glm::vec3(0.5f), glm::vec4(1.0f), 1.0f);
+				Renderer2D::End();
+            }
+
             glm::vec3 sphereCenter = glm::vec3(0.0f, 0.0f, 0.0f);
-			glm::vec3 sphere2Center = glm::vec3(5.0f, 0.0f, 10.0f);
             float sphereRadius = 1.0f;
 
-			Renderer2D::Begin(m_EditorCamera);
-
-			Renderer2D::DrawLine(glm::vec3(0.0f), rayDirection * 150.0f);
-			
-			Renderer2D::End();
-
 			Renderer3D::Begin(m_EditorCamera);
-            // Draw the ray
-            //DrawRay(rayOrigin, rayDirection, 100.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 			glm::mat4 t = glm::translate(glm::mat4(1.0f), sphereCenter);
             Renderer3D::DrawSphere(t, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), sphereRadius);
 
             if (RayIntersectsSphere(rayOrigin, rayDirection, sphereCenter, sphereRadius))
             {
-				OGN_CORE_INFO("I am here Eye: {0} world: {0}", eye, worldRay);
-            }
-			t = glm::translate(glm::mat4(1.0f), sphere2Center);
-			Renderer3D::DrawSphere(t, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), sphereRadius);
-            if (RayIntersectsSphere(rayOrigin, rayDirection, sphere2Center, sphereRadius))
-            {
-                OGN_CORE_INFO("I am here Eye: {0} world: {0}", eye, worldRay);
+				OGN_CORE_INFO("I am here");
             }
 
 			Renderer3D::End();
