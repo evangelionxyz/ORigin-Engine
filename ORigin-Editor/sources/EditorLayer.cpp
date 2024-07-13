@@ -16,51 +16,75 @@
 
 #include "Panels/AnimationTimeline.h"
 
-
-glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
-{
-	float x = (2.0f * mouse.x) / screen.x - 1;
-	float y = 1.0f - (2.0f * mouse.y) / screen.y;
-	return glm::vec2(x, y);
-}
-
-glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc)
-{
-	return glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
-}
-
-glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
-{
-	glm::mat4 inverseProjection = glm::inverse(projectionMatrix);
-	glm::vec4 eyeCoords = inverseProjection * clipCoords;
-	return glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
-}
-
-glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
-{
-	glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
-	return glm::normalize(glm::vec3(worldCoords));
-}
-
-bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)
-{
-    glm::vec3 oc = rayOrigin - sphereCenter;
-    float a = glm::dot(rayDirection, rayDirection);
-    float b = 2.0f * glm::dot(oc, rayDirection);
-    float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
-    float discriminant = b * b - 4 * a * c;
-    return (discriminant > 0);
-}
-
-void DrawRay(const glm::vec3 &orgn, const glm::vec3 &direction, float length, const glm::vec4 &color)
-{
-    glm::vec3 end = orgn + glm::normalize(direction) * length;
-    origin::Renderer2D::DrawLine(orgn, end, color);
-}
-
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
 
 namespace origin
 {
+	glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
+	{
+		float x = (2.0f * mouse.x) / screen.x - 1;
+		float y = 1.0f - (2.0f * mouse.y) / screen.y;
+		return glm::vec2(x, y);
+	}
+
+	glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc)
+	{
+		return glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
+	}
+
+	glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
+	{
+		glm::mat4 inverseProjection = glm::inverse(projectionMatrix);
+		glm::vec4 eyeCoords = inverseProjection * clipCoords;
+		return glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+	}
+
+	glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
+	{
+		glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
+		return glm::normalize(glm::vec3(worldCoords));
+	}
+
+	glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const EditorCamera &camera, glm::vec3 *rayOrigin)
+	{
+        glm::vec2 ndc = GetNormalizedDeviceCoord(mouse, screen);
+        glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
+        glm::vec3 rayDirection = glm::vec3(0.0f);
+		*rayOrigin = glm::vec3(0.0f);
+
+        if (camera.GetProjectionType() == ProjectionType::Perspective)
+        {
+            glm::vec4 eye = GetEyeCoord(hmc, camera.GetProjection());
+            glm::vec3 worldRay = GetWorldCoord(eye, camera.GetViewMatrix());
+            *rayOrigin = camera.GetPosition();
+            rayDirection = worldRay;
+        }
+		else
+		{
+            // calculate ray origin and direction for orthographic projection
+            glm::mat4 invViewProj = glm::inverse(camera.GetProjection() * camera.GetViewMatrix());
+
+            // ray origin (on near plane)
+            *rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
+            *rayOrigin /= 1.0f;
+            rayDirection = -glm::normalize(camera.GetForwardDirection());
+		}
+
+		return rayDirection;
+	}
+
+    bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)
+    {
+        glm::vec3 oc = rayOrigin - sphereCenter;
+        float a = glm::dot(rayDirection, rayDirection);
+        float b = 2.0f * glm::dot(oc, rayDirection);
+        float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
+        float discriminant = b * b - 4 * a * c;
+        return (discriminant > 0);
+    }
+
 	static EditorLayer *s_Instance = nullptr;
 
 	EditorLayer::EditorLayer() : Layer("EditorLayer") { s_Instance = this; }
@@ -109,26 +133,26 @@ namespace origin
 		//m_EditorCamera.SetPosition({ 0.0f, 5.0f, 18.0f });
 		//m_EditorCamera.SetPitch(0.3f);
 
-		m_ActiveScene = std::make_shared<Scene>();
-		const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+m_ActiveScene = std::make_shared<Scene>();
+const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 
-		if (commandLineArgs.Count > 1)
-		{
-			m_ProjectDirectoryPath = commandLineArgs[1];
-			if (!OpenProject(m_ProjectDirectoryPath))
-				Application::Get().Close();
-		}
+if (commandLineArgs.Count > 1)
+{
+	m_ProjectDirectoryPath = commandLineArgs[1];
+	if (!OpenProject(m_ProjectDirectoryPath))
+		Application::Get().Close();
+}
 
-		m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
-		m_Gizmos = std::make_unique<Gizmos>();
+m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
+m_Gizmos = std::make_unique<Gizmos>();
 
-		if (!m_UIEditor)
-		{
-			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
-		}
+if (!m_UIEditor)
+{
+	m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+}
 	}
 
-	void EditorLayer::OnEvent(Event& e)
+	void EditorLayer::OnEvent(Event &e)
 	{
 		OGN_PROFILER_INPUT();
 
@@ -155,20 +179,20 @@ namespace origin
 		{
 		case SceneState::Edit:
 		case SceneState::Simulate:
+		{
+			const auto &fbSpec = m_Framebuffer->GetSpecification();
+			if (m_SceneViewportSize.x != fbSpec.Width || m_SceneViewportSize.y != fbSpec.Height)
 			{
-				const auto &fbSpec = m_Framebuffer->GetSpecification();
-				if (m_SceneViewportSize.x != fbSpec.Width || m_SceneViewportSize.y != fbSpec.Height)
+				if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
 				{
-					if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
-					{
-						m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-						m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-						m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
-					}
-
+					m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+					m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
+					m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
 				}
-				break;
+
 			}
+			break;
+		}
 		case SceneState::Play:
 			uint32_t width = m_ActiveScene->GetWidth();
 			uint32_t height = m_ActiveScene->GetHeight();
@@ -195,60 +219,18 @@ namespace origin
 		Render(ts);
 		m_ActiveScene->GetUIRenderer()->Render();
 
-		//if (IsViewportHovered && IsViewportFocused)
+		if (IsViewportHovered && IsViewportFocused)
 		{
 			auto [mx, my] = ImGui::GetMousePos();
 			m_ViewportMousePos = { mx, my };
-			// m_SceneViewportBounds[0] = top left (based on screen coordinate)
-			// m_SceneViewportBounds[1] = bottom right (based on screen coordinate)
 			m_ViewportMousePos -= m_SceneViewportBounds[0];
-			const glm::ivec2 &viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
-			m_ViewportMousePos.y = viewportSize.y - m_ViewportMousePos.y;
-			m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
-			m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
-			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-			m_Gizmos->SetHovered(m_PixelData);
-			
-			glm::vec2 ndc = GetNormalizedDeviceCoord(m_ViewportMousePos, viewportSize);
-			glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
-            glm::vec3 rayOrigin;
-            glm::vec3 rayDirection;
+			m_ViewportMousePos.y = m_SceneViewportSize.y - m_ViewportMousePos.y;
+			m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_SceneViewportSize - glm::vec2(1.0f, 1.0f));
 
-            if (m_EditorCamera.GetProjectionType() == ProjectionType::Perspective)
-            {
-                glm::vec4 eye = GetEyeCoord(hmc, m_EditorCamera.GetProjection());
-                glm::vec3 worldRay = GetWorldCoord(eye, m_EditorCamera.GetViewMatrix());
-				rayOrigin = m_EditorCamera.GetPosition();
-                rayDirection = worldRay;
-            }
-            else if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic)
-            {
-                // calculate ray origin and direction for orthographic projection
-                glm::mat4 invViewProj = glm::inverse(m_EditorCamera.GetProjection() * m_EditorCamera.GetViewMatrix());
-
-                // ray origin (on near plane)
-				rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
-				rayOrigin /= 1.0f;
-                rayDirection = -glm::normalize(m_EditorCamera.GetForwardDirection());
-
-				Renderer2D::Begin(m_EditorCamera);
-				Renderer2D::DrawCircle(rayOrigin, glm::vec3(0.5f), glm::vec4(1.0f), 1.0f);
-				Renderer2D::End();
-            }
-
-            glm::vec3 sphereCenter = glm::vec3(0.0f, 0.0f, 0.0f);
-            float sphereRadius = 1.0f;
-
-			Renderer3D::Begin(m_EditorCamera);
-			glm::mat4 t = glm::translate(glm::mat4(1.0f), sphereCenter);
-            Renderer3D::DrawSphere(t, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), sphereRadius);
-
-            if (RayIntersectsSphere(rayOrigin, rayDirection, sphereCenter, sphereRadius))
-            {
-				OGN_CORE_INFO("I am here");
-            }
-
-			Renderer3D::End();
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				CheckHoveredEntity();
+			}
 		}
 
 		InputProcedure(ts);
@@ -1147,7 +1129,14 @@ namespace origin
 		}
 	}
 
-	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+    void EditorLayer::CheckHoveredEntity()
+    {
+        m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
+        m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+        m_Gizmos->SetHovered(m_PixelData);
+    }
+
+    bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
 		OGN_PROFILER_INPUT();
 
@@ -1191,8 +1180,10 @@ namespace origin
 		{
 			Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
-            if (IsViewportFocused && IsViewportHovered && !ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+            if (IsViewportFocused && IsViewportHovered && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
 			{
+				CheckHoveredEntity();
+
                 if (m_PixelData >= 0)
                 {
 					if (m_HoveredEntity != selectedEntity)

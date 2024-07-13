@@ -87,10 +87,12 @@ namespace origin
 		std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
 		std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
 
+		void CheckHoveredEntity();
+
 		glm::vec4 m_ClearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 		glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
-		glm::ivec2 m_ViewportMousePos = { 0.0f, 0.0f };
+		glm::vec2 m_ViewportMousePos = { 0.0f, 0.0f };
 		glm::vec2 m_SceneViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
 
 		ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
