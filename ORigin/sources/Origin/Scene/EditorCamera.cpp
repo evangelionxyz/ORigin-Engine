@@ -87,7 +87,14 @@ namespace origin {
 		UpdateProjection();
 	}
 
-	void EditorCamera::UpdateView()
+    void EditorCamera::SetPosition(const glm::vec3 &position)
+    {
+		m_Position = position;
+		UpdateProjection();
+		UpdateView();
+    }
+
+    void EditorCamera::UpdateView()
 	{
 		switch (m_ProjectionType)
 		{

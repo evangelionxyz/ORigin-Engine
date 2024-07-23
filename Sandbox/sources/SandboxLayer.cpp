@@ -13,16 +13,6 @@
 
 using namespace origin;
 
-glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
-glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-float deltaTime = 0.0f;
-float updateRate = 1.0f;
-float timer = 1.0f;
-float response = 0.0f;
-float framerate = 0.0f;
-
 struct Light
 {
 	glm::vec4 Direction = { -0.5f, -1.0f, -0.5f, 1.0f };
@@ -39,13 +29,18 @@ SandboxLayer::SandboxLayer()
 	randomColor.resize(10, glm::vec3(1.0f));
 }
 
-
 void SandboxLayer::OnAttach()
 {
 	MeshRenderer::Init();
 
-	m_Camera.InitPerspective(45.0f, 1.776f, 0.1f, 800.0f);
+	m_Camera.InitPerspective(45.0f, 1.776f, 1.0f, 300.0f);
 	m_Camera.SetPosition({ 0.0f, 5.0f, 10.0f });
+
+    m_SceneCamera.InitPerspective(45.0f, 1.776f, 1.0f, 100.0f);
+	m_CamTC.WorldTranslation = { 0.0f, 20.0f, 0.0f };
+	nPlane = m_SceneCamera.GetNear();
+	fPlane = m_SceneCamera.GetFar();
+	FOV = m_SceneCamera.GetFOV();
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -63,6 +58,9 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	Renderer::GetStatistics().Reset();
 
 	m_Camera.OnUpdate(ts);
+	m_SceneCamera.OnUpdate(ts);
+
+	m_Frustum.Update(m_SceneCamera.GetProjection() * glm::inverse(m_CamTC.GetTransform()));
 	
 	RenderCommand::ClearColor(0.1f, 0.3f, 0.4f, 1.0f);
 	RenderCommand::Clear();
@@ -102,8 +100,13 @@ void SandboxLayer::OnUpdate(Timestep ts)
             float time = glfwGetTime();
             float y = sin(x * 0.5f + z_pos * 2.5f + time) * 1.5f; // Adjust multipliers for wave frequency and amplitude
 
-            glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x, y, z_pos });
-            MeshRenderer::DrawCube(transform, glm::vec4(randomColor[(i + size) % 10], 1.0f));
+			glm::vec3 center = { x, y, z_pos };
+
+			if (m_Frustum.IsSphereVisible(center, 1.0f))
+			{
+                glm::mat4 transform = glm::translate(glm::mat4(1.0f), center);
+                MeshRenderer::DrawSphere(transform, glm::vec4(randomColor[(i + size) % 10], 1.0f));
+			}
         }
     }
 
@@ -127,7 +130,6 @@ void SandboxLayer::OnGuiRender()
 	ImGui::Text("%.3f fps %0.3f ms", framerate, response);
 	ImGui::Checkbox("Polygon Mode", &polygonMode);
 	ImGui::SliderInt("Size", &size, 0, 1000);
-	ImGui::ColorEdit4("Color", glm::value_ptr(color));
 	ImGui::Separator();
 
 	ImGui::DragFloat3("Direction", glm::value_ptr(light.Direction), 0.025f);
@@ -146,6 +148,22 @@ void SandboxLayer::OnGuiRender()
     ImGui::Text("Sphere Indices %d", Renderer::GetStatistics().GetTotalSphereIndexCount());
 
 	ImGui::Text("Draw Calls %d", Renderer::GetStatistics().DrawCalls);
+
+	ImGui::End();
+
+
+	ImGui::Begin("Camera");
+    UI::DrawVec3Control("Translation", m_CamTC.WorldTranslation);
+    glm::vec3 rotation = glm::degrees(m_CamTC.WorldRotation);
+    UI::DrawVec3Control("Rotation", rotation, 1.0f);
+	m_CamTC.WorldRotation = glm::radians(rotation);
+
+	UI::DrawFloatControl("FOV", &FOV, 1.0f, 20.0f, 90.0f);
+	m_SceneCamera.SetFov(glm::radians(FOV));
+	UI::DrawFloatControl("Near", &nPlane, 0.025f, 0.0f, 20.0f);
+	m_SceneCamera.SetNear(nPlane);
+	UI::DrawFloatControl("Far", &fPlane, 0.025f, 100.0f, 500.0f);
+	m_SceneCamera.SetFar(fPlane);
 
 	ImGui::End();
 }
@@ -183,6 +201,11 @@ void SandboxLayer::DrawGrid()
 			Renderer2D::DrawLine({ -size, 0.0f, s }, { size, 0.0f, s }, color);
 			Renderer2D::DrawLine({ s, 0.0f, -size }, { s, 0.0f, size }, color);
 		}
+	}
+
+	for (const auto &edge : m_Frustum.GetEdges())
+	{
+		Renderer2D::DrawLine(edge.first, edge.second, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	}
 
 	Renderer2D::End();

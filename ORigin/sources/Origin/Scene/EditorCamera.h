@@ -21,6 +21,7 @@ namespace origin {
 		void OnUpdate(Timestep ts) override;
 		void OnEvent(Event& e) override;
 		void SetViewportSize(float width, float height) override;
+		void SetPosition(const glm::vec3 &position) override;
         bool OnMouseScroll(MouseScrolledEvent &e);
         void MousePan(const glm::vec2 &delta);
         void MouseRotate(const glm::vec2 &delta);

@@ -44,7 +44,7 @@ namespace origin
         virtual void OnEvent(Event &e) { };
         virtual void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); UpdateView();}
         virtual void SetProjectionType(ProjectionType type) { m_ProjectionType = type; UpdateProjection(); UpdateView();}
-        virtual void SetPosition(const glm::vec3 &position) { m_Position = position; UpdateProjection(); UpdateView();}
+        virtual void SetPosition(const glm::vec3 &position) { }
         virtual void SetDistance(float distance) { m_Distance = distance; UpdateProjection(); UpdateView();}
         virtual void SetPitch(float pitch) { m_Pitch = pitch; UpdateProjection(); UpdateView();}
         virtual void SetYaw(float yaw) { m_Yaw = yaw; UpdateProjection(); UpdateView();}
