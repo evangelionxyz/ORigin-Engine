@@ -271,9 +271,9 @@ namespace origin {
 					drawIcon(tc, textures.at("camera"), (int)entity);
 
 					glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ? glm::vec3(tc.WorldRotation) : glm::vec3(0.0f, 0.0f, tc.WorldRotation.z);
-					glm::vec2 orthoSize = cc.Camera.GetOrthographicSize();
+					glm::vec2 orthoSize = cc.Camera.GetOrthoSize();
 
-					if (cc.Camera.GetAspectRatioType() != SceneCamera::AspectRatioType::Free)
+					if (cc.Camera.GetAspectRatioType() != AspectRatioType::Free)
 					{
 						glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
 							* glm::toMat4(glm::qua(rotation))

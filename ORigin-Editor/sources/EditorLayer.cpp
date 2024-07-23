@@ -22,69 +22,6 @@
 
 namespace origin
 {
-	glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
-	{
-		float x = (2.0f * mouse.x) / screen.x - 1;
-		float y = 1.0f - (2.0f * mouse.y) / screen.y;
-		return glm::vec2(x, y);
-	}
-
-	glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc)
-	{
-		return glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
-	}
-
-	glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
-	{
-		glm::mat4 inverseProjection = glm::inverse(projectionMatrix);
-		glm::vec4 eyeCoords = inverseProjection * clipCoords;
-		return glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
-	}
-
-	glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
-	{
-		glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
-		return glm::normalize(glm::vec3(worldCoords));
-	}
-
-	glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const EditorCamera &camera, glm::vec3 *rayOrigin)
-	{
-        glm::vec2 ndc = GetNormalizedDeviceCoord(mouse, screen);
-        glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
-        glm::vec3 rayDirection = glm::vec3(0.0f);
-		*rayOrigin = glm::vec3(0.0f);
-
-        if (camera.GetProjectionType() == ProjectionType::Perspective)
-        {
-            glm::vec4 eye = GetEyeCoord(hmc, camera.GetProjection());
-            glm::vec3 worldRay = GetWorldCoord(eye, camera.GetViewMatrix());
-            *rayOrigin = camera.GetPosition();
-            rayDirection = worldRay;
-        }
-		else
-		{
-            // calculate ray origin and direction for orthographic projection
-            glm::mat4 invViewProj = glm::inverse(camera.GetProjection() * camera.GetViewMatrix());
-
-            // ray origin (on near plane)
-            *rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
-            *rayOrigin /= 1.0f;
-            rayDirection = -glm::normalize(camera.GetForwardDirection());
-		}
-
-		return rayDirection;
-	}
-
-    bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)
-    {
-        glm::vec3 oc = rayOrigin - sphereCenter;
-        float a = glm::dot(rayDirection, rayDirection);
-        float b = 2.0f * glm::dot(oc, rayDirection);
-        float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
-        float discriminant = b * b - 4 * a * c;
-        return (discriminant > 0);
-    }
-
 	static EditorLayer *s_Instance = nullptr;
 
 	EditorLayer::EditorLayer() : Layer("EditorLayer") { s_Instance = this; }
@@ -227,10 +164,9 @@ if (!m_UIEditor)
 			m_ViewportMousePos.y = m_SceneViewportSize.y - m_ViewportMousePos.y;
 			m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_SceneViewportSize - glm::vec2(1.0f, 1.0f));
 
-			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-			{
-				CheckHoveredEntity();
-			}
+            m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
+            m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+            m_Gizmos->SetHovered(m_PixelData);
 		}
 
 		InputProcedure(ts);
@@ -712,7 +648,7 @@ if (!m_UIEditor)
 				{
 					switch (cc.Camera.GetAspectRatioType())
 					{
-					case SceneCamera::AspectRatioType::TwentyOneByNine:
+					case AspectRatioType::TwentyOneByNine:
 						m_GameViewportSize.x = m_SceneViewportSize.x;
 						m_GameViewportSize.y = m_GameViewportSize.x / 21.0f * 9.0f;
 
@@ -722,7 +658,7 @@ if (!m_UIEditor)
 							m_GameViewportSize.x = m_GameViewportSize.y / 9.0f * 21.0f;
 						}
 						break;
-					case SceneCamera::AspectRatioType::SixteenByNine:
+					case AspectRatioType::SixteenByNine:
 						m_GameViewportSize.x = m_SceneViewportSize.x;
 						m_GameViewportSize.y = m_GameViewportSize.x / 16.0f * 9.0f;
 
@@ -732,7 +668,7 @@ if (!m_UIEditor)
 							m_GameViewportSize.x = m_GameViewportSize.y / 9.0f * 16.0f;
 						}
 						break;
-					case SceneCamera::AspectRatioType::SixteenByTen:
+					case AspectRatioType::SixteenByTen:
 						m_GameViewportSize.x = m_SceneViewportSize.x;
 						m_GameViewportSize.y = m_GameViewportSize.x / 16.0f * 10.0f;
 
@@ -742,7 +678,7 @@ if (!m_UIEditor)
 							m_GameViewportSize.x = m_GameViewportSize.y / 10.0f * 16.0f;
 						}
 						break;
-					case SceneCamera::AspectRatioType::FourByThree:
+					case AspectRatioType::FourByThree:
 						m_GameViewportSize.x = m_SceneViewportSize.x;
 						m_GameViewportSize.y = m_GameViewportSize.x / 4.0f * 3.0f;
 
@@ -752,7 +688,7 @@ if (!m_UIEditor)
 							m_GameViewportSize.x = m_GameViewportSize.y / 3.0f * 4.0f;
 						}
 						break;
-					case SceneCamera::AspectRatioType::Free:
+					case AspectRatioType::Free:
 						m_GameViewportSize.x = m_SceneViewportSize.x;
 						m_GameViewportSize.y = m_SceneViewportSize.y;
 						break;
@@ -1076,8 +1012,8 @@ if (!m_UIEditor)
 				ImGui::Text("Circles: %d", renderStats.CircleCount);
 				ImGui::Text("Lines: %d", renderStats.LineCount);
 				ImGui::Text("Cubes: %d", renderStats.CubeCount);
-				ImGui::Text("Vertices: %d", renderStats.GetTotalVertexCount());
-				ImGui::Text("Indices: %d", renderStats.GetTotalIndexCount());
+				ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
+				ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
 				ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
 				ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
 				ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
@@ -1129,40 +1065,9 @@ if (!m_UIEditor)
 		}
 	}
 
-    void EditorLayer::CheckHoveredEntity()
-    {
-        m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
-        m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-        m_Gizmos->SetHovered(m_PixelData);
-    }
-
     bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
 		OGN_PROFILER_INPUT();
-
-		if (e.Is(Mouse::ButtonMiddle) && IsViewportHovered && !IsViewportFocused)
-		{
-			ImGui::SetWindowFocus("Scene");
-		}
-
-		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-
-		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
-		{
-			if (!ImGuizmo::IsOver() || m_ImGuizmoOperation == ImGuizmo::OPERATION::NONE)
-			{
-				if (m_PixelData >= 0)
-				{
-					if (m_HoveredEntity != selectedEntity)
-						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-				}
-				else if(m_PixelData == -1)
-				{
-					m_Gizmos->SetType(GizmoType::NONE);
-					m_SceneHierarchy.SetSelectedEntity({});
-				}
-			}
-		}
 		
 		return false;
 	}
@@ -1180,10 +1085,8 @@ if (!m_UIEditor)
 		{
 			Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
-            if (IsViewportFocused && IsViewportHovered && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
+            if (IsViewportHovered && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
 			{
-				CheckHoveredEntity();
-
                 if (m_PixelData >= 0)
                 {
 					if (m_HoveredEntity != selectedEntity)
@@ -1214,7 +1117,7 @@ if (!m_UIEditor)
 						if (cam.IsValid())
 						{
 							CameraComponent &cc = cam.GetComponent<CameraComponent>();
-							orthoScale = cc.Camera.GetOrthographicScale() / cc.Camera.GetViewportSize().y;
+							orthoScale = cc.Camera.GetOrthoScale() / cc.Camera.GetViewportSize().y;
 						}
 					}
 

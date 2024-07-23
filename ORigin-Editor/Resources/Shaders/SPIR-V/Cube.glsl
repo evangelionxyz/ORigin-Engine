@@ -57,8 +57,6 @@ layout(binding = 0) uniform sampler2D u_Textures[32];
 
 void main()
 {
-	vec4 texColor = In.Color;
-	texColor *= texture(u_Textures[int(v_TexIndex)], In.TexCoord);
-	oColor = texColor;
+	oColor = In.Color * texture(u_Textures[int(v_TexIndex)], In.TexCoord);
 	oEntityID = v_EntityID;
 }

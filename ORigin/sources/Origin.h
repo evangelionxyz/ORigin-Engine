@@ -35,6 +35,7 @@
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/SceneCamera.h"
+#include "Origin/Scene/Camera.h"
 #include "Origin/Scene/Components.h"
 #include "Origin/Scene/Lighting.h"
 #include "Origin/Scene/SpriteSheet.h"

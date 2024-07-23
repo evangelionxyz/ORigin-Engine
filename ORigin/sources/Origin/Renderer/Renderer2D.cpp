@@ -222,7 +222,7 @@ namespace origin {
 		delete[] s_Render2DData.QuadVertexBufferBase;
 	}
 
-	void Renderer2D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)
+	void Renderer2D::Begin(const Camera &camera, const glm::mat4& camTransform)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -235,7 +235,7 @@ namespace origin {
 		StartBatch();
 	}
 
-	void Renderer2D::Begin(const EditorCamera& camera)
+	void Renderer2D::Begin(const Camera &camera)
 	{
 		OGN_PROFILER_RENDERING();
 

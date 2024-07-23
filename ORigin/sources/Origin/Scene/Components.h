@@ -2,10 +2,8 @@
 #pragma once
 
 #include "Origin/Animation/AnimationState.h"
-
 #include "Origin/Audio/AudioListener.h"
 #include "Origin/Math/Math.h"
-#include "SceneCamera.h"
 #include "Origin/Core/UUID.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Model.h"
@@ -14,6 +12,8 @@
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "SpriteSheet.h"
+#include "Camera.h"
+#include "SceneCamera.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -251,8 +251,8 @@ namespace origin
 	{
 	public:
 		SceneCamera Camera;
-		bool Primary = true;
 
+		bool Primary = true;
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
 	};

@@ -265,7 +265,7 @@ namespace origin
 				m_UIRenderer->AddUI(ui);
 				cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
-				const glm::vec2 &ortho = cc.Camera.GetOrthographicSize();
+				const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
 				m_UIRenderer->CreateFramebuffer(vp.x, vp.y, ortho.x, ortho.y);
 			}
 		});
@@ -296,7 +296,7 @@ namespace origin
 		m_UIRenderer->Unload();
 	}
 
-	void Scene::OnEditorUpdate(Timestep ts, EditorCamera& editorCamera)
+	void Scene::OnEditorUpdate(Timestep ts, Camera& editorCamera)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -346,7 +346,7 @@ namespace origin
 		RenderScene(editorCamera);
 	}
 
-	void Scene::OnUpdateSimulation(Timestep ts, EditorCamera& editorCamera)
+	void Scene::OnUpdateSimulation(Timestep ts, Camera& editorCamera)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -477,7 +477,7 @@ namespace origin
 		}
 	}
 
-	void Scene::RenderScene(const EditorCamera &camera)
+	void Scene::RenderScene(const Camera &camera)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -634,7 +634,7 @@ namespace origin
 #endif
 	}
 
-	void Scene::RenderScene(const SceneCamera& camera, const TransformComponent& cameraTransform)
+	void Scene::RenderScene(const Camera& camera, const TransformComponent& cameraTransform)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -800,7 +800,7 @@ namespace origin
 			{
 				cc.Camera.SetViewportSize(width, height);
 				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
-				const glm::vec2 &ortho = cc.Camera.GetOrthographicSize();
+				const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
 				m_UIRenderer->SetViewportSize(vp.x, vp.y, ortho.x, ortho.y);
 			}
 		}

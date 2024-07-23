@@ -5,40 +5,40 @@
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/GUI/UI.h"
 #include "SandboxLayer.h"
-#include <imgui.h>
-
 #include "MeshRenderer.h"
 #include "MeshVertexData.h"
 #include "ModelLoader.h"
+#include <imgui.h>
+
 
 using namespace origin;
 
+glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+glm::vec3 position = { 0.0f, 0.0f, 0.0f };
+glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-struct MyModel
-{
-	std::shared_ptr<VertexArray> vao;
-	std::shared_ptr<VertexBuffer> vbo;
-	glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
-	MeshData data;
-	glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
-	glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-	std::shared_ptr<Shader> shader;
-};
-
-MyModel model;
-int size = 10;
-float framerate = 0.0f;
-float response = 0.0f;
 float deltaTime = 0.0f;
 float updateRate = 1.0f;
-float timer = 0.0f;
+float timer = 1.0f;
+float response = 0.0f;
+float framerate = 0.0f;
 
-glm::vec3 lightPos = glm::vec3(0.0f, 1.0f, 0.0f);
-
-void reload()
+struct Light
 {
-	model.shader = Shader::Create("Resources/Shaders/Mesh.glsl", false);
+	glm::vec4 Direction = { -0.5f, -1.0f, -0.5f, 1.0f };
+	glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glm::vec4 AmbientColor = { 0.6f, 0.6f, 0.6f, 1.0f };
+};
+
+Light light;
+std::shared_ptr<UniformBuffer> lightBuffer;
+
+SandboxLayer::SandboxLayer()
+	: Layer("Sandbox"), rng(std::random_device {}()), dist(0.0f, 1.0f)
+{
+	randomColor.resize(10, glm::vec3(1.0f));
 }
+
 
 void SandboxLayer::OnAttach()
 {
@@ -47,10 +47,11 @@ void SandboxLayer::OnAttach()
 	m_Camera.InitPerspective(45.0f, 1.776f, 0.1f, 800.0f);
 	m_Camera.SetPosition({ 0.0f, 5.0f, 10.0f });
 
-	model.data = ModelLoader::LoadModel("Resources/Models/cube.obj");
-	ModelLoader::ProcessMesh(model.data, model.vao, model.vbo);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glEnable(GL_DEPTH_TEST);
 
-	model.shader = Shader::Create("Resources/Shaders/Mesh.glsl", false);
+	lightBuffer = UniformBuffer::Create(sizeof(Light), 1);
 }
 
 SandboxLayer::~SandboxLayer()
@@ -59,14 +60,15 @@ SandboxLayer::~SandboxLayer()
 
 void SandboxLayer::OnUpdate(Timestep ts)
 {
-	m_Camera.OnUpdate(ts);
+	Renderer::GetStatistics().Reset();
 
+	m_Camera.OnUpdate(ts);
+	
 	RenderCommand::ClearColor(0.1f, 0.3f, 0.4f, 1.0f);
 	RenderCommand::Clear();
 
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-
+	glPolygonMode(GL_FRONT_AND_BACK, polygonMode ? GL_LINE : GL_FILL);
+		
 	if (timer <= 0.0f)
 	{
 		deltaTime = ts;
@@ -76,28 +78,38 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	}
 	timer -= ts;
 
-	model.shader->Enable();
-	model.shader->SetMatrix("uViewProjection", m_Camera.GetViewProjection());
-	model.shader->SetVector("uLightingPosition", lightPos);
-	model.shader->SetVector("uColor", model.color);
-	//MeshRenderer::Begin();
-	//glm::mat4 transform = glm::translate(glm::mat4(1.0f), model.position) * glm::scale(glm::mat4(1.0f), model.scale);
-	//MeshRenderer::Draw(transform, model.data.vertices, model.data.indices);
-	//MeshRenderer::End();
+	lightBuffer->Bind();
+	lightBuffer->SetData(&light, sizeof(Light));
+	MeshRenderer::Begin(m_Camera);
 
-	for (int x = -size; x < size; x++)
+	if (timeColorChange >= 2.0f)
 	{
-		for (int z = -size; z < size; z++)
+		for (auto &color : randomColor)
 		{
-			model.shader->SetMatrix("uTransform", glm::translate(glm::mat4(1.0f), { x + (x * 1.5), 0.0f, z + (z * 1.5) }));
-			RenderCommand::DrawIndexed(model.vao);
+			color = GetRandomColor();
 		}
+		timeColorChange = 0.0f;
 	}
 
-	model.shader->Disable();
+	timeColorChange += ts;
+
+    for (int i = -size; i < size; ++i)
+    {
+        for (int z = -size; z < size; ++z)
+        {
+            float x = i + i * 1.5f;
+            float z_pos = z + z * 2.0f;
+            float time = glfwGetTime();
+            float y = sin(x * 0.5f + z_pos * 2.5f + time) * 1.5f; // Adjust multipliers for wave frequency and amplitude
+
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x, y, z_pos });
+            MeshRenderer::DrawCube(transform, glm::vec4(randomColor[(i + size) % 10], 1.0f));
+        }
+    }
+
+	MeshRenderer::End();
 
 	DrawGrid();
-
 }
 
 void SandboxLayer::OnEvent(Event& e)
@@ -112,12 +124,28 @@ void SandboxLayer::OnEvent(Event& e)
 void SandboxLayer::OnGuiRender()
 {
 	ImGui::Begin("Window");
-	
 	ImGui::Text("%.3f fps %0.3f ms", framerate, response);
+	ImGui::Checkbox("Polygon Mode", &polygonMode);
+	ImGui::SliderInt("Size", &size, 0, 1000);
+	ImGui::ColorEdit4("Color", glm::value_ptr(color));
+	ImGui::Separator();
 
-	ImGui::ColorEdit3("Color", glm::value_ptr(model.color));
-	ImGui::DragFloat3("Light pos", glm::value_ptr(lightPos), 0.025f);
-	ImGui::DragInt("Count", &size);
+	ImGui::DragFloat3("Direction", glm::value_ptr(light.Direction), 0.025f);
+	ImGui::ColorEdit3("LightColor", glm::value_ptr(light.Color));
+	ImGui::ColorEdit3("AmbientColor", glm::value_ptr(light.AmbientColor));
+
+	ImGui::Separator();
+	ImGui::Text("Line Count %d", Renderer::GetStatistics().LineCount);
+
+	ImGui::Text("Cube Count %d", Renderer::GetStatistics().CubeCount);
+	ImGui::Text("Cube Vertices %d", Renderer::GetStatistics().GetTotalCubeVertexCount());
+	ImGui::Text("Cube Indices %d", Renderer::GetStatistics().GetTotalCubeIndexCount());
+
+	ImGui::Text("Sphere Count %d", Renderer::GetStatistics().SphereCount);
+    ImGui::Text("Sphere Vertices %d", Renderer::GetStatistics().GetTotalSphereVertexCount());
+    ImGui::Text("Sphere Indices %d", Renderer::GetStatistics().GetTotalSphereIndexCount());
+
+	ImGui::Text("Draw Calls %d", Renderer::GetStatistics().DrawCalls);
 
 	ImGui::End();
 }
@@ -131,11 +159,6 @@ bool SandboxLayer::OnWindowResize(FramebufferResizeEvent& e)
 
 bool SandboxLayer::OnKeyPressedEvent(KeyPressedEvent &e)
 {
-	if (e.GetKeyCode() == Key::D1)
-	{
-		reload();
-	}
-
 	return false;
 }
 
@@ -163,4 +186,9 @@ void SandboxLayer::DrawGrid()
 	}
 
 	Renderer2D::End();
+}
+
+glm::vec3 SandboxLayer::GetRandomColor()
+{
+    return glm::vec3(dist(rng), dist(rng), dist(rng));
 }

@@ -4,6 +4,7 @@
 #include "RenderCommand.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Scene/Components.h"
+#include "Origin/Scene/EditorCamera.h"
 
 namespace origin {
 
@@ -21,10 +22,17 @@ namespace origin {
 		uint32_t QuadCount = 0;
 		uint32_t CircleCount = 0;
 		uint32_t LineCount = 0;
-		uint32_t CubeCount = 0;
 
-		uint32_t GetTotalVertexCount() const { return QuadCount * 4; }
-		uint32_t GetTotalIndexCount() const { return QuadCount * 6; }
+		uint32_t CubeCount = 0;
+		uint32_t SphereCount = 0;
+
+		uint32_t GetTotalQuadVertexCount() const { return QuadCount * 4; }
+		uint32_t GetTotalQuadIndexCount() const { return QuadCount * 6; }
+		uint32_t GetTotalCubeVertexCount() const { return CubeCount * 24; }
+		uint32_t GetTotalCubeIndexCount() const { return CubeCount * 36; }
+        uint32_t GetTotalSphereVertexCount() const { return SphereCount * 544; }
+        uint32_t GetTotalSphereIndexCount() const { return SphereCount * 768; }
+
 		void Reset() { memset(this, 0, sizeof(Statistics)); };
 	};
 
@@ -50,6 +58,13 @@ namespace origin {
 
 		static Statistics &GetStatistics();
 		static RenderData s_RenderData;
+
+        static glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen);
+        static glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc);
+        static glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix);
+		static glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix);
+		static glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const EditorCamera &camera, glm::vec3 *rayOrigin);
+		static bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius);
 
 	private:
 		static void LoadShaders();

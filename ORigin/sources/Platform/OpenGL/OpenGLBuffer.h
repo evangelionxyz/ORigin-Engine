@@ -29,6 +29,7 @@ namespace origin
 	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
+		OpenGLIndexBuffer(uint32_t size);
 		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
 		OpenGLIndexBuffer(const std::vector<uint32_t> &indices);
 

@@ -57,7 +57,7 @@ namespace origin
 			if (cam.IsValid())
 			{
 				auto &cc = cam.GetComponent<CameraComponent>();
-				const float orthoSizeY = cc.Camera.GetOrthographicSize().y * 2.0f;
+				const float orthoSizeY = cc.Camera.GetOrthoSize().y * 2.0f;
 				m_Camera.SetOrthoScale(orthoSizeY * 1.3f);
 				m_Camera.SetOrthoScaleMax(orthoSizeY * 4.0f);
 			}
@@ -443,7 +443,7 @@ namespace origin
 			if (cam.IsValid())
 			{
 				auto &cc = cam.GetComponent<CameraComponent>();
-				const glm::vec2 &orthoSize = cc.Camera.GetOrthographicSize();
+				const glm::vec2 &orthoSize = cc.Camera.GetOrthoSize();
 				Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { orthoSize.x * 2.0f, orthoSize.y * 2.0f, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
 
 				for (int i = 0; i < m_UICompHandler->Components.size(); i++)

@@ -112,11 +112,25 @@ namespace origin
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
 		GLenum error = glGetError();
 		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer.ctor(vector<uint32_t>) {0}", error);
 	}
 
-	OpenGLIndexBuffer::~OpenGLIndexBuffer()
+    OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t size)
+		: m_Count(size)
+    {
+		OGN_PROFILER_RENDERING();
+
+		glCreateBuffers(1, &m_RendererID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+
+        GLenum error = glGetError();
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer.ctor(uint32_t,uint32_t) {0}", error);
+    }
+
+    OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		OGN_PROFILER_RENDERING();
 

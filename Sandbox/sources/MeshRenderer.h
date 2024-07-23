@@ -10,17 +10,16 @@ namespace origin
 	class MeshRenderer
 	{
 	public:
-
 		static void Init();
 		static void Shutdown();
-
 		static void StartBatch();
 		static void NextBatch();
-		static void Begin();
+		static void Begin(const Camera &camera);
 		static void Flush();
 		static void End();
 
-		static void Draw(const glm::mat4 &transform, std::span<MeshVertexData> vertices, std::span<uint32_t> indices);
+		static void DrawCube(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
+		static void DrawSphere(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
 	};
 }
 

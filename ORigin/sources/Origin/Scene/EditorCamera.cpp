@@ -9,9 +9,6 @@
 #include "Origin/Scene/Components.h"
 #include "Origin/Scene/Entity.h"
 #include <GLFW/glfw3.h>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/compatibility.hpp>
 #include <algorithm>
 
 namespace origin {
@@ -55,16 +52,14 @@ namespace origin {
 			break;
 
 		case ProjectionType::Orthographic:
-			float OrthoLeft = -m_OrthoScale * m_AspectRatio * 0.5f;
-			float OrthoRight = m_OrthoScale * m_AspectRatio * 0.5f;
-			float OrthoTop = -m_OrthoScale * 0.5f;
-			float OrthoBottom = m_OrthoScale * 0.5f;
-			m_Projection = glm::ortho(OrthoLeft, OrthoRight, OrthoTop, OrthoBottom, m_OrthoNearClip, m_OrthoFarClip);
+			m_OrthoSize.x = m_OrthoScale * m_AspectRatio / 2.0f;
+			m_OrthoSize.y = m_OrthoScale / 2.0f;
+			m_Projection = glm::ortho(-m_OrthoSize.x, m_OrthoSize.x, -m_OrthoSize.y, m_OrthoSize.y, m_OrthoNearClip, m_OrthoFarClip);
 			break;
 		}
 	}
 
-	float EditorCamera::ZoomSpeed() const
+	float EditorCamera::GetZoomSpeed() const
 	{
 		float speed = 0.0f;
 		float distance = 0.0f;
@@ -97,7 +92,7 @@ namespace origin {
 		switch (m_ProjectionType)
 		{
 		case ProjectionType::Perspective:
-			m_View = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(GetOrientation());
+			m_View = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f)));
 			m_View = glm::inverse(m_View);
 			break;
 		case ProjectionType::Orthographic:
@@ -122,8 +117,8 @@ namespace origin {
 		}
 		else if (m_CameraStyle == FreeMove)
 		{
-			xFactor = ZoomSpeed();
-			yFactor = ZoomSpeed();
+			xFactor = GetZoomSpeed();
+			yFactor = GetZoomSpeed();
 		}
 
 		return { xFactor, yFactor };
@@ -322,7 +317,7 @@ namespace origin {
 		switch (m_ProjectionType)
 		{
 		case ProjectionType::Perspective:
-			m_Distance -= delta * ZoomSpeed();
+			m_Distance -= delta * GetZoomSpeed();
 			if (m_Distance <= 1.0f)
 			{
 				m_FocalPoint += GetForwardDirection();
@@ -330,31 +325,11 @@ namespace origin {
 			}
 			break;
 		case ProjectionType::Orthographic:
-			m_OrthoScale -= delta * ZoomSpeed();
+			m_OrthoScale -= delta * GetZoomSpeed();
 			m_OrthoScale = std::max(m_OrthoScale, 1.0f);
 			m_OrthoScale = std::min(m_OrthoScale, m_MaxOrthoScale);
 			break;
 		}
-	}
-
-	glm::vec3 EditorCamera::GetUpDirection() const
-	{
-		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));
-	}
-
-	glm::vec3 EditorCamera::GetRightDirection() const
-	{
-		return glm::rotate(GetOrientation(), glm::vec3(1.0f, 0.0f, 0.0f));
-	}
-
-	glm::vec3 EditorCamera::GetForwardDirection() const
-	{
-		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
-	}
-
-	glm::quat EditorCamera::GetOrientation() const
-	{
-		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
 	}
 
 	const glm::mat4& EditorCamera::GetProjection() const

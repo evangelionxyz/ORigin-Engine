@@ -516,7 +516,7 @@ namespace origin {
 				if (ImGui::Selectable(aspectRatioType[i], isSelected))
 				{
 					currentAspectRatioType = aspectRatioType[i];
-					camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(i));
+					camera.SetAspectRatioType(static_cast<AspectRatioType>(i));
 				}
 
 				if (isSelected)
@@ -527,34 +527,32 @@ namespace origin {
 
 		if (component.Camera.GetProjectionType() == ProjectionType::Perspective)
 		{
-			float perspectiveFov = glm::degrees(camera.GetPerspectiveFov());
-			camera.SetPerspectiveFov(glm::radians(perspectiveFov));
-
+			float perspectiveFov = glm::degrees(camera.GetFOV());
 			if (ImGui::DragFloat("FOV", &perspectiveFov, 0.1f, 0.01f, 10000.0f))
-				camera.SetPerspectiveFov(glm::radians(perspectiveFov));
+				camera.SetFov(glm::radians(perspectiveFov));
 
-			float perspectiveNearClip = camera.GetPerspectiveNearClip();
+			float perspectiveNearClip = camera.GetNear();
 			if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f))
-				camera.SetPerspectiveNearClip(perspectiveNearClip);
+				camera.SetNear(perspectiveNearClip);
 
-			float perspectiveFarClip = camera.GetPerspectiveFarClip();
+			float perspectiveFarClip = camera.GetFar();
 			if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f))
-				camera.SetPerspectiveFarClip(perspectiveFarClip);
+				camera.SetFar(perspectiveFarClip);
 		}
 
 		if (component.Camera.GetProjectionType() == ProjectionType::Orthographic)
 		{
-			float orthoScale = camera.GetOrthographicScale();
-			if (ImGui::DragFloat("Ortho Size", &orthoScale, 0.1f, 1.0f, 100.0f))
-				camera.SetOrthographicScale(orthoScale);
+			float orthoScale = camera.GetOrthoScale();
+			if (ImGui::DragFloat("Ortho Scale", &orthoScale, 0.1f, 1.0f, 100.0f))
+				camera.SetOrthoScale(orthoScale);
 
-			float orthoNearClip = camera.GetOrthographicNearClip();
+			float orthoNearClip = camera.GetOrthoNear();
 			if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
-				camera.SetOrthographicNearClip(orthoNearClip);
+				camera.SetOrthoNear(orthoNearClip);
 
-			float orthoFarClip = camera.GetOrthographicFarClip();
+			float orthoFarClip = camera.GetOrthoFar();
 			if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
-				camera.SetOrthographicFarClip(orthoFarClip);
+				camera.SetOrthoFar(orthoFarClip);
 		}});
 
 		DrawComponent<SpriteAnimationComponent>("SPRITE ANIMATION", entity, [](auto &component)

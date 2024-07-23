@@ -288,13 +288,12 @@ namespace origin
 			out << YAML::BeginMap; // Camera
 			out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(camera.GetProjectionType());
 			out << YAML::Key << "AspectRatioType" << YAML::Value << static_cast<int>(camera.GetAspectRatioType());
-
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveFov();
-			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
-			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
-			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicScale();
-			out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
-			out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
+            out << YAML::Key << "FOV" << YAML::Value << camera.GetFOV();
+			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetNear();
+			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetFar();
+            out << YAML::Key << "OrthoScale" << YAML::Value << camera.GetOrthoScale();
+            out << YAML::Key << "OrthoNear" << YAML::Value << camera.GetOrthoNear();
+            out << YAML::Key << "OrthoFar" << YAML::Value << camera.GetOrthoFar();
 			out << YAML::Key << "ViewportSize" << YAML::Value << camera.GetViewportSize();
 			out << YAML::EndMap; // !Camera
 
@@ -698,16 +697,19 @@ namespace origin
 				{
 					CameraComponent &cc = deserializedEntity.AddComponent<CameraComponent>();
 					const auto& cameraProps = cameraComponent["Camera"];
-					cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
-					cc.Camera.SetAspectRatioType(static_cast<SceneCamera::AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
-					cc.Camera.SetPerspectiveFov(cameraProps["PerspectiveFOV"].as<float>());
-					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
-					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
-					cc.Camera.SetOrthographicScale(cameraProps["OrthographicSize"].as<float>());
-					cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
-					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 					glm::vec2 viewportSize = cameraProps["ViewportSize"].as<glm::vec2>();
-					cc.Camera.SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+					float fov = cameraProps["FOV"].as<float>();
+					float nearClip = cameraProps["PerspectiveNear"].as<float>();
+					float farClip = cameraProps["PerspectiveFar"].as<float>();
+					cc.Camera.InitPerspective(fov, viewportSize.x / viewportSize.y, nearClip, farClip);
+
+					float orthoScale = cameraProps["OrthoScale"].as<float>();
+					nearClip = cameraProps["OrthoNear"].as<float>();
+					farClip = cameraProps["OrthoFar"].as<float>();
+					cc.Camera.InitOrthographic(orthoScale, nearClip, farClip);
+                    cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
+                    cc.Camera.SetAspectRatioType(static_cast<AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
+					cc.Camera.SetViewportSize(viewportSize.x, viewportSize.y);
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 				}
 

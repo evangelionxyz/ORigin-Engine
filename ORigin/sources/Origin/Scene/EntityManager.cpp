@@ -36,7 +36,10 @@ namespace origin
 	Entity EntityManager::CreateCamera(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
-		entity.AddComponent<CameraComponent>();
+		auto cc = entity.AddComponent<CameraComponent>();
+		cc.Camera.InitOrthographic(10, 0.1f, 2.0f);
+		cc.Camera.InitPerspective(40.0f, 1.7776f, 0.1f, 500.0f);
+
 		entity.AddComponent<AudioListenerComponent>();
 		entity.GetComponent<TransformComponent>().Translation.z = 8.0f;
 		return entity;

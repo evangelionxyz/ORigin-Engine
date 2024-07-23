@@ -38,8 +38,8 @@ namespace origin
         void OnUpdateRuntime(Timestep time);
         void OnSimulationStart();
         void OnSimulationStop();
-        void OnUpdateSimulation(Timestep time, EditorCamera &camera);
-        void OnEditorUpdate(Timestep time, EditorCamera &camera);
+        void OnUpdateSimulation(Timestep time, Camera &camera);
+        void OnEditorUpdate(Timestep time, Camera &camera);
         void OnViewportResize(const uint32_t width, const uint32_t height);
         void OnShadowRender();
 
@@ -62,8 +62,8 @@ namespace origin
         std::shared_ptr<UIRenderer> m_UIRenderer;
         std::shared_ptr<Physics2D> m_Physics2D;
 
-        void RenderScene(const EditorCamera &camera);
-        void RenderScene(const SceneCamera &camera, const TransformComponent &cameraTransform);
+        void RenderScene(const Camera &camera);
+        void RenderScene(const Camera &camera, const TransformComponent &cameraTransform);
 
         template <typename T>
         void OnComponentAdded(Entity entity, T &component);

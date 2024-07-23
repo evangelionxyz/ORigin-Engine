@@ -58,11 +58,11 @@ namespace origin {
 		s_Render3DData.CubeVertexBuffer->SetLayout({
 			{ShaderDataType::Float3,	"a_Pos"			},
 			{ShaderDataType::Float4,	"a_Color"		},
-			{ShaderDataType::Float2,	"a_TexCoord"},
-			{ShaderDataType::Float,		"a_TexIndex"},
-			{ShaderDataType::Int,			"a_EntityID"},
+			{ShaderDataType::Float2,	"a_TexCoord"    },
+			{ShaderDataType::Float,		"a_TexIndex"    },
+			{ShaderDataType::Int,		"a_EntityID"    },
 		});
-		
+
 		s_Render3DData.CubeVertexArray->AddVertexBuffer(s_Render3DData.CubeVertexBuffer);
 		s_Render3DData.CubeVertexBufferBase = new Vertex[Renderer::s_RenderData.MaxVertices];
 
@@ -126,7 +126,7 @@ namespace origin {
 		s_Render3DData.CubeShader = Renderer::GetShader("Cube");
 	}
 
-	void Renderer3D::Begin(const SceneCamera& camera, const glm::mat4& camTransform)
+	void Renderer3D::Begin(const Camera &camera, const glm::mat4& camTransform)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -139,7 +139,7 @@ namespace origin {
 		StartBatch();
 	}
 
-	void Renderer3D::Begin(const EditorCamera& camera)
+	void Renderer3D::Begin(const Camera &camera)
 	{
 		OGN_PROFILER_RENDERING();
 
