@@ -9,17 +9,17 @@ project "Sandbox"
 
     links {
         "ORigin",
-        "assimp",
-        "Box2D",
-        "origin-glfw",
-        "glad",
-        "ImGui",
-        "Optick",
-        "msdf-atlas-gen",
-        "msdfgen",
-        "freetype",
-        "yaml-cpp",
-        "PhysX"
+        "ASSIMP",
+        "BOX2D",
+        "GLFW",
+        "GLAD",
+        "IMGUI",
+        "OPTICK",
+        "MSDFATLASGEN",
+        "MSDFGEN",
+        "FreeType",
+        "YAMLCPP",
+        "JOLT",
     }
 
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/Sandbox")
@@ -31,24 +31,23 @@ project "Sandbox"
     }
 
     includedirs {
+        "%{wks.location}/sources",
         "%{wks.location}/ORigin/sources",
-        "%{prj.location}/sources",
         "%{IncludeDir.SPDLOG}",
         "%{IncludeDir.ASSIMP}",
-        "%{IncludeDir.STBI}",
         "%{IncludeDir.GLFW}",
-        "%{IncludeDir.IMGUI}",
-        "%{IncludeDir.Miniaudio}",
-        "%{IncludeDir.IMGUIZMO}",
-        "%{IncludeDir.BOX2D}",
-        "%{IncludeDir.OPTICK}",
         "%{IncludeDir.GLAD}",
-        "%{IncludeDir.GLM}",
+        "%{IncludeDir.BOX2D}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.msdf_atlas_gen}",
-        "%{IncludeDir.msdfgen}",
-        "%{IncludeDir.JoltPhysics}",
-        "%{IncludeDir.YAML_CPP}",
+        "%{IncludeDir.MINIAUDIO}",
+        "%{IncludeDir.IMGUI}",
+        "%{IncludeDir.IMGUIZMO}",
+        "%{IncludeDir.GLM}",
+        "%{IncludeDir.YAMLCPP}",
+        "%{IncludeDir.OPTICK}",
+        "%{IncludeDir.JOLT}",
+        "%{IncludeDir.MSDFGEN}",
+        "%{IncludeDir.MSDFATLASGEN}",
     }
 
     defines {

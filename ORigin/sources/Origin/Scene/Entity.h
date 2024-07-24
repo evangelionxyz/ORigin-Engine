@@ -2,9 +2,10 @@
 
 #pragma once
 #include "entt/entt.hpp"
-#include "box2d/b2_contact.h"
 #include "Scene.h"
-#include "Components.h"
+
+#include "Components/PhysicsComponents.h"
+#include "Components/Components.h"
 
 namespace origin {
 
@@ -55,24 +56,6 @@ namespace origin {
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
-
-		bool IsContactWith(const std::string& objName)
-		{
-			if (!HasComponent<Rigidbody2DComponent>())
-				return false;
-
-			auto& rb2d = GetComponent<Rigidbody2DComponent>();
-			return rb2d.ContactWith == objName;
-		}
-
-		std::string GetContactTag()
-		{
-			if (!HasComponent<Rigidbody2DComponent>())
-				return "";
-
-			const auto &rb2d = GetComponent<Rigidbody2DComponent>();
-			return rb2d.ContactWith;
-		}
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 
 		bool IsValid() const

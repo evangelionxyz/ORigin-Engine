@@ -8,7 +8,6 @@
 #include "Layer.h"
 #include "LayerStack.h"
 #include "Command.h"
-
 #include "Origin/GUI/GuiLayer.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/GraphicsContext.h"

@@ -1,8 +1,6 @@
 #pragma once
 #include <Origin.h>
 
-#include "Frustum.h"
-
 #include <random>
 #include <chrono>
 
@@ -22,6 +20,7 @@ namespace origin
         bool OnKeyPressedEvent(KeyPressedEvent &e);
 
     private:
+        void RenderScene();
         void DrawGrid();
         glm::vec3 GetRandomColor();
 
@@ -30,12 +29,14 @@ namespace origin
         TransformComponent m_CamTC;
         Frustum m_Frustum;
 
+        std::vector<glm::vec3> positions;
+
         std::mt19937 rng;
         std::uniform_real_distribution<float> dist;
         std::vector<glm::vec3> randomColor;
         bool polygonMode = false;
         float nPlane, fPlane, FOV;
-        int size = 20;
+        const int size = 20;
         float timeColorChange = 0.0f;
         float deltaTime = 0.0f;
         float updateRate = 1.0f;

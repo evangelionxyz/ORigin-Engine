@@ -11,9 +11,12 @@
 #include "Origin/Renderer/ParticleSystem.h"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
-#include "SpriteSheet.h"
-#include "Camera.h"
-#include "SceneCamera.h"
+#include "Origin/Renderer/MeshVertexData.h"
+
+#include "Origin/Scene/Camera.h"
+#include "Origin/Scene/SceneCamera.h"
+#include "Origin/Scene/SpriteSheet.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -24,12 +27,14 @@
 
 namespace origin
 {
-	class Mesh;
 	class Lighting;
 	class AudioSource;
 	class SpriteAnimation;
-	class ScriptableEntity;
+    class ScriptableEntity;
 	class RigidbodyComponent;
+    class BoxColliderComponent;
+    class SphereColliderComponent;
+    class CapsuleColliderComponent;
 
 	class IDComponent
 	{
@@ -41,7 +46,6 @@ namespace origin
 		IDComponent(const IDComponent &) = default;
 		IDComponent(UUID id, UUID parent = UUID(0)) : ID(id), Parent(parent) { }
 	};
-
 
 	class TagComponent
 	{
@@ -77,7 +81,6 @@ namespace origin
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent&) = default;
 	};
-
 	
 	class AudioComponent
 	{
@@ -123,9 +126,18 @@ namespace origin
 	class StaticMeshComponent
 	{
 	public:
+		enum class Type
+		{
+			Cube = 0,
+			Sphere,
+			Capsule
+		};
+
 		std::string Name;
-		std::shared_ptr<Mesh> HMesh;
+		MeshData Data;
 		AssetHandle HMaterial = UUID(0);
+		Type mType;
+
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
@@ -226,7 +238,6 @@ namespace origin
 		SpriteRenderer2DComponent(float r, float g, float b, float a)
 			: Color(r, g, b, a){}
 	};
-
 	
 	class LightComponent
 	{
@@ -541,9 +552,28 @@ namespace origin
 	{
 	};
 
-	using AllComponents = ComponentGroup<TransformComponent, CameraComponent,
-		UIComponent, SpriteAnimationComponent, AudioComponent, AudioListenerComponent, LightComponent,
-		SpriteRenderer2DComponent, StaticMeshComponent, ModelComponent, TextComponent,
-		CircleRendererComponent, ParticleComponent, ScriptComponent, NativeScriptComponent,
-		Rigidbody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, RevoluteJoint2DComponent>;
+	using AllComponents = ComponentGroup<
+		TransformComponent, 
+		CameraComponent,
+		UIComponent, 
+		SpriteAnimationComponent, 
+		AudioComponent, 
+		AudioListenerComponent, 
+		LightComponent,
+		SpriteRenderer2DComponent, 
+		StaticMeshComponent, 
+		ModelComponent, 
+		TextComponent,
+		CircleRendererComponent, 
+		ParticleComponent, 
+		ScriptComponent, 
+		NativeScriptComponent,
+		Rigidbody2DComponent, 
+		BoxCollider2DComponent, 
+		CircleCollider2DComponent, 
+		RevoluteJoint2DComponent,
+        RigidbodyComponent,
+        BoxColliderComponent,
+        SphereColliderComponent,
+        CapsuleColliderComponent>;
 }

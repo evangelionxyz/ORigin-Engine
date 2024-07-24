@@ -5,7 +5,7 @@
 
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Scene/EntityManager.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/Lighting.h"
 #include "Origin/Scripting/ScriptEngine.h"
@@ -176,6 +176,52 @@ namespace origin
 			out << YAML::EndMap; // !UIComponent
 		}
 
+        if (entity.HasComponent<BoxColliderComponent>())
+        {
+            out << YAML::Key << "BoxColliderComponent";
+            out << YAML::BeginMap; // BoxColliderComponent
+            const auto &bc = entity.GetComponent<BoxColliderComponent>();
+            out << YAML::Key << "Size" << YAML::Value << bc.Size;
+            out << YAML::Key << "Restitution" << YAML::Value << bc.Restitution;
+            out << YAML::Key << "StaticFriction" << YAML::Value << bc.StaticFriction;
+            out << YAML::Key << "DynamicFriction" << YAML::Value << bc.DynamicFriction;
+
+            out << YAML::EndMap; // !BoxColliderComponent
+        }
+
+        if (entity.HasComponent<SphereColliderComponent>())
+        {
+            out << YAML::Key << "SphereColliderComponent";
+            out << YAML::BeginMap;
+            const auto &sc = entity.GetComponent<SphereColliderComponent>();
+            out << YAML::Key << "Radius" << sc.Radius;
+            out << YAML::Key << "Restitution" << sc.Restitution;
+            out << YAML::Key << "StaticFriction" << YAML::Value << sc.StaticFriction;
+            out << YAML::Key << "DynamicFriction" << YAML::Value << sc.DynamicFriction;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<RigidbodyComponent>())
+        {
+            out << YAML::Key << "RigidbodyComponent";
+            out << YAML::BeginMap; // RigidbodyComponent
+            const auto &rigidbody = entity.GetComponent<RigidbodyComponent>();
+
+            out << YAML::Key << "Mass" << YAML::Value << rigidbody.Mass;
+            out << YAML::Key << "CenterMass" << YAML::Value << rigidbody.CenterMass;
+
+            out << YAML::Key << "UseGravity" << YAML::Value << rigidbody.UseGravity;
+            out << YAML::Key << "RotateX" << YAML::Value << rigidbody.RotateX;
+            out << YAML::Key << "RotateY" << YAML::Value << rigidbody.RotateY;
+            out << YAML::Key << "RotateZ" << YAML::Value << rigidbody.RotateZ;
+            out << YAML::Key << "MoveX" << YAML::Value << rigidbody.MoveX;
+            out << YAML::Key << "MoveY" << YAML::Value << rigidbody.MoveY;
+            out << YAML::Key << "MoveZ" << YAML::Value << rigidbody.MoveZ;
+            out << YAML::Key << "IsStatic" << YAML::Value << rigidbody.IsStatic;
+
+            out << YAML::EndMap; // !Rigidbody
+        }
+
 		if (entity.HasComponent<ScriptComponent>())
 		{
 			out << YAML::Key << "ScriptComponent";
@@ -302,6 +348,18 @@ namespace origin
 			out << YAML::EndMap; // !CameraComponent
 		}
 
+		if (entity.HasComponent<StaticMeshComponent>())
+		{
+			out << YAML::Key << "StaticMeshComponent";
+			out << YAML::BeginMap; // StaticMeshComponent
+
+			const StaticMeshComponent sc = entity.GetComponent<StaticMeshComponent>();
+			out << YAML::Key << "Name" << sc.Name;
+			out << YAML::Key << "Type" << (int)sc.mType;
+			out << YAML::Key << "HMaterial" << sc.HMaterial;
+			out << YAML::EndMap; // !StaticMeshComponent
+		}
+
 		if (entity.HasComponent<AudioListenerComponent>())
 		{
 			out << YAML::Key << "AudioListenerComponent";
@@ -394,7 +452,7 @@ namespace origin
 			case LightingType::Directional:
 			{
 				out << YAML::Key << "Color" << YAML::Value << light->m_DirLightData.Color;
-				out << YAML::Key << "Strength" << YAML::Value << light->m_DirLightData.Strength;
+				out << YAML::Key << "Ambient" << YAML::Value << light->m_DirLightData.Ambient;
 				out << YAML::Key << "Diffuse" << YAML::Value << light->m_DirLightData.Diffuse;
 				out << YAML::Key << "Specular" << YAML::Value << light->m_DirLightData.Specular;
 				break;
@@ -713,6 +771,17 @@ namespace origin
 					cc.Primary = cameraComponent["Primary"].as<bool>();
 				}
 
+				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
+				{
+					StaticMeshComponent &sc = deserializedEntity.AddComponent<StaticMeshComponent>();
+					sc.Name = staticMeshComponent["Name"].as<std::string>();
+					sc.HMaterial = staticMeshComponent["HMaterial"].as<uint64_t>();
+					sc.mType = static_cast<StaticMeshComponent::Type>(staticMeshComponent["Type"].as<int>());
+
+					// TODO: Add create model
+				}
+
+
 				if (YAML::Node particleComponent = entity["ParticleComponent"])
 				{
 					ParticleComponent &pc = deserializedEntity.AddComponent<ParticleComponent>();
@@ -766,7 +835,7 @@ namespace origin
 					case LightingType::Directional:
 					{
 						light->m_DirLightData.Color = lightComponent["Color"].as<glm::vec4>();
-						light->m_DirLightData.Strength = lightComponent["Strength"].as<float>();
+						light->m_DirLightData.Ambient = lightComponent["Ambient"].as<glm::vec4>();
 						light->m_DirLightData.Diffuse = lightComponent["Diffuse"].as<float>();
 						light->m_DirLightData.Specular = lightComponent["Specular"].as<float>();
 						break;
@@ -856,6 +925,40 @@ namespace origin
 						tc.ScreenSpace = textComponent["ScreenSpace"].as<bool>();
 					}
 				}
+
+                if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
+                {
+                    auto &boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
+                    boxCollider.Size = boxColliderComponent["Size"].as<glm::vec3>();
+                    boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
+                    boxCollider.StaticFriction = boxColliderComponent["StaticFriction"].as<float>();
+                    boxCollider.DynamicFriction = boxColliderComponent["DynamicFriction"].as<float>();
+                }
+
+                if (YAML::Node sphereColliderComponent = entity["SphereColliderComponent"])
+                {
+                    auto &sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
+                    sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
+                    sphereCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
+                    sphereCollider.StaticFriction = sphereColliderComponent["StaticFriction"].as<float>();
+                    sphereCollider.DynamicFriction = sphereColliderComponent["DynamicFriction"].as<float>();
+                }
+                
+                if (YAML::Node rigidbodyComponent = entity["RigidbodyComponent"])
+                {
+                    auto &rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
+                    rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
+                    rigidbody.CenterMass = rigidbodyComponent["CenterMass"].as<glm::vec3>();
+                    rigidbody.UseGravity = rigidbodyComponent["UseGravity"].as<bool>();
+                    rigidbody.RotateX = rigidbodyComponent["RotateX"].as<bool>();
+                    rigidbody.RotateY = rigidbodyComponent["RotateY"].as<bool>();
+                    rigidbody.RotateZ = rigidbodyComponent["RotateZ"].as<bool>();
+                    rigidbody.MoveX = rigidbodyComponent["MoveX"].as<bool>();
+                    rigidbody.MoveY = rigidbodyComponent["MoveY"].as<bool>();
+                    rigidbody.MoveZ = rigidbodyComponent["MoveZ"].as<bool>();
+                    rigidbody.IsStatic = rigidbodyComponent["IsStatic"].as<bool>();
+
+                }
 
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])
 				{

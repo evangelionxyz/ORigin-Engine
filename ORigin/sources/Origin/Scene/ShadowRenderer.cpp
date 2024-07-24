@@ -13,7 +13,7 @@ namespace origin {
 	ShadowRenderer::ShadowRenderer(const std::shared_ptr<Shader>& depthShader, LightingType type)
 		: m_DepthShader(depthShader)
 	{
-		m_DepthUniformBuffer = UniformBuffer::Create(sizeof(m_DepthBufferData), 0);
+		m_DepthUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 0);
 		Invalidate(type);
 	}
 
@@ -79,7 +79,7 @@ namespace origin {
 		m_Framebuffer->Unbind();
 	}
 
-	void ShadowRenderer::OnRenderBegin(const TransformComponent& tc, const glm::mat4& modelTransform)
+	void ShadowRenderer::OnRenderBegin(const TransformComponent& tc, const glm::mat4& transform)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -88,10 +88,9 @@ namespace origin {
 		{
 			glm::mat4 projection = glm::ortho(-Size, Size, -Size, Size, Near, Far);
 			glm::mat4 view = glm::lookAt(-tc.GetUp(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0));
-			m_DepthBufferData.LightViewProjection = projection * view;
-			m_DepthBufferData.ModelTransform = modelTransform;
+			ViewProjection = (projection * view) * glm::inverse(transform);
 			m_DepthUniformBuffer->Bind();
-			m_DepthUniformBuffer->SetData(&m_DepthBufferData, sizeof(m_DepthBufferData));
+			m_DepthUniformBuffer->SetData(&ViewProjection, sizeof(ViewProjection));
 		}
 	}
 

@@ -1,4 +1,4 @@
-project "freetype"
+project "FreeType"
     location (vendorProjectFiles)
     kind "StaticLib"
     language "C"

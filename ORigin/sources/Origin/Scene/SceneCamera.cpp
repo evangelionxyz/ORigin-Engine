@@ -46,8 +46,8 @@ namespace origin
 		m_OrthoSize.x = m_OrthoScale * m_AspectRatio / 2.0f;
 		m_OrthoSize.y = m_OrthoScale / 2.0f;
 
-		UpdateProjection();
 		UpdateView();
+		UpdateProjection();
 	}
 
     void SceneCamera::SetAspectRatioType(AspectRatioType type)
@@ -98,8 +98,8 @@ namespace origin
 		m_OrthoSize.x = m_OrthoScale * m_AspectRatio / 2.0f;
 		m_OrthoSize.y = m_OrthoScale / 2.0f;
 
-		UpdateProjection();
 		UpdateView();
+		UpdateProjection();
 	}
 
     void SceneCamera::UpdateProjection()
@@ -110,7 +110,7 @@ namespace origin
 				m_Projection = glm::perspective(m_FOV, m_AspectRatio, m_NearClip, m_FarClip);
 				break;
 			case ProjectionType::Orthographic:
-				m_Projection = glm::ortho(-m_OrthoSize.x, m_OrthoSize.x, -m_OrthoSize.y, m_OrthoSize.y, m_NearClip, m_FarClip);
+				m_Projection = glm::ortho(-m_OrthoSize.x, m_OrthoSize.x, -m_OrthoSize.y, m_OrthoSize.y, m_OrthoNearClip, m_OrthoFarClip);
 				break;
 		}
 	}

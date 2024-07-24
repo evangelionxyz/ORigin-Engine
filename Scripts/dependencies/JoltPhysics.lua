@@ -1,5 +1,6 @@
 -- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-project "JoltPhysics"
+
+project "JOLT"
     location (vendorProjectFiles)
     kind "StaticLib"
     language "C++"

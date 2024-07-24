@@ -1,7 +1,7 @@
 #pragma once
 #include "ShadowRenderer.h"
 #include "Origin/Renderer/UniformBuffer.h"
-#include "Components.h"
+#include "Components/Components.h"
 
 namespace origin {
 
@@ -33,16 +33,11 @@ namespace origin {
 		}
 	}
 
-	struct LightBufferData
-	{
-		glm::mat4 Transform;
-	};
-
-	struct DirectionalLightBufferData
+	struct DirLightBufferData
 	{
 		glm::vec4 Direction = glm::vec4(0.0f);
 		glm::vec4 Color = glm::vec4(1.0f);
-		float Strength = 1.0f;
+		glm::vec4 Ambient = glm::vec4(0.2f);
 		float Diffuse = 1.0f;
 		float Specular = 1.0f;
 	};
@@ -56,8 +51,7 @@ namespace origin {
 		void OnRender(const TransformComponent& lightDirection);
 		void SetType(LightingType type);
 
-		LightBufferData m_LightData;
-		DirectionalLightBufferData m_DirLightData;
+		DirLightBufferData m_DirLightData;
 
 		const std::shared_ptr<ShadowRenderer>& GetShadow() const { return m_ShadowRenderer; }
 
@@ -71,8 +65,8 @@ namespace origin {
 
 	private:
 		std::shared_ptr<ShadowRenderer> m_ShadowRenderer;
-		std::shared_ptr<UniformBuffer> m_UniformBuffer;
-		std::shared_ptr<UniformBuffer> m_DirectionalUniformBuffer;
+		std::shared_ptr<UniformBuffer> m_TransformUniformBuffer;
+		std::shared_ptr<UniformBuffer> m_LightingUniformBuffer;
 	};
 }
 

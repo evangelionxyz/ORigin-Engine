@@ -11,11 +11,10 @@
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Scene/EntityManager.h"
-#include "Origin/GUI/UI.h"
-#include <filesystem>
-
 #include "Panels/AnimationTimeline.h"
+#include "Origin/GUI/UI.h"
 
+#include <filesystem>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>

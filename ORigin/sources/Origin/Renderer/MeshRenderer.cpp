@@ -1,3 +1,6 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
+#include "pch.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Shader.h"
@@ -59,7 +62,7 @@ namespace origin
 	void MeshRenderer::Init()
 	{
 		s_Data.Ubo = UniformBuffer::Create(sizeof(CameraBufferData), 0);
-		s_Data.Shader = Shader::Create("Resources/Shaders/MeshTest.glsl", true, true);
+		s_Data.Shader = Renderer::GetShader("Mesh");
 		s_Data.TextureSlots[0] = Renderer::WhiteTexture;
 
 
@@ -128,13 +131,18 @@ namespace origin
         
 	}
 
-	void MeshRenderer::Begin(const Camera &camera)
+	void MeshRenderer::Begin(const Camera &camera, Shader *shader)
 	{
 		s_Data.CameraData.ViewProjection = camera.GetViewProjection();
 		s_Data.CameraData.Position = camera.GetPosition();
 
 		s_Data.Ubo->Bind();
 		s_Data.Ubo->SetData(&s_Data.CameraData, sizeof(CameraBufferData));
+
+		if (!shader)
+			s_Data.Shader->Enable();
+		else
+			shader->Enable();
 
 		StartBatch();
 	}
@@ -150,21 +158,25 @@ namespace origin
         s_Data.SphereVBOPtr = s_Data.SphereVBOBase;
 	}
 
-	void MeshRenderer::Flush()
+	void MeshRenderer::NextBatch()
 	{
-		s_Data.Shader->Enable();
+		End();
+		StartBatch();
+	}
 
-		if (s_Data.CubeIndexCount)
-		{
-			uint32_t dataSize = (uint8_t *)s_Data.CubeVBOPtr - (uint8_t *)s_Data.CubeVBOBase;
-			s_Data.CubeVBO->SetData(s_Data.CubeVBOBase, dataSize);
+	void MeshRenderer::End()
+	{
+        if (s_Data.CubeIndexCount)
+        {
+            uint32_t dataSize = (uint8_t *)s_Data.CubeVBOPtr - (uint8_t *)s_Data.CubeVBOBase;
+            s_Data.CubeVBO->SetData(s_Data.CubeVBOBase, dataSize);
 
-			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-				s_Data.TextureSlots[i]->Bind(i);
-			RenderCommand::DrawIndexed(s_Data.CubeVAO, s_Data.CubeIndexCount);
+            for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+                s_Data.TextureSlots[i]->Bind(i);
+            RenderCommand::DrawIndexed(s_Data.CubeVAO, s_Data.CubeIndexCount);
 
-			Renderer::GetStatistics().DrawCalls++;
-		}
+            Renderer::GetStatistics().DrawCalls++;
+        }
 
         if (s_Data.SphereIndexCount)
         {
@@ -174,19 +186,8 @@ namespace origin
             for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
                 s_Data.TextureSlots[i]->Bind(i);
             RenderCommand::DrawIndexed(s_Data.SphereVAO, s_Data.SphereIndexCount);
-			Renderer::GetStatistics().DrawCalls++;
+            Renderer::GetStatistics().DrawCalls++;
         }
-	}
-
-	void MeshRenderer::NextBatch()
-	{
-		Flush();
-		StartBatch();
-	}
-
-	void MeshRenderer::End()
-	{
-		Flush();
 	}
 
 	void MeshRenderer::DrawCube(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
@@ -209,6 +210,14 @@ namespace origin
 		Renderer::GetStatistics().CubeCount++;
 	}
 
+    void MeshRenderer::DrawCube(const glm::mat4 &transform, Material *material, int entityID)
+    {
+		if(material)
+			DrawCube(transform, material->Color, entityID);
+		else
+			DrawCube(transform, glm::vec4(1.0f), entityID);
+    }
+
     void MeshRenderer::DrawSphere(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
     {
         if (s_Data.SphereIndexCount >= MeshRenderData::MaxSphereIndices)
@@ -227,6 +236,19 @@ namespace origin
 
         s_Data.SphereIndexCount += 768;
 		Renderer::GetStatistics().SphereCount++;
+    }
+
+    void MeshRenderer::DrawSphere(const glm::mat4 &transform, Material *material, int entityID /*= -1*/)
+    {
+        if (material)
+			DrawSphere(transform, material->Color, entityID);
+        else
+			DrawSphere(transform, glm::vec4(1.0f), entityID);
+    }
+
+    Shader *MeshRenderer::GetShader()
+    {
+		return s_Data.Shader.get();
     }
 
     void MeshRenderer::Shutdown()

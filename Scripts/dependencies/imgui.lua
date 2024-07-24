@@ -1,5 +1,6 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
-project "ImGui"
+
+project "IMGUI"
   location (vendorProjectFiles)
   kind "StaticLib"
   language "C++"

@@ -3,7 +3,7 @@
 #pragma once
 #include "RenderCommand.h"
 #include "Origin/Renderer/Texture.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/EditorCamera.h"
 
 namespace origin {

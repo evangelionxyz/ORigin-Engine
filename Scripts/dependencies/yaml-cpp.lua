@@ -1,6 +1,6 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-project "yaml-cpp"
+project "YAMLCPP"
 	location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C++"

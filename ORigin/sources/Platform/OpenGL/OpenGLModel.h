@@ -2,9 +2,8 @@
 
 #pragma once
 #include "Origin/Renderer/Model.h"
-#include "Origin/Renderer/Mesh.h"
 #include "Origin/Renderer/UniformBuffer.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <vector>
@@ -17,15 +16,10 @@ namespace origin
 	public:
 		OpenGLModel(const char *filepath, Scene *scene);
 		~OpenGLModel() override;
-
-		virtual void SetTransform(const glm::mat4 &transform) override;
 		virtual const std::string &GetFilepath() override { return m_Filepath; }
-		
 		virtual const std::vector<StaticMeshComponent> &GetMeshes() override { return m_Meshes; }
 
 	private:
-		std::vector<MeshVertex> m_Vertices;
-		std::vector<uint32_t> m_Indices;
 		std::shared_ptr<UniformBuffer> m_UniformBuffer;
 		std::vector<StaticMeshComponent> m_Meshes;
 		

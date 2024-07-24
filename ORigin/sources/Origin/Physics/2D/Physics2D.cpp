@@ -4,7 +4,7 @@
 #include "Physics2D.h"
 
 #include "Origin/Scene/Entity.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 
 #include "box2d/box2d.h"
 #include "box2d/b2_world.h"

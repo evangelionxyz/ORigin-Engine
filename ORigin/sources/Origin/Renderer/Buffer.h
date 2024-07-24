@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "Mesh.h"
-
 #include "Origin/Core/Assert.h"
 
 namespace origin

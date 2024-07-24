@@ -1,5 +1,6 @@
 #pragma once
 #include "Origin/Renderer/VertexArray.h"
+#include "Origin/Renderer/Shader.h"
 #include "Origin/Renderer/Buffer.h"
 #include "Origin/Renderer/RenderCommand.h"
 #include "Origin/Scene/Skybox.h"

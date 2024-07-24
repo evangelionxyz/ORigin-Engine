@@ -2,7 +2,7 @@
 
 #include "Gizmos.h"
 #include "../EditorLayer.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include "Origin/Renderer/Renderer2D.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -179,20 +179,20 @@ namespace origin {
 		Renderer3D::Begin(camera);
 		auto &scene = EditorLayer::Get().m_ActiveScene;
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 #if 0
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		const auto &box = scene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
-		for (auto entity : box)
+		for (auto b : box)
 		{
-			const auto &[tc, bc] = box.get<TransformComponent, BoxColliderComponent>(entity);
+			const auto &[tc, bc] = box.get<TransformComponent, BoxColliderComponent>(b);
 
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + bc.Offset))
 				* glm::toMat4(glm::quat(tc.WorldRotation))
 				* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(bc.Size * 2.0f) * 2.0f);
 
-			Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)entity);
+			Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)b);
 		}
-
 
 		const auto &sphere = scene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
 		for (auto entity : sphere)
@@ -203,10 +203,8 @@ namespace origin {
 				* glm::toMat4(glm::quat(tc.WorldRotation))
 				* glm::scale(glm::mat4(1.0f), tc.WorldScale);
 
-			Renderer3D::DrawSphere(transform,
-														 glm::vec4(1.0f, 0.0f, 1.0f, 1.0f),
-														 (sc.Radius + 0.1f) * 2.0f,
-														 (int)entity);
+			Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), 
+				(sc.Radius + 0.1f) * 2.0f, (int)entity);
 		}
 
 		const auto &capsule = scene->GetAllEntitiesWith<TransformComponent, CapsuleColliderComponent>();
@@ -265,23 +263,11 @@ namespace origin {
 			if (entity.HasComponent<CameraComponent>())
 			{
 				CameraComponent &cc = entity.GetComponent<CameraComponent>();
-
-				if (camera.GetOrthoScale() >= 20.0f || camera.GetProjectionType() == ProjectionType::Perspective)
-				{
-					drawIcon(tc, textures.at("camera"), (int)entity);
-
-					glm::vec3 rotation = camera.GetProjectionType() == ProjectionType::Perspective ? glm::vec3(tc.WorldRotation) : glm::vec3(0.0f, 0.0f, tc.WorldRotation.z);
-					glm::vec2 orthoSize = cc.Camera.GetOrthoSize();
-
-					if (cc.Camera.GetAspectRatioType() != AspectRatioType::Free)
-					{
-						glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
-							* glm::toMat4(glm::qua(rotation))
-							* glm::scale(glm::mat4(1.0f), glm::vec3(orthoSize.x * 2.0f, orthoSize.y * 2.0f, 1.0f));
-
-						Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-					}
-				}
+				cc.Camera.GetFrustum().Update(cc.Camera.GetProjection() * glm::inverse(tc.GetTransform()));
+                for (const auto &edge : cc.Camera.GetFrustum().GetEdges())
+                {
+                    Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
+                }
 			}
 			else if (entity.HasComponent<AudioComponent>())
 			{

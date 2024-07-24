@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
-#include "Components.h"
+#include "Components/Components.h"
 #include "Origin/Renderer/Shader.h"
 
 namespace origin

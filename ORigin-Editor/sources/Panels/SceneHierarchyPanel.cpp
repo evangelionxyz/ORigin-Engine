@@ -143,6 +143,10 @@ namespace origin {
 			{
 				if (ImGui::MenuItem("Empty Mesh"))
 					SetSelectedEntity(EntityManager::CreateMesh("Empty Mesh", m_Scene.get()));
+                if (ImGui::MenuItem("Cube"))
+                    SetSelectedEntity(EntityManager::CreateCube("Cube", m_Scene.get()));
+                if (ImGui::MenuItem("Sphere"))
+                    SetSelectedEntity(EntityManager::CreateSphere("Sphere", m_Scene.get()));
 				ImGui::EndMenu();
 			}
 
@@ -340,15 +344,15 @@ namespace origin {
 			DisplayAddComponentEntry<SpriteAnimationComponent>("2D SPRITE ANIMATION");
 			DisplayAddComponentEntry<CircleRendererComponent>("2D CIRCLE RENDERER 2D");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
+			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH");
 			DisplayAddComponentEntry<ModelComponent>("MODEL");
 			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
 			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
-			if (DisplayAddComponentEntry<LightComponent>("LIGHTING"))
-			{
-				auto &lc = m_SelectedEntity.GetComponent<LightComponent>();
-				if (!lc.Light)
-					lc.Light = Lighting::Create(LightingType::Directional);
-			}
+			DisplayAddComponentEntry<LightComponent>("LIGHTING");
+            DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
+            DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
+            DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
+            DisplayAddComponentEntry<CapsuleColliderComponent>("CAPSULE COLLIDER");
 
 			ImGui::EndPopup();
 		}
@@ -363,6 +367,11 @@ namespace origin {
 			UI::DrawVec3Control("Rotation", rotation, 1.0f);
 			component.Rotation = glm::radians(rotation);
 			UI::DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
+		});
+
+		DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
+		{
+
 		});
 
 		DrawComponent<ModelComponent>("MODEL", entity, [&, scene = m_Scene](auto &component)
@@ -785,13 +794,11 @@ namespace origin {
 					case LightingType::Directional:
 					{
 						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->m_DirLightData.Color));
-						UI::DrawFloatControl("Strength", &component.Light->m_DirLightData.Strength, 0.01f, 0.0f, 100.0f);
+						ImGui::ColorEdit3("Ambient", glm::value_ptr(component.Light->m_DirLightData.Ambient));
 						UI::DrawFloatControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
 						UI::DrawFloatControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
-						UI::DrawFloatControl("Far", &component.Light->GetShadow()->Far, 1.0f, -1000.0f, 1000.0f, 50.0f);
-						UI::DrawFloatControl("Near", &component.Light->GetShadow()->Near, 1.0f, -1000.0f, 1000.0f, -10.0f);
-						UI::DrawFloatControl("Size", &component.Light->GetShadow()->Size, 1.0f, -1000.0f, 1000.0f, 50.0f);
 
+#if 0
 						if (component.Light->GetShadow()->GetFramebuffer())
 						{
 							uint32_t texture = component.Light->GetShadow()->GetFramebuffer()->GetDepthAttachmentRendererID();
@@ -799,6 +806,7 @@ namespace origin {
 							ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(size, size), ImVec2(0, 1), ImVec2(1, 0));
 						}
 						break;	
+#endif
 					}
 #if 0
 					case LightingType::Spot:
@@ -997,6 +1005,32 @@ namespace origin {
 						joint->SetMotorSpeed(component.MotorSpeed);
 				}
 			});
+        DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto &component)
+        {
+            UI::DrawCheckbox("UseGravity", &component.UseGravity);
+            UI::DrawCheckbox("Rotate X", &component.RotateX);
+            UI::DrawCheckbox("Rotate Y", &component.RotateY);
+            UI::DrawCheckbox("Rotate Z", &component.RotateZ);
+            UI::DrawCheckbox("Static", &component.IsStatic);
+            UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
+            UI::DrawVec3Control("Center Mass", component.CenterMass);
+        });
+
+        DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
+        {
+            UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
+            UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+            UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+            UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+        });
+
+        DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto &component)
+        {
+            UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
+            UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+            UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+            UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+        });
 
 		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Scene](auto &component) mutable
 			{
@@ -1351,6 +1385,10 @@ namespace origin {
 			{
 				if (ImGui::MenuItem("Empty Mesh"))
 					entity = EntityManager::CreateMesh("Empty Mesh", m_Scene.get());
+                if (ImGui::MenuItem("Cube"))
+                    entity = EntityManager::CreateCube("Cube", m_Scene.get());
+                if (ImGui::MenuItem("Sphere"))
+                    entity = EntityManager::CreateSphere("Sphere", m_Scene.get());
 				ImGui::EndMenu();
 			}
 

@@ -1,12 +1,13 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #pragma once
+
 #include "UIRenderer.h"
 #include "EditorCamera.h"
 #include "Origin/Asset/Asset.h"
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Core/Time.h"
-#include "Origin/Scene/Components.h"
+
 #include <entt/entt.hpp>
 
 class b2World;
@@ -93,8 +94,8 @@ namespace origin
         friend class Gizmos;
         friend class SceneSerializer;
         friend class SceneHierarchyPanel;
-        friend class PhysXScene;
-        friend class JoltScene;
+
         friend class Physics2D;
+        friend class PhysicsEngine;
     };
 }

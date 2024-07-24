@@ -3,6 +3,7 @@
 #include "pch.h"
 
 #include "OpenGLModel.h"
+#include "Origin/Renderer/MeshVertexData.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Scene/EntityManager.h"
@@ -20,7 +21,8 @@ namespace origin
 
 		Assimp::Importer importer;
 		const aiScene *aiScene = importer.ReadFile(filepath,
-			aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
+			aiProcess_Triangulate | aiProcess_GenSmoothNormals 
+			| aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
 		);
 
 		OGN_CORE_INFO("[OpenGLModel] Trying to load {0}", filepath);
@@ -30,14 +32,11 @@ namespace origin
 			return;
 		}
 
-		ProcessNode(aiScene->mRootNode, aiScene);
+		aiNode *node = aiScene->mRootNode;
+		ProcessNode(node, aiScene);
 	}
 
 	OpenGLModel::~OpenGLModel()
-	{
-	}
-
-	void OpenGLModel::SetTransform(const glm::mat4 &transform)
 	{
 	}
 
@@ -45,56 +44,39 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		for (uint32_t n = 0; n < node->mNumMeshes; n++)
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
-			// Get each meshes
-			aiMesh *aiMesh = scene->mMeshes[node->mMeshes[n]];
-			
-			std::vector<MeshVertex> vertices;
-			std::vector<uint32_t> indices;
+            aiMesh *aiMesh = scene->mMeshes[node->mMeshes[i]];
 
-			for (uint32_t i = 0; i < aiMesh->mNumVertices; i++)
-			{
-				MeshVertex vertex;
-				vertex.Position = { aiMesh->mVertices[i].x, aiMesh->mVertices[i].y, aiMesh->mVertices[i].z };
+            StaticMeshComponent m;
+            m.Name = node->mName.C_Str();
 
-				if (aiMesh->HasNormals())
-					vertex.Normal = { aiMesh->mNormals[i].x, aiMesh->mNormals[i].y, aiMesh->mNormals[i].z };
+            for (uint32_t i = 0; i < aiMesh->mNumVertices; i++)
+            {
+               
+				MeshVertexData vertex;
+                vertex.Position = { aiMesh->mVertices[i].x, aiMesh->mVertices[i].y, aiMesh->mVertices[i].z };
 
-				if (aiMesh->mTextureCoords[0])
-					vertex.TexCoord = { aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y };
-				else
-					vertex.TexCoord = { 0.0f, 0.0f };
+                if (aiMesh->HasNormals())
+                {
+                    vertex.Normal = { aiMesh->mNormals[i].x, aiMesh->mNormals[i].y, aiMesh->mNormals[i].z };
+                }
 
-				vertices.push_back(vertex);
-			}
+                if (aiMesh->mTextureCoords[0])
+                    vertex.TexCoord = { aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y };
+                else
+                    vertex.TexCoord = { 0.0f, 0.0f };
 
-			for (uint32_t f = 0; f < aiMesh->mNumFaces; f++)
-			{
-				aiFace face = aiMesh->mFaces[f];
-				for (uint32_t in = 0; in < face.mNumIndices; in++)
-					indices.push_back(face.mIndices[in]);
-			}
+                m.Data.vertices.push_back(vertex);
+            }
 
-#if 0
-			if (this->GetMaterial())
-			{
-				if (aiMesh->mMaterialIndex > 0)
-				{
-					aiMaterial *aiMat = scene->mMaterials[aiMesh->mMaterialIndex];
-					std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(GetMaterial());
-					Utils::LoadMatTextures(&material->Textures, m_Filepath, aiMat, aiTextureType_DIFFUSE);
-					Utils::LoadMatTextures(&material->Textures, m_Filepath, aiMat, aiTextureType_SPECULAR);
-				}
-			}
-#endif
-
-			// Creating Entity to scene
-			StaticMeshComponent m;
-			m.Name = node->mName.C_Str();
-			m.HMesh = Mesh::Create(vertices, indices);
+            for (uint32_t f = 0; f < aiMesh->mNumFaces; f++)
+            {
+                aiFace face = aiMesh->mFaces[f];
+                for (uint32_t in = 0; in < face.mNumIndices; in++)
+                    m.Data.indices.push_back(face.mIndices[in]);
+            }
 			OGN_CORE_TRACE("[Model] Pushing meshses {0}", m.Name);
-			
 			m_Meshes.push_back(std::move(m));
 		}
 

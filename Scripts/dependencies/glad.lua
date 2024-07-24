@@ -1,6 +1,6 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-project "glad"
+project "GLAD"
     location (vendorProjectFiles)
     kind "StaticLib"
 	language "C"

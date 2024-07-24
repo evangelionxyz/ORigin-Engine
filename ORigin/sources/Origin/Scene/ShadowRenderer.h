@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components.h"
+#include "Components/Components.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Renderer/UniformBuffer.h"
 
@@ -19,20 +19,15 @@ namespace origin
 		void BindFramebuffer();
 		void UnbindFramebuffer();
 
-		void OnRenderBegin(const TransformComponent& tc, const glm::mat4& modelTransform);
+		void OnRenderBegin(const TransformComponent& tc, const glm::mat4& transform);
 		void OnRenderEnd();
 
 		static std::shared_ptr<ShadowRenderer> Create(const std::shared_ptr<Shader>& depthShader, LightingType type);
 
 		std::shared_ptr<Framebuffer>& GetFramebuffer() { return m_Framebuffer; }
 
-		struct DepthBufferData
-		{
-			glm::mat4 LightViewProjection;
-			glm::mat4 ModelTransform;
-		};
-		DepthBufferData m_DepthBufferData;
-
+		glm::mat4 Transform;
+		glm::mat4 ViewProjection;
 		glm::mat4 ShadowProjection;
 
 		float Size = 20.0f;

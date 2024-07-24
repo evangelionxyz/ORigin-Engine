@@ -1,6 +1,6 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-project "origin-glfw"
+project "GLFW"
     location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C"

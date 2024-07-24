@@ -4,7 +4,7 @@
 #include <string>
 #include "miniaudio.h"
 #include "Origin/Asset/Asset.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 
 namespace origin {
 

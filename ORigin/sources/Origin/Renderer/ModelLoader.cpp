@@ -1,3 +1,6 @@
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
+#include "pch.h"
 #include "ModelLoader.h"
 
 namespace origin
@@ -58,7 +61,7 @@ namespace origin
 	void ModelLoader::ProcessMesh(const MeshData &data, std::shared_ptr<VertexArray> &vertexArray, std::shared_ptr<VertexBuffer> &vertexBuffer)
 	{
 		vertexArray = VertexArray::Create();
-		vertexBuffer = VertexBuffer::Create((void *)data.vertices.data(), data.vertices.size() * sizeof(MeshVertex));
+		vertexBuffer = VertexBuffer::Create((void *)data.vertices.data(), data.vertices.size() * sizeof(MeshVertexData));
 
 		vertexBuffer->SetLayout
 		({

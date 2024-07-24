@@ -1,29 +1,32 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
+#include "Scene.h"
+
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Animation/Animation.h"
-#include "Origin/Physics/Contact2DListener.h"
-#include "Origin/Physics/Physics2D.h"
+#include "Origin/Physics/2D/Physics2D.h"
+#include "Origin/Physics/2D/Contact2DListener.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Renderer/MeshRenderer.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
-#include "Scene.h"
-#include "Entity.h"
-#include "Lighting.h"
+
 #include "EntityManager.h"
 #include "ScriptableEntity.h"
+#include "Lighting.h"
+#include "Entity.h"
+
+#include "Origin/Physics/PhysicsEngine.h"
 
 #include <glm/glm.hpp>
 
 namespace origin
 {
-	class LightComponent;
-
 	Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
@@ -59,7 +62,7 @@ namespace origin
 			enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
 		}
 
-		EntityManager::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttStorage);
+		EntityManager::CopyComponent(AllComponents {}, dstSceneRegistry, srcSceneRegistry, enttStorage);
 		return newScene;
 	}
 
@@ -83,7 +86,7 @@ namespace origin
 		auto view = m_Registry.view<TagComponent>();
 		for (auto entity : view)
 		{
-			const TagComponent& tc = view.get<TagComponent>(entity);
+			const TagComponent &tc = view.get<TagComponent>(entity);
 			if (tc.Tag == name)
 				return { entity, this };
 		}
@@ -159,6 +162,7 @@ namespace origin
 					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
 			}
 
+			PhysicsEngine::Simulate(ts, this);
 			m_Physics2D->Simulate(ts);
 		}
 
@@ -170,16 +174,16 @@ namespace origin
 
 		m_Registry.view<IDComponent>().each([&](entt::entity e, auto idc)
 		{
-				if (EntityManager::IsParent(idc.ID, uuid, this))
-				{
-					Entity entt = { e, this };
-					m_Registry.destroy(e);
-					m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
+			if (EntityManager::IsParent(idc.ID, uuid, this))
+			{
+				Entity entt = { e, this };
+				m_Registry.destroy(e);
+				m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
 					[&](auto e)
-					{
-						return e.first == idc.ID;
-					}), m_EntityStorage.end());
-				}
+				{
+					return e.first == idc.ID;
+				}), m_EntityStorage.end());
+			}
 		});
 	}
 
@@ -237,22 +241,23 @@ namespace origin
 
 		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
 		{
-			if(!nsc.Instance)
+			if (!nsc.Instance)
 			{
 				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity { entity, this };	
+				nsc.Instance->m_Entity = Entity { entity, this };
 			}
 		});
 
 		auto audioView = m_Registry.view<AudioComponent>();
-		for (auto& e : audioView)
+		for (auto &e : audioView)
 		{
-			auto& ac = audioView.get<AudioComponent>(e);
+			auto &ac = audioView.get<AudioComponent>(e);
 			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 			if (ac.PlayAtStart)
 				audio->Play();
 		}
 
+		PhysicsEngine::OnSimulateStart(this);
 		m_Physics2D->OnSimulationStart();
 
 		m_Registry.view<UIComponent>().each([this](entt::entity e, UIComponent ui)
@@ -277,54 +282,55 @@ namespace origin
 
 		m_Running = false;
 		ScriptEngine::ClearSceneContext();
-		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
 		{
 			nsc.DestroyScript(&nsc);
 		});
 
-		const auto& audioView = m_Registry.view<AudioComponent>();
+		const auto &audioView = m_Registry.view<AudioComponent>();
 
-		for (auto& e : audioView)
+		for (auto &e : audioView)
 		{
-			auto& ac = audioView.get<AudioComponent>(e);
-			if (const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+			auto &ac = audioView.get<AudioComponent>(e);
+			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 				audio->Stop();
 		}
 
+		PhysicsEngine::OnSimulateStop(this);
 		m_Physics2D->OnSimulationStop();
 
 		m_UIRenderer->Unload();
 	}
 
-	void Scene::OnEditorUpdate(Timestep ts, Camera& editorCamera)
+	void Scene::OnEditorUpdate(Timestep ts, Camera &editorCamera)
 	{
 		OGN_PROFILER_RENDERING();
 
-		m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto &nsc)
 		{
 			nsc.Instance->OnUpdate(time);
 		});
 
-		m_Registry.view<ParticleComponent>().each([time = ts](auto entity, auto& pc)
+		m_Registry.view<ParticleComponent>().each([time = ts](auto entity, auto &pc)
 		{
 			pc.Particle.OnUpdate(time);
 		});
 
 		// Animation
-		const auto& animView = m_Registry.view<SpriteAnimationComponent>();
+		const auto &animView = m_Registry.view<SpriteAnimationComponent>();
 		for (const auto entity : animView)
 		{
-			auto& ac = animView.get<SpriteAnimationComponent>(entity);
-			if(ac.State->IsCurrentAnimationExists())
+			auto &ac = animView.get<SpriteAnimationComponent>(entity);
+			if (ac.State->IsCurrentAnimationExists())
 				ac.State->OnUpdateEditor(ts);
 		}
 
 		// Audio Update
 		Renderer2D::Begin(editorCamera);
-		const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
+		const auto &audioView = m_Registry.view<TransformComponent, AudioComponent>();
 		for (auto entity : audioView)
 		{
-			const auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
+			const auto &[tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
 			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 			{
 				audio->SetVolume(ac.Volume);
@@ -346,31 +352,31 @@ namespace origin
 		RenderScene(editorCamera);
 	}
 
-	void Scene::OnUpdateSimulation(Timestep ts, Camera& editorCamera)
+	void Scene::OnUpdateSimulation(Timestep ts, Camera &editorCamera)
 	{
 		OGN_PROFILER_RENDERING();
 
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
 			// Update Scripts
-			m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto& sc)
+			m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto &sc)
 			{
-				Entity entity{ entityID, this };
+				Entity entity { entityID, this };
 				ScriptEngine::OnUpdateEntity(entity, time);
 			});
 
-			m_Registry.view<NativeScriptComponent>().each([this, time = ts](auto entityID, auto& nsc)
+			m_Registry.view<NativeScriptComponent>().each([this, time = ts](auto entityID, auto &nsc)
 			{
 				nsc.Instance->OnUpdate(time);
 			});
 
-			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto& pc)
+			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto &pc)
 			{
 				pc.Particle.OnUpdate(time);
 			});
 
 			// Animation
-			const auto& animView = m_Registry.view<SpriteAnimationComponent>();
+			const auto &animView = m_Registry.view<SpriteAnimationComponent>();
 			for (auto e : animView)
 			{
 				auto ac = animView.get<SpriteAnimationComponent>(e);
@@ -379,10 +385,10 @@ namespace origin
 			}
 
 			Renderer2D::Begin(editorCamera);
-			const auto& audioView = m_Registry.view<TransformComponent, AudioComponent>();
+			const auto &audioView = m_Registry.view<TransformComponent, AudioComponent>();
 			for (auto entity : audioView)
 			{
-				const auto& [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
+				const auto &[tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
 				if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 				{
 					audio->SetVolume(ac.Volume);
@@ -400,18 +406,19 @@ namespace origin
 			Renderer2D::End();
 
 			bool isMainCameraListening = false;
-			const auto& audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
+			const auto &audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
 			for (const auto entity : audioListenerView)
 			{
 				auto [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-				if(al.Enable)
+				if (al.Enable)
 					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
 				isMainCameraListening = al.Enable;
 			}
 
-			if(!isMainCameraListening)
+			if (!isMainCameraListening)
 				editorCamera.UpdateAudioListener(ts);
 
+			PhysicsEngine::Simulate(ts, this);
 			m_Physics2D->Simulate(ts);
 		}
 
@@ -433,19 +440,20 @@ namespace origin
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
 		{
-				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity { entity, this };
+			nsc.Instance = nsc.InstantiateScript();
+			nsc.Instance->m_Entity = Entity { entity, this };
 		});
 
+		PhysicsEngine::OnSimulateStart(this);
 		m_Physics2D->OnSimulationStart();
 
 		// Audio
-		const auto& audioView = m_Registry.view<AudioComponent>();
-		for (auto& e : audioView)
+		const auto &audioView = m_Registry.view<AudioComponent>();
+		for (auto &e : audioView)
 		{
-			auto& ac = audioView.get<AudioComponent>(e);
+			auto &ac = audioView.get<AudioComponent>(e);
 			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 			if (ac.PlayAtStart)
 				audio->Play();
@@ -459,20 +467,21 @@ namespace origin
 		m_Running = false;
 
 		ScriptEngine::ClearSceneContext();
-		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto& nsc)
+		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
 		{
 			nsc.DestroyScript(&nsc);
 		});
 
+		PhysicsEngine::OnSimulateStop(this);
 		m_Physics2D->OnSimulationStop();
 
 		// Audio
 		auto view = m_Registry.view<AudioComponent>();
-		for (auto& e : view)
+		for (auto &e : view)
 		{
-			auto& ac = view.get<AudioComponent>(e);
-			
-			if (const std::shared_ptr<AudioSource>& audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+			auto &ac = view.get<AudioComponent>(e);
+
+			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
 				audio->Stop();
 		}
 	}
@@ -572,7 +581,7 @@ namespace origin
 					else
 					{
 						const float ratio = camera.GetAspectRatio();
-						transform = glm::scale(tc.GetTransform(), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0});
+						transform = glm::scale(tc.GetTransform(), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
 						invertedCamTransform = glm::inverse(camera.GetViewProjection());
 					}
 
@@ -596,23 +605,49 @@ namespace origin
 		// 3D Scene
 		glEnable(GL_DEPTH_TEST);
 
+
+
+		MeshRenderer::Begin(camera);
+		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
 		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		for(auto e : meshView)
+		for (auto e : meshView)
 		{
 			const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
-			if(!tc.Visible)
+			if (!tc.Visible)
 				continue;
-			
-			mc.HMesh->Draw(tc.GetTransform(), (int)e);
+
+			std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(mc.HMaterial);
+
+			for (auto &li : lightView)
+			{
+				const auto &[tc, lc] = lightView.get<TransformComponent, LightComponent>(li);
+				lc.Light->OnRender(tc);
+			}
+
+			switch (mc.mType)
+			{
+			case StaticMeshComponent::Type::Cube:
+			{
+				MeshRenderer::DrawCube(tc.GetTransform(), material.get(), (int)e);
+				break;
+			}
+			case StaticMeshComponent::Type::Sphere:
+			{
+				MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
+				break;
+			}
+			}
 		}
-		
+
+		MeshRenderer::End();
+
 #if 0
 		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
 		const auto &modelView = m_Registry.view<TransformComponent, ModelComponent>();
 		for (const auto entity : modelView)
 		{
 			const auto &[tc, mc] = modelView.get<TransformComponent, ModelComponent>(entity);
-			if(!tc.Visible)
+			if (!tc.Visible)
 				continue;
 
 			if (AssetManager::GetAssetType(mc.Handle) == AssetType::Model)
@@ -634,7 +669,7 @@ namespace origin
 #endif
 	}
 
-	void Scene::RenderScene(const Camera& camera, const TransformComponent& cameraTransform)
+	void Scene::RenderScene(const Camera &camera, const TransformComponent &cameraTransform)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -729,22 +764,22 @@ namespace origin
 
 		Renderer2D::End();
 	}
-	
+
 	void Scene::OnShadowRender()
 	{
 #if 0
 		OGN_PROFILER_RENDERING();
 
-		const auto& dirLight = m_Registry.view<TransformComponent, LightComponent>();
-		for (auto& light : dirLight)
+		const auto &dirLight = m_Registry.view<TransformComponent, LightComponent>();
+		for (auto &light : dirLight)
 		{
-			const auto& [lightTransform, lc] = dirLight.get<TransformComponent, LightComponent>(light);
+			const auto &[lightTransform, lc] = dirLight.get<TransformComponent, LightComponent>(light);
 			lc.Light->GetShadow()->BindFramebuffer();
 
-			const auto& meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-			for (auto& entity : meshView)
+			const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+			for (auto &entity : meshView)
 			{
-				const auto& [tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
+				const auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
 
 				if (AssetManager::GetAssetType(mesh.Handle) == AssetType::Model)
 				{
@@ -808,7 +843,7 @@ namespace origin
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 	}
-	
+
 	void Scene::Step(int frames)
 	{
 		m_StepFrames = frames;
@@ -816,39 +851,70 @@ namespace origin
 
 	template <typename T>
 	void Scene::OnComponentAdded(Entity entity, T &component)
-	{
-	}
+	{ }
 
-#define OGN_REG_COMPONENT(components)\
-template<>\
-void Scene::OnComponentAdded<components>(Entity entity, components& component){}
+#define OGN_ADD_COMPONENT(components)\
+	template<>\
+	void Scene::OnComponentAdded<components>(Entity entity, components &component){}
 
-	OGN_REG_COMPONENT(IDComponent)
-	OGN_REG_COMPONENT(TagComponent)
-	OGN_REG_COMPONENT(TransformComponent)
-	OGN_REG_COMPONENT(UIComponent)
-	OGN_REG_COMPONENT(AudioComponent)
-	OGN_REG_COMPONENT(AudioListenerComponent)
-	OGN_REG_COMPONENT(SpriteAnimationComponent)
-	OGN_REG_COMPONENT(SpriteRenderer2DComponent)
-	OGN_REG_COMPONENT(LightComponent)
-	OGN_REG_COMPONENT(StaticMeshComponent)
-	OGN_REG_COMPONENT(ModelComponent)
-	OGN_REG_COMPONENT(TextComponent)
-	OGN_REG_COMPONENT(CircleRendererComponent)
-	OGN_REG_COMPONENT(NativeScriptComponent)
-	OGN_REG_COMPONENT(ScriptComponent)
-	OGN_REG_COMPONENT(Rigidbody2DComponent)
-	OGN_REG_COMPONENT(BoxCollider2DComponent)
-	OGN_REG_COMPONENT(CircleCollider2DComponent)
-	OGN_REG_COMPONENT(RevoluteJoint2DComponent)
-	OGN_REG_COMPONENT(ParticleComponent)
-	OGN_REG_COMPONENT(RigidbodyComponent)
+	OGN_ADD_COMPONENT(IDComponent)
+	OGN_ADD_COMPONENT(TagComponent)
+	OGN_ADD_COMPONENT(TransformComponent)
+	OGN_ADD_COMPONENT(UIComponent)
+	OGN_ADD_COMPONENT(AudioComponent)
+	OGN_ADD_COMPONENT(AudioListenerComponent)
+	OGN_ADD_COMPONENT(SpriteAnimationComponent)
+	OGN_ADD_COMPONENT(SpriteRenderer2DComponent)
+	OGN_ADD_COMPONENT(StaticMeshComponent)
+	OGN_ADD_COMPONENT(ModelComponent)
+	OGN_ADD_COMPONENT(TextComponent)
+	OGN_ADD_COMPONENT(CircleRendererComponent)
+	OGN_ADD_COMPONENT(NativeScriptComponent)
+	OGN_ADD_COMPONENT(ScriptComponent)
+	OGN_ADD_COMPONENT(ParticleComponent)
+	// 2D Physics
+	OGN_ADD_COMPONENT(Rigidbody2DComponent)
+	OGN_ADD_COMPONENT(BoxCollider2DComponent)
+	OGN_ADD_COMPONENT(CircleCollider2DComponent)
+	OGN_ADD_COMPONENT(RevoluteJoint2DComponent)
+	// 3D Physics
+	OGN_ADD_COMPONENT(RigidbodyComponent)
+	OGN_ADD_COMPONENT(BoxColliderComponent)
+	OGN_ADD_COMPONENT(SphereColliderComponent)
+	OGN_ADD_COMPONENT(CapsuleColliderComponent)
 
-	template <>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
+	template<>
+	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent &component)
 	{
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
+
+	template<>
+	void Scene::OnComponentAdded(Entity entity, BoxColliderComponent &component)
+	{
+        if (!entity.HasComponent<RigidbodyComponent>())
+        {
+            entity.AddComponent<RigidbodyComponent>();
+        }
+	}
+
+    template<>
+    void Scene::OnComponentAdded(Entity entity, SphereColliderComponent &component)
+    {
+		if (!entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.AddComponent<RigidbodyComponent>();
+		}
+    }
+
+    template<>
+    void Scene::OnComponentAdded(Entity entity, CapsuleColliderComponent &component)
+    {
+        if (!entity.HasComponent<RigidbodyComponent>())
+        {
+            entity.AddComponent<RigidbodyComponent>();
+        }
+    }
 }
+

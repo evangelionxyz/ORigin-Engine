@@ -16,22 +16,12 @@ project "ORigin"
     files {
         "%{prj.location}/sources/pch.cpp",
         "%{prj.location}/sources/pch.h",
+        "%{prj.location}/sources/Origin.h",
         "%{prj.location}/sources/Origin/**.cpp",
         "%{prj.location}/sources/Origin/**.h",
 
         "%{prj.location}/sources/Platform/OpenGL/**.cpp",
         "%{prj.location}/sources/Platform/OpenGL/**.h",
-
-        "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImGuizmo.h",
-        "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImGradient.h",
-        "%{IncludeDir.IMGUIZMO}/GraphEditor.cpp",
-        "%{IncludeDir.IMGUIZMO}/GraphEditor.h",
-        "%{IncludeDir.IMGUIZMO}/ImCurveEdit.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImCurveEdit.h",
-        "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImSequencer.h"
     }
 
     includedirs {
@@ -44,31 +34,30 @@ project "ORigin"
         "%{IncludeDir.IMGUIZMO}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.GLM}",
-        "%{IncludeDir.Miniaudio}",
+        "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.ENTT}",
         "%{IncludeDir.FILEWATCHER}",
         "%{IncludeDir.OPTICK}",
-        "%{IncludeDir.YAML_CPP}",
+        "%{IncludeDir.YAMLCPP}",
         "%{IncludeDir.ASSIMP}",
-        "%{IncludeDir.PhysX}",
-        "%{IncludeDir.JoltPhysics}",
-        "%{IncludeDir.msdfgen}",
-        "%{IncludeDir.msdf_atlas_gen}",
+        "%{IncludeDir.JOLT}",
+        "%{IncludeDir.MSDFGEN}",
+        "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.MONO}"
     }
 
     links {
-        "assimp",
-        "Box2D",
-        "origin-glfw",
-        "glad",
-        "ImGui",
-        "Optick",
-        "msdf-atlas-gen",
-        "msdfgen",
-        "freetype",
-        "yaml-cpp",
-        "PhysX"
+        "ASSIMP",
+        "BOX2D",
+        "GLFW",
+        "GLAD",
+        "IMGUI",
+        "OPTICK",
+        "MSDFATLASGEN",
+        "MSDFGEN",
+        "FreeType",
+        "YAMLCPP",
+        "JOLT",
     }
     
     defines { "GLFW_INCLUDE_NONE", "_CRT_SECURE_NO_WARNINGS" }

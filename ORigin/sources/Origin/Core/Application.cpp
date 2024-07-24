@@ -4,8 +4,8 @@
 #include "Application.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Audio/AudioEngine.h"
-#include "Origin/Physics/Physics.h"
 #include "Origin/Scripting/ScriptEngine.h"
+#include "Origin/Physics/PhysicsEngine.h"
 
 #include <imgui.h>
 #include <stb_image.h>
@@ -56,14 +56,14 @@ namespace origin {
 		}
 
 		Renderer::Init();
-		Physics::Init();
 		AudioEngine::Init();
+		PhysicsEngine::Init();
 	}
 
 	Application::~Application()
 	{
 		AudioEngine::Shutdown();
-		Physics::Shutdown();
+		PhysicsEngine::Shutdown();
 		Renderer::Shutdown();
 		Window::GLFWShutdown();
 

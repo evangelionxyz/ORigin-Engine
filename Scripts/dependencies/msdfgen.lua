@@ -1,6 +1,6 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-project "msdfgen"
+project "MSDFGEN"
 	location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C++"

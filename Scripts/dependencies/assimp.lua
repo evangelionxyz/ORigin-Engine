@@ -1,6 +1,6 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-project "assimp"
+project "ASSIMP"
   location (vendorProjectFiles)
   kind "StaticLib"
 	language "C++"

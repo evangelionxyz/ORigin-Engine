@@ -60,7 +60,6 @@ namespace origin
 {
 	struct MaterialBufferData
 	{
-		glm::vec4 Color = glm::vec4(1.0f);
 		float Emission = 0.0f;
 		float MetallicValue = 0.0f;
 		float RoughnessValue = 0.0f;
@@ -92,7 +91,7 @@ namespace origin
 		virtual AssetType GetType() const { return GetStaticType(); }
 
 		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Textures;
-
+		glm::vec4 Color = glm::vec4(1.0f);
 	private:
 		AssetHandle m_AlbedoMap = UUID(0);
 		AssetHandle m_MetallicMap = UUID(0);

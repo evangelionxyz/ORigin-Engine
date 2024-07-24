@@ -16,6 +16,8 @@ namespace origin
 		static Entity CreateLighting(const std::string &name, Scene *scene);
 		static Entity CreateEntityWithUUID(UUID uuid, const std::string &name, Scene *scene);
 		static Entity CreateMesh(const std::string &name, Scene *scene);
+		static Entity CreateCube(const std::string &name, Scene *scene);
+		static Entity CreateSphere(const std::string &name, Scene *scene);
 		static Entity CreateUI(const std::string &name, Scene *scene);
 		static Entity DuplicateEntity(Entity entity, Scene *scene);
 
@@ -57,8 +59,10 @@ namespace origin
 		{
 			([&]()
 			 {
-				 if (src.HasComponent<Component>())
-					 dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+				if (src.HasComponent<Component>())
+				{
+					dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+				}
 			 }(), ...);
 		}
 

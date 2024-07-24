@@ -12,44 +12,54 @@ project "Editor"
 
     links {
         "ORigin",
-        "assimp",
-        "Box2D",
-        "origin-glfw",
-        "glad",
-        "ImGui",
-        "Optick",
-        "msdf-atlas-gen",
-        "msdfgen",
-        "freetype",
-        "yaml-cpp",
-        "PhysX"
+        "ASSIMP",
+        "BOX2D",
+        "GLFW",
+        "GLAD",
+        "IMGUI",
+        "OPTICK",
+        "MSDFATLASGEN",
+        "MSDFGEN",
+        "FreeType",
+        "YAMLCPP",
+        "JOLT",
     }
 
     files {
         "%{prj.location}/sources/**.cpp",
         "%{prj.location}/sources/**.h",
         "%{prj.location}/**.h",
+
+        "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
+        "%{IncludeDir.IMGUIZMO}/ImGuizmo.h",
+        "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
+        "%{IncludeDir.IMGUIZMO}/ImGradient.h",
+        "%{IncludeDir.IMGUIZMO}/GraphEditor.cpp",
+        "%{IncludeDir.IMGUIZMO}/GraphEditor.h",
+        "%{IncludeDir.IMGUIZMO}/ImCurveEdit.cpp",
+        "%{IncludeDir.IMGUIZMO}/ImCurveEdit.h",
+        "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
+        "%{IncludeDir.IMGUIZMO}/ImSequencer.h"
     }
 
     includedirs {
-        "%{wks.location}/ORigin/sources",
         "%{wks.location}/sources",
+        "%{wks.location}/ORigin/sources",
         "%{IncludeDir.SPDLOG}",
         "%{IncludeDir.ASSIMP}",
-        "%{IncludeDir.STBI}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.BOX2D}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.Miniaudio}",
+        "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.IMGUI}",
         "%{IncludeDir.IMGUIZMO}",
         "%{IncludeDir.GLM}",
-        "%{IncludeDir.YAML_CPP}",
+        "%{IncludeDir.YAMLCPP}",
         "%{IncludeDir.OPTICK}",
-        "%{IncludeDir.JoltPhysics}",
-        "%{IncludeDir.msdfgen}",
-        "%{IncludeDir.msdf_atlas_gen}",
+        "%{IncludeDir.JOLT}",
+        "%{IncludeDir.MSDFGEN}",
+        "%{IncludeDir.MSDFATLASGEN}",
     }
 
     defines {

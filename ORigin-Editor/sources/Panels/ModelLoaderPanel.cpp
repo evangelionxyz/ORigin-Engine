@@ -2,7 +2,7 @@
 
 #include "ModelLoaderPanel.h"
 #include "Origin/Asset/AssetManager.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/EntityManager.h"
 #include "Origin/GUI/UI.h"
 
@@ -66,7 +66,6 @@ namespace origin
                     Entity entity = EntityManager::CreateEntity(mesh.Name, s_Data.scene);
                     auto &sm = entity.AddComponent<StaticMeshComponent>();
                     sm.Name = mesh.Name;
-                    sm.HMesh = 0;
                     sm.HMaterial = mesh.HMaterial;
 
                     EntityManager::AddChild(parent, entity, s_Data.scene);

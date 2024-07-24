@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 #include "ShaderLibrary.h"
+#include "MeshRenderer.h"
 #include "Renderer2D.h"
 #include "Renderer3D.h"
 #include "MaterialLibrary.h"
@@ -56,6 +57,7 @@ namespace origin {
 
 				Renderer2D::Init();
 				Renderer3D::Init();
+				MeshRenderer::Init();
 			}
 			break;
 #ifdef OGN_PLATFORM_WINDOWS

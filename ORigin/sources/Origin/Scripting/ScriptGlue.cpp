@@ -4,14 +4,14 @@
 #include "ScriptGlue.h"
 #include "ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Physics/2D/Physics2D.h"
+#include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/EntityManager.h"
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Core/Input.h"
 #include "Origin/Audio/AudioSource.h"
-#include "Origin/Physics/Physics2D.h"
 
 #include <mono/metadata/object.h>
 #include <mono/metadata/reflection.h>

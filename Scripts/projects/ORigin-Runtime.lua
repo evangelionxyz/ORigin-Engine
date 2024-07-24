@@ -12,17 +12,17 @@ project "Runtime"
 
     links {
         "ORigin",
-        "assimp",
-        "Box2D",
-        "origin-glfw",
-        "glad",
-        "ImGui",
-        "Optick",
-        "msdf-atlas-gen",
-        "msdfgen",
-        "freetype",
-        "yaml-cpp",
-        "PhysX"
+        "ASSIMP",
+        "BOX2D",
+        "GLFW",
+        "GLAD",
+        "IMGUI",
+        "OPTICK",
+        "MSDFTATLASGEN",
+        "MSDFGEN",
+        "FreeType",
+        "YAMLCPP",
+        "JOLT",
     }
 
     files {
@@ -39,15 +39,15 @@ project "Runtime"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.BOX2D}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.Miniaudio}",
+        "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.IMGUI}",
         "%{IncludeDir.IMGUIZMO}",
         "%{IncludeDir.GLM}",
-        "%{IncludeDir.YAML_CPP}",
+        "%{IncludeDir.YAMLCPP}",
         "%{IncludeDir.OPTICK}",
-        "%{IncludeDir.JoltPhysics}",
-        "%{IncludeDir.msdfgen}",
-        "%{IncludeDir.msdf_atlas_gen}",
+        "%{IncludeDir.JOLT}",
+        "%{IncludeDir.MSDFGEN}",
+        "%{IncludeDir.MSDFATLASGEN}",
     }
 
     defines {

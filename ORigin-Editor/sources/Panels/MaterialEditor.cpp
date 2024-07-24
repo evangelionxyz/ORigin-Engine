@@ -33,7 +33,7 @@ namespace origin
 
 			ImVec2 buttonSize = ImVec2(100.0f, 40.0f);
 
-			ImGui::ColorEdit4("Color", glm::value_ptr(m_Material->BufferData.Color));
+			ImGui::ColorEdit4("Color", glm::value_ptr(m_Material->Color));
 
 			ImGui::Button("Albedo Map", buttonSize);
 			if (ImGui::BeginDragDropTarget())

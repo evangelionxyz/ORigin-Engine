@@ -6,7 +6,7 @@
 #include "Origin/Core/Input.h"
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Core/MouseCodes.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/Entity.h"
 #include <GLFW/glfw3.h>
 #include <algorithm>
@@ -57,6 +57,8 @@ namespace origin {
 			m_Projection = glm::ortho(-m_OrthoSize.x, m_OrthoSize.x, -m_OrthoSize.y, m_OrthoSize.y, m_OrthoNearClip, m_OrthoFarClip);
 			break;
 		}
+
+		m_Frustum.Update(m_Projection * m_View);
 	}
 
 	float EditorCamera::GetZoomSpeed() const

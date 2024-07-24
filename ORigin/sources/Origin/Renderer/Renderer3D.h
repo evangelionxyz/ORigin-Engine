@@ -2,7 +2,7 @@
 
 #pragma once
 #include "Origin/Scene/EditorCamera.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 
 #include <glm/glm.hpp>
 

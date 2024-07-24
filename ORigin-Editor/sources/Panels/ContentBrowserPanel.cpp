@@ -11,8 +11,6 @@
 
 #include <imgui.h>
 
-#pragma warning(disable : OGN_DISABLED_WARNINGS)
-
 namespace origin
 {
 	static uint32_t itemRenderCount = 0;

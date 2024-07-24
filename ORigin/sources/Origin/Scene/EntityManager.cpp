@@ -69,7 +69,23 @@ namespace origin
 		return entity;
 	}
 
-	Entity EntityManager::CreateUI(const std::string &name, Scene *scene)
+    Entity EntityManager::CreateCube(const std::string &name, Scene *scene)
+    {
+        Entity entity = CreateEntityWithUUID(UUID(), name, scene);
+		entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Cube;
+
+        return entity;
+    }
+
+    Entity EntityManager::CreateSphere(const std::string &name, Scene *scene)
+    {
+        Entity entity = CreateEntityWithUUID(UUID(), name, scene);
+        entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Sphere;
+
+        return entity;
+    }
+
+    Entity EntityManager::CreateUI(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
 		entity.AddComponent<UIComponent>();

@@ -1,4 +1,4 @@
-project "msdf-atlas-gen"
+project "MSDFATLASGEN"
 	location (vendorProjectFiles)
 	kind "StaticLib"
 	language "C++"

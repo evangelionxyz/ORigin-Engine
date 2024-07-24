@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Core/Application.h"
 

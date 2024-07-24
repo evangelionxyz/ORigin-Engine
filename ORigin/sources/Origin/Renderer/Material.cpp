@@ -19,7 +19,7 @@ namespace origin {
 		m_Shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
 		m_Shader->Enable();
 
-		int binding = 4;
+		int binding = 1;
 		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), binding);
 	}
 
@@ -31,7 +31,7 @@ namespace origin {
 		OGN_CORE_ASSERT(m_Shader, "[Material] Shader is uninitialized or empty!")
 		m_Shader->Enable();
 
-		int binding = 4;
+		int binding = 1;
 		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), binding);
 	}
 
@@ -91,17 +91,7 @@ namespace origin {
 
 	bool Material::RefreshShader()
 	{
-		OGN_PROFILER_RENDERING();
-
-		std::string shaderPath = m_Shader->GetFilepath();
-		bool enableSpirv = m_Shader->IsSpirvEnabled();
-		bool recompile = m_Shader->IsRecompilerSpirv();
-
-		m_Shader.reset();
-
-		m_Shader = Shader::Create(shaderPath, enableSpirv, recompile);
-		OGN_CORE_WARN("[Material] Shader {} Refreshed", m_Shader->GetName());
-
+		m_Shader->Reload();
 		return true;
 	}
 

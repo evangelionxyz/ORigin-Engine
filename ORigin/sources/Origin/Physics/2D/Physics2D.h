@@ -1,6 +1,6 @@
 #pragma once
 #include "Origin/Scene/Entity.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
 #include "box2d/b2_body.h"
 
 class b2World;
