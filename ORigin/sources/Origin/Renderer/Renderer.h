@@ -59,13 +59,6 @@ namespace origin {
 		static Statistics &GetStatistics();
 		static RenderData s_RenderData;
 
-        static glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen);
-        static glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc);
-        static glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix);
-		static glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix);
-		static glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const EditorCamera &camera, glm::vec3 *rayOrigin);
-		static bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius);
-
 	private:
 		static void LoadShaders();
 		static void LoadMaterials();

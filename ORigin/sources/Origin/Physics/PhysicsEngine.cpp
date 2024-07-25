@@ -223,33 +223,10 @@ namespace origin
         JPH::RegisterDefaultAllocator();
 
         // TODO: Install callbacks
-
         JPH::Factory::sInstance = new JPH::Factory();
-
         JPH::RegisterTypes();
-
         s_Data.TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(32 * 1024 * 1024);
         s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(2048, 8, std::thread::hardware_concurrency() - 1);
-
-        const uint32_t maxBodies = 1024;
-        const uint32_t numBodyMutexes = 0;
-        const uint32_t maxBodyPairs = 1024;
-        const uint32_t maxContactConstrainsts = 1024;
-
-        
-
-        s_Data.PhysicsSystem = std::make_unique<JPH::PhysicsSystem>();
-        s_Data.PhysicsSystem->Init(maxBodies, numBodyMutexes, maxBodyPairs, maxContactConstrainsts,
-            s_Data.BroadPhaseLayerInterface, s_Data.ObjectVsBroadPaheLayerFilter, s_Data.ObjectLayerPairFilter);
-
-        s_Data.BodyActivationListener = std::make_unique<JoltBodyActivationListener>();
-        s_Data.PhysicsSystem->SetBodyActivationListener(s_Data.BodyActivationListener.get());
-
-        s_Data.ContactListener = std::make_unique<JoltContactListener>();
-        s_Data.PhysicsSystem->SetContactListener(s_Data.ContactListener.get());
-
-        s_Data.BodyInterface = &s_Data.PhysicsSystem->GetBodyInterface();
-        s_Data.PhysicsSystem->OptimizeBroadPhase();
     }
 
     void PhysicsEngine::Shutdown()
@@ -287,8 +264,12 @@ namespace origin
 
         if (body)
         {
-            s_Data.BodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
-            s_Data.BodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.0f, -5.0f, 0.0f));
+            JPH::BodyID bodyId = body->GetID();
+            s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
+            s_Data.BodyInterface->SetLinearVelocity(bodyId, JPH::Vec3(0.0f, -5.0f, 0.0f));
+
+            s_Data.BodyInterface->SetFriction(bodyId, bc.Friction);
+            s_Data.BodyInterface->SetRestitution(bodyId, bc.Restitution);
             rb.Body = body;
         }
     }
@@ -328,6 +309,26 @@ namespace origin
 
     void PhysicsEngine::OnSimulateStart(Scene *scene)
     {
+        const uint32_t maxBodies = 1024;
+        const uint32_t numBodyMutexes = 0;
+        const uint32_t maxBodyPairs = 1024;
+        const uint32_t maxContactConstrainsts = 1024;
+
+        s_Data.PhysicsSystem = std::make_unique<JPH::PhysicsSystem>();
+        s_Data.PhysicsSystem->Init(maxBodies, numBodyMutexes, maxBodyPairs, maxContactConstrainsts,
+            s_Data.BroadPhaseLayerInterface, s_Data.ObjectVsBroadPaheLayerFilter, s_Data.ObjectLayerPairFilter);
+
+        s_Data.PhysicsSystem->SetGravity(JPH::Vec3(0.0f, -9.8f, 0.0f));
+
+        s_Data.BodyActivationListener = std::make_unique<JoltBodyActivationListener>();
+        s_Data.PhysicsSystem->SetBodyActivationListener(s_Data.BodyActivationListener.get());
+
+        s_Data.ContactListener = std::make_unique<JoltContactListener>();
+        s_Data.PhysicsSystem->SetContactListener(s_Data.ContactListener.get());
+
+        s_Data.BodyInterface = &s_Data.PhysicsSystem->GetBodyInterface();
+        s_Data.PhysicsSystem->OptimizeBroadPhase();
+
         for (auto id : scene->m_Registry.view<BoxColliderComponent>())
         {
             Entity entity = { id, scene };
@@ -353,7 +354,6 @@ namespace origin
             s_Data.BodyInterface->RemoveBody(body->GetID());
             s_Data.BodyInterface->DestroyBody(body->GetID());
         }
-
     }
 
     void PhysicsEngine::Simulate(Timestep ts, Scene *scene)

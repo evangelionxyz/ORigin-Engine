@@ -131,6 +131,22 @@ namespace origin
         
 	}
 
+	void MeshRenderer::Begin(const Camera &camera, const glm::mat4 &transform, Shader *shader)
+	{
+        s_Data.CameraData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
+        s_Data.CameraData.Position = glm::mat3(transform) * camera.GetPosition();
+
+        s_Data.Ubo->Bind();
+        s_Data.Ubo->SetData(&s_Data.CameraData, sizeof(CameraBufferData));
+
+        if (!shader)
+            s_Data.Shader->Enable();
+        else
+            shader->Enable();
+
+        StartBatch();
+	}
+
 	void MeshRenderer::Begin(const Camera &camera, Shader *shader)
 	{
 		s_Data.CameraData.ViewProjection = camera.GetViewProjection();

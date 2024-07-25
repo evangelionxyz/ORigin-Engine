@@ -231,6 +231,7 @@ namespace origin {
 
 		auto &textures = EditorLayer::Get().m_UITextures;
 		auto &scene = EditorLayer::Get().m_ActiveScene;
+		const glm::vec2 &screen = EditorLayer::Get().m_SceneViewportSize;
 
 		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture, int entity)
 		{
@@ -268,6 +269,11 @@ namespace origin {
                 {
                     Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
                 }
+
+				glm::vec3 pos = Math::WorldToScreen(tc.WorldTranslation, 
+					tc.GetTransform(), camera.GetViewProjection(), {screen.x, -screen.y});
+				Renderer2D::DrawQuad(glm::translate(glm::mat4(1.0f), pos), 
+					textures.at("camera"), (int)entity, glm::vec2(1.0f), glm::vec4(1.0f));
 			}
 			else if (entity.HasComponent<AudioComponent>())
 			{

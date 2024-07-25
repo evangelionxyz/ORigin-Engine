@@ -122,6 +122,7 @@ namespace origin {
 
 		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 28.0f);
 		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
+
 		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 			ImGui::OpenPopup("CreateEntity");
 
@@ -161,8 +162,11 @@ namespace origin {
 
 		if (open)
 		{
-			for (auto e : m_Scene->m_EntityStorage)
-				DrawEntityNode({ e.second, m_Scene.get() });
+			m_Scene->m_Registry.view<TransformComponent>().each([&](auto entity, auto &nsc)
+			{
+				DrawEntityNode({ entity, m_Scene.get() });
+			});
+
 			ImGui::TreePop();
 		}
 
@@ -371,7 +375,43 @@ namespace origin {
 
 		DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
 		{
+			std::string label = "Default Material";
 
+			std::shared_ptr<Material> material;
+			if (component.HMaterial)
+			{
+				material = AssetManager::GetAsset<Material>(component.HMaterial);
+				label = "Attached";
+			}
+			else
+			{
+                material = Renderer::GetMaterial("Mesh");
+			}
+
+            ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+            // Material Button
+            ImGui::Button(label.c_str(), buttonSize);
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                {
+                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+                    if (AssetManager::GetAssetType(handle) == AssetType::Material)
+                    {
+                        component.HMaterial= handle;
+                    }
+                    else
+                    {
+                        OGN_CORE_WARN("Wrong asset type!");
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+			if (material)
+			{
+				ImGui::ColorEdit4("Color", glm::value_ptr(material->Color));
+			}
 		});
 
 		DrawComponent<ModelComponent>("MODEL", entity, [&, scene = m_Scene](auto &component)
@@ -1019,16 +1059,14 @@ namespace origin {
         DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
         {
             UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
-            UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-            UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+            UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
 
         DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto &component)
         {
             UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
-            UI::DrawFloatControl("StaticFriction", &component.StaticFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
-            UI::DrawFloatControl("DynamicFriction", &component.DynamicFriction, 0.025f, 0.0f, 1000.0f, 0.5f);
+            UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
 

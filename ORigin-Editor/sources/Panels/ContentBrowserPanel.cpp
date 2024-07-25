@@ -168,7 +168,7 @@ namespace origin
 					}
 				}
 
-				if (ImGui::BeginPopupContextItem())
+				if (ImGui::BeginPopupContextItem("CONTENT_BROWSER_ITEM_CONTEXT", ImGuiPopupFlags_MouseButtonRight))
 				{
 					Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
 					ImGui::Separator();
@@ -344,6 +344,48 @@ namespace origin
 		}
 
 		ImGui::Columns(1);
+
+        if (ImGui::BeginPopupContextWindow("CONTENT_BROWSER_CONTEXT", 
+			ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+        {
+            if (ImGui::BeginMenu("CREATE"))
+            {
+                if (ImGui::MenuItem("New Folder", nullptr))
+                {
+                    const std::filesystem::path folder = m_CurrentDirectory / "New Folder";
+                    if (!std::filesystem::exists(folder))
+                    {
+                        std::filesystem::create_directory(folder);
+                    }
+                }
+
+                if (ImGui::MenuItem("Material", nullptr))
+                {
+                    std::shared_ptr<Material> material = Material::Create();
+                    const std::filesystem::path materialPath = m_CurrentDirectory / "Material.mat";
+                    if (!std::filesystem::exists(materialPath))
+                    {
+                        MaterialSerializer::Serialize(materialPath, material);
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Thumbnail Size"))
+            {
+                if (ImGui::MenuItem("Small"))
+                    m_ThumbnailSize = 70;
+                if (ImGui::MenuItem("Medium"))
+                    m_ThumbnailSize = 90;
+                if (ImGui::MenuItem("Large"))
+                    m_ThumbnailSize = 110;
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndPopup();
+        }
 
 		ImGui::EndChild();
 

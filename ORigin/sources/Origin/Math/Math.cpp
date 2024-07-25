@@ -157,4 +157,81 @@ namespace origin
 		return { v.x / l, v.y / l, v.z / l };
 	}
 
+    glm::vec3 Math::WorldToScreen(const glm::vec3& worldPos, const glm::mat4 &modelTransform, const glm::mat4 &viewProjection, const glm::vec2 &screen)
+    {
+		glm::vec4 modelPos = modelTransform * glm::vec4(worldPos, 1.0f);
+		glm::vec4 clipPos = viewProjection * modelPos;
+
+		glm::vec3 ndcPos = glm::vec3(clipPos) / clipPos.w;
+
+		glm::vec3 screenSpacePos;
+		screenSpacePos.x = (ndcPos.x + 1.0f) * 0.5f * screen.x;
+		screenSpacePos.y = (1.0f - ndcPos.y) * 0.5f * screen.y;
+		screenSpacePos.z = ndcPos.z;
+		return screenSpacePos;
+    }
+
+    glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
+    {
+        float x = (2.0f * mouse.x) / screen.x - 1;
+        float y = 1.0f - (2.0f * mouse.y) / screen.y;
+        return glm::vec2(x, y);
+    }
+
+    glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc)
+    {
+        return glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
+    }
+
+    glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
+    {
+        glm::mat4 inverseProjection = glm::inverse(projectionMatrix);
+        glm::vec4 eyeCoords = inverseProjection * clipCoords;
+        return glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+    }
+
+    glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
+    {
+        glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
+        return glm::normalize(glm::vec3(worldCoords));
+    }
+
+    glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const Camera &camera, glm::vec3 *rayOrigin)
+    {
+        glm::vec2 ndc = GetNormalizedDeviceCoord(mouse, screen);
+        glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
+        glm::vec3 rayDirection = glm::vec3(0.0f);
+        *rayOrigin = glm::vec3(0.0f);
+
+        if (camera.GetProjectionType() == ProjectionType::Perspective)
+        {
+            glm::vec4 eye = GetEyeCoord(hmc, camera.GetProjection());
+            glm::vec3 worldRay = GetWorldCoord(eye, camera.GetViewMatrix());
+            *rayOrigin = camera.GetPosition();
+            rayDirection = worldRay;
+        }
+        else
+        {
+            // calculate ray origin and direction for orthographic projection
+            glm::mat4 invViewProj = glm::inverse(camera.GetProjection() * camera.GetViewMatrix());
+
+            // ray origin (on near plane)
+            *rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
+            *rayOrigin /= 1.0f;
+            rayDirection = -glm::normalize(camera.GetForwardDirection());
+        }
+
+        return rayDirection;
+    }
+
+    bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)
+    {
+        glm::vec3 oc = rayOrigin - sphereCenter;
+        float a = glm::dot(rayDirection, rayDirection);
+        float b = 2.0f * glm::dot(oc, rayDirection);
+        float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
+        float discriminant = b * b - 4 * a * c;
+        return (discriminant > 0);
+    }
+
 }

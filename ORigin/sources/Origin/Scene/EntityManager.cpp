@@ -66,6 +66,7 @@ namespace origin
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, scene);
 		entity.AddComponent<StaticMeshComponent>();
+		entity.AddComponent<RigidbodyComponent>();
 		return entity;
 	}
 
@@ -73,6 +74,8 @@ namespace origin
     {
         Entity entity = CreateEntityWithUUID(UUID(), name, scene);
 		entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Cube;
+		entity.AddComponent<RigidbodyComponent>();
+		entity.AddComponent<BoxColliderComponent>();
 
         return entity;
     }
@@ -81,6 +84,8 @@ namespace origin
     {
         Entity entity = CreateEntityWithUUID(UUID(), name, scene);
         entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Sphere;
+        entity.AddComponent<RigidbodyComponent>();
+        entity.AddComponent<SphereColliderComponent>();
 
         return entity;
     }

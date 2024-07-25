@@ -21,6 +21,9 @@ namespace origin
 
         RigidbodyComponent() = default;
         RigidbodyComponent(const RigidbodyComponent &) = default;
+
+
+        void SetLinearVelocity(const glm::vec3 &);
     };
 
     class BoxColliderComponent
@@ -28,8 +31,7 @@ namespace origin
     public:
         glm::vec3 Size = { 0.5f, 0.5f, 0.5f };
 
-        float StaticFriction = 0.6f;
-        float DynamicFriction = 0.6f;
+        float Friction = 0.6f;
         float Restitution = 0.0f;
 
         void *Shape = nullptr;
@@ -43,8 +45,8 @@ namespace origin
     {
     public:
         float Radius = 0.5f;
-        float StaticFriction = 0.6f;
-        float DynamicFriction = 0.6f;
+
+        float Friction = 0.6f;
         float Restitution = 0.0f;
 
         void *Shape = nullptr;
@@ -57,8 +59,7 @@ namespace origin
     class CapsuleColliderComponent
     {
     public:
-        float StaticFriction = 0.6f;
-        float DynamicFriction = 0.6f;
+        float Friction = 0.6f;
         float Restitution = 0.0f;
 
         void *Shape = nullptr;

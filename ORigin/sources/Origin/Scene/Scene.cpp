@@ -599,13 +599,9 @@ namespace origin
 
 		Renderer2D::End();
 
-
-
 		// ===============================
 		// 3D Scene
 		glEnable(GL_DEPTH_TEST);
-
-
 
 		MeshRenderer::Begin(camera);
 		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
@@ -616,7 +612,11 @@ namespace origin
 			if (!tc.Visible)
 				continue;
 
-			std::shared_ptr<Material> material = AssetManager::GetAsset<Material>(mc.HMaterial);
+			std::shared_ptr<Material> material;
+			if (mc.HMaterial)
+				material = AssetManager::GetAsset<Material>(mc.HMaterial);
+			else
+				material = Renderer::GetMaterial("Mesh");
 
 			for (auto &li : lightView)
 			{
@@ -761,8 +761,49 @@ namespace origin
 				}
 			}
 		}
-
 		Renderer2D::End();
+
+        // ===============================
+        // 3D Scene
+        glEnable(GL_DEPTH_TEST);
+
+        MeshRenderer::Begin(camera, cameraTransform.GetTransform());
+        const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
+        const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+        for (auto e : meshView)
+        {
+            const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
+            if (!tc.Visible)
+                continue;
+
+            std::shared_ptr<Material> material;
+            if (mc.HMaterial)
+                material = AssetManager::GetAsset<Material>(mc.HMaterial);
+            else
+                material = Renderer::GetMaterial("Mesh");
+
+            for (auto &li : lightView)
+            {
+                const auto &[tc, lc] = lightView.get<TransformComponent, LightComponent>(li);
+                lc.Light->OnRender(tc);
+            }
+
+            switch (mc.mType)
+            {
+				case StaticMeshComponent::Type::Cube:
+				{
+					MeshRenderer::DrawCube(tc.GetTransform(), material.get(), (int)e);
+					break;
+				}
+				case StaticMeshComponent::Type::Sphere:
+				{
+					MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
+					break;
+				}
+			}
+        }
+
+        MeshRenderer::End();
 	}
 
 	void Scene::OnShadowRender()
@@ -879,15 +920,14 @@ namespace origin
 	OGN_ADD_COMPONENT(RevoluteJoint2DComponent)
 	// 3D Physics
 	OGN_ADD_COMPONENT(RigidbodyComponent)
-	OGN_ADD_COMPONENT(BoxColliderComponent)
-	OGN_ADD_COMPONENT(SphereColliderComponent)
-	OGN_ADD_COMPONENT(CapsuleColliderComponent)
 
 	template<>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent &component)
 	{
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
+		{
 			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		}
 	}
 
 	template<>
@@ -915,6 +955,15 @@ namespace origin
         {
             entity.AddComponent<RigidbodyComponent>();
         }
+    }
+
+	template<>
+    void Scene::OnComponentAdded(Entity entity, LightComponent &component)
+    {
+		if (!component.Light)
+		{
+			component.Light = Lighting::Create(LightingType::Directional);
+		}
     }
 }
 
