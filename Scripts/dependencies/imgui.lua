@@ -16,16 +16,21 @@ project "IMGUI"
     "%{wks.location}/ORigin/vendor/imgui/imgui_tables.cpp",
     "%{wks.location}/ORigin/vendor/imgui/imgui_widgets.cpp",
     "%{wks.location}/ORigin/vendor/imgui/imgui.cpp",
-
     "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_opengl3.cpp",
     "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_glfw.cpp",
-
     "%{wks.location}/ORigin/vendor/imgui/imconfig.h",
     "%{wks.location}/ORigin/vendor/imgui/imgui.h",
     "%{wks.location}/ORigin/vendor/imgui/imgui_internal.h",
     "%{wks.location}/ORigin/vendor/imgui/imstb_rectpack.h",
     "%{wks.location}/ORigin/vendor/imgui/imstb_textedit.h",
     "%{wks.location}/ORigin/vendor/imgui/imstb_truetype.h",
+
+    -- include ImGuizmo src to compile
+    "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
+    "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
+    "%{IncludeDir.IMGUIZMO}/GraphEditor.cpp",
+    "%{IncludeDir.IMGUIZMO}/ImCurveEdit.cpp",
+    "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
   }
 
   includedirs {

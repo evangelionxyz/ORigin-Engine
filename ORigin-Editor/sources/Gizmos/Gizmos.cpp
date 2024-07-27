@@ -173,13 +173,11 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		if (camera.GetProjectionType() == ProjectionType::Orthographic && !EditorLayer::Get().m_VisualizeCollider)
+		if (camera.GetProjectionType() == ProjectionType::Orthographic || !EditorLayer::Get().m_VisualizeCollider)
 			return;
 
 		Renderer3D::Begin(camera);
 		auto &scene = EditorLayer::Get().m_ActiveScene;
-
-#if 0
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		const auto &box = scene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
@@ -203,25 +201,11 @@ namespace origin {
 				* glm::toMat4(glm::quat(tc.WorldRotation))
 				* glm::scale(glm::mat4(1.0f), tc.WorldScale);
 
-			Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), 
-				(sc.Radius + 0.1f) * 2.0f, (int)entity);
-		}
-
-		const auto &capsule = scene->GetAllEntitiesWith<TransformComponent, CapsuleColliderComponent>();
-		for (auto entity : capsule)
-		{
-			const auto &[tc, cc] = capsule.get<TransformComponent, CapsuleColliderComponent>(entity);
-			glm::vec3 rot = tc.WorldRotation + glm::vec3(0.0f, 0.0f, glm::radians(90.0f));
-
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + cc.Offset))
-				* glm::toMat4(glm::quat(rot))
-				* glm::scale(glm::mat4(1.0f), tc.WorldScale);
-
-			Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius, cc.Height * 2.0f, (int)entity);
+			Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), sc.Radius * 2.0f, (int)entity);
 		}
 
 		Renderer3D::End();
-#endif
+
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
@@ -269,11 +253,17 @@ namespace origin {
                 {
                     Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
                 }
-
-				glm::vec3 pos = Math::WorldToScreen(tc.WorldTranslation, 
-					tc.GetTransform(), camera.GetViewProjection(), {screen.x, -screen.y});
-				Renderer2D::DrawQuad(glm::translate(glm::mat4(1.0f), pos), 
-					textures.at("camera"), (int)entity, glm::vec2(1.0f), glm::vec4(1.0f));
+				if (cc.Camera.IsPerspective())
+				{
+					drawIcon(tc, textures.at("camera"), (int)entity);
+				}
+				else
+				{
+					if (cc.Camera.GetOrthoScale() > 15.0f)
+					{
+						drawIcon(tc, textures.at("camera"), (int)entity);
+					}
+				}
 			}
 			else if (entity.HasComponent<AudioComponent>())
 			{

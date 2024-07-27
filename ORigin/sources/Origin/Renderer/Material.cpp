@@ -12,15 +12,14 @@ namespace origin {
 #define ALBEDO_MAP		"u_AlbedoMap"
 #define SPECULAR_MAP	"u_SpecularMap"
 
-	Material::Material()
+	Material::Material(const std::string &name)
+		: m_Name(name)
 	{
 		OGN_PROFILER_RENDERING();
 
 		m_Shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
 		m_Shader->Enable();
-
-		int binding = 1;
-		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), binding);
+		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), MATERIAL_BINDING);
 	}
 
 	Material::Material(const std::shared_ptr<Shader> &shader)
@@ -31,8 +30,7 @@ namespace origin {
 		OGN_CORE_ASSERT(m_Shader, "[Material] Shader is uninitialized or empty!")
 		m_Shader->Enable();
 
-		int binding = 1;
-		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), binding);
+		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), MATERIAL_BINDING);
 	}
 
 	void Material::Bind()
@@ -105,11 +103,11 @@ namespace origin {
 		m_MetallicMap = handle;
 	}
 
-	std::shared_ptr<Material> Material::Create()
+	std::shared_ptr<Material> Material::Create(const std::string &name)
 	{
 		OGN_PROFILER_RENDERING();
 
-		return std::make_shared<Material>();
+		return std::make_shared<Material>(name);
 	}
 
 	std::shared_ptr<Material> Material::Create(const std::shared_ptr<Shader> &shader)

@@ -58,10 +58,12 @@ namespace origin {
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 
-		bool IsValid() const
+		bool IsValid()
 		{
-			if (m_Scene)
+			if (m_Scene && GetUUID())
+			{
 				return m_Scene->m_Registry.valid(m_EntityHandle);
+			}
 			return m_Scene != nullptr && m_EntityHandle != entt::null;
 		}
 

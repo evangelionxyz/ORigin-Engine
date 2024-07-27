@@ -18,7 +18,7 @@ project "Runtime"
         "GLAD",
         "IMGUI",
         "OPTICK",
-        "MSDFTATLASGEN",
+        "MSDFATLASGEN",
         "MSDFGEN",
         "FreeType",
         "YAMLCPP",

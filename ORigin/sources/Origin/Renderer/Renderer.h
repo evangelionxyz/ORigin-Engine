@@ -8,6 +8,10 @@
 
 namespace origin {
 
+#define CAMERA_BINDING 0
+#define MATERIAL_BINDING 1
+#define LIGHTING_BINDING 2
+
 	struct RenderData
 	{
 		static const uint32_t MaxTriangles = 1000;

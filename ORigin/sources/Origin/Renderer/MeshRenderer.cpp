@@ -12,11 +12,11 @@ namespace origin
 {
 	struct MeshRenderData
 	{
-		static const uint32_t MaxCubeTriangles = 9000;
+		static const uint32_t MaxCubeTriangles = 4000;
 		static const uint32_t MaxCubeVertices = MaxCubeTriangles * 24;
 		static const uint32_t MaxCubeIndices = MaxCubeTriangles * 36;
 
-		static const uint32_t MaxSphereTriangles = 4896;
+		static const uint32_t MaxSphereTriangles = 1000;
 		static const uint32_t MaxSphereVertices = MaxSphereTriangles * 544;
 		static const uint32_t MaxSphereIndices = MaxSphereTriangles * 768;
 
@@ -33,6 +33,7 @@ namespace origin
 	{
 		CameraBufferData CameraData;
 		std::shared_ptr<UniformBuffer> Ubo;
+
 		std::shared_ptr<Shader> Shader;
         std::array<std::shared_ptr<Texture2D>, 32> TextureSlots;
         uint32_t TextureSlotIndex = 1; // 0 White texture
@@ -41,7 +42,6 @@ namespace origin
 		// CUBE
 		MeshData CubeData;
 		uint32_t CubeIndexCount = 0;
-		
 		std::shared_ptr<VertexArray> CubeVAO;
 		std::shared_ptr<VertexBuffer> CubeVBO;
 		MeshVertexData *CubeVBOPtr = nullptr;
@@ -60,19 +60,16 @@ namespace origin
 	static MeshRendererData s_Data;
 
 	void MeshRenderer::Init()
-	{
-		s_Data.Ubo = UniformBuffer::Create(sizeof(CameraBufferData), 0);
-		s_Data.Shader = Renderer::GetShader("Mesh");
-		s_Data.TextureSlots[0] = Renderer::WhiteTexture;
-
-
+	{	
 		BufferLayout bufferLayout = {
-			{ ShaderDataType::Float3, "aPosition"     },
-			{ ShaderDataType::Float3, "aNormal"       },
-			{ ShaderDataType::Float4, "aColor"        },
-			{ ShaderDataType::Float2, "aTexCoord"     },
-			{ ShaderDataType::Float,  "aTexIndex"     },
-			{ ShaderDataType::Int,    "aEntityID"     }
+			{ ShaderDataType::Float3, "aPosition"   },
+			{ ShaderDataType::Float3, "aNormals"    },
+			{ ShaderDataType::Float3, "aColor"      },
+			{ ShaderDataType::Float2, "aUV"         },
+			{ ShaderDataType::Float4, "aBoneIDs"    },
+			{ ShaderDataType::Float4, "aBoneWeights"},
+			{ ShaderDataType::Float,  "aTexIndex"   },
+			{ ShaderDataType::Int,    "aEntityID"   },
 		};
 
 		// ======================================
@@ -102,7 +99,6 @@ namespace origin
 		s_Data.CubeVAO->SetIndexBuffer(cubeIBO);
         delete[] cubeIndices;
 
-
         // ======================================
         // ================ Sphere ================
         s_Data.SphereData = ModelLoader::LoadModel("Resources/Models/sphere.obj");
@@ -129,12 +125,16 @@ namespace origin
         s_Data.SphereVAO->SetIndexBuffer(sphereIBO);
         delete[] sphereIndices;
         
+        s_Data.Ubo = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
+
+        s_Data.Shader = Renderer::GetShader("Mesh");
+        s_Data.TextureSlots[0] = Renderer::WhiteTexture;
 	}
 
 	void MeshRenderer::Begin(const Camera &camera, const glm::mat4 &transform, Shader *shader)
 	{
         s_Data.CameraData.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-        s_Data.CameraData.Position = glm::mat3(transform) * camera.GetPosition();
+        s_Data.CameraData.Position = camera.GetPosition();
 
         s_Data.Ubo->Bind();
         s_Data.Ubo->SetData(&s_Data.CameraData, sizeof(CameraBufferData));
@@ -214,15 +214,18 @@ namespace origin
 		for (size_t i = 0; i < 24; i++)
 		{
 			s_Data.CubeVBOPtr->Position = transform * glm::vec4(s_Data.CubeData.vertices[i].Position, 1.0f);
-			s_Data.CubeVBOPtr->Normal = glm::mat3(transform) * s_Data.CubeData.vertices[i].Normal;
+			glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
+			s_Data.CubeVBOPtr->Normals = transposeMat * s_Data.CubeData.vertices[i].Normals;
 			s_Data.CubeVBOPtr->Color = color;
-			s_Data.CubeVBOPtr->TexCoord = s_Data.CubeData.vertices[i].TexCoord;
+			s_Data.CubeVBOPtr->UV = s_Data.CubeData.vertices[i].UV;
+			s_Data.CubeVBOPtr->BoneIDs = glm::vec4(0.0f);
+			s_Data.CubeVBOPtr->BoneWeights = glm::vec4(1.0f);
 			s_Data.CubeVBOPtr->TexIndex = 0.0f;
 			s_Data.CubeVBOPtr->EntityID = entityID;
 			s_Data.CubeVBOPtr++;
 		}
 
-		s_Data.CubeIndexCount += 36;
+		s_Data.CubeIndexCount += s_Data.CubeData.indices.size();
 		Renderer::GetStatistics().CubeCount++;
 	}
 
@@ -242,15 +245,18 @@ namespace origin
         for (size_t i = 0; i < 544; i++)
         {
             s_Data.SphereVBOPtr->Position = transform * glm::vec4(s_Data.SphereData.vertices[i].Position, 1.0f);
-            s_Data.SphereVBOPtr->Normal = glm::mat3(transform) * s_Data.SphereData.vertices[i].Normal;
+            glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
+            s_Data.SphereVBOPtr->Normals = transposeMat * s_Data.SphereData.vertices[i].Normals;
             s_Data.SphereVBOPtr->Color = color;
-            s_Data.SphereVBOPtr->TexCoord = s_Data.SphereData.vertices[i].TexCoord;
+            s_Data.SphereVBOPtr->UV = s_Data.SphereData.vertices[i].UV;
+            s_Data.SphereVBOPtr->BoneIDs = glm::vec4(0.0f);
+            s_Data.SphereVBOPtr->BoneWeights = glm::vec4(1.0f);
             s_Data.SphereVBOPtr->TexIndex = 0.0f;
             s_Data.SphereVBOPtr->EntityID = entityID;
             s_Data.SphereVBOPtr++;
         }
 
-        s_Data.SphereIndexCount += 768;
+        s_Data.SphereIndexCount += s_Data.SphereData.indices.size();
 		Renderer::GetStatistics().SphereCount++;
     }
 

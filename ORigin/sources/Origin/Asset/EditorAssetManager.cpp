@@ -112,12 +112,11 @@ namespace origin
 
 		if (metadata.Type == AssetType::None)
 		{
-			OGN_CORE_ERROR("[EditorAssetManager] Invalid Asset Type");
+			OGN_CORE_ERROR("[EditorAssetManager] Invalid Asset Type {0}", filepath);
 			return 0;
 		}
 
 		std::shared_ptr<Asset> asset;
-
 		if (metadata.Type == AssetType::Font)
 		{
 			auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;

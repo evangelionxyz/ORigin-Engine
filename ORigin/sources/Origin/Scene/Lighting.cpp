@@ -18,8 +18,7 @@ namespace origin {
 		std::shared_ptr<Shader> dirLightDepthShader = Shader::Create("Resources/Shaders/SPIR-V/DirectionalLightDepthMap.glsl", true);
 		m_ShadowRenderer = ShadowRenderer::Create(dirLightDepthShader, type);
 
-		int binding = 2;
-		m_LightingUniformBuffer = UniformBuffer::Create(sizeof(DirLightBufferData), binding);
+		m_LightingUniformBuffer = UniformBuffer::Create(sizeof(DirLightBufferData), LIGHTING_BINDING);
 	}
 
 	Lighting::~Lighting()

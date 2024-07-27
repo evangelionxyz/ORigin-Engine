@@ -20,24 +20,15 @@ namespace origin
         bool OnKeyPressedEvent(KeyPressedEvent &e);
 
     private:
-        void RenderScene();
         void DrawGrid();
-        glm::vec3 GetRandomColor();
-
         EditorCamera m_Camera;
         SceneCamera m_SceneCamera;
         TransformComponent m_CamTC;
         Frustum m_Frustum;
 
-        std::vector<glm::vec3> positions;
-
-        std::mt19937 rng;
-        std::uniform_real_distribution<float> dist;
-        std::vector<glm::vec3> randomColor;
+        const int size = 20;
         bool polygonMode = false;
         float nPlane, fPlane, FOV;
-        const int size = 20;
-        float timeColorChange = 0.0f;
         float deltaTime = 0.0f;
         float updateRate = 1.0f;
         float timer = 1.0f;

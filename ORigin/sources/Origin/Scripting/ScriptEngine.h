@@ -21,17 +21,17 @@ namespace origin {
 
 	enum class ScriptFieldType
 	{
-		None = 0,
+		Invalid = 0,
+		Entity,
 		Float, Double,
 		Bool, Char, Byte, Short, Int, Long,
 		UByte, UShort, UInt, ULong,
-		Vector2, Vector3, Vector4,
-		Entity
+		Vector2, Vector3, Vector4
 	};
 
 	struct ScriptField
 	{
-		ScriptFieldType Type;
+		ScriptFieldType Type = ScriptFieldType::Invalid;
 		std::string Name;
 
 		MonoClassField* ClassField = nullptr;
@@ -41,7 +41,6 @@ namespace origin {
 	struct ScriptFieldInstance
 	{
 		ScriptField Field;
-
 		ScriptFieldInstance()
 		{
 			memset(m_Buffer, 0, sizeof(m_Buffer));
@@ -181,7 +180,7 @@ namespace origin {
 		{
 			switch (type)
 			{
-				case ScriptFieldType::None:			return "None";
+				case ScriptFieldType::Invalid:			return "None";
 				case ScriptFieldType::Float:		return "Float";
 				case ScriptFieldType::Double:		return "Double";
 				case ScriptFieldType::Bool:			return "Boolean";
@@ -206,7 +205,7 @@ namespace origin {
 
 		inline ScriptFieldType ScriptFieldTypeFromString(std::string_view type)
 		{
-			if (type == "None")			return ScriptFieldType::None;
+			if (type == "None")			return ScriptFieldType::Invalid;
 			if (type == "Float")		return ScriptFieldType::Float;
 			if (type == "Double")		return ScriptFieldType::Double;
 			if (type == "Boolean")	return ScriptFieldType::Bool;
@@ -224,7 +223,7 @@ namespace origin {
 			if (type == "Vec4")			return ScriptFieldType::Vector4;
 			if (type == "Entity")		return ScriptFieldType::Entity;
 
-			return ScriptFieldType::None;
+			return ScriptFieldType::Invalid;
 		}
 	}
 }

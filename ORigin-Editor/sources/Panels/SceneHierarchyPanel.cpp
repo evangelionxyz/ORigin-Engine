@@ -5,6 +5,7 @@
 #include "UIEditor.h"
 #include "SceneHierarchyPanel.h"
 #include "ModelLoaderPanel.h"
+#include "entt/entt.hpp"
 
 #include "Origin/GUI/UI.h"
 #include "Origin/Project/Project.h"
@@ -49,7 +50,7 @@ namespace origin {
 			}
 		}
 
-		return Entity();
+		return Entity{ (entt::entity)-1, nullptr };
 	}
 
 	void SceneHierarchyPanel::SetActiveScene(const std::shared_ptr<Scene> &scene, bool reset)
@@ -381,11 +382,12 @@ namespace origin {
 			if (component.HMaterial)
 			{
 				material = AssetManager::GetAsset<Material>(component.HMaterial);
-				label = "Attached";
+				label = material->GetName();
 			}
 			else
 			{
                 material = Renderer::GetMaterial("Mesh");
+				label = material->GetName();
 			}
 
             ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
@@ -1059,6 +1061,7 @@ namespace origin {
         DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
         {
             UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
+            UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f);
             UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
@@ -1066,6 +1069,7 @@ namespace origin {
         DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto &component)
         {
             UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
+			UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f);
             UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
@@ -1266,7 +1270,9 @@ namespace origin {
 											if (payload->DataSize == sizeof(Entity))
 											{
 												Entity src { *static_cast<entt::entity *>(payload->Data), scene.get() };
-												scriptField.SetValue<uint64_t>(src.GetUUID());
+												uint64_t id = (uint64_t)src.GetUUID();
+												scriptField.Field.Type = ScriptFieldType::Entity;
+												scriptField.SetValue<uint64_t>(id);
 											}
 										}
 										ImGui::EndDragDropTarget();

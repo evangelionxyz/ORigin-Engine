@@ -50,7 +50,7 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 
-		s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), 0);
+		s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 
 		//  ======== Cube ========
 		s_Render3DData.CubeVertexArray = VertexArray::Create();

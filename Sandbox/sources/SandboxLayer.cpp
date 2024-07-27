@@ -6,25 +6,116 @@
 #include "Origin/GUI/UI.h"
 #include "SandboxLayer.h"
 
+#include "Model.h"
+#include <iostream>
 #include <imgui.h>
 
 using namespace origin;
 
-struct LightBuffer
+const char *vertexShaderSource = R"(
+	#version 450 core
+	layout (location = 0) in vec3 position; 
+	layout (location = 1) in vec3 normal;
+	layout (location = 2) in vec2 uv;
+	layout (location = 3) in vec4 boneIds;
+	layout (location = 4) in vec4 boneWeights;
+
+	out vec2 tex_cord;
+	out vec3 v_normal;
+	out vec3 v_pos;
+
+	uniform mat4 boneTransforms[50];
+	uniform mat4 viewProjection;
+	uniform mat4 transform;
+
+	void main()
+	{
+		mat4 boneTransform  =  mat4(0.0);
+		boneTransform  +=    boneTransforms[int(boneIds.x)] * boneWeights.x;
+		boneTransform  +=    boneTransforms[int(boneIds.y)] * boneWeights.y;
+		boneTransform  +=    boneTransforms[int(boneIds.z)] * boneWeights.z;
+		boneTransform  +=    boneTransforms[int(boneIds.w)] * boneWeights.w;
+		vec4 pos = boneTransform * vec4(position, 1.0);
+		gl_Position = viewProjection * transform * pos;
+		v_pos = vec3(transform * boneTransform * pos);
+		tex_cord = uv;
+		v_normal = mat3(transpose(inverse(transform * boneTransform))) * normal;
+		v_normal = normalize(v_normal);
+	}
+
+	)";
+const char *fragmentShaderSource = R"(
+	#version 450 core
+
+	in vec2 tex_cord;
+	in vec3 v_normal;
+	in vec3 v_pos;
+	out vec4 color;
+
+	uniform sampler2D diff_texture;
+
+	vec3 lightPos = vec3(0.2, 1.0, -3.0);
+	
+	void main()
+	{
+		vec3 lightDir = normalize(lightPos - v_pos);
+		float diff = max(dot(v_normal, lightDir), 0.2);
+		vec3 dCol = diff * texture(diff_texture, tex_cord).rgb; 
+		color = vec4(dCol, 1);
+	}
+	)";
+
+
+uint32_t createVertexArray(std::vector<Vertex> &vertices, std::vector<uint32_t> indices)
 {
-	glm::vec4 Direction = { -0.5f, -1.0f, -0.5f, 1.0f };
-	glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glm::vec4 AmbientColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-};
+    uint32_t
+        vao = 0,
+        vbo = 0,
+        ebo = 0;
 
-LightBuffer lightBuffer;
-std::shared_ptr<UniformBuffer> lightBufferObj;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, position));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, uv));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, boneIds));
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, boneWeights));
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), &indices[0], GL_STATIC_DRAW);
+    glBindVertexArray(0);
+    return vao;
+}
+
+std::shared_ptr<Texture2D> texture;
+Animation animation;
+Bone skeleton;
+uint32_t vao;
+uint32_t shader = 0;
+uint32_t boneCount = 0;
+uint32_t viewProjectionLoc;
+uint32_t modelTransformLoc;
+uint32_t boneTransformsLoc;
+glm::mat4 globalInverseTransform(1.0f);
+glm::mat4 identity(1.0f);
+std::vector<glm::mat4> currentPose = {};
+std::vector<Vertex> vertices = {};
+std::vector<uint32_t> indices = {};
+double elapsedTime = 0.0;
 
 
-
-SandboxLayer::SandboxLayer() : Layer("Sandbox"), rng(std::random_device {}()), dist(0.0f, 1.0f)
+SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
-	randomColor.resize(10, glm::vec3(1.0f));
 }
 
 void SandboxLayer::OnAttach()
@@ -34,28 +125,42 @@ void SandboxLayer::OnAttach()
 	m_Camera.InitPerspective(45.0f, 1.776f, 1.0f, 300.0f);
 	m_Camera.SetPosition({ 0.0f, 5.0f, 10.0f });
 
-    m_SceneCamera.InitPerspective(45.0f, 1.776f, 1.0f, 100.0f);
+	m_SceneCamera.InitPerspective(45.0f, 1.776f, 1.0f, 100.0f);
 	m_CamTC.WorldTranslation = { 0.0f, 1.0f, 0.0f };
 	nPlane = m_SceneCamera.GetNear();
 	fPlane = m_SceneCamera.GetFar();
 	FOV = m_SceneCamera.GetFOV();
 
-	lightBufferObj = UniformBuffer::Create(sizeof(lightBuffer), 1);
+	//load model file
+	Assimp::Importer importer;
+	const char *filePath = "Resources/Models/character.dae";
+	const aiScene *scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	{
+		OGN_CORE_ASSERT(false, importer.GetErrorString());
+		exit(EXIT_FAILURE);
+	}
+	aiMesh *mesh = scene->mMeshes[0];
 
-    for (int i = -size; i < size; ++i)
-    {
-        for (int j = -size; j < size; ++j)
-        {
-            float x = i + i * 1.5f;
-            float z = j + j * 2.0f;
-			positions.push_back({ x, 0.0f, z });
-        }
-    }
+	texture = Texture2D::Create("Resources/Models/diffuse.png");
 
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+	globalInverseTransform = AssimpToGlmMatrix(scene->mRootNode->mTransformation);
+	//globalInverseTransform = glm::inverse(globalInverseTransform);
 
+	loadModel(scene, mesh, vertices, indices, skeleton, boneCount);
+	LoadAnimation(scene, animation);
+	currentPose.resize(boneCount, identity);
+	vao = createVertexArray(vertices, indices);
 
+	shader = createShader(vertexShaderSource, fragmentShaderSource);
+	viewProjectionLoc = glGetUniformLocation(shader, "viewProjection");
+	modelTransformLoc = glGetUniformLocation(shader, "transform");
+	boneTransformsLoc = glGetUniformLocation(shader, "boneTransforms");
+
+	
+
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.1f, 0.3f, 0.4f, 1.0f);
 }
 
@@ -70,8 +175,8 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	m_Camera.OnUpdate(ts);
 	m_SceneCamera.OnUpdate(ts);
 
-	m_Frustum.Update(m_SceneCamera.GetProjection() * glm::inverse(m_CamTC.GetTransform()));
-		
+	m_Frustum.Update(m_Camera.GetViewProjection());
+
 	if (timer <= 0.0f)
 	{
 		deltaTime = ts;
@@ -81,18 +186,33 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	}
 	timer -= ts;
 
-    if (timeColorChange >= 2.0f)
-    {
-        for (auto &color : randomColor)
-        {
-            color = GetRandomColor();
-        }
-        timeColorChange = 0.0f;
-    }
+	elapsedTime = glfwGetTime(); // Get time in seconds
 
-    timeColorChange += ts;
-    glPolygonMode(GL_FRONT_AND_BACK, polygonMode ? GL_LINE : GL_FILL);
-	RenderScene();
+	// RENDER HERE
+	glPolygonMode(GL_FRONT_AND_BACK, polygonMode ? GL_LINE : GL_FILL);
+	glCullFace(GL_BACK);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(shader);
+	glActiveTexture(GL_TEXTURE0);
+	texture->Bind(0);
+
+	GetPose(animation, skeleton, (float)elapsedTime * 1000.0f, currentPose, identity, globalInverseTransform);
+	for (int x = -5; x < 5; ++x)
+	{
+		for (int z = -5; z < 5; ++z)
+		{
+			glUniformMatrix4fv(viewProjectionLoc, 1, GL_FALSE, glm::value_ptr(m_Camera.GetViewProjection()));
+			glUniformMatrix4fv(boneTransformsLoc, boneCount, GL_FALSE, glm::value_ptr(currentPose[0]));
+
+			glm::mat4 modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(x + x * 1.5f, 0.0f, z + z * 1.5f))
+				* glm::scale(glm::mat4(1.0f), { 0.5f, 0.5f, 0.5f });
+			glUniformMatrix4fv(modelTransformLoc, 1, GL_FALSE, glm::value_ptr(modelTransform));
+
+			glBindVertexArray(vao);
+			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		}
+	}
 
 	DrawGrid();
 }
@@ -112,10 +232,6 @@ void SandboxLayer::OnGuiRender()
 	ImGui::Text("%.3f fps %0.3f ms", framerate, response);
 	ImGui::Checkbox("Polygon Mode", &polygonMode);
 	ImGui::Separator();
-
-	ImGui::DragFloat3("Direction", glm::value_ptr(lightBuffer.Direction), 0.025f);
-	ImGui::ColorEdit3("LightColor", glm::value_ptr(lightBuffer.Color));
-	ImGui::ColorEdit3("AmbientColor", glm::value_ptr(lightBuffer.AmbientColor));
 
 	ImGui::Separator();
 	ImGui::Text("Line Count %d", Renderer::GetStatistics().LineCount);
@@ -147,6 +263,26 @@ void SandboxLayer::OnGuiRender()
 	m_SceneCamera.SetFar(fPlane);
 
 	ImGui::End();
+
+    if (ImGui::Begin("Debug Info"))
+    {
+        ImGui::Text("Shader Program: %u", shader);
+        ImGui::Text("Bone Count: %d", boneCount);
+
+        // Display currentPose matrices
+        for (size_t i = 0; i < currentPose.size(); ++i)
+        {
+            ImGui::Text("Bone %zu Transform", i);
+            ImGui::InputFloat4("Transform", glm::value_ptr(currentPose[i]), "%.2f");
+        }
+
+        ImGui::Text("Elapsed Time: %.2f", elapsedTime);
+        ImGui::Text("Ticks Per Second: %.2f", animation.ticksPerSecond);
+        ImGui::Text("Animation Duration: %.2f", animation.duration);
+
+        ImGui::End();
+    }
+
 }
 
 bool SandboxLayer::OnWindowResize(FramebufferResizeEvent& e)
@@ -170,7 +306,6 @@ void SandboxLayer::DrawGrid()
 { 
 	Renderer2D::Begin(m_Camera);
 
-#if 0
 	float alphaColor = 0.3f;
 	glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, alphaColor);
 	glm::vec2 cameraPosition = { m_Camera.GetPosition().x, m_Camera.GetPosition().z };
@@ -189,7 +324,6 @@ void SandboxLayer::DrawGrid()
 			Renderer2D::DrawLine({ s, 0.0f, -size }, { s, 0.0f, size }, color);
 		}
 	}
-#endif
 
 	for (const auto &edge : m_Frustum.GetEdges())
 	{
@@ -197,39 +331,4 @@ void SandboxLayer::DrawGrid()
 	}
 
 	Renderer2D::End();
-}
-
-glm::vec3 SandboxLayer::GetRandomColor()
-{
-    return glm::vec3(dist(rng), dist(rng), dist(rng));
-}
-
-void SandboxLayer::RenderScene()
-{
-    glCullFace(GL_BACK);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    lightBufferObj->Bind();
-    lightBufferObj->SetData(&lightBuffer, sizeof(lightBuffer));
-    MeshRenderer::Begin(m_Camera);
-
-    int i = 0;
-    for (auto &pos : positions)
-    {
-        if (m_Frustum.IsSphereVisible(pos, 1.0f))
-        {
-            float time = glfwGetTime();
-            pos.y = sin(pos.x * 0.5f + pos.z * 2.5f + time) * 1.5f;
-
-            glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos);
-            MeshRenderer::DrawCube(transform, glm::vec4(randomColor[i % 10], 1.0f));
-        }
-        i++;
-    }
-
-    glm::mat4 t = glm::translate(glm::mat4(1.0f), { 0.0f, -5.0f, 0.0f })
-        * glm::scale(glm::mat4(1.0f), { 50.0f, 0.5f, 50.0f });
-    MeshRenderer::DrawCube(t, glm::vec4(0.9f));
-
-    MeshRenderer::End();
 }

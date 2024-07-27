@@ -223,7 +223,7 @@ namespace origin {
 
 	std::shared_ptr<Material> MaterialImporter::Load(const std::filesystem::path &filepath)
 	{
-		std::shared_ptr<Material> material = Material::Create();
+		std::shared_ptr<Material> material = Material::Create(filepath.stem().string());
 		MaterialSerializer::Deserialize(filepath, material);
 		return material;
 	}

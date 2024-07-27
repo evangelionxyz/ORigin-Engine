@@ -451,7 +451,7 @@ if (!m_UIEditor)
 		m_ActiveScene = m_EditorScene;
 		m_ScenePath = metadata.Filepath;
 		std::string name = metadata.Filepath.stem().string();
-		readOnlyScene->SetName(name);
+		m_ActiveScene->SetName(name);
 
 		if (!m_UIEditor)
 		{
@@ -1084,7 +1084,8 @@ if (!m_UIEditor)
 		{
 			Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
-            if (IsViewportHovered && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGuizmo::IsOver())
+            if (IsViewportHovered && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && 
+				((m_Gizmos->GetType() == GizmoType::NONE) || !ImGuizmo::IsOver()))
 			{
                 if (m_PixelData >= 0)
                 {
@@ -1184,9 +1185,6 @@ if (!m_UIEditor)
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
 		OGN_PROFILER_INPUT();
-
-		if (!IsViewportFocused && !m_SceneHierarchy.IsSceneHierarchyFocused)
-			return false;
 
 		auto &app = Application::Get();
 		const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);

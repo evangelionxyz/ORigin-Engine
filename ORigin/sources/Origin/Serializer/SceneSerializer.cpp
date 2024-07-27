@@ -271,7 +271,7 @@ namespace origin
 							WRITE_FIELD_TYPE(Vector2, glm::vec2);
 							WRITE_FIELD_TYPE(Vector3, glm::vec3);
 							WRITE_FIELD_TYPE(Vector4, glm::vec4);
-							WRITE_FIELD_TYPE(Entity, UUID);
+							WRITE_FIELD_TYPE(Entity, uint64_t);
 						}
 
 						out << YAML::EndMap; // !Fields

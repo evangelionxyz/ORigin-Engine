@@ -42,6 +42,7 @@
 #include <Jolt/Physics/Character/CharacterVirtual.h>
 
 #include "Origin/Profiler/Profiler.h"
+#include "Origin/Scene/Components/PhysicsComponents.h"
 
 namespace origin
 {
@@ -176,27 +177,6 @@ namespace origin
         }
     };
 
-    // Conversion functions
-    static JPH::Vec3 GlmToJoltVec3(const glm::vec3 &v)
-    {
-        return JPH::Vec3(v.x, v.y, v.z);
-    }
-
-    static glm::vec3 JoltToGlmVec3(const JPH::Vec3 &v)
-    {
-        return glm::vec3(v.GetX(), v.GetY(), v.GetZ());
-    }
-
-    static JPH::Quat GlmToJoltQuat(const glm::quat &q)
-    {
-        return JPH::Quat(q.x, q.y, q.z, q.w);
-    }
-
-    static glm::quat JoltToGlmQuat(const JPH::Quat &q)
-    {
-        return glm::quat(q.GetW(), q.GetX(), q.GetY(), q.GetZ());
-    }
-
     static constexpr uint32_t cNumBodies = 10240;
     static constexpr uint32_t cNumBodiesMutexes = 0;
     static constexpr uint32_t cMaxBodyPairs = 65536;
@@ -226,7 +206,7 @@ namespace origin
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();
         s_Data.TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(32 * 1024 * 1024);
-        s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(2048, 8, std::thread::hardware_concurrency() - 1);
+        s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(1024, 8, std::thread::hardware_concurrency() - 1);
     }
 
     void PhysicsEngine::Shutdown()
@@ -256,7 +236,7 @@ namespace origin
         JPH::ShapeRefC shape = shapeResult.Get();
         bc.Shape = reinterpret_cast<void *>(&shape);
 
-        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + bc.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
         
@@ -266,8 +246,6 @@ namespace origin
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
-            s_Data.BodyInterface->SetLinearVelocity(bodyId, JPH::Vec3(0.0f, -5.0f, 0.0f));
-
             s_Data.BodyInterface->SetFriction(bodyId, bc.Friction);
             s_Data.BodyInterface->SetRestitution(bodyId, bc.Restitution);
             rb.Body = body;
@@ -286,7 +264,7 @@ namespace origin
         auto &sc = entity.GetComponent<SphereColliderComponent>();
         auto &rb = entity.GetComponent<RigidbodyComponent>();
 
-        JPH::SphereShapeSettings shapeSettings(sc.Radius * 2.0f);
+        JPH::SphereShapeSettings shapeSettings((sc.Radius * 2.0f) * tc.Scale.x);
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
 
         OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
@@ -294,15 +272,17 @@ namespace origin
 
         sc.Shape = reinterpret_cast<void *>(&shape);
 
-        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + sc.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
 
         JPH::Body *body = s_Data.BodyInterface->CreateBody(settings);
         if (body)
         {
-            s_Data.BodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
-            s_Data.BodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.0f, -5.0f, 0.0f));
+            JPH::BodyID bodyId = body->GetID();
+            s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
+            s_Data.BodyInterface->SetFriction(bodyId, sc.Friction);
+            s_Data.BodyInterface->SetRestitution(bodyId, sc.Restitution);
             rb.Body = body;
         }
     }
@@ -310,15 +290,13 @@ namespace origin
     void PhysicsEngine::OnSimulateStart(Scene *scene)
     {
         const uint32_t maxBodies = 1024;
-        const uint32_t numBodyMutexes = 0;
+        const uint32_t numBodyMutexes = 8;
         const uint32_t maxBodyPairs = 1024;
         const uint32_t maxContactConstrainsts = 1024;
 
         s_Data.PhysicsSystem = std::make_unique<JPH::PhysicsSystem>();
         s_Data.PhysicsSystem->Init(maxBodies, numBodyMutexes, maxBodyPairs, maxContactConstrainsts,
             s_Data.BroadPhaseLayerInterface, s_Data.ObjectVsBroadPaheLayerFilter, s_Data.ObjectLayerPairFilter);
-
-        s_Data.PhysicsSystem->SetGravity(JPH::Vec3(0.0f, -9.8f, 0.0f));
 
         s_Data.BodyActivationListener = std::make_unique<JoltBodyActivationListener>();
         s_Data.PhysicsSystem->SetBodyActivationListener(s_Data.BodyActivationListener.get());
@@ -328,6 +306,8 @@ namespace origin
 
         s_Data.BodyInterface = &s_Data.PhysicsSystem->GetBodyInterface();
         s_Data.PhysicsSystem->OptimizeBroadPhase();
+
+        s_Data.PhysicsSystem->SetGravity(JPH::Vec3(0.0f, -9.8f, 0.0f));
 
         for (auto id : scene->m_Registry.view<BoxColliderComponent>())
         {
@@ -380,6 +360,36 @@ namespace origin
         }
 
         s_Data.PhysicsSystem->Update(ts, 1, s_Data.TempAllocator.get(), s_Data.JobSystem.get());
+    }
+
+    void PhysicsEngine::OnInstantiateScriptEntity(Entity entity)
+    {
+        if (entity.HasComponent<RigidbodyComponent>())
+        {
+            if(entity.HasComponent<BoxColliderComponent>())
+                CreateBoxCollider(entity);
+
+            if (entity.HasComponent<SphereColliderComponent>())
+                CreateSphereCollider(entity);
+        }
+    }
+
+    void PhysicsEngine::OnDestroyScriptEntity(Entity entity)
+    {
+        if (entity.HasComponent<RigidbodyComponent>())
+        {
+            RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
+
+            JPH::Body *body = reinterpret_cast<JPH::Body *>(rb.Body);
+
+            s_Data.BodyInterface->RemoveBody(body->GetID());
+            s_Data.BodyInterface->DestroyBody(body->GetID());
+        }
+    }
+
+    JPH::BodyInterface *PhysicsEngine::GetBodyInterface()
+    {
+        return s_Data.BodyInterface;
     }
 
 }

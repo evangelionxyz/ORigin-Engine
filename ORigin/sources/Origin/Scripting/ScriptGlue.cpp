@@ -5,6 +5,7 @@
 #include "ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Physics/2D/Physics2D.h"
+#include "Origin/Physics/PhysicsEngine.h"
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
@@ -138,6 +139,7 @@ namespace origin
 			Entity copyEntity = EntityManager::DuplicateEntity(entity, scene);
 			copyEntity.GetComponent<TransformComponent>().WorldTranslation = translation;
 			scene->GetPhysics2D()->OnInstantiateScriptEntity(copyEntity);
+			PhysicsEngine::OnInstantiateScriptEntity(copyEntity);
 			return copyEntity.GetUUID();
 		}
 		
@@ -155,6 +157,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			scene->GetPhysics2D()->OnDestroyScriptEntity(entity);
+			PhysicsEngine::OnDestroyScriptEntity(entity);
 			scene->DestroyEntity(entity);
 		}
 	}
@@ -1342,6 +1345,396 @@ namespace origin
 		}
 	}
 
+	static void RigidbodyComponent_AddForce(UUID entityID, glm::vec3 force)
+	{ 
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+				rb.AddForce(force);
+            }
+        }
+	}
+
+    static void RigidbodyComponent_AddTorque(UUID entityID, glm::vec3 torque)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.AddTorque(torque);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_AddForceAndTorque(UUID entityID, glm::vec3 force, glm::vec3 torque)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.AddForceAndTorque(force, torque);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_AddImpulse(UUID entityID, glm::vec3 impulse)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.AddImpulse(impulse);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_AddAngularImpulse(UUID entityID, glm::vec3 impulse)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.AddAngularImpulse(impulse);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_ActivateBody(UUID entityID)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.ActivateBody();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_DeactivateBody(UUID entityID)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.DeactivateBody();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_DestroyBody(UUID entityID)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.DestroyBody();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_IsActive(UUID entityID, bool *isActive)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+				*isActive = rb.IsActive();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_MoveKinematic(UUID entityID, glm::vec3 targetPosition, glm::vec3 targetRotation, float deltaTime)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+				rb.MoveKinematic(targetRotation, targetRotation, deltaTime);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_AddLinearVelocity(UUID entityID, glm::vec3 velocity)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+				rb.AddLinearVelocity(velocity);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_SetPosition(UUID entityID, glm::vec3 position, bool activate)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.SetPosition(position, activate);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_SetEulerAngleRotation(UUID entityID, glm::vec3 rotation, bool activate)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.SetEulerAngleRotation(rotation, activate);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_SetRotation(UUID entityID, const glm::quat &rotation, bool activate)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.SetRotation(rotation, activate);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_SetLinearVelocity(UUID entityID, glm::vec3 velocity)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+				rb.SetLinearVelocity(velocity);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_SetFriction(UUID entityID, float friction)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.SetFriction(friction);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_SetRestitution(UUID entityID, float restitution)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.SetRestitution(restitution);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_SetGravityFactory(UUID entityID, float gravityFactor)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                rb.SetGravityFactor(gravityFactor);
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetPosition(UUID entityID, glm::vec3 *position)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+				*position = rb.GetPosition();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetEulerAngleRotation(UUID entityID, glm::vec3 *eulerAngles)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                *eulerAngles = rb.GetEulerAngleRotation();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetRotation(UUID entityID, glm::quat *rotation)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                *rotation = rb.GetRotation();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetRestitution(UUID entityID, float *restitution)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                *restitution = rb.GetRestitution();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetFriction(UUID entityID, float *friction)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                *friction = rb.GetFriction();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetGravityFactor(UUID entityID, float *gravityFactor)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                *gravityFactor = rb.GetGravityFactor();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetCenterOfMassPosition(UUID entityID, glm::vec3 *centerMassOfPosition)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                *centerMassOfPosition = rb.GetCenterOfMassPosition();
+            }
+        }
+    }
+
+    static void RigidbodyComponent_GetLinearVelocity(UUID entityID, glm::vec3 *getLinearVelocity)
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
+            if (rb.Body)
+            {
+                *getLinearVelocity = rb.GetLinearVelocity();
+            }
+        }
+    }
+
 	static bool Input_IsKeyPressed(KeyCode keycode)
 	{
 		OGN_PROFILER_LOGIC();
@@ -1516,6 +1909,33 @@ namespace origin
 
 		OGN_ADD_INTERNAL_CALLS(SpriteAnimationComponent_SetActiveState);
 		OGN_ADD_INTERNAL_CALLS(SpriteAnimationComponent_GetActiveState);
+
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_AddForce);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_AddTorque);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_AddForceAndTorque);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_AddImpulse);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_AddAngularImpulse);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_ActivateBody);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_DeactivateBody);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_DestroyBody);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_IsActive);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_MoveKinematic);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_AddLinearVelocity);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetPosition);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetRotation);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetEulerAngleRotation);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetLinearVelocity);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetFriction);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetRestitution);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetGravityFactory);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetPosition);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetEulerAngleRotation);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetRotation);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetFriction);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetRestitution);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetGravityFactor);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetCenterOfMassPosition);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetLinearVelocity);
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 

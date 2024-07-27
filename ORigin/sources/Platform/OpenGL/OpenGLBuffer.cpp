@@ -16,12 +16,12 @@ namespace origin
 		// Clear any existing errors
 		while (glGetError() != GL_NO_ERROR);
 
-		glCreateBuffers(1, &m_RendererID);
+		glGenBuffers(1, &m_RendererID);
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
-			std::cerr << "[glCreateBuffers] Error: " << error << std::endl;
-			OGN_CORE_ASSERT(false, "[glCreateBuffers] {0}", error);
+			std::cerr << "[glGenBuffers] Error: " << error << std::endl;
+			OGN_CORE_ASSERT(false, "[glGenBuffers] {0}", error);
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -45,7 +45,7 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		glCreateBuffers(1, &m_RendererID);
+		glGenBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
@@ -95,13 +95,19 @@ namespace origin
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t *indices, uint32_t count)
 		: m_Count(count)
 	{
-		OGN_PROFILER_RENDERING();
+        OGN_PROFILER_RENDERING();
 
-		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
-		GLenum error = glGetError();
-		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer.ctor(uint32_t,uint32_t) {0}", error);
+        glGenBuffers(1, &m_RendererID);
+        GLenum error = glGetError();
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "OpenGL error after glGenBuffers: {0}", error);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+        error = glGetError();
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "OpenGL error after glBindBuffer: {0}", error);
+
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+        error = glGetError();
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "OpenGL error after glBufferData: {0}", error);
 	}
 
 	OpenGLIndexBuffer::OpenGLIndexBuffer(const std::vector<uint32_t> &indices)
@@ -109,7 +115,7 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		glCreateBuffers(1, &m_RendererID);
+		glGenBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
@@ -122,7 +128,7 @@ namespace origin
     {
 		OGN_PROFILER_RENDERING();
 
-		glCreateBuffers(1, &m_RendererID);
+		glGenBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 

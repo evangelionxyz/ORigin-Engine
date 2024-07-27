@@ -55,9 +55,9 @@ namespace origin {
 				LoadShaders();
 				LoadMaterials();
 
+				MeshRenderer::Init();
 				Renderer2D::Init();
 				Renderer3D::Init();
-				MeshRenderer::Init();
 			}
 			break;
 #ifdef OGN_PLATFORM_WINDOWS
@@ -82,6 +82,7 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 
+		MeshRenderer::Shutdown();
 		Renderer2D::Shutdown();
 		Renderer3D::Shutdown();
 
@@ -133,6 +134,8 @@ namespace origin {
 
 	void Renderer::LoadMaterials()
 	{
-		s_MaterialLibrary.Add("Mesh", Material::Create(Renderer::GetShader("Mesh")));
+		std::shared_ptr<Material>material = Material::Create(Renderer::GetShader("Mesh"));
+		material->SetName("Default Material");
+		s_MaterialLibrary.Add("Mesh", material);
 	}
 }

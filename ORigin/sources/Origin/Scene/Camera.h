@@ -114,10 +114,10 @@ namespace origin
         float m_MoveSpeed = 2.0f;
         float m_FOV = 45.0f;
         float m_AspectRatio = 1.778f;
-        float m_NearClip = 0.1f;
-        float m_FarClip = 500.0f;
-        float m_OrthoNearClip = -1.0f;
-        float m_OrthoFarClip = 100.0f;
+        float m_NearClip = 2.5f;
+        float m_FarClip = 50.0f;
+        float m_OrthoNearClip = 1.0f;
+        float m_OrthoFarClip = 50.0f;
         float m_OrthoScale = 10.0f;
         float m_MaxOrthoScale = 100.0f;
     };

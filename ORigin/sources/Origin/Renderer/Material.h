@@ -50,11 +50,9 @@ namespace origin::Utils
 				loadedTextures.push_back(newTexture);
 			}
 		}
-
 		loadedTextures.clear();
 	}
 }
-
 
 namespace origin
 {
@@ -69,7 +67,7 @@ namespace origin
 	class Material : public Asset
 	{
 	public:
-		Material();
+		Material(const std::string &name);
 		Material(const std::shared_ptr<Shader> &shader);
 		MaterialBufferData BufferData;
 
@@ -80,11 +78,14 @@ namespace origin
 
 		void SetAlbedoMap(AssetHandle handle);
 		void SetMetallicMap(AssetHandle handle);
+		void SetName(const std::string &name) { m_Name = name; }
+
 		AssetHandle GetAlbedoMap() { return m_AlbedoMap; }
 		AssetHandle GetMetallicMap() { return m_MetallicMap; }
+		const std::string &GetName() { return m_Name; }
 
 		std::shared_ptr<Shader> m_Shader;
-		static std::shared_ptr<Material> Create();
+		static std::shared_ptr<Material> Create(const std::string &name);
 		static std::shared_ptr<Material> Create(const std::shared_ptr<Shader> &shader);
 
 		static AssetType GetStaticType() { return AssetType::Material; }
@@ -98,5 +99,7 @@ namespace origin
 
 		std::shared_ptr<UniformBuffer> m_UniformBuffer;
 		friend class OpenGLModel;
+
+		std::string m_Name = "Material";
 	};
 }

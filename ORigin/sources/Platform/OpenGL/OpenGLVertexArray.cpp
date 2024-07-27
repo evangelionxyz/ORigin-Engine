@@ -7,32 +7,28 @@
 
 namespace origin
 {
-	static GLenum ShaderDataType_OpenGL(ShaderDataType type)
-	{
-		OGN_PROFILER_RENDERING();
+    GLenum ShaderDataType_OpenGL(ShaderDataType type)
+    {
+        switch (type)
+        {
+        case ShaderDataType::Float:      return GL_FLOAT;
+        case ShaderDataType::Float2:     return GL_FLOAT;
+        case ShaderDataType::Float3:     return GL_FLOAT;
+        case ShaderDataType::Float4:     return GL_FLOAT;
+        case ShaderDataType::Mat2:       return GL_FLOAT;
+        case ShaderDataType::Mat3:       return GL_FLOAT;
+        case ShaderDataType::Mat4:       return GL_FLOAT;
+        case ShaderDataType::Int:        return GL_INT;
+        case ShaderDataType::Int2:       return GL_INT;
+        case ShaderDataType::Int3:       return GL_INT;
+        case ShaderDataType::Int4:       return GL_INT;
+        case ShaderDataType::Boolean:    return GL_BOOL;
+        default:
+            OGN_CORE_ASSERT(false, "Unknown Shader Data Type");
+            return 0;
+        }
+    }
 
-		switch (type)
-		{
-		case ShaderDataType::Int:			return GL_INT;
-		case ShaderDataType::Int2:		return GL_INT;
-		case ShaderDataType::Int3:		return GL_INT;
-		case ShaderDataType::Int4:		return GL_INT;
-
-		case ShaderDataType::Float:		return GL_FLOAT;
-		case ShaderDataType::Float2:	return GL_FLOAT;
-		case ShaderDataType::Float3:	return GL_FLOAT;
-		case ShaderDataType::Float4:	return GL_FLOAT;
-
-		case ShaderDataType::Mat2:		return GL_FLOAT;
-		case ShaderDataType::Mat3:		return GL_FLOAT;
-		case ShaderDataType::Mat4:		return GL_FLOAT;
-
-		case ShaderDataType::Boolean: return GL_BOOL;
-		}
-
-		OGN_CORE_ASSERT(false, "Unknown Shader Data Type");
-		return 0;
-	}
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
@@ -86,6 +82,7 @@ namespace origin
 				m_VertexBufferIndex++;
 				break;
 			}
+			case ShaderDataType::Mat2:
 			case ShaderDataType::Mat3:
 			case ShaderDataType::Mat4:
 			{

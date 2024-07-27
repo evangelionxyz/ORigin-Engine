@@ -29,17 +29,6 @@ project "Editor"
         "%{prj.location}/sources/**.cpp",
         "%{prj.location}/sources/**.h",
         "%{prj.location}/**.h",
-
-        "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImGuizmo.h",
-        "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImGradient.h",
-        "%{IncludeDir.IMGUIZMO}/GraphEditor.cpp",
-        "%{IncludeDir.IMGUIZMO}/GraphEditor.h",
-        "%{IncludeDir.IMGUIZMO}/ImCurveEdit.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImCurveEdit.h",
-        "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
-        "%{IncludeDir.IMGUIZMO}/ImSequencer.h"
     }
 
     includedirs {

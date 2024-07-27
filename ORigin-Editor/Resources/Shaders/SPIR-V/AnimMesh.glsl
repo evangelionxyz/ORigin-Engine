@@ -15,6 +15,12 @@ layout(std140, binding = 0) uniform Camera
     vec3 Position;
 } CameraBuffer;
 
+layout(std140, binding = 1) uniform Model
+{
+    mat4 ModelMatrix;
+    mat4 BoneTransforms[50];
+} ModelBuffer;
+
 struct Vertex
 {
     vec3 Position;
@@ -29,10 +35,21 @@ layout(location = 5) out flat int vEntityID;
 
 void main()
 {
-    gl_Position = CameraBuffer.ViewProjection * vec4(aPosition, 1.0);
+    mat4 boneTransform = mat4(0.0);
 
-    Out.Position = aPosition;
-    Out.Normals = normalize(aNormals);
+    boneTransform += ModelBuffer.BoneTransforms[int(aBoneIDs.x)] * aBoneWeights.x;
+    boneTransform += ModelBuffer.BoneTransforms[int(aBoneIDs.y)] * aBoneWeights.y;
+    boneTransform += ModelBuffer.BoneTransforms[int(aBoneIDs.z)] * aBoneWeights.z;
+    boneTransform += ModelBuffer.BoneTransforms[int(aBoneIDs.w)] * aBoneWeights.w;
+    
+    vec4 position = boneTransform * vec4(aPosition, 1.0);
+
+    Out.Position = vec3(ModelBuffer.ModelMatrix * boneTransform * position);
+    Out.Normals = mat3(transpose(inverse(ModelBuffer.ModelMatrix * boneTransform))) * aNormals;
+    Out.Normals = normalize(Out.Normals);
+
+    gl_Position = CameraBuffer.ViewProjection * position;
+
     Out.Color = aColor;
     Out.UV = aUV;
     vTexIndex = aTexIndex;
@@ -41,6 +58,7 @@ void main()
 
 // type fragment
 #version 450 core
+
 layout(location = 0) out vec4 oColor;
 layout(location = 1) out int oEntityID;
 
@@ -64,7 +82,7 @@ layout(std140, binding = 0) uniform Camera
     vec3 Position;
 } CameraBuffer;
 
-layout(std140, binding = 1) uniform Material
+layout(std140, binding = 2) uniform Material
 {
     float Emission;
     float Metallic;
@@ -72,7 +90,7 @@ layout(std140, binding = 1) uniform Material
     bool UseNormalMaps;
 } MaterialBuffer;
 
-layout(std140, binding = 2) uniform Lighting
+layout(std140, binding = 3) uniform Lighting
 {
     vec4 Direction;
     vec4 Color;

@@ -56,17 +56,8 @@ namespace origin
                
 				MeshVertexData vertex;
                 vertex.Position = { aiMesh->mVertices[i].x, aiMesh->mVertices[i].y, aiMesh->mVertices[i].z };
-
-                if (aiMesh->HasNormals())
-                {
-                    vertex.Normal = { aiMesh->mNormals[i].x, aiMesh->mNormals[i].y, aiMesh->mNormals[i].z };
-                }
-
-                if (aiMesh->mTextureCoords[0])
-                    vertex.TexCoord = { aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y };
-                else
-                    vertex.TexCoord = { 0.0f, 0.0f };
-
+				vertex.Normals = { aiMesh->mNormals[i].x, aiMesh->mNormals[i].y, aiMesh->mNormals[i].z };
+				vertex.UV = { aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y };
                 m.Data.vertices.push_back(vertex);
             }
 
@@ -76,6 +67,7 @@ namespace origin
                 for (uint32_t in = 0; in < face.mNumIndices; in++)
                     m.Data.indices.push_back(face.mIndices[in]);
             }
+
 			OGN_CORE_TRACE("[Model] Pushing meshses {0}", m.Name);
 			m_Meshes.push_back(std::move(m));
 		}

@@ -34,15 +34,17 @@ namespace origin
 		struct TreeNode
 		{
 			std::filesystem::path Path;
+			std::map<std::filesystem::path, uint32_t> Children;
 			AssetHandle Handle = 0;
 			uint32_t Parent = static_cast<uint32_t>(-1);
-			std::map<std::filesystem::path, uint32_t> Children;
-			
 			TreeNode(std::filesystem::path path, AssetHandle handle)
 				: Path(std::move(path)), Handle(handle) {}
 		};
 
 		std::vector<TreeNode> m_TreeNodes;
+		std::filesystem::path m_RenamePath;
+		bool m_Renaming = false;
+		char m_RenameBuffer[256] = { 0 };
 		std::map<std::filesystem::path, std::vector<std::filesystem::path>> m_AssetTree;
 		int m_ThumbnailSize = 64;
 

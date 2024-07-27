@@ -3,7 +3,8 @@
 #include "Origin/GUI/UI.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Asset/AssetManager.h"
-#include "Origin/Scene/Components.h"
+#include "Origin/Scene/Components/Components.h"
+
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 

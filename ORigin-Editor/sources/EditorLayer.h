@@ -102,7 +102,7 @@ namespace origin
 		bool m_Draw3DGrid = true;
 		bool m_Draw2DGrid = true;
 		bool m_DrawLineModeActive = false;
-		bool m_VisualizeCollider = true;
+		bool m_VisualizeCollider = false;
 		Entity m_HoveredEntity = {};
 
 		friend class Gizmos;

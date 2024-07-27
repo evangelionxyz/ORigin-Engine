@@ -18,6 +18,8 @@ project "ASSIMP"
 
     "%{wks.location}/ORigin/vendor/assimp/code/CApi/**.cpp",
 
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaExporter.cpp",
+    "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaHelper.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaLoader.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaParser.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Ply/PlyParser.cpp",
@@ -77,6 +79,9 @@ project "ASSIMP"
     "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/trees.c",
     "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/uncompr.c",
     "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/zutil.c",
+
+    "%{wks.location}/ORigin/vendor/assimp/contrib/unzip/ioapi.c",
+    "%{wks.location}/ORigin/vendor/assimp/contrib/unzip/unzip.c",
 	}
 	
 	includedirs {
@@ -121,7 +126,7 @@ project "ASSIMP"
       "ASSIMP_BUILD_NO_IRR_IMPORTER",
       "ASSIMP_BUILD_NO_Q3D_IMPORTER",
       "ASSIMP_BUILD_NO_B3D_IMPORTER",
-      "ASSIMP_BUILD_NO_COLLADA_IMPORTER",
+      --"ASSIMP_BUILD_NO_COLLADA_IMPORTER",
       "ASSIMP_BUILD_NO_TERRAGEN_IMPORTER",
       "ASSIMP_BUILD_NO_CSM_IMPORTER",
       "ASSIMP_BUILD_NO_3D_IMPORTER",

@@ -25,7 +25,7 @@ namespace origin {
 		const AssetMetadata& GetMetadata(AssetHandle handle) const;
 		const std::filesystem::path& GetFilepath(AssetHandle handle);
 
-		const AssetRegistry& GetAssetRegistry() const { return m_AssetRegistry; }
+		AssetRegistry &GetAssetRegistry() { return m_AssetRegistry; }
 
 		void SerializeAssetRegistry();
 		bool DeserializeAssetRegistry();

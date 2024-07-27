@@ -123,7 +123,7 @@ namespace origin
 			if (it == s_ScriptFieldTypeMap.end())
 			{
 				OGN_CORE_ERROR("Unkown Field Type : {}", typeName);
-				return ScriptFieldType::None;
+				return ScriptFieldType::Invalid;
 			}
 			return it->second;
 		}
@@ -157,8 +157,6 @@ namespace origin
 
 	ScriptEngineData* s_ScriptEngineData = nullptr;
 
-	
-
 	// =================================
 	// Script Class
 
@@ -180,9 +178,9 @@ namespace origin
 
 	MonoObject* ScriptClass::InvokeMethod(MonoObject* classInstance, MonoMethod* method, void** params)
 	{
-		MonoObject *result = mono_runtime_invoke(method, classInstance, params, NULL);
-		//mono_object_unbox(result);
-		return result;
+		// If break here, check you C# code, the members should not a null object
+        MonoObject *result = mono_runtime_invoke(method, classInstance, params, NULL);
+        return result;
 	}
 
 	// =================================
@@ -247,7 +245,7 @@ namespace origin
 			// Get Entity Field from App Class
 			MonoObject *fieldValue = nullptr;
 			mono_field_get_value(m_Instance, field.ClassField, &fieldValue);
-			if (!fieldValue)
+			if (!fieldValue || !fieldValue->vtable)
 			{
 				OGN_CORE_ERROR("[ScriptInstance] Could not get field '{0}' in class", name);
 				return false;
@@ -549,9 +547,12 @@ namespace origin
 						instance->SetFieldValueInternal(name, entityInstance);
 						break;
 					}
-					default:
-						instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
-						break;
+					case ScriptFieldType::Invalid:
+						OGN_CORE_ASSERT(false, "[ScriptEngine] Null Object Field {0}", name);
+						return;
+                    default:
+                        instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
+                        break;
 					}
 				}
 			}

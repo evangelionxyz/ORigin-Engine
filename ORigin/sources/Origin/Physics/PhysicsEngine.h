@@ -1,14 +1,10 @@
 #pragma once
-
 #include "Origin/Core/Time.h"
 #include "Origin/Scene/Entity.h"
-#include "Origin/Scene/Components/PhysicsComponents.h"
+#include <glm/glm.hpp>
 
 #include <Jolt/Jolt.h>
-#include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Physics/Collision/ContactListener.h>
-#include <Jolt/Physics/PhysicsSettings.h>
-#include <glm/glm.hpp>
+#include <Jolt/Physics/Body/BodyInterface.h>
 
 namespace origin {
 
@@ -25,6 +21,11 @@ namespace origin {
 		static void OnSimulateStart(Scene *scene);
 		static void OnSimulateStop(Scene *scene);
 		static void Simulate(Timestep ts, Scene *scene);
+
+		static void OnInstantiateScriptEntity(Entity entity);
+		static void OnDestroyScriptEntity(Entity entity);
+
+		static JPH::BodyInterface *GetBodyInterface();
 	};
 }
 

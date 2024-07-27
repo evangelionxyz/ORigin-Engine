@@ -5,6 +5,7 @@
 
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Asset/AssetImporter.h"
+#include "Origin/Asset/AssetManager.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Utils/Utils.h"
 #include "Origin/Utils/StringUtils.h"
@@ -118,13 +119,17 @@ namespace origin
 			for (const auto &path : relativePath)
 			{
 				if (node->Path == relativePath)
+				{
 					break;
+				}
 
 				if (node->Children.find(path) != node->Children.end())
+				{
 					node = &m_TreeNodes[node->Children[path]];
+				}
 			}
 
-			for (const auto &[item, treeNodeIndex] : node->Children)
+			for (auto &[item, treeNodeIndex] : node->Children)
 			{
 				bool shouldBreak = false;
 
@@ -205,7 +210,6 @@ namespace origin
 
 						node->Children.erase(item);
 						m_TreeNodes.erase(m_TreeNodes.begin() + index);
-
 						// reset the node
 						uint32_t count = 0;
 						for (auto n : m_TreeNodes)
@@ -214,18 +218,77 @@ namespace origin
 								node->Children[n.Path] = count;
 							count++;
 						}
-
 						shouldBreak = true;
-
+						
 						RefreshAssetTree();
+					}
+
+					if (ImGui::MenuItem("Rename"))
+					{
+						m_Renaming = true;
+						m_RenamePath = item;
+						strncpy_s(m_RenameBuffer, filenameStr.c_str(), sizeof(m_RenameBuffer));
 					}
 
 					ImGui::EndPopup();
 				}
 
-				ImGui::TextWrapped(filenameStr.c_str());
-				ImGui::NextColumn();
+				if (m_Renaming && m_RenamePath == item)
+				{
+					if (ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue))
+					{
+						std::filesystem::path newPath = m_CurrentDirectory / m_RenameBuffer;
+						if (!std::filesystem::exists(newPath))
+						{
+							std::filesystem::path renamingItem = item;
+							std::filesystem::rename(m_CurrentDirectory / renamingItem, newPath);
 
+							uint32_t index = treeNodeIndex;
+							node->Children.erase(renamingItem);
+							node->Children[m_RenameBuffer] = index;
+							m_TreeNodes[index].Path = newPath.filename();
+							shouldBreak = true;
+							
+                            // Refresh the asset registry
+                            auto &assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
+                            std::filesystem::path oldRelativePath = std::filesystem::relative(m_CurrentDirectory / renamingItem, Project::GetActiveAssetDirectory());
+                            std::filesystem::path newRelativePath = std::filesystem::relative(newPath, Project::GetActiveAssetDirectory());
+
+                            for (auto &[handle, metadata] : assetRegistry)
+                            {
+								auto genStr = oldRelativePath.generic_string();
+                                if (metadata.Filepath.generic_string().find(genStr) == 0)
+                                {
+									std::filesystem::path relativePath = std::filesystem::relative(metadata.Filepath, oldRelativePath);
+									metadata.Filepath = newRelativePath;
+									if (relativePath != ".")
+										metadata.Filepath /= relativePath;
+
+									if (metadata.Type == AssetType::Material)
+									{
+										std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
+										mat->SetName(metadata.Filepath.stem().string());
+									}
+									else if (metadata.Type == AssetType::Scene)
+									{
+                                        std::shared_ptr<Scene> scene = AssetManager::GetAsset<Scene>(handle);
+                                        scene->SetName(metadata.Filepath.stem().string());
+									}
+                                }
+                            }
+
+                            // Serialize the updated asset registry
+                            Project::GetActive()->GetEditorAssetManager()->SerializeAssetRegistry();
+						}
+						m_Renaming = false;
+					}
+				}
+				else
+				{
+					ImGui::TextWrapped(filenameStr.c_str());
+				}
+
+				ImGui::NextColumn();
 				ImGui::PopID();
 
 				if (shouldBreak)
@@ -311,7 +374,7 @@ namespace origin
 								assetImported = false;
 							}
 
-							if (!assetImported)
+							if (!assetImported && !std::filesystem::is_directory(path))
 							{
 								if (ImGui::MenuItem("Import To Project"))
 								{
@@ -361,11 +424,15 @@ namespace origin
 
                 if (ImGui::MenuItem("Material", nullptr))
                 {
-                    std::shared_ptr<Material> material = Material::Create();
+                    std::shared_ptr<Material> material = Material::Create("Material");
                     const std::filesystem::path materialPath = m_CurrentDirectory / "Material.mat";
                     if (!std::filesystem::exists(materialPath))
                     {
                         MaterialSerializer::Serialize(materialPath, material);
+						std::filesystem::path relativePath = std::filesystem::relative(materialPath, Project::GetActiveAssetDirectory());
+						Project::GetActive()->GetEditorAssetManager()->ImportAsset(relativePath);
+
+						RefreshAssetTree();
                     }
                 }
 
