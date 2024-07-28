@@ -96,12 +96,27 @@ namespace origin {
 		UpdateView();
     }
 
+    void EditorCamera::SetFocalPoint(const glm::vec3 &position)
+    {
+		m_FocalPoint = position;
+    }
+
+    void EditorCamera::SetPitch(float pitch)
+    {
+		m_Pitch = pitch;
+    }
+
+    void EditorCamera::SetYaw(float yaw)
+    {
+		m_Yaw = yaw;
+    }
+
     void EditorCamera::UpdateView()
 	{
 		switch (m_ProjectionType)
 		{
 		case ProjectionType::Perspective:
-			m_View = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f)));
+			m_View = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(glm::quat({ -m_Pitch, -m_Yaw, 0.0f }));
 			m_View = glm::inverse(m_View);
 			break;
 		case ProjectionType::Orthographic:
@@ -341,7 +356,12 @@ namespace origin {
 		}
 	}
 
-	const glm::mat4& EditorCamera::GetProjection() const
+    void EditorCamera::SetDistance(float distance)
+    {
+		m_Distance = distance;
+    }
+
+    const glm::mat4 &EditorCamera::GetProjection() const
 	{
 		return m_Projection;
 	}

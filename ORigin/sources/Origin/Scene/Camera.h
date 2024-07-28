@@ -43,6 +43,7 @@ namespace origin
         virtual void InitOrthographic(float scale, float nearClip, float farClip) { };
         virtual void OnUpdate(Timestep ts) { };
         virtual void OnEvent(Event &e) { };
+        virtual void SetFocalPoint(const glm::vec3 &position) { };
         virtual void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); UpdateView(); }
         virtual void SetProjectionType(ProjectionType type) { m_ProjectionType = type; UpdateProjection(); UpdateView(); }
         virtual void SetPosition(const glm::vec3 &position) { }
@@ -85,9 +86,6 @@ namespace origin
         virtual const ProjectionType GetProjectionType() const { return m_ProjectionType; }
         virtual const CameraStyle GetStyle() { return m_CameraStyle; }
         virtual const AspectRatioType GetAspectRatioType() const { return m_AspecRatioType; }
-        virtual glm::vec3 GetUpDirection() const { return glm::rotate(glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f)), glm::vec3(0.0f, 1.0f, 0.0f)); }
-        virtual glm::vec3 GetRightDirection() const { return glm::rotate(glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f)), glm::vec3(1.0f, 0.0f, 0.0f)); }
-        virtual glm::vec3 GetForwardDirection() const { return glm::rotate(glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f)), glm::vec3(0.0f, 0.0f, -1.0f)); }
         virtual Frustum &GetFrustum() { return m_Frustum; }
 
     protected:

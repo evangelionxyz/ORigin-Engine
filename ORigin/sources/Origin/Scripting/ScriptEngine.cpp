@@ -4,6 +4,7 @@
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
 #include "ScriptClass.h"
+#include "Origin/Core/ConsoleManager.h"
 
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Project/Project.h"
@@ -325,6 +326,7 @@ namespace origin
 			ScriptGlue::RegisterComponents();
 
 			OGN_CORE_TRACE("[ScriptEngine] Assembly Reloaded");
+			PUSH_CONSOLE_INFO("[ScriptEngine] Assembly Reloaded");
 		}
 	}
 
@@ -378,14 +380,16 @@ namespace origin
 						uint64_t uuid = *(uint64_t *)fieldInstance.m_Buffer;
 						if (uuid == 0)
 						{
-							OGN_CORE_ERROR("[Script Engine] Field '{0}' (Entity class) is not assigned yet", name);
+							OGN_CORE_ERROR("[ScriptEngine] Field '{0}' (Entity class) is not assigned yet", name);
+							PUSH_CONSOLE_ERROR("[ScriptEngine] Field '{0}' (Entity class) is not assigned yet", name);
 							continue;
 						}
 
 						MonoMethod *ctorMethod = s_ScriptEngineData->EntityClass.GetMethod(".ctor", 1);
 						if (!ctorMethod)
 						{
-							OGN_CORE_ERROR("[Script Engine] Failed to find constructor.");
+							OGN_CORE_ERROR("[ScriptEngine] Failed to find constructor");
+							PUSH_CONSOLE_ERROR("[ScriptEngine] Failed to find constructor {0}", name);
 							continue;
 						}
 
@@ -394,6 +398,7 @@ namespace origin
 						if (!entityInstance)
 						{
 							OGN_CORE_ERROR("[Script Engine] Failed to create Entity instance.");
+							PUSH_CONSOLE_ERROR("[Script Engine] Failed to create Entity instance. {0}", name);
 							continue;
 						}
 
@@ -406,6 +411,7 @@ namespace origin
 						break;
 					}
 					case ScriptFieldType::Invalid:
+						PUSH_CONSOLE_ERROR("[ScriptEngine] Null Object Field {0}", name);
 						OGN_CORE_ASSERT(false, "[ScriptEngine] Null Object Field {0}", name);
 						return;
                     default:
@@ -428,7 +434,8 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(entityID);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0} {1}", entity.GetTag(), entityID);
+			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0}", entity.GetTag(), entityID);
+			//PUSH_CONSOLE_ERROR("[Script Engine] Entity script instance is not attached! {0}", entityID);
 			return;
 		}
 
@@ -481,7 +488,8 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Failed to find {} ", uuid);
+			OGN_CORE_ERROR("[Script Engine] Failed to find {0}", uuid);
+			PUSH_CONSOLE_ERROR("[Script Engine] Failed to find {0} ", (uint64_t)uuid);
 			return nullptr;
 		}
 
@@ -507,8 +515,11 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		OGN_CORE_ASSERT(s_ScriptEngineData->EntityInstances.find(uuid) != s_ScriptEngineData->EntityInstances.end(),
-			"[Script Engine] Invalid Script Instance");
+		if (s_ScriptEngineData->EntityInstances.find(uuid) == s_ScriptEngineData->EntityInstances.end())
+		{
+			PUSH_CONSOLE_ERROR("[ScriptEngine] Invalid Script Instance {0}", (uint64_t)uuid);
+			OGN_CORE_ASSERT(false, "[Script Engine] Invalid Script Instance");
+		}
 
 		return s_ScriptEngineData->EntityInstances.at(uuid)->GetMonoObject();
 	}

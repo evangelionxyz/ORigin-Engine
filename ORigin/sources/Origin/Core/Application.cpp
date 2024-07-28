@@ -6,6 +6,7 @@
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Physics/PhysicsEngine.h"
+#include "ConsoleManager.h"
 
 #include <imgui.h>
 #include <stb_image.h>
@@ -32,6 +33,8 @@ namespace origin {
 
 		RendererAPI::SetAPI(RendererAPI::API::OpenGL);
 		Window::GLFWInit();
+
+		m_ConsoleManager = std::make_unique<ConsoleManager>();
 
 		switch (RendererAPI::GetAPI())
 		{
@@ -66,7 +69,6 @@ namespace origin {
 		AudioEngine::Shutdown();
 		PhysicsEngine::Shutdown();
 		Window::GLFWShutdown();
-
 		s_Instance = nullptr;
 	}
 

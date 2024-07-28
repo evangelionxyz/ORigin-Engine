@@ -8,6 +8,7 @@
 #include "Origin/Audio/AudioListener.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Math/Math.h"
+#include "Origin/Core/ConsoleManager.h"
 #include "Origin/Core/Input.h"
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Core/MouseCodes.h"

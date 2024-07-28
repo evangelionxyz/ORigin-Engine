@@ -40,7 +40,7 @@ namespace origin
 		m_UITextures["plus"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_plus.png");
 		m_UITextures["eyes_open"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_eyes_open.png");
 		m_UITextures["eyes_closed"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_eyes_closed.png");
-		
+
 		// Gizmo icons
 		m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
 		m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
@@ -62,30 +62,32 @@ namespace origin
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
-		m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 500.0f);
 		m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
-		m_EditorCamera.SetPosition({0.0f, 1.0f, 10.0f});
 
-		//m_EditorCamera.SetPosition({ 0.0f, 5.0f, 18.0f });
-		//m_EditorCamera.SetPitch(0.3f);
+		m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 500.0f);
+		m_EditorCamera.SetPosition({ 35.0f, 35.0f, 35.0f });
+		m_EditorCamera.SetDistance(58.0f);
+		m_EditorCamera.SetYaw(-0.7f);
+		m_EditorCamera.SetPitch(0.63f);
 
-m_ActiveScene = std::make_shared<Scene>();
-const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 
-if (commandLineArgs.Count > 1)
-{
-	m_ProjectDirectoryPath = commandLineArgs[1];
-	if (!OpenProject(m_ProjectDirectoryPath))
-		Application::Get().Close();
-}
+		m_ActiveScene = std::make_shared<Scene>();
+		const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
 
-m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
-m_Gizmos = std::make_unique<Gizmos>();
+		if (commandLineArgs.Count > 1)
+		{
+			m_ProjectDirectoryPath = commandLineArgs[1];
+			if (!OpenProject(m_ProjectDirectoryPath))
+				Application::Get().Close();
+		}
 
-if (!m_UIEditor)
-{
-	m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
-}
+		m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
+		m_Gizmos = std::make_unique<Gizmos>();
+
+		if (!m_UIEditor)
+		{
+			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+		}
 	}
 
 	void EditorLayer::OnEvent(Event &e)
@@ -224,23 +226,17 @@ if (!m_UIEditor)
 	void EditorLayer::OnGuiRender()
 	{
 		m_Dockspace.Begin();
-
-		if (m_ContentBrowser)
-			m_ContentBrowser->OnImGuiRender();
-
 		m_UIEditor->OnImGuiRender();
 		m_SpriteSheetEditor->OnImGuiRender();
 		m_MaterialEditor.OnImGuiRender();
-
 		m_SceneHierarchy.OnImGuiRender();
-
+		ConsoleWindow();
 		MenuBar();
 		SceneViewportToolbar();
 		GUIRender();
-		SceneViewport();
-
 		ModelLoaderPanel::OnUIRender();
-
+		SceneViewport();
+		if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
 		m_Dockspace.End();
 	}
 
@@ -1063,6 +1059,67 @@ if (!m_UIEditor)
 			ImGui::ShowDemoWindow(&guiImGuiDemoWindow);
 		}
 	}
+
+    void EditorLayer::ConsoleWindow()
+    {
+		ImGui::Begin("Console");
+        ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+        ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 30.0f), false, childFlags);
+		if (UI::DrawButton("CLEAR"))
+		{
+			ConsoleManager::Get().Clear();
+		}
+		ImGui::EndChild();
+
+		ImGui::BeginChild("CONSOLE_CONTENT", ImGui::GetContentRegionAvail());
+
+        // By default, if we don't enable ScrollX the sizing policy for each column is "Stretch"
+        // All columns maintain a sizing weight, and they will occupy all available width.
+        static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersInnerH
+			| ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_RowBg;
+
+        if (ImGui::BeginTable("table1", 3, flags))
+        {
+			float timestampWidth = ImGui::CalcTextSize("Timestamp").x + 2.0f;
+            ImGui::TableSetupColumn("Timestamp");
+            ImGui::TableSetupColumn("Message");
+            ImGui::TableSetupColumn("Type");
+            ImGui::TableHeadersRow();
+
+            for (auto &m : ConsoleManager::GetMessages())
+            {
+                ImGui::TableNextRow();
+
+                switch (m.Type)
+                {
+                case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
+                case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
+                case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.5f, 0.2f, 1.0f)); break;
+                }
+
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("%s", m.Timestamp.c_str());
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s", m.Message.c_str());
+                ImGui::TableSetColumnIndex(2);
+
+                switch (m.Type)
+                {
+                case ConsoleMessageType::Info:    ImGui::Text("INFO"); break;
+                case ConsoleMessageType::Error:   ImGui::Text("ERROR"); break;
+				case ConsoleMessageType::Warning: ImGui::Text("WARN"); break;
+                }
+
+				ImGui::PopStyleColor(1);
+            }
+
+            ImGui::EndTable();
+        }
+
+		ImGui::EndChild();
+
+		ImGui::End();
+    }
 
     bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{

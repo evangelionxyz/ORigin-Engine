@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ScriptClass.h"
+#include "Origin/Core/ConsoleManager.h"
 
 #include <mono/jit/jit.h>
 
@@ -55,8 +56,11 @@ namespace origin
         const char *stackTrace = mono_string_to_utf8(stackTraceString);
         OGN_CORE_ERROR("[ScriptClass] {0}", message);
         OGN_CORE_ERROR("[ScriptClass] {0}", stackTrace);
+        PUSH_CONSOLE_ERROR("[ScriptClass] Exception Message {0}", message);
+        PUSH_CONSOLE_ERROR("[ScriptClass] Exception StackTrace {0}", stackTrace);
 
         mono_free((void *)message);
         mono_free((void *)stackTrace);
+
     }
 }

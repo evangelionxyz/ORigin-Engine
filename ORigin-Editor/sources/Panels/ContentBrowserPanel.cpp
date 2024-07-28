@@ -93,7 +93,6 @@ namespace origin
 
 	void ContentBrowserPanel::DrawContentBrowser()
 	{
-
 		ImGui::Begin("Content Browser");
 
 		DrawNavButton();

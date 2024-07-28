@@ -2,7 +2,7 @@
 
 #include "pch.h"
 #include "SceneSerializer.h"
-
+#include "Origin/Core/ConsoleManager.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Scene/EntityManager.h"
 #include "Origin/Scene/Components/Components.h"
@@ -255,6 +255,7 @@ namespace origin
 						if (entityFields.find(name) == entityFields.end())
 						{
 							OGN_CORE_ERROR("[SceneSerializer] {} SCRIPT FIELDS NOT FOUND", name);
+							PUSH_CONSOLE_ERROR("[SceneSerializer] {} SCRIPT FIELDS NOT FOUND", name);
 							continue;
 						}
 
@@ -572,7 +573,7 @@ namespace origin
 
 	void SceneSerializer::Serialize(const std::filesystem::path &path)
 	{
-		std::string filepath = path.string();
+		std::string filepath = path.generic_string();
 		size_t pos = filepath.find_last_of(".");
 		if (pos != std::string::npos)
 		{
@@ -606,7 +607,8 @@ namespace origin
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 		fout.close();
-		OGN_CORE_INFO("[SeceneSerializer] Scene Serialized in {0}", filepath);
+		OGN_CORE_INFO("[SceneSerializer] Scene Serialized in {0}", filepath);
+		PUSH_CONSOLE_INFO("[SceneSerializer] Scene Serialized in {0}", filepath);
 	}
 
 	void SceneSerializer::SerializeRuntime(const std::filesystem::path& filepath)
@@ -627,6 +629,7 @@ namespace origin
 
 		auto sceneName = data["Scene"].as<std::string>();
 		OGN_CORE_TRACE("[SceneSerializer] Deserializing scene '{0}'", sceneName);
+		PUSH_CONSOLE_INFO("[SceneSerializer] Deserializing scene '{0}'", sceneName);
 		if (YAML::Node entities = data["Entities"])
 		{
 			for (YAML::iterator::value_type entity : entities)

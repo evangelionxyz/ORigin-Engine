@@ -2,13 +2,13 @@
 #include "pch.h"
 
 #include "EditorAssetManager.h"
+#include "Origin/Core/ConsoleManager.h"
 #include "AssetImporter.h"
 #include "Origin/Project/Project.h"
 #include <yaml-cpp/yaml.h>
 
 namespace origin
 {
-
 	static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap = {
 		{ ".org", AssetType::Scene },
 		{ ".jpg", AssetType::Texture },
@@ -30,7 +30,8 @@ namespace origin
 	{
 		if (s_AssetExtensionMap.find(extension) == s_AssetExtensionMap.end())
 		{
-			OGN_CORE_WARN("[EditorAssetManager] Could not find AssetType for: {}", extension);
+			OGN_CORE_WARN("[EditorAssetManager] Could not find AssetType for {0}", extension);
+			PUSH_CONSOLE_WARNING("[EditorAssetManager] Could not find AssetType for {0}", extension);
 			return AssetType::None;
 		}
 
@@ -70,6 +71,7 @@ namespace origin
 				if (!asset)
 				{
 					OGN_CORE_ERROR("[EditorAssetManager] Asset Import Failed!");
+					PUSH_CONSOLE_ERROR("[EditorAssetManager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
 				}
 				else
 				{
@@ -113,6 +115,7 @@ namespace origin
 		if (metadata.Type == AssetType::None)
 		{
 			OGN_CORE_ERROR("[EditorAssetManager] Invalid Asset Type {0}", filepath);
+			PUSH_CONSOLE_ERROR("[EditorAssetManager] Invalid Asset Type {0}", filepath.generic_string());
 			return 0;
 		}
 
@@ -183,6 +186,7 @@ namespace origin
 		auto path = Project::GetActiveAssetRegistryPath();
 
 		OGN_CORE_INFO("[EditorAssetManager] Serialize Registry {0}", path.string());
+		PUSH_CONSOLE_INFO("[EditorAssetManager] Serialize Registry {0}", path.generic_string());
 
 		YAML::Emitter out;
 		{
@@ -215,6 +219,7 @@ namespace origin
 
 		if (!std::filesystem::exists(path))
 		{
+			PUSH_CONSOLE_ERROR("[EditorAssetManager] Failed to deserialize AssetRegistry {0}", path.generic_string());
 			OGN_CORE_ASSERT(false, "[EditorAssetManager] Failed to deserialize AssetRegistry");
 			return false;
 		}

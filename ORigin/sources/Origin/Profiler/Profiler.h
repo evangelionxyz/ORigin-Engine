@@ -52,23 +52,22 @@ namespace origin
 		//std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
 	};
 
-
 #ifdef _MSC_VER
 	#define __FUNCNAME__ __FUNCSIG__
-#endif 
+#endif
 
 #if defined(OGN_PROFILING)
-	#define OGN_PROFILER_START(name)				OPTICK_APP(name) OPTICK_START_CAPTURE()
-	#define OGN_PROFILER_STOP()							OPTICK_STOP_CAPTURE()
+	#define OGN_PROFILER_START(name)        OPTICK_APP(name) OPTICK_START_CAPTURE()
+	#define OGN_PROFILER_STOP()             OPTICK_STOP_CAPTURE()
 	#define OGN_PROFILER_BEGIN_FRAME(name)	OPTICK_FRAME(name)
-	#define OGN_PROFILER_SCOPE(name)				OPTICK_CATEGORY(name, OPTICK_MAKE_CATEGORY(Optick::Filter::GameLogic, Optick::Color::Cyan))
-	#define OGN_PROFILER_FUNCTION()					OGN_PROFILER_SCOPE(__FUNCNAME__)
-	#define OGN_PROFILER_PHYSICS()					OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Physics, Optick::Color::Orange))
-	#define OGN_PROFILER_RENDERING()				OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Rendering, Optick::Color::Purple))
-	#define OGN_PROFILER_INPUT()						OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Input, Optick::Color::Sienna))
-	#define OGN_PROFILER_LOGIC()						OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::GameLogic, Optick::Color::DarkRed))
-	#define OGN_PROFILER_AUDIO()						OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Audio, Optick::Color::ForestGreen)
-	#define OGN_PROFILER_SCENE()						OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Scene, Optick::Color::Lavender))
+	#define OGN_PROFILER_SCOPE(name)        OPTICK_CATEGORY(name, OPTICK_MAKE_CATEGORY(Optick::Filter::GameLogic, Optick::Color::Cyan))
+	#define OGN_PROFILER_FUNCTION()         OGN_PROFILER_SCOPE(__FUNCNAME__)
+	#define OGN_PROFILER_PHYSICS()          OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Physics, Optick::Color::Orange))
+	#define OGN_PROFILER_RENDERING()        OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Rendering, Optick::Color::Purple))
+	#define OGN_PROFILER_INPUT()            OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Input, Optick::Color::Sienna))
+	#define OGN_PROFILER_LOGIC()            OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::GameLogic, Optick::Color::DarkRed))
+	#define OGN_PROFILER_AUDIO()            OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Audio, Optick::Color::ForestGreen)
+	#define OGN_PROFILER_SCENE()            OPTICK_CATEGORY(__FUNCNAME__, OPTICK_MAKE_CATEGORY(Optick::Filter::Scene, Optick::Color::Lavender))
 #else
 	#define OGN_PROFILER_START(name)
 	#define OGN_PROFILER_STOP()

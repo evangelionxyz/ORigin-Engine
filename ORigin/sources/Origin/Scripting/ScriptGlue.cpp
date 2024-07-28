@@ -13,6 +13,7 @@
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Core/Input.h"
 #include "Origin/Audio/AudioSource.h"
+#include "Origin/Core/ConsoleManager.h"
 
 #include <mono/metadata/object.h>
 #include <mono/metadata/reflection.h>
@@ -166,30 +167,14 @@ namespace origin
 	// Logging
 	static void NativeLog(MonoString *string, int parameter)
 	{
-		OGN_PROFILER_LOGIC();
 		std::string str = Utils::MonoStringToString(string);
-	}
-
-	static void NativeLog_Vector(glm::vec3 *parameter, glm::vec3 *outResult)
-	{
-		OGN_PROFILER_LOGIC();
-
-		*outResult = normalize(*parameter);
-	}
-
-	static float NativeLog_VectorDot(glm::vec3 parameter)
-	{
-		OGN_PROFILER_LOGIC();
-
-		return dot(parameter, parameter);
+		PUSH_CONSOLE_INFO("{0}", str.c_str());
 	}
 
 	// ==============================================
 	// Component
 	static MonoObject *GetScriptInstance(UUID entityID)
 	{
-		OGN_PROFILER_LOGIC();
-
 		return ScriptEngine::GetManagedInstance(entityID);
 	}
 
@@ -1804,7 +1789,8 @@ namespace origin
 			}
 			else
 			{
-				OGN_CORE_ERROR("Could not demangle type name: {}", typeName);
+				OGN_CORE_ERROR("Could not demangle type name: {0}", typeName);
+				PUSH_CONSOLE_ERROR("Could not demangle type name: {0}", typeName);
 				return;
 			}
 #endif
@@ -1814,7 +1800,8 @@ namespace origin
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
-				OGN_CORE_ERROR("[ScriptGlue] Could not find component type {}", managedTypename);
+				OGN_CORE_ERROR("[ScriptGlue] Could not find component type {0}", managedTypename);
+				PUSH_CONSOLE_ERROR("[ScriptGlue] Could not find component type {0}", managedTypename);
 				return;
 			}
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
@@ -1853,8 +1840,6 @@ namespace origin
 
 		// Logging
 		OGN_ADD_INTERNAL_CALLS(NativeLog);
-		OGN_ADD_INTERNAL_CALLS(NativeLog_Vector);
-		OGN_ADD_INTERNAL_CALLS(NativeLog_VectorDot);
 
 		// Components
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetForward);

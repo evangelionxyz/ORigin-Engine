@@ -196,7 +196,7 @@ namespace origin
         return glm::normalize(glm::vec3(worldCoords));
     }
 
-    glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const Camera &camera, glm::vec3 *rayOrigin)
+    glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const Camera &camera, glm::vec3 *rayOrigin, const glm::vec3 &camForward)
     {
         glm::vec2 ndc = GetNormalizedDeviceCoord(mouse, screen);
         glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
@@ -218,7 +218,7 @@ namespace origin
             // ray origin (on near plane)
             *rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
             *rayOrigin /= 1.0f;
-            rayDirection = -glm::normalize(camera.GetForwardDirection());
+            rayDirection = -glm::normalize(camForward);
         }
 
         return rayDirection;

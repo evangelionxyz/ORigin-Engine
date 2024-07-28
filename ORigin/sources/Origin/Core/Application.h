@@ -11,6 +11,7 @@
 #include "Origin/GUI/GuiLayer.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/GraphicsContext.h"
+#include "ConsoleManager.h"
 
 #include <mutex>
 
@@ -60,6 +61,7 @@ namespace origin {
 		bool SetVSync = false;
 
 	private:
+		std::unique_ptr<ConsoleManager> m_ConsoleManager;
 		ApplicationSpecification m_Spec;
 		LayerStack m_LayerStack;
 		std::shared_ptr<Window> m_Window;

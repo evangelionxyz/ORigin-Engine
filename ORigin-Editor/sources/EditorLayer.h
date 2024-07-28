@@ -61,6 +61,7 @@ namespace origin
 		void OnSceneStop();
 		void InputProcedure(Timestep time);
 		void GUIRender();
+		void ConsoleWindow();
 
 		enum class SceneState
 		{
