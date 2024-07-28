@@ -1015,53 +1015,62 @@ namespace origin {
 				}
 
 				b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(component.Joint);
-				if (UI::DrawCheckbox("Limit", &component.EnableLimit))
+				if (joint)
 				{
-					if (joint)
-						joint->EnableLimit(component.EnableLimit);
-				}
-				UI::DrawVec2Control("Anchor", component.AnchorPoint);
-				if (UI::DrawFloatControl("Lower Angle", &component.LowerAngle, 0.0f))
-				{
-					if (joint)
+                    if (UI::DrawCheckbox("Limit", &component.EnableLimit))
+                    {
+                        joint->EnableLimit(component.EnableLimit);
+                    }
+                    UI::DrawVec2Control("Anchor", component.AnchorPoint);
+                    if (UI::DrawFloatControl("Lower Angle", &component.LowerAngle, 0.0f))
+                    {
 						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
-				}
-				if (UI::DrawFloatControl("Upper Angle", &component.UpperAngle, 0.0f))
-				{
-					if (joint)
+                    }
+                    if (UI::DrawFloatControl("Upper Angle", &component.UpperAngle, 0.0f))
+                    {
 						joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
-				}
-				if (UI::DrawFloatControl("Max Torque", &component.MaxMotorTorque, 0.0f))
-				{
-					if (joint)
+                    }
+                    if (UI::DrawFloatControl("Max Torque", &component.MaxMotorTorque, 0.0f))
+                    {
 						joint->SetMaxMotorTorque(component.MaxMotorTorque);
-				}
-				if (UI::DrawCheckbox("Motor", &component.EnableMotor))
-				{
-					if (joint)
+                    }
+                    if (UI::DrawCheckbox("Motor", &component.EnableMotor))
+                    {
 						joint->EnableMotor(component.EnableMotor);
-				}
-				if (UI::DrawFloatControl("Motor Speed", &component.MotorSpeed, 0.0f))
-				{
-					if (joint)
+                    }
+                    if (UI::DrawFloatControl("Motor Speed", &component.MotorSpeed, 0.0f))
+                    {
 						joint->SetMotorSpeed(component.MotorSpeed);
+                    }
 				}
+				
 			});
         DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto &component)
         {
             UI::DrawCheckbox("UseGravity", &component.UseGravity);
-            UI::DrawCheckbox("Rotate X", &component.RotateX);
-            UI::DrawCheckbox("Rotate Y", &component.RotateY);
-            UI::DrawCheckbox("Rotate Z", &component.RotateZ);
+			ImGui::PushID("Rotate");
+			ImGui::Text("Rotate");
+			ImGui::SameLine(); ImGui::Checkbox("X", &component.RotateX);
+			ImGui::SameLine(); ImGui::Checkbox("Y", &component.RotateY);
+			ImGui::SameLine(); ImGui::Checkbox("Z", &component.RotateZ);
+			ImGui::PopID();
+
+            ImGui::PushID("Translate");
+            ImGui::Text("Translate");
+            ImGui::SameLine(); ImGui::Checkbox("X", &component.MoveX);
+            ImGui::SameLine(); ImGui::Checkbox("Y", &component.MoveY);
+            ImGui::SameLine(); ImGui::Checkbox("Z", &component.MoveZ);
+            ImGui::PopID();
+
             UI::DrawCheckbox("Static", &component.IsStatic);
             UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
+			UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f);
             UI::DrawVec3Control("Center Mass", component.CenterMass);
         });
 
         DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
         {
             UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
-            UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f);
             UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
@@ -1069,7 +1078,14 @@ namespace origin {
         DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto &component)
         {
             UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
-			UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f);
+            UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
+            UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+        });
+
+        DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto &component)
+        {
+            UI::DrawFloatControl("Half Height", &component.HalfHeight, 0.025f, 0.0f, 10.0f, 1.0f);
+            UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
             UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
@@ -1080,7 +1096,9 @@ namespace origin {
 				bool isSelected = false;
 
 				if (!scriptClassExist)
+				{
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+				}
 
 				auto scriptStorage = ScriptEngine::GetScriptClassStorage();
 				std::string currentScriptClasses = component.ClassName;
@@ -1190,7 +1208,7 @@ namespace origin {
 				{
 					// !IsRunning
 
-					std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
+					std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClassesByName(component.ClassName);
 					const auto &fields = entityClass->GetFields();
 					auto &entityFields = ScriptEngine::GetScriptFieldMap(entity);
 

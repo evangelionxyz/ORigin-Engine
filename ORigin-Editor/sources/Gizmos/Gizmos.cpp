@@ -154,7 +154,6 @@ namespace origin {
 
 			if(selectedEntity.HasComponent<RevoluteJoint2DComponent>())
 			{
-
 				auto &rjc = selectedEntity.GetComponent<RevoluteJoint2DComponent>();
 				glm::vec2 anchorPoint = { 
 					tc.WorldTranslation.x + rjc.AnchorPoint.x,
@@ -172,39 +171,46 @@ namespace origin {
 	void Gizmos::Draw3DOverlay(const EditorCamera &camera)
 	{
 		OGN_PROFILER_RENDERING();
-
 		if (camera.GetProjectionType() == ProjectionType::Orthographic || !EditorLayer::Get().m_VisualizeCollider)
 			return;
 
+		glEnable(GL_DEPTH_TEST);
 		Renderer3D::Begin(camera);
 		auto &scene = EditorLayer::Get().m_ActiveScene;
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		const auto &box = scene->GetAllEntitiesWith<TransformComponent, BoxColliderComponent>();
-		for (auto b : box)
+		const auto &view = scene->m_Registry.view<TransformComponent, RigidbodyComponent>();
+		for (auto e : view)
 		{
-			const auto &[tc, bc] = box.get<TransformComponent, BoxColliderComponent>(b);
+			Entity entity = { e, scene.get() };
+			const auto &[tc, rb] = view.get<TransformComponent, RigidbodyComponent>(e);
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + rb.Offset));
 
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + bc.Offset))
-				* glm::toMat4(glm::quat(tc.WorldRotation))
-				* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(bc.Size * 2.0f) * 2.0f);
+			if (entity.HasComponent<BoxColliderComponent>())
+			{
+				BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
+				transform *= glm::toMat4(glm::quat(tc.WorldRotation))
+					* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(cc.Size * 2.0f) * 2.0f);
+				Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)e);
+			}
 
-			Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)b);
-		}
+			if (entity.HasComponent<SphereColliderComponent>())
+			{
+				SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
+                transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+                Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
+			}
 
-		const auto &sphere = scene->GetAllEntitiesWith<TransformComponent, SphereColliderComponent>();
-		for (auto entity : sphere)
-		{
-			const auto &[tc, sc] = sphere.get<TransformComponent, SphereColliderComponent>(entity);
-
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + sc.Offset))
-				* glm::toMat4(glm::quat(tc.WorldRotation))
-				* glm::scale(glm::mat4(1.0f), tc.WorldScale);
-
-			Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), sc.Radius * 2.0f, (int)entity);
+            if (entity.HasComponent<CapsuleColliderComponent>())
+            {
+                CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
+                transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+                Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
+            }
 		}
 
 		Renderer3D::End();
+		glDisable(GL_DEPTH_TEST);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
@@ -251,7 +257,9 @@ namespace origin {
 				cc.Camera.GetFrustum().Update(cc.Camera.GetProjection() * glm::inverse(tc.GetTransform()));
                 for (const auto &edge : cc.Camera.GetFrustum().GetEdges())
                 {
+					glEnable(GL_DEPTH_TEST);
                     Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
+					glDisable(GL_DEPTH_TEST);
                 }
 				if (cc.Camera.IsPerspective())
 				{

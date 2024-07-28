@@ -184,7 +184,7 @@ namespace origin
 
             out << YAML::Key << "Mass" << YAML::Value << rigidbody.Mass;
             out << YAML::Key << "CenterMass" << YAML::Value << rigidbody.CenterMass;
-
+            out << YAML::Key << "Offset" << YAML::Value << rigidbody.Offset;
             out << YAML::Key << "UseGravity" << YAML::Value << rigidbody.UseGravity;
             out << YAML::Key << "RotateX" << YAML::Value << rigidbody.RotateX;
             out << YAML::Key << "RotateY" << YAML::Value << rigidbody.RotateY;
@@ -193,7 +193,6 @@ namespace origin
             out << YAML::Key << "MoveY" << YAML::Value << rigidbody.MoveY;
             out << YAML::Key << "MoveZ" << YAML::Value << rigidbody.MoveZ;
             out << YAML::Key << "IsStatic" << YAML::Value << rigidbody.IsStatic;
-
             out << YAML::EndMap; // !Rigidbody
         }
 
@@ -205,7 +204,6 @@ namespace origin
             out << YAML::Key << "Size" << YAML::Value << bc.Size;
             out << YAML::Key << "Restitution" << YAML::Value << bc.Restitution;
             out << YAML::Key << "Friction" << YAML::Value << bc.Friction;
-
             out << YAML::EndMap; // !BoxColliderComponent
         }
 
@@ -220,6 +218,18 @@ namespace origin
             out << YAML::EndMap;
         }
 
+        if (entity.HasComponent<CapsuleColliderComponent>())
+        {
+            out << YAML::Key << "CapsuleColliderComponent";
+            out << YAML::BeginMap;
+            const auto &sc = entity.GetComponent<CapsuleColliderComponent>();
+            out << YAML::Key << "Radius" << sc.Radius;
+            out << YAML::Key << "HalfHeight" << sc.HalfHeight;
+            out << YAML::Key << "Restitution" << sc.Restitution;
+            out << YAML::Key << "Friction" << YAML::Value << sc.Friction;
+            out << YAML::EndMap;
+        }
+
 		if (entity.HasComponent<ScriptComponent>())
 		{
 			out << YAML::Key << "ScriptComponent";
@@ -229,7 +239,7 @@ namespace origin
 			out << YAML::Key << "ClassName" << YAML::Value << sc.ClassName;
 
 			// Fields
-			const std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
+			const std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClassesByName(sc.ClassName);
 
 			if (entityClass)
 			{
@@ -929,6 +939,7 @@ namespace origin
                     auto &rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
                     rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
                     rigidbody.CenterMass = rigidbodyComponent["CenterMass"].as<glm::vec3>();
+					rigidbody.Offset = rigidbodyComponent["Offset"].as<glm::vec3>();
                     rigidbody.UseGravity = rigidbodyComponent["UseGravity"].as<bool>();
                     rigidbody.RotateX = rigidbodyComponent["RotateX"].as<bool>();
                     rigidbody.RotateY = rigidbodyComponent["RotateY"].as<bool>();
@@ -954,6 +965,15 @@ namespace origin
                     sphereCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
                     sphereCollider.Friction = sphereColliderComponent["Friction"].as<float>();
                 }
+
+                if (YAML::Node capsuleColliderComponent = entity["CapsuleColliderComponent"])
+                {
+                    auto &capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
+					capsuleCollider.Radius = capsuleColliderComponent["Radius"].as<float>();
+					capsuleCollider.HalfHeight = capsuleColliderComponent["HalfHeight"].as<float>();
+                    capsuleCollider.Restitution = capsuleColliderComponent["Restitution"].as<float>();
+                    capsuleCollider.Friction = capsuleColliderComponent["Friction"].as<float>();
+                }
                 
 				if (YAML::Node scriptComponent = entity["ScriptComponent"])
 				{
@@ -964,7 +984,7 @@ namespace origin
 
 					if (YAML::Node scriptFields = scriptComponent["ScriptFields"])
 					{
-						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClass(sc.ClassName);
+						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClassesByName(sc.ClassName);
 						OGN_CORE_ASSERT(entityClass, "SceneSerializer: Entity Class is Invalid");
 
 						if (entityClass)

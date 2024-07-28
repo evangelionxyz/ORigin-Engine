@@ -33,7 +33,9 @@ namespace origin
         bool MoveX = true, MoveY = true, MoveZ = true;
         bool IsStatic = false;
         float Mass = 1.0f;
+        bool AllowSleeping = true;
         glm::vec3 CenterMass = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 Offset = { 0.0f, 0.0f, 0.0f };
 
         void *Body = nullptr;
         RigidbodyComponent() = default;
@@ -60,6 +62,10 @@ namespace origin
         float GetRestitution();
         float GetFriction();
         float GetGravityFactor();
+
+        void SetMaxLinearVelocity(float max);
+        void SetMaxAngularVelocity(float max);
+
         glm::vec3 GetPosition();
         glm::vec3 GetEulerAngleRotation();
         glm::quat GetRotation();
@@ -73,6 +79,7 @@ namespace origin
         float Friction = 0.6f;
         float Restitution = 0.6f;
         float Density = 1.0f;
+
         void *Shape = nullptr;
     };
 
@@ -80,7 +87,6 @@ namespace origin
     {
     public:
         glm::vec3 Size = { 0.5f, 0.5f, 0.5f };
-        glm::vec3 Offset = { 0.0f, 0.0f, 0.0f };
         
         BoxColliderComponent() = default;
         BoxColliderComponent(const BoxColliderComponent &) = default;
@@ -90,7 +96,6 @@ namespace origin
     {
     public:
         float Radius = 0.5f;
-        glm::vec3 Offset = { 0.0f, 0.0f, 0.0f };
 
         SphereColliderComponent() = default;
         SphereColliderComponent(const SphereColliderComponent &) = default;
@@ -99,6 +104,8 @@ namespace origin
     class CapsuleColliderComponent : public PhysicsCollider
     {
     public:
+        float HalfHeight = 1.0f;
+        float Radius = 0.5f;
 
         CapsuleColliderComponent() = default;
         CapsuleColliderComponent(const CapsuleColliderComponent &) = default;

@@ -24,9 +24,10 @@ project "JOLT"
 
 	filter "configurations:Debug"
 		runtime "Debug"
+        optimize "off"
 		symbols "on"
         defines {
-            "NDEBUG"
+            "DEBUG"
         }
 
 	filter "configurations:Release"
@@ -41,3 +42,6 @@ project "JOLT"
 		runtime "Release"
 		optimize "on"
         symbols "off"
+        defines {
+            "NDEBUG"
+        }

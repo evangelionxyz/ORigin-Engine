@@ -60,7 +60,7 @@ namespace origin {
 
 		bool IsValid()
 		{
-			if (m_Scene && GetUUID())
+			if (m_Scene)
 			{
 				return m_Scene->m_Registry.valid(m_EntityHandle);
 			}

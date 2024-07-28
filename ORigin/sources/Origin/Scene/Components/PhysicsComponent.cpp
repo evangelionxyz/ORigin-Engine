@@ -176,4 +176,16 @@ namespace origin
         const auto &value = PhysicsEngine::GetBodyInterface()->GetLinearVelocity(body->GetID());
         return { value.GetX(), value.GetY(), value.GetZ() };
     }
+
+    void RigidbodyComponent::SetMaxLinearVelocity(float max)
+    {
+        JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
+        body->GetMotionProperties()->SetMaxLinearVelocity(max);
+    }
+
+    void RigidbodyComponent::SetMaxAngularVelocity(float max)
+    {
+        JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
+        body->GetMotionProperties()->SetMaxAngularVelocity(max);
+    }
 }

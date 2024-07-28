@@ -104,6 +104,11 @@ namespace ORiginEngine
             return new Vector3(vectorA.X + vectorB.X, vectorA.Y + vectorB.Y, vectorA.Z + vectorB.Z);
         }
 
+        public static Vector3 operator -(Vector3 vectorA)
+        {
+            return new Vector3(-vectorA.X, -vectorA.Y, -vectorA.Z);
+        }
+
         public static Vector3 operator -(Vector3 vectorA, Vector3 vectorB)
         {
             return new Vector3(vectorA.X - vectorB.X, vectorA.Y - vectorB.Y, vectorA.Z - vectorB.Z);

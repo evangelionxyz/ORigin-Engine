@@ -139,7 +139,7 @@ namespace origin
 			Entity copyEntity = EntityManager::DuplicateEntity(entity, scene);
 			copyEntity.GetComponent<TransformComponent>().WorldTranslation = translation;
 			scene->GetPhysics2D()->OnInstantiateScriptEntity(copyEntity);
-			PhysicsEngine::OnInstantiateScriptEntity(copyEntity);
+			PhysicsEngine::InstantiateEntity(copyEntity);
 			return copyEntity.GetUUID();
 		}
 		
@@ -157,7 +157,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			scene->GetPhysics2D()->OnDestroyScriptEntity(entity);
-			PhysicsEngine::OnDestroyScriptEntity(entity);
+			PhysicsEngine::DestroyEntity(entity);
 			scene->DestroyEntity(entity);
 		}
 	}

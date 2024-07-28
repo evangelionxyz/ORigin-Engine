@@ -339,14 +339,14 @@ namespace origin
         while (pos != std::string::npos)
         {
             size_t eol = source.find_first_of("\r\n", pos);
-            OGN_CORE_ASSERT(eol != std::string::npos, "Syntax error")
-                size_t begin = pos + typeTokenLength + 1;
+            OGN_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+            size_t begin = pos + typeTokenLength + 1;
             std::string type = source.substr(begin, eol - begin);
-            OGN_CORE_ASSERT(Utils::ShaderTypeFromString(type, m_Filepath), "Invalid shader type specified")
+            OGN_CORE_ASSERT(Utils::ShaderTypeFromString(type, m_Filepath), "Invalid shader type specified");
 
-                size_t nextLinePos = source.find_first_of("\r\n", eol);
-            OGN_CORE_ASSERT(nextLinePos != std::string::npos, "Syntax Error")
-                pos = source.find(typeToken, nextLinePos);
+            size_t nextLinePos = source.find_first_of("\r\n", eol);
+            OGN_CORE_ASSERT(nextLinePos != std::string::npos, "Syntax Error");
+            pos = source.find(typeToken, nextLinePos);
             shaderSources[Utils::ShaderTypeFromString(type, m_Filepath)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
         }
         return shaderSources;

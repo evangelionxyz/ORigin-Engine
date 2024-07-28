@@ -1073,7 +1073,8 @@ if (!m_UIEditor)
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
-		OGN_PROFILER_INPUT();
+		if (m_SceneState == SceneState::Play)
+			return;
 
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
 		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };

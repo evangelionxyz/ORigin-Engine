@@ -27,7 +27,7 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		OGN_CORE_ASSERT(m_Shader, "[Material] Shader is uninitialized or empty!")
+		OGN_CORE_ASSERT(m_Shader, "[Material] Shader is uninitialized or empty!");
 		m_Shader->Enable();
 
 		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), MATERIAL_BINDING);

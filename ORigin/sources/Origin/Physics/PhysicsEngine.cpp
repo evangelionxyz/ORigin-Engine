@@ -19,6 +19,8 @@
 
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Scene/Components/PhysicsComponents.h"
+#include "JoltContactListener.h"
+#include "JoltBodyActivationListener.h"
 
 namespace origin
 {
@@ -59,79 +61,108 @@ namespace origin
         JPH::Factory::sInstance = nullptr;
     }
 
-    void PhysicsEngine::CreateBoxCollider(Entity entity)
+    void *PhysicsEngine::CreateBoxCollider(Entity entity, const glm::vec3 &size, RigidbodyComponent &rb)
     {
         auto &tc = entity.GetComponent<TransformComponent>();
 
-        if (!entity.HasComponent<RigidbodyComponent>())
-        {
-            OGN_CORE_ERROR("[Jolt] Could not create colldier");
-            return;
-        }
-
-        auto &cc = entity.GetComponent<BoxColliderComponent>();
-        auto &rb = entity.GetComponent<RigidbodyComponent>();
-
-        glm::vec3 halfExtents = tc.Scale * (cc.Size * 2.0f);
+        glm::vec3 halfExtents = tc.Scale * (size * 2.0f);
         JPH::BoxShapeSettings shapeSettings(GlmToJoltVec3(halfExtents));
-        shapeSettings.SetDensity(cc.Density);
 
         shapeSettings.mUserData = entity.GetUUID();
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
         OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
         JPH::ShapeRefC shape = shapeResult.Get();
-        cc.Shape = (void *)shape.GetPtr();
 
-        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + cc.Offset), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
         
-        JPH::Body *body = s_Data.BodyInterface->CreateBody(settings);
+        bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::None;
+        if (rb.RotateX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationX;
+        if (rb.RotateY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationY;
+        if (rb.RotateZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationZ;
+        if (rb.MoveX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationX;
+        if (rb.MoveY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationY;
+        if (rb.MoveZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationZ;
+
+        JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
 
         if (body)
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
-            s_Data.BodyInterface->SetFriction(bodyId, cc.Friction);
-            s_Data.BodyInterface->SetRestitution(bodyId, cc.Restitution);
             rb.Body = body;
         }
+
+        return (void *)shape.GetPtr();
     }
 
-    void PhysicsEngine::CreateSphereCollider(Entity entity)
+    void *PhysicsEngine::CreateSphereCollider(Entity entity, float radius, RigidbodyComponent &rb)
     {
         auto &tc = entity.GetComponent<TransformComponent>();
-        if (!entity.HasComponent<RigidbodyComponent>())
-        {
-            OGN_CORE_ERROR("[Jolt] Could not create colldier");
-            return;
-        }
 
-        auto &cc = entity.GetComponent<SphereColliderComponent>();
-        auto &rb = entity.GetComponent<RigidbodyComponent>();
-
-        JPH::SphereShapeSettings shapeSettings((cc.Radius * 2.0f) * tc.Scale.x);
-        shapeSettings.SetDensity(cc.Density);
+        JPH::SphereShapeSettings shapeSettings((radius * 2.0f) * tc.Scale.x);
         shapeSettings.mUserData = entity.GetUUID();
 
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
         OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
         JPH::ShapeRefC shape = shapeResult.Get();
-        cc.Shape = (void *)shape.GetPtr();
 
-        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + cc.Offset), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
 
-        JPH::Body *body = s_Data.BodyInterface->CreateBody(settings);
+        bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::None;
+        if (rb.RotateX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationX;
+        if (rb.RotateY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationY;
+        if (rb.RotateZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationZ;
+        if (rb.MoveX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationX;
+        if (rb.MoveY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationY;
+        if (rb.MoveZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationZ;
+
+        JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
         if (body)
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
-            s_Data.BodyInterface->SetFriction(bodyId, cc.Friction);
-            s_Data.BodyInterface->SetRestitution(bodyId, cc.Restitution);
             rb.Body = body;
         }
+
+        return (void *)shape.GetPtr();
+    }
+
+    void *PhysicsEngine::CreateCapsuleCollider(Entity entity, float halfHeight, float radius, RigidbodyComponent &rb)
+    {
+        auto &tc = entity.GetComponent<TransformComponent>();
+
+        JPH::CapsuleShapeSettings shapeSettings(halfHeight * tc.Scale.y, (radius * 2.0f) * tc.Scale.x);
+        shapeSettings.mUserData = entity.GetUUID();
+
+        JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+        OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
+        JPH::ShapeRefC shape = shapeResult.Get();
+
+        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset), GlmToJoltQuat(tc.WorldRotation),
+            rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
+            rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
+
+        bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::None;
+        if (rb.RotateX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationX;
+        if (rb.RotateY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationY;
+        if (rb.RotateZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::RotationZ;
+        if (rb.MoveX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationX;
+        if (rb.MoveY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationY;
+        if (rb.MoveZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationZ;
+
+        JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
+        if (body)
+        {
+            JPH::BodyID bodyId = body->GetID();
+            s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
+            rb.Body = body;
+        }
+
+        return (void *)shape.GetPtr();
     }
 
     void PhysicsEngine::OnSimulateStart(Scene *scene)
@@ -149,16 +180,10 @@ namespace origin
         s_Data.BodyInterface = &s_Data.PhysicsSystem->GetBodyInterface();
 
         // Create Components
-        for (auto id : scene->m_Registry.view<BoxColliderComponent>())
+        for (auto id : scene->m_Registry.view<RigidbodyComponent>())
         {
             Entity entity = { id, scene };
-            CreateBoxCollider(entity);
-        }
-
-        for (auto id : scene->m_Registry.view<SphereColliderComponent>())
-        {
-            Entity entity = { id, scene };
-            CreateSphereCollider(entity);
+            InstantiateEntity(entity);
         }
     }
 
@@ -167,12 +192,7 @@ namespace origin
         for (auto id : scene->m_Registry.view<RigidbodyComponent>())
         {
             Entity entity = { id, scene };
-            RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
-
-            JPH::Body *body = reinterpret_cast<JPH::Body *>(rb.Body);
-
-            s_Data.BodyInterface->RemoveBody(body->GetID());
-            s_Data.BodyInterface->DestroyBody(body->GetID());
+            DestroyEntity(entity);
         }
     }
 
@@ -219,26 +239,43 @@ namespace origin
         s_Data.PhysicsSystem->Update(ts, 1, s_Data.TempAllocator.get(), s_Data.JobSystem.get());
     }
 
-    void PhysicsEngine::OnInstantiateScriptEntity(Entity entity)
+    void PhysicsEngine::InstantiateEntity(Entity entity)
     {
         if (entity.HasComponent<RigidbodyComponent>())
         {
-            if(entity.HasComponent<BoxColliderComponent>())
-                CreateBoxCollider(entity);
+            RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
 
-            if (entity.HasComponent<SphereColliderComponent>())
-                CreateSphereCollider(entity);
+            if (entity.HasComponent<BoxColliderComponent>())
+            {
+                BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
+                CreateBoxCollider(entity, cc.Size, rb);
+                rb.SetFriction(cc.Friction);
+                rb.SetRestitution(cc.Restitution);
+            }
+            else if (entity.HasComponent<CapsuleColliderComponent>())
+            {
+                CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
+                CreateCapsuleCollider(entity, cc.HalfHeight, cc.Radius, rb);
+                rb.SetFriction(cc.Friction);
+                rb.SetRestitution(cc.Restitution);
+            }
+            else if (entity.HasComponent<SphereColliderComponent>())
+            {
+                SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
+                CreateSphereCollider(entity, cc.Radius, rb);
+                rb.SetFriction(cc.Friction);
+                rb.SetRestitution(cc.Restitution);
+            }
         }
     }
 
-    void PhysicsEngine::OnDestroyScriptEntity(Entity entity)
+    void PhysicsEngine::DestroyEntity(Entity entity)
     {
         if (entity.HasComponent<RigidbodyComponent>())
         {
             RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
 
             JPH::Body *body = reinterpret_cast<JPH::Body *>(rb.Body);
-
             s_Data.BodyInterface->RemoveBody(body->GetID());
             s_Data.BodyInterface->DestroyBody(body->GetID());
         }
