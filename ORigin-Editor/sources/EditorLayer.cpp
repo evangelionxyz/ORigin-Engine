@@ -1063,20 +1063,20 @@ namespace origin
     void EditorLayer::ConsoleWindow()
     {
 		ImGui::Begin("Console");
-        ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
-        ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 30.0f), false, childFlags);
+        static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+        ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f), 0, windowFlags);
 		if (UI::DrawButton("CLEAR"))
 		{
 			ConsoleManager::Get().Clear();
 		}
 		ImGui::EndChild();
 
-		ImGui::BeginChild("CONSOLE_CONTENT", ImGui::GetContentRegionAvail());
+		ImGui::BeginChild("CONSOLE_CONTENT", ImGui::GetContentRegionAvail(), 0, windowFlags);
 
         // By default, if we don't enable ScrollX the sizing policy for each column is "Stretch"
         // All columns maintain a sizing weight, and they will occupy all available width.
         static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersInnerH
-			| ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_RowBg;
+			| ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX;
 
         if (ImGui::BeginTable("table1", 3, flags))
         {
@@ -1100,7 +1100,7 @@ namespace origin
 				ImGui::TableSetColumnIndex(0);
 				ImGui::Text("%s", m.Timestamp.c_str());
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%s", m.Message.c_str());
+                ImGui::TextWrapped("%s", m.Message.c_str());
                 ImGui::TableSetColumnIndex(2);
 
                 switch (m.Type)

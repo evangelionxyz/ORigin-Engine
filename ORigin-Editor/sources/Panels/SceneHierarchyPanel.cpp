@@ -101,14 +101,9 @@ namespace origin {
 
 		IsSceneHierarchyFocused = ImGui::IsWindowFocused();
 
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed
-			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 1.6f });
-		ImGui::Separator();
-		bool open = ImGui::TreeNodeEx((void *)typeid(EditorLayer::Get().m_ActiveScene).hash_code(), treeNodeFlags, EditorLayer::Get().m_ActiveScene->GetName().c_str());
-		ImGui::PopStyleVar();
-
+		static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+		ImGui::BeginChild("scene_hierarchy", ImVec2(ImGui::GetContentRegionAvail().x, 20.0f), 0, windowFlags);
+		ImGui::Button(m_Scene->GetName().c_str(), ImGui::GetContentRegionAvail());
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
@@ -120,60 +115,71 @@ namespace origin {
 			}
 			ImGui::EndDragDropTarget();
 		}
+		ImGui::EndChild();
 
-		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 28.0f);
-		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
+		ImGui::BeginChild("entity_hierarcy", ImGui::GetContentRegionAvail(), 0, windowFlags);
 
-		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
-			ImGui::OpenPopup("CreateEntity");
+        static ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg
+            | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_ScrollY
+            | ImGuiTableFlags_ScrollX;
+        if (ImGui::BeginTable("ENTITY_HIERARCHY", 3, tableFlags))
+        {
+            ImGui::TableSetupColumn("Name");
+            ImGui::TableSetupColumn("Type");
+            ImGui::TableSetupColumn("Active");
+            ImGui::TableHeadersRow();
 
-		if (ImGui::BeginPopup("CreateEntity"))
-		{
-			if (ImGui::MenuItem("Empty"))
-				SetSelectedEntity(EntityManager::CreateEntity("Empty", m_Scene.get()));
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 0.0f));
+            m_Scene->m_Registry.view<TransformComponent>().each([&](auto entity, auto &nsc)
+            {
+                DrawEntityNode({ entity, m_Scene.get() });
+            });
+			ImGui::PopStyleVar();
 
-			if (ImGui::BeginMenu("2D"))
-			{
-				if (ImGui::MenuItem("Sprite"))
-					SetSelectedEntity(EntityManager::CreateSprite("Sprite", m_Scene.get()));
-				if (ImGui::MenuItem("Circle"))
-					SetSelectedEntity(EntityManager::CreateCircle("Circle", m_Scene.get()));
-				ImGui::EndMenu();
-			}
+            if (ImGui::BeginPopupContextWindow("create_entity_context",
+                ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+            {
+                if (ImGui::MenuItem("Empty"))
+                {
+                    SetSelectedEntity(EntityManager::CreateEntity("Empty", m_Scene.get()));
+                }
 
-			if (ImGui::BeginMenu("3D"))
-			{
-				if (ImGui::MenuItem("Empty Mesh"))
-					SetSelectedEntity(EntityManager::CreateMesh("Empty Mesh", m_Scene.get()));
-                if (ImGui::MenuItem("Cube"))
-                    SetSelectedEntity(EntityManager::CreateCube("Cube", m_Scene.get()));
-                if (ImGui::MenuItem("Sphere"))
-                    SetSelectedEntity(EntityManager::CreateSphere("Sphere", m_Scene.get()));
-				ImGui::EndMenu();
-			}
+                if (ImGui::BeginMenu("2D"))
+                {
+                    if (ImGui::MenuItem("Sprite"))
+                        SetSelectedEntity(EntityManager::CreateSprite("Sprite", m_Scene.get()));
+                    if (ImGui::MenuItem("Circle"))
+                        SetSelectedEntity(EntityManager::CreateCircle("Circle", m_Scene.get()));
+                    ImGui::EndMenu();
+                }
 
-			if (ImGui::MenuItem("UI"))
-				SetSelectedEntity(EntityManager::CreateUI("UI", m_Scene.get()));
-			if (ImGui::MenuItem("Camera"))
-				SetSelectedEntity(EntityManager::CreateCamera("Camera", m_Scene.get()));
-			if (ImGui::MenuItem("Lighting"))
-				SetSelectedEntity(EntityManager::CreateLighting("Lighting", m_Scene.get()));
-			ImGui::EndPopup();
-		}
+                if (ImGui::BeginMenu("3D"))
+                {
+                    if (ImGui::MenuItem("Empty Mesh"))
+                        SetSelectedEntity(EntityManager::CreateMesh("Empty Mesh", m_Scene.get()));
+                    if (ImGui::MenuItem("Cube"))
+                        SetSelectedEntity(EntityManager::CreateCube("Cube", m_Scene.get()));
+                    if (ImGui::MenuItem("Sphere"))
+                        SetSelectedEntity(EntityManager::CreateSphere("Sphere", m_Scene.get()));
+                    ImGui::EndMenu();
+                }
 
-		if (open)
-		{
-			m_Scene->m_Registry.view<TransformComponent>().each([&](auto entity, auto &nsc)
-			{
-				DrawEntityNode({ entity, m_Scene.get() });
-			});
+                if (ImGui::MenuItem("UI"))
+                    SetSelectedEntity(EntityManager::CreateUI("UI", m_Scene.get()));
+                if (ImGui::MenuItem("Camera"))
+                    SetSelectedEntity(EntityManager::CreateCamera("Camera", m_Scene.get()));
+                if (ImGui::MenuItem("Lighting"))
+                    SetSelectedEntity(EntityManager::CreateLighting("Lighting", m_Scene.get()));
+                ImGui::EndPopup();
+            }
 
-			ImGui::TreePop();
-		}
+            ImGui::EndTable();
+        }
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+        
 
-		ImGui::PopStyleVar();
+		ImGui::EndChild();
+
 		ImGui::End();
 	}
 
@@ -193,23 +199,11 @@ namespace origin {
 			return;
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap
-			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
-		ImVec4 headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.1f, 0.1f, 0.3f, 1.0f) : ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-		ImVec4 headerHovered = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.7f, 1.0f) : ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
-
-		if (m_SelectedEntity == entity)
-		{
-			headerActive = entity.HasComponent<UIComponent>() ? ImVec4(0.3f, 0.3f, 0.9f, 1.0f) : ImVec4(0.47f, 0.47f, 0.47f, 1.0f);
-		}
-
-		ImGui::PushStyleColor(ImGuiCol_Header, headerActive);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, headerHovered);
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
 		bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
-		ImGui::PopStyleVar();
-		ImGui::PopStyleColor(2);
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 		{
@@ -224,7 +218,7 @@ namespace origin {
 		bool isDeleting = false;
 		if (!m_Scene->IsRunning())
 		{
-			if (ImGui::BeginPopupContextItem())
+			if (ImGui::BeginPopupContextItem(entity.GetTag().c_str()))
 			{
 				Entity e = EntityContextMenu();
 				if (e.GetScene())
@@ -273,16 +267,15 @@ namespace origin {
 				m_SelectedEntity = entity;
 		}
 
+        ImGui::TableNextColumn();
+        ImGui::Text("Entity");
+
+        ImGui::TableNextColumn();
 		if (!isDeleting)
 		{
 			ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
 			auto &tc = entity.GetComponent<TransformComponent>();
-			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_open")->GetRendererID());
-			if (!tc.Visible)
-				texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("eyes_closed")->GetRendererID());
-			ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 28.0f);
-			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
-				tc.Visible = !tc.Visible;
+			ImGui::Checkbox("##Active", &tc.Visible);
 			ImGui::PopID();
 		}
 
