@@ -3,194 +3,33 @@
 #include "pch.h"
 #include "PhysicsEngine.h"
 
-#include <Jolt/Physics/PhysicsSettings.h>
-#include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/RegisterTypes.h>
+#include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/JobSystemSingleThreaded.h>
-#include <Jolt/Core/TempAllocator.h>
-#include <Jolt/Core/StreamWrapper.h>
-#include <Jolt/Core/StringTools.h>
-#include <Jolt/Geometry/OrientedBox.h>
 #include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/StateRecorderImpl.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/SoftBody/SoftBodyMotionProperties.h>
-#include <Jolt/Physics/SoftBody/SoftBodyCreationSettings.h>
-#include <Jolt/Physics/PhysicsScene.h>
-#include <Jolt/Physics/Collision/RayCast.h>
-#include <Jolt/Physics/Collision/ShapeCast.h>
-#include <Jolt/Physics/Collision/CastResult.h>
-#include <Jolt/Physics/Collision/CollidePointResult.h>
-#include <Jolt/Physics/Collision/AABoxCast.h>
-#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
-#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
-#include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/TaperedCapsuleShape.h>
-#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
-#include <Jolt/Physics/Collision/Shape/TriangleShape.h>
-#include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
-#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/NarrowPhaseStats.h>
-#include <Jolt/Physics/Constraints/DistanceConstraint.h>
-#include <Jolt/Physics/Constraints/PulleyConstraint.h>
-#include <Jolt/Physics/Character/CharacterVirtual.h>
 
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Scene/Components/PhysicsComponents.h"
 
 namespace origin
 {
-
-    static void TraceImpl(const char *inFMT, ...)
-    {
-        // Format the message
-        va_list list;
-        va_start(list, inFMT);
-        char buffer[1024];
-        vsnprintf(buffer, sizeof(buffer), inFMT, list);
-        va_end(list);
-
-        // Print to the TTY
-        OGN_CORE_TRACE(buffer);
-    }
-
-    namespace Layers
-    {
-        static constexpr JPH::ObjectLayer NON_MOVING = 0;
-        static constexpr JPH::ObjectLayer MOVING = 1;
-        static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
-    }
-
-    namespace BroadPhaseLayers
-    {
-        static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
-        static constexpr JPH::BroadPhaseLayer MOVING(1);
-        static constexpr uint32_t NUM_LAYERS(2);
-    }
-
-    /// Class that determines if two object layers can collide
-    class JoltObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
-    {
-    public:
-        virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
-        {
-            switch (inObject1)
-            {
-            case Layers::NON_MOVING:
-                return inObject2 == Layers::MOVING; // Non moving only collides with moving
-            case Layers::MOVING:
-                return true; // Moving collides with everything
-            default:
-                JPH_ASSERT(false);
-                return false;
-            }
-        }
-    };
-
-    class JoltBroadPhaseLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
-    {
-    public:
-        JoltBroadPhaseLayerInterfaceImpl()
-        {
-            m_ObjectToBP[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
-            m_ObjectToBP[Layers::MOVING] = BroadPhaseLayers::MOVING;
-        }
-
-        virtual uint32_t GetNumBroadPhaseLayers() const override
-        {
-            return BroadPhaseLayers::NUM_LAYERS;
-        }
-
-        virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
-        {
-            OGN_CORE_ASSERT(inLayer < Layers::NUM_LAYERS, "[Jolt] Invalid Layer");
-            return m_ObjectToBP[inLayer];
-        }
-
-    private:
-        JPH::BroadPhaseLayer m_ObjectToBP[Layers::NUM_LAYERS];
-    };
-
-    /// Class that determines if an object layer can collide with a broadphase layer
-    class JoltObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
-    {
-    public:
-        virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
-        {
-            switch (inLayer1)
-            {
-            case Layers::NON_MOVING:
-                return inLayer2 == BroadPhaseLayers::MOVING;
-            case Layers::MOVING:
-                return true;
-            default:
-                OGN_CORE_ASSERT(false, "");
-                return false;
-            }
-        }
-    };
-
-    // An example contact listener
-    class JoltContactListener : public JPH::ContactListener
-    {
-    public:
-        virtual JPH::ValidateResult	OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override
-        {
-            OGN_CORE_TRACE("Contact validate callback");
-            return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
-        }
-
-        virtual void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
-        {
-            OGN_CORE_TRACE("A contact was added");
-        }
-
-        virtual void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
-        {
-            OGN_CORE_TRACE("A contact was presisted");
-        }
-
-        virtual void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override
-        {
-            OGN_CORE_TRACE("A contact was removed");
-        }
-    };
-
-    // An example activation listener
-    class JoltBodyActivationListener : public JPH::BodyActivationListener
-    {
-    public:
-        virtual void OnBodyActivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override
-        {
-            OGN_CORE_TRACE("A body was activated");
-        }
-
-        virtual void OnBodyDeactivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override
-        {
-            OGN_CORE_TRACE("A body went to sleep");
-        }
-    };
-
-    static constexpr uint32_t cNumBodies = 10240;
-    static constexpr uint32_t cNumBodiesMutexes = 0;
-    static constexpr uint32_t cMaxBodyPairs = 65536;
-    static constexpr uint32_t cMaxContactConstraints = 2048;
-
     struct PhysicsEngineData
     {
         std::unique_ptr<JPH::PhysicsSystem> PhysicsSystem;
-        JPH::BodyInterface *BodyInterface;
         std::unique_ptr<JPH::TempAllocator> TempAllocator;
         std::unique_ptr<JPH::JobSystem> JobSystem;
         std::unique_ptr<JPH::BodyActivationListener> BodyActivationListener;
         std::unique_ptr<JPH::ContactListener> ContactListener;
-
+        JPH::BodyInterface *BodyInterface;
         JoltBroadPhaseLayerInterfaceImpl BroadPhaseLayerInterface;
         JoltObjectVsBroadPhaseLayerFilterImpl ObjectVsBroadPaheLayerFilter;
         JoltObjectLayerPairFilterImpl ObjectLayerPairFilter;
@@ -198,21 +37,26 @@ namespace origin
 
     static PhysicsEngineData s_Data;
 
+    static constexpr unsigned int cNumBodies = 1024;
+    static constexpr unsigned int cNumBodyMutexes = 0; // Autodetect
+    static constexpr unsigned int cMaxBodyPairs = 1024;
+    static constexpr unsigned int cMaxContactConstraints = 2048;
+    static const int cMaxPhysicsJobs = 2048;
+
     void PhysicsEngine::Init()
     {
         JPH::RegisterDefaultAllocator();
-
-        // TODO: Install callbacks
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();
         s_Data.TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(32 * 1024 * 1024);
-        s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(1024, 8, std::thread::hardware_concurrency() - 1);
+        s_Data.JobSystem = std::make_unique<JPH::JobSystemSingleThreaded>(cMaxPhysicsJobs);
     }
 
     void PhysicsEngine::Shutdown()
     {
         JPH::UnregisterTypes();
         delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
     }
 
     void PhysicsEngine::CreateBoxCollider(Entity entity)
@@ -230,11 +74,13 @@ namespace origin
 
         glm::vec3 halfExtents = tc.Scale * (bc.Size * 2.0f);
         JPH::BoxShapeSettings shapeSettings(GlmToJoltVec3(halfExtents));
+        shapeSettings.mUserData = entity.GetUUID();
+
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
 
         OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
         JPH::ShapeRefC shape = shapeResult.Get();
-        bc.Shape = reinterpret_cast<void *>(&shape);
+        bc.Shape = (void *)shape.GetPtr();
 
         JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + bc.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
@@ -265,12 +111,12 @@ namespace origin
         auto &rb = entity.GetComponent<RigidbodyComponent>();
 
         JPH::SphereShapeSettings shapeSettings((sc.Radius * 2.0f) * tc.Scale.x);
-        JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
+        shapeSettings.mUserData = entity.GetUUID();
 
+        JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
         OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
         JPH::ShapeRefC shape = shapeResult.Get();
-
-        sc.Shape = reinterpret_cast<void *>(&shape);
+        sc.Shape = (void *)shape.GetPtr();
 
         JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + sc.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
@@ -289,26 +135,19 @@ namespace origin
 
     void PhysicsEngine::OnSimulateStart(Scene *scene)
     {
-        const uint32_t maxBodies = 1024;
-        const uint32_t numBodyMutexes = 8;
-        const uint32_t maxBodyPairs = 1024;
-        const uint32_t maxContactConstrainsts = 1024;
+        s_Data.BodyActivationListener = std::make_unique<JoltBodyActivationListener>();
+        s_Data.ContactListener = std::make_unique<JoltContactListener>();
 
         s_Data.PhysicsSystem = std::make_unique<JPH::PhysicsSystem>();
-        s_Data.PhysicsSystem->Init(maxBodies, numBodyMutexes, maxBodyPairs, maxContactConstrainsts,
-            s_Data.BroadPhaseLayerInterface, s_Data.ObjectVsBroadPaheLayerFilter, s_Data.ObjectLayerPairFilter);
-
-        s_Data.BodyActivationListener = std::make_unique<JoltBodyActivationListener>();
+        s_Data.PhysicsSystem->Init(cNumBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, s_Data.BroadPhaseLayerInterface, s_Data.ObjectVsBroadPaheLayerFilter, s_Data.ObjectLayerPairFilter);
         s_Data.PhysicsSystem->SetBodyActivationListener(s_Data.BodyActivationListener.get());
-
-        s_Data.ContactListener = std::make_unique<JoltContactListener>();
         s_Data.PhysicsSystem->SetContactListener(s_Data.ContactListener.get());
-
-        s_Data.BodyInterface = &s_Data.PhysicsSystem->GetBodyInterface();
+        s_Data.PhysicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
         s_Data.PhysicsSystem->OptimizeBroadPhase();
 
-        s_Data.PhysicsSystem->SetGravity(JPH::Vec3(0.0f, -9.8f, 0.0f));
+        s_Data.BodyInterface = &s_Data.PhysicsSystem->GetBodyInterface();
 
+        // Create Components
         for (auto id : scene->m_Registry.view<BoxColliderComponent>())
         {
             Entity entity = { id, scene };
@@ -356,6 +195,23 @@ namespace origin
 
                 tc.Translation = tc.WorldTranslation;
                 tc.Rotation = tc.WorldRotation;
+            }
+
+            if (entity.HasComponent<BoxColliderComponent>())
+            {
+                BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
+                if (cc.Shape)
+                {
+                    JPH::BoxShape *shape = reinterpret_cast<JPH::BoxShape *>(cc.Shape);
+                }
+            }
+            else if (entity.HasComponent<SphereColliderComponent>())
+            {
+                SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
+                if (cc.Shape)
+                {
+                    JPH::SphereShape *shape = reinterpret_cast<JPH::SphereShape *>(cc.Shape);
+                }
             }
         }
 

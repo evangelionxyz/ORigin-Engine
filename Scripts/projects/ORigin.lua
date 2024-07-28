@@ -93,7 +93,7 @@ project "ORigin"
 
         filter "configurations:Debug"
             runtime "Debug"
-            symbols "On"
+            symbols "on"
             defines { "OGN_DEBUG", "_DEBUG" }
             links {
                 "%{Library.ShaderC_Debug}",
@@ -104,7 +104,7 @@ project "ORigin"
 
         filter "configurations:Release"
             runtime "Release"
-            optimize "On"
+            optimize "on"
             defines { "OGN_RELEASE", "NDEBUG" }
             links {
                 "%{Library.ShaderC_Release}",
@@ -114,7 +114,8 @@ project "ORigin"
 
         filter "configurations:Dist"
             runtime "Release"
-            optimize "On"
+            symbols "off"
+            optimize "on"
             defines { "OGN_RELEASE", "NDEBUG" }
             links {
                 "%{Library.ShaderC_Release}",
@@ -140,16 +141,16 @@ project "ORigin"
 
         filter "configurations:Debug"
             runtime "Debug"
-            symbols "On"
+            symbols "on"
             defines { "OGN_DEBUG", "_DEBUG" }
 
         filter "configurations:Release"
             runtime "Release"
-            optimize "On"
+            optimize "on"
             defines { "OGN_RELEASE", "NDEBUG" }
 
         filter "configurations:Dist"
             runtime "Release"
-            optimize "On"
+            optimize "on"
             defines { "OGN_RELEASE", "NDEBUG" }
   

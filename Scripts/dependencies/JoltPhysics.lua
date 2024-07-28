@@ -1,4 +1,4 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "JOLT"
     location (vendorProjectFiles)
@@ -25,7 +25,19 @@ project "JOLT"
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "on"
+        defines {
+            "NDEBUG"
+        }
 
 	filter "configurations:Release"
 		runtime "Release"
 		optimize "on"
+        symbols "off"
+        defines {
+            "NDEBUG"
+        }
+
+    filter "configurations:Dist"
+		runtime "Release"
+		optimize "on"
+        symbols "off"

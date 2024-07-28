@@ -25,6 +25,24 @@ namespace ORiginEngine
 
     public class TransformComponent : Component
     {
+        public Vector3 GetForward()
+        {
+            InternalCalls.TransformComponent_GetForward(Entity.ID, out Vector3 forward);
+            return forward;
+        }
+
+        public Vector3 GetRight()
+        {
+            InternalCalls.TransformComponent_GetRight(Entity.ID, out Vector3 right);
+            return right;
+        }
+
+        public Vector3 GetUp()
+        {
+            InternalCalls.TransformComponent_GetUp(Entity.ID, out Vector3 up);
+            return up;
+        }
+
         public Vector3 Translation
         {
             get

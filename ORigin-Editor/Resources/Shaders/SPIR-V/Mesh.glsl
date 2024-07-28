@@ -115,7 +115,7 @@ void main()
 
     vec3 finalColor = (lighting * textureColor.rgb) * In.Color.rgb;
     float gamma = 2.2;
-    finalColor = ApplyGammaCorrection(finalColor, gamma);
+    //finalColor = ApplyGammaCorrection(finalColor, gamma);
     oColor = vec4(finalColor, 1.0);
 
     oEntityID = vEntityID;

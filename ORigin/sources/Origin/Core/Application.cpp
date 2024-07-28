@@ -55,16 +55,16 @@ namespace origin {
 			PushOverlay(m_GuiLayer);
 		}
 
-		Renderer::Init();
-		AudioEngine::Init();
 		PhysicsEngine::Init();
+		AudioEngine::Init();
+		Renderer::Init();
 	}
 
 	Application::~Application()
 	{
+		Renderer::Shutdown();
 		AudioEngine::Shutdown();
 		PhysicsEngine::Shutdown();
-		Renderer::Shutdown();
 		Window::GLFWShutdown();
 
 		s_Instance = nullptr;

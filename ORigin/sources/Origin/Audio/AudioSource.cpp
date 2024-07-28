@@ -109,7 +109,7 @@ namespace origin
 		ma_sound_set_max_distance(m_Sound.get(), maxVal);
 	}
 
-	void AudioSource::LoadSource(const char *name, const std::filesystem::path &filepath, bool looping, bool spatializing)
+    void AudioSource::LoadSource(const char *name, const std::filesystem::path &filepath, bool looping, bool spatializing)
 	{
 		m_Sound = std::make_unique<ma_sound>();
 		AudioEngine::CreateSound(name, filepath.generic_string().c_str(), m_Sound.get());

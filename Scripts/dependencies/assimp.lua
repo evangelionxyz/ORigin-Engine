@@ -15,22 +15,18 @@ project "ASSIMP"
     "%{wks.location}/ORigin/vendor/assimp/code/Common/**.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/M3D/**.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/IQM/**.cpp",
-
     "%{wks.location}/ORigin/vendor/assimp/code/CApi/**.cpp",
-
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaExporter.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaHelper.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaLoader.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Collada/ColladaParser.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Ply/PlyParser.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/AssetLib/Ply/PlyLoader.cpp",
-
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/EmbedTexturesProcess.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ConvertToLHProcess.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/GenVertexNormalsProcess.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ArmaturePopulate.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/GenBoundingBoxesProcess.cpp",
-
     "%{wks.location}/ORigin/vendor/assimp/code/Material/MaterialSystem.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ProcessHelper.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ScaleProcess.cpp",
@@ -63,7 +59,6 @@ project "ASSIMP"
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/CalcTangentsProcess.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/ScaleProcess.cpp",
     "%{wks.location}/ORigin/vendor/assimp/code/PostProcessing/EmbedTexturesProcess.cpp",
-
     "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/adler32.c",
     "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/compress.c",
     "%{wks.location}/ORigin/vendor/assimp/contrib/zlib/crc32.c",
@@ -184,6 +179,9 @@ project "ASSIMP"
 
 	filter "system:windows"
 		systemversion "latest"
+        defines {
+            "_CRT_SECURE_NO_WARNINGS",
+        }
 
 	filter "configurations:Debug"
 		runtime "Debug"

@@ -86,23 +86,26 @@ project "Editor"
     -- Default
     filter "configurations:Debug"
         runtime "Debug"
-        symbols "On"
+        optimize "off"
+        symbols "on"
         defines {
             "GLFW_INCLUDE_NONE",
             "OGN_DEBUG", "_DEBUG"
         }
 
     filter "configurations:Release"
-        optimize "On"
         runtime "Release"
+        optimize "on"
+        symbols "off"
         defines {
             "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }
 
     filter "configurations:Dist"
-        optimize "On"
         runtime "Release"
+        optimize "on"
+        symbols "off"
         defines {
             "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"

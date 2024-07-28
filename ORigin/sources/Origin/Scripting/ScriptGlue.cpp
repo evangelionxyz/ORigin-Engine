@@ -193,6 +193,45 @@ namespace origin
 		return ScriptEngine::GetManagedInstance(entityID);
 	}
 
+    static void TransformComponent_GetForward(UUID entityID, glm::vec3 *outForward)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            *outForward = entity.GetComponent<TransformComponent>().GetForward();
+        }
+    }
+
+    static void TransformComponent_GetRight(UUID entityID, glm::vec3 *outRight)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            *outRight = entity.GetComponent<TransformComponent>().GetRight();
+        }
+    }
+
+    static void TransformComponent_GetUp(UUID entityID, glm::vec3 *outUp)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            *outUp = entity.GetComponent<TransformComponent>().GetUp();
+        }
+    }
+
 	static void TransformComponent_GetTranslation(UUID entityID, glm::vec3 *outTranslation)
 	{
 		OGN_PROFILER_LOGIC();
@@ -1818,6 +1857,9 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(NativeLog_VectorDot);
 
 		// Components
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetForward);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRight);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetUp);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRotation);
