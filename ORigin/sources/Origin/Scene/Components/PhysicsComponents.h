@@ -67,46 +67,38 @@ namespace origin
         glm::vec3 GetLinearVelocity();
     };
 
-    class BoxColliderComponent
+    class PhysicsCollider
+    {
+    public:
+        float Friction = 0.6f;
+        float Restitution = 0.6f;
+        float Density = 1.0f;
+        void *Shape = nullptr;
+    };
+
+    class BoxColliderComponent : public PhysicsCollider
     {
     public:
         glm::vec3 Size = { 0.5f, 0.5f, 0.5f };
         glm::vec3 Offset = { 0.0f, 0.0f, 0.0f };
-
-        float Friction = 0.6f;
-        float Restitution = 0.6f;
-
-        void *Shape = nullptr;
-        void *Body = nullptr;
-
+        
         BoxColliderComponent() = default;
         BoxColliderComponent(const BoxColliderComponent &) = default;
     };
 
-    class SphereColliderComponent
+    class SphereColliderComponent : public PhysicsCollider
     {
     public:
         float Radius = 0.5f;
         glm::vec3 Offset = { 0.0f, 0.0f, 0.0f };
 
-        float Friction = 0.6f;
-        float Restitution = 0.6f;
-
-        void *Shape = nullptr;
-        void *Body = nullptr;
-
         SphereColliderComponent() = default;
         SphereColliderComponent(const SphereColliderComponent &) = default;
     };
 
-    class CapsuleColliderComponent
+    class CapsuleColliderComponent : public PhysicsCollider
     {
     public:
-        float Friction = 0.6f;
-        float Restitution = 0.6f;
-
-        void *Shape = nullptr;
-        void *Body = nullptr;
 
         CapsuleColliderComponent() = default;
         CapsuleColliderComponent(const CapsuleColliderComponent &) = default;

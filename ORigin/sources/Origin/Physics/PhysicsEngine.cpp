@@ -49,7 +49,7 @@ namespace origin
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();
         s_Data.TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(32 * 1024 * 1024);
-        s_Data.JobSystem = std::make_unique<JPH::JobSystemSingleThreaded>(cMaxPhysicsJobs);
+        s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, 8, std::thread::hardware_concurrency() - 1);
     }
 
     void PhysicsEngine::Shutdown()
@@ -69,20 +69,20 @@ namespace origin
             return;
         }
 
-        auto &bc = entity.GetComponent<BoxColliderComponent>();
+        auto &cc = entity.GetComponent<BoxColliderComponent>();
         auto &rb = entity.GetComponent<RigidbodyComponent>();
 
-        glm::vec3 halfExtents = tc.Scale * (bc.Size * 2.0f);
+        glm::vec3 halfExtents = tc.Scale * (cc.Size * 2.0f);
         JPH::BoxShapeSettings shapeSettings(GlmToJoltVec3(halfExtents));
+        shapeSettings.SetDensity(cc.Density);
+
         shapeSettings.mUserData = entity.GetUUID();
-
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
-
         OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
         JPH::ShapeRefC shape = shapeResult.Get();
-        bc.Shape = (void *)shape.GetPtr();
+        cc.Shape = (void *)shape.GetPtr();
 
-        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + bc.Offset), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + cc.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
         
@@ -92,8 +92,8 @@ namespace origin
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
-            s_Data.BodyInterface->SetFriction(bodyId, bc.Friction);
-            s_Data.BodyInterface->SetRestitution(bodyId, bc.Restitution);
+            s_Data.BodyInterface->SetFriction(bodyId, cc.Friction);
+            s_Data.BodyInterface->SetRestitution(bodyId, cc.Restitution);
             rb.Body = body;
         }
     }
@@ -107,18 +107,19 @@ namespace origin
             return;
         }
 
-        auto &sc = entity.GetComponent<SphereColliderComponent>();
+        auto &cc = entity.GetComponent<SphereColliderComponent>();
         auto &rb = entity.GetComponent<RigidbodyComponent>();
 
-        JPH::SphereShapeSettings shapeSettings((sc.Radius * 2.0f) * tc.Scale.x);
+        JPH::SphereShapeSettings shapeSettings((cc.Radius * 2.0f) * tc.Scale.x);
+        shapeSettings.SetDensity(cc.Density);
         shapeSettings.mUserData = entity.GetUUID();
 
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
         OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
         JPH::ShapeRefC shape = shapeResult.Get();
-        sc.Shape = (void *)shape.GetPtr();
+        cc.Shape = (void *)shape.GetPtr();
 
-        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + sc.Offset), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings settings(shape, GlmToJoltVec3(tc.WorldTranslation + cc.Offset), GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
 
@@ -127,8 +128,8 @@ namespace origin
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
-            s_Data.BodyInterface->SetFriction(bodyId, sc.Friction);
-            s_Data.BodyInterface->SetRestitution(bodyId, sc.Restitution);
+            s_Data.BodyInterface->SetFriction(bodyId, cc.Friction);
+            s_Data.BodyInterface->SetRestitution(bodyId, cc.Restitution);
             rb.Body = body;
         }
     }
