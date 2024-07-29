@@ -29,6 +29,7 @@ namespace origin {
 
 		void SetData(Buffer data) override;
 		std::string GetFilepath() override { return m_Filepath; }
+		void Bind(uint32_t bindingPoint, uint32_t index, uint32_t arrayCount) override;
 		void Bind(uint32_t slot = 0) override;
 		void Unbind() override;
 		void Delete() override;
@@ -77,7 +78,7 @@ namespace origin {
 		std::string GetFilepath() override { return m_Filepath; }
 
 		void LoadFaces(std::string& filepath, Faces faces);
-
+		void Bind(uint32_t bindingPoint, uint32_t index, uint32_t arrayCount) override;
 		void Bind(uint32_t slot = 0) override;
 		void Unbind() override;
 		void Delete() override;

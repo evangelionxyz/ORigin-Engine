@@ -20,7 +20,8 @@ namespace origin
 		static const uint32_t MaxSphereVertices = MaxSphereTriangles * 544;
 		static const uint32_t MaxSphereIndices = MaxSphereTriangles * 768;
 
-		static const uint32_t MaxTextureSlots = 32;
+		static const uint32_t MaxAlbedoSlots = 16;
+		static const uint32_t MaxSpecularSlots = 16;
 	};
 
 	struct CameraBufferData
@@ -35,8 +36,10 @@ namespace origin
 		std::shared_ptr<UniformBuffer> Ubo;
 
 		std::shared_ptr<Shader> Shader;
-        std::array<std::shared_ptr<Texture2D>, 32> TextureSlots;
-        uint32_t TextureSlotIndex = 1; // 0 White texture
+        std::array<std::shared_ptr<Texture2D>, 16> AlbedoSlots;
+        std::array<std::shared_ptr<Texture2D>, 16> SpecularSlots;
+        uint32_t AlbedoTextureSlotIndex = 1; // 0 White texture
+        uint32_t SpecularTextureSlotIndex = 1; // 0 White texture
 
 		// ===========================
 		// CUBE
@@ -62,14 +65,16 @@ namespace origin
 	void MeshRenderer::Init()
 	{	
 		BufferLayout bufferLayout = {
-			{ ShaderDataType::Float3, "aPosition"   },
-			{ ShaderDataType::Float3, "aNormals"    },
-			{ ShaderDataType::Float3, "aColor"      },
-			{ ShaderDataType::Float2, "aUV"         },
-			{ ShaderDataType::Float4, "aBoneIDs"    },
-			{ ShaderDataType::Float4, "aBoneWeights"},
-			{ ShaderDataType::Float,  "aTexIndex"   },
-			{ ShaderDataType::Int,    "aEntityID"   },
+			{ ShaderDataType::Float3, "aPosition"     },
+			{ ShaderDataType::Float3, "aNormals"      },
+			{ ShaderDataType::Float3, "aColor"        },
+			{ ShaderDataType::Float2, "aUV"           },
+			{ ShaderDataType::Float2, "aTilingFactor" },
+			{ ShaderDataType::Float4, "aBoneIDs"      },
+			{ ShaderDataType::Float4, "aBoneWeights"  },
+			{ ShaderDataType::Float,  "aAlbedoIndex"  },
+			{ ShaderDataType::Float,  "aSpecularIndex"},
+			{ ShaderDataType::Int,    "aEntityID"     },
 		};
 
 		// ======================================
@@ -128,7 +133,8 @@ namespace origin
         s_Data.Ubo = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 
         s_Data.Shader = Renderer::GetShader("Mesh");
-        s_Data.TextureSlots[0] = Renderer::WhiteTexture;
+        s_Data.AlbedoSlots[0] = Renderer::WhiteTexture;
+		s_Data.SpecularSlots[0] = Renderer::WhiteTexture;
 	}
 
 	void MeshRenderer::Begin(const Camera &camera, const glm::mat4 &transform, Shader *shader)
@@ -165,7 +171,8 @@ namespace origin
 
 	void MeshRenderer::StartBatch()
 	{
-		s_Data.TextureSlotIndex = 1;
+		s_Data.AlbedoTextureSlotIndex = 1;
+		s_Data.SpecularTextureSlotIndex = 1;
 
 		s_Data.CubeIndexCount = 0;
 		s_Data.CubeVBOPtr = s_Data.CubeVBOBase;
@@ -187,8 +194,12 @@ namespace origin
             uint32_t dataSize = (uint8_t *)s_Data.CubeVBOPtr - (uint8_t *)s_Data.CubeVBOBase;
             s_Data.CubeVBO->SetData(s_Data.CubeVBOBase, dataSize);
 
-            for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-                s_Data.TextureSlots[i]->Bind(i);
+            for (uint32_t i = 0; i < s_Data.AlbedoTextureSlotIndex; i++)
+                s_Data.AlbedoSlots[i]->Bind(0, i, MeshRenderData::MaxAlbedoSlots);
+
+            for (uint32_t i = 0; i < s_Data.SpecularTextureSlotIndex; i++)
+                s_Data.SpecularSlots[i]->Bind(1, i, MeshRenderData::MaxSpecularSlots);
+
             RenderCommand::DrawIndexed(s_Data.CubeVAO, s_Data.CubeIndexCount);
 
             Renderer::GetStatistics().DrawCalls++;
@@ -199,8 +210,12 @@ namespace origin
             uint32_t dataSize = (uint8_t *)s_Data.SphereVBOPtr - (uint8_t *)s_Data.SphereVBOBase;
             s_Data.SphereVBO->SetData(s_Data.SphereVBOBase, dataSize);
 
-            for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-                s_Data.TextureSlots[i]->Bind(i);
+            for (uint32_t i = 0; i < s_Data.AlbedoTextureSlotIndex; i++)
+                s_Data.AlbedoSlots[i]->Bind(0, i, MeshRenderData::MaxAlbedoSlots);
+
+            for (uint32_t i = 0; i < s_Data.SpecularTextureSlotIndex; i++)
+                s_Data.SpecularSlots[i]->Bind(1, i, MeshRenderData::MaxSpecularSlots);
+
             RenderCommand::DrawIndexed(s_Data.SphereVAO, s_Data.SphereIndexCount);
             Renderer::GetStatistics().DrawCalls++;
         }
@@ -218,9 +233,11 @@ namespace origin
 			s_Data.CubeVBOPtr->Normals = transposeMat * s_Data.CubeData.vertices[i].Normals;
 			s_Data.CubeVBOPtr->Color = color;
 			s_Data.CubeVBOPtr->UV = s_Data.CubeData.vertices[i].UV;
+			s_Data.CubeVBOPtr->TilingFactor = s_Data.CubeData.vertices[i].TilingFactor;
 			s_Data.CubeVBOPtr->BoneIDs = glm::vec4(0.0f);
 			s_Data.CubeVBOPtr->BoneWeights = glm::vec4(1.0f);
-			s_Data.CubeVBOPtr->TexIndex = 0.0f;
+			s_Data.CubeVBOPtr->AlbedoIndex = 0.0f;
+			s_Data.CubeVBOPtr->SpecularIndex = 0.0f;
 			s_Data.CubeVBOPtr->EntityID = entityID;
 			s_Data.CubeVBOPtr++;
 		}
@@ -231,10 +248,90 @@ namespace origin
 
     void MeshRenderer::DrawCube(const glm::mat4 &transform, Material *material, int entityID)
     {
-		if(material)
-			DrawCube(transform, material->Color, entityID);
+		if (material)
+		{
+			DrawCube(transform, 
+                material->Albedo.Texture,
+                material->Metallic.Texture,
+                material->TilingFactor, 
+                material->Color, entityID);
+		}
 		else
+		{
 			DrawCube(transform, glm::vec4(1.0f), entityID);
+		}
+    }
+
+	void MeshRenderer::DrawCube(const glm::mat4 &transform,
+		const std::shared_ptr<Texture2D> &albedo,
+		const std::shared_ptr<Texture2D> &specular,
+		const glm::vec2 &tilingFactor, const glm::vec4 &color, int entityID)
+	{
+		if (s_Data.CubeIndexCount >= MeshRenderData::MaxCubeIndices)
+			NextBatch();
+
+		float albedoIndex = 0.0f;
+		if (albedo)
+		{
+            for (uint32_t i = 1; i < s_Data.AlbedoTextureSlotIndex; i++)
+            {
+                if (*s_Data.AlbedoSlots[i] == *albedo)
+                {
+					albedoIndex = (float)i;
+                    break;
+                }
+            }
+
+            if (albedoIndex == 0)
+            {
+                if (s_Data.AlbedoTextureSlotIndex >= MeshRenderData::MaxAlbedoSlots)
+                    NextBatch();
+				albedoIndex = (float)s_Data.AlbedoTextureSlotIndex;
+                s_Data.AlbedoSlots[s_Data.AlbedoTextureSlotIndex] = albedo;
+                s_Data.AlbedoTextureSlotIndex++;
+            }
+		}
+
+        float specularIndex = 0.0f;
+        if (specular)
+        {
+            for (uint32_t i = 1; i < s_Data.SpecularTextureSlotIndex; i++)
+            {
+                if (*s_Data.SpecularSlots[i] == *specular)
+                {
+                    specularIndex = (float)i;
+                    break;
+                }
+            }
+
+            if (specularIndex == 0)
+            {
+                if (s_Data.SpecularTextureSlotIndex >= MeshRenderData::MaxSpecularSlots)
+                    NextBatch();
+                specularIndex = (float)s_Data.SpecularTextureSlotIndex;
+                s_Data.SpecularSlots[s_Data.SpecularTextureSlotIndex] = specular;
+                s_Data.SpecularTextureSlotIndex++;
+            }
+        }
+
+        for (size_t i = 0; i < 24; i++)
+        {
+            s_Data.CubeVBOPtr->Position = transform * glm::vec4(s_Data.CubeData.vertices[i].Position, 1.0f);
+            glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
+            s_Data.CubeVBOPtr->Normals = transposeMat * s_Data.CubeData.vertices[i].Normals;
+            s_Data.CubeVBOPtr->Color = color;
+            s_Data.CubeVBOPtr->UV = s_Data.CubeData.vertices[i].UV;
+            s_Data.CubeVBOPtr->TilingFactor = tilingFactor;
+            s_Data.CubeVBOPtr->BoneIDs = glm::vec4(0.0f);
+            s_Data.CubeVBOPtr->BoneWeights = glm::vec4(1.0f);
+            s_Data.CubeVBOPtr->AlbedoIndex = albedoIndex;
+            s_Data.CubeVBOPtr->SpecularIndex = specularIndex;
+            s_Data.CubeVBOPtr->EntityID = entityID;
+            s_Data.CubeVBOPtr++;
+        }
+
+        s_Data.CubeIndexCount += s_Data.CubeData.indices.size();
+        Renderer::GetStatistics().CubeCount++;
     }
 
     void MeshRenderer::DrawSphere(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
@@ -249,9 +346,11 @@ namespace origin
             s_Data.SphereVBOPtr->Normals = transposeMat * s_Data.SphereData.vertices[i].Normals;
             s_Data.SphereVBOPtr->Color = color;
             s_Data.SphereVBOPtr->UV = s_Data.SphereData.vertices[i].UV;
+            s_Data.SphereVBOPtr->TilingFactor = s_Data.SphereData.vertices[i].TilingFactor;
             s_Data.SphereVBOPtr->BoneIDs = glm::vec4(0.0f);
             s_Data.SphereVBOPtr->BoneWeights = glm::vec4(1.0f);
-            s_Data.SphereVBOPtr->TexIndex = 0.0f;
+            s_Data.SphereVBOPtr->AlbedoIndex = 0.0f;
+            s_Data.SphereVBOPtr->SpecularIndex = 0.0f;
             s_Data.SphereVBOPtr->EntityID = entityID;
             s_Data.SphereVBOPtr++;
         }

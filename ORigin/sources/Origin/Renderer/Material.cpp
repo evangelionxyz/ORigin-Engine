@@ -20,6 +20,9 @@ namespace origin {
 		m_Shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
 		m_Shader->Enable();
 		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), MATERIAL_BINDING);
+
+		Albedo.Texture = Renderer::WhiteTexture;
+		Metallic.Texture = Renderer::WhiteTexture;
 	}
 
 	Material::Material(const std::shared_ptr<Shader> &shader)
@@ -31,6 +34,9 @@ namespace origin {
 		m_Shader->Enable();
 
 		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), MATERIAL_BINDING);
+
+        Albedo.Texture = Renderer::WhiteTexture;
+        Metallic.Texture = Renderer::WhiteTexture;
 	}
 
 	void Material::Bind()
@@ -40,38 +46,6 @@ namespace origin {
 		m_UniformBuffer->Bind();
 		m_UniformBuffer->SetData(&BufferData, sizeof(MaterialBufferData));
 		m_Shader->Enable();
-
-		if (Textures.empty() && (m_AlbedoMap == 0 && m_MetallicMap == 0))
-		{
-			Renderer::WhiteTexture->Bind(0);
-			Renderer::WhiteTexture->Bind(1);
-		}
-
-		if (m_AlbedoMap == 0 && m_MetallicMap == 0)
-		{
-			for (auto &t : Textures)
-			{
-				if (t.first == aiTextureType_DIFFUSE)
-				{
-					t.second->Bind(0);
-					m_Shader->SetInt(ALBEDO_MAP, 0);
-				}
-				else if (t.first == aiTextureType_SPECULAR)
-				{
-					t.second->Bind(1);
-					m_Shader->SetInt(ALBEDO_MAP, 1);
-				}
-			}
-		}
-
-		if (m_AlbedoMap != 0)
-			AssetManager::GetAsset<Texture2D>(m_AlbedoMap)->Bind(0);
-
-		if (m_MetallicMap != 0)
-			AssetManager::GetAsset<Texture2D>(m_MetallicMap)->Bind(1);
-
-		m_Shader->SetInt(ALBEDO_MAP, 0);
-		m_Shader->SetInt(SPECULAR_MAP, 1);
 	}
 
 	void Material::Unbind()
@@ -95,12 +69,14 @@ namespace origin {
 
 	void Material::SetAlbedoMap(AssetHandle handle)
 	{
-		m_AlbedoMap = handle;
+		Albedo.Handle = handle;
+		Albedo.Texture = AssetManager::GetAsset<Texture2D>(handle);
 	}
 
 	void Material::SetMetallicMap(AssetHandle handle)
 	{
-		m_MetallicMap = handle;
+		Metallic.Handle = handle;
+		Metallic.Texture = AssetManager::GetAsset<Texture2D>(handle);
 	}
 
 	std::shared_ptr<Material> Material::Create(const std::string &name)

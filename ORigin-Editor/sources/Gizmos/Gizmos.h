@@ -38,7 +38,7 @@ namespace origin {
 	public:
 		Gizmos() = default;
 
-		void OnRender(const EditorCamera &camera);
+		void OnRender(const EditorCamera &camera, Scene *scene, bool visualizeCollider);
 		void OnEvent(Event &e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 		void SetSnapValue(float value) { m_SnapValue = value; }
@@ -48,10 +48,8 @@ namespace origin {
 
 		void Draw2DGrid(const EditorCamera &camera);
 		void Draw3DGrid(const EditorCamera &camera, bool horizontal, bool vertical, int size);
-
-		void Draw2DOverlay();
-		void Draw3DOverlay(const EditorCamera &camera);
-		void DrawIcons(const EditorCamera &camera);
+		void DrawIcons(const EditorCamera &camera, Scene *scene);
+		void DrawFrustum(const EditorCamera &camera, Scene *scene);
 		void CalculateBoundary2DSizing(const EditorCamera &camera);
 
 	private:

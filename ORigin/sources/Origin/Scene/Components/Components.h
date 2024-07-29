@@ -30,17 +30,62 @@ namespace origin
 	class Lighting;
 	class AudioSource;
 	class SpriteAnimation;
-    class ScriptableEntity;
+	class ScriptableEntity;
 	class RigidbodyComponent;
-    class BoxColliderComponent;
-    class SphereColliderComponent;
-    class CapsuleColliderComponent;
+	class BoxColliderComponent;
+	class SphereColliderComponent;
+	class CapsuleColliderComponent;
+
+	enum class EntityType
+	{
+		Entity   = BIT(1),
+		Prefabs  = BIT(2),
+		Audio    = BIT(3),
+		UI       = BIT(4),
+		Mesh     = BIT(5),
+		Bone     = BIT(6),
+		Camera   = BIT(7),
+		Lighting = BIT(8)
+	};
+
+	namespace Utils
+	{
+		static std::string EntityTypeToString(EntityType type)
+		{
+			switch (type)
+			{
+            case EntityType::Entity:   return "Entity";
+			case EntityType::Prefabs:  return "Prefabs";
+			case EntityType::Audio:    return "Audio";
+			case EntityType::UI:       return "UI";
+			case EntityType::Mesh:     return "Mesh";
+			case EntityType::Bone:     return "Bone";
+			case EntityType::Camera:   return "Camera";
+			case EntityType::Lighting: return "Lighting";
+			default:                   return "Invalid";
+			}
+		}
+
+		static EntityType EntityTypeStringToType(const std::string &type)
+		{
+			if      ("Entity")   return EntityType::Entity;
+			else if ("Prefabs")  return EntityType::Prefabs;
+			else if ("Audio")    return EntityType::Audio;
+			else if ("UI")       return EntityType::UI;
+			else if ("Mesh")     return EntityType::Mesh;
+			else if ("Bone")     return EntityType::Bone;
+			else if ("Camera")   return EntityType::Camera;
+			else if ("Lighting") return EntityType::Lighting;
+			return (EntityType)-1;
+		}
+	}
 
 	class IDComponent
 	{
 	public:
 		UUID ID;
 		UUID Parent = UUID(0);
+		EntityType Type = EntityType::Entity;
 
 		IDComponent() = default;
 		IDComponent(const IDComponent &) = default;

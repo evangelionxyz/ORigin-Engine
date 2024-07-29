@@ -50,12 +50,13 @@ namespace origin
 		auto newEntity = Entity();
 
 		// create entities in new scene
-		auto idView = srcSceneRegistry.view<IDComponent>();
+		const auto &idView = srcSceneRegistry.view<IDComponent>();
 		for (auto e : idView)
 		{
-			auto idc = srcSceneRegistry.get<IDComponent>(e);
-			const auto name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, newScene.get());
+			const auto &idc = srcSceneRegistry.get<IDComponent>(e);
+			const auto &name = srcSceneRegistry.get<TagComponent>(e).Tag;
+			newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, idc.Type, newScene.get());
+
 			auto &eIDC = newEntity.GetComponent<IDComponent>();
 			eIDC.Parent = idc.Parent;
 
@@ -198,10 +199,13 @@ namespace origin
 			{
 				const CameraComponent &camera = view.get<CameraComponent>(entity);
 				if (camera.Primary)
+				{
 					return { entity, this };
+				}
 			}
 		}
-		return {};
+
+		return {entt::null, nullptr};
 	}
 
 	void Scene::OnUpdateRuntime(Timestep ts)
@@ -614,9 +618,15 @@ namespace origin
 
 			std::shared_ptr<Material> material;
 			if (mc.HMaterial)
+			{
 				material = AssetManager::GetAsset<Material>(mc.HMaterial);
+			}
 			else
+			{
 				material = Renderer::GetMaterial("Mesh");
+			}
+
+			//material->Bind();
 
 			for (auto &li : lightView)
 			{
@@ -777,10 +787,16 @@ namespace origin
                 continue;
 
             std::shared_ptr<Material> material;
-            if (mc.HMaterial)
+			if (mc.HMaterial)
+			{
                 material = AssetManager::GetAsset<Material>(mc.HMaterial);
-            else
-                material = Renderer::GetMaterial("Mesh");
+			}
+			else
+			{
+				material = Renderer::GetMaterial("Mesh");
+			}
+
+			//material->Bind();
 
             for (auto &li : lightView)
             {

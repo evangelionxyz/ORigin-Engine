@@ -50,7 +50,7 @@ namespace origin {
 			}
 		}
 
-		return Entity{ (entt::entity)-1, nullptr };
+		return { entt::null, nullptr };
 	}
 
 	void SceneHierarchyPanel::SetActiveScene(const std::shared_ptr<Scene> &scene, bool reset)
@@ -111,7 +111,9 @@ namespace origin {
 				OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 				Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
 				if (src.HasParent())
-					auto &srcIDC = src.GetComponent<IDComponent>().Parent = 0;
+				{
+					src.GetComponent<IDComponent>().Parent = 0;
+				}
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -124,6 +126,7 @@ namespace origin {
             | ImGuiTableFlags_ScrollX;
         if (ImGui::BeginTable("ENTITY_HIERARCHY", 3, tableFlags))
         {
+			ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableSetupColumn("Name");
             ImGui::TableSetupColumn("Type");
             ImGui::TableSetupColumn("Active");
@@ -141,7 +144,7 @@ namespace origin {
             {
                 if (ImGui::MenuItem("Empty"))
                 {
-                    SetSelectedEntity(EntityManager::CreateEntity("Empty", m_Scene.get()));
+                    SetSelectedEntity(EntityManager::CreateEntity("Empty", m_Scene.get(), EntityType::Entity));
                 }
 
                 if (ImGui::BeginMenu("2D"))
@@ -253,7 +256,6 @@ namespace origin {
 				{
 					OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
 					Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
-
 					// the current 'entity' is the target (new parent for src)
 					EntityManager::AddChild(entity, src, m_Scene.get());
 				}
@@ -263,12 +265,14 @@ namespace origin {
 
 		if (ImGui::IsItemHovered())
 		{
-			if(ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
 				m_SelectedEntity = entity;
+			}
 		}
 
         ImGui::TableNextColumn();
-        ImGui::Text("Entity");
+        ImGui::TextWrapped(Utils::EntityTypeToString(entity.GetType()).c_str());
 
         ImGui::TableNextColumn();
 		if (!isDeleting)
@@ -291,7 +295,9 @@ namespace origin {
 
 					Entity ent = { e.second, m_Scene.get() };
 					if (ent.GetComponent<IDComponent>().Parent == entity.GetUUID())
+					{
 						DrawEntityNode({ e.second, m_Scene.get() }, index + 1);
+					}
 				}
 			}
 			ImGui::TreePop();
@@ -406,6 +412,7 @@ namespace origin {
 			if (material)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(material->Color));
+				UI::DrawVec2Control("Tiling", material->TilingFactor, 0.25f, 1.0f);
 			}
 		});
 
@@ -1425,7 +1432,7 @@ namespace origin {
 		if (ImGui::BeginMenu("CREATE"))
 		{
 			if (ImGui::MenuItem("Empty")) 
-				entity = EntityManager::CreateEntity("Empty", m_Scene.get());
+				entity = EntityManager::CreateEntity("Empty", m_Scene.get(), EntityType::Entity);
 
 			if (ImGui::BeginMenu("2D"))
 			{

@@ -1,5 +1,5 @@
 ﻿// type vertex
-#version 460 core
+#version 450 core
 layout(location = 0) in vec2 aPos;
 layout(location = 0) out vec2 vTexCoord;
 
@@ -14,6 +14,7 @@ void main()
 // type fragment
 #version 460 core
 layout(location = 0) out vec4 oColor;
+
 layout(location = 0) in vec2 vTexCoord;
 
 uniform sampler2D uScreenTexture;

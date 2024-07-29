@@ -40,6 +40,12 @@ namespace origin {
 		void Reset() { memset(this, 0, sizeof(Statistics)); };
 	};
 
+	struct ShaderList
+	{
+		std::string Name;
+		std::shared_ptr<Shader> Shader;
+	};
+
 	class Renderer
 	{
 	public:

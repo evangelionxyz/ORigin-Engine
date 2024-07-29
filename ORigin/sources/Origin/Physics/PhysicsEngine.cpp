@@ -248,21 +248,21 @@ namespace origin
             if (entity.HasComponent<BoxColliderComponent>())
             {
                 BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
-                CreateBoxCollider(entity, cc.Size, rb);
+                cc.Shape = CreateBoxCollider(entity, cc.Size, rb);
                 rb.SetFriction(cc.Friction);
                 rb.SetRestitution(cc.Restitution);
             }
             else if (entity.HasComponent<CapsuleColliderComponent>())
             {
                 CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
-                CreateCapsuleCollider(entity, cc.HalfHeight, cc.Radius, rb);
+                cc.Shape = CreateCapsuleCollider(entity, cc.HalfHeight, cc.Radius, rb);
                 rb.SetFriction(cc.Friction);
                 rb.SetRestitution(cc.Restitution);
             }
             else if (entity.HasComponent<SphereColliderComponent>())
             {
                 SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
-                CreateSphereCollider(entity, cc.Radius, rb);
+                cc.Shape = CreateSphereCollider(entity, cc.Radius, rb);
                 rb.SetFriction(cc.Friction);
                 rb.SetRestitution(cc.Restitution);
             }

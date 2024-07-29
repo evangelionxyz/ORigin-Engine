@@ -63,7 +63,7 @@ namespace origin
                 Entity parent = s_Data.scene->GetEntityWithUUID(s_Data.entityID);
                 for (auto &mesh : model->GetMeshes())
                 {
-                    Entity entity = EntityManager::CreateEntity(mesh.Name, s_Data.scene);
+                    Entity entity = EntityManager::CreateEntity(mesh.Name, s_Data.scene, EntityType::Mesh);
                     auto &sm = entity.AddComponent<StaticMeshComponent>();
                     sm.Name = mesh.Name;
                     sm.HMaterial = mesh.HMaterial;

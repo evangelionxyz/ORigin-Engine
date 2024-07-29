@@ -64,6 +64,12 @@ namespace origin
 		bool UseNormalMaps = false;
 	};
 
+	struct MaterialTexture
+	{
+		UUID Handle = 0;
+		std::shared_ptr<Texture2D> Texture;
+	};
+
 	class Material : public Asset
 	{
 	public:
@@ -80,8 +86,6 @@ namespace origin
 		void SetMetallicMap(AssetHandle handle);
 		void SetName(const std::string &name) { m_Name = name; }
 
-		AssetHandle GetAlbedoMap() { return m_AlbedoMap; }
-		AssetHandle GetMetallicMap() { return m_MetallicMap; }
 		const std::string &GetName() { return m_Name; }
 
 		std::shared_ptr<Shader> m_Shader;
@@ -91,12 +95,13 @@ namespace origin
 		static AssetType GetStaticType() { return AssetType::Material; }
 		virtual AssetType GetType() const { return GetStaticType(); }
 
-		std::unordered_map<aiTextureType, std::shared_ptr<Texture2D>> Textures;
-		glm::vec4 Color = glm::vec4(1.0f);
-	private:
-		AssetHandle m_AlbedoMap = UUID(0);
-		AssetHandle m_MetallicMap = UUID(0);
+		MaterialTexture Albedo;
+		MaterialTexture Metallic;
 
+		glm::vec4 Color = glm::vec4(1.0f);
+		glm::vec2 TilingFactor = glm::vec2(1.0f);
+
+	private:
 		std::shared_ptr<UniformBuffer> m_UniformBuffer;
 		friend class OpenGLModel;
 

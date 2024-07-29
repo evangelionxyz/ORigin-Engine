@@ -82,7 +82,9 @@ namespace origin
         glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         if (data)
+        {
             SetData(data);
+        }
 
         m_IsLoaded = true;
     }
@@ -147,8 +149,6 @@ namespace origin
         m_IsLoaded = true;
     }
 
-
-
     OpenGLTexture2D::~OpenGLTexture2D()
     {
         Unbind();
@@ -171,6 +171,16 @@ namespace origin
 
         m_Index = index;
         glBindTextureUnit(index, m_RendererID); // bind texture index to renderID
+    }
+
+    void OpenGLTexture2D::Bind(uint32_t bindingPoint, uint32_t index, uint32_t arrayCount)
+    {
+        OGN_PROFILER_RENDERING();
+
+        uint32_t textureUnit = bindingPoint * arrayCount + index;
+
+        m_Index = index;
+        glBindTextureUnit(textureUnit, m_RendererID); // bind texture index to renderID
     }
 
     void OpenGLTexture2D::Unbind()
@@ -359,6 +369,11 @@ namespace origin
     }
 
     void OpenGLTextureCube::Bind(uint32_t slot)
+    {
+
+    }
+
+    void OpenGLTextureCube::Bind(uint32_t bindingPoint, uint32_t index, uint32_t arrayCount)
     {
 
     }

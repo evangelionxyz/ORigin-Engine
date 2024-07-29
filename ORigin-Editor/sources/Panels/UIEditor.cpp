@@ -171,8 +171,10 @@ namespace origin
 									else
 									{
 										OGN_CORE_WARN("[UIEditor] Wrong asset type!");
+										PUSH_CONSOLE_WARNING("[UIEditor] Wrong asset type!");
 									}
 								}
+								ImGui::EndDragDropTarget();
 							}
 
 							if (text->Component.FontHandle)
@@ -247,6 +249,7 @@ namespace origin
 									else
 									{
 										OGN_CORE_WARN("[UIEditor] Wrong asset type!");
+										PUSH_CONSOLE_WARNING("[UIEditor] Wrong asset type!");
 									}
 								}
 								else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
@@ -256,6 +259,7 @@ namespace origin
 									sprite->Component.Min = data.Min;
 									sprite->Component.Max = data.Max;
 								}
+
 								ImGui::EndDragDropTarget();
 							}
 							if (sprite->Component.Texture)
@@ -288,20 +292,13 @@ namespace origin
 	{
 		ImGui::Begin("UI Hierarchy");
 
-		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
-		ImGui::SameLine(contentRegionAvailable.x - 24.0f);
-		ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
-
-		if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
-			ImGui::OpenPopup("CreateUI");
-
-		if (ImGui::BeginPopup("CreateUI"))
+		if (ImGui::BeginPopupContextWindow("CreateUI",
+			ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::MenuItem("Text"))
 				UIEditor::CreateNewText();
 			if (ImGui::MenuItem("Sprite"))
 				UIEditor::CreateNewTexture();
-
 			ImGui::EndPopup();
 		}
 

@@ -31,6 +31,7 @@ namespace origin
 		bool guiMenuStyle = false;
 		bool guiRenderSettingsWindow = true;
 		bool guiImGuiDemoWindow = false;
+		bool guiConsoleWindow = true;
 		bool IsViewportHovered = false;
 		bool IsViewportFocused = false;
 
@@ -100,7 +101,7 @@ namespace origin
 		int m_PixelData = -1;
 		int m_RenderTarget = 0;
 		float m_Time = 0.0f;
-		bool m_Draw3DGrid = true;
+		bool m_Draw3DGrid = false;
 		bool m_Draw2DGrid = true;
 		bool m_DrawLineModeActive = false;
 		bool m_VisualizeCollider = false;

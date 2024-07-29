@@ -35,7 +35,7 @@ namespace origin
 
 			ImGui::ColorEdit4("Color", glm::value_ptr(m_Material->Color));
 
-			ImGui::Button("Albedo Map", buttonSize);
+			ImGui::Button("Albedo", buttonSize);
 			if (ImGui::BeginDragDropTarget())
 			{
 				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -56,7 +56,7 @@ namespace origin
 
 			UI::DrawFloatControl("Emission", &m_Material->BufferData.Emission);
 
-			ImGui::Button("Metallic Map", buttonSize);
+			ImGui::Button("Metallic", buttonSize);
 			if (ImGui::BeginDragDropTarget())
 			{
 				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -64,7 +64,7 @@ namespace origin
 					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
 					if (AssetManager::GetAssetType(handle) == AssetType::Texture)
 					{
-						OGN_CORE_INFO("[MaterialEditor] AlbedoMap Applied");
+						OGN_CORE_INFO("[MaterialEditor] Metallic Applied");
 						m_Material->SetMetallicMap(handle);
 					}
 					else

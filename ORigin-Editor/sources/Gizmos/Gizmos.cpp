@@ -55,8 +55,8 @@ namespace origin {
 		if (camera.GetProjectionType() != ProjectionType::Perspective)
 			return;
 
+		glEnable(GL_DEPTH_TEST);
 		Renderer2D::Begin(camera);
-
 		float alphaColor = 0.3f;
 		glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, alphaColor);
 		glm::vec2 cameraPosition = { camera.GetPosition().x, camera.GetPosition().z };
@@ -97,132 +97,27 @@ namespace origin {
 		Renderer2D::End();
 	}
 
-	void Gizmos::Draw2DOverlay()
+	void Gizmos::DrawFrustum(const EditorCamera &camera, Scene *scene)
 	{
-		OGN_PROFILER_RENDERING();
-
-		auto &editor = EditorLayer::Get();
-
-		if (editor.m_VisualizeCollider)
-		{
-			auto &scene = EditorLayer::Get().m_ActiveScene;
-
-			const auto &quad = scene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
-			for (auto entity : quad)
-			{
-				const auto &[tc, bc2d] = quad.get<TransformComponent, BoxCollider2DComponent>(entity);
-
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + bc2d.Offset, tc.WorldTranslation.z))
-					* glm::rotate(glm::mat4(1.0f), tc.WorldRotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale) * bc2d.Size * 2.0f, 1.0f));
-
-				Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), (int)entity);
-			}
-
-			const auto &circle = scene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
-			for (auto entity : circle)
-			{
-				const auto &[tc, cc2d] = circle.get<TransformComponent, CircleCollider2DComponent>(entity);
-
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc2d.Offset, tc.WorldTranslation.z))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale * cc2d.Radius * 2.0f), 1.0f));
-
-				Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, 0.0f, (int)entity);
-			}
-		}
-
-		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
-		if (selectedEntity.IsValid())
-		{
-			const auto &tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 rotation = glm::toMat4(glm::quat(tc.WorldRotation));
-
-			if (selectedEntity.HasComponent<SpriteRenderer2DComponent>())
-			{
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z))
-					* rotation * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-				Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-			}
-			else if (selectedEntity.HasComponent<CircleRendererComponent>())
-			{
-				glm::vec3 translation = tc.WorldTranslation + glm::vec3(0.0f, 0.0f, 0.5f);
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-					* rotation * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-
-				Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
-			}
-
-			if(selectedEntity.HasComponent<RevoluteJoint2DComponent>())
-			{
-				auto &rjc = selectedEntity.GetComponent<RevoluteJoint2DComponent>();
-				glm::vec2 anchorPoint = { 
-					tc.WorldTranslation.x + rjc.AnchorPoint.x,
-					tc.WorldTranslation.y + rjc.AnchorPoint.y };
-
-				glm::mat4 transform = glm::translate(glm::mat4(1.0f),{ anchorPoint, tc.WorldTranslation.z + 0.0f })
-					* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
-
-				Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);
-			}
-		}
-		Renderer2D::End();
-	}
-
-	void Gizmos::Draw3DOverlay(const EditorCamera &camera)
-	{
-		OGN_PROFILER_RENDERING();
-		if (camera.GetProjectionType() == ProjectionType::Orthographic || !EditorLayer::Get().m_VisualizeCollider)
-			return;
-
-		glEnable(GL_DEPTH_TEST);
-		Renderer3D::Begin(camera);
-		auto &scene = EditorLayer::Get().m_ActiveScene;
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		const auto &view = scene->m_Registry.view<TransformComponent, RigidbodyComponent>();
-		for (auto e : view)
-		{
-			Entity entity = { e, scene.get() };
-			const auto &[tc, rb] = view.get<TransformComponent, RigidbodyComponent>(e);
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + rb.Offset));
-
-			if (entity.HasComponent<BoxColliderComponent>())
-			{
-				BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
-				transform *= glm::toMat4(glm::quat(tc.WorldRotation))
-					* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(cc.Size * 2.0f) * 2.0f);
-				Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)e);
-			}
-
-			if (entity.HasComponent<SphereColliderComponent>())
-			{
-				SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
-                transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-                Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
-			}
-
-            if (entity.HasComponent<CapsuleColliderComponent>())
+        glEnable(GL_DEPTH_TEST);
+        Renderer2D::Begin(camera);
+        for (auto &e : scene->GetAllEntitiesWith<CameraComponent>())
+        {
+            Entity entity = { e, scene };
+            const TransformComponent &tc = entity.GetComponent<TransformComponent>();
+            CameraComponent &cc = entity.GetComponent<CameraComponent>();
+            cc.Camera.GetFrustum().Update(cc.Camera.GetProjection() * glm::inverse(tc.GetTransform()));
+            for (const auto &edge : cc.Camera.GetFrustum().GetEdges())
             {
-                CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
-                transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-                Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
+                Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
             }
-		}
-
-		Renderer3D::End();
-		glDisable(GL_DEPTH_TEST);
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        Renderer2D::End();
 	}
 
-	void Gizmos::DrawIcons(const EditorCamera &camera)
+	void Gizmos::DrawIcons(const EditorCamera &camera, Scene *scene)
 	{
 		OGN_PROFILER_RENDERING();
-
-		auto &textures = EditorLayer::Get().m_UITextures;
-		auto &scene = EditorLayer::Get().m_ActiveScene;
-		const glm::vec2 &screen = EditorLayer::Get().m_SceneViewportSize;
-
 		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture, int entity)
 		{
 			glm::mat4 transform = glm::mat4(1.0f);
@@ -244,100 +139,190 @@ namespace origin {
 			Renderer2D::DrawQuad(transform, texture, (int)entity, glm::vec2(1.0f), glm::vec4(1.0f));
 		};
 
-		for (auto &e : scene->GetAllEntitiesWith<TransformComponent>())
+		// Draw ICONS
 		{
-			Entity entity = { e, scene.get() };
-			if (!entity.IsValid())
-				continue;
-
-			TransformComponent &tc = entity.GetComponent<TransformComponent>();
-			if (entity.HasComponent<CameraComponent>())
+			auto &textures = EditorLayer::Get().m_UITextures;
+			const glm::vec2 &screen = EditorLayer::Get().m_SceneViewportSize;
+			glEnable(GL_DEPTH_TEST);
+			Renderer2D::Begin(camera);
+			for (auto &e : scene->GetAllEntitiesWith<TransformComponent>())
 			{
-				CameraComponent &cc = entity.GetComponent<CameraComponent>();
-				cc.Camera.GetFrustum().Update(cc.Camera.GetProjection() * glm::inverse(tc.GetTransform()));
-                for (const auto &edge : cc.Camera.GetFrustum().GetEdges())
-                {
-					glEnable(GL_DEPTH_TEST);
-                    Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
-					glDisable(GL_DEPTH_TEST);
-                }
-				if (cc.Camera.IsPerspective())
+				Entity entity = { e, scene };
+				if (!entity.IsValid())
+					continue;
+
+				TransformComponent &tc = entity.GetComponent<TransformComponent>();
+				if (entity.HasComponent<CameraComponent>())
 				{
-					drawIcon(tc, textures.at("camera"), (int)entity);
-				}
-				else
-				{
-					if (cc.Camera.GetOrthoScale() > 15.0f)
+					CameraComponent &cc = entity.GetComponent<CameraComponent>();
+					if (cc.Camera.IsPerspective())
+					{
+						drawIcon(tc, textures.at("camera"), (int)entity);
+					}
+					else if (!cc.Camera.IsPerspective() && cc.Camera.GetOrthoScale() > 15.0f)
 					{
 						drawIcon(tc, textures.at("camera"), (int)entity);
 					}
 				}
-			}
-			else if (entity.HasComponent<AudioComponent>())
-			{
-				drawIcon(tc, textures.at("audio"), (int)entity);
-			}
-			else if (entity.HasComponent<LightComponent>())
-			{
-				drawIcon(tc, textures.at("lighting"), (int)entity);
-			}
-		}
-
-		Renderer2D::End();
-	}
-
-	void Gizmos::OnRender(const EditorCamera &camera)
-	{
-		OGN_PROFILER_RENDERING();
-
-		////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////     2D     //////////////////////////////////
-		////////////////////////////////////////////////////////////////////////////////
-		Renderer2D::Begin(camera);
-
-		glDisable(GL_DEPTH_TEST);
-		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
-		if (selectedEntity.IsValid())
-		{
-			if (m_Type == GizmoType::BOUNDARY2D)
-			{
-				CalculateBoundary2DSizing(camera);
-
-				float size = camera.GetOrthoScale() * 0.03f;
-				auto &tc = selectedEntity.GetComponent<TransformComponent>();
-
-				// bottom left corner
-				glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
-				glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
-				glm::vec4 col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_LEFT ? green : red;
-
-				std::vector<glm::vec3> cornerOffsets = {
-						{ -tc.WorldScale.x / 2.0f, -tc.WorldScale.y / 2.0f, 1.0f }, // Bottom left
-						{ -tc.WorldScale.x / 2.0f,  tc.WorldScale.y / 2.0f, 1.0f }, // Top left
-						{  tc.WorldScale.x / 2.0f, -tc.WorldScale.y / 2.0f, 1.0f }, // Bottom right
-						{  tc.WorldScale.x / 2.0f,  tc.WorldScale.y / 2.0f, 1.0f }  // Top right
-				};
-
-				for (int i = 0; i < 4; ++i)
+				else if (entity.HasComponent<AudioComponent>())
 				{
-					glm::vec4 col = (m_Boundary2DCorner == static_cast<Boundary2DCorner>(i)) ? green : red;
-					glm::quat rotationQuat = glm::quat(tc.WorldRotation);
-					glm::mat4 tf = glm::translate(glm::mat4(1.0f), tc.WorldTranslation + glm::vec3(rotationQuat * glm::vec4(cornerOffsets[i], 0.0f))) *
-						glm::toMat4(rotationQuat) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-
-					Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - (i + 1));
+					drawIcon(tc, textures.at("audio"), (int)entity);
+				}
+				else if (entity.HasComponent<LightComponent>())
+				{
+					drawIcon(tc, textures.at("lighting"), (int)entity);
 				}
 			}
 			Renderer2D::End();
 		}
+	}
 
-		Draw2DOverlay();
-		DrawIcons(camera);
+	void Gizmos::OnRender(const EditorCamera &camera, Scene *scene, bool visualizeCollider)
+	{
+		OGN_PROFILER_RENDERING();
 
-		////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////     3D     //////////////////////////////////
-		////////////////////////////////////////////////////////////////////////////////
-		Draw3DOverlay(camera);
+		glDisable(GL_DEPTH_TEST);
+		Renderer2D::Begin(camera);
+
+		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
+		const auto &viewA = scene->GetAllEntitiesWith<TransformComponent>();
+		for (auto e : viewA)
+		{
+			Entity entity = { e, scene };
+			auto &tc = entity.GetComponent<TransformComponent>();
+
+			// Selected entity
+			if (entity == selectedEntity && selectedEntity.IsValid())
+			{
+				// 2D Boundsizing
+				if (m_Type == GizmoType::BOUNDARY2D)
+				{
+					CalculateBoundary2DSizing(camera);
+					float size = camera.GetOrthoScale() * 0.03f;
+
+					// bottom left corner
+					glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
+					glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
+					glm::vec4 col = m_Boundary2DCorner == Boundary2DCorner::BOTTOM_LEFT ? green : red;
+					glm::vec3 cornerOffsets[4] = {
+							{ -tc.WorldScale.x / 2.0f, -tc.WorldScale.y / 2.0f, 1.0f }, // Bottom left
+							{ -tc.WorldScale.x / 2.0f,  tc.WorldScale.y / 2.0f, 1.0f }, // Top left
+							{  tc.WorldScale.x / 2.0f, -tc.WorldScale.y / 2.0f, 1.0f }, // Bottom right
+							{  tc.WorldScale.x / 2.0f,  tc.WorldScale.y / 2.0f, 1.0f }  // Top right
+					};
+
+					for (int i = 0; i < 4; ++i)
+					{
+						glm::vec4 col = (m_Boundary2DCorner == static_cast<Boundary2DCorner>(i)) ? green : red;
+						glm::quat rotationQuat = glm::quat(tc.WorldRotation);
+						glm::mat4 tf = glm::translate(glm::mat4(1.0f), tc.WorldTranslation + glm::vec3(rotationQuat * glm::vec4(cornerOffsets[i], 0.0f))) *
+							glm::toMat4(rotationQuat) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+
+						Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - (i + 1));
+					}
+				}
+
+                if (entity.HasComponent<RevoluteJoint2DComponent>())
+                {
+                    auto &rjc = entity.GetComponent<RevoluteJoint2DComponent>();
+                    glm::vec2 anchorPoint = {
+                        tc.WorldTranslation.x + rjc.AnchorPoint.x,
+                        tc.WorldTranslation.y + rjc.AnchorPoint.y };
+
+                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), { anchorPoint, tc.WorldTranslation.z + 0.0f })
+                        * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+
+                    Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);
+                }
+
+                if (entity.HasComponent<SpriteRenderer2DComponent>())
+                {
+                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z))
+                        * glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+                    Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+                }
+                else if (entity.HasComponent<CircleRendererComponent>())
+                {
+                    glm::vec3 translation = tc.WorldTranslation + glm::vec3(0.0f, 0.0f, 0.5f);
+                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+                        * glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+
+                    Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
+                }
+			}
+
+            // visualizing collider
+            if (visualizeCollider)
+            {
+                // 2D Collider
+                if (entity.HasComponent<BoxCollider2DComponent>())
+                {
+                    BoxCollider2DComponent &cc = entity.GetComponent<BoxCollider2DComponent>();
+
+                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc.Offset, tc.WorldTranslation.z))
+                        * glm::rotate(glm::mat4(1.0f), tc.WorldRotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+                        * glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale) * cc.Size * 2.0f, 1.0f));
+
+                    Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), (int)entity);
+                }
+
+                if (entity.HasComponent<CircleCollider2DComponent>())
+                {
+                    CircleCollider2DComponent &cc = entity.GetComponent<CircleCollider2DComponent>();
+
+                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc.Offset, tc.WorldTranslation.z))
+                        * glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale * cc.Radius * 2.0f), 1.0f));
+
+                    Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, 0.0f, (int)entity);
+                }
+            }
+		}
+
+        Renderer2D::End();
+
+		if (visualizeCollider)
+		{
+			glEnable(GL_DEPTH_TEST);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			Renderer3D::Begin(camera);
+			const auto &viewB = scene->GetAllEntitiesWith<RigidbodyComponent>();
+			for (auto e : viewB)
+			{
+				// 3D Collider
+				Entity entity = { e, scene };
+				const TransformComponent &tc = entity.GetComponent<TransformComponent>();
+				const RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
+				if (camera.IsPerspective())
+				{
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + rb.Offset));
+					if (entity.HasComponent<BoxColliderComponent>())
+					{
+						BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
+						transform *= glm::toMat4(glm::quat(tc.WorldRotation))
+							* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(cc.Size * 2.0f) * 2.0f);
+						Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)e);
+					}
+
+					if (entity.HasComponent<SphereColliderComponent>())
+					{
+						SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
+						transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+						Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
+					}
+
+					if (entity.HasComponent<CapsuleColliderComponent>())
+					{
+						CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
+						transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+						Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
+					}
+
+				}
+			}
+			Renderer3D::End();
+            glDisable(GL_DEPTH_TEST);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 	}
 
 	void Gizmos::OnEvent(Event &e)
@@ -386,7 +371,9 @@ namespace origin {
 		OGN_PROFILER_FUNCTION();
 
 		if (m_Hovered >= -1)
+		{
 			m_Type = type;
+		}
 	}
 
 	void Gizmos::CalculateBoundary2DSizing(const EditorCamera &camera)

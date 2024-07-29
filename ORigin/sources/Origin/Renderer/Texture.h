@@ -50,6 +50,7 @@ namespace origin {
 
 		virtual std::string GetFilepath() = 0;
 		virtual std::string GetName() const = 0;
+		virtual void Bind(uint32_t bindingPoint, uint32_t index, uint32_t arrayCount) = 0;
 		virtual void Bind(uint32_t slot = 0) = 0;
 		virtual void Unbind() = 0;
 		virtual void Delete() = 0;

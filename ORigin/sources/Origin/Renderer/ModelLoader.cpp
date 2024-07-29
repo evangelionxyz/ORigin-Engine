@@ -117,6 +117,7 @@ namespace origin
 				vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 				vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 				vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+				vertex.TilingFactor	 = glm::vec2(1.0f);
 				vertex.BoneIDs = glm::vec4(0.0f);
 				vertex.BoneWeights = glm::vec4(0.0f);
 				data->vertices.push_back(vertex);
@@ -232,14 +233,16 @@ namespace origin
 
 		vertexBuffer->SetLayout
 		({
-			{ ShaderDataType::Float3, "aPosition"   },
-			{ ShaderDataType::Float3, "aNormals"    },
-			{ ShaderDataType::Float3, "aColor"      },
-			{ ShaderDataType::Float2, "aUV"         },
-			{ ShaderDataType::Float4, "aBoneIDs"    },
-			{ ShaderDataType::Float4, "aBoneWeights"},
-			{ ShaderDataType::Float,  "aTexIndex"   },
-			{ ShaderDataType::Int,	  "aEntityID"   }
+			{ ShaderDataType::Float3, "aPosition"     },
+			{ ShaderDataType::Float3, "aNormals"      },
+			{ ShaderDataType::Float3, "aColor"        },
+			{ ShaderDataType::Float2, "aUV"           },
+			{ ShaderDataType::Float2, "aTilingFactor" },
+			{ ShaderDataType::Float4, "aBoneIDs"      },
+			{ ShaderDataType::Float4, "aBoneWeights"  },
+			{ ShaderDataType::Float,  "aAlbedoIndex"  },
+			{ ShaderDataType::Float,  "aSpecularIndex"},
+			{ ShaderDataType::Int,	  "aEntityID"     }
 		});
 
 		vertexArray->AddVertexBuffer(vertexBuffer);

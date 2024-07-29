@@ -184,7 +184,7 @@ namespace origin
 		m_Time += ts.Seconds();
 
 		Renderer::GetStatistics().Reset();
-		Application::Get().GetGuiLayer()->BlockEvents(!IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused && !m_UIEditor->IsViewportFocused);
+		//Application::Get().GetGuiLayer()->BlockEvents(!IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused && !m_UIEditor->IsViewportFocused);
 		
 		m_SpriteSheetEditor->OnUpdate(ts);
 		m_UIEditor->OnUpdate(ts);
@@ -538,16 +538,11 @@ namespace origin
 				if (ImGui::MenuItem("Reload"))
 				{
 					if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+					{
 						OnSceneStop();
+					}
 					ScriptEngine::ReloadAssembly();
 				}
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Object"))
-			{
-				if (ImGui::MenuItem("Empty Entity", nullptr, nullptr, (bool)Project::GetActive()
-					&& !m_ScenePath.empty())) m_SceneHierarchy.SetSelectedEntity(EntityManager::CreateEntityWithUUID(UUID(), "Empty", m_ActiveScene.get()));
 				ImGui::EndMenu();
 			}
 
@@ -590,25 +585,28 @@ namespace origin
 			break;
 
 		case SceneState::Edit:
-			if (m_Draw3DGrid)
-				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
-			if (m_Draw2DGrid)
-				m_Gizmos->Draw2DGrid(m_EditorCamera);
+			
+			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
 
+			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
+			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+			
 			m_EditorCamera.OnUpdate(ts);
 			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
-			m_Gizmos->OnRender(m_EditorCamera);
+			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
+			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
 
 		case SceneState::Simulate:
-			if (m_Draw3DGrid)
-				m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
-			if (m_Draw2DGrid)
-				m_Gizmos->Draw2DGrid(m_EditorCamera);
+			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
 
+			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
+			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+			
 			m_EditorCamera.OnUpdate(ts);
 			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
-			m_Gizmos->OnRender(m_EditorCamera);
+			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
+			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
 		}
 	}
@@ -872,9 +870,13 @@ namespace origin
 				if (m_SceneHierarchy.GetContext())
 				{
 					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+					{
 						OnSceneSimulate();
+					}
 					else if (m_SceneState == SceneState::Simulate)
+					{
 						OnSceneStop();
+					}
 				}
 			}
 
@@ -1062,7 +1064,7 @@ namespace origin
 
     void EditorLayer::ConsoleWindow()
     {
-		ImGui::Begin("Console");
+		ImGui::Begin("Console", &guiConsoleWindow);
         static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
         ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f), 0, windowFlags);
 		if (UI::DrawButton("CLEAR"))
@@ -1080,39 +1082,45 @@ namespace origin
 
         if (ImGui::BeginTable("table1", 3, flags))
         {
-			float timestampWidth = ImGui::CalcTextSize("Timestamp").x + 2.0f;
+			ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableSetupColumn("Timestamp");
             ImGui::TableSetupColumn("Message");
             ImGui::TableSetupColumn("Type");
             ImGui::TableHeadersRow();
 
-            for (auto &m : ConsoleManager::GetMessages())
-            {
-                ImGui::TableNextRow();
+			ImGuiListClipper clipper;
+			const auto &messages = ConsoleManager::GetMessages();
+			clipper.Begin(messages.size());
 
-                switch (m.Type)
-                {
-                case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
-                case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
-                case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.5f, 0.2f, 1.0f)); break;
-                }
+			while (clipper.Step())
+			{
+				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row)
+				{
+                    ImGui::TableNextRow();
 
-				ImGui::TableSetColumnIndex(0);
-				ImGui::Text("%s", m.Timestamp.c_str());
-                ImGui::TableSetColumnIndex(1);
-                ImGui::TextWrapped("%s", m.Message.c_str());
-                ImGui::TableSetColumnIndex(2);
+                    switch (messages[row].Type)
+                    {
+                    case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
+                    case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
+                    case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.5f, 0.2f, 1.0f)); break;
+                    }
 
-                switch (m.Type)
-                {
-                case ConsoleMessageType::Info:    ImGui::Text("INFO"); break;
-                case ConsoleMessageType::Error:   ImGui::Text("ERROR"); break;
-				case ConsoleMessageType::Warning: ImGui::Text("WARN"); break;
-                }
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("%s", messages[row].Timestamp.c_str());
+					ImGui::TableSetColumnIndex(1);
+					ImGui::TextWrapped("%s", messages[row].Message.c_str());
+					ImGui::TableSetColumnIndex(2);
 
-				ImGui::PopStyleColor(1);
-            }
+					switch (messages[row].Type)
+                    {
+                    case ConsoleMessageType::Info:    ImGui::Text("INFO"); break;
+                    case ConsoleMessageType::Error:   ImGui::Text("ERROR"); break;
+                    case ConsoleMessageType::Warning: ImGui::Text("WARN"); break;
+                    }
 
+                    ImGui::PopStyleColor(1);
+				}
+			}
             ImGui::EndTable();
         }
 
@@ -1254,96 +1262,126 @@ namespace origin
 		switch (e.GetKeyCode())
 		{
 		case Key::D:
-			{
-				if (control)
-					OnDuplicateEntity();
-				break;
-			}
+		{
+			if (control)
+				OnDuplicateEntity();
+			break;
+		}
 
 		case Key::E:
-			{
-				if (!ImGuizmo::IsUsing() && !io.WantTextInput && m_GizmosMode == ImGuizmo::MODE::LOCAL)
-					m_Gizmos->SetType(GizmoType::SCALE);
-				break;
-			}
+		{
+			if (!ImGuizmo::IsUsing() && !io.WantTextInput && m_GizmosMode == ImGuizmo::MODE::LOCAL)
+				m_Gizmos->SetType(GizmoType::SCALE);
+			break;
+		}
 
 		case Key::F:
+		{
+			if (selectedEntity.IsValid() && !io.WantTextInput)
 			{
-				if (selectedEntity.IsValid() && !io.WantTextInput)
+				const auto &tc = selectedEntity.GetComponent<TransformComponent>();
+				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic)
 				{
-					const auto &tc = selectedEntity.GetComponent<TransformComponent>();
-					if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic)
-					{
-						m_EditorCamera.SetPosition({ tc.WorldTranslation.x, tc.WorldTranslation.y, m_EditorCamera.GetPosition().z });
-					}
-					else
-					{
-						m_EditorCamera.SetPosition({ tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z });
-					}
-					
+					m_EditorCamera.SetPosition({ tc.WorldTranslation.x, tc.WorldTranslation.y, m_EditorCamera.GetPosition().z });
 				}
-				break;
+				else
+				{
+					m_EditorCamera.SetPosition({ tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z });
+				}
 			}
+			break;
+		}
 
 		case Key::O:
-			{
-				if (control) OpenScene();
-				break;
-			}
+		{
+			if (control) OpenScene();
+			break;
+		}
 
 		case Key::N:
-			{
-				if (control) NewScene();
-				break;
-			}
+		{
+			if (control) NewScene();
+			break;
+		}
 
 		case Key::R:
+		{
+			if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+				m_Gizmos->SetType(GizmoType::ROTATE);
+			break;
+		}
+		case Key::F5:
+		{
+			if (m_SceneHierarchy.GetContext())
 			{
-				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_Gizmos->SetType(GizmoType::ROTATE);
-				break;
-			}
-
-			// File Operation
-		case Key::S:
-			{
-				if (control)
+				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
 				{
-					if (shift)
-						SaveSceneAs();
-					else
-						SaveScene();
+					OnScenePlay();
 				}
-				break;
+				else if (m_SceneState == SceneState::Play)
+				{
+					OnSceneStop();
+				}
 			}
+			break;
+		}
+
+		case Key::F6:
+		{
+			if (m_SceneHierarchy.GetContext())
+			{
+				if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+				{
+					OnSceneSimulate();
+				}
+				else if (m_SceneState == SceneState::Simulate)
+				{
+					OnSceneStop();
+				}
+			}
+			break;
+		}
+
+		// File Operation
+		case Key::S:
+		{
+			if (control)
+			{
+				if (shift)
+					SaveSceneAs();
+				else
+					SaveScene();
+			}
+			break;
+		}
 
 		case Key::T:
-			{
-				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_Gizmos->SetType(GizmoType::TRANSLATE);
-				break;
-			}
+		{
+			if (!ImGuizmo::IsUsing() && !io.WantTextInput)
+				m_Gizmos->SetType(GizmoType::TRANSLATE);
+			break;
+		}
 
 		case Key::Y:
-			{
-				if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-					m_Gizmos->SetType(GizmoType::BOUNDARY2D);
-				break;
-			}
+		{
+			if (!ImGuizmo::IsUsing() && !io.WantTextInput && !m_EditorCamera.IsPerspective())
+				m_Gizmos->SetType(GizmoType::BOUNDARY2D);
+			break;
+		}
 
 		case Key::F11:
-			{
-				guiMenuFullscreen = !guiMenuFullscreen;
-				app.GetWindow().SetFullscreen(guiMenuFullscreen);
-				break;
-			}
+		{
+			guiMenuFullscreen = !guiMenuFullscreen;
+			app.GetWindow().SetFullscreen(guiMenuFullscreen);
+			break;
+		}
 
 		case Key::Delete:
-			{
-				if(!io.WantTextInput)
-					OnDestroyEntity();
-				break;
-			}
+		{
+			if (!io.WantTextInput)
+				OnDestroyEntity();
+			break;
+		}
 		}
 
 		return false;

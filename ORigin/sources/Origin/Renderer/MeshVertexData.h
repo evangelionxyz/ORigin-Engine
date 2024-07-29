@@ -10,9 +10,11 @@ namespace origin
         glm::vec3 Normals;
         glm::vec3 Color;
         glm::vec2 UV;
+        glm::vec2 TilingFactor;
         glm::vec4 BoneIDs;
         glm::vec4 BoneWeights;
-        float TexIndex = 0.0f;
+        float AlbedoIndex = 0.0f;
+        float SpecularIndex = 0.0f;
         int EntityID = -1;
     };
 

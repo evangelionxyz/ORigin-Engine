@@ -74,7 +74,8 @@ namespace origin
 		auto &idc = entity.GetComponent<IDComponent>();
 		out << YAML::BeginMap; // Entity
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
-		out << YAML::Key << "Parent" << idc.Parent;
+		out << YAML::Key << "Type" << YAML::Value << Utils::EntityTypeToString(idc.Type);
+		out << YAML::Key << "Parent" << YAML::Value << idc.Parent;
 		if (entity.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent";
@@ -635,11 +636,10 @@ namespace origin
 			for (YAML::iterator::value_type entity : entities)
 			{
 				uint64_t uuid = entity["Entity"].as<uint64_t>();
-				std::string name;
-				if (auto tagComponent = entity["TagComponent"])
-					name = tagComponent["Tag"].as<std::string>();
+				std::string name = entity["TagComponent"]["Tag"].as<std::string>();
+				//EntityType type = Utils::EntityTypeStringToType(entity["Parent"].as<std::string>());
+				Entity deserializedEntity = EntityManager::CreateEntityWithUUID(uuid, name, EntityType::Entity, m_Scene.get());
 
-				Entity deserializedEntity = EntityManager::CreateEntityWithUUID(uuid, name, m_Scene.get());
 				deserializedEntity.GetComponent<IDComponent>().Parent = entity["Parent"].as<uint64_t>();
 
 				if (YAML::Node transformComponent = entity["TransformComponent"])

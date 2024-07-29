@@ -55,6 +55,7 @@ namespace origin {
 		}
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		EntityType GetType() { return GetComponent<IDComponent>().Type; }
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 

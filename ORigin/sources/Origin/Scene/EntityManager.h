@@ -8,13 +8,13 @@ namespace origin
 	class EntityManager
 	{
 	public:
-		static Entity CreateEntity(const std::string &name, Scene *scene);
+		static Entity CreateEntity(const std::string &name, Scene *scene, EntityType type);
 		static Entity CreateAudio(const std::string &name, Scene *scene);
 		static Entity CreateSprite(const std::string &name, Scene *scene);
 		static Entity CreateCircle(const std::string &name, Scene *scene);
 		static Entity CreateCamera(const std::string &name, Scene *scene);
 		static Entity CreateLighting(const std::string &name, Scene *scene);
-		static Entity CreateEntityWithUUID(UUID uuid, const std::string &name, Scene *scene);
+		static Entity CreateEntityWithUUID(UUID uuid, const std::string &name, EntityType type, Scene *scene);
 		static Entity CreateMesh(const std::string &name, Scene *scene);
 		static Entity CreateCube(const std::string &name, Scene *scene);
 		static Entity CreateSphere(const std::string &name, Scene *scene);
