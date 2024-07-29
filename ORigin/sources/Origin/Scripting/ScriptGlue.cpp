@@ -10,6 +10,7 @@
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/EntityManager.h"
+#include "Origin/Core/MouseCodes.h"
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Core/Input.h"
 #include "Origin/Audio/AudioSource.h"
@@ -164,10 +165,11 @@ namespace origin
 	}
 
 	// ==============================================
-	// Logging
-	static void NativeLog(MonoString *string, int parameter)
+	// Debug
+	static void Debug_Log(MonoString *string, int parameter)
 	{
 		std::string str = Utils::MonoStringToString(string);
+		OGN_CORE_WARN("{0}", str);
 		PUSH_CONSOLE_INFO("{0}", str.c_str());
 	}
 
@@ -271,7 +273,7 @@ namespace origin
 		}
 	}
 
-    static void TransformComponent_GetRotationEuler(UUID entityID, glm::vec3 *outRotation)
+    static void TransformComponent_GetEulerAngles(UUID entityID, glm::vec3 *angle)
     {
         OGN_PROFILER_LOGIC();
 
@@ -281,11 +283,11 @@ namespace origin
 
         if (entity.IsValid())
         {
-            *outRotation = glm::eulerAngles(entity.GetComponent<TransformComponent>().Rotation);
+            *angle = entity.GetComponent<TransformComponent>().GetEulerAngles();
         }
     }
 
-    static void TransformComponent_SetRotationEuler(UUID entityID, glm::vec3 rotation)
+    static void TransformComponent_SetEulerAngles(UUID entityID, glm::vec3 angle)
     {
         OGN_PROFILER_LOGIC();
 
@@ -295,7 +297,7 @@ namespace origin
 
         if (entity.IsValid())
         {
-            entity.GetComponent<TransformComponent>().Rotation = glm::quat(rotation);
+            entity.GetComponent<TransformComponent>().SetEulerAngles(angle);
         }
     }
 
@@ -325,6 +327,45 @@ namespace origin
 			entity.GetComponent<TransformComponent>().Scale = scale;
 		}
 	}
+
+    static void TransformComponent_SetForward(UUID entityID, glm::vec3 forward)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            entity.GetComponent<TransformComponent>().SetForward(forward);
+        }
+    }
+
+    static void TransformComponent_SetRight(UUID entityID, glm::vec3 right)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            entity.GetComponent<TransformComponent>().SetRight(right);
+        }
+    }
+
+    static void TransformComponent_SetUp(UUID entityID, glm::vec3 up)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            entity.GetComponent<TransformComponent>().SetUp(up);
+        }
+    }
 
 	static void Rigidbody2DComponent_SetVelocity(UUID entityID, glm::vec2 velocity)
 	{
@@ -1787,18 +1828,39 @@ namespace origin
         }
     }
 
-	static bool Input_IsKeyPressed(KeyCode keycode)
-	{
-		OGN_PROFILER_LOGIC();
-
-		return Input::IsKeyPressed(keycode);
+	static void Input_ToggleMouseLock()
+	{ 
+		Input::Get().ToggleMouseLock();
 	}
 
-	static bool Input_IsKeyReleased(KeyCode keycode)
-	{
-		OGN_PROFILER_LOGIC();
+	static void Input_GetMouseDelta(glm::vec2 *delta)
+	{ 
+		*delta = Input::Get().GetMouseDelta();
+	}
 
-		return Input::IsKeyReleased(keycode);
+	static void Input_GetMousePosition(glm::vec2 *value)
+	{ 
+		*value = Input::Get().GetMousePosition();
+	}
+
+	static void Input_SetMousePosition(glm::vec2 value)
+	{ 
+		Input::Get().SetMousePosition(value.x, value.y);
+	}
+
+	static void Input_IsMouseButtonDown(MouseCode button, bool *value)
+	{ 
+		*value = Input::Get().IsMouseButtonPressed(button);
+	}
+
+	static void Input_IsKeyPressed(KeyCode keycode, bool *value)
+	{
+		*value = Input::Get().IsKeyPressed(keycode);
+	}
+
+	static void Input_IsKeyReleased(KeyCode keycode, bool *value)
+	{
+		*value = Input::Get().IsKeyReleased(keycode);
 	}
 
 	template <typename... Component>
@@ -1866,19 +1928,22 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(Entity_Instantiate);
 		OGN_ADD_INTERNAL_CALLS(Entity_Destroy);
 
-		// Logging
-		OGN_ADD_INTERNAL_CALLS(NativeLog);
+		// Debug
+		OGN_ADD_INTERNAL_CALLS(Debug_Log);
 
 		// Components
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetForward);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetForward);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRight);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRight);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetUp);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetUp);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRotation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRotation);
-		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRotationEuler);
-		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRotationEuler);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetEulerAngles);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetEulerAngles);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetScale);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetScale);
 
@@ -1996,6 +2061,10 @@ namespace origin
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 
+		OGN_ADD_INTERNAL_CALLS(Input_GetMousePosition);
+		OGN_ADD_INTERNAL_CALLS(Input_SetMousePosition);
+		OGN_ADD_INTERNAL_CALLS(Input_GetMouseDelta);
+		OGN_ADD_INTERNAL_CALLS(Input_IsMouseButtonDown);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyReleased);
 	}

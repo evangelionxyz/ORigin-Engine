@@ -13,18 +13,32 @@ namespace origin
 	{
 	public:
 		Input();
+		void Init(void *window);
+		bool IsKeyReleased(const KeyCode keycode);
+		bool IsKeyPressed(const KeyCode keycode);
+		bool IsMouseButtonPressed(const MouseCode button);
+		float GetMouseX();
+		float GetMouseY();
+		void SetMousePosition(float x, float y);
+		void SetMouseLastPosition(float x, float y);
+		glm::vec2 GetMousePosition() const;
+		glm::vec2 GetMouseDelta() const;
 
-		static bool IsKeyReleased(const KeyCode keycode);
-		static bool IsKeyPressed(const KeyCode keycode);
-		static bool IsMouseButtonPressed(const MouseCode button);
-		static glm::vec2 GetMousePosition();
-		static float GetMouseX();
-		static float GetMouseY();
-		static void SetMousePosition(float x, float y);
+		void Update();
+		void ToggleMouseLock();
+		void MouseHide();
+		void MouseUnHide();
+		void SetMouseHide(bool hide);
+		static Input &Get();
 
 	private:
-		bool m_IsMouseDragging = false;
-		glm::vec2 m_MouseInitialPosition = glm::vec2(0.0f);
 		static Input* s_Instance;
+		bool m_IsMouseLocked = false;
+		bool m_IsMouseDragging = false;
+		bool m_IsMouseHidden = false;
+		glm::vec2 m_MouseDelta = { 0.0f, 0.0f };
+		glm::vec2 m_RawMouseDelta = { 0.0f, 0.0f };
+		glm::vec2 m_LastMousePosition = { 0.0f, 0.0f };
+		friend class EditorCamera;
 	};
 }

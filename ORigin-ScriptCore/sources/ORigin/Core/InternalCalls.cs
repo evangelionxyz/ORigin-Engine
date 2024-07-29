@@ -23,6 +23,10 @@ namespace ORiginEngine
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Entity_GetVisibility(ulong entityID, out bool result);
 
+        // Debug
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Debug_Log(string result);
+
         // Script Instance
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object GetScriptInstance(ulong entityID);
@@ -31,17 +35,27 @@ namespace ORiginEngine
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetForward(ulong entityID, out Vector3 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetForward(ulong entityID, Vector3 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetRight(ulong entityID, out Vector3 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetRight(ulong entityID, Vector3 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetUp(ulong entityID, out Vector3 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetUp(ulong entityID, Vector3 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetTranslation(ulong entityID, out Vector3 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_SetTranslation(ulong entityID, Vector3 value);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector3 result);
+        internal extern static void TransformComponent_GetRotation(ulong entityID, out Quaternion result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_SetRotation(ulong entityID, Vector3 value);
+        internal extern static void TransformComponent_SetRotation(ulong entityID, Quaternion value);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_GetEulerAngles(ulong entityID, out Vector3 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetEulerAngles(ulong entityID, Vector3 value);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -282,15 +296,23 @@ namespace ORiginEngine
         internal extern static void RigidbodyComponent_GetCenterOfMassPosition(ulong entityID, out Vector3 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidbodyComponent_GetLinearVelocity(ulong entityID, out Vector3 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_GetRotation(ulong entityID, out Quaternion result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetRotation(ulong entityID, Quaternion result, bool activate);
 
         // INPUT
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Input_GetMousePosition(out Vector2 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Input_SetMousePosition(Vector2 value);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Input_GetMouseDelta(out Vector2 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Input_IsMouseButtonDown(MouseCode button);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Input_IsKeyPressed(KeyCode keycode);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Input_IsKeyReleased(KeyCode keycode);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_IsMouseDown(MouseCode code);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_IsMouseUp(MouseCode code);
     }
 }

@@ -409,7 +409,7 @@ namespace origin
 		if (!IsViewportFocused)
 			return false;
 
-		bool control = Input::IsKeyPressed(Key::LeftControl);
+		bool control = Input::Get().IsKeyPressed(Key::LeftControl);
 
 		if (control)
 		{
@@ -435,12 +435,10 @@ namespace origin
 		if (m_Controls.empty())
 			return;
 
-		static glm::vec2 initialPosition = { 0.0f, 0.0f };
-		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
-		const glm::vec2 delta = mouse - initialPosition;
-		initialPosition = mouse;
+		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
+		const glm::vec2 delta = Input::Get().GetMouseDelta();
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered && m_SelectedIndex >= 0)
+		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered && m_SelectedIndex >= 0)
 		{
 			auto &c = m_Controls[m_SelectedIndex];
 			float orthoScale = m_Camera.GetOrthoScale() / m_Camera.GetHeight();
@@ -451,9 +449,9 @@ namespace origin
 			m_MoveTranslation.y -= delta.y * orthoScale;
 
 			float snapSize = 0.5f;
-			if (Input::IsKeyPressed(Key::LeftShift))
+			if (Input::Get().IsKeyPressed(Key::LeftShift))
 			{
-				if (Input::IsKeyPressed(Key::LeftControl))
+				if (Input::Get().IsKeyPressed(Key::LeftControl))
 					snapSize = 0.1f;
 
 				switch (c.SelectedCorner)
@@ -469,9 +467,9 @@ namespace origin
 				switch (c.SelectedCorner)
 				{
 					case NONE:
-						if (Input::IsKeyPressed(Key::X))
+						if (Input::Get().IsKeyPressed(Key::X))
 							c.Position.x += delta.x * orthoScale;
-						else if (Input::IsKeyPressed(Key::Y))
+						else if (Input::Get().IsKeyPressed(Key::Y))
 							c.Position.y -= delta.y * orthoScale;
 						else
 						{

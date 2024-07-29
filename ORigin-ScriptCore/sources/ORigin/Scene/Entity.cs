@@ -42,12 +42,12 @@ namespace ORiginEngine
             set => InternalCalls.TransformComponent_SetTranslation(ID, value);
         }
 
-        public Vector3 Rotation
+        public Quaternion Rotation
         {
             get
             {
-                InternalCalls.TransformComponent_GetRotation(ID, out Vector3 rotation);
-                return rotation;
+                InternalCalls.TransformComponent_GetRotation(ID, out Quaternion quat);
+                return quat;
             }
             set => InternalCalls.TransformComponent_SetRotation(ID, value);
         }

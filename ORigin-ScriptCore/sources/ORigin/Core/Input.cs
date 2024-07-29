@@ -1,27 +1,47 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
+using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
+
 namespace ORiginEngine
 {
-  public static class Input
-  {
-    public static bool IsKeyPressed(KeyCode code)
+    public static class Input
     {
-      return InternalCalls.Input_IsKeyPressed(code);
-    }
+        public static Vector2 MousePosition
+        {
+            get
+            {
+                InternalCalls.Input_GetMousePosition(out Vector2 result);
+                return result;
+            }
+            set
+            {
+                InternalCalls.Input_SetMousePosition(value);
+            }
+        }
 
-    public static bool IsKeyReleased(KeyCode code)
-    {
-      return InternalCalls.Input_IsKeyReleased(code);
-    }
+        public static Vector2 MouseDelta
+        {
+            get
+            {
+                InternalCalls.Input_GetMouseDelta(out Vector2 result);
+                return result;
+            }
+        }
 
-    public static bool IsMouseDown(MouseCode code)
-    {
-      return InternalCalls.Input_IsMouseDown(code);
-    }
+        public static bool IsMouseDown(MouseCode code)
+        {
+            return InternalCalls.Input_IsMouseButtonDown(code);
+        }
 
-    public static bool IsMouseUp(MouseCode code)
-    {
-      return InternalCalls.Input_IsMouseUp(code);
+        public static bool IsKeyPressed(KeyCode code)
+        {
+            return InternalCalls.Input_IsKeyPressed(code);
+        }
+
+        public static bool IsKeyReleased(KeyCode code)
+        {
+            return InternalCalls.Input_IsKeyReleased(code);
+        }
     }
-  }
 }

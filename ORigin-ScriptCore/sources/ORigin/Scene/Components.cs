@@ -25,22 +25,46 @@ namespace ORiginEngine
 
     public class TransformComponent : Component
     {
-        public Vector3 GetForward()
+        public Vector3 Forward
         {
-            InternalCalls.TransformComponent_GetForward(Entity.ID, out Vector3 forward);
-            return forward;
+            get
+            {
+                InternalCalls.TransformComponent_GetForward(Entity.ID, out Vector3 forward);
+                return forward;
+            }
+
+            set
+            {
+                InternalCalls.TransformComponent_SetForward(Entity.ID, value);
+            }
         }
 
-        public Vector3 GetRight()
+        public Vector3 Right
         {
-            InternalCalls.TransformComponent_GetRight(Entity.ID, out Vector3 right);
-            return right;
+            get
+            {
+                InternalCalls.TransformComponent_GetRight(Entity.ID, out Vector3 right);
+                return right;
+            }
+
+            set
+            {
+                InternalCalls.TransformComponent_SetRight(Entity.ID, value);
+            }
         }
 
-        public Vector3 GetUp()
+        public Vector3 Up
         {
-            InternalCalls.TransformComponent_GetUp(Entity.ID, out Vector3 up);
-            return up;
+            get
+            {
+                InternalCalls.TransformComponent_GetUp(Entity.ID, out Vector3 up);
+                return up;
+            }
+
+            set
+            {
+                InternalCalls.TransformComponent_SetUp(Entity.ID, value);
+            }
         }
 
         public Vector3 Translation
@@ -56,16 +80,29 @@ namespace ORiginEngine
             }
         }
 
-        public Vector3 Rotation
+        public Quaternion Rotation
         {
             get
             {
-                InternalCalls.TransformComponent_GetRotation(Entity.ID, out Vector3 rotation);
-                return rotation;
+                InternalCalls.TransformComponent_GetRotation(Entity.ID, out Quaternion quat);
+                return quat;
             }
             set
             {
                 InternalCalls.TransformComponent_SetRotation(Entity.ID, value);
+            }
+        }
+
+        public Vector3 EulerAngles
+        {
+            get
+            {
+                InternalCalls.TransformComponent_GetEulerAngles(Entity.ID, out Vector3 quat);
+                return quat;
+            }
+            set
+            {
+                InternalCalls.TransformComponent_SetEulerAngles(Entity.ID, value);
             }
         }
 
@@ -525,6 +562,17 @@ namespace ORiginEngine
         public void SetLinearVelocity(Vector3 velocity)
         {
             InternalCalls.RigidbodyComponent_SetLinearVelocity(Entity.ID, velocity);
+        }
+
+        public void SetRotation(Quaternion quat, bool activate)
+        {
+            InternalCalls.RigidbodyComponent_SetRotation(Entity.ID, quat, activate);
+        }
+
+        public Quaternion GetRotation()
+        {
+            InternalCalls.RigidbodyComponent_GetRotation(Entity.ID, out Quaternion result);
+            return result;
         }
 
         public float Friction

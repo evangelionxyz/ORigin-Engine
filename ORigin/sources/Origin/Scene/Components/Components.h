@@ -296,7 +296,7 @@ namespace origin
 			WorldRotation = glm::normalize(delta * WorldRotation);
         }
 
-        void SetScale(const glm::vec3 &factor)
+        void SetWorldScale(const glm::vec3 &factor)
         {
             WorldScale *= factor;
         }
@@ -310,7 +310,6 @@ namespace origin
 		{
 			WorldRotation = glm::quat(euler);
 		}
-
 	};
 
 	class SpriteRenderer2DComponent

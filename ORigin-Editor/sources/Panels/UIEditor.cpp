@@ -525,15 +525,13 @@ namespace origin
 
 	void UIEditor::OnMouse(float ts)
 	{
-		static glm::vec2 initialPosition = { 0.0f, 0.0f };
-		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
-		const glm::vec2 delta = mouse - initialPosition;
-		initialPosition = mouse;
+		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
+		const glm::vec2 delta = Input::Get().GetMouseDelta();
 
 		if (!m_UICompHandler)
 			return;
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered)
+		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered)
 		{
 			for (int i = 0; i < m_UICompHandler->Components.size(); i++)
 			{
@@ -544,10 +542,10 @@ namespace origin
 
 					static glm::vec3 translation = tc.Translation;
 
-					if (Input::IsKeyPressed(Key::LeftShift))
+					if (Input::Get().IsKeyPressed(Key::LeftShift))
 					{
 						float snapeValue = 0.5f;
-						if (Input::IsKeyPressed(Key::LeftControl))
+						if (Input::Get().IsKeyPressed(Key::LeftControl))
 							snapeValue = 0.1f;
 
 						translation += glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);

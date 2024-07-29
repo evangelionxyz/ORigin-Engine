@@ -66,7 +66,7 @@ namespace origin {
 		LayerStack m_LayerStack;
 		std::shared_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer, *m_SplashScreenGui;
-		std::unique_ptr<Input> m_MainInputHandle;
+		Input m_InputHandle;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e) const;
 		bool OnWindowResize(WindowResizeEvent& e);

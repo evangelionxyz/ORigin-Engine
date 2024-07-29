@@ -155,35 +155,37 @@ namespace origin {
 
 	void EditorCamera::OnUpdate(Timestep ts)
 	{
-		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
-		const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-		m_InitialMousePosition = mouse;
+		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
+		const glm::vec2 delta = Input::Get().GetMouseDelta() * 0.003f;
 
 		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
 		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonRight)|| Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+		bool panOrRotate = Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) || Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle);
+        Input::Get().SetMouseHide(panOrRotate);
+
+		if (panOrRotate)
 		{
 			if (mouse.x > wWidth - 2.0f)
 			{
-				m_InitialMousePosition.x = 2.0f;
-				Input::SetMousePosition(2.0f, mouse.y);
+				Input::Get().m_LastMousePosition.x = 2.0f;
+				Input::Get().SetMousePosition(2.0f, mouse.y);
 			}
 			else if (mouse.x < 2.0f)
 			{
-				m_InitialMousePosition.x = wWidth - 2.0f;
-				Input::SetMousePosition(wWidth - 2.0f, mouse.y);
+				Input::Get().m_LastMousePosition.x = wWidth - 2.0f;
+				Input::Get().SetMousePosition(wWidth - 2.0f, mouse.y);
 			}
 
 			if (mouse.y > wHeight - 2.0f)
 			{
-				m_InitialMousePosition.y = 2.0f;
-				Input::SetMousePosition(mouse.x, 2.0f);
+				Input::Get().m_LastMousePosition.y = 2.0f;
+				Input::Get().SetMousePosition(mouse.x, 2.0f);
 			}
 			else if (mouse.y < 2.0f)
 			{
-				m_InitialMousePosition.y = wHeight - 2.0f;
-				Input::SetMousePosition(mouse.x, wHeight - 2.0f);
+				Input::Get().m_LastMousePosition.y = wHeight - 2.0f;
+				Input::Get().SetMousePosition(mouse.x, wHeight - 2.0f);
 			}
 		}
 
@@ -195,9 +197,9 @@ namespace origin {
 			switch (m_CameraStyle)
 			{
 				case CameraStyle::Pivot:
-					if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && !Input::Get().IsKeyPressed(Key::LeftControl))
 						MouseRotate(delta);
-					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
 						MousePan(delta);
 
 					m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, 0.8f);
@@ -205,29 +207,29 @@ namespace origin {
 					break;
 
 				case CameraStyle::FreeMove:
-					if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
 						MouseRotate(delta);
-					if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
 						MousePan(delta);
 
 					if (m_CanMoving)
 					{
-						if (Input::IsKeyPressed(Key::A))
+						if (Input::Get().IsKeyPressed(Key::A))
 						{
 							velocity -= GetRightDirection();
 							m_MoveSpeed += ts * 2.0f;
 						}
-						else if (Input::IsKeyPressed(Key::D))
+						else if (Input::Get().IsKeyPressed(Key::D))
 						{
 							velocity += GetRightDirection();
 							m_MoveSpeed += ts * 2.0f;
 						}
-						if (Input::IsKeyPressed(Key::W))
+						if (Input::Get().IsKeyPressed(Key::W))
 						{
 							velocity += GetForwardDirection();
 							m_MoveSpeed += ts * 2.0f;
 						}
-						else if (Input::IsKeyPressed(Key::S))
+						else if (Input::Get().IsKeyPressed(Key::S))
 						{
 							velocity -= GetForwardDirection();
 							m_MoveSpeed += ts * 2.0f;
@@ -251,7 +253,7 @@ namespace origin {
 
 		else if (m_ProjectionType == ProjectionType::Orthographic)
 		{
-			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
+			if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
 				MousePan(delta);
 
 			lastPosition = m_Position;

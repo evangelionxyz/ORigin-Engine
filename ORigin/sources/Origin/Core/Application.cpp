@@ -50,7 +50,7 @@ namespace origin {
 
 		m_Window->SetIcon(spec.IconPath.c_str());
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
-		m_MainInputHandle = std::make_unique<Input>();
+		m_InputHandle.Init(m_Window->GetNativeWindow());
 
 		if (!spec.Runtime)
 		{
@@ -83,6 +83,8 @@ namespace origin {
 			float time = static_cast<float>(glfwGetTime());
 			Timestep ts = time - m_LastFrame;
 			m_LastFrame = time;
+
+			m_InputHandle.Update();
 
 			AssetImporter::SyncToMainThread(ts);
 			ExecuteMainThreadQueue();

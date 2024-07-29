@@ -758,7 +758,7 @@ namespace origin
 				&& !entity.HasComponent<LightComponent>()
 				&& !entity.HasComponent<AudioComponent>();
 
-			bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
+			bool snap = Input::Get().IsKeyPressed(KeyCode(Key::LeftShift));
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				m_ImGuizmoOperation, static_cast<ImGuizmo::MODE>(m_GizmosMode), glm::value_ptr(transform), nullptr,
 				snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
@@ -796,7 +796,7 @@ namespace origin
 			}
 		}
 
-		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
+		if (ImGui::IsWindowFocused() && Input::Get().IsKeyPressed(Key::Escape))
 		{
 			m_Gizmos->SetType(GizmoType::NONE);
 		}
@@ -1069,12 +1069,23 @@ namespace origin
 
     void EditorLayer::ConsoleWindow()
     {
+        bool scrollToBottom = false;
+        static bool autoScroll = true;
+		static size_t lastMessageCount = 0;
+        ImGuiStyle &style = ImGui::GetStyle();
+
 		ImGui::Begin("Console", &guiConsoleWindow);
         static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
         ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f), 0, windowFlags);
 		if (UI::DrawButton("CLEAR"))
 		{
 			ConsoleManager::Get().Clear();
+			lastMessageCount = 0;
+		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Auto-scroll", &autoScroll))
+		{
+			lastMessageCount = 0;
 		}
 		ImGui::EndChild();
 
@@ -1096,6 +1107,14 @@ namespace origin
 			ImGuiListClipper clipper;
 			const auto &messages = ConsoleManager::GetMessages();
 			clipper.Begin(messages.size());
+
+            // Check if there are new messages
+            
+            if (messages.size() > lastMessageCount && autoScroll)
+            {
+                scrollToBottom = true;
+                lastMessageCount = messages.size();
+            }
 
 			while (clipper.Step())
 			{
@@ -1126,6 +1145,13 @@ namespace origin
                     ImGui::PopStyleColor(1);
 				}
 			}
+
+            if (scrollToBottom)
+            {
+                ImGui::SetScrollHereY(1.0f);
+                scrollToBottom = false;
+            }
+
             ImGui::EndTable();
         }
 
@@ -1147,11 +1173,11 @@ namespace origin
 			return;
 
 		static glm::vec2 initialPosition = { 0.0f, 0.0f };
-		const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
+		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
 		const glm::vec2 delta = mouse - initialPosition;
 		initialPosition = mouse;
 
-		if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
 			Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 
@@ -1213,10 +1239,10 @@ namespace origin
 					}
 					else
 					{
-						if (Input::IsKeyPressed(Key::LeftShift))
+						if (Input::Get().IsKeyPressed(Key::LeftShift))
 						{
 							float snapeValue = 0.5f;
-							if (Input::IsKeyPressed(Key::LeftControl))
+							if (Input::Get().IsKeyPressed(Key::LeftControl))
 								snapeValue = 0.1f;
 
 							if (selectedEntity.HasParent())
@@ -1258,8 +1284,8 @@ namespace origin
 		OGN_PROFILER_INPUT();
 
 		auto &app = Application::Get();
-		const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		const bool control = Input::Get().IsKeyPressed(Key::LeftControl) || Input::Get().IsKeyPressed(Key::RightControl);
+		const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
 
 		ImGuiIO& io = ImGui::GetIO();
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
