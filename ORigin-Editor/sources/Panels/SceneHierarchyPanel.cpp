@@ -367,9 +367,10 @@ namespace origin {
 		DrawComponent<TransformComponent>("TRANSFORM", entity, [&](auto &component)
 		{
 			UI::DrawVec3Control("Translation", component.Translation);
-			glm::vec3 rotation = glm::degrees(component.Rotation);
-			UI::DrawVec3Control("Rotation", rotation, 1.0f);
-			component.Rotation = glm::radians(rotation);
+			glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(component.Rotation));
+			UI::DrawVec3Control("Rotation", eulerRotation, 1.0f);
+			glm::vec3 rotationRadians = glm::radians(eulerRotation);
+			component.Rotation = glm::quat(rotationRadians);
 			UI::DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
 		});
 

@@ -203,19 +203,46 @@ namespace origin
             Entity entity = { id, scene };
             TransformComponent &tc = entity.GetComponent<TransformComponent>();
             RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
+            IDComponent &idc = entity.GetComponent<IDComponent>();
 
             JPH::Body *body = reinterpret_cast<JPH::Body *>(rb.Body);
 
             if (body)
             {
-                glm::vec3 pos = JoltToGlmVec3(body->GetPosition());
-                glm::quat rot = JoltToGlmQuat(body->GetRotation());
+#if 1
+                glm::vec3 worldPosition = JoltToGlmVec3(body->GetPosition());
+                glm::quat worldRotation = JoltToGlmQuat(body->GetRotation());
 
-                tc.WorldTranslation = pos;
-                tc.WorldRotation = glm::eulerAngles(rot);
+                glm::vec3 originalWorldPosition = worldPosition;
+                glm::quat originalWorldRotation = worldRotation;
 
+                Entity currentEntity = entity;
+                while (currentEntity.HasParent())
+                {
+                    UUID parentId = currentEntity.GetComponent<IDComponent>().Parent;
+                    Entity parent = scene->GetEntityWithUUID(parentId);
+                    TransformComponent &ptc = parent.GetComponent<TransformComponent>();
+
+                    glm::quat invParentRotation = glm::inverse(ptc.WorldRotation);
+                    glm::vec3 invParentScale = 1.0f / ptc.WorldScale;
+
+                    worldPosition = invParentRotation * ((worldPosition - ptc.WorldTranslation) * invParentScale);
+                    worldRotation = invParentRotation * worldRotation;
+
+                    currentEntity = parent;
+                }
+
+                tc.Translation = worldPosition;
+                tc.Rotation = worldRotation;
+
+                tc.WorldTranslation = originalWorldPosition;
+                tc.WorldRotation = originalWorldRotation;
+#else
+                tc.WorldTranslation = JoltToGlmVec3(body->GetPosition());
+                tc.WorldRotation = JoltToGlmQuat(body->GetRotation());
                 tc.Translation = tc.WorldTranslation;
                 tc.Rotation = tc.WorldRotation;
+#endif
             }
 
             if (entity.HasComponent<BoxColliderComponent>())

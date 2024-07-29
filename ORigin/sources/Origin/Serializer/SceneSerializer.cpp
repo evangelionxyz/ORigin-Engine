@@ -637,7 +637,7 @@ namespace origin
 			{
 				uint64_t uuid = entity["Entity"].as<uint64_t>();
 				std::string name = entity["TagComponent"]["Tag"].as<std::string>();
-				//EntityType type = Utils::EntityTypeStringToType(entity["Parent"].as<std::string>());
+				EntityType type = Utils::EntityTypeStringToType(entity["Type"].as<std::string>());
 				Entity deserializedEntity = EntityManager::CreateEntityWithUUID(uuid, name, EntityType::Entity, m_Scene.get());
 
 				deserializedEntity.GetComponent<IDComponent>().Parent = entity["Parent"].as<uint64_t>();
@@ -646,7 +646,7 @@ namespace origin
 				{
 					TransformComponent &tc = deserializedEntity.GetComponent<TransformComponent>();
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
-					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
+					tc.Rotation = transformComponent["Rotation"].as<glm::quat>();
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
 					tc.Visible = transformComponent["Visible"].as<bool>();
 				}
@@ -709,7 +709,7 @@ namespace origin
 							}
 							component.Component.Color = comp["Color"].as<glm::vec4>();
 							component.Transform.WorldTranslation = comp["Translation"].as<glm::vec3>();
-							component.Transform.WorldRotation = comp["Rotation"].as<glm::vec3>();
+							component.Transform.WorldRotation = comp["Rotation"].as<glm::quat>();
 							component.Transform.WorldScale = comp["Scale"].as<glm::vec3>();
 
 							std::string name = comp["Name"].as<std::string>();
@@ -728,7 +728,7 @@ namespace origin
 							component.Component.Texture = textureHandle;
 							component.Component.Color = comp["Color"].as<glm::vec4>();
 							component.Transform.WorldTranslation = comp["Translation"].as<glm::vec3>();
-							component.Transform.WorldRotation = comp["Rotation"].as<glm::vec3>();
+							component.Transform.WorldRotation = comp["Rotation"].as<glm::quat>();
 							component.Transform.WorldScale = comp["Scale"].as<glm::vec3>();
 
 							std::string name = comp["Name"].as<std::string>();
@@ -791,7 +791,6 @@ namespace origin
 
 					// TODO: Add create model
 				}
-
 
 				if (YAML::Node particleComponent = entity["ParticleComponent"])
 				{

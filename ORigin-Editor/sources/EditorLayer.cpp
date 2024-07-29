@@ -617,19 +617,19 @@ namespace origin
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
 		ImGui::Begin("Scene", nullptr, window_flags);
-		
+
 		IsViewportHovered = ImGui::IsWindowHovered();
 		IsViewportFocused = ImGui::IsWindowFocused();
-		
-		const ImVec2& viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		const ImVec2& viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		const ImVec2& viewportOffset = ImGui::GetWindowPos();
+
+		const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		const ImVec2 &viewportOffset = ImGui::GetWindowPos();
 		m_SceneViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_SceneViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-		
+
 		if (m_SceneState == SceneState::Play)
 		{
 			auto camView = m_ActiveScene->m_Registry.view<CameraComponent>();
@@ -704,11 +704,11 @@ namespace origin
 		ImGui::Image(viewportID, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				if (m_SceneState == SceneState::Edit)
 				{
-					AssetHandle handle = *(AssetHandle*)payload->Data;
+					AssetHandle handle = *(AssetHandle *)payload->Data;
 					OpenScene(handle);
 				}
 			}
@@ -747,7 +747,7 @@ namespace origin
 			auto &tc = entity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
 			auto &idc = entity.GetComponent<IDComponent>();
-			
+
 			const glm::mat4 &cameraProjection = m_EditorCamera.GetProjection();
 			const glm::mat4 &cameraView = m_EditorCamera.GetViewMatrix();
 
@@ -759,8 +759,9 @@ namespace origin
 				&& !entity.HasComponent<AudioComponent>();
 
 			bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), m_ImGuizmoOperation, static_cast<ImGuizmo::MODE>(m_GizmosMode),
-				glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				m_ImGuizmoOperation, static_cast<ImGuizmo::MODE>(m_GizmosMode), glm::value_ptr(transform), nullptr,
+				snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -779,22 +780,26 @@ namespace origin
 
 					// Convert back to world space
 					tc.Translation = glm::vec3(ptc.GetTransform() * localTranslation);
-
 					tc.Translation = glm::vec3(localTranslation);
-					tc.Rotation = rotation - ptc.WorldRotation;
+					tc.Rotation = glm::inverse(ptc.WorldRotation) * glm::quat(rotation);
 					tc.Scale = scale / ptc.WorldScale;
 				}
 				else
 				{
 					tc.Translation = translation;
-					tc.Rotation += rotation - tc.Rotation;
+                    glm::vec3 localEuler = glm::eulerAngles(tc.Rotation);
+                    localEuler += rotation - localEuler;
+					tc.Rotation = glm::quat(localEuler);
+
 					tc.Scale = scale;
 				}
 			}
 		}
 
 		if (ImGui::IsWindowFocused() && Input::IsKeyPressed(Key::Escape))
+		{
 			m_Gizmos->SetType(GizmoType::NONE);
+		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -1197,7 +1202,7 @@ namespace origin
 						{
 							Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
 							auto &parentTC = parent.GetComponent<TransformComponent>();
-							velocity += glm::inverse(glm::quat(parentTC.WorldRotation)) * glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
+							velocity += glm::inverse(parentTC.WorldRotation) * glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
 						}
 						else
 						{
@@ -1219,7 +1224,7 @@ namespace origin
 								Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
 								auto &parentTC = parent.GetComponent<TransformComponent>();
 
-								translation += glm::inverse(glm::quat(parentTC.WorldRotation)) * glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+								translation += glm::inverse(parentTC.WorldRotation) * glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
 							}
 							else
 							{
@@ -1237,7 +1242,7 @@ namespace origin
 							{
 								Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
 								auto &parentTC = parent.GetComponent<TransformComponent>();
-								translation = glm::inverse(glm::quat(parentTC.WorldRotation)) * translation;
+								translation = glm::inverse(parentTC.WorldRotation) * translation;
 							}
 							tc.Translation += glm::vec3(glm::vec2(translation), 0.0f);
 							translation = tc.Translation;

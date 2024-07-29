@@ -214,9 +214,9 @@ namespace origin {
 					for (int i = 0; i < 4; ++i)
 					{
 						glm::vec4 col = (m_Boundary2DCorner == static_cast<Boundary2DCorner>(i)) ? green : red;
-						glm::quat rotationQuat = glm::quat(tc.WorldRotation);
-						glm::mat4 tf = glm::translate(glm::mat4(1.0f), tc.WorldTranslation + glm::vec3(rotationQuat * glm::vec4(cornerOffsets[i], 0.0f))) *
-							glm::toMat4(rotationQuat) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+						glm::vec3 localTranslation = tc.WorldRotation * cornerOffsets[i];
+						glm::mat4 tf = glm::translate(glm::mat4(1.0f), tc.WorldTranslation + localTranslation) *
+							glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
 
 						Renderer2D::DrawQuad(tf, col, BOUNDARY2D_ID - (i + 1));
 					}
@@ -238,14 +238,14 @@ namespace origin {
                 if (entity.HasComponent<SpriteRenderer2DComponent>())
                 {
                     glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z))
-                        * glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+                        * glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
                     Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
                 }
                 else if (entity.HasComponent<CircleRendererComponent>())
                 {
                     glm::vec3 translation = tc.WorldTranslation + glm::vec3(0.0f, 0.0f, 0.5f);
                     glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-                        * glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+                        * glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
 
                     Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
                 }
@@ -260,7 +260,7 @@ namespace origin {
                     BoxCollider2DComponent &cc = entity.GetComponent<BoxCollider2DComponent>();
 
                     glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc.Offset, tc.WorldTranslation.z))
-                        * glm::rotate(glm::mat4(1.0f), tc.WorldRotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+                        * glm::toMat4(tc.WorldRotation)
                         * glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale) * cc.Size * 2.0f, 1.0f));
 
                     Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), (int)entity);

@@ -113,39 +113,39 @@ namespace origin {
 		m_World->Step(deltaTime, velocityIterations, positionIterations);
 
 		// Retrieve transform from Box2D
-		auto rb2dView = m_Scene->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
+		auto rb2dView = m_Scene->m_Registry.view<Rigidbody2DComponent>();
 		for (entt::entity e : rb2dView)
 		{
 			Entity entity{ e, m_Scene };
-			auto [tc, rb2d] = rb2dView.get<TransformComponent, Rigidbody2DComponent>(e);
-			auto body = static_cast<b2Body*>(rb2d.RuntimeBody);
+			auto &tc = entity.GetComponent<TransformComponent>();
+			auto &rb = entity.GetComponent<Rigidbody2DComponent>();
+			auto &idc = entity.GetComponent<IDComponent>();
+
+			auto body = static_cast<b2Body*>(rb.RuntimeBody);
 
 			if (body)
 			{
 				auto& position = body->GetPosition();
 				tc.WorldTranslation.x = position.x;
 				tc.WorldTranslation.y = position.y;
-				tc.WorldRotation.z = body->GetAngle();
+				tc.WorldRotation = glm::quat({ 0.0f, 0.0f, body->GetAngle() });
 
 				tc.Translation = tc.WorldTranslation;
 				tc.Rotation = tc.WorldRotation;
 			}
-		}
 
-		auto view = m_Scene->m_Registry.view<IDComponent, TransformComponent>();
-		for (entt::entity e : view)
-		{
-			auto [idc, tc] = view.get<IDComponent, TransformComponent>(e);
-			Entity entity { e, m_Scene };
-
-			if (!entity.HasComponent<Rigidbody2DComponent>() && idc.Parent != 0)
+			if (idc.Parent)
 			{
-				auto &parentTC = m_Scene->GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
-				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(parentTC.WorldRotation), tc.Translation);
-				tc.WorldTranslation = rotatedLocalPos + parentTC.WorldTranslation;
-				tc.WorldRotation = parentTC.WorldRotation + tc.Rotation;
-				tc.WorldScale = tc.Scale * parentTC.WorldScale;
-				
+                auto &ptc = m_Scene->GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
+
+				// rotate local translation by parent rotation and add to parent translation
+                glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
+				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+
+				// combine parent and local rotations
+				tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
+
+                tc.WorldScale = tc.Scale * ptc.WorldScale;
 			}
 		}
 	}
@@ -185,7 +185,7 @@ namespace origin {
 				yPos = bodyDef.position.y;
 
 			bodyDef.position.Set(xPos, yPos);
-			bodyDef.angle = tc.WorldRotation.z;
+			bodyDef.angle = glm::eulerAngles(tc.WorldRotation).z;
 			bodyDef.gravityScale = rb2d.GravityScale;
 
 			b2Body* body = m_World->CreateBody(&bodyDef);
@@ -260,7 +260,7 @@ namespace origin {
 				yPos = bodyDef.position.y;
 
 			bodyDef.position.Set(xPos, yPos);
-			bodyDef.angle = tc.WorldRotation.z;
+			bodyDef.angle = glm::eulerAngles(tc.WorldRotation).z;
 			bodyDef.gravityScale = rb2d.GravityScale;
 
 			b2Body *body = m_World->CreateBody(&bodyDef);

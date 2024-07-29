@@ -19,7 +19,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -214,12 +213,12 @@ namespace origin
 	class TransformComponent
 	{
 	public:
-		glm::vec3 Translation = glm::vec3(0.0f);
-		glm::vec3 Rotation = glm::vec3(0.0f);
-		glm::vec3 Scale = glm::vec3(1.0f);
 		glm::vec3 WorldTranslation = glm::vec3(0.0f);
-		glm::vec3 WorldRotation = glm::vec3(0.0f);
+		glm::quat WorldRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		glm::vec3 WorldScale = glm::vec3(1.0f);
+		glm::vec3 Translation = glm::vec3(0.0f);
+		glm::quat Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::vec3 Scale = glm::vec3(1.0f);
 
 		bool Visible = true;
 
@@ -233,36 +232,85 @@ namespace origin
 
 		void SetTransform(glm::mat4 transform)
 		{
-			Math::DecomposeTransformEuler(transform, WorldTranslation, WorldRotation, WorldScale);
+			Math::DecomposeTransform(transform, WorldTranslation, WorldRotation, WorldScale);
 		}
 
 		glm::mat4 GetTransform() const
 		{
-			glm::mat4 rotation = glm::toMat4(glm::quat(WorldRotation));
-			return glm::translate(glm::mat4(1.0f), WorldTranslation)
-				* rotation * glm::scale(glm::mat4(1.0f), WorldScale);
+			return glm::translate(glm::mat4(1.0f), WorldTranslation) * glm::toMat4(WorldRotation) * glm::scale(glm::mat4(1.0f), WorldScale);
+		}
+
+		void SetLocalTansform(glm::mat4 transform)
+		{
+			Math::DecomposeTransform(transform, Translation, Rotation, Scale);
+		}
+
+		glm::mat4 GetLocalTransform() const
+		{
+			return glm::translate(glm::mat4(1.0f), Translation) * glm::toMat4(Rotation) * glm::scale(glm::mat4(1.0f), Scale);
 		}
 
 		glm::vec3 GetForward() const
 		{
-			glm::mat4 rotation = toMat4(glm::quat(WorldRotation));
-			glm::vec4 forward = rotation * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
-			return glm::normalize(glm::vec3(forward));
+			return glm::normalize(WorldRotation * glm::vec3(0.0f, 0.0f, -1.0f));
 		}
 
 		glm::vec3 GetUp() const
 		{
-			glm::mat4 rotation = toMat4(glm::quat(WorldRotation));
-			glm::vec4 up = rotation * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-			return glm::normalize(glm::vec3(up));
+			return glm::normalize(WorldRotation * glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 
 		glm::vec3 GetRight() const
 		{
-			glm::mat4 rotation = toMat4(glm::quat(WorldRotation));
-			glm::vec4 right = rotation * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-			return glm::normalize(glm::vec3(right));
+			return glm::normalize(WorldRotation * glm::vec3(1.0f, 0.0f, 0.0f));
 		}
+
+        void SetForward(const glm::vec3 &forward)
+        {
+			glm::vec3 currentForward = GetForward();
+			glm::quat rotationQuat = glm::rotation(currentForward, forward);
+			WorldRotation = rotationQuat * WorldRotation;
+        }
+
+        void SetUp(const glm::vec3 &up)
+        {
+            glm::vec3 currentUp = GetUp();
+            glm::quat rotationQuat = glm::rotation(currentUp, up);
+            WorldRotation = rotationQuat * WorldRotation;
+        }
+
+        void SetRight(const glm::vec3 &right)
+        {
+            glm::vec3 currentRight = GetRight();
+            glm::quat rotationQuat = glm::rotation(currentRight, right);
+            WorldRotation = rotationQuat * WorldRotation;
+        }
+
+        void Translate(const glm::vec3 &delta)
+        {
+            WorldTranslation += delta;
+        }
+
+        void Rotate(const glm::quat &delta)
+        {
+			WorldRotation = glm::normalize(delta * WorldRotation);
+        }
+
+        void SetScale(const glm::vec3 &factor)
+        {
+            WorldScale *= factor;
+        }
+
+		glm::vec3 GetEulerAngles()
+		{
+			return glm::eulerAngles(WorldRotation);
+		}
+
+		void SetEulerAngles(const glm::vec3 &euler)
+		{
+			WorldRotation = glm::quat(euler);
+		}
+
 	};
 
 	class SpriteRenderer2DComponent

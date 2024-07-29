@@ -152,9 +152,10 @@ namespace origin
 						}
 
 						UI::DrawVec3Control("Translation", text->Transform.WorldTranslation, 0.1f);
-						glm::vec3 rotation = glm::degrees(text->Transform.WorldRotation);
-						UI::DrawVec3Control("Rotation", rotation, 0.1f);
-						text->Transform.WorldRotation = glm::radians(rotation);
+						glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(text->Transform.WorldRotation));
+						UI::DrawVec3Control("Rotation", eulerRotation, 0.1f);
+						glm::vec3 rotationRadians = glm::radians(eulerRotation);
+						text->Transform.WorldRotation = glm::quat(rotationRadians);
 						UI::DrawVec3Control("Scale", text->Transform.WorldScale, 0.1f, 1.0f);
 
 						UI::DrawButtonWithColumn("Font", "Drag Here", nullptr, [&]()
@@ -212,9 +213,10 @@ namespace origin
 						}
 
 						UI::DrawVec3Control("Translation", sprite->Transform.WorldTranslation, 0.1f);
-						glm::vec3 rotation = glm::degrees(sprite->Transform.WorldRotation);
-						UI::DrawVec3Control("Rotation", rotation, 0.1f);
-						sprite->Transform.WorldRotation = glm::radians(rotation);
+						glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(sprite->Transform.WorldRotation));
+						UI::DrawVec3Control("Rotation", eulerRotation, 0.1f);
+						glm::vec3 rotationRadians = glm::radians(eulerRotation);
+						sprite->Transform.WorldRotation = glm::quat(rotationRadians);
 						UI::DrawVec3Control("Scale", sprite->Transform.WorldScale, 0.1f, 1.0f);
 
 						ImGui::ColorEdit4("Color", glm::value_ptr(sprite->Component.Color));

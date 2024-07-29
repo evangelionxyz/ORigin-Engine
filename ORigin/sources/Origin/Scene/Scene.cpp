@@ -23,6 +23,9 @@
 
 #include "Origin/Physics/PhysicsEngine.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
 #include <glm/glm.hpp>
 
 namespace origin
@@ -113,7 +116,9 @@ namespace origin
 			m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto &nsc)
 			{
 				if (nsc.Instance)
+				{
 					nsc.Instance->OnUpdate(time);
+				}
 			});
 
 			// Particle Update
@@ -160,13 +165,17 @@ namespace origin
 			{
 				auto [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
 				if (al.Enable)
+				{
 					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
+				}
 			}
 
 			PhysicsEngine::Simulate(ts, this);
 			m_Physics2D->Simulate(ts);
-		}
 
+            // Update entire transform hierarchy
+            UpdateTransform();
+		}
 	}
 
 	void Scene::DestroyEntity(Entity entity)
@@ -222,7 +231,6 @@ namespace origin
 
 			if (cc.Primary)
 			{
-				UpdateTransform();
 				RenderScene(cc.Camera, tc);
 				break;
 			}
@@ -234,7 +242,7 @@ namespace origin
 		OGN_PROFILER_SCENE();
 
 		m_Running = true;
-		UpdateTransform();
+
 		ScriptEngine::SetSceneContext(this);
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		for (auto e : scriptView)
@@ -352,7 +360,9 @@ namespace origin
 		Renderer2D::End();
 		editorCamera.UpdateAudioListener(ts);
 
-		UpdateTransform();
+        // Update entire transform hierarchy
+        UpdateTransform();
+
 		RenderScene(editorCamera);
 	}
 
@@ -420,13 +430,17 @@ namespace origin
 			}
 
 			if (!isMainCameraListening)
+			{
 				editorCamera.UpdateAudioListener(ts);
+			}
 
 			PhysicsEngine::Simulate(ts, this);
 			m_Physics2D->Simulate(ts);
 		}
 
-		UpdateTransform();
+        // Update entire transform hierarchy
+        UpdateTransform();
+		
 		RenderScene(editorCamera);
 	}
 
@@ -576,7 +590,7 @@ namespace origin
 							const float ratio = cc.GetAspectRatio();
 							glm::vec2 scale = glm::vec2(tc.WorldScale.x, tc.WorldScale.y * ratio);
 							transform = glm::translate(glm::mat4(1.0f), { tc.WorldTranslation.x, tc.WorldTranslation.y, 0.0f })
-								* glm::toMat4(glm::quat(ccTC.Rotation))
+								* glm::toMat4(ccTC.Rotation)
 								* glm::scale(glm::mat4(1.0f), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
 
 							invertedCamTransform = glm::inverse(cc.GetViewProjection());
@@ -853,31 +867,63 @@ namespace origin
 #endif
 	}
 
-	void Scene::UpdateTransform()
-	{
-		OGN_PROFILER_FUNCTION();
+    void Scene::UpdateTransform()
+    {
+        OGN_PROFILER_FUNCTION();
 
-		const auto &view = m_Registry.view<IDComponent, TransformComponent>();
-		for (auto entity : view)
-		{
-			const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
-
+        const auto &view = m_Registry.view<IDComponent, TransformComponent>();
+        for (auto entity : view)
+        {
+            const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
+#if 1
 			if (idc.Parent)
 			{
 				const auto &ptc = GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
-				glm::vec3 rotatedLocalPos = glm::rotate(glm::quat(ptc.WorldRotation), tc.Translation);
+				glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
 				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
-				tc.WorldRotation = ptc.WorldRotation + tc.Rotation;
+				tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
 				tc.WorldScale = tc.Scale * ptc.WorldScale;
 			}
 			else
 			{
-				tc.WorldTranslation = tc.Translation;
-				tc.WorldRotation = tc.Rotation;
-				tc.WorldScale = tc.Scale;
+                tc.WorldTranslation = tc.Translation;
+                tc.WorldRotation = tc.Rotation;
+                tc.WorldScale = tc.Scale;
 			}
+#else
+			ApplyParentTransform(tc, idc);
+#endif
+        }
+    }
+
+	void Scene::ApplyParentTransform(TransformComponent &tc, const IDComponent &idc)
+	{
+		if (idc.Parent)
+		{
+			auto parentEntity = GetEntityWithUUID(idc.Parent);
+			if (!parentEntity.IsValid())
+			{
+				return;
+			}
+
+			auto &ptc = parentEntity.GetComponent<TransformComponent>();
+			const auto &pidc = parentEntity.GetComponent<IDComponent>();
+
+			ApplyParentTransform(ptc, pidc);
+
+			glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
+			tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+			tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
+			tc.WorldScale = ptc.WorldScale * tc.Scale;
+		}
+		else
+		{
+			tc.WorldTranslation = tc.Translation;
+			tc.WorldRotation = tc.Rotation;
+			tc.WorldScale = tc.Scale;
 		}
 	}
+
 
 	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
 	{

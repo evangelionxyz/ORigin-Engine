@@ -59,7 +59,7 @@ namespace origin {
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 
-		bool IsValid()
+		bool IsValid() const
 		{
 			if (m_Scene)
 			{

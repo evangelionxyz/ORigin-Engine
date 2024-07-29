@@ -42,6 +42,7 @@ namespace origin
         void OnUpdateSimulation(Timestep time, Camera &camera);
         void OnEditorUpdate(Timestep time, Camera &camera);
         void OnViewportResize(const uint32_t width, const uint32_t height);
+        void ApplyParentTransform(TransformComponent &tc, const IDComponent &idc);
         void OnShadowRender();
 
         void UpdateTransform();

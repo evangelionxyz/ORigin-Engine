@@ -243,7 +243,7 @@ namespace origin
 		}
 	}
 
-	static void TransformComponent_GetRotation(UUID entityID, glm::vec3 *outRotation)
+	static void TransformComponent_GetRotation(UUID entityID, glm::quat *outRotation)
 	{
 		OGN_PROFILER_LOGIC();
 
@@ -257,7 +257,7 @@ namespace origin
 		}
 	}
 
-	static void TransformComponent_SetRotation(UUID entityID, glm::vec3 rotation)
+	static void TransformComponent_SetRotation(UUID entityID, glm::quat rotation)
 	{
 		OGN_PROFILER_LOGIC();
 
@@ -270,6 +270,34 @@ namespace origin
 			entity.GetComponent<TransformComponent>().Rotation = rotation;
 		}
 	}
+
+    static void TransformComponent_GetRotationEuler(UUID entityID, glm::vec3 *outRotation)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+
+        if (entity.IsValid())
+        {
+            *outRotation = glm::eulerAngles(entity.GetComponent<TransformComponent>().Rotation);
+        }
+    }
+
+    static void TransformComponent_SetRotationEuler(UUID entityID, glm::vec3 rotation)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+
+        if (entity.IsValid())
+        {
+            entity.GetComponent<TransformComponent>().Rotation = glm::quat(rotation);
+        }
+    }
 
 	static void TransformComponent_GetScale(UUID entityID, glm::vec3 *outScale)
 	{
@@ -1849,6 +1877,8 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetTranslation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRotation);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRotation);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetRotationEuler);
+		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetRotationEuler);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetScale);
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_SetScale);
 
