@@ -8,7 +8,6 @@ namespace origin
     ConsoleManager::ConsoleManager()
     {
         s_Instance = this;
-        m_Messages.reserve(500);
     }
 
     ConsoleManager::~ConsoleManager()
@@ -29,7 +28,7 @@ namespace origin
 
     void ConsoleManager::PushMessage(ConsoleMessageType type, const std::string &message)
     {
-        if (m_Messages.size() >= 500)
+        if (m_Messages.size() > 1000)
             m_Messages.erase(m_Messages.begin());
 
         std::string timeStamp = GetCurrentTime();

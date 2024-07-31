@@ -149,7 +149,7 @@ namespace origin
         return { value.GetX(), value.GetY(), value.GetZ() };
     }
 
-    glm::vec3 RigidbodyComponent::GetEulerAngleRotation()
+    glm::vec3 RigidbodyComponent::GetEulerAngles()
     {
         JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
         const auto &value = PhysicsEngine::GetBodyInterface()->GetRotation(body->GetID());
@@ -187,5 +187,17 @@ namespace origin
     {
         JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
         body->GetMotionProperties()->SetMaxAngularVelocity(max);
+    }
+
+    void RigidbodyComponent::SetMass(float mass)
+    {
+    }
+
+    void RigidbodyComponent::SetOffset(const glm::vec3 &offset)
+    {
+    }
+
+    void RigidbodyComponent::SetCenterMass(const glm::vec3 &center)
+    {
     }
 }

@@ -1,6 +1,7 @@
 ﻿// type vertex
 #version 450 core
 layout(location = 0) in vec2 aPos;
+
 layout(location = 0) out vec2 vTexCoord;
 
 uniform mat4 uViewProjection;

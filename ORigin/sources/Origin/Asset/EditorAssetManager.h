@@ -18,8 +18,9 @@ namespace origin {
 		virtual AssetType GetAssetType(AssetHandle handle) const override;
 
 		AssetHandle ImportAsset(const std::filesystem::path& filepath);
-		void RemoveAsset(AssetHandle handle);
+		void InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<std::shared_ptr<Asset>()> loader);
 
+		void RemoveAsset(AssetHandle handle);
 		void RemoveLoadedAsset(AssetHandle handle);
 
 		const AssetMetadata& GetMetadata(AssetHandle handle) const;

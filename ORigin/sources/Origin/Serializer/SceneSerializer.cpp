@@ -313,6 +313,7 @@ namespace origin
 				out << YAML::Key << "Looping" << YAML::Value << ac.Looping;
 				out << YAML::Key << "Spatial" << YAML::Value << ac.Spatializing;
 				out << YAML::Key << "PlayAtStart" << YAML::Value << ac.PlayAtStart;
+				out << YAML::Key << "Overlapping" << YAML::Value << ac.Overlapping;
 			}
 			
 			out << YAML::EndMap; // AudioComponent
@@ -753,7 +754,12 @@ namespace origin
 						ac.Looping = audioComponent["Looping"].as<bool>();
 						ac.Spatializing = audioComponent["Spatial"].as<bool>();
 						ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
+						ac.Overlapping = audioComponent["Overlapping"].as<bool>();
 						std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+						if (ac.Overlapping)
+						{
+							audio->ActivateOverlapping();
+						}
 						audio->SetVolume(ac.Volume);
 						audio->SetLoop(ac.Looping);
 						audio->SetPitch(ac.Pitch);

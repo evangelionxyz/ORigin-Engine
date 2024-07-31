@@ -28,12 +28,22 @@ namespace origin
     class RigidbodyComponent
     {
     public:
+
+        enum EMotionQuality
+        {
+            Discrete = 0,
+            LinearCast = 1
+        };
+
+        EMotionQuality MotionQuality = Discrete;
+
         bool UseGravity = true;
         bool RotateX = true, RotateY = true, RotateZ = true;
         bool MoveX = true, MoveY = true, MoveZ = true;
         bool IsStatic = false;
         float Mass = 1.0f;
         bool AllowSleeping = true;
+        float GravityFactor = 1.0f;
         glm::vec3 CenterMass = { 0.0f, 0.0f, 0.0f };
         glm::vec3 Offset = { 0.0f, 0.0f, 0.0f };
 
@@ -59,15 +69,18 @@ namespace origin
         void SetLinearVelocity(const glm::vec3 &vel);
         void SetFriction(float value);
         void SetGravityFactor(float value);
+        void SetMaxLinearVelocity(float max);
+        void SetMaxAngularVelocity(float max);
+        void SetMass(float mass);
+        void SetOffset(const glm::vec3 &offset);
+        void SetCenterMass(const glm::vec3 &center);
+        void SetSleep(bool sleep);
         float GetRestitution();
         float GetFriction();
         float GetGravityFactor();
 
-        void SetMaxLinearVelocity(float max);
-        void SetMaxAngularVelocity(float max);
-
         glm::vec3 GetPosition();
-        glm::vec3 GetEulerAngleRotation();
+        glm::vec3 GetEulerAngles();
         glm::quat GetRotation();
         glm::vec3 GetCenterOfMassPosition();
         glm::vec3 GetLinearVelocity();

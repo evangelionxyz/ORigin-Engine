@@ -4,6 +4,8 @@
 #include "Project.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Serializer/ProjectSerializer.h"
+#include "Origin/Serializer/SceneSerializer.h"
+#include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Profiler/Profiler.h"
 #include <fstream>
 #include <yaml-cpp/yaml.h>

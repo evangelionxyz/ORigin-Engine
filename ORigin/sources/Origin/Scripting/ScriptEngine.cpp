@@ -319,7 +319,9 @@ namespace origin
 			s_ScriptEngineData->EntityScriptStorage.clear();
 
 			for (auto &it : s_ScriptEngineData->EntityClasses)
+			{
 				s_ScriptEngineData->EntityScriptStorage.emplace_back(it.first);
+			}
 
 			// retrieve entity class
 			s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
@@ -370,9 +372,18 @@ namespace origin
 			// Copy Fields Value from Editor to Runtime
 			if (s_ScriptEngineData->EntityScriptFields.find(entityID) != s_ScriptEngineData->EntityScriptFields.end())
 			{
-				const ScriptFieldMap &fieldMap = s_ScriptEngineData->EntityScriptFields.at(entityID);
-				for (const auto &[name, fieldInstance] : fieldMap)
+				ScriptFieldMap &fieldMap = s_ScriptEngineData->EntityScriptFields.at(entityID);
+				for (auto &[name, fieldInstance] : fieldMap)
 				{
+					// Check invalid type
+					if (fieldInstance.Field.Type == ScriptFieldType::Invalid)
+					{
+						ScriptFieldType type = instance->GetScriptClass()->GetFields()[name].Type;
+						fieldInstance.Field.Type = type;
+						OGN_CORE_WARN("[ScriptEngine] Checking invalid type {0}", name);
+						PUSH_CONSOLE_WARNING("[ScriptEngine] Checking invalid type {0}", name);
+					}
+
 					switch (fieldInstance.Field.Type)
 					{
 					case ScriptFieldType::Entity:
@@ -529,6 +540,11 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		MonoObject *instance = mono_object_new(s_ScriptEngineData->AppDomain, monoClass);
+		if (!instance)
+		{
+			return nullptr;
+		}
+
 		mono_runtime_object_init(instance);
 		return instance;
 	}

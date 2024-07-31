@@ -196,30 +196,33 @@ namespace origin
         return glm::normalize(glm::vec3(worldCoords));
     }
 
-    glm::vec3 GetRay(const glm::vec2 &mouse, const glm::vec2 &screen, const Camera &camera, glm::vec3 *rayOrigin, const glm::vec3 &camForward)
+    glm::vec3 GetRayOrthographic(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, glm::vec3 *rayOrigin, const glm::vec3 &camForward)
     {
-        glm::vec2 ndc = GetNormalizedDeviceCoord(mouse, screen);
+        glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
         glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
         glm::vec3 rayDirection = glm::vec3(0.0f);
         *rayOrigin = glm::vec3(0.0f);
 
-        if (camera.GetProjectionType() == ProjectionType::Perspective)
-        {
-            glm::vec4 eye = GetEyeCoord(hmc, camera.GetProjection());
-            glm::vec3 worldRay = GetWorldCoord(eye, camera.GetViewMatrix());
-            *rayOrigin = camera.GetPosition();
-            rayDirection = worldRay;
-        }
-        else
-        {
-            // calculate ray origin and direction for orthographic projection
-            glm::mat4 invViewProj = glm::inverse(camera.GetProjection() * camera.GetViewMatrix());
+        // calculate ray origin and direction for orthographic projection
+        glm::mat4 invViewProj = glm::inverse(projection * view);
 
-            // ray origin (on near plane)
-            *rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
-            *rayOrigin /= 1.0f;
-            rayDirection = -glm::normalize(camForward);
-        }
+        // ray origin (on near plane)
+        *rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
+        *rayOrigin /= 1.0f;
+        rayDirection = -glm::normalize(camForward);
+
+        return rayDirection;
+    }
+
+    glm::vec3 GetRayPerspective(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, const glm::vec3 camPosition, const glm::vec3 &camForward)
+    {
+        glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
+        glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
+        glm::vec3 rayDirection = glm::vec3(0.0f);
+
+        glm::vec4 eye = GetEyeCoord(hmc, projection);
+        glm::vec3 worldRay = GetWorldCoord(eye, view);
+        rayDirection = worldRay;
 
         return rayDirection;
     }

@@ -25,7 +25,11 @@ namespace ORiginEngine
 
         // Debug
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void Debug_Log(string result);
+        internal extern static void Debug_LogError(string result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Debug_LogInfo(string result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Debug_LogWarning(string result);
 
         // Script Instance
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -127,6 +131,10 @@ namespace ORiginEngine
         internal extern static bool AudioComponent_IsSpatial(ulong entityID);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void AudioComponent_Play(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_PlayOverlapping(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioComponent_PlayLooped(ulong entityID);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void AudioComponent_Stop(ulong entityID);
 
@@ -303,16 +311,34 @@ namespace ORiginEngine
 
         // INPUT
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_GetMousePosition(out Vector2 result);
+        internal extern static void Input_IsMouseDragging(out bool result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_SetMousePosition(Vector2 value);
+        internal extern static void Input_SetMouseHide(bool value);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_GetMouseDelta(out Vector2 result);
+        internal extern static void Input_IsMouseHidden(out bool result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_IsMouseButtonDown(MouseCode button);
+        internal extern static void Input_ToggleMouseLock();
+
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_IsKeyPressed(KeyCode keycode);
+        internal extern static void Input_GetMousePosition(out Vector2 result);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Input_IsKeyReleased(KeyCode keycode);
+        internal extern static void Input_SetMousePosition(Vector2 value);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Input_GetMouseDelta(out Vector2 result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Input_IsMouseButtonDown(MouseCode button, out bool result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Input_IsKeyPressed(KeyCode keycode, out bool result);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Input_IsKeyReleased(KeyCode keycode, out bool result);
+
+        // Scene
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Scene_LockMouse();
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Scene_UnlockMouse();
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Scene_IsFocusing(out bool result);
+
     }
 }

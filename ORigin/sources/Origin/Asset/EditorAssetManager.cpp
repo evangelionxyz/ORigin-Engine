@@ -49,36 +49,39 @@ namespace origin
 		if (!IsAssetHandleValid(handle))
 			return nullptr;
 
-		std::shared_ptr<Asset> asset;
-
 		if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
 		{
-			asset = m_LoadedAssets.at(handle);
+			return m_LoadedAssets.at(handle);
 		}
-		else
-		{
-			const AssetMetadata &metadata = GetMetadata(handle);
 
-			if (metadata.Type == AssetType::Font)
-			{
-				auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
-				m_LoadedAssets[handle] = asset;
-				FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
-			}
-			else
-			{
-				asset = AssetImporter::ImportAsset(handle, metadata);
-				if (!asset)
-				{
-					OGN_CORE_ERROR("[EditorAssetManager] Asset Import Failed!");
-					PUSH_CONSOLE_ERROR("[EditorAssetManager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
-				}
-				else
-				{
-					m_LoadedAssets[handle] = asset;
-				}
-			}
-		}
+        std::shared_ptr<Asset> asset;
+        const AssetMetadata &metadata = GetMetadata(handle);
+
+        switch (metadata.Type)
+        {
+        case AssetType::Font:
+        {
+            auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
+            m_LoadedAssets[handle] = asset;
+            FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
+			return nullptr;
+            break;
+        }
+        default:
+            asset = AssetImporter::ImportAsset(handle, metadata);
+			break;
+        }
+
+        if (!asset)
+        {
+            OGN_CORE_ERROR("[EditorAssetManager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
+            PUSH_CONSOLE_ERROR("[EditorAssetManager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
+			return nullptr;
+        }
+        else
+        {
+            m_LoadedAssets[handle] = asset;
+        }
 
 		return asset;
 	}
@@ -149,7 +152,27 @@ namespace origin
 		return 0;
 	}
 
-	void EditorAssetManager::RemoveAsset(AssetHandle handle)
+    void EditorAssetManager::InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<std::shared_ptr<Asset>()> loader)
+    {
+		std::shared_ptr<Asset> asset;
+        if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
+        {
+            asset = m_LoadedAssets.at(handle);
+			return;
+        }
+
+		asset = loader();
+        if (asset)
+        {
+            asset->Handle = handle;
+            m_LoadedAssets[handle] = asset;
+            m_AssetRegistry[handle] = metadata;
+
+            SerializeAssetRegistry();
+        }
+    }
+
+    void EditorAssetManager::RemoveAsset(AssetHandle handle)
 	{
 		if (m_AssetRegistry.find(handle) != m_AssetRegistry.end())
 			m_AssetRegistry.erase(handle);

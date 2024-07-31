@@ -98,7 +98,7 @@ namespace origin {
 		// =============================================
 		// =================== Lines ===================
 		// =============================================
-		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLines = 102400;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 
 		std::shared_ptr<VertexArray> LineVertexArray;
@@ -217,48 +217,30 @@ namespace origin {
 
 	void Renderer2D::Shutdown()
 	{
-		OGN_PROFILER_FUNCTION();
-
 		delete[] s_Render2DData.QuadVertexBufferBase;
-	}
-
-	void Renderer2D::Begin(const Camera &camera, const glm::mat4& camTransform)
-	{
-		OGN_PROFILER_RENDERING();
-
-		s_CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(camTransform);
-		s_CameraBufferData.Position = camera.GetPosition();
-
-		s_CameraUniformBuffer->Bind();
-		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
-
-		StartBatch();
 	}
 
 	void Renderer2D::Begin(const Camera &camera)
 	{
-		OGN_PROFILER_RENDERING();
-
 		s_CameraBufferData.ViewProjection = camera.GetViewProjection();
 		s_CameraBufferData.Position = camera.GetPosition();
-
 		s_CameraUniformBuffer->Bind();
 		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
 
 		StartBatch();
 	}
 
-	void Renderer2D::Begin(const glm::mat4 &viewProjection, const glm::vec3& position)
-	{
+    void Renderer2D::Begin(const glm::mat4 &viewProjection, glm::vec3 pos)
+    {
 		s_CameraBufferData.ViewProjection = viewProjection;
-		s_CameraBufferData.Position = position;
-		s_CameraUniformBuffer->Bind();
-		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
+		s_CameraBufferData.Position = pos;
+        s_CameraUniformBuffer->Bind();
+        s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
 
-		StartBatch();
-	}
+        StartBatch();
+    }
 
-	void Renderer2D::End()
+    void Renderer2D::End()
 	{
 		Flush();
 	}

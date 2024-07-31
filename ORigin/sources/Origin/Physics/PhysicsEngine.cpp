@@ -17,6 +17,7 @@
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/TaperedCapsuleShape.h>
 
+#include "Origin/Scene/Scene.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Scene/Components/PhysicsComponents.h"
 #include "JoltContactListener.h"
@@ -39,10 +40,10 @@ namespace origin
 
     static PhysicsEngineData s_Data;
 
-    static constexpr unsigned int cNumBodies = 1024;
+    static constexpr unsigned int cNumBodies = 20480;
     static constexpr unsigned int cNumBodyMutexes = 0; // Autodetect
-    static constexpr unsigned int cMaxBodyPairs = 1024;
-    static constexpr unsigned int cMaxContactConstraints = 2048;
+    static constexpr unsigned int cMaxBodyPairs = 64000;
+    static constexpr unsigned int cMaxContactConstraints = 20480;
     static const int cMaxPhysicsJobs = 2048;
 
     void PhysicsEngine::Init()
@@ -87,6 +88,16 @@ namespace origin
 
         JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
 
+        switch (rb.MotionQuality)
+        {
+        case RigidbodyComponent::EMotionQuality::Discrete:
+            bodySettings.mMotionQuality = JPH::EMotionQuality::Discrete;
+            break;
+        case RigidbodyComponent::EMotionQuality::LinearCast:
+            bodySettings.mMotionQuality = JPH::EMotionQuality::LinearCast;
+            break;
+        }
+
         if (body)
         {
             JPH::BodyID bodyId = body->GetID();
@@ -119,6 +130,16 @@ namespace origin
         if (rb.MoveX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationX;
         if (rb.MoveY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationY;
         if (rb.MoveZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationZ;
+
+        switch (rb.MotionQuality)
+        {
+        case RigidbodyComponent::EMotionQuality::Discrete:
+            bodySettings.mMotionQuality = JPH::EMotionQuality::Discrete;
+            break;
+        case RigidbodyComponent::EMotionQuality::LinearCast:
+            bodySettings.mMotionQuality = JPH::EMotionQuality::LinearCast;
+            break;
+        }
 
         JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
         if (body)
@@ -153,6 +174,16 @@ namespace origin
         if (rb.MoveX) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationX;
         if (rb.MoveY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationY;
         if (rb.MoveZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationZ;
+
+        switch (rb.MotionQuality)
+        {
+        case RigidbodyComponent::EMotionQuality::Discrete:
+            bodySettings.mMotionQuality = JPH::EMotionQuality::Discrete;
+            break;
+        case RigidbodyComponent::EMotionQuality::LinearCast:
+            bodySettings.mMotionQuality = JPH::EMotionQuality::LinearCast;
+            break;
+        }
 
         JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
         if (body)
@@ -234,7 +265,6 @@ namespace origin
 
                 tc.Translation = worldPosition;
                 tc.Rotation = worldRotation;
-
                 tc.WorldTranslation = originalWorldPosition;
                 tc.WorldRotation = originalWorldRotation;
 #else

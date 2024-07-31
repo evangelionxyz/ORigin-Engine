@@ -129,6 +129,7 @@ namespace origin {
 		s_ShaderLibrary.Load("Mesh", "Resources/Shaders/SPIR-V/Mesh.glsl", true, recompileShader);
 		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true, recompileShader);
 		s_ShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true, recompileShader);
+		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);
 		s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 	}
 

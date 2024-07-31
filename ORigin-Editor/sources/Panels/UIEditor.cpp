@@ -414,11 +414,8 @@ namespace origin
 			return;
 		}
 
-		m_Camera.SetMoveActive(IsViewportFocused);
-		m_Camera.SetDraggingActive(IsViewportFocused);
-		m_Camera.SetScrollingActive(IsViewportHovered);
-
-		m_Camera.OnUpdate(ts);
+		m_Camera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
+		m_Camera.OnUpdate(ts, m_ViewportBounds[0], m_ViewportBounds[1]);
 		OnMouse(ts);
 
 		m_Framebuffer->Bind();
@@ -538,7 +535,8 @@ namespace origin
 				if (m_SelectedIndex == i)
 				{
 					auto &tc = m_UICompHandler->Components[m_SelectedIndex]->Transform;
-					float orthoScale = m_Camera.GetOrthoScale() / m_Camera.GetHeight();
+					float viewportHeight = m_Camera.GetViewportSize().y;
+					float orthoScale = m_Camera.GetOrthoScale() / viewportHeight;
 
 					static glm::vec3 translation = tc.Translation;
 

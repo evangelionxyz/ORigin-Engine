@@ -99,17 +99,31 @@ namespace origin
 
 	Entity EntityManager::DuplicateEntity(Entity entity, Scene *scene)
 	{
-		std::string name = entity.GetTag();
-		Entity newEntity = CreateEntity(name, scene, entity.GetType());
-		CopyComponentIfExists(AllComponents {}, newEntity, entity);
+		// Create current entity
+        std::string name = entity.GetTag();
+        Entity newEntity = CreateEntity(name, scene, entity.GetType());
+        CopyComponentIfExists(AllComponents {}, newEntity, entity);
 
-		auto &entityIDC = entity.GetComponent<IDComponent>();
-		auto &newEntityIDC = newEntity.GetComponent<IDComponent>();
+        auto &entityIDC = entity.GetComponent<IDComponent>();
+        auto &newEntityIDC = newEntity.GetComponent<IDComponent>();
 
-		if (entity.HasParent())
+        if (entity.HasParent())
+        {
+            auto &parentIDC = scene->GetEntityWithUUID(entityIDC.Parent).GetComponent<IDComponent>();
+            newEntityIDC.Parent = entityIDC.Parent;
+        }
+
+		auto view = scene->m_Registry.view<IDComponent>();
+		for (auto e : view)
 		{
-			auto &parentIDC = scene->GetEntityWithUUID(entityIDC.Parent).GetComponent<IDComponent>();
-			newEntityIDC.Parent = entityIDC.Parent;
+			Entity child = { e, scene };
+			if (child.IsValid() && child.GetComponent<IDComponent>().Parent == entity.GetUUID())
+			{
+                Entity newChild = CreateEntity(child.GetTag(), scene, child.GetType());
+                CopyComponentIfExists(AllComponents {}, newChild, child);
+                IDComponent idc = newChild.GetComponent<IDComponent>();
+                AddChild(newEntity, newChild, scene);
+			}
 		}
 
 		return newEntity;
@@ -160,7 +174,8 @@ namespace origin
 
 		if (target == source)
 			return true;
-		if (destIDC.Parent != 0)
+
+		if (destIDC.Parent)
 		{
 			if (EntityManager::IsParent(destIDC.Parent, source, scene))
 			{

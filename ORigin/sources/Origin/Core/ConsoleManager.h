@@ -35,9 +35,15 @@ namespace origin
         static ConsoleManager &Get();
 
         template<typename... Args>
-        void PushFormattedMessage(ConsoleMessageType type, const std::string &format, Args&&... args)
+        void PushFormattedMessage(ConsoleMessageType type, fmt::format_string<Args...> format, Args&&... args)
         {
-            std::string message = std::vformat(format, std::make_format_args(args...));
+            std::string message = fmt::format(format, std::forward<Args>(args)...);
+            PushMessage(type, message);
+        }
+
+        // Overload for when no formatting is needed
+        void PushFormattedMessage(ConsoleMessageType type, const std::string &message)
+        {
             PushMessage(type, message);
         }
 
@@ -47,6 +53,6 @@ namespace origin
     };
 }
 
-#define PUSH_CONSOLE_WARNING(format, ...) origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Warning, format, __VA_ARGS__)
-#define PUSH_CONSOLE_INFO(format, ...)    origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Info, format, __VA_ARGS__)
-#define PUSH_CONSOLE_ERROR(format, ...)   origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Error, format, __VA_ARGS__)
+#define PUSH_CONSOLE_WARNING(...) origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Warning, __VA_ARGS__)
+#define PUSH_CONSOLE_INFO(...)    origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Info, __VA_ARGS__)
+#define PUSH_CONSOLE_ERROR(...)   origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Error, __VA_ARGS__)

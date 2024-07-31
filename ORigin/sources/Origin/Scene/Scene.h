@@ -31,9 +31,7 @@ namespace origin
         Entity FindEntityByName(std::string_view name);
 
         void UpdateRuntime(Timestep ts);
-
         void DestroyEntity(Entity entity);
-
         void OnRuntimeStart();
         void OnRuntimeStop();
         void OnUpdateRuntime(Timestep time);
@@ -42,10 +40,13 @@ namespace origin
         void OnUpdateSimulation(Timestep time, Camera &camera);
         void OnEditorUpdate(Timestep time, Camera &camera);
         void OnViewportResize(const uint32_t width, const uint32_t height);
-        void ApplyParentTransform(TransformComponent &tc, const IDComponent &idc);
         void OnShadowRender();
-
         void UpdateTransform();
+
+        void SetFocus(bool focus);
+        void LockMouse();
+        void UnlockMouse();
+        bool IsFocusing() { return m_IsFocus; }
 
         template <typename... Components>
         auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
@@ -63,30 +64,22 @@ namespace origin
         std::string m_Name = "untitled";
         std::shared_ptr<UIRenderer> m_UIRenderer;
         std::shared_ptr<Physics2D> m_Physics2D;
-
         void RenderScene(const Camera &camera);
-        void RenderScene(const Camera &camera, const TransformComponent &cameraTransform);
-
-        template <typename T>
-        void OnComponentAdded(Entity entity, T &component);
-
         bool IsRunning() const { return m_Running; }
         bool IsPaused() const { return m_Paused; }
-
         void SetPaused(bool paused) { m_Paused = paused; }
         void Step(int frames);
 
+        template <typename T>
+        void OnComponentAdded(Entity entity, T &component);
+        entt::registry m_Registry {};
         glm::vec4 m_GridColor = glm::vec4(1.0f);
-        int m_GridSize = 5;
-
         std::vector<std::pair<UUID, entt::entity>> m_EntityStorage;
-
-        entt::registry m_Registry;
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
         uint32_t m_GameViewportWidth = 0, m_GameViewportHeight = 0;
-
         bool m_Running = false;
         bool m_Paused = false;
+        bool m_IsFocus = false;
         int m_StepFrames = 0;
 
         friend class Entity;

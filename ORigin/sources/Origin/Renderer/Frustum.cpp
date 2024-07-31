@@ -5,6 +5,12 @@
 
 namespace origin
 {
+
+    Frustum::Frustum(const glm::mat4 &viewProjection)
+    {
+        Update(viewProjection);
+    }
+
     void Frustum::Update(const glm::mat4 &viewProjection)
     {
         // Extract frustum planes from the view-projection matrix

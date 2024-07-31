@@ -46,7 +46,6 @@ namespace origin
 
 	void SpriteSheetEditor::SetSelectedSpriteSheet(AssetHandle handle)
 	{
-		// Serialize before close the previous sprite
 		if (!m_CurrentFilepath.empty())
 		{
 			Serialize(m_CurrentFilepath);
@@ -58,12 +57,10 @@ namespace origin
 
 		if (Deserialize() && !m_IsOpened)
 		{
-			m_Camera.SetOrthoScale(static_cast<float>(m_Texture->GetHeight()));
-			m_Camera.SetOrthoScaleMax(m_Texture->GetHeight() * 4.f);
-
+			m_Camera.SetOrthoScale(static_cast<float>(m_Texture->GetHeight()) * 4.0f);
+			m_Camera.SetOrthoScaleMax(m_Texture->GetHeight() * 6.f);
 			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
-
 			ImGui::SetWindowFocus("Sprite Sheet Editor");
 		}
 	}
@@ -226,11 +223,8 @@ namespace origin
 		if (!m_IsOpened)
 			return;
 
-		m_Camera.SetMoveActive(IsViewportFocused);
-		m_Camera.SetDraggingActive(IsViewportFocused);
-		m_Camera.SetScrollingActive(IsViewportHovered);
-
-		m_Camera.OnUpdate(ts);
+		m_Camera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
+		m_Camera.OnUpdate(ts, m_ViewportBounds[0], m_ViewportBounds[1]);
 		OnMouse(ts);
 
 		RenderCommand::ClearColor(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
@@ -261,7 +255,7 @@ namespace origin
 				bool selected = m_SelectedIndex == offset / 5;
 
 				// Draw Rectangle Line
-				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x, c.Position.y, 1.0f })
+				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x, c.Position.y, 0.8f })
 					* glm::scale(glm::mat4(1.0f), { c.Size.x, c.Size.y, 1.0f });
 				glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 				Renderer2D::DrawRect(tf, col);
@@ -392,7 +386,7 @@ namespace origin
 					m_MoveTranslation = m_Controls[m_SelectedIndex].Position;
 				}
 			}
-			else if (m_HoveredIndex < 0 && m_SelectedIndex >= 0)
+			else if (m_HoveredIndex < 0 && m_SelectedIndex > 0)
 			{
 				m_Controls[m_SelectedIndex].SelectedCorner = NONE;
 				m_SelectedIndex = -1;
@@ -441,7 +435,8 @@ namespace origin
 		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered && m_SelectedIndex >= 0)
 		{
 			auto &c = m_Controls[m_SelectedIndex];
-			float orthoScale = m_Camera.GetOrthoScale() / m_Camera.GetHeight();
+			float viewportHeight = m_Camera.GetViewportSize().y;
+			float orthoScale = m_Camera.GetOrthoScale() / viewportHeight;
 
 			glm::vec2 atlasSize = { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 

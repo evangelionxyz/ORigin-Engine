@@ -15,6 +15,7 @@
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
+#include "Origin/Core/Input.h"
 
 #include "EntityManager.h"
 #include "ScriptableEntity.h"
@@ -77,10 +78,12 @@ namespace origin
 		for (auto e : m_EntityStorage)
 		{
 			if (e.first == uuid)
+			{
 				return { e.second, this };
+			}
 		}
 
-		return Entity();
+		return Entity { entt::null, nullptr };
 	}
 
 	Entity Scene::FindEntityByName(std::string_view name)
@@ -228,10 +231,10 @@ namespace origin
 		for (auto entity : cameraView)
 		{
 			auto [tc, cc] = cameraView.get<TransformComponent, CameraComponent>(entity);
-
 			if (cc.Primary)
 			{
-				RenderScene(cc.Camera, tc);
+				cc.Camera.SetTransform(tc.GetTransform());
+				RenderScene(cc.Camera);
 				break;
 			}
 		}
@@ -266,7 +269,9 @@ namespace origin
 			auto &ac = audioView.get<AudioComponent>(e);
 			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 			if (ac.PlayAtStart)
+			{
 				audio->Play();
+			}
 		}
 
 		PhysicsEngine::OnSimulateStart(this);
@@ -305,7 +310,9 @@ namespace origin
 		{
 			auto &ac = audioView.get<AudioComponent>(e);
 			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+			{
 				audio->Stop();
+			}
 		}
 
 		PhysicsEngine::OnSimulateStop(this);
@@ -358,7 +365,6 @@ namespace origin
 			}
 		}
 		Renderer2D::End();
-		editorCamera.UpdateAudioListener(ts);
 
         // Update entire transform hierarchy
         UpdateTransform();
@@ -419,19 +425,12 @@ namespace origin
 			}
 			Renderer2D::End();
 
-			bool isMainCameraListening = false;
 			const auto &audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
 			for (const auto entity : audioListenerView)
 			{
 				auto [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
 				if (al.Enable)
 					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
-				isMainCameraListening = al.Enable;
-			}
-
-			if (!isMainCameraListening)
-			{
-				editorCamera.UpdateAudioListener(ts);
 			}
 
 			PhysicsEngine::Simulate(ts, this);
@@ -474,7 +473,9 @@ namespace origin
 			auto &ac = audioView.get<AudioComponent>(e);
 			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 			if (ac.PlayAtStart)
+			{
 				audio->Play();
+			}
 		}
 	}
 
@@ -500,7 +501,9 @@ namespace origin
 			auto &ac = view.get<AudioComponent>(e);
 
 			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+			{
 				audio->Stop();
+			}
 		}
 	}
 
@@ -517,8 +520,16 @@ namespace origin
 			return aLen < bLen;
 		});
 
+        if (!camera.IsPerspective())
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
+        else
+        {
+            glEnable(GL_DEPTH_TEST);
+        }
+
 		Renderer2D::Begin(camera);
-		glDisable(GL_DEPTH_TEST);
 
 		// Render All entities
 		for (auto &e : m_EntityStorage)
@@ -640,8 +651,6 @@ namespace origin
 				material = Renderer::GetMaterial("Mesh");
 			}
 
-			//material->Bind();
-
 			for (auto &li : lightView)
 			{
 				const auto &[tc, lc] = lightView.get<TransformComponent, LightComponent>(li);
@@ -692,150 +701,7 @@ namespace origin
 		}
 #endif
 	}
-
-	void Scene::RenderScene(const Camera &camera, const TransformComponent &cameraTransform)
-	{
-		OGN_PROFILER_RENDERING();
-
-		std::sort(m_EntityStorage.begin(), m_EntityStorage.end(), [&](const auto a, const auto b)
-		{
-			Entity eA { std::get<1>(a), this };
-			Entity eB { std::get<1>(b), this };
-
-			float aLen = eA.GetComponent<TransformComponent>().WorldTranslation.z;
-			float bLen = eB.GetComponent<TransformComponent>().WorldTranslation.z;
-			return aLen < bLen;
-		});
-
-		Renderer2D::Begin(camera, cameraTransform.GetTransform());
-		glDisable(GL_DEPTH_TEST);
-		{
-			// Render All entities
-			for (auto &e : m_EntityStorage)
-			{
-				Entity entity { e.second, this };
-				auto &tc = entity.GetComponent<TransformComponent>();
-
-				if (!tc.Visible)
-					continue;
-
-				// 2D Quads
-				if (entity.HasComponent<SpriteRenderer2DComponent>())
-				{
-					auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
-					if (entity.HasComponent<SpriteAnimationComponent>())
-					{
-						auto &ac = entity.GetComponent<SpriteAnimationComponent>();
-						if (ac.State->IsCurrentAnimationExists())
-						{
-							if (ac.State->GetAnimation()->HasFrame())
-							{
-								auto &anim = ac.State->GetAnimation();
-								src.Texture = anim->GetCurrentFrame().Handle;
-								src.Min = anim->GetCurrentFrame().Min;
-								src.Max = anim->GetCurrentFrame().Max;
-							}
-						}
-					}
-					Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(e.second));
-				}
-
-				if (entity.HasComponent<CircleRendererComponent>())
-				{
-					auto &cc = entity.GetComponent<CircleRendererComponent>();
-					Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
-																 static_cast<int>(e.second));
-				}
-
-				// Particles
-				if (entity.HasComponent<ParticleComponent>())
-				{
-					auto &pc = entity.GetComponent<ParticleComponent>();
-					for (int i = 0; i < 5; i++)
-					{
-						pc.Particle.Emit(pc,
-							{ tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z + pc.ZAxis },
-								tc.WorldScale, pc.Rotation, static_cast<int>(e.second));
-					}
-
-					pc.Particle.OnRender();
-				}
-
-				// Text
-				if (entity.HasComponent<TextComponent>())
-				{
-					auto &text = entity.GetComponent<TextComponent>();
-					glm::mat4 transform = glm::mat4(1.0f);
-					glm::mat4 invertedCamTransform = glm::mat4(1.0f);
-
-					if (text.ScreenSpace)
-					{
-						const float ratio = camera.GetAspectRatio();
-						transform = glm::scale(tc.GetTransform(), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0f });
-						invertedCamTransform = glm::inverse(camera.GetViewProjection());
-						transform = invertedCamTransform * transform;
-					}
-					else
-					{
-						transform = tc.GetTransform();
-					}
-
-					if (text.FontHandle != 0)
-						Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
-				}
-			}
-		}
-		Renderer2D::End();
-
-        // ===============================
-        // 3D Scene
-        glEnable(GL_DEPTH_TEST);
-
-        MeshRenderer::Begin(camera, cameraTransform.GetTransform());
-        const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-        const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-        for (auto e : meshView)
-        {
-            const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
-            if (!tc.Visible)
-                continue;
-
-            std::shared_ptr<Material> material;
-			if (mc.HMaterial)
-			{
-                material = AssetManager::GetAsset<Material>(mc.HMaterial);
-			}
-			else
-			{
-				material = Renderer::GetMaterial("Mesh");
-			}
-
-			//material->Bind();
-
-            for (auto &li : lightView)
-            {
-                const auto &[tc, lc] = lightView.get<TransformComponent, LightComponent>(li);
-                lc.Light->OnRender(tc);
-            }
-
-            switch (mc.mType)
-            {
-				case StaticMeshComponent::Type::Cube:
-				{
-					MeshRenderer::DrawCube(tc.GetTransform(), material.get(), (int)e);
-					break;
-				}
-				case StaticMeshComponent::Type::Sphere:
-				{
-					MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
-					break;
-				}
-			}
-        }
-
-        MeshRenderer::End();
-	}
-
+	
 	void Scene::OnShadowRender()
 	{
 #if 0
@@ -875,14 +741,13 @@ namespace origin
         for (auto entity : view)
         {
             const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
-#if 1
 			if (idc.Parent)
 			{
 				const auto &ptc = GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
 				glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
 				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
 				tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
-				tc.WorldScale = tc.Scale * ptc.WorldScale;
+				tc.WorldScale = tc.Scale;
 			}
 			else
 			{
@@ -890,40 +755,25 @@ namespace origin
                 tc.WorldRotation = tc.Rotation;
                 tc.WorldScale = tc.Scale;
 			}
-#else
-			ApplyParentTransform(tc, idc);
-#endif
         }
     }
 
-	void Scene::ApplyParentTransform(TransformComponent &tc, const IDComponent &idc)
-	{
-		if (idc.Parent)
-		{
-			auto parentEntity = GetEntityWithUUID(idc.Parent);
-			if (!parentEntity.IsValid())
-			{
-				return;
-			}
+    void Scene::SetFocus(bool focus)
+    {
+		m_IsFocus = focus;
+    }
 
-			auto &ptc = parentEntity.GetComponent<TransformComponent>();
-			const auto &pidc = parentEntity.GetComponent<IDComponent>();
+    void Scene::LockMouse()
+    {
+		m_IsFocus = true;
+		Input::Get().MouseHide();
+    }
 
-			ApplyParentTransform(ptc, pidc);
-
-			glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
-			tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
-			tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
-			tc.WorldScale = ptc.WorldScale * tc.Scale;
-		}
-		else
-		{
-			tc.WorldTranslation = tc.Translation;
-			tc.WorldRotation = tc.Rotation;
-			tc.WorldScale = tc.Scale;
-		}
-	}
-
+    void Scene::UnlockMouse()
+    {
+        m_IsFocus = false;
+        Input::Get().MouseUnHide();
+    }
 
 	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
 	{

@@ -20,6 +20,8 @@ namespace origin
             Count
         };
 
+        Frustum(const glm::mat4 &viewProjection);
+
         void Update(const glm::mat4 &viewProjection);
         bool IsPointVisible(const glm::vec3 &point) const;
         bool IsSphereVisible(const glm::vec3 &center, float radius) const;

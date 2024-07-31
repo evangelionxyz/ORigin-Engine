@@ -36,9 +36,14 @@ namespace origin {
 		UpdateProjection();
 	}
 
-	void EditorCamera::UpdateAudioListener(Timestep ts)
+    void EditorCamera::SetProjectionType(ProjectionType type)
+    {
+		m_ProjectionType = type;
+    }
+
+    void EditorCamera::UpdateAudioListener(Timestep ts)
 	{
-		m_AudioListener.Set(GetPosition(), glm::vec3(0.0f), GetForwardDirection(), GetUpDirection());
+		m_AudioListener.Set(m_Position, glm::vec3(0.0f), GetForwardDirection(), GetUpDirection());
 	}
 
 	void EditorCamera::UpdateProjection()
@@ -57,8 +62,6 @@ namespace origin {
 			m_Projection = glm::ortho(-m_OrthoSize.x, m_OrthoSize.x, -m_OrthoSize.y, m_OrthoSize.y, m_OrthoNearClip, m_OrthoFarClip);
 			break;
 		}
-
-		m_Frustum.Update(m_Projection * m_View);
 	}
 
 	float EditorCamera::GetZoomSpeed() const
@@ -89,6 +92,21 @@ namespace origin {
 		UpdateProjection();
 	}
 
+    void EditorCamera::SetFov(float fovy)
+    {
+		m_FOV = fovy;
+    }
+
+    void EditorCamera::SetNear(float nearClip)
+    {
+		m_NearClip = nearClip;
+    }
+
+    void EditorCamera::SetFar(float farClip)
+    {
+		m_FarClip = farClip;
+    }
+
     void EditorCamera::SetPosition(const glm::vec3 &position)
     {
 		m_Position = position;
@@ -99,6 +117,11 @@ namespace origin {
     void EditorCamera::SetFocalPoint(const glm::vec3 &position)
     {
 		m_FocalPoint = position;
+    }
+
+    void EditorCamera::SetStyle(CameraStyle style)
+    {
+		m_CameraStyle = style;
     }
 
     void EditorCamera::SetPitch(float pitch)
@@ -134,16 +157,8 @@ namespace origin {
 		float x = std::min(m_ViewportWidth * 0.01f, 1.8f);
 		float y = std::min(m_ViewportHeight * 0.01f, 1.8f);
 
-		if (m_CameraStyle == Pivot)
-		{
-			xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
-			yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
-		}
-		else if (m_CameraStyle == FreeMove)
-		{
-			xFactor = GetZoomSpeed();
-			yFactor = GetZoomSpeed();
-		}
+        xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
+        yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
 
 		return { xFactor, yFactor };
 	}
@@ -153,111 +168,111 @@ namespace origin {
 		return 0.8f;
 	}
 
-	void EditorCamera::OnUpdate(Timestep ts)
+	void EditorCamera::OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax)
 	{
-		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
-		const glm::vec2 delta = Input::Get().GetMouseDelta() * 0.003f;
+        const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
+		const glm::vec2 delta = (mouse - m_LastMousePos) * 0.003f;
+        m_LastMousePos = mouse;
 
-		const float wWidth = static_cast<float>(Application::Get().GetWindow().GetWidth());
-		const float wHeight = static_cast<float>(Application::Get().GetWindow().GetHeight());
-
-		bool panOrRotate = Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) || Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle);
-        Input::Get().SetMouseHide(panOrRotate);
-
-		if (panOrRotate)
+		if (m_AllowedMove)
 		{
-			if (mouse.x > wWidth - 2.0f)
-			{
-				Input::Get().m_LastMousePosition.x = 2.0f;
-				Input::Get().SetMousePosition(2.0f, mouse.y);
-			}
-			else if (mouse.x < 2.0f)
-			{
-				Input::Get().m_LastMousePosition.x = wWidth - 2.0f;
-				Input::Get().SetMousePosition(wWidth - 2.0f, mouse.y);
-			}
+            bool panOrRotate = Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) || Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle);
 
-			if (mouse.y > wHeight - 2.0f)
-			{
-				Input::Get().m_LastMousePosition.y = 2.0f;
-				Input::Get().SetMousePosition(mouse.x, 2.0f);
-			}
-			else if (mouse.y < 2.0f)
-			{
-				Input::Get().m_LastMousePosition.y = wHeight - 2.0f;
-				Input::Get().SetMousePosition(mouse.x, wHeight - 2.0f);
-			}
+            float offset = 1.0f;
+            int windowPosX, windowPosY;
+            glfwGetWindowPos((GLFWwindow *)Input::Get().GetWindow(), &windowPosX, &windowPosY);
+            glm::vec2 absMousePos = mouse + glm::vec2(windowPosX, windowPosY);
+
+            m_IsInViewport = absMousePos.x < screenMax.x && absMousePos.x > screenMin.x
+                && absMousePos.y < screenMax.y && absMousePos.y > screenMin.y;
+
+            if (panOrRotate && m_IsInViewport)
+            {
+                glm::vec2 viewportCenter = (screenMin + screenMax) / 2.0f;
+                Input::Get().SetMousePosition(viewportCenter.x - windowPosX, viewportCenter.y - windowPosY);
+				m_LastMousePos = viewportCenter - glm::vec2(windowPosX, windowPosY);
+            }
+
+            Input::Get().SetMouseHide(panOrRotate && m_IsInViewport);
+
+            if (m_IsInViewport)
+            {
+                static glm::vec3 lastPosition = glm::vec3(0.0f);
+                glm::vec3 velocity(0.0f);
+                if (m_ProjectionType == ProjectionType::Perspective)
+                {
+                    switch (m_CameraStyle)
+                    {
+                    case CameraStyle::Pivot:
+                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && !Input::Get().IsKeyPressed(Key::LeftControl))
+                            MouseRotate(delta);
+                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
+                            MousePan(delta);
+
+                        m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, 0.8f);
+                        lastPosition = m_FocalPoint - GetForwardDirection() * m_Distance;
+                        break;
+
+                    case CameraStyle::FreeMove:
+                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
+                            MouseRotate(delta);
+                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
+                            MousePan(delta);
+
+                        if (!Input::Get().IsKeyPressed(Key::LeftControl))
+                        {
+                            bool notMoving = true;
+                            if (Input::Get().IsKeyPressed(Key::A))
+                            {
+                                velocity -= GetRightDirection();
+                                m_MoveSpeed += ts;
+                                notMoving = false;
+                            }
+                            else if (Input::Get().IsKeyPressed(Key::D))
+                            {
+                                velocity += GetRightDirection();
+                                m_MoveSpeed += ts;
+                                notMoving = false;
+                            }
+
+                            if (Input::Get().IsKeyPressed(Key::W))
+                            {
+                                velocity += GetForwardDirection();
+                                m_MoveSpeed += ts;
+                                notMoving = false;
+                            }
+                            else if (Input::Get().IsKeyPressed(Key::S))
+                            {
+                                velocity -= GetForwardDirection();
+                                m_MoveSpeed += ts;
+                                notMoving = false;
+                            }
+
+                            if (notMoving && m_MoveSpeed > 2.0f)
+                            {
+                                m_MoveSpeed -= ts * 10.0f;
+                            }
+
+                            m_MoveSpeed = glm::clamp(m_MoveSpeed, 1.0f, 200.0f);
+                            m_Position = glm::lerp(m_Position, m_Position + (velocity * m_MoveSpeed * 0.5f), 0.5f);
+
+                            lastPosition = m_Position;
+                            m_Distance = 5.0f;
+                            m_FocalPoint = lastPosition + GetForwardDirection() * m_Distance;
+                        }
+
+                        break;
+                    }
+                }
+                else if (m_ProjectionType == ProjectionType::Orthographic)
+                {
+                    if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
+                        MousePan(delta);
+                    lastPosition = m_Position;
+                }
+            }
 		}
-
-		static glm::vec3 lastPosition = glm::vec3(0.0f);
-		glm::vec3 velocity(0.0f);
-
-		if (m_ProjectionType == ProjectionType::Perspective)
-		{
-			switch (m_CameraStyle)
-			{
-				case CameraStyle::Pivot:
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && !Input::Get().IsKeyPressed(Key::LeftControl))
-						MouseRotate(delta);
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
-						MousePan(delta);
-
-					m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, 0.8f);
-					lastPosition = m_FocalPoint - GetForwardDirection() * m_Distance;
-					break;
-
-				case CameraStyle::FreeMove:
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
-						MouseRotate(delta);
-					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
-						MousePan(delta);
-
-					if (m_CanMoving)
-					{
-						if (Input::Get().IsKeyPressed(Key::A))
-						{
-							velocity -= GetRightDirection();
-							m_MoveSpeed += ts * 2.0f;
-						}
-						else if (Input::Get().IsKeyPressed(Key::D))
-						{
-							velocity += GetRightDirection();
-							m_MoveSpeed += ts * 2.0f;
-						}
-						if (Input::Get().IsKeyPressed(Key::W))
-						{
-							velocity += GetForwardDirection();
-							m_MoveSpeed += ts * 2.0f;
-						}
-						else if (Input::Get().IsKeyPressed(Key::S))
-						{
-							velocity -= GetForwardDirection();
-							m_MoveSpeed += ts * 2.0f;
-						}
-						else
-						{
-							m_MoveSpeed -= ts * 2.0f;
-						}
-
-						m_MoveSpeed = glm::clamp(m_MoveSpeed, 2.0f, 20.0f);
-						m_Position = glm::lerp(m_Position, m_Position + velocity, ts * m_MoveSpeed);
-
-						lastPosition = m_Position;
-						m_Distance = 5.0f;
-						m_FocalPoint = lastPosition + GetForwardDirection() * m_Distance;
-					}
-					
-					break;
-			}
-		}
-
-		else if (m_ProjectionType == ProjectionType::Orthographic)
-		{
-			if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
-				MousePan(delta);
-
-			lastPosition = m_Position;
-		}
+		
 
 		UpdateView();
 		UpdateProjection();
@@ -271,11 +286,12 @@ namespace origin {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		if (!m_CanScrolling)
+		if (!m_IsInViewport)
+		{
 			return false;
+		}
 
 		float delta = e.GetYOffset();
-
 		switch (m_ProjectionType)
 		{
 		case ProjectionType::Perspective:
@@ -287,7 +303,14 @@ namespace origin {
 			}
 			else if (m_CameraStyle == FreeMove)
 			{
-				m_MoveSpeed += delta;
+				if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
+				{
+					m_MoveSpeed += delta * 5.0f;
+				}
+				else
+				{
+					m_Position = glm::lerp(m_Position, (m_Position + GetForwardDirection() * delta * m_MoveSpeed), 0.5f);
+				}
 			}
 			break;
 		case ProjectionType::Orthographic:
@@ -302,9 +325,6 @@ namespace origin {
 
 	void EditorCamera::MousePan(const glm::vec2& delta)
 	{
-		if (!m_CanDragging)
-			return;
-
 		auto [xSpeed, ySpeed] = PanSpeed();
 
 		switch (m_ProjectionType)
@@ -317,10 +337,9 @@ namespace origin {
 			}
 			else
 			{
-				m_Position -= GetRightDirection() * delta.x * m_MoveSpeed;
-				m_Position += GetUpDirection() * delta.y * m_MoveSpeed;
+				m_Position -= GetRightDirection() * delta.x * ySpeed * ySpeed * m_MoveSpeed;
+				m_Position += GetUpDirection() * delta.y * ySpeed * ySpeed * m_MoveSpeed;
 			}
-			
 			break;
 		case ProjectionType::Orthographic:
 			m_Position += glm::vec3(-delta.x * (m_OrthoScale / m_ViewportHeight) * 300.0f, delta.y * (m_OrthoScale / m_ViewportHeight) * 300.0f, 0.0f);
@@ -330,9 +349,6 @@ namespace origin {
 
 	void EditorCamera::MouseRotate(const glm::vec2& delta)
 	{
-		if (!m_CanDragging)
-			return;
-
 		float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 		m_Yaw += yawSign * delta.x * RotationSpeed();
 		m_Pitch += delta.y * RotationSpeed();
@@ -358,19 +374,39 @@ namespace origin {
 		}
 	}
 
+	const glm::vec3 EditorCamera::GetPosition() const
+	{
+		return m_Position;
+	}
+
+	const glm::vec2 EditorCamera::GetViewportSize() const
+	{
+		return { m_ViewportWidth, m_ViewportHeight };
+	}
+
+    void EditorCamera::SetAllowedMove(bool active)
+    {
+		m_AllowedMove = active;
+    }
+
     void EditorCamera::SetDistance(float distance)
     {
 		m_Distance = distance;
     }
 
-    const glm::mat4 &EditorCamera::GetProjection() const
+    const glm::mat4 EditorCamera::GetProjectionMatrix() const
 	{
 		return m_Projection;
 	}
 
-	const glm::mat4 &EditorCamera::GetViewMatrix() const
+	const glm::mat4 EditorCamera::GetViewMatrix() const
 	{
 		return m_View;
 	}
+
+    const glm::mat4 EditorCamera::GetViewProjection() const
+    {
+		return m_Projection * m_View;
+    }
 
 }

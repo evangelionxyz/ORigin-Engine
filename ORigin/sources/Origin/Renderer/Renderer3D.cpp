@@ -126,26 +126,11 @@ namespace origin {
 		s_Render3DData.CubeShader = Renderer::GetShader("Cube");
 	}
 
-	void Renderer3D::Begin(const Camera &camera, const glm::mat4& camTransform)
-	{
-		OGN_PROFILER_RENDERING();
-
-		s_CameraBufferData.ViewProjection = camera.GetProjection() * glm::inverse(camTransform);
-		s_CameraBufferData.Position = camera.GetPosition();
-
-		s_CameraUniformBuffer->Bind();
-		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
-
-		StartBatch();
-	}
-
 	void Renderer3D::Begin(const Camera &camera)
 	{
 		OGN_PROFILER_RENDERING();
-
 		s_CameraBufferData.ViewProjection = camera.GetViewProjection();
 		s_CameraBufferData.Position = camera.GetPosition();
-
 		s_CameraUniformBuffer->Bind();
 		s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
 

@@ -166,12 +166,26 @@ namespace origin
 
 	// ==============================================
 	// Debug
-	static void Debug_Log(MonoString *string, int parameter)
+	static void Debug_LogWarning(MonoString *string, int parameter)
 	{
 		std::string str = Utils::MonoStringToString(string);
 		OGN_CORE_WARN("{0}", str);
-		PUSH_CONSOLE_INFO("{0}", str.c_str());
+		PUSH_CONSOLE_WARNING("{0}", str.c_str());
 	}
+
+    static void Debug_LogError(MonoString *string, int parameter)
+    {
+        std::string str = Utils::MonoStringToString(string);
+        OGN_CORE_ERROR("{0}", str);
+        PUSH_CONSOLE_ERROR("{0}", str.c_str());
+    }
+
+    static void Debug_LogInfo(MonoString *string, int parameter)
+    {
+        std::string str = Utils::MonoStringToString(string);
+        OGN_CORE_TRACE("{0}", str);
+        PUSH_CONSOLE_INFO("{0}", str.c_str());
+    }
 
 	// ==============================================
 	// Component
@@ -283,7 +297,7 @@ namespace origin
 
         if (entity.IsValid())
         {
-            *angle = entity.GetComponent<TransformComponent>().GetEulerAngles();
+            *angle = glm::eulerAngles(entity.GetComponent<TransformComponent>().Rotation);
         }
     }
 
@@ -297,7 +311,7 @@ namespace origin
 
         if (entity.IsValid())
         {
-            entity.GetComponent<TransformComponent>().SetEulerAngles(angle);
+            entity.GetComponent<TransformComponent>().Rotation = glm::quat(angle);
         }
     }
 
@@ -542,6 +556,38 @@ namespace origin
 			audio->Play();
 		}
 	}
+
+    static void AudioComponent_PlayOverlapping(UUID entityID)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &ac = entity.GetComponent<AudioComponent>();
+            OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
+            const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+            audio->PlayOverlapping();
+        }
+    }
+
+    static void AudioComponent_PlayLooped(UUID entityID)
+    {
+        OGN_PROFILER_LOGIC();
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
+        Entity entity = scene->GetEntityWithUUID(entityID);
+        if (entity.IsValid())
+        {
+            auto &ac = entity.GetComponent<AudioComponent>();
+            OGN_CORE_ASSERT(ac.Audio, "ScriptGlue: Invalid Audio");
+            const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+            audio->PlayLooped();
+        }
+    }
 
 	static void AudioComponent_Stop(UUID entityID)
 	{
@@ -1693,7 +1739,7 @@ namespace origin
         }
     }
 
-    static void RigidbodyComponent_SetGravityFactory(UUID entityID, float gravityFactor)
+    static void RigidbodyComponent_SetGravityFactor(UUID entityID, float gravityFactor)
     {
         Scene *scene = ScriptEngine::GetSceneContext();
         OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
@@ -1733,7 +1779,7 @@ namespace origin
             auto &rb = entity.GetComponent<RigidbodyComponent>();
             if (rb.Body)
             {
-                *eulerAngles = rb.GetEulerAngleRotation();
+                *eulerAngles = rb.GetEulerAngles();
             }
         }
     }
@@ -1828,39 +1874,86 @@ namespace origin
         }
     }
 
+	static void Scene_LockMouse()
+	{ 
+		Scene *scene = ScriptEngine::GetSceneContext();
+		scene->LockMouse();
+	}
+
+	static void Scene_UnlockMouse()
+    {
+        Scene *scene = ScriptEngine::GetSceneContext();
+        scene->UnlockMouse();
+    }
+
+	static void Scene_IsFocusing(bool *value)
+	{ 
+        Scene *scene = ScriptEngine::GetSceneContext();
+		*value = scene->IsFocusing();
+	}
+
+    static void Input_IsMouseDragging(bool *value)
+    {
+        *value = Input::Get().IsDragging();
+    }
+
+	static void Input_SetMouseHide(bool hide)
+	{
+		Input::Get().SetMouseHide(hide);
+		if (!hide)
+		{
+			Input::Get().ResetMouseDelta();
+		}
+	}
+
+    static void Input_IsMouseHidden(bool *value)
+    {
+        *value = Input::Get().IsHidden();
+    }
+
 	static void Input_ToggleMouseLock()
 	{ 
 		Input::Get().ToggleMouseLock();
 	}
 
 	static void Input_GetMouseDelta(glm::vec2 *delta)
-	{ 
+    {
 		*delta = Input::Get().GetMouseDelta();
 	}
 
 	static void Input_GetMousePosition(glm::vec2 *value)
-	{ 
+    {
 		*value = Input::Get().GetMousePosition();
 	}
 
 	static void Input_SetMousePosition(glm::vec2 value)
-	{ 
+    {
 		Input::Get().SetMousePosition(value.x, value.y);
 	}
 
 	static void Input_IsMouseButtonDown(MouseCode button, bool *value)
 	{ 
+        Scene *scene = ScriptEngine::GetSceneContext();
+        if (scene->IsFocusing())
 		*value = Input::Get().IsMouseButtonPressed(button);
 	}
 
 	static void Input_IsKeyPressed(KeyCode keycode, bool *value)
 	{
-		*value = Input::Get().IsKeyPressed(keycode);
+        Scene *scene = ScriptEngine::GetSceneContext();
+		if (scene->IsFocusing())
+		{
+			*value = Input::Get().IsKeyPressed(keycode);
+		}
 	}
 
 	static void Input_IsKeyReleased(KeyCode keycode, bool *value)
 	{
-		*value = Input::Get().IsKeyReleased(keycode);
+		Scene *scene = ScriptEngine::GetSceneContext();
+		if (scene->IsFocusing())
+		{
+			*value = Input::Get().IsKeyReleased(keycode);
+		}
 	}
 
 	template <typename... Component>
@@ -1886,6 +1979,11 @@ namespace origin
 #endif
 			size_t pos = typeName.find_last_of(':');
 			std::string_view structName = (pos == std::string_view::npos) ? typeName : typeName.substr(pos + 1);
+
+			// Remove 'Component'
+			pos = structName.find("Component");
+			structName = structName.substr(0, pos);
+
 			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
@@ -1929,7 +2027,9 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(Entity_Destroy);
 
 		// Debug
-		OGN_ADD_INTERNAL_CALLS(Debug_Log);
+		OGN_ADD_INTERNAL_CALLS(Debug_LogWarning);
+		OGN_ADD_INTERNAL_CALLS(Debug_LogError);
+		OGN_ADD_INTERNAL_CALLS(Debug_LogInfo);
 
 		// Components
 		OGN_ADD_INTERNAL_CALLS(TransformComponent_GetForward);
@@ -1957,6 +2057,8 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(Rigidbody2DComponent_GetContactWithTag);
 
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Play);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_PlayOverlapping);
+		OGN_ADD_INTERNAL_CALLS(AudioComponent_PlayLooped);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_Stop);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_SetVolume);
 		OGN_ADD_INTERNAL_CALLS(AudioComponent_GetVolume);
@@ -2049,7 +2151,7 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetLinearVelocity);
 		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetFriction);
 		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetRestitution);
-		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetGravityFactory);
+		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_SetGravityFactor);
 		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetPosition);
 		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetEulerAngleRotation);
 		OGN_ADD_INTERNAL_CALLS(RigidbodyComponent_GetRotation);
@@ -2061,11 +2163,19 @@ namespace origin
 
 		OGN_ADD_INTERNAL_CALLS(GetScriptInstance);
 
+		OGN_ADD_INTERNAL_CALLS(Input_IsMouseDragging);
+		OGN_ADD_INTERNAL_CALLS(Input_SetMouseHide);
+		OGN_ADD_INTERNAL_CALLS(Input_IsMouseHidden);
+		OGN_ADD_INTERNAL_CALLS(Input_ToggleMouseLock);
 		OGN_ADD_INTERNAL_CALLS(Input_GetMousePosition);
 		OGN_ADD_INTERNAL_CALLS(Input_SetMousePosition);
 		OGN_ADD_INTERNAL_CALLS(Input_GetMouseDelta);
 		OGN_ADD_INTERNAL_CALLS(Input_IsMouseButtonDown);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyReleased);
+
+		OGN_ADD_INTERNAL_CALLS(Scene_LockMouse);
+		OGN_ADD_INTERNAL_CALLS(Scene_UnlockMouse);
+		OGN_ADD_INTERNAL_CALLS(Scene_IsFocusing);
 	}
 }

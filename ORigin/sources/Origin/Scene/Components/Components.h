@@ -139,9 +139,11 @@ namespace origin
 		bool Spatializing = false;
 		bool Looping = false;
 		bool PlayAtStart = false;
+		bool Overlapping = false;
+		int OverlapCount = 10;
 
 		AudioComponent() = default;
-		AudioComponent(const AudioComponent&) = default;
+		AudioComponent(const AudioComponent &) = default;
 	};
 
 	class ParticleComponent
@@ -164,7 +166,7 @@ namespace origin
 		float LifeTime = 1.0f;
 
 		ParticleComponent() = default;
-		ParticleComponent(const ParticleComponent&) = default;
+		ParticleComponent(const ParticleComponent &) = default;
 	};
 
 	class StaticMeshComponent
@@ -295,21 +297,6 @@ namespace origin
         {
 			WorldRotation = glm::normalize(delta * WorldRotation);
         }
-
-        void SetWorldScale(const glm::vec3 &factor)
-        {
-            WorldScale *= factor;
-        }
-
-		glm::vec3 GetEulerAngles()
-		{
-			return glm::eulerAngles(WorldRotation);
-		}
-
-		void SetEulerAngles(const glm::vec3 &euler)
-		{
-			WorldRotation = glm::quat(euler);
-		}
 	};
 
 	class SpriteRenderer2DComponent

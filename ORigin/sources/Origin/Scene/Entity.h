@@ -2,14 +2,13 @@
 
 #pragma once
 #include "entt/entt.hpp"
-#include "Scene.h"
-
+#include "Origin/Core/ConsoleManager.h"
 #include "Components/PhysicsComponents.h"
 #include "Components/Components.h"
+#include "Scene.h"
 
 namespace origin {
 
-	class Scene;
 	class Entity
 	{
 	public:
@@ -58,26 +57,42 @@ namespace origin {
 		EntityType GetType() { return GetComponent<IDComponent>().Type; }
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
+		Scene *GetScene() const { return m_Scene; }
 
 		bool IsValid() const
 		{
+			bool isValid = true;
 			if (m_Scene)
 			{
-				return m_Scene->m_Registry.valid(m_EntityHandle);
+				if (m_Scene->m_Name.empty())
+				{
+					isValid = false;
+				}
+				else
+				{
+					isValid = m_Scene->m_Registry.valid(m_EntityHandle);
+				}
 			}
-			return m_Scene != nullptr && m_EntityHandle != entt::null;
+			else
+			{
+				isValid = m_Scene != nullptr && m_EntityHandle != entt::null;
+			}
+
+            if (!isValid)
+            {
+                //OGN_CORE_ERROR("[Entity] Accessing invalid entity!");
+                //PUSH_CONSOLE_ERROR("[Entity] Accessing invalid entity!");
+            }
+
+			return isValid;
 		}
 
 		operator entt::entity() const { return m_EntityHandle; }
 		operator int() const { return static_cast<int>(m_EntityHandle); }
 		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
 		operator uintptr_t() const { return static_cast<uintptr_t>(m_EntityHandle); }
-
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
-		
-		Scene* GetScene() const { return m_Scene; }
-
 	private:
 		entt::entity m_EntityHandle{entt::null};
 		Scene* m_Scene = nullptr;

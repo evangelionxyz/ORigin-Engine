@@ -21,15 +21,21 @@ namespace origin
 		float GetMouseY();
 		void SetMousePosition(float x, float y);
 		void SetMouseLastPosition(float x, float y);
-		glm::vec2 GetMousePosition() const;
-		glm::vec2 GetMouseDelta() const;
 
 		void Update();
 		void ToggleMouseLock();
 		void MouseHide();
 		void MouseUnHide();
 		void SetMouseHide(bool hide);
+		bool IsHidden() const;
+		bool IsDragging() const;
+		void SetMouseToCenter();
+		void ResetMouseDelta();
+		glm::vec2 GetMousePosition() const;
+		glm::vec2 GetMouseDelta() const;
+		void *GetWindow();
 		static Input &Get();
+
 
 	private:
 		static Input* s_Instance;

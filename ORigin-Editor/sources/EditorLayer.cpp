@@ -69,7 +69,7 @@ namespace origin
 		m_EditorCamera.SetDistance(58.0f);
 		m_EditorCamera.SetYaw(-0.7f);
 		m_EditorCamera.SetPitch(0.63f);
-
+		m_EditorCamera.SetStyle(CameraStyle::FreeMove);
 
 		m_ActiveScene = std::make_shared<Scene>();
 		const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
@@ -184,17 +184,13 @@ namespace origin
 		m_Time += ts.Seconds();
 
 		Renderer::GetStatistics().Reset();
-		//Application::Get().GetGuiLayer()->BlockEvents(!IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused && !m_UIEditor->IsViewportFocused);
-		
-		m_SpriteSheetEditor->OnUpdate(ts);
-		m_UIEditor->OnUpdate(ts);
-
 		if (m_SceneState != SceneState::Play)
 		{
-			m_EditorCamera.SetMoveActive(!ImGui::GetIO().WantTextInput && IsViewportFocused);
-			m_EditorCamera.SetDraggingActive(IsViewportFocused && !m_SpriteSheetEditor->IsViewportFocused);
-			m_EditorCamera.SetScrollingActive(IsViewportHovered);
+			m_EditorCamera.UpdateAudioListener(ts);
 		}
+
+		m_SpriteSheetEditor->OnUpdate(ts);
+		m_UIEditor->OnUpdate(ts);
 	}
 
 	void EditorLayer::OnDuplicateEntity()
@@ -252,6 +248,7 @@ namespace origin
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
 		m_SceneHierarchy.SetActiveScene(m_ActiveScene);
+		m_ActiveScene->LockMouse();
 	}
 
 	void EditorLayer::OnScenePause()
@@ -262,6 +259,7 @@ namespace origin
 			return;
 
 		m_ActiveScene->SetPaused(true);
+		m_ActiveScene->UnlockMouse();
 	}
 
 	void EditorLayer::OnSceneSimulate()
@@ -275,7 +273,6 @@ namespace origin
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnSimulationStart();
-
 		m_SceneHierarchy.SetActiveScene(m_ActiveScene);
 	}
 
@@ -289,11 +286,10 @@ namespace origin
 			m_ActiveScene->OnRuntimeStop();
 		else if (m_SceneState == SceneState::Simulate)
 			m_ActiveScene->OnSimulationStop();
-
 		m_SceneHierarchy.SetActiveScene(m_EditorScene);
 		m_ActiveScene = m_EditorScene;
-
 		m_SceneState = SceneState::Edit;
+        m_ActiveScene->UnlockMouse();
 	}
 
 	bool EditorLayer::NewProject()
@@ -378,6 +374,7 @@ namespace origin
 		m_EditorScene = std::make_shared<Scene>();
 		m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
 		m_ActiveScene = m_EditorScene;
+		Project::SetActiveScene(m_ActiveScene);
 		m_ScenePath = std::filesystem::path();
 	}
 
@@ -449,6 +446,8 @@ namespace origin
 		std::string name = metadata.Filepath.stem().string();
 		m_ActiveScene->SetName(name);
 
+		Project::SetActiveScene(m_ActiveScene);
+
 		if (!m_UIEditor)
 		{
 			m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
@@ -492,6 +491,8 @@ namespace origin
 		m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
 		m_ActiveScene = m_EditorScene;
 
+		Project::SetActiveScene(m_ActiveScene);
+
 		m_ScenePath = filepath;
 
 		if (!m_UIEditor)
@@ -522,12 +523,18 @@ namespace origin
 			{
 				if (ImGui::MenuItem("New Project")) NewProject();
 				if (ImGui::MenuItem("Open Project")) OpenProject();
-				if (ImGui::MenuItem("Save Project", "", nullptr, (bool)Project::GetActive())) Project::SaveActive();
+
+				if (ImGui::MenuItem("Save Project", "", nullptr, (bool)Project::GetActive()))
+				{
+					SaveScene();
+					Project::SaveActive();
+				}
+
 				ImGui::Separator();
 				if (ImGui::MenuItem("New Scene", "Ctrl+N", nullptr, (bool)Project::GetActive())) NewScene();
-				if (ImGui::MenuItem("Open Scene", "Ctrl+O", nullptr, (bool)Project::GetActive()))  OpenScene();
-				if (ImGui::MenuItem("Save Scene", "Ctrl+S", nullptr, (bool)Project::GetActive()))  SaveScene();
-				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S", nullptr, (bool)Project::GetActive()))  SaveSceneAs();
+				if (ImGui::MenuItem("Open Scene", "Ctrl+O", nullptr, (bool)Project::GetActive())) OpenScene();
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S", nullptr, (bool)Project::GetActive())) SaveScene();
+				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S", nullptr, (bool)Project::GetActive())) SaveSceneAs();
 				if (ImGui::MenuItem("Exit", "Alt+F4")) window.Close();
 
 				ImGui::EndMenu();
@@ -580,30 +587,35 @@ namespace origin
 		switch (m_SceneState)
 		{
 		case SceneState::Play:
+		{
+			if (m_ActiveScene->IsFocusing())
+			{
+				Input::Get().SetMouseToCenter();
+			}
 			m_Gizmos->SetType(GizmoType::NONE);
 			m_ActiveScene->OnUpdateRuntime(ts);
+			Entity cam = m_ActiveScene->GetPrimaryCameraEntity();
+			CameraComponent cc = cam.GetComponent<CameraComponent>();
+			m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
 			break;
-
+		}
 		case SceneState::Edit:
-			
+			m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
 			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
-
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-			
-			m_EditorCamera.OnUpdate(ts);
+			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
 			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
 
 		case SceneState::Simulate:
+			m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
 			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
-
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-			
-			m_EditorCamera.OnUpdate(ts);
+			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
 			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
@@ -748,7 +760,7 @@ namespace origin
 			glm::mat4 transform = tc.GetTransform();
 			auto &idc = entity.GetComponent<IDComponent>();
 
-			const glm::mat4 &cameraProjection = m_EditorCamera.GetProjection();
+			const glm::mat4 &cameraProjection = m_EditorCamera.GetProjectionMatrix();
 			const glm::mat4 &cameraView = m_EditorCamera.GetViewMatrix();
 
 			float snapValues[] = { snapValue, snapValue, snapValue };
@@ -782,7 +794,7 @@ namespace origin
 					tc.Translation = glm::vec3(ptc.GetTransform() * localTranslation);
 					tc.Translation = glm::vec3(localTranslation);
 					tc.Rotation = glm::inverse(ptc.WorldRotation) * glm::quat(rotation);
-					tc.Scale = scale / ptc.WorldScale;
+					tc.Scale = scale;
 				}
 				else
 				{
@@ -799,6 +811,11 @@ namespace origin
 		if (ImGui::IsWindowFocused() && Input::Get().IsKeyPressed(Key::Escape))
 		{
 			m_Gizmos->SetType(GizmoType::NONE);
+		}
+
+		if (ImGui::IsWindowFocused() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_SceneState == SceneState::Play)
+		{
+			m_ActiveScene->LockMouse();
 		}
 
 		ImGui::End();
@@ -1109,7 +1126,6 @@ namespace origin
 			clipper.Begin(messages.size());
 
             // Check if there are new messages
-            
             if (messages.size() > lastMessageCount && autoScroll)
             {
                 scrollToBottom = true;
@@ -1126,7 +1142,7 @@ namespace origin
                     {
                     case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
                     case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
-                    case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.5f, 0.2f, 1.0f)); break;
+                    case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 1.0f, 0.2f, 1.0f)); break;
                     }
 
                     ImGui::TableSetColumnIndex(0);
@@ -1172,10 +1188,8 @@ namespace origin
 		if (m_SceneState == SceneState::Play)
 			return;
 
-		static glm::vec2 initialPosition = { 0.0f, 0.0f };
 		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
-		const glm::vec2 delta = mouse - initialPosition;
-		initialPosition = mouse;
+		const glm::vec2 delta = Input::Get().GetMouseDelta();
 
 		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
@@ -1188,15 +1202,18 @@ namespace origin
                 {
 					if (m_HoveredEntity != selectedEntity)
 					{
-						m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-						selectedEntity = m_HoveredEntity;
+						if (m_HoveredEntity.IsValid())
+						{
+                            m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
+                            selectedEntity = m_HoveredEntity;
+						}
 					}
                 }
                 else if (m_PixelData == -1)
                 {
                     m_Gizmos->SetType(GizmoType::NONE);
-                    m_SceneHierarchy.SetSelectedEntity({});
-					selectedEntity = {};
+					m_SceneHierarchy.SetSelectedEntity({ entt::null, nullptr });
+					selectedEntity = { entt::null, nullptr };
                 }
 			}
 
@@ -1206,8 +1223,8 @@ namespace origin
 				{
 					auto &tc = selectedEntity.GetComponent<TransformComponent>();
 					auto &idc = selectedEntity.GetComponent<IDComponent>();
-
-					float orthoScale = m_EditorCamera.GetOrthoScale() / m_EditorCamera.GetHeight();
+					float viewportHeight = m_EditorCamera.GetViewportSize().y;
+					float orthoScale = m_EditorCamera.GetOrthoScale() / viewportHeight;
 					if (m_SceneState == SceneState::Play)
 					{
 						Entity cam = m_ActiveScene->GetPrimaryCameraEntity();
@@ -1292,10 +1309,21 @@ namespace origin
 
 		switch (e.GetKeyCode())
 		{
+		case Key::Escape:
+		{
+			if (m_SceneState == SceneState::Play)
+			{
+				m_ActiveScene->UnlockMouse();
+			}
+			break;
+		}
 		case Key::D:
 		{
-			if (control)
+			if (control && 
+				!(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate))
+			{
 				OnDuplicateEntity();
+			}
 			break;
 		}
 

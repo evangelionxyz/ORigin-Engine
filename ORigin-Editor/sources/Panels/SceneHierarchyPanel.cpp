@@ -35,6 +35,11 @@ namespace origin {
 
 	Entity SceneHierarchyPanel::SetSelectedEntity(Entity entity)
 	{
+		if (m_Scene->IsFocusing())
+		{
+			return { entt::null, nullptr };
+		}
+
 		return m_SelectedEntity = entity;
 	}
 
@@ -56,7 +61,9 @@ namespace origin {
 	void SceneHierarchyPanel::SetActiveScene(const std::shared_ptr<Scene> &scene, bool reset)
 	{
 		if (reset)
-			m_SelectedEntity = {};
+		{
+			m_SelectedEntity = { entt::null, nullptr };
+		}
 
 		m_Scene = scene;
 
@@ -69,18 +76,23 @@ namespace origin {
 		if (newEntity.IsValid())
 		{
 			if (entityID == newEntity.GetUUID())
+			{
 				m_SelectedEntity = newEntity;
+			}
 		}
 		else
 		{
-			m_SelectedEntity = Entity();
+			m_SelectedEntity = { entt::null, nullptr };
 		}
 	}
 
 	void SceneHierarchyPanel::DestroyEntity(Entity entity)
 	{
-		m_SelectedEntity = {};
-		m_Scene->DestroyEntity(entity);
+		if (!m_Scene->IsFocusing())
+		{
+			m_SelectedEntity = { entt::null, nullptr };
+			m_Scene->DestroyEntity(entity);
+		}
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -121,9 +133,8 @@ namespace origin {
 
 		ImGui::BeginChild("entity_hierarcy", ImGui::GetContentRegionAvail(), 0, windowFlags);
 
-        static ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg
-            | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_ScrollY
-            | ImGuiTableFlags_ScrollX;
+        static ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg 
+			| ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX;
         if (ImGui::BeginTable("ENTITY_HIERARCHY", 3, tableFlags))
         {
 			ImGui::TableSetupScrollFreeze(0, 1);
@@ -179,10 +190,7 @@ namespace origin {
             ImGui::EndTable();
         }
 
-        
-
 		ImGui::EndChild();
-
 		ImGui::End();
 	}
 
@@ -191,7 +199,9 @@ namespace origin {
 		ImGui::Begin("Properties");
 		IsScenePropertiesFocused = ImGui::IsWindowFocused();
 		if (m_SelectedEntity.IsValid())
+		{
 			DrawComponents(m_SelectedEntity);
+		}
 		ImGui::End();
 	}
 
@@ -202,7 +212,8 @@ namespace origin {
 			return;
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
+			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
@@ -227,7 +238,7 @@ namespace origin {
 				if (e.GetScene())
 				{
 					EntityManager::AddChild(entity, e, m_Scene.get());
-					m_SelectedEntity = e;
+					SetSelectedEntity(e);
 				}
 
 				if (ImGui::MenuItem("Delete"))
@@ -267,7 +278,7 @@ namespace origin {
 		{
 			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 			{
-				m_SelectedEntity = entity;
+				SetSelectedEntity(entity);
 			}
 		}
 
@@ -382,7 +393,14 @@ namespace origin {
 			if (component.HMaterial)
 			{
 				material = AssetManager::GetAsset<Material>(component.HMaterial);
-				label = material->GetName();
+				if (material)
+				{
+					label = material->GetName();
+				}
+				else
+				{
+					label = "Invalid";
+				}
 			}
 			else
 			{
@@ -677,7 +695,17 @@ namespace origin {
 						name = std::string(buffer);
 						audio->SetName(name.c_str());
 					}
-
+                    if (UI::DrawCheckbox("Allow Overlap", &component.Overlapping))
+                    {
+                        if (component.Overlapping)
+                        {
+                            audio->ActivateOverlapping();
+                        }
+                        else
+                        {
+                            audio->DeactivateOverlapping();
+                        }
+                    }
 					UI::DrawCheckbox("Play At Start", &component.PlayAtStart);
 					UI::DrawCheckbox("Looping", &component.Looping);
 					UI::DrawFloatControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
@@ -916,14 +944,12 @@ namespace origin {
 			UI::DrawFloatControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
 			UI::DrawFloatControl("Mass", &component.Mass, 0.01f);
 			UI::DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
-			UI::DrawCheckbox("Freeze Pos X", &component.FreezePositionX);
-			UI::DrawCheckbox("Freeze Pos Y", &component.FreezePositionY);
+			UI::DrawCheckbox2("Freeze Translate", &component.FreezePositionX, &component.FreezePositionY);
 			UI::DrawCheckbox("Fixed Rotation", &component.FixedRotation);
 			UI::DrawCheckbox("Awake", &component.Awake);
 			UI::DrawCheckbox("Allow Sleeping", &component.AllowSleeping);
 			UI::DrawCheckbox("Bullet", &component.Bullet);
-
-			});
+		});
 
 		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto &component)
 			{
@@ -1046,27 +1072,67 @@ namespace origin {
 				}
 				
 			});
-        DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [](auto &component)
+        DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [scene = m_Scene](auto &component)
         {
+            const char *motionQuality[2] = { "Discrete", "LinearCast" };
+            const char *currentMotionQuality = motionQuality[static_cast<int>(component.MotionQuality)];
+
+            bool isSelected = false;
+            if (ImGui::BeginCombo("Motion Quality", currentMotionQuality))
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    isSelected = currentMotionQuality == motionQuality[i];
+                    if (ImGui::Selectable(motionQuality[i], isSelected))
+                    {
+                        currentMotionQuality = motionQuality[i];
+						component.MotionQuality = static_cast<RigidbodyComponent::EMotionQuality>(i);
+                    }
+
+					if (isSelected)
+					{
+                        ImGui::SetItemDefaultFocus();
+					}
+                }
+                ImGui::EndCombo();
+            }
+
             UI::DrawCheckbox("UseGravity", &component.UseGravity);
-			ImGui::PushID("Rotate");
-			ImGui::Text("Rotate");
-			ImGui::SameLine(); ImGui::Checkbox("X", &component.RotateX);
-			ImGui::SameLine(); ImGui::Checkbox("Y", &component.RotateY);
-			ImGui::SameLine(); ImGui::Checkbox("Z", &component.RotateZ);
-			ImGui::PopID();
 
-            ImGui::PushID("Translate");
-            ImGui::Text("Translate");
-            ImGui::SameLine(); ImGui::Checkbox("X", &component.MoveX);
-            ImGui::SameLine(); ImGui::Checkbox("Y", &component.MoveY);
-            ImGui::SameLine(); ImGui::Checkbox("Z", &component.MoveZ);
-            ImGui::PopID();
+			static float coloumnWidth = 100.0f;
+			UI::DrawCheckbox3("Rotate", &component.RotateX, &component.RotateY, &component.RotateZ);
+			UI::DrawCheckbox3("Translate", &component.MoveX, &component.MoveY, &component.MoveZ);
 
-            UI::DrawCheckbox("Static", &component.IsStatic);
-            UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f);
-			UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f);
-            UI::DrawVec3Control("Center Mass", component.CenterMass);
+            UI::DrawCheckbox("Allow Sleeping", &component.IsStatic);
+			if (UI::DrawFloatControl("Gravity Factor", &component.GravityFactor, 0.05f, 0.0f, 1000.0f, 0.0f))
+			{
+				if (scene->IsRunning())
+				{
+					component.SetGravityFactor(component.GravityFactor);
+				}
+			}
+			
+			if (UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f))
+			{
+                if (scene->IsRunning())
+                {
+                    component.SetMass(component.Mass);
+                }
+			}
+			if (UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f))
+			{
+                if (scene->IsRunning())
+                {
+                    component.SetOffset(component.Offset);
+                }
+			}
+			if (UI::DrawVec3Control("Center Mass", component.CenterMass))
+			{
+                if (scene->IsRunning())
+                {
+                    component.SetCenterMass(component.CenterMass);
+                }
+			}
         });
 
         DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
@@ -1465,7 +1531,7 @@ namespace origin {
 
 		if (entity.IsValid())
 		{
-			m_SelectedEntity = entity;
+			SetSelectedEntity(entity);
 		}
 
 		return entity;

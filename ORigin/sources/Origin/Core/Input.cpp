@@ -60,6 +60,11 @@ namespace origin
 		return m_MouseDelta;
     }
 
+    void *Input::GetWindow()
+    {
+		return s_Window;
+    }
+
     float Input::GetMouseX()
 	{
 		return s_Instance->GetMousePosition().x;
@@ -86,14 +91,6 @@ namespace origin
         glm::vec2 currentMousePos = GetMousePosition();
         m_MouseDelta = currentMousePos - m_LastMousePosition;
         m_LastMousePosition = currentMousePos;
-
-        // If mouse is locked, reset cursor to center of window
-        if (m_IsMouseLocked)
-        {
-            int width, height;
-            glfwGetWindowSize(s_Window, &width, &height);
-            SetMousePosition(width / 2.0f, height / 2.0f);
-        }
 	}
 
 	void Input::ToggleMouseLock()
@@ -133,6 +130,30 @@ namespace origin
     void Input::SetMouseHide(bool hide)
     {
 		hide ? MouseHide() : MouseUnHide();
+    }
+
+    bool Input::IsHidden() const
+    {
+		return m_IsMouseHidden;
+    }
+
+    bool Input::IsDragging() const
+    {
+		return m_IsMouseDragging;
+    }
+
+    void Input::SetMouseToCenter()
+    {
+        int width, height;
+        glfwGetWindowSize(s_Window, &width, &height);
+        SetMousePosition(width / 2.0f, height / 2.0f);
+		m_LastMousePosition = { width / 2.0f, height / 2.0f };
+    }
+
+    void Input::ResetMouseDelta()
+    {
+		m_MouseDelta = { 0.0f, 0.0f };
+		m_LastMousePosition = { 0.0f, 0.0f };
     }
 
     Input &Input::Get()

@@ -38,7 +38,7 @@ namespace origin {
 	public:
 		Gizmos() = default;
 
-		void OnRender(const EditorCamera &camera, Scene *scene, bool visualizeCollider);
+		void OnRender(const Camera &camera, Scene *scene, bool visualizeCollider);
 		void OnEvent(Event &e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 		void SetSnapValue(float value) { m_SnapValue = value; }
@@ -46,11 +46,11 @@ namespace origin {
 		void SetType(GizmoType type);
 		GizmoType GetType() const { return m_Type; }
 
-		void Draw2DGrid(const EditorCamera &camera);
-		void Draw3DGrid(const EditorCamera &camera, bool horizontal, bool vertical, int size);
-		void DrawIcons(const EditorCamera &camera, Scene *scene);
-		void DrawFrustum(const EditorCamera &camera, Scene *scene);
-		void CalculateBoundary2DSizing(const EditorCamera &camera);
+		void Draw2DGrid(const Camera &camera);
+		void Draw3DGrid(const Camera &camera, bool horizontal, bool vertical, int size);
+		void DrawIcons(const Camera &camera, Scene *scene);
+		void DrawFrustum(const Camera &camera, Scene *scene);
+		void CalculateBoundary2DSizing(const Camera &camera);
 
 	private:
 		Boundary2DCorner m_Boundary2DCorner = Boundary2DCorner::NONE;

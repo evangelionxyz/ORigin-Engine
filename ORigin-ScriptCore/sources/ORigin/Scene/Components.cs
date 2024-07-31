@@ -7,7 +7,7 @@ namespace ORiginEngine
         public Entity Entity { get; internal set; }
     }
 
-    public class SpriteAnimationComponent : Component
+    public class SpriteAnimation : Component
     {
         public string ActiveState
         {
@@ -23,7 +23,7 @@ namespace ORiginEngine
         }
     }
 
-    public class TransformComponent : Component
+    public class Transform : Component
     {
         public Vector3 Forward
         {
@@ -120,7 +120,7 @@ namespace ORiginEngine
         }
     }
 
-    public class Rigidbody2DComponent : Component
+    public class Rigidbody2D : Component
     {
         public Vector2 Velocity
         {
@@ -166,12 +166,23 @@ namespace ORiginEngine
         }
     }
 
-    public class AudioComponent : Component
+    public class Audio : Component
     {
         public void Play()
         {
             InternalCalls.AudioComponent_Play(Entity.ID);
         }
+
+        public void PlayOverlapping()
+        {
+            InternalCalls.AudioComponent_PlayOverlapping(Entity.ID);
+        }
+
+        public void PlayLooped()
+        {
+            InternalCalls.AudioComponent_PlayLooped(Entity.ID);
+        }
+
         public void Stop()
         {
             InternalCalls.AudioComponent_Stop(Entity.ID);
@@ -216,9 +227,9 @@ namespace ORiginEngine
 
     }
 
-    public class TextComponent : Component
+    public class Text : Component
     {
-        public string Text
+        public string TextString
         {
             get => InternalCalls.TextComponent_GetText(Entity.ID);
             set => InternalCalls.TextComponent_SetText(Entity.ID, value);
@@ -250,7 +261,7 @@ namespace ORiginEngine
         }
     }
 
-    public class BoxCollider2DComponent : Component
+    public class BoxCollider2D : Component
     {
         public Vector2 Offset
         {
@@ -331,7 +342,7 @@ namespace ORiginEngine
         }
     }
 
-    public class CircleCollider2DComponent : Component
+    public class CircleCollider2D : Component
     {
         public Vector2 Offset
         {
@@ -412,7 +423,7 @@ namespace ORiginEngine
         }
     }
 
-    public class CircleRendererComponent : Component
+    public class CircleRenderer : Component
     {
         public Vector3 Color
         {
@@ -456,7 +467,7 @@ namespace ORiginEngine
         }
     }
 
-    public class SpriteRenderer2DComponent : Component
+    public class SpriteRenderer2D : Component
     {
         public Vector4 Color
         {
@@ -512,7 +523,7 @@ namespace ORiginEngine
         }
     }
 
-    public class RigidbodyComponent : Component
+    public class Rigidbody : Component
     {
         public void AddForce(Vector3 force)
         {
@@ -554,14 +565,15 @@ namespace ORiginEngine
             InternalCalls.RigidbodyComponent_SetPosition(Entity.ID, position, activate);
         }
 
-        public void SetEulerAngleRotation(Vector3 rotation, bool activate)
+        public void SetEulerAngles(Vector3 rotation, bool activate)
         {
             InternalCalls.RigidbodyComponent_SetEulerAngleRotation(Entity.ID, rotation, activate);
         }
 
-        public void SetLinearVelocity(Vector3 velocity)
+        public Vector3 GetEulerAngles()
         {
-            InternalCalls.RigidbodyComponent_SetLinearVelocity(Entity.ID, velocity);
+            InternalCalls.RigidbodyComponent_GetEulerAngleRotation(Entity.ID, out Vector3 result);
+            return result;
         }
 
         public void SetRotation(Quaternion quat, bool activate)
@@ -582,10 +594,7 @@ namespace ORiginEngine
                 InternalCalls.RigidbodyComponent_GetFriction(Entity.ID, out float value);
                 return value;
             }
-            set
-            {
-                InternalCalls.RigidbodyComponent_SetFriction(Entity.ID, value);
-            }
+            set => InternalCalls.RigidbodyComponent_SetFriction(Entity.ID, value);
         }
 
         public float Restitution
@@ -595,10 +604,7 @@ namespace ORiginEngine
                 InternalCalls.RigidbodyComponent_GetRestitution(Entity.ID, out float value);
                 return value;
             }
-            set
-            {
-                InternalCalls.RigidbodyComponent_SetRestitution(Entity.ID, value);
-            }
+            set => InternalCalls.RigidbodyComponent_SetRestitution(Entity.ID, value);
             
         }
 
@@ -658,7 +664,7 @@ namespace ORiginEngine
         }
     }
 
-    public class UIComponent : Component
+    public class UI : Component
     {
         public string GetTextString(string name)
         {

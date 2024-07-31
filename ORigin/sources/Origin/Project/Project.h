@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Origin/Core/Assert.h"
-
 #include "Origin/Asset/Asset.h"
 #include "Origin/Asset/EditorAssetManager.h"
 
@@ -20,6 +19,7 @@ namespace origin
 		std::filesystem::path ScriptModulePath;
 	};
 
+	class Scene;
 	class Project
 	{
 	public:
@@ -29,6 +29,7 @@ namespace origin
 		std::filesystem::path GetAssetRegistryPath() { return GetProjectDirectory() / m_Config.AssetRegistry; }
 		std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path) { return GetAssetDirectory() / path; }
 		std::filesystem::path GetAssetAbsolutePath(const std::filesystem::path& path);
+		
 
 		static const std::filesystem::path GetActiveProjectPath()
 		{
@@ -60,7 +61,15 @@ namespace origin
 			return s_ActiveProject->GetAssetRegistryPath();
 		}
 
-		static std::shared_ptr<Project> GetActive() { return s_ActiveProject; }
+		static std::shared_ptr<Scene> GetActiveScene() 
+		{
+			return s_ActiveProject->m_ActiveScene;
+		}
+
+		static std::shared_ptr<Project> GetActive() 
+		{ 
+			return s_ActiveProject;
+		}
 
 		ProjectConfig& GetConfig() { return m_Config; }
 		std::shared_ptr<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
@@ -72,6 +81,10 @@ namespace origin
 
 		static bool SaveActive();
 		static bool SaveActive(const std::filesystem::path& path);
+		static void SetActiveScene(const std::shared_ptr<Scene> &scene)
+		{
+			s_ActiveProject->m_ActiveScene = scene;
+		}
 
 		void SetStartScene(AssetHandle handle);
 
@@ -79,6 +92,7 @@ namespace origin
 		ProjectConfig m_Config;
 		std::filesystem::path m_ProjectDirectory;
 		std::shared_ptr<AssetManagerBase> m_AssetManager;
+		std::shared_ptr<Scene> m_ActiveScene ;
 		inline static std::shared_ptr<Project> s_ActiveProject;
 	};
 

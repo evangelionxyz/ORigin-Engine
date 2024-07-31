@@ -16,9 +16,9 @@ namespace origin {
 
 	// Functions to Importing and Loading assets
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
-		{	AssetType::Audio, AudioImporter::Import },
-		{	AssetType::Texture, TextureImporter::ImportTexture2D },
-		{	AssetType::Scene, SceneImporter::Import },
+		{ AssetType::Audio, AudioImporter::Import },
+		{ AssetType::Texture, TextureImporter::ImportTexture2D },
+		{ AssetType::Scene, SceneImporter::Import },
 		{ AssetType::MeshSource, ModelImporter::Import },
 		{ AssetType::Material, MaterialImporter::Import },
 		{ AssetType::Model, ModelImporter::Import },

@@ -58,7 +58,8 @@ namespace origin
 
 		// Backward Button
 		std::shared_ptr<Texture2D> navButtonTexture = m_IconMap.at("backward_button_icon");
-		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0)))
+		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0))
+			&& !m_Project->GetActiveScene()->IsFocusing())
 		{
 			if (m_CurrentDirectory != Project::GetActiveAssetDirectory())
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
@@ -78,7 +79,8 @@ namespace origin
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, m_Mode == Mode::Asset ? ImVec4(0.0f, 0.8f, 0.0f, 1.0f) : ImVec4(0.8f, 0.0f, 0.8f, 1.0f));
 		const char* label = m_Mode == Mode::Asset ? "Asset" : "File";
 		navButtonTexture = m_Mode == Mode::Asset ? m_IconMap.at("asset_mode_icon") : m_IconMap.at("file_mode_icon");
-		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0)))
+		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0))
+			&& !m_Project->GetActiveScene()->IsFocusing())
 		{
 			m_Mode = m_Mode == Mode::Asset ? Mode::FileSystem : Mode::Asset;
 			RefreshAssetTree();
@@ -157,7 +159,7 @@ namespace origin
 
 				ImGui::PopStyleColor();
 
-				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && !m_Project->GetActiveScene()->IsFocusing())
 				{
 					if (std::filesystem::directory_entry(m_CurrentDirectory / item).is_directory())
 						m_CurrentDirectory /= item.filename();
@@ -172,7 +174,7 @@ namespace origin
 					}
 				}
 
-				if (ImGui::BeginPopupContextItem("CONTENT_BROWSER_ITEM_CONTEXT", ImGuiPopupFlags_MouseButtonRight))
+				if (ImGui::BeginPopupContextItem("CONTENT_BROWSER_ITEM_CONTEXT", ImGuiPopupFlags_MouseButtonRight) && !m_Project->GetActiveScene()->IsFocusing())
 				{
 					Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
 					ImGui::Separator();
@@ -350,13 +352,13 @@ namespace origin
 							ImGui::EndTooltip();
 						}
 
-						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && !m_Project->GetActiveScene()->IsFocusing())
 						{
 							if (directoryEntry.is_directory())
 								m_CurrentDirectory /= path.filename();
 						}
 
-						if (ImGui::BeginPopupContextItem())
+						if (ImGui::BeginPopupContextItem() && !m_Project->GetActiveScene()->IsFocusing())
 						{
 							Utils::CenteredText(Utils::CapitalizeWholeText(filenameStr).c_str());
 							ImGui::Separator();
@@ -408,7 +410,7 @@ namespace origin
 		ImGui::Columns(1);
 
         if (ImGui::BeginPopupContextWindow("CONTENT_BROWSER_CONTEXT", 
-			ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+			ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems) && !m_Project->GetActiveScene()->IsFocusing())
         {
             if (ImGui::BeginMenu("CREATE"))
             {

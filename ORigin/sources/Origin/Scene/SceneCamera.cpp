@@ -29,15 +29,6 @@ namespace origin
         UpdateProjection();
     }
 
-	const glm::mat4 &SceneCamera::GetProjection() const
-	{
-		return m_Projection;
-	}
-
-	const glm::mat4 &SceneCamera::GetViewMatrix() const
-	{
-		return m_View;
-	}
 
     void SceneCamera::SetOrthoScale(float scale)
 	{
@@ -50,10 +41,40 @@ namespace origin
 		UpdateProjection();
 	}
 
+    void SceneCamera::SetOrthoNear(float nearClip)
+    {
+        m_OrthoNearClip = nearClip;
+    }
+
+    void SceneCamera::SetOrthoFar(float farClip)
+    {
+        m_OrthoFarClip = farClip;
+    }
+
+    void SceneCamera::SetOrthoScaleMax(float max)
+    {
+        m_MaxOrthoScale = max;
+    }
+
     void SceneCamera::SetAspectRatioType(AspectRatioType type)
     {
-		m_AspecRatioType = type;
+		m_AspectRatioType = type;
 		SceneCamera::SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+    }
+
+    void SceneCamera::SetTransform(const glm::mat4 &transform)
+    {
+		m_Transform = transform;
+    }
+
+    void SceneCamera::SetProjectionType(ProjectionType type)
+    {
+		m_ProjectionType = type;
+    }
+
+    const glm::mat4 SceneCamera::GetViewProjection() const
+    {
+		return m_Projection * m_View * glm::inverse(m_Transform);
     }
 
     void SceneCamera::SetViewportSize(float width, float height)
@@ -61,7 +82,7 @@ namespace origin
 		float desiredRatio = width / height;
 		float x = 0, y = 0;
 
-		switch (m_AspecRatioType)
+		switch (m_AspectRatioType)
 		{
 		case AspectRatioType::SixteenByNine:
 			desiredRatio = 16.f / 9.f;
@@ -102,6 +123,21 @@ namespace origin
 		UpdateProjection();
 	}
 
+    void SceneCamera::SetFov(float fovy)
+    {
+        m_FOV = fovy;
+    }
+
+    void SceneCamera::SetNear(float nearClip)
+    {
+        m_NearClip = nearClip;
+    }
+
+    void SceneCamera::SetFar(float farClip)
+    {
+        m_FarClip = farClip;
+    }
+
     void SceneCamera::UpdateProjection()
 	{
 		switch (m_ProjectionType)
@@ -119,6 +155,36 @@ namespace origin
     {
         m_View = glm::translate(glm::mat4(1.0f), m_Position);
         m_View = glm::inverse(m_View);
+    }
+
+    const glm::mat4 SceneCamera::GetProjectionMatrix() const
+    {
+        return m_Projection;
+    }
+
+    const glm::mat4 SceneCamera::GetViewMatrix() const
+    {
+        return m_View;
+    }
+
+    const glm::vec2 SceneCamera::GetOrthoSize() const
+    {
+		return m_OrthoSize;
+    }
+
+    const glm::vec2 SceneCamera::GetViewportSize() const
+    {
+        return { m_ViewportWidth, m_ViewportHeight };
+    }
+
+    const bool SceneCamera::IsPerspective() const
+    {
+        return m_ProjectionType == ProjectionType::Perspective;
+    }
+
+    const float SceneCamera::GetAspectRatio() const
+    {
+		return m_AspectRatio;
     }
 
 }

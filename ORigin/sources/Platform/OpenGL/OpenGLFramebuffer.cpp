@@ -139,6 +139,8 @@ namespace origin {
 	OpenGL_Framebuffer::OpenGL_Framebuffer(const FramebufferSpecification& specification)
 		: m_Spec(specification)
 	{
+		OGN_CORE_ASSERT(m_Spec.Width > 0 && m_Spec.Height > 0, "[OpenGLFramebuffer] Invalid size");
+
 		for (auto spec : m_Spec.Attachments.TextureAttachments)
 		{
 			if (!Utils::IsDepthFormat(spec.TextureFormat))

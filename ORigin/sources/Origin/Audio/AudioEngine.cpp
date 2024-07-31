@@ -46,7 +46,7 @@ namespace origin {
 	void AudioEngine::CreateSound(const char *name, const char *filepath, ma_sound* sound)
 	{
 		ma_result result = ma_sound_init_from_file(s_AudioData.Engine, filepath, 0, nullptr, nullptr, sound);
-		OGN_CORE_ASSERT(result == MA_SUCCESS, "[MiniaudioEngine] Failed create sound");
+		OGN_CORE_ASSERT(result == MA_SUCCESS, "[MiniaudioEngine] Failed to create sound");
 	}
 
 	void AudioEngine::CreateStreaming(const char *name, const char *filepath, ma_sound* sound)

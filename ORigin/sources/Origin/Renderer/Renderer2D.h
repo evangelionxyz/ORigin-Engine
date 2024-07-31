@@ -15,8 +15,7 @@ namespace origin
 		static void Init();
 		static void Shutdown();
 
-		static void Begin(const glm::mat4 &projection, const glm::vec3 &position = glm::vec3(0.0f));
-		static void Begin(const Camera &camera, const glm::mat4& camTransform);
+		static void Begin(const glm::mat4 &viewProjection, glm::vec3 pos = glm::vec3(0.0f));
 		static void Begin(const Camera &camera);
 		static void End();
 		static void Flush();

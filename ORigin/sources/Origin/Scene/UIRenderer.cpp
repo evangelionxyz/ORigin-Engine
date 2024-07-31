@@ -4,6 +4,7 @@
 #include "UIRenderer.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Renderer/Renderer.h"
 
 namespace origin
 {
@@ -22,9 +23,9 @@ namespace origin
 		float vertices[] =
 		{
 			 -1.0f,  1.0f,
-				1.0f,  1.0f,
+			  1.0f,  1.0f,
 			 -1.0f, -1.0f,
-				1.0f, -1.0f
+			  1.0f, -1.0f
 		};
 
 		glCreateVertexArrays(1, &m_VAO);
@@ -36,8 +37,7 @@ namespace origin
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), nullptr);
 
-		m_ScreenShader = Shader::Create("Resources/Shaders/Screen.glsl", false);
-
+		m_ScreenShader = Renderer::GetShader("Screen");
 		m_Projection = glm::ortho(-orthoW, orthoW, -orthoH, orthoH, 0.0f, 2.0f);
 	}
 
@@ -83,6 +83,8 @@ namespace origin
 
 	void UIRenderer::Render()
 	{
+		glDisable(GL_DEPTH_TEST);
+
 		for (auto &ui : m_UIs)
 		{
 			m_ScreenShader->Enable();

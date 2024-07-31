@@ -13,7 +13,7 @@ namespace origin {
 
 #define BOUNDARY2D_ID -2
 
-	void Gizmos::Draw2DGrid(const EditorCamera &camera)
+	void Gizmos::Draw2DGrid(const Camera &camera)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -30,10 +30,11 @@ namespace origin {
 
 		float offset = -0.5f * lineSpacing;
 
-		float minX = cameraPosition.x - orthoSize - camera.GetWidth() / 10.0f;
-		float maxX = cameraPosition.x + orthoSize + camera.GetWidth() / 10.0f;
-		float minY = cameraPosition.y - orthoSize - camera.GetHeight() / 10.0f;
-		float maxY = cameraPosition.y + orthoSize + camera.GetHeight() / 10.0f;
+		glm::vec2 viewportSize = camera.GetViewportSize();
+		float minX = cameraPosition.x - orthoSize - viewportSize.x / 10.0f;
+		float maxX = cameraPosition.x + orthoSize + viewportSize.x / 10.0f;
+		float minY = cameraPosition.y - orthoSize - viewportSize.y / 10.0f;
+		float maxY = cameraPosition.y + orthoSize + viewportSize.y / 10.0f;
 
 		glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.15f);
 
@@ -48,7 +49,7 @@ namespace origin {
 		Renderer2D::End();
 	}
 
-	void Gizmos::Draw3DGrid(const EditorCamera &camera, bool horizontal, bool vertical, int size)
+	void Gizmos::Draw3DGrid(const Camera &camera, bool horizontal, bool vertical, int size)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -97,17 +98,17 @@ namespace origin {
 		Renderer2D::End();
 	}
 
-	void Gizmos::DrawFrustum(const EditorCamera &camera, Scene *scene)
+	void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
 	{
         glEnable(GL_DEPTH_TEST);
         Renderer2D::Begin(camera);
         for (auto &e : scene->GetAllEntitiesWith<CameraComponent>())
         {
             Entity entity = { e, scene };
-            const TransformComponent &tc = entity.GetComponent<TransformComponent>();
+			TransformComponent &tc = entity.GetComponent<TransformComponent>();
             CameraComponent &cc = entity.GetComponent<CameraComponent>();
-            cc.Camera.GetFrustum().Update(cc.Camera.GetProjection() * glm::inverse(tc.GetTransform()));
-            for (const auto &edge : cc.Camera.GetFrustum().GetEdges())
+			Frustum frustum(cc.Camera.GetProjectionMatrix() * cc.Camera.GetViewMatrix() * glm::inverse(tc.GetTransform()));
+            for (const auto &edge : frustum.GetEdges())
             {
                 Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
             }
@@ -115,7 +116,7 @@ namespace origin {
         Renderer2D::End();
 	}
 
-	void Gizmos::DrawIcons(const EditorCamera &camera, Scene *scene)
+	void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
 	{
 		OGN_PROFILER_RENDERING();
 		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture, int entity)
@@ -177,7 +178,7 @@ namespace origin {
 		}
 	}
 
-	void Gizmos::OnRender(const EditorCamera &camera, Scene *scene, bool visualizeCollider)
+	void Gizmos::OnRender(const Camera &camera, Scene *scene, bool visualizeCollider)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -195,7 +196,7 @@ namespace origin {
 			if (entity == selectedEntity && selectedEntity.IsValid())
 			{
 				// 2D Boundsizing
-				if (m_Type == GizmoType::BOUNDARY2D)
+				if (m_Type == GizmoType::BOUNDARY2D && !camera.IsPerspective())
 				{
 					CalculateBoundary2DSizing(camera);
 					float size = camera.GetOrthoScale() * 0.03f;
@@ -376,14 +377,15 @@ namespace origin {
 		}
 	}
 
-	void Gizmos::CalculateBoundary2DSizing(const EditorCamera &camera)
+	void Gizmos::CalculateBoundary2DSizing(const Camera &camera)
 	{
 		OGN_PROFILER_LOGIC();
 
 		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
 		const glm::vec2 delta = Input::Get().GetMouseDelta();
 
-		float orthoScale = camera.GetOrthoScale() / camera.GetHeight();
+		float viewportHeight = camera.GetViewportSize().y;
+		float orthoScale = camera.GetOrthoScale() / viewportHeight;
 		glm::vec3 translation = glm::vec3(delta, 0.0f);
 
 		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();

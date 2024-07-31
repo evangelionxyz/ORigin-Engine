@@ -11,10 +11,7 @@ namespace origin
 	public:
 		static void Init();
 		static void Shutdown();
-		
-		static void Begin(const Camera &camera, const glm::mat4 &transform, Shader *shader = nullptr);
 		static void Begin(const Camera &camera, Shader *shader = nullptr);
-
         static void StartBatch();
         static void NextBatch();
 		static void End();

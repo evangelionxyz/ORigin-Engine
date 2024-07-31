@@ -168,6 +168,61 @@ namespace origin::UI
 		return ret;
 	}
 
+    static bool DrawCheckbox2(const char *label, bool *x, bool *y, float coloumnWidth = defColWidth)
+    {
+        bool ret = false;
+
+        ImGui::PushID(label);
+
+        ImGui::BeginColumns(label, 3, ImGuiOldColumnFlags_GrowParentContentsSize);
+        ImGui::SetColumnWidth(0, coloumnWidth);
+        ImGui::Text(label);
+        ImGui::NextColumn();
+        if (ImGui::Checkbox("X", x))
+        {
+            ret = true;
+        }
+        ImGui::NextColumn();
+        if (ImGui::Checkbox("Y", y))
+        {
+            ret = true;
+        }
+        ImGui::EndColumns();
+        ImGui::PopID();
+
+        return ret;
+    }
+
+    static bool DrawCheckbox3(const char *label, bool *x, bool *y, bool *z, float coloumnWidth = defColWidth)
+    {
+        bool ret = false;
+
+        ImGui::PushID(label);
+
+        ImGui::BeginColumns(label, 4, ImGuiOldColumnFlags_GrowParentContentsSize);
+        ImGui::SetColumnWidth(0, coloumnWidth);
+        ImGui::Text(label);
+        ImGui::NextColumn();
+		if (ImGui::Checkbox("X", x))
+		{
+			ret = true;
+		}
+        ImGui::NextColumn();
+		if (ImGui::Checkbox("Y", y))
+		{
+			ret = true;
+		}
+        ImGui::NextColumn();
+		if (ImGui::Checkbox("Z", z))
+		{
+			ret = true;
+		}
+        ImGui::EndColumns();
+        ImGui::PopID();
+
+        return ret;
+    }
+
 	static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
 	{
 		bool changed = false;

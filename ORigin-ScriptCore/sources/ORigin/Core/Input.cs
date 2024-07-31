@@ -29,19 +29,48 @@ namespace ORiginEngine
             }
         }
 
+        public static bool IsMouseDragging()
+        {
+            InternalCalls.Input_IsMouseDragging(out bool result);
+            return result;
+        }
+
+        public static void SetMouseHide(bool hide)
+        {
+            InternalCalls.Input_SetMouseHide(hide);
+        }
+
+        public static bool HideMouse
+        {
+            get
+            {
+                InternalCalls.Input_IsMouseHidden(out bool result);
+                return result;
+            }
+            set => InternalCalls.Input_SetMouseHide(value);
+        }
+
+        public static void ToggleMouseLock()
+        {
+            InternalCalls.Input_ToggleMouseLock();
+        }
+
         public static bool IsMouseDown(MouseCode code)
         {
-            return InternalCalls.Input_IsMouseButtonDown(code);
+            InternalCalls.Input_IsMouseButtonDown(code, out bool result);
+            return result;
         }
 
         public static bool IsKeyPressed(KeyCode code)
         {
-            return InternalCalls.Input_IsKeyPressed(code);
+            InternalCalls.Input_IsKeyPressed(code, out bool result);
+            return result;
         }
 
         public static bool IsKeyReleased(KeyCode code)
         {
-            return InternalCalls.Input_IsKeyReleased(code);
+            InternalCalls.Input_IsKeyReleased(code, out bool result);
+            return result;
         }
     }
 }
