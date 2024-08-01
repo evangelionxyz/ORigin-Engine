@@ -232,6 +232,13 @@ namespace origin
 		{
 		}
 
+		bool operator != (const TransformComponent &other) const
+		{
+			return WorldTranslation != other.Translation
+				|| WorldRotation != other.WorldRotation
+				|| WorldScale != other.WorldScale;
+		}
+
 		void SetTransform(glm::mat4 transform)
 		{
 			Math::DecomposeTransform(transform, WorldTranslation, WorldRotation, WorldScale);

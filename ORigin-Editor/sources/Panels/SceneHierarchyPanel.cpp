@@ -24,6 +24,8 @@
 
 namespace origin {
 
+	static bool IsDragging = false;
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene> &scene)
 	{
 		SetActiveScene(scene);
@@ -319,16 +321,23 @@ namespace origin {
 	{
 		if (entity.HasComponent<TagComponent>())
 		{
-			auto &tag = entity.GetComponent<TagComponent>().Tag;
+			auto &tag = entity.GetComponent<TagComponent>();
 			char buffer[256];
-			strncpy(buffer, tag.c_str(), sizeof(buffer));
+			strncpy(buffer, tag.Tag.c_str(), sizeof(buffer));
+
 			if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				tag = std::string(buffer);
-				if (tag.empty())
+				auto &temp = ComponentsCommand<TagComponent>::GetTempComponent();
+				temp = tag;
+				tag.Tag = std::string(buffer);
+				if (tag.Tag.empty())
 				{
-					tag = "'No Name'";
+					tag.Tag = "'No Name'";
 				}
+
+				CommandManager::Instance().ExecuteCommand(
+				std::make_unique<ComponentsCommand<TagComponent>>(tag, 
+					ComponentsCommand<TagComponent>::GetTempComponent()));
 			}
 		}
 
@@ -375,14 +384,35 @@ namespace origin {
 		ImGui::PopStyleVar();
 		ImGui::PopItemWidth();
 
-		DrawComponent<TransformComponent>("TRANSFORM", entity, [&](auto &component)
+		DrawComponent<TransformComponent>("TRANSFORM", entity, [&](auto &transform)
 		{
-			UI::DrawVec3Control("Translation", component.Translation);
-			glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(component.Rotation));
-			UI::DrawVec3Control("Rotation", eulerRotation, 1.0f);
-			glm::vec3 rotationRadians = glm::radians(eulerRotation);
-			component.Rotation = glm::quat(rotationRadians);
-			UI::DrawVec3Control("Scale", component.Scale, 0.01f, 1.0f);
+			bool changed = false;
+
+            if (!IsDragging && !ImGuizmo::IsUsing())
+            {
+				auto &temp = ComponentsCommand<TransformComponent>::GetTempComponent();
+				temp = transform;
+            }
+
+            changed |= UI::DrawVec3Control("Translation", transform.Translation);
+            glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(transform.Rotation));
+            bool rotationChanged = UI::DrawVec3Control("Rotation", eulerRotation, 1.0f);
+            if (rotationChanged)
+            {
+                glm::vec3 rotationRadians = glm::radians(eulerRotation);
+                transform.Rotation = glm::quat(rotationRadians);
+				changed = true;
+            }
+            changed |= UI::DrawVec3Control("Scale", transform.Scale, 0.01f, 1.0f);
+
+            if (changed && !IsDragging)
+            {
+                CommandManager::Instance().ExecuteCommand(
+                    std::make_unique<ComponentsCommand<TransformComponent>>(transform, 
+					ComponentsCommand<TransformComponent>::GetTempComponent()));
+            }
+
+			IsDragging = changed;
 		});
 
 		DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
@@ -551,6 +581,13 @@ namespace origin {
 
 		DrawComponent<CameraComponent>("CAMERA", entity, [](auto &component)
 		{
+			bool changed = false;
+            if (!IsDragging)
+            {
+				auto &temp = ComponentsCommand<CameraComponent>::GetTempComponent();
+				temp = component;
+            }
+
 			auto &camera = component.Camera;
 			UI::DrawCheckbox("Primary", &component.Primary);
 
@@ -567,6 +604,7 @@ namespace origin {
 					{
 						currentProjectionType = projectionType[i];
 						component.Camera.SetProjectionType(static_cast<ProjectionType>(i));
+						changed = true;
 					}
 
 					if (isSelected)
@@ -575,55 +613,84 @@ namespace origin {
 				ImGui::EndCombo();
 			}
 
-		const char* aspectRatioType[5] = { "Free", "16/10", "16/9", "21/9", "4/3" };
-		const char* currentAspectRatioType = aspectRatioType[static_cast<int>(camera.GetAspectRatioType())];
+			const char* aspectRatioType[5] = { "Free", "16/10", "16/9", "21/9", "4/3" };
+			const char* currentAspectRatioType = aspectRatioType[static_cast<int>(camera.GetAspectRatioType())];
 		
-		if (ImGui::BeginCombo("Aspect Ratio", currentAspectRatioType))
-		{
-			for (int i = 0; i < 5; i++)
+			if (ImGui::BeginCombo("Aspect Ratio", currentAspectRatioType))
 			{
-				isSelected = currentAspectRatioType == aspectRatioType[i];
-				if (ImGui::Selectable(aspectRatioType[i], isSelected))
+				for (int i = 0; i < 5; i++)
 				{
-					currentAspectRatioType = aspectRatioType[i];
-					camera.SetAspectRatioType(static_cast<AspectRatioType>(i));
+					isSelected = currentAspectRatioType == aspectRatioType[i];
+					if (ImGui::Selectable(aspectRatioType[i], isSelected))
+					{
+						currentAspectRatioType = aspectRatioType[i];
+						camera.SetAspectRatioType(static_cast<AspectRatioType>(i));
+						changed = true;
+					}
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			if (component.Camera.GetProjectionType() == ProjectionType::Perspective)
+			{
+				float perspectiveFov = glm::degrees(camera.GetFOV());
+				if (ImGui::DragFloat("FOV", &perspectiveFov, 0.1f, 0.01f, 10000.0f))
+				{
+					camera.SetFov(glm::radians(perspectiveFov));
+					changed = true;
 				}
 
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
+				float perspectiveNearClip = camera.GetNear();
+				if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f))
+				{
+					camera.SetNear(perspectiveNearClip);
+					changed = true;
+				}
+
+				float perspectiveFarClip = camera.GetFar();
+				if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f))
+				{
+					camera.SetFar(perspectiveFarClip);
+					changed = true;
+				}
 			}
-			ImGui::EndCombo();
-		}
 
-		if (component.Camera.GetProjectionType() == ProjectionType::Perspective)
-		{
-			float perspectiveFov = glm::degrees(camera.GetFOV());
-			if (ImGui::DragFloat("FOV", &perspectiveFov, 0.1f, 0.01f, 10000.0f))
-				camera.SetFov(glm::radians(perspectiveFov));
+			if (component.Camera.GetProjectionType() == ProjectionType::Orthographic)
+			{
+				float orthoScale = camera.GetOrthoScale();
+				if (ImGui::DragFloat("Ortho Scale", &orthoScale, 0.1f, 1.0f, 100.0f))
+				{
+					camera.SetOrthoScale(orthoScale);
+					changed = true;
+				}
 
-			float perspectiveNearClip = camera.GetNear();
-			if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f))
-				camera.SetNear(perspectiveNearClip);
+				float orthoNearClip = camera.GetOrthoNear();
+				if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
+				{
+					camera.SetOrthoNear(orthoNearClip);
+					changed = true;
+				}
 
-			float perspectiveFarClip = camera.GetFar();
-			if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f))
-				camera.SetFar(perspectiveFarClip);
-		}
+				float orthoFarClip = camera.GetOrthoFar();
+				if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
+				{
+					changed = true;
+					camera.SetOrthoFar(orthoFarClip);
+				}
+			}
 
-		if (component.Camera.GetProjectionType() == ProjectionType::Orthographic)
-		{
-			float orthoScale = camera.GetOrthoScale();
-			if (ImGui::DragFloat("Ortho Scale", &orthoScale, 0.1f, 1.0f, 100.0f))
-				camera.SetOrthoScale(orthoScale);
+            if (changed && !IsDragging)
+            {
+                CommandManager::Instance().ExecuteCommand(
+                    std::make_unique<ComponentsCommand<CameraComponent>>(component,
+					ComponentsCommand<CameraComponent>::GetTempComponent()));
+            }
 
-			float orthoNearClip = camera.GetOrthoNear();
-			if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
-				camera.SetOrthoNear(orthoNearClip);
-
-			float orthoFarClip = camera.GetOrthoFar();
-			if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
-				camera.SetOrthoFar(orthoFarClip);
-		}});
+            IsDragging = changed;
+		});
 
 		DrawComponent<SpriteAnimationComponent>("SPRITE ANIMATION", entity, [](auto &component)
 		{

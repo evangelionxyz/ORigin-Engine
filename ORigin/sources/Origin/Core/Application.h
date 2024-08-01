@@ -7,7 +7,6 @@
 #include "Time.h"
 #include "Layer.h"
 #include "LayerStack.h"
-#include "Command.h"
 #include "Origin/GUI/GuiLayer.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/GraphicsContext.h"
@@ -64,9 +63,9 @@ namespace origin {
 		std::unique_ptr<ConsoleManager> m_ConsoleManager;
 		ApplicationSpecification m_Spec;
 		LayerStack m_LayerStack;
-		std::shared_ptr<Window> m_Window;
 		GuiLayer* m_GuiLayer, *m_SplashScreenGui;
 		Input m_InputHandle;
+		std::shared_ptr<Window> m_Window;
 		static Application* s_Instance;
 		bool OnWindowClose(WindowCloseEvent& e) const;
 		bool OnWindowResize(WindowResizeEvent& e);

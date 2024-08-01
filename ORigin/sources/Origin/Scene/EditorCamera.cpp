@@ -337,8 +337,8 @@ namespace origin {
 			}
 			else
 			{
-				m_Position -= GetRightDirection() * delta.x * ySpeed * ySpeed * m_MoveSpeed;
-				m_Position += GetUpDirection() * delta.y * ySpeed * ySpeed * m_MoveSpeed;
+				m_Position -= GetRightDirection() * delta.x * m_MoveSpeed;
+				m_Position += GetUpDirection() * delta.y * m_MoveSpeed;
 			}
 			break;
 		case ProjectionType::Orthographic:

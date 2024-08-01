@@ -775,8 +775,16 @@ namespace origin
 				m_ImGuizmoOperation, static_cast<ImGuizmo::MODE>(m_GizmosMode), glm::value_ptr(transform), nullptr,
 				snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
 
+            
+			static bool changed = false;
 			if (ImGuizmo::IsUsing())
 			{
+                if (!changed)
+                {
+					auto &temp = ComponentsCommand<TransformComponent>::GetTempComponent();
+					temp = tc;
+                }
+
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransformEuler(transform, translation, rotation, scale);
 
@@ -805,7 +813,21 @@ namespace origin
 
 					tc.Scale = scale;
 				}
+
+				changed = true;
 			}
+
+            if (changed && !ImGuizmo::IsUsing())
+            {
+				if (tc != ComponentsCommand<TransformComponent>::GetTempComponent())
+				{
+                    CommandManager::Instance().ExecuteCommand(
+                    std::make_unique<ComponentsCommand<TransformComponent>>(tc, 
+						ComponentsCommand<TransformComponent>::GetTempComponent()));
+                    changed = false;
+				}
+                
+            }
 		}
 
 		if (ImGui::IsWindowFocused() && Input::Get().IsKeyPressed(Key::Escape))
@@ -1142,7 +1164,7 @@ namespace origin
                     {
                     case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
                     case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
-                    case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 1.0f, 0.2f, 1.0f)); break;
+                    case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); break;
                     }
 
                     ImGui::TableSetColumnIndex(0);
@@ -1423,8 +1445,19 @@ namespace origin
 
 		case Key::Y:
 		{
-			if (!ImGuizmo::IsUsing() && !io.WantTextInput && !m_EditorCamera.IsPerspective())
-				m_Gizmos->SetType(GizmoType::BOUNDARY2D);
+			if (!io.WantTextInput)
+			{
+				if (!ImGuizmo::IsUsing() && !m_EditorCamera.IsPerspective())
+				{
+					m_Gizmos->SetType(GizmoType::BOUNDARY2D);
+				}
+
+				if (control)
+				{
+					CommandManager::Instance().Redo();
+				}
+				
+			}
 			break;
 		}
 
@@ -1439,6 +1472,14 @@ namespace origin
 		{
 			if (!io.WantTextInput)
 				OnDestroyEntity();
+			break;
+		}
+		case Key::Z:
+		{
+			if (!io.WantTextInput && control)
+			{
+				CommandManager::Instance().Undo();
+			}
 			break;
 		}
 		}

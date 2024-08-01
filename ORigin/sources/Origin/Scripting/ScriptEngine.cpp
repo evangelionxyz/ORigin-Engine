@@ -373,6 +373,27 @@ namespace origin
 			if (s_ScriptEngineData->EntityScriptFields.find(entityID) != s_ScriptEngineData->EntityScriptFields.end())
 			{
 				ScriptFieldMap &fieldMap = s_ScriptEngineData->EntityScriptFields.at(entityID);
+				const auto classFields = instance->GetScriptClass()->GetFields();
+
+				if (fieldMap.size() != classFields.size())
+				{
+                    // find any private members
+                    std::vector<std::string> keysToRemove;
+                    for (const auto &[fieldName, field] : fieldMap)
+                    {
+                        if (classFields.find(fieldName) == classFields.end())
+                        {
+                            keysToRemove.push_back(fieldName);
+                        }
+                    }
+
+                    // remove if they are there
+                    for (const auto &key : keysToRemove)
+                    {
+                        fieldMap.erase(key);
+                    }
+				}
+				
 				for (auto &[name, fieldInstance] : fieldMap)
 				{
 					// Check invalid type
@@ -557,7 +578,6 @@ namespace origin
 
 		const MonoTableInfo *typeDefinitionTable = mono_image_get_table_info(s_ScriptEngineData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionTable);
-
 		MonoClass *entityClass = mono_class_from_name(s_ScriptEngineData->CoreAssemblyImage, "ORiginEngine", "Entity");
 
 		for (int32_t i = 0; i < numTypes; i++)
@@ -590,6 +610,7 @@ namespace origin
 
 			int fieldCount = mono_class_num_fields(monoClass);
 			void *iterator = nullptr;
+
 			while (MonoClassField *field = mono_class_get_fields(monoClass, &iterator))
 			{
 				const char *fieldName = mono_field_get_name(field);

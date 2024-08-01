@@ -368,8 +368,8 @@ namespace origin::UI
 
 			ImGui::SameLine();
 
-			if (ImGui::DragFloat("##X", &values.x, speed))
-				changed = true;
+			changed |= ImGui::DragFloat("##X", &values.x, speed);
+				
 
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
@@ -390,8 +390,8 @@ namespace origin::UI
 				changed = true;
 			}
 			ImGui::SameLine();
-			if (ImGui::DragFloat("##Y", &values.y, speed))
-				changed = true;
+			changed |= ImGui::DragFloat("##Y", &values.y, speed);
+				
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 		}
@@ -412,8 +412,7 @@ namespace origin::UI
 			}
 
 			ImGui::SameLine();
-			if (ImGui::DragFloat("##Z", &values.z, speed))
-				changed = true;
+			changed |= ImGui::DragFloat("##Z", &values.z, speed);
 			ImGui::PopItemWidth();
 		}
 
