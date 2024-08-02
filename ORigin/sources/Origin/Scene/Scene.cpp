@@ -71,7 +71,7 @@ namespace origin
 		return newScene;
 	}
 
-	Entity Scene::GetEntityWithUUID(UUID uuid)
+    Entity Scene::GetEntityWithUUID(UUID uuid)
 	{
 		OGN_PROFILER_SCENE();
 
@@ -181,24 +181,83 @@ namespace origin
 		}
 	}
 
-	void Scene::DestroyEntity(Entity entity)
-	{
-		UUID uuid = entity.GetUUID();
-
-		m_Registry.view<IDComponent>().each([&](entt::entity e, auto idc)
+    void Scene::DestroyEntityRecursive(UUID entityId)
+    {
+		std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
+		for (const auto &childId : childrenIds)
 		{
-			if (EntityManager::IsParent(idc.ID, uuid, this))
-			{
-				Entity entt = { e, this };
-				m_Registry.destroy(e);
-				m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
-					[&](auto e)
-				{
-					return e.first == idc.ID;
-				}), m_EntityStorage.end());
-			}
-		});
+			DestroyEntityRecursive(childId);
+		}
+		Entity entity = GetEntityWithUUID(entityId);
+		if (entity)
+		{
+			m_Registry.destroy((entt::entity)entity);
+            m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
+                [entityId](const auto &pair) { return pair.first == entityId; }),
+           m_EntityStorage.end());
+		}
+    }
+
+    void Scene::DestroyEntity(Entity entity)
+	{
+        UUID uuid = entity.GetUUID();
+        DestroyEntityRecursive(uuid);
 	}
+
+    void Scene::DeserializeDeletedEntity()
+    {
+
+    }
+
+    Entity Scene::DuplicateEntityRecursive(Entity entity, Entity newParent)
+    {
+		std::string name = entity.GetTag();
+		Entity newEntity = EntityManager::CreateEntity(name, this, entity.GetType());
+		EntityManager::CopyComponentIfExists(AllComponents {}, newEntity, entity);
+
+		auto &newEntityIDC = newEntity.GetComponent<IDComponent>();
+		if (newParent)
+		{
+			newEntityIDC.Parent = newParent.GetUUID();
+		}
+		else if (entity.HasParent())
+		{
+			newEntityIDC.Parent = entity.GetParentUUID();
+		}
+		else
+		{
+			newEntityIDC.Parent = UUID(0);
+		}
+
+		auto view = m_Registry.view<IDComponent>();
+		for (auto e : view)
+		{
+			Entity child = { e, this };
+			if (child.IsValid() && child.GetComponent<IDComponent>().Parent == entity.GetUUID())
+			{
+				DuplicateEntityRecursive(child, newEntity);
+			}
+		}
+		return newEntity;
+    }
+
+    Entity Scene::DuplicateEntity(Entity entity)
+    {
+		return DuplicateEntityRecursive(entity, {});
+    }
+
+    std::vector<origin::UUID> Scene::GetChildrenUUIDs(UUID parentId)
+    {
+        std::vector<UUID> childrenUUIDs;
+        m_Registry.view<IDComponent>().each([&](auto entity, const IDComponent idc)
+        {
+            if (idc.Parent == parentId)
+            {
+                childrenUUIDs.push_back(idc.ID);
+            }
+        });
+        return childrenUUIDs;
+    }
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{
@@ -669,6 +728,11 @@ namespace origin
 				MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
 				break;
 			}
+            case StaticMeshComponent::Type::Capsule:
+            {
+                MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), (int)e);
+                break;
+            }
 			}
 		}
 
@@ -743,11 +807,15 @@ namespace origin
             const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
 			if (idc.Parent)
 			{
-				const auto &ptc = GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
-				glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
-				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
-				tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
-				tc.WorldScale = tc.Scale;
+				auto parent = GetEntityWithUUID(idc.Parent);
+				if (parent.IsValid())
+				{
+                    auto &ptc = parent.GetComponent<TransformComponent>();
+                    glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
+                    tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+                    tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
+                    tc.WorldScale = tc.Scale;
+				}
 			}
 			else
 			{
@@ -775,7 +843,7 @@ namespace origin
         Input::Get().MouseUnHide();
     }
 
-	void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
+    void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
 	{
 		OGN_PROFILER_SCENE();
 
@@ -802,7 +870,7 @@ namespace origin
 		m_StepFrames = frames;
 	}
 
-	template <typename T>
+    template <typename T>
 	void Scene::OnComponentAdded(Entity entity, T &component)
 	{ }
 

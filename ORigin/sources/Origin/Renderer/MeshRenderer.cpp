@@ -12,13 +12,17 @@ namespace origin
 {
 	struct MeshRenderData
 	{
-		static const uint32_t MaxCubeTriangles = 4000;
+		static const uint32_t MaxCubeTriangles = 1000;
 		static const uint32_t MaxCubeVertices = MaxCubeTriangles * 24;
 		static const uint32_t MaxCubeIndices = MaxCubeTriangles * 36;
 
 		static const uint32_t MaxSphereTriangles = 1000;
 		static const uint32_t MaxSphereVertices = MaxSphereTriangles * 544;
 		static const uint32_t MaxSphereIndices = MaxSphereTriangles * 768;
+
+        static const uint32_t MaxCapsuleTriangles = 1000;
+        static const uint32_t MaxCapsuleVertices = MaxCapsuleTriangles * 1136;
+        static const uint32_t MaxCapsuleIndices = MaxCapsuleTriangles * 1620;
 
 		static const uint32_t MaxAlbedoSlots = 16;
 		static const uint32_t MaxSpecularSlots = 16;
@@ -58,6 +62,15 @@ namespace origin
 		std::shared_ptr<VertexBuffer> SphereVBO;
 		MeshVertexData *SphereVBOPtr = nullptr;
 		MeshVertexData *SphereVBOBase = nullptr;
+
+        // ===========================
+        // CAPSULE
+        MeshData CapsuleData;
+        uint32_t CapsuleIndexCount = 0;
+        std::shared_ptr<VertexArray> CapsuleVAO;
+        std::shared_ptr<VertexBuffer> CapsuleVBO;
+        MeshVertexData *CapsuleVBOPtr = nullptr;
+        MeshVertexData *CapsuleVBOBase = nullptr;
 	};
 
 	static MeshRendererData s_Data;
@@ -129,6 +142,34 @@ namespace origin
         std::shared_ptr<IndexBuffer> sphereIBO = IndexBuffer::Create(sphereIndices, MeshRenderData::MaxSphereIndices);
         s_Data.SphereVAO->SetIndexBuffer(sphereIBO);
         delete[] sphereIndices;
+
+        // ======================================
+       // ================ Capsule ================
+        s_Data.CapsuleData = ModelLoader::LoadModel("Resources/Models/capsule.obj");
+        s_Data.CapsuleVAO = VertexArray::Create();
+        s_Data.CapsuleVBO = VertexBuffer::Create(MeshRenderData::MaxCapsuleVertices * sizeof(MeshVertexData));
+        s_Data.CapsuleVBO->SetLayout(bufferLayout);
+        s_Data.CapsuleVAO->AddVertexBuffer(s_Data.CapsuleVBO);
+        s_Data.CapsuleVBOBase = new MeshVertexData[MeshRenderData::MaxCapsuleVertices];
+
+        OGN_CORE_INFO("{}", s_Data.CapsuleData.vertices.size());
+
+        uint32_t *capsuleIndices = new uint32_t[MeshRenderData::MaxCapsuleIndices];
+        baseIndicesCount = s_Data.CapsuleData.indices.size();
+        uint32_t maxCapsules = MeshRenderData::MaxCapsuleIndices / baseIndicesCount;
+
+        for (uint32_t capsuleIndex = 0; capsuleIndex < maxCapsules; ++capsuleIndex)
+        {
+            uint32_t vertexOffset = capsuleIndex * s_Data.CapsuleData.vertices.size();
+            for (uint32_t i = 0; i < baseIndicesCount; ++i)
+            {
+                capsuleIndices[capsuleIndex * baseIndicesCount + i] = s_Data.CapsuleData.indices[i] + vertexOffset;
+            }
+        }
+
+        std::shared_ptr<IndexBuffer> capsuleIBO = IndexBuffer::Create(capsuleIndices, MeshRenderData::MaxCapsuleIndices);
+        s_Data.SphereVAO->SetIndexBuffer(capsuleIBO);
+        delete[] capsuleIndices;
         
         s_Data.Ubo = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 
@@ -163,6 +204,9 @@ namespace origin
 
 		s_Data.SphereIndexCount = 0;
         s_Data.SphereVBOPtr = s_Data.SphereVBOBase;
+
+        s_Data.CapsuleIndexCount = 0;
+        s_Data.CapsuleVBOPtr = s_Data.CapsuleVBOBase;
 	}
 
 	void MeshRenderer::NextBatch()
@@ -203,6 +247,21 @@ namespace origin
             RenderCommand::DrawIndexed(s_Data.SphereVAO, s_Data.SphereIndexCount);
             Renderer::GetStatistics().DrawCalls++;
         }
+
+        if (s_Data.CapsuleIndexCount)
+        {
+            uint32_t dataSize = (uint8_t *)s_Data.CapsuleVBOPtr - (uint8_t *)s_Data.CapsuleVBOBase;
+            s_Data.CapsuleVBO->SetData(s_Data.CapsuleVBOBase, dataSize);
+
+            for (uint32_t i = 0; i < s_Data.AlbedoTextureSlotIndex; i++)
+                s_Data.AlbedoSlots[i]->Bind(0, i, MeshRenderData::MaxAlbedoSlots);
+
+            for (uint32_t i = 0; i < s_Data.SpecularTextureSlotIndex; i++)
+                s_Data.SpecularSlots[i]->Bind(1, i, MeshRenderData::MaxSpecularSlots);
+
+            RenderCommand::DrawIndexed(s_Data.CapsuleVAO, s_Data.CapsuleIndexCount);
+            Renderer::GetStatistics().DrawCalls++;
+        }
 	}
 
 	void MeshRenderer::DrawCube(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
@@ -210,7 +269,7 @@ namespace origin
 		if (s_Data.CubeIndexCount >= MeshRenderData::MaxCubeIndices)
 			NextBatch();
 
-		for (size_t i = 0; i < 24; i++)
+		for (size_t i = 0; i < s_Data.CubeData.vertices.size(); i++)
 		{
 			s_Data.CubeVBOPtr->Position = transform * glm::vec4(s_Data.CubeData.vertices[i].Position, 1.0f);
 			glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
@@ -298,7 +357,7 @@ namespace origin
             }
         }
 
-        for (size_t i = 0; i < 24; i++)
+        for (size_t i = 0; i < s_Data.CubeData.vertices.size(); i++)
         {
             s_Data.CubeVBOPtr->Position = transform * glm::vec4(s_Data.CubeData.vertices[i].Position, 1.0f);
             glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
@@ -323,7 +382,7 @@ namespace origin
         if (s_Data.SphereIndexCount >= MeshRenderData::MaxSphereIndices)
             NextBatch();
 
-        for (size_t i = 0; i < 544; i++)
+        for (size_t i = 0; i < s_Data.SphereData.vertices.size(); i++)
         {
             s_Data.SphereVBOPtr->Position = transform * glm::vec4(s_Data.SphereData.vertices[i].Position, 1.0f);
             glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
@@ -349,6 +408,39 @@ namespace origin
 			DrawSphere(transform, material->Color, entityID);
         else
 			DrawSphere(transform, glm::vec4(1.0f), entityID);
+    }
+
+    void MeshRenderer::DrawCapsule(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
+    {
+        if (s_Data.CapsuleIndexCount >= MeshRenderData::MaxCapsuleIndices)
+            NextBatch();
+
+        for (size_t i = 0; i < s_Data.CapsuleData.vertices.size(); i++)
+        {
+            s_Data.CapsuleVBOPtr->Position = transform * glm::vec4(s_Data.CapsuleData.vertices[i].Position, 1.0f);
+            glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
+            s_Data.CapsuleVBOPtr->Normals = transposeMat * s_Data.CapsuleData.vertices[i].Normals;
+            s_Data.CapsuleVBOPtr->Color = color;
+            s_Data.CapsuleVBOPtr->UV = s_Data.CapsuleData.vertices[i].UV;
+            s_Data.CapsuleVBOPtr->TilingFactor = s_Data.CapsuleData.vertices[i].TilingFactor;
+            s_Data.CapsuleVBOPtr->BoneIDs = glm::vec4(0.0f);
+            s_Data.CapsuleVBOPtr->BoneWeights = glm::vec4(1.0f);
+            s_Data.CapsuleVBOPtr->AlbedoIndex = 0.0f;
+            s_Data.CapsuleVBOPtr->SpecularIndex = 0.0f;
+            s_Data.CapsuleVBOPtr->EntityID = entityID;
+            s_Data.CapsuleVBOPtr++;
+        }
+
+        s_Data.CapsuleIndexCount += s_Data.CapsuleData.indices.size();
+        Renderer::GetStatistics().SphereCount++;
+    }
+
+    void MeshRenderer::DrawCapsule(const glm::mat4 &transform, Material *material, int entityID /*= -1*/)
+    {
+        if (material)
+            DrawCapsule(transform, material->Color, entityID);
+        else
+            DrawCapsule(transform, glm::vec4(1.0f), entityID);
     }
 
     Shader *MeshRenderer::GetShader()

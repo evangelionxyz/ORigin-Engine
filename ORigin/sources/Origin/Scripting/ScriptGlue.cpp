@@ -138,7 +138,7 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			Entity copyEntity = EntityManager::DuplicateEntity(entity, scene);
+			Entity copyEntity = scene->DuplicateEntity(entity);
 			copyEntity.GetComponent<TransformComponent>().WorldTranslation = translation;
 			scene->GetPhysics2D()->OnInstantiateScriptEntity(copyEntity);
 			PhysicsEngine::InstantiateEntity(copyEntity);

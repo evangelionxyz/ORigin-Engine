@@ -201,7 +201,7 @@ namespace origin
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
 		if (selectedEntity.IsValid())
 		{
-			Entity entity = EntityManager::DuplicateEntity(selectedEntity, m_EditorScene.get());
+			Entity entity = m_ActiveScene->DuplicateEntity(selectedEntity);
 			m_SceneHierarchy.SetSelectedEntity(entity);
 		}
 	}
@@ -215,7 +215,7 @@ namespace origin
 		if (selectedEntity.IsValid())
 		{
 			m_ActiveScene->DestroyEntity(selectedEntity);
-			m_SceneHierarchy.SetSelectedEntity({ });
+			//CommandManager::Instance().ExecuteCommand(std::make_unique<DestoryEntityCommand>(m_ActiveScene, selectedEntity));
 		}
 	}
 
@@ -790,19 +790,23 @@ namespace origin
 
 				if (entity.HasParent())
 				{
-					auto &ptc = m_ActiveScene->GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
-					glm::vec4 localTranslation = glm::inverse(ptc.GetTransform()) * glm::vec4(translation, 1.0f);
+					auto parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
+					if (parent.IsValid())
+					{
+						auto &ptc = parent.GetComponent<TransformComponent>();
+						glm::vec4 localTranslation = glm::inverse(ptc.GetTransform()) * glm::vec4(translation, 1.0f);
 
-					// Apply parent's scale to local translation
-					localTranslation.x *= ptc.WorldScale.x;
-					localTranslation.y *= ptc.WorldScale.y;
-					localTranslation.z *= ptc.WorldScale.z;
+						// Apply parent's scale to local translation
+						localTranslation.x *= ptc.WorldScale.x;
+						localTranslation.y *= ptc.WorldScale.y;
+						localTranslation.z *= ptc.WorldScale.z;
 
-					// Convert back to world space
-					tc.Translation = glm::vec3(ptc.GetTransform() * localTranslation);
-					tc.Translation = glm::vec3(localTranslation);
-					tc.Rotation = glm::inverse(ptc.WorldRotation) * glm::quat(rotation);
-					tc.Scale = scale;
+						// Convert back to world space
+						tc.Translation = glm::vec3(ptc.GetTransform() * localTranslation);
+						tc.Translation = glm::vec3(localTranslation);
+						tc.Rotation = glm::inverse(ptc.WorldRotation) * glm::quat(rotation);
+						tc.Scale = scale;
+					}
 				}
 				else
 				{
@@ -826,7 +830,6 @@ namespace origin
 						ComponentsCommand<TransformComponent>::GetTempComponent()));
                     changed = false;
 				}
-                
             }
 		}
 
@@ -1207,7 +1210,7 @@ namespace origin
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play || !(IsViewportHovered && IsViewportFocused))
 			return;
 
 		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };

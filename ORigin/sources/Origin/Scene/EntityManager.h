@@ -18,8 +18,8 @@ namespace origin
 		static Entity CreateMesh(const std::string &name, Scene *scene);
 		static Entity CreateCube(const std::string &name, Scene *scene);
 		static Entity CreateSphere(const std::string &name, Scene *scene);
+		static Entity CreateCapsule(const std::string &name, Scene *scene);
 		static Entity CreateUI(const std::string &name, Scene *scene);
-		static Entity DuplicateEntity(Entity entity, Scene *scene);
 
 		static void AddChild(Entity destination, Entity source, Scene *scene);
 		static bool ChildExists(Entity destination, Entity source, Scene *scene);
@@ -70,7 +70,6 @@ namespace origin
 		static void CopyComponentIfExists(ComponentGroup<Component...>, Entity dst, Entity src)
 		{
 			CopyComponentIfExists<Component...>(dst, src);
-		}
-
+        }
 	};
 }

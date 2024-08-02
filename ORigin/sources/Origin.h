@@ -35,6 +35,7 @@
 #include "Origin/Renderer/ModelLoader.h"
 #include "Origin/Renderer/Frustum.h"
 #include "Origin/Scene/Entity.h"
+#include "Origin/Scene/SceneCommand.h"
 #include "Origin/Scene/ScriptableEntity.h"
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Scene/EditorCamera.h"

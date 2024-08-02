@@ -154,7 +154,9 @@ namespace origin
 	glm::vec3 Math::Normalize(const glm::vec3 &v)
 	{
 		float l = glm::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-		return { v.x / l, v.y / l, v.z / l };
+		if(l > 0.0f)
+			return { v.x / l, v.y / l, v.z / l };
+		return v;
 	}
 
     glm::vec3 Math::WorldToScreen(const glm::vec3& worldPos, const glm::mat4 &modelTransform, const glm::mat4 &viewProjection, const glm::vec2 &screen)

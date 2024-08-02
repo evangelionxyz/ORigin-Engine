@@ -27,6 +27,9 @@ namespace origin
 		static void DrawSphere(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
 		static void DrawSphere(const glm::mat4 &transform, Material *material, int entityID = -1);
 
+        static void DrawCapsule(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
+        static void DrawCapsule(const glm::mat4 &transform, Material *material, int entityID = -1);
+
 		static Shader *GetShader();
 	};
 }

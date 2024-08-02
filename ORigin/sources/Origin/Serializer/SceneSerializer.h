@@ -16,6 +16,9 @@ namespace origin
 		bool Deserialize(const std::filesystem::path& filepath);
 		bool DeserializeRuntime(const std::filesystem::path& filepath);
 
+		void SerializeDeletedEntity(Entity entity, const std::filesystem::path &path);
+		void DeserializeDeletedEntity(const std::filesystem::path &path);
+
 	private:
 		std::shared_ptr<Scene> m_Scene;
 	};

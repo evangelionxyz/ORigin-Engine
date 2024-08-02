@@ -76,7 +76,6 @@ namespace origin
 		entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Cube;
 		entity.AddComponent<RigidbodyComponent>();
 		entity.AddComponent<BoxColliderComponent>();
-
         return entity;
     }
 
@@ -86,7 +85,15 @@ namespace origin
         entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Sphere;
         entity.AddComponent<RigidbodyComponent>();
         entity.AddComponent<SphereColliderComponent>();
+        return entity;
+    }
 
+    Entity EntityManager::CreateCapsule(const std::string &name, Scene *scene)
+    {
+        Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Mesh, scene);
+        entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Capsule;
+        entity.AddComponent<RigidbodyComponent>();
+        entity.AddComponent<CapsuleColliderComponent>();
         return entity;
     }
 
@@ -95,38 +102,6 @@ namespace origin
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::UI, scene);
 		entity.AddComponent<UIComponent>();
 		return entity;
-	}
-
-	Entity EntityManager::DuplicateEntity(Entity entity, Scene *scene)
-	{
-		// Create current entity
-        std::string name = entity.GetTag();
-        Entity newEntity = CreateEntity(name, scene, entity.GetType());
-        CopyComponentIfExists(AllComponents {}, newEntity, entity);
-
-        auto &entityIDC = entity.GetComponent<IDComponent>();
-        auto &newEntityIDC = newEntity.GetComponent<IDComponent>();
-
-        if (entity.HasParent())
-        {
-            auto &parentIDC = scene->GetEntityWithUUID(entityIDC.Parent).GetComponent<IDComponent>();
-            newEntityIDC.Parent = entityIDC.Parent;
-        }
-
-		auto view = scene->m_Registry.view<IDComponent>();
-		for (auto e : view)
-		{
-			Entity child = { e, scene };
-			if (child.IsValid() && child.GetComponent<IDComponent>().Parent == entity.GetUUID())
-			{
-                Entity newChild = CreateEntity(child.GetTag(), scene, child.GetType());
-                CopyComponentIfExists(AllComponents {}, newChild, child);
-                IDComponent idc = newChild.GetComponent<IDComponent>();
-                AddChild(newEntity, newChild, scene);
-			}
-		}
-
-		return newEntity;
 	}
 
 	void EntityManager::AddChild(Entity destination, Entity source, Scene *scene)
@@ -166,23 +141,15 @@ namespace origin
 	{
 		Entity destEntity = scene->GetEntityWithUUID(target);
 		if (!destEntity.IsValid())
-		{
 			return false;
-		}
-
 		auto &destIDC = destEntity.GetComponent<IDComponent>();
-
 		if (target == source)
 			return true;
-
 		if (destIDC.Parent)
 		{
 			if (EntityManager::IsParent(destIDC.Parent, source, scene))
-			{
 				return true;
-			}
 		}
-
 		return false;
 	}
 

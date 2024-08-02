@@ -1046,4 +1046,31 @@ namespace origin
 	{
 		return false;
 	}
+
+    void SceneSerializer::SerializeDeletedEntity(Entity entity, const std::filesystem::path &path)
+    {
+		std::string filepath = path.generic_string();
+		size_t pos = filepath.find_last_of(".");
+		if (pos != std::string::npos)
+		{
+			std::string extension = filepath.substr(pos);
+			if (extension == ".h")
+			{
+				filepath.erase(pos);
+			}
+		}
+
+		filepath += ".org";
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "history" << YAML::Value << path.filename().string();
+		SerializeEntity(out, entity);
+		out << YAML::EndMap;
+
+		std::ofstream fout(filepath);
+		fout << out.c_str();
+		fout.close();
+    }
+
 }

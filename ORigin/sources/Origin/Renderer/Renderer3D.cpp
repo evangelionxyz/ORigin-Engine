@@ -308,13 +308,13 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		constexpr uint8_t segments = 20;
-		constexpr uint8_t stacks = 10;
+		constexpr uint8_t segments = 13;
+		constexpr uint8_t stacks = 8;
 
 		if (s_Render3DData.CubeIndexCount + (segments * 6 * 2) >= Renderer::s_RenderData.MaxQuadIndices)
 			NextBatch();
 
-		const float textureIndex = 0.0f; // White Texture
+		const float textureIndex = 0.0f;
 		const float tilingFactor = 1.0f;
 		glm::vec2 textureCoords = glm::vec2(0.0f);
 

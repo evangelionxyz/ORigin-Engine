@@ -299,7 +299,7 @@ namespace origin {
 					if (entity.HasComponent<BoxColliderComponent>())
 					{
 						BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
-						transform *= glm::toMat4(glm::quat(tc.WorldRotation))
+						transform *= glm::toMat4(tc.WorldRotation)
 							* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(cc.Size * 2.0f) * 2.0f);
 						Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), (int)e);
 					}
@@ -307,17 +307,18 @@ namespace origin {
 					if (entity.HasComponent<SphereColliderComponent>())
 					{
 						SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
-						transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+						transform *= glm::toMat4(tc.WorldRotation) 
+							* glm::scale(glm::mat4(1.0f), tc.WorldScale);
 						Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
 					}
 
 					if (entity.HasComponent<CapsuleColliderComponent>())
 					{
 						CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
-						transform *= glm::toMat4(glm::quat(tc.WorldRotation)) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-						Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, (int)entity);
+						transform *= glm::toMat4(tc.WorldRotation) 
+							* glm::scale(glm::mat4(1.0f), tc.WorldScale);
+						Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, cc.HalfHeight * 2.0f, (int)entity);
 					}
-
 				}
 			}
 			Renderer3D::End();

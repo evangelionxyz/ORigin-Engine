@@ -23,6 +23,7 @@ namespace origin
         Scene();
 
         static std::shared_ptr<Scene> Copy(const std::shared_ptr<Scene> &other);
+
         static AssetType GetStaticType() { return AssetType::Scene; }
         AssetType GetType() const override { return GetStaticType(); }
 
@@ -31,7 +32,10 @@ namespace origin
         Entity FindEntityByName(std::string_view name);
 
         void UpdateRuntime(Timestep ts);
+        void DestroyEntityRecursive(UUID entityId);
         void DestroyEntity(Entity entity);
+        Entity DuplicateEntityRecursive(Entity entity, Entity newParent);
+        Entity DuplicateEntity(Entity entity);
         void OnRuntimeStart();
         void OnRuntimeStop();
         void OnUpdateRuntime(Timestep time);
@@ -60,6 +64,8 @@ namespace origin
         uint32_t GetWidth() { return m_ViewportWidth; }
         uint32_t GetHeight() { return m_ViewportHeight; }
 
+        void DeserializeDeletedEntity();
+
     private:
         std::string m_Name = "untitled";
         std::shared_ptr<UIRenderer> m_UIRenderer;
@@ -69,6 +75,7 @@ namespace origin
         bool IsPaused() const { return m_Paused; }
         void SetPaused(bool paused) { m_Paused = paused; }
         void Step(int frames);
+        std::vector<UUID> GetChildrenUUIDs(UUID parentId);
 
         template <typename T>
         void OnComponentAdded(Entity entity, T &component);

@@ -47,11 +47,11 @@ namespace origin {
 
 	Entity SceneHierarchyPanel::GetSelectedEntity()
 	{
-		if (m_SelectedEntity.IsValid())
+		if (m_SelectedEntity)
 		{
 			Entity entity = { m_SelectedEntity, m_Scene.get() };
 
-			if (entity.IsValid())
+			if (entity)
 			{
 				return entity;
 			}
@@ -69,13 +69,13 @@ namespace origin {
 
 		m_Scene = scene;
 
-		if (!m_SelectedEntity.IsValid())
+		if (!m_SelectedEntity)
 			return;
 
 		UUID entityID = m_SelectedEntity.GetUUID();
 		Entity newEntity = m_Scene->GetEntityWithUUID(entityID);
 
-		if (newEntity.IsValid())
+		if (newEntity)
 		{
 			if (entityID == newEntity.GetUUID())
 			{
@@ -177,6 +177,8 @@ namespace origin {
                         SetSelectedEntity(EntityManager::CreateCube("Cube", m_Scene.get()));
                     if (ImGui::MenuItem("Sphere"))
                         SetSelectedEntity(EntityManager::CreateSphere("Sphere", m_Scene.get()));
+                    if (ImGui::MenuItem("Capsule"))
+                        SetSelectedEntity(EntityManager::CreateCapsule("Capsule", m_Scene.get()));
                     ImGui::EndMenu();
                 }
 
@@ -200,7 +202,7 @@ namespace origin {
 	{
 		ImGui::Begin("Properties");
 		IsScenePropertiesFocused = ImGui::IsWindowFocused();
-		if (m_SelectedEntity.IsValid())
+		if (m_SelectedEntity)
 		{
 			DrawComponents(m_SelectedEntity);
 		}
@@ -209,13 +211,13 @@ namespace origin {
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
 	{
-		auto valid = m_Scene->m_Registry.valid(entity);
-		if (!valid || (entity.HasParent() && index == 0))
+		if (!entity || (entity.HasParent() && index == 0))
+		{
 			return;
+		}
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
-			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
@@ -302,14 +304,13 @@ namespace origin {
 			{
 				for (auto e : m_Scene->m_EntityStorage)
 				{
-					valid = m_Scene->m_Registry.valid(e.second);
-					if (!valid)
-						break;
-
 					Entity ent = { e.second, m_Scene.get() };
-					if (ent.GetComponent<IDComponent>().Parent == entity.GetUUID())
+					if (ent)
 					{
-						DrawEntityNode({ e.second, m_Scene.get() }, index + 1);
+						if (ent.GetParentUUID() == entity.GetUUID())
+						{
+							DrawEntityNode({ e.second, m_Scene.get() }, index + 1);
+						}
 					}
 				}
 			}
@@ -1321,7 +1322,7 @@ namespace origin {
 						case ScriptFieldType::Entity:
 							uint64_t uuid = scriptInstance->GetFieldValue<uint64_t>(name);
 							Entity e = scene->GetEntityWithUUID(uuid);
-							if (e.IsValid())
+							if (e)
 							{
 								UI::DrawButtonWithColumn(name.c_str(), e.GetTag().c_str(), nullptr, [&]()
 								{
@@ -1406,7 +1407,7 @@ namespace origin {
 								if (uuid)
 								{
 									Entity e = scene->GetEntityWithUUID(uuid);
-									if (e.IsValid())
+									if (e)
 									{
 										label = e.GetTag();
 									}
@@ -1596,7 +1597,7 @@ namespace origin {
 			ImGui::EndMenu();
 		}
 
-		if (entity.IsValid())
+		if (entity)
 		{
 			SetSelectedEntity(entity);
 		}

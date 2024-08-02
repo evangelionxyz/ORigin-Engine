@@ -32,7 +32,7 @@ namespace origin {
 		void SetYaw(float yaw);
         bool OnMouseScroll(MouseScrolledEvent &e);
         void MousePan(const glm::vec2 &delta);
-        void MouseRotate(const glm::vec2 &delta);
+        void MouseRotate(const glm::vec2 &delta, float dt);
         void MouseZoom(const float dela);
 		void SetDistance(float distance);
         float RotationSpeed() const;
@@ -72,6 +72,16 @@ namespace origin {
         float m_Pitch = 0.0f, m_Yaw = 0.0f;
         bool m_IsInViewport = false;
         bool m_AllowedMove = false;
+        glm::vec3 m_Velocity = glm::vec3(0.0f);
         glm::vec2 m_LastMousePos = glm::vec2(0.0f);
+
+        const float ACCELERATION = 70.0f;
+        const float DECELERATION = 130.0f;
+        const float MAX_SPEED = 100.0f;
+
+        glm::vec2 m_AngularVelocity = glm::vec2(0.0f);
+        const float ROTATION_SPEED = 0.8f;
+        const float DAMPING = 0.9f;
+        const float SENSITIVITY = 0.2f;
 	};
 }

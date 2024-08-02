@@ -116,7 +116,14 @@ namespace origin
 				MeshVertexData vertex;
 				vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 				vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-				vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+				if (mesh->mTextureCoords[0])
+				{
+					vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+				}
+				else
+				{
+					vertex.UV = { 1.0f, 1.0f };
+				}
 				vertex.TilingFactor	 = glm::vec2(1.0f);
 				vertex.BoneIDs = glm::vec4(0.0f);
 				vertex.BoneWeights = glm::vec4(0.0f);

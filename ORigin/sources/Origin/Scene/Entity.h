@@ -54,9 +54,10 @@ namespace origin {
 		}
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		UUID GetParentUUID() { return GetComponent<IDComponent>().Parent; }
+		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 		EntityType GetType() { return GetComponent<IDComponent>().Type; }
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
-		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 		Scene *GetScene() const { return m_Scene; }
 
 		bool IsValid() const
@@ -87,6 +88,7 @@ namespace origin {
 			return isValid;
 		}
 
+		operator bool() const { return IsValid(); }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator int() const { return static_cast<int>(m_EntityHandle); }
 		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
