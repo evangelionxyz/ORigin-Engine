@@ -236,6 +236,7 @@ namespace origin {
 		bool isDeleting = false;
 		if (!m_Scene->IsRunning())
 		{
+			ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
 			if (ImGui::BeginPopupContextItem(entity.GetTag().c_str()))
 			{
 				Entity e = EntityContextMenu();
@@ -250,7 +251,6 @@ namespace origin {
 					DestroyEntity(entity);
 					isDeleting = true;
 				}
-
 				ImGui::EndPopup();
 			}
 
@@ -276,6 +276,7 @@ namespace origin {
 				}
 				ImGui::EndDragDropTarget();
 			}
+			ImGui::PopID();
 		}
 
 		if (ImGui::IsItemHovered())
@@ -286,13 +287,12 @@ namespace origin {
 			}
 		}
 
-        ImGui::TableNextColumn();
-        ImGui::TextWrapped(Utils::EntityTypeToString(entity.GetType()).c_str());
-
-        ImGui::TableNextColumn();
 		if (!isDeleting)
 		{
 			ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
+            ImGui::TableNextColumn();
+            ImGui::TextWrapped(Utils::EntityTypeToString(entity.GetType()).c_str());
+			ImGui::TableNextColumn();
 			auto &tc = entity.GetComponent<TransformComponent>();
 			ImGui::Checkbox("##Active", &tc.Visible);
 			ImGui::PopID();
