@@ -14,7 +14,7 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
         // depth map shader
-        m_DepthMapShader = Shader::Create("Resources/Shaders/SPIR-V/DepthMap.glsl", false);
+        m_DepthMapShader = Renderer::GetShader("DepthMap");
 
         glGenFramebuffers(1, &FrameBufferID);
         glGenTextures(1, &DepthMapID);

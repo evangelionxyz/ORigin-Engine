@@ -159,7 +159,7 @@ namespace origin
 		{
 			m_Framebuffer->Bind();
 			RenderCommand::ClearColor(m_ClearColor);
-			RenderCommand::Clear();
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			m_Framebuffer->ClearAttachment(1, -1);
 
 			Render(ts);
@@ -177,6 +177,92 @@ namespace origin
 
 		InputProcedure(ts);
 	}
+
+    void EditorLayer::RenderStencilBuffer()
+    {
+        glEnable(GL_STENCIL_TEST);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+#if 0
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF); // enable writing to the stencil buffer
+		// draw to stencil buffer
+
+		MeshRenderer::Begin(m_EditorCamera);
+		glm::mat4 tr = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+		MeshRenderer::DrawCube(tr, glm::vec4(0.0f, 0.5f, 1.0f, 1.0f));
+		MeshRenderer::End();
+
+		//We set the stencil function to GL_NOTEQUAL to make sure that 
+		//we're only drawing parts of the containers that are not equal to 1
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00); // disable writing to the stencil buffer
+		glDisable(GL_DEPTH_TEST);
+		Shader *outlineShader = Renderer::GetShader("Outline").get();
+		outlineShader->Enable();
+		outlineShader->SetMatrix("viewProjection", m_EditorCamera.GetViewProjection());
+
+        MeshRenderer::Begin(m_EditorCamera, outlineShader);
+        tr = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(1.1f));
+        MeshRenderer::DrawCube(tr, glm::vec4(1.0f));
+        MeshRenderer::End();
+		outlineShader->Disable();
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glEnable(GL_DEPTH_TEST);
+#else
+
+        // Second pass: Draw the outline
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        glStencilMask(0x00);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Enable color writing
+        glDepthFunc(GL_ALWAYS); // Always pass depth test
+
+        MeshRenderer::Begin(m_EditorCamera);
+		if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
+		{
+			if (entity.HasComponent<StaticMeshComponent>())
+			{
+				TransformComponent &tc = entity.GetComponent<TransformComponent>();
+				MeshRenderer::DrawCube(tc.GetTransform(), glm::vec4(0.0f, 0.5f, 1.0f, 1.0f));
+			}
+		}
+        MeshRenderer::End();
+
+        //We set the stencil function to GL_NOTEQUAL to make sure that 
+        //we're only drawing parts of the containers that are not equal to 1
+        // Second pass: Draw the outline
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        glStencilMask(0x00);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Enable color writing
+        glDepthFunc(GL_ALWAYS); // Always pass depth test
+
+        Shader *outlineShader = Renderer::GetShader("Outline").get();
+        outlineShader->Enable();
+        outlineShader->SetMatrix("viewProjection", m_EditorCamera.GetViewProjection());
+
+        MeshRenderer::Begin(m_EditorCamera, outlineShader);
+        if (Entity entity = m_SceneHierarchy.GetSelectedEntity())
+        {
+            if (entity.HasComponent<StaticMeshComponent>())
+            {
+                TransformComponent &tc = entity.GetComponent<TransformComponent>();
+                glm::mat4 trA = glm::translate(glm::mat4(1.0f), tc.WorldTranslation) * glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(1.1f));
+                MeshRenderer::DrawCube(trA, glm::vec4(0.0f, 0.5f, 1.0f, 1.0f));
+            }
+        }
+        MeshRenderer::End();
+        outlineShader->Disable();
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glDepthFunc(GL_LESS); // Reset depth function
+        //glDepthMask(GL_TRUE); // Re-enable depth writing
+        glDisable(GL_STENCIL_TEST);
+#endif
+    }
 
 	EditorLayer &EditorLayer::Get()
 	{
@@ -444,7 +530,6 @@ namespace origin
 
 		auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
 		std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
-		
 
 		if (!readOnlyScene)
 		{
@@ -598,6 +683,8 @@ namespace origin
 		{
 			m_ProfilerResults.push_back(result);
 		});
+
+		RenderStencilBuffer();
 
 		switch (m_SceneState)
 		{
@@ -1545,4 +1632,5 @@ namespace origin
 
 		return false;
 	}
+
 }

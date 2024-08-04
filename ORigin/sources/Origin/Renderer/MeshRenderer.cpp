@@ -291,7 +291,7 @@ namespace origin
         }
 	}
 
-    void MeshRenderer::DrawCube(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
+    void MeshRenderer::DrawCube(const glm::mat4 &transform, glm::vec4 color, int entityID)
 	{
 		if (s_MeshRenderData.CubeIndexCount >= MeshRenderData::MaxCubeIndices)
 			NextBatch();

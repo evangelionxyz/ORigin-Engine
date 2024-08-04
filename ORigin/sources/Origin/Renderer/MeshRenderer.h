@@ -18,7 +18,7 @@ namespace origin
         static void NextBatch();
 		static void End();
 
-		static void DrawCube(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
+		static void DrawCube(const glm::mat4 &transform, glm::vec4 color = glm::vec4(1.0f), int entityID = -1);
 
 		static void DrawCube(const glm::mat4 &transform, 
 			const std::shared_ptr<Texture2D> &albedo, 

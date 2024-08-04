@@ -127,9 +127,11 @@ namespace origin {
 		s_ShaderLibrary.Load("Mesh", "Resources/Shaders/SPIR-V/Mesh.glsl", true);
 		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true);
 		s_ShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true);
-		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/SPIR-V/DepthMap.glsl", false);
-		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);
-		s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
+
+		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl");
+		s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl");
+		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl");
+		s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl");
 	}
 
 	void Renderer::LoadMaterials()
