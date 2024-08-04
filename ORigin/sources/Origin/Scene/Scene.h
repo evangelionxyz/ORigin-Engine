@@ -31,6 +31,8 @@ namespace origin
         Entity GetEntityWithUUID(UUID uuid);
         Entity FindEntityByName(std::string_view name);
 
+        void Render3DScene(const Camera &camera, entt::entity id);
+
         void UpdateRuntime(Timestep ts);
         void DestroyEntityRecursive(UUID entityId);
         void DestroyEntity(Entity entity);

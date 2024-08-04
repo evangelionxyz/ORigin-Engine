@@ -102,7 +102,131 @@ namespace origin
 		return Entity();
 	}
 
-	void Scene::UpdateRuntime(Timestep ts)
+    void Scene::Render3DScene(const Camera &camera, entt::entity selectedId)
+    {
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+        const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
+        const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+
+        // First pass: Render all objects and mark the selected object in the stencil buffer
+        for (auto &li : lightView)
+        {
+            const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(li);
+            if (!lightTC.Visible)
+                continue;
+
+            lc.Light->DirLightData.LightSpaceMat = lc.Light->GetShadow().ViewProjection;
+            lc.Light->DirLightData.Position = glm::vec4(lightTC.WorldTranslation, 1.0f);
+            lc.Light->LightingUBO->Bind();
+            lc.Light->LightingUBO->SetData(&lc.Light->DirLightData, sizeof(lc.Light->DirLightData));
+            MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
+
+            for (auto e : meshView)
+            {
+                const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
+                if (!tc.Visible)
+                    continue;
+
+                std::shared_ptr<Material> material;
+                if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
+                else material = Renderer::GetMaterial("Mesh");
+
+                // Set stencil function based on whether this is the selected entity
+                if (e == selectedId)
+                {
+                    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+                    glStencilMask(0xFF);
+                }
+                else
+                {
+                    glStencilFunc(GL_ALWAYS, 0, 0xFF);
+                    glStencilMask(0x00);
+                }
+
+                MeshRenderer::Begin(camera);
+                switch (mc.mType)
+                {
+                case StaticMeshComponent::Type::Cube:
+                    MeshRenderer::DrawCube(tc.GetTransform(), material.get(), (int)e);
+                    break;
+                case StaticMeshComponent::Type::Sphere:
+                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
+                    break;
+                case StaticMeshComponent::Type::Capsule:
+                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), (int)e);
+                    break;
+                }
+                MeshRenderer::End();
+            }
+        }
+
+        // Second pass: Draw the outline for the selected object
+        if (m_Registry.valid(selectedId))
+        {
+			Entity entity = { selectedId, this };
+			if (entity.HasComponent<StaticMeshComponent>())
+			{
+				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+				glStencilMask(0x00);
+				glDisable(GL_DEPTH_TEST);
+
+				Shader *outlineShader = Renderer::GetShader("Outline").get();
+				outlineShader->Enable();
+				outlineShader->SetMatrix("viewProjection", camera.GetViewProjection());
+
+				MeshRenderer::Begin(camera, outlineShader);
+
+				const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(selectedId);
+
+				// Calculate distance-based outline thickness
+				glm::vec3 cameraPosition = camera.GetPosition();
+				glm::vec3 objectPosition = tc.WorldTranslation;
+				float distance = glm::distance(cameraPosition, objectPosition);
+
+				// Calculate the object's bounding sphere radius (approximation)
+				float objectRadius = glm::length(tc.WorldScale) * 0.5f;
+
+				// Calculate the outline thickness
+				float baseThickness = 0.02f; // Adjust this value to change the base thickness
+				float thicknessFactor = baseThickness * (distance / objectRadius);
+
+				// Clamp the thickness factor to a reasonable range
+				thicknessFactor = glm::clamp(thicknessFactor, 0.001f, 0.1f);
+
+				glm::mat4 trA = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
+					* glm::toMat4(tc.WorldRotation)
+					* glm::scale(glm::mat4(1.0f), tc.WorldScale * (1.0f + thicknessFactor));
+
+				switch (mc.mType)
+				{
+				case StaticMeshComponent::Type::Cube:
+					MeshRenderer::DrawCube(trA, glm::vec4(1.0f), (int)selectedId);
+					break;
+				case StaticMeshComponent::Type::Sphere:
+					MeshRenderer::DrawSphere(trA, glm::vec4(1.0f), (int)selectedId);
+					break;
+				case StaticMeshComponent::Type::Capsule:
+					MeshRenderer::DrawCapsule(trA, glm::vec4(1.0f), (int)selectedId);
+					break;
+				}
+
+				MeshRenderer::End();
+				outlineShader->Disable();
+
+				// Reset state
+				glStencilMask(0xFF);
+				glStencilFunc(GL_ALWAYS, 0, 0xFF);
+				glEnable(GL_DEPTH_TEST);
+			}
+        }
+
+        glDisable(GL_STENCIL_TEST);
+    }
+
+    void Scene::UpdateRuntime(Timestep ts)
 	{
 		if (!m_Paused || m_StepFrames-- > 0)
 		{
@@ -688,6 +812,7 @@ namespace origin
 
 		Renderer2D::End();
 
+#if 0
 		// ===============================
 		// 3D Scene
 		glEnable(GL_DEPTH_TEST);
@@ -731,6 +856,7 @@ namespace origin
             }
 			MeshRenderer::End();
         }
+#endif
 	}
 	
 	void Scene::RenderShadow(const glm::mat4 &viewProjection)

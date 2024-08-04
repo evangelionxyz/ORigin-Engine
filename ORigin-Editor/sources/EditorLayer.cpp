@@ -213,7 +213,7 @@ namespace origin
         glEnable(GL_DEPTH_TEST);
 #else
 
-        // Second pass: Draw the outline
+        // Draw the outline
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
         glStencilMask(0x00);
@@ -684,8 +684,6 @@ namespace origin
 			m_ProfilerResults.push_back(result);
 		});
 
-		RenderStencilBuffer();
-
 		switch (m_SceneState)
 		{
 		case SceneState::Play:
@@ -700,6 +698,7 @@ namespace origin
 			{
 				CameraComponent cc = cam.GetComponent<CameraComponent>();
 				m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
+				m_ActiveScene->Render3DScene(m_EditorCamera, entt::null);
 			}
 			break;
 		}
@@ -710,6 +709,7 @@ namespace origin
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
 			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
+			m_ActiveScene->Render3DScene(m_EditorCamera, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
@@ -721,6 +721,7 @@ namespace origin
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
 			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
+			m_ActiveScene->Render3DScene(m_EditorCamera, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
@@ -1482,6 +1483,10 @@ namespace origin
 			if (m_SceneState == SceneState::Play)
 			{
 				m_ActiveScene->UnlockMouse();
+			}
+			if (m_SceneState != SceneState::Play && IsViewportFocused)
+			{
+				m_SceneHierarchy.SetSelectedEntity({});
 			}
 			break;
 		}
