@@ -932,20 +932,14 @@ namespace origin {
 				{
 					case LightingType::Directional:
 					{
-						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->m_DirLightData.Color));
-						ImGui::ColorEdit3("Ambient", glm::value_ptr(component.Light->m_DirLightData.Ambient));
-						UI::DrawFloatControl("Diffuse", &component.Light->m_DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
-						UI::DrawFloatControl("Specular", &component.Light->m_DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
-
-#if 0
-						if (component.Light->GetShadow()->GetFramebuffer())
-						{
-							uint32_t texture = component.Light->GetShadow()->GetFramebuffer()->GetDepthAttachmentRendererID();
-							float size = ImGui::GetContentRegionAvail().x;
-							ImGui::Image(reinterpret_cast<ImTextureID>(texture), ImVec2(size, size), ImVec2(0, 1), ImVec2(1, 0));
-						}
+						ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->DirLightData.Color));
+						ImGui::ColorEdit3("Ambient", glm::value_ptr(component.Light->DirLightData.Ambient));
+						UI::DrawFloatControl("Diffuse", &component.Light->DirLightData.Diffuse, 0.01f, 0.0f, 1.0f, 1.0f);
+						UI::DrawFloatControl("Specular", &component.Light->DirLightData.Specular, 0.01f, 0.0f, 1.0f, 1.0f);
+						UI::DrawFloatControl("NearPlane", &component.Light->NearPlane, 0.01f, 0.0f, 1000.0f, 1.0f);
+						UI::DrawFloatControl("FarPlane", &component.Light->FarPlane, 0.01f, 0.0f, 1000.0f, 1.0f);
+						UI::DrawFloatControl("OrthoSize", &component.Light->OrthoSize, 0.01f, 0.0f, 1000.0f, 1.0f);
 						break;	
-#endif
 					}
 #if 0
 					case LightingType::Spot:
@@ -1171,7 +1165,8 @@ namespace origin {
 			UI::DrawCheckbox3("Rotate", &component.RotateX, &component.RotateY, &component.RotateZ);
 			UI::DrawCheckbox3("Translate", &component.MoveX, &component.MoveY, &component.MoveZ);
 
-            UI::DrawCheckbox("Allow Sleeping", &component.IsStatic);
+            UI::DrawCheckbox("Static", &component.IsStatic);
+            UI::DrawCheckbox("Allow Sleeping", &component.AllowSleeping);
 			if (UI::DrawFloatControl("Gravity Factor", &component.GravityFactor, 0.05f, 0.0f, 1000.0f, 0.0f))
 			{
 				if (scene->IsRunning())

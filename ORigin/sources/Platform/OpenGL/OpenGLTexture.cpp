@@ -161,7 +161,7 @@ namespace origin
 
         // Verify the actual BPP
         uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-        OGN_CORE_ASSERT(data.Size == m_Width * m_Height * bpp, "OpenGLTexture: Data must be entire texture!");
+        OGN_CORE_ASSERT(data.Size == m_Width * m_Height * bpp, "[OpenGLTexture] Data must be entire texture!");
         glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data.Data);
     }
 
@@ -195,7 +195,7 @@ namespace origin
         OGN_PROFILER_RENDERING();
 
         glDeleteTextures(1, &m_RendererID);
-        OGN_CORE_WARN("TEXTURE: \"{}\" at index {} has been deleted", m_Filepath, m_Index);
+        OGN_CORE_WARN("[OpenGLTexture] \"{}\" at index {} has been deleted", m_Filepath, m_Index);
     }
 
     void OpenGLTexture2D::ChangeSize(uint64_t newWidth, uint64_t newHeight)
@@ -278,9 +278,9 @@ namespace origin
             if (data)
             {
                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
-                OGN_CORE_TRACE("Texture \"{0}\" Successfully Loaded", faces[i]);
+                OGN_CORE_TRACE("[OpenGLTexture] \"{0}\" Successfully Loaded", faces[i]);
             }
-            else OGN_CORE_ERROR("Failed to load Texture: {0}", faces[i]);
+            else OGN_CORE_ERROR("[OpenGLTexture] Failed to load Texture: {0}", faces[i]);
 
             stbi_image_free(data);
         }
@@ -348,9 +348,9 @@ namespace origin
         if (data)
         {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + faces, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
-            OGN_CORE_TRACE("Texture \"{0}\" Successfully Loaded", filepath);
+            OGN_CORE_TRACE("[OpenGLTexture] \"{0}\" Successfully Loaded", filepath);
         }
-        else OGN_CORE_ERROR("Failed to load Texture: {0}", filepath);
+        else OGN_CORE_ERROR("[OpenGLTexture] Failed to load Texture: {0}", filepath);
 
         stbi_image_free(data);
 

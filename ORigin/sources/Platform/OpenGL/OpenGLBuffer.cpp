@@ -16,7 +16,7 @@ namespace origin
 		// Clear any existing errors
 		while (glGetError() != GL_NO_ERROR);
 
-		glGenBuffers(1, &m_RendererID);
+		glCreateBuffers(1, &m_RendererID);
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
@@ -45,7 +45,7 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		glGenBuffers(1, &m_RendererID);
+		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
@@ -97,7 +97,7 @@ namespace origin
 	{
         OGN_PROFILER_RENDERING();
 
-        glGenBuffers(1, &m_RendererID);
+        glCreateBuffers(1, &m_RendererID);
         GLenum error = glGetError();
         OGN_CORE_ASSERT(error == GL_NO_ERROR, "OpenGL error after glGenBuffers: {0}", error);
 
@@ -115,7 +115,7 @@ namespace origin
 	{
 		OGN_PROFILER_RENDERING();
 
-		glGenBuffers(1, &m_RendererID);
+		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
@@ -128,7 +128,7 @@ namespace origin
     {
 		OGN_PROFILER_RENDERING();
 
-		glGenBuffers(1, &m_RendererID);
+		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 

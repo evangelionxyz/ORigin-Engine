@@ -225,8 +225,14 @@ namespace origin
         sources[GL_VERTEX_SHADER] = vertexSrc;
         sources[GL_FRAGMENT_SHADER] = fragmentSrc;
 
-        CompileOrGetVulkanBinaries(sources);
-        CompileOrGetOpenGLBinaries();
+        if (!CompileOrGetVulkanBinaries(sources))
+        {
+            return;
+        }
+        if (!CompileOrGetOpenGLBinaries())
+        {
+            return;
+        };
         CreateSpirvProgram();
     }
 
@@ -240,8 +246,15 @@ namespace origin
         sources[GL_FRAGMENT_SHADER] = fragmentSrc;
         sources[GL_GEOMETRY_SHADER] = geomterySrc;
 
-        CompileOrGetVulkanBinaries(sources);
-        CompileOrGetOpenGLBinaries();
+        if (!CompileOrGetVulkanBinaries(sources))
+        {
+            return;
+        }
+        if (!CompileOrGetOpenGLBinaries())
+        {
+            return;
+        }
+
         CreateSpirvProgram();
     }
 
@@ -379,7 +392,7 @@ namespace origin
         return shaderSources;
     }
 
-    void OpenGLShader::CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string> &shaderSources)
+    bool OpenGLShader::CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string> &shaderSources)
     {
         OGN_PROFILER_RENDERING();
 
@@ -420,27 +433,33 @@ namespace origin
                 PUSH_CONSOLE_ERROR("[OpenGLShader] Failed to compile Vulkan {0}", module.GetErrorMessage().c_str());
                 OGN_CORE_ASSERT(succsess, module.GetErrorMessage());
 
-                if (succsess)
+                if (!succsess)
                 {
-                    shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+                    return false;
+                }
 
-                    std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-                    if (out.is_open())
-                    {
-                        auto &data = shaderData[stage];
-                        out.write((char *)data.data(), data.size() * sizeof(uint32_t));
-                        out.flush();
-                        out.close();
-                    }
+                shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+                std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+                if (out.is_open())
+                {
+                    auto &data = shaderData[stage];
+                    out.write((char *)data.data(), data.size() * sizeof(uint32_t));
+                    out.flush();
+                    out.close();
                 }
             }
         }
 
         for (auto &&[stage, data] : shaderData)
+        {
             Reflect(stage, data);
+        }
+
+        return true;
     }
 
-    void OpenGLShader::CompileOrGetOpenGLBinaries()
+    bool OpenGLShader::CompileOrGetOpenGLBinaries()
     {
         OGN_PROFILER_RENDERING();
 
@@ -479,22 +498,26 @@ namespace origin
                 m_OpenGLSourceCode[stage] = glslCompiler.compile();
                 auto &source = m_OpenGLSourceCode[stage];
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
-                bool succsess = module.GetCompilationStatus() == shaderc_compilation_status_success;
+                bool success = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
-                if (succsess)
+                if (!success)
                 {
-                    shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-                    std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary);
-                    if (outfile.is_open())
-                    {
-                        auto &data = shaderData[stage];
-                        outfile.write((char *)data.data(), data.size() * sizeof(uint32_t));
-                        outfile.flush();
-                        outfile.close();
-                    }
+                    return false;
+                }
+
+                shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+                std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary);
+                if (outfile.is_open())
+                {
+                    auto &data = shaderData[stage];
+                    outfile.write((char *)data.data(), data.size() * sizeof(uint32_t));
+                    outfile.flush();
+                    outfile.close();
                 }
             }
         }
+
+        return true;
     }
 
     void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t> &shaderData)
@@ -632,7 +655,7 @@ namespace origin
         if (m_EnableSpirv)
         {
             Utils::CreateCachedDirectoryIfNeeded();
-
+            m_RecompileSPIRV = true;
             std::string source = ReadFile(m_Filepath);
             {
                 auto shaderSources = PreProcess(source);
@@ -644,6 +667,7 @@ namespace origin
                 OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
                 PUSH_CONSOLE_INFO("Shader Creation took {0} ms", timer.ElapsedMillis());
             }
+            m_RecompileSPIRV = false;
         }
         else // Without SPIRV
         {

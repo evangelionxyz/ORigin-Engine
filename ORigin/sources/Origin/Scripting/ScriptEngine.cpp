@@ -24,22 +24,22 @@ namespace origin
 {
 	static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
 	{
-		{"System.Boolean", ScriptFieldType::Bool},
-		{"System.Single", ScriptFieldType::Float},
-		{"System.Char",		ScriptFieldType::Char},
-		{"System.Byte",		ScriptFieldType::Byte},
-		{"System.Double", ScriptFieldType::Double},
-		{"System.Int16",	ScriptFieldType::Short},
-		{"System.Int32",	ScriptFieldType::Int},
-		{"System.Int64",	ScriptFieldType::Long},
-		{"System.UInt16", ScriptFieldType::UShort},
-		{"System.UInt32", ScriptFieldType::UInt},
-		{"System.UInt64", ScriptFieldType::ULong},
-		{"System.UInt",		ScriptFieldType::UByte},
-		{"ORiginEngine.Vector2",ScriptFieldType::Vector2},
-		{"ORiginEngine.Vector3",ScriptFieldType::Vector3},
-		{"ORiginEngine.Vector4",ScriptFieldType::Vector4},
-		{"ORiginEngine.Entity",	ScriptFieldType::Entity},
+		{"System.Boolean",       ScriptFieldType::Bool},
+		{"System.Single",        ScriptFieldType::Float},
+		{"System.Char",          ScriptFieldType::Char},
+		{"System.Byte",          ScriptFieldType::Byte},
+		{"System.Double",        ScriptFieldType::Double},
+		{"System.Int16",         ScriptFieldType::Short},
+		{"System.Int32",         ScriptFieldType::Int},
+		{"System.Int64",         ScriptFieldType::Long},
+		{"System.UInt16",        ScriptFieldType::UShort},
+		{"System.UInt32",        ScriptFieldType::UInt},
+		{"System.UInt64",        ScriptFieldType::ULong},
+		{"System.UInt",          ScriptFieldType::UByte},
+		{"ORiginEngine.Vector2", ScriptFieldType::Vector2},
+		{"ORiginEngine.Vector3", ScriptFieldType::Vector3},
+		{"ORiginEngine.Vector4", ScriptFieldType::Vector4},
+		{"ORiginEngine.Entity",	 ScriptFieldType::Entity},
 	};
 
 	namespace Utils
@@ -327,8 +327,8 @@ namespace origin
 			s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 			ScriptGlue::RegisterComponents();
 
-			OGN_CORE_TRACE("[ScriptEngine] Assembly Reloaded");
-			PUSH_CONSOLE_INFO("[ScriptEngine] Assembly Reloaded");
+			OGN_CORE_TRACE("[Script Engine] Assembly Reloaded");
+			PUSH_CONSOLE_INFO("[Script Engine] Assembly Reloaded");
 		}
 	}
 
@@ -401,8 +401,8 @@ namespace origin
 					{
 						ScriptFieldType type = instance->GetScriptClass()->GetFields()[name].Type;
 						fieldInstance.Field.Type = type;
-						OGN_CORE_WARN("[ScriptEngine] Checking invalid type {0}", name);
-						PUSH_CONSOLE_WARNING("[ScriptEngine] Checking invalid type {0}", name);
+						OGN_CORE_WARN("[Script Engine] Checking invalid type {0}", name);
+						PUSH_CONSOLE_WARNING("[Script Engine] Checking invalid type {0}", name);
 					}
 
 					switch (fieldInstance.Field.Type)
@@ -412,16 +412,16 @@ namespace origin
 						uint64_t uuid = *(uint64_t *)fieldInstance.m_Buffer;
 						if (uuid == 0)
 						{
-							OGN_CORE_ERROR("[ScriptEngine] Field '{0}' (Entity class) is not assigned yet", name);
-							PUSH_CONSOLE_ERROR("[ScriptEngine] Field '{0}' (Entity class) is not assigned yet", name);
+							OGN_CORE_ERROR("[Script Engine] Field '{0}' (Entity class) is not assigned yet", name);
+							PUSH_CONSOLE_ERROR("[Script Engine] Field '{0}' (Entity class) is not assigned yet", name);
 							continue;
 						}
 
 						MonoMethod *ctorMethod = s_ScriptEngineData->EntityClass.GetMethod(".ctor", 1);
 						if (!ctorMethod)
 						{
-							OGN_CORE_ERROR("[ScriptEngine] Failed to find constructor");
-							PUSH_CONSOLE_ERROR("[ScriptEngine] Failed to find constructor {0}", name);
+							OGN_CORE_ERROR("[Script Engine] Failed to find constructor");
+							PUSH_CONSOLE_ERROR("[Script Engine] Failed to find constructor {0}", name);
 							continue;
 						}
 
@@ -443,8 +443,8 @@ namespace origin
 						break;
 					}
 					case ScriptFieldType::Invalid:
-						PUSH_CONSOLE_ERROR("[ScriptEngine] Null Object Field {0}", name);
-						OGN_CORE_ASSERT(false, "[ScriptEngine] Null Object Field {0}", name);
+						PUSH_CONSOLE_ERROR("[Script Engine] Null Object Field {0}", name);
+						OGN_CORE_ASSERT(false, "[Script Engine] Null Object Field {0}", name);
 						return;
                     default:
                         instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
@@ -549,7 +549,7 @@ namespace origin
 
 		if (s_ScriptEngineData->EntityInstances.find(uuid) == s_ScriptEngineData->EntityInstances.end())
 		{
-			PUSH_CONSOLE_ERROR("[ScriptEngine] Invalid Script Instance {0}", (uint64_t)uuid);
+			PUSH_CONSOLE_ERROR("[Script Engine] Invalid Script Instance {0}", (uint64_t)uuid);
 			OGN_CORE_ASSERT(false, "[Script Engine] Invalid Script Instance");
 		}
 

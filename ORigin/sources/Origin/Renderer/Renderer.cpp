@@ -107,9 +107,9 @@ namespace origin {
 		return s_ShaderLibrary.Get(name);
 	}
 
-	const std::unordered_map<std::string, std::shared_ptr<Shader>> Renderer::GetShaderLibrary()
+	ShaderLibrary &Renderer::GetShaderLibrary()
 	{
-		return s_ShaderLibrary.GetMap();
+		return s_ShaderLibrary;
 	}
 
 	std::shared_ptr<Material> Renderer::GetMaterial(const std::string &name)
@@ -121,14 +121,13 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 
-		bool recompileShader = false;
-
-		s_ShaderLibrary.Load("Line2D", "Resources/Shaders/SPIR-V/Line2D.glsl", true, recompileShader);
-		s_ShaderLibrary.Load("Circle2D", "Resources/Shaders/SPIR-V/Circle2D.glsl", true, recompileShader);
-		s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true, recompileShader);
-		s_ShaderLibrary.Load("Mesh", "Resources/Shaders/SPIR-V/Mesh.glsl", true, recompileShader);
-		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true, recompileShader);
-		s_ShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true, recompileShader);
+		s_ShaderLibrary.Load("Line2D", "Resources/Shaders/SPIR-V/Line2D.glsl", true);
+		s_ShaderLibrary.Load("Circle2D", "Resources/Shaders/SPIR-V/Circle2D.glsl", true);
+		s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true);
+		s_ShaderLibrary.Load("Mesh", "Resources/Shaders/SPIR-V/Mesh.glsl", true);
+		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true);
+		s_ShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true);
+		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/SPIR-V/DepthMap.glsl", false);
 		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);
 		s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 	}

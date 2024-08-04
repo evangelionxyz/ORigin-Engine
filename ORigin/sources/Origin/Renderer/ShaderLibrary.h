@@ -20,7 +20,7 @@ namespace origin
 
 		bool Exist(const std::string &name);
 
-		std::unordered_map<std::string, std::shared_ptr<Shader>> GetMap() const { return m_ShaderMap; }
+		std::unordered_map<std::string, std::shared_ptr<Shader>> &GetMap() { return m_ShaderMap; }
 		inline size_t GetSize() const { return m_ShaderMap.size(); }
 
 	private:

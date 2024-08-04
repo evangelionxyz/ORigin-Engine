@@ -10,101 +10,103 @@
 
 namespace origin {
 
-	ShadowRenderer::ShadowRenderer(const std::shared_ptr<Shader>& depthShader, LightingType type)
-		: m_DepthShader(depthShader)
-	{
-		m_DepthUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4), 0);
-		Invalidate(type);
-	}
-
-	void ShadowRenderer::Invalidate(LightingType type)
+    void ShadowRenderer::OnCreate(LightingType type)
 	{
 		OGN_PROFILER_RENDERING();
+        // depth map shader
+        m_DepthMapShader = Shader::Create("Resources/Shaders/SPIR-V/DepthMap.glsl", false);
 
-		m_LightingType = type;
+        glGenFramebuffers(1, &FrameBufferID);
+        glGenTextures(1, &DepthMapID);
+        glBindTexture(GL_TEXTURE_2D, DepthMapID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-		if (m_Framebuffer)
-			m_Framebuffer.reset();
+        glBindFramebuffer(GL_FRAMEBUFFER, FrameBufferID);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, DepthMapID, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
 
-		FramebufferSpecification fbSpec;
-		fbSpec.Width = 1024;
-		fbSpec.Height = 1024;
-		fbSpec.ReadBuffer = false;
-		
-		switch (type)
-		{
-			case origin::LightingType::Spot:
-				break;
-			
-			case origin::LightingType::Point:
-				fbSpec.WrapMode = GL_CLAMP_TO_EDGE;
-				fbSpec.Attachments = { FramebufferTextureFormat::DEPTH_CUBE };
-				break;
-			
-			case origin::LightingType::Directional:
-				fbSpec.WrapMode = GL_CLAMP_TO_BORDER;
-				fbSpec.Attachments = { FramebufferTextureFormat::DEPTH };
-				break;
-		}
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		m_Framebuffer = Framebuffer::Create(fbSpec);
 	}
 
-	void ShadowRenderer::OnAttachTexture(const std::shared_ptr<Shader> objectShader)
+    // bind for each lighting
+    void ShadowRenderer::BindFBO()
+    {
+        glViewport(0, 0, 2048, 2048);
+        glBindFramebuffer(GL_FRAMEBUFFER, FrameBufferID);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void ShadowRenderer::UnbindFBO()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+    }
+
+	// begin for each object
+    void ShadowRenderer::CalculateViewProjection(const TransformComponent &tc, const glm::mat4 &camViewProjection)
 	{
-		OGN_PROFILER_RENDERING();
+#if 1
+        glm::vec3 lightDir = -tc.GetForward();// use negative forward as light direction
 
-		OGN_CORE_ASSERT(m_Framebuffer, "ShadowRenderer: Invalid Framebuffer");
-		glBindTextureUnit(2, m_Framebuffer->GetDepthAttachmentRendererID());
-		objectShader->SetInt("u_ShadowMap", 2);
+        std::array<glm::vec3, 8> frustumCorners;
+        CalculateFrustumCorners(camViewProjection, frustumCorners);
+
+        // find the bounding box of the frustum in light space
+        glm::vec3 minCorner(std::numeric_limits<float>::max());
+        glm::vec3 maxCorner(std::numeric_limits<float>::lowest());
+
+        glm::mat4 lightView = glm::lookAt(glm::vec3(0.0f) - lightDir, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        for (const auto &corner : frustumCorners)
+        {
+            glm::vec3 lightSpaceCorner = glm::vec3(lightView * glm::vec4(corner, 1.0f));
+            minCorner = glm::min(minCorner, lightSpaceCorner);
+            maxCorner = glm::max(maxCorner, lightSpaceCorner);
+        }
+
+        // calculate orthographic projection parameters
+        float l = minCorner.x, r = maxCorner.x;
+        float b = minCorner.y, t = maxCorner.y;
+        float n = -maxCorner.z, f = minCorner.z; // flip for GL's negative z direction
+
+        // add some padding to avoid clipping errors
+        float padding = 10.0f;
+        glm::mat4 lightProjection = glm::ortho(l - padding, r + padding, b - padding, t + padding, n - padding, f + padding);
+        ViewProjection = lightProjection * lightView;
+#else
+        //glm::mat4 lightView = glm::lookAt(-tc.GetUp(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //glm::mat4 lightProjection = glm::ortho(-20.0f, 20.0f, 20.0f, 20.0f, 20.0f, 20.0f);
+        //ViewProjection = lightProjection * lightView;
+#endif
 	}
 
-	void ShadowRenderer::BindFramebuffer()
-	{
-		OGN_PROFILER_RENDERING();
+    void ShadowRenderer::CalculateFrustumCorners(const glm::mat4 &camViewProjection, std::array<glm::vec3, 8> &frustumCorners)
+    {
+        glm::mat4 invCamVP = glm::inverse(camViewProjection);
 
-		if (m_Framebuffer)
-		{
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
+        std::array<glm::vec4, 8> ndcCorners = {
+            glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
+            glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
+            glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f),
+            glm::vec4(1.0f, 1.0f, -1.0f, 1.0f),
+            glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f),
+            glm::vec4(1.0f, -1.0f, 1.0f, 1.0f),
+            glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f),
+            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)
+        };
 
-			m_Framebuffer->Bind();
-			glClear(GL_DEPTH_BUFFER_BIT);
-		}
-	}
+        for (size_t i = 0; i < 8; ++i)
+        {
+            glm::vec4 invCorner = invCamVP * ndcCorners[i];
+            frustumCorners[i] = invCorner / invCorner.w;
+        }
+    }
 
-	void ShadowRenderer::UnbindFramebuffer()
-	{
-		OGN_PROFILER_RENDERING();
-		m_Framebuffer->Unbind();
-	}
-
-	void ShadowRenderer::OnRenderBegin(const TransformComponent& tc, const glm::mat4& transform)
-	{
-		OGN_PROFILER_RENDERING();
-
-		m_DepthShader->Enable();
-		if (m_LightingType == LightingType::Directional)
-		{
-			glm::mat4 projection = glm::ortho(-Size, Size, -Size, Size, Near, Far);
-			glm::mat4 view = glm::lookAt(-tc.GetUp(), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0));
-			ViewProjection = (projection * view) * glm::inverse(transform);
-			m_DepthUniformBuffer->Bind();
-			m_DepthUniformBuffer->SetData(&ViewProjection, sizeof(ViewProjection));
-		}
-	}
-
-	void ShadowRenderer::OnRenderEnd()
-	{
-		OGN_PROFILER_RENDERING();
-
-		m_DepthUniformBuffer->Unbind();
-		m_DepthShader->Disable();
-	}
-
-	std::shared_ptr<ShadowRenderer> ShadowRenderer::Create(const std::shared_ptr<Shader>& depthShader, LightingType type)
-	{
-		OGN_PROFILER_RENDERING();
-		return std::make_shared<ShadowRenderer>(depthShader, type);
-	}
 }

@@ -20,6 +20,7 @@ namespace origin
             Count
         };
 
+        Frustum() = default;
         Frustum(const glm::mat4 &viewProjection);
 
         void Update(const glm::mat4 &viewProjection);

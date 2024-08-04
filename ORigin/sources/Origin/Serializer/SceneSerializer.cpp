@@ -462,10 +462,13 @@ namespace origin
 #endif
 			case LightingType::Directional:
 			{
-				out << YAML::Key << "Color" << YAML::Value << light->m_DirLightData.Color;
-				out << YAML::Key << "Ambient" << YAML::Value << light->m_DirLightData.Ambient;
-				out << YAML::Key << "Diffuse" << YAML::Value << light->m_DirLightData.Diffuse;
-				out << YAML::Key << "Specular" << YAML::Value << light->m_DirLightData.Specular;
+				out << YAML::Key << "Color" << YAML::Value << light->DirLightData.Color;
+				out << YAML::Key << "Near" << YAML::Value << light->NearPlane;
+				out << YAML::Key << "Far" << YAML::Value << light->FarPlane;
+                out << YAML::Key << "OrthoSize" << YAML::Value << light->OrthoSize;
+				out << YAML::Key << "Ambient" << YAML::Value << light->DirLightData.Ambient;
+				out << YAML::Key << "Diffuse" << YAML::Value << light->DirLightData.Diffuse;
+				out << YAML::Key << "Specular" << YAML::Value << light->DirLightData.Specular;
 				break;
 			}
 			}
@@ -793,6 +796,7 @@ namespace origin
 					StaticMeshComponent &sc = deserializedEntity.AddComponent<StaticMeshComponent>();
 					sc.Name = staticMeshComponent["Name"].as<std::string>();
 					sc.HMaterial = staticMeshComponent["HMaterial"].as<uint64_t>();
+					if (sc.HMaterial) AssetManager::GetAsset<Material>(sc.HMaterial); // load material and store to memory
 					sc.mType = static_cast<StaticMeshComponent::Type>(staticMeshComponent["Type"].as<int>());
 
 					// TODO: Add create model
@@ -829,7 +833,7 @@ namespace origin
 				if (YAML::Node lightComponent = entity["LightComponent"])
 				{
 					auto& light = deserializedEntity.AddComponent<LightComponent>().Light;
-					light = Lighting::Create(Utils::LightTypeStringToType(lightComponent["Type"].as<std::string>()));
+					//light = Lighting::Create(Utils::LightTypeStringToType(lightComponent["Type"].as<std::string>()));
 					
 					switch (light->Type)
 					{
@@ -850,10 +854,13 @@ namespace origin
 #endif
 					case LightingType::Directional:
 					{
-						light->m_DirLightData.Color = lightComponent["Color"].as<glm::vec4>();
-						light->m_DirLightData.Ambient = lightComponent["Ambient"].as<glm::vec4>();
-						light->m_DirLightData.Diffuse = lightComponent["Diffuse"].as<float>();
-						light->m_DirLightData.Specular = lightComponent["Specular"].as<float>();
+						light->DirLightData.Color = lightComponent["Color"].as<glm::vec4>();
+						light->DirLightData.Ambient = lightComponent["Ambient"].as<glm::vec4>();
+						light->DirLightData.Diffuse = lightComponent["Diffuse"].as<float>();
+						light->DirLightData.Specular = lightComponent["Specular"].as<float>();
+						light->NearPlane = lightComponent["Near"].as<float>();
+						light->FarPlane = lightComponent["Far"].as<float>();
+						light->OrthoSize = lightComponent["OrthoSize"].as<float>();
 						break;
 					}
 					}

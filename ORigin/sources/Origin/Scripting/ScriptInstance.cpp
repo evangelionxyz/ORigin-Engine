@@ -58,8 +58,8 @@ namespace origin
         auto it = fields.find(name);
         if (it == fields.end())
         {
-            PUSH_CONSOLE_ERROR("[ScriptInstance] Failed to Get Internal Value");
-            OGN_CORE_ERROR("[ScriptInstance] Failed to Get Internal Value");
+            PUSH_CONSOLE_ERROR("[Script Instance] Failed to Get Internal Value");
+            OGN_CORE_ERROR("[Script Instance] Failed to Get Internal Value");
             return false;
         }
 
@@ -71,8 +71,8 @@ namespace origin
             mono_field_get_value(m_Instance, field.ClassField, &fieldValue);
             if (!fieldValue || !fieldValue->vtable)
             {
-                PUSH_CONSOLE_ERROR("[ScriptInstance] Could not get field '{0}' in class", name);
-                OGN_CORE_ERROR("[ScriptInstance] Could not get field '{0}' in class", name);
+                PUSH_CONSOLE_ERROR("[Script Instance] Could not get field '{0}' in class", name);
+                OGN_CORE_ERROR("[Script Instance] Could not get field '{0}' in class", name);
                 return false;
             }
 
@@ -81,8 +81,8 @@ namespace origin
             MonoClassField *idField = mono_class_get_field_from_name(klass, "ID");
             if (!idField)
             {
-                PUSH_CONSOLE_ERROR("[ScriptInstance] Failed to find field '{0}' in Entity class", name);
-                OGN_CORE_ERROR("[ScriptInstance] Failed to find field '{0}' in Entity class", name);
+                PUSH_CONSOLE_ERROR("[Script Instance] Failed to find field '{0}' in Entity class", name);
+                OGN_CORE_ERROR("[Script Instance] Failed to find field '{0}' in Entity class", name);
                 return false;
             }
 
@@ -104,8 +104,8 @@ namespace origin
         auto it = fields.find(name);
         if (it == fields.end())
         {
-            PUSH_CONSOLE_ERROR("[ScriptInstance] Failed to set field '{0}' value", name);
-            OGN_CORE_ERROR("[ScriptInstance] Failed to set field '{0}' value", name);
+            PUSH_CONSOLE_ERROR("[Script Instance] Failed to set field '{0}' value", name);
+            OGN_CORE_ERROR("[Script Instance] Failed to set field '{0}' value", name);
             return false;
         }
 

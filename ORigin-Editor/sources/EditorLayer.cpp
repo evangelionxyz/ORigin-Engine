@@ -63,8 +63,7 @@ namespace origin
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
 		m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
-
-		m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 500.0f);
+		m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 1000.0f);
 		m_EditorCamera.SetPosition({ 35.0f, 35.0f, 35.0f });
 		m_EditorCamera.SetDistance(58.0f);
 		m_EditorCamera.SetYaw(-0.7f);
@@ -108,6 +107,13 @@ namespace origin
 	{
 		OGN_PROFILER_FUNCTION();
 
+		// calculate mouse
+        auto [mx, my] = ImGui::GetMousePos();
+        m_ViewportMousePos = { mx, my };
+        m_ViewportMousePos -= m_SceneViewportBounds[0];
+        m_ViewportMousePos.y = m_SceneViewportSize.y - m_ViewportMousePos.y;
+        m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_SceneViewportSize - glm::vec2(1.0f, 1.0f));
+
 		ProfilerTimer timer("EditorLayer::OnUpdate", [&](ProfilerResult result)
 		{
 			m_ProfilerResults.push_back(result);
@@ -146,32 +152,30 @@ namespace origin
 
 		SystemUpdate(ts);
 
-		// m_ActiveScene->OnShadowRender();
+        m_ActiveScene->RenderShadow(m_EditorCamera.GetViewProjection());
+
 		m_ActiveScene->GetUIRenderer()->RenderFramebuffer();
 
-		m_Framebuffer->Bind();
-		RenderCommand::ClearColor(m_ClearColor);
-		RenderCommand::Clear();
-		m_Framebuffer->ClearAttachment(1, -1);
-
-		Render(ts);
-		m_ActiveScene->GetUIRenderer()->Render();
-
-		if (IsViewportHovered && IsViewportFocused)
 		{
-			auto [mx, my] = ImGui::GetMousePos();
-			m_ViewportMousePos = { mx, my };
-			m_ViewportMousePos -= m_SceneViewportBounds[0];
-			m_ViewportMousePos.y = m_SceneViewportSize.y - m_ViewportMousePos.y;
-			m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_SceneViewportSize - glm::vec2(1.0f, 1.0f));
+			m_Framebuffer->Bind();
+			RenderCommand::ClearColor(m_ClearColor);
+			RenderCommand::Clear();
+			m_Framebuffer->ClearAttachment(1, -1);
 
-            m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
-            m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-            m_Gizmos->SetHovered(m_PixelData);
+			Render(ts);
+			m_ActiveScene->GetUIRenderer()->Render();
+
+			if (IsViewportHovered && IsViewportFocused)
+			{
+				m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
+				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+				m_Gizmos->SetHovered(m_PixelData);
+			}
+
+			m_Framebuffer->Unbind();
 		}
 
 		InputProcedure(ts);
-		m_Framebuffer->Unbind();
 	}
 
 	EditorLayer &EditorLayer::Get()
@@ -199,7 +203,7 @@ namespace origin
 			return;
 
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-		if (selectedEntity.IsValid())
+		if (selectedEntity)
 		{
 			Entity entity = m_ActiveScene->DuplicateEntity(selectedEntity);
 			m_SceneHierarchy.SetSelectedEntity(entity);
@@ -212,7 +216,7 @@ namespace origin
 			return;
 
 		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-		if (selectedEntity.IsValid())
+		if (selectedEntity)
 		{
 			m_ActiveScene->DestroyEntity(selectedEntity);
 			//CommandManager::Instance().ExecuteCommand(std::make_unique<DestoryEntityCommand>(m_ActiveScene, selectedEntity));
@@ -222,6 +226,7 @@ namespace origin
 	void EditorLayer::OnGuiRender()
 	{
 		m_Dockspace.Begin();
+		SceneViewport();
 		m_UIEditor->OnImGuiRender();
 		m_SpriteSheetEditor->OnImGuiRender();
 		m_MaterialEditor.OnImGuiRender();
@@ -231,7 +236,6 @@ namespace origin
 		SceneViewportToolbar();
 		GUIRender();
 		ModelLoaderPanel::OnUIRender();
-		SceneViewport();
 		if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
 		m_Dockspace.End();
 	}
@@ -241,7 +245,9 @@ namespace origin
 		OGN_PROFILER_SCENE();
 
 		if (m_SceneState == SceneState::Simulate)
+		{
 			OnSceneStop();
+		}
 
 		m_SceneState = SceneState::Play;
 
@@ -256,7 +262,9 @@ namespace origin
 		OGN_PROFILER_SCENE();
 
 		if (m_SceneState == SceneState::Edit)
+		{
 			return;
+		}
 
 		m_ActiveScene->SetPaused(true);
 		m_ActiveScene->UnlockMouse();
@@ -267,7 +275,9 @@ namespace origin
 		OGN_PROFILER_RENDERING();
 
 		if (m_SceneState == SceneState::Play)
+		{
 			OnSceneStop();
+		}
 
 		m_SceneState = SceneState::Simulate;
 
@@ -283,9 +293,14 @@ namespace origin
 		ScriptEngine::ClearSceneContext();
 
 		if (m_SceneState == SceneState::Play)
+		{
 			m_ActiveScene->OnRuntimeStop();
+		}
 		else if (m_SceneState == SceneState::Simulate)
+		{
 			m_ActiveScene->OnSimulationStop();
+		}
+
 		m_SceneHierarchy.SetActiveScene(m_EditorScene);
 		m_ActiveScene = m_EditorScene;
 		m_SceneState = SceneState::Edit;
@@ -594,9 +609,11 @@ namespace origin
 			}
 			m_Gizmos->SetType(GizmoType::NONE);
 			m_ActiveScene->OnUpdateRuntime(ts);
-			Entity cam = m_ActiveScene->GetPrimaryCameraEntity();
-			CameraComponent cc = cam.GetComponent<CameraComponent>();
-			m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
+			if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
+			{
+				CameraComponent cc = cam.GetComponent<CameraComponent>();
+				m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
+			}
 			break;
 		}
 		case SceneState::Edit:
@@ -749,7 +766,7 @@ namespace origin
 		}
 
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
-		if (entity.IsValid() && m_Gizmos->GetType() != GizmoType::NONE)
+		if (entity && m_Gizmos->GetType() != GizmoType::NONE)
 		{
 			// Gizmos
 			ImGuizmo::SetDrawlist();
@@ -791,7 +808,7 @@ namespace origin
 				if (entity.HasParent())
 				{
 					auto parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
-					if (parent.IsValid())
+					if (parent)
 					{
 						auto &ptc = parent.GetComponent<TransformComponent>();
 						glm::vec4 localTranslation = glm::inverse(ptc.GetTransform()) * glm::vec4(translation, 1.0f);
@@ -838,7 +855,7 @@ namespace origin
 			m_Gizmos->SetType(GizmoType::NONE);
 		}
 
-		if (ImGui::IsWindowFocused() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_SceneState == SceneState::Play)
+		if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_SceneState == SceneState::Play)
 		{
 			m_ActiveScene->LockMouse();
 		}
@@ -860,14 +877,14 @@ namespace origin
 			ImVec2 posMinA = ImVec2(canvasPos);
 			ImVec2 posMaxA = ImVec2(canvasPos.x + 600.0f, canvasPos.y + canvasSize.y);
 
-			/*static float hue = 0.0f;
+			static float hue = 0.0f;
 			hue += ImGui::GetIO().DeltaTime * 0.1f;
 			if (hue >= 360.0f)
 				hue -= 360.0f;
-			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);*/
+			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);
 
-			uint32_t rectColor = ImColor(0.2231f, 0.44321f, 0.1f);
-			if (m_SceneState == SceneState::Play)
+			//uint32_t rectColor = ImColor(0.2231f, 0.44321f, 0.1f);
+			if (m_SceneState != SceneState::Play)
 				rectColor = ImColor(0.7213f, 0.2321f, 0.1f);
 
 			uint32_t rectTransparentColor = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -973,7 +990,7 @@ namespace origin
 	void EditorLayer::GUIRender()
 	{
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
-		if (entity.IsValid())
+		if (entity)
 		{
 			if (entity.HasComponent<SpriteAnimationComponent>())
 			{
@@ -984,86 +1001,121 @@ namespace origin
 
 		if (guiStatisticWindow)
 		{
-			ImGui::Begin("Statistics", &guiStatisticWindow);
-			if (ImGui::BeginTabBar("##Statistics"))
+			static ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+			ImGui::Begin("Render Settings", &guiStatisticWindow);
+			if (ImGui::BeginTabBar("##render_settings"))
 			{
 				if (ImGui::BeginTabItem("Render Settings"))
 				{
 					UI::DrawCheckbox("Visualize Collider", &m_VisualizeCollider);
-
-					switch (m_EditorCamera.GetProjectionType())
+					if (ImGui::TreeNodeEx("Shaders", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
 					{
-					case ProjectionType::Perspective:
+						if (ImGui::BeginTable("SHADERS_TABLE", 3))
 						{
-							const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
-							const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
-							ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
-							if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
+							ImGui::TableSetupScrollFreeze(0, 1);
+							ImGui::TableSetupColumn("Name");
+							ImGui::TableSetupColumn("Type");
+							ImGui::TableSetupColumn("Reload");
+							ImGui::TableHeadersRow();
+
+							for (auto &[name, shader] : Renderer::GetShaderLibrary().GetMap())
 							{
-								for (int i = 0; i < 2; i++)
+								ImGui::PushID(name.c_str());
+								ImGui::TableNextRow();
+								ImGui::TableNextColumn();
+								ImGui::TextWrapped(name.c_str());
+								ImGui::TableNextColumn();
+								ImGui::TextWrapped(shader->IsSpirvEnabled() ? "SPIR-V" : "-");
+								ImGui::TableNextColumn();
+								if (ImGui::Button("Reload"))
 								{
-									const bool isSelected = currentCMSTypeString == CMSTypeString[i];
-									if (ImGui::Selectable(CMSTypeString[i], isSelected))
-									{
-										currentCMSTypeString = CMSTypeString[i];
-										m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
-
-									} if (isSelected) ImGui::SetItemDefaultFocus();
-								} ImGui::EndCombo();
+									shader->Reload();
+								}
+								ImGui::PopID();
 							}
-
-							float fov = m_EditorCamera.GetFOV();
-							if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
-								m_EditorCamera.SetFov(fov);
-
-							UI::DrawCheckbox("Grid 3D", &m_Draw3DGrid);
-							if (m_Draw3DGrid)
-								UI::DrawIntControl("Grid Size", &m_3DGridSize, 1.0f);
-							break;
+							ImGui::EndTable();
 						}
-					case ProjectionType::Orthographic:
-						UI::DrawCheckbox("Grid 2D", &m_Draw2DGrid);
-						break;
+						ImGui::TreePop();
 					}
+                    if (ImGui::TreeNodeEx("Statistics", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        const auto renderStats = Renderer::GetStatistics();
+                        ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
+                        ImGui::Text("Quads: %d", renderStats.QuadCount);
+                        ImGui::Text("Circles: %d", renderStats.CircleCount);
+                        ImGui::Text("Lines: %d", renderStats.LineCount);
+                        ImGui::Text("Cubes: %d", renderStats.CubeCount);
+                        ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
+                        ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
+                        ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
+                        ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
+                        ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
+                        ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
+                        ImGui::Text("Hovered Pixel (%d)", m_PixelData);
+                        ImGui::TreePop();
+                    }
+                    if (ImGui::TreeNodeEx("Camera Settings", treeFlags))
+                    {
+                        switch (m_EditorCamera.GetProjectionType())
+                        {
+                        case ProjectionType::Perspective:
+                        {
+                            const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
+                            const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
+                            ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
+                            if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
+                            {
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    const bool isSelected = currentCMSTypeString == CMSTypeString[i];
+                                    if (ImGui::Selectable(CMSTypeString[i], isSelected))
+                                    {
+                                        currentCMSTypeString = CMSTypeString[i];
+                                        m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
 
-					ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
+                                    } if (isSelected) ImGui::SetItemDefaultFocus();
+                                } ImGui::EndCombo();
+                            }
 
-					const char *RTTypeString[] = { "Normal", "HDR" };
-					const char *currentRTTypeString = RTTypeString[m_RenderTarget];
+                            float fov = m_EditorCamera.GetFOV();
+                            if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
+                                m_EditorCamera.SetFov(fov);
 
-					if (ImGui::BeginCombo("Render Target", currentRTTypeString))
-					{
-						for (int i = 0; i < 2; i++)
-						{
-							const bool isSelected = currentRTTypeString == RTTypeString[i];
-							if (ImGui::Selectable(RTTypeString[i], isSelected))
-							{
-								currentRTTypeString = RTTypeString[i];
-								m_RenderTarget = i;
-							}
-							if (isSelected) ImGui::SetItemDefaultFocus();
-						}
-						ImGui::EndCombo();
-					}
+                            UI::DrawCheckbox("Grid 3D", &m_Draw3DGrid);
+                            if (m_Draw3DGrid)
+                                UI::DrawIntControl("Grid Size", &m_3DGridSize, 1.0f);
+                            break;
+                        }
+                        case ProjectionType::Orthographic:
+                            UI::DrawCheckbox("Grid 2D", &m_Draw2DGrid);
+                            break;
+                        }
+
+                        ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
+
+                        const char *RTTypeString[] = { "Normal", "HDR" };
+                        const char *currentRTTypeString = RTTypeString[m_RenderTarget];
+
+                        if (ImGui::BeginCombo("Render Target", currentRTTypeString))
+                        {
+                            for (int i = 0; i < 2; i++)
+                            {
+                                const bool isSelected = currentRTTypeString == RTTypeString[i];
+                                if (ImGui::Selectable(RTTypeString[i], isSelected))
+                                {
+                                    currentRTTypeString = RTTypeString[i];
+                                    m_RenderTarget = i;
+                                }
+                                if (isSelected) ImGui::SetItemDefaultFocus();
+                            }
+                            ImGui::EndCombo();
+                        }
+
+                        ImGui::TreePop();
+                    }
 					ImGui::EndTabItem();
 				}
-
-				ImGui::Separator();
-				const auto renderStats = Renderer::GetStatistics();
-				
-				ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
-				ImGui::Text("Quads: %d", renderStats.QuadCount);
-				ImGui::Text("Circles: %d", renderStats.CircleCount);
-				ImGui::Text("Lines: %d", renderStats.LineCount);
-				ImGui::Text("Cubes: %d", renderStats.CubeCount);
-				ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
-				ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
-				ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
-				ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
-				ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
-				ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
-				ImGui::Text("Hovered Pixel (%d)", m_PixelData);
-				ImGui::Separator();
 
 				if (ImGui::BeginTabItem("Render Time"))
 				{
@@ -1075,8 +1127,9 @@ namespace origin
 					strcpy(timer, "Total Working Timer: %d : %d : %d");
 					ImGui::Text(timer, h, m, s);
 
-					if (ImGui::Button("Reset Time")) { 
-						m_Time = 0.0f; 
+					if (ImGui::Button("Reset Time"))
+					{
+						m_Time = 0.0f;
 					}
 
 					for (auto r : m_ProfilerResults)
@@ -1091,11 +1144,14 @@ namespace origin
 
 					ImGui::EndTabItem();
 				}
-				ImGui::EndTabBar();
 			}
-			ImGui::End();
+
+			ImGui::EndTabBar();
+			
 		}
-		
+				
+		ImGui::End();
+
 		if (guiMenuStyle)
 		{
 			ImGui::Begin("Style Editor", &guiMenuStyle);
@@ -1227,7 +1283,7 @@ namespace origin
                 {
 					if (m_HoveredEntity != selectedEntity)
 					{
-						if (m_HoveredEntity.IsValid())
+						if (m_HoveredEntity)
 						{
                             m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
                             selectedEntity = m_HoveredEntity;
@@ -1242,7 +1298,7 @@ namespace origin
                 }
 			}
 
-			if (selectedEntity.IsValid() && IsViewportFocused && IsViewportHovered)
+			if (selectedEntity && IsViewportFocused && IsViewportHovered)
 			{
 				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
 				{
@@ -1253,7 +1309,7 @@ namespace origin
 					if (m_SceneState == SceneState::Play)
 					{
 						Entity cam = m_ActiveScene->GetPrimaryCameraEntity();
-						if (cam.IsValid())
+						if (cam)
 						{
 							CameraComponent &cc = cam.GetComponent<CameraComponent>();
 							orthoScale = cc.Camera.GetOrthoScale() / cc.Camera.GetViewportSize().y;
@@ -1361,7 +1417,7 @@ namespace origin
 
 		case Key::F:
 		{
-			if (selectedEntity.IsValid() && !io.WantTextInput)
+			if (selectedEntity && !io.WantTextInput)
 			{
 				const auto &tc = selectedEntity.GetComponent<TransformComponent>();
 				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic)

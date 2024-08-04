@@ -113,6 +113,17 @@ namespace origin {
                 Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
             }
         }
+        for (auto &e : scene->GetAllEntitiesWith<LightComponent>())
+        {
+            Entity entity = { e, scene };
+            TransformComponent &tc = entity.GetComponent<TransformComponent>();
+            LightComponent &cc = entity.GetComponent<LightComponent>();
+            Frustum frustum(cc.Light->GetShadow().ViewProjection);
+            for (const auto &edge : frustum.GetEdges())
+            {
+                Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.7f, 0.0f, 1.0f });
+            }
+        }
         Renderer2D::End();
 	}
 
@@ -156,11 +167,11 @@ namespace origin {
 				if (entity.HasComponent<CameraComponent>())
 				{
 					CameraComponent &cc = entity.GetComponent<CameraComponent>();
-					if (cc.Camera.IsPerspective())
+					if (camera.IsPerspective())
 					{
 						drawIcon(tc, textures.at("camera"), (int)entity);
 					}
-					else if (!cc.Camera.IsPerspective() && cc.Camera.GetOrthoScale() > 15.0f)
+					else if (!camera.IsPerspective() && camera.GetOrthoScale() > 15.0f)
 					{
 						drawIcon(tc, textures.at("camera"), (int)entity);
 					}

@@ -21,32 +21,32 @@ namespace origin
         UUID entityID;
     };
     
-    static ModelLoaderData s_Data;
+    static ModelLoaderData s_MeshRenderData;
 
     void ModelLoaderPanel::Show(UUID entityID, ModelComponent *component, AssetHandle handle, Scene *scene)
     {
-        s_Data.cmp = component;
-        s_Data.handle = handle;
-        s_Data.scene = scene;
-        s_Data.isOpen = true;
-        s_Data.entityID = entityID;
+        s_MeshRenderData.cmp = component;
+        s_MeshRenderData.handle = handle;
+        s_MeshRenderData.scene = scene;
+        s_MeshRenderData.isOpen = true;
+        s_MeshRenderData.entityID = entityID;
 
         ImGui::OpenPopup("Model Importer");
     }
 
     void ModelLoaderPanel::OnUIRender()
     {
-        if (!s_Data.cmp)
+        if (!s_MeshRenderData.cmp)
         {
             return;
         }
 
-        ImGui::Begin("Model Importer", &s_Data.isOpen, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Model Importer", &s_MeshRenderData.isOpen, ImGuiWindowFlags_AlwaysAutoResize);
 
-        std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(s_Data.cmp->Handle);
+        std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(s_MeshRenderData.cmp->Handle);
         if (model)
         {
-            ImGui::Text("UUID    : %llu", s_Data.cmp->Handle);
+            ImGui::Text("UUID    : %llu", s_MeshRenderData.cmp->Handle);
             ImGui::Text("Filepath: %s", model->GetFilepath().c_str());
 
             ImGui::Separator();
@@ -60,31 +60,31 @@ namespace origin
 
             if (UI::DrawButton("Confirm"))
             {
-                Entity parent = s_Data.scene->GetEntityWithUUID(s_Data.entityID);
+                Entity parent = s_MeshRenderData.scene->GetEntityWithUUID(s_MeshRenderData.entityID);
                 for (auto &mesh : model->GetMeshes())
                 {
-                    Entity entity = EntityManager::CreateEntity(mesh.Name, s_Data.scene, EntityType::Mesh);
+                    Entity entity = EntityManager::CreateEntity(mesh.Name, s_MeshRenderData.scene, EntityType::Mesh);
                     auto &sm = entity.AddComponent<StaticMeshComponent>();
                     sm.Name = mesh.Name;
                     sm.HMaterial = mesh.HMaterial;
 
-                    EntityManager::AddChild(parent, entity, s_Data.scene);
+                    EntityManager::AddChild(parent, entity, s_MeshRenderData.scene);
                 }
 
-                s_Data.isOpen = false;
+                s_MeshRenderData.isOpen = false;
             }
 
             ImGui::SameLine(0.0f, 10.0f);
             if (UI::DrawButton("Close"))
             {
-                s_Data.cmp->Handle = 0;
-                s_Data.isOpen = false;
+                s_MeshRenderData.cmp->Handle = 0;
+                s_MeshRenderData.isOpen = false;
             }
         }
 
-        if (s_Data.isOpen == false)
+        if (s_MeshRenderData.isOpen == false)
         {
-            s_Data.cmp = nullptr;
+            s_MeshRenderData.cmp = nullptr;
             model = 0;
         }
 

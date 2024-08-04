@@ -9,12 +9,12 @@
 namespace origin {
 
 #define CAMERA_BINDING 0
-#define MATERIAL_BINDING 1
-#define LIGHTING_BINDING 2
+#define LIGHTING_BINDING 1
+#define MATERIAL_BINDING 2
 
 	struct RenderData
 	{
-		static const uint32_t MaxTriangles = 8192;
+		static const uint32_t MaxTriangles = 4096;
 		static const uint32_t MaxVertices = MaxTriangles * 24;
 		static const uint32_t MaxQuadIndices = MaxTriangles * 6;
 		static const uint32_t MaxTextureSlots = 32;
@@ -46,6 +46,7 @@ namespace origin {
 		std::shared_ptr<Shader> Shader;
 	};
 
+	class ShaderLibrary;
 	class Renderer
 	{
 	public:
@@ -59,7 +60,7 @@ namespace origin {
 
 		const static std::shared_ptr<Shader>& GetCurrentShader() { return s_GlobalShader; }
 		static std::shared_ptr<Shader> GetShader(const std::string &name);
-		static const std::unordered_map<std::string, std::shared_ptr<Shader>> GetShaderLibrary();
+		static ShaderLibrary &GetShaderLibrary();
 
 		static std::shared_ptr<Material> GetMaterial(const std::string &name);
 

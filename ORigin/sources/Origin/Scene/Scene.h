@@ -44,7 +44,7 @@ namespace origin
         void OnUpdateSimulation(Timestep time, Camera &camera);
         void OnEditorUpdate(Timestep time, Camera &camera);
         void OnViewportResize(const uint32_t width, const uint32_t height);
-        void OnShadowRender();
+        void RenderShadow(const glm::mat4 &viewProjection);
         void UpdateTransform();
 
         void SetFocus(bool focus);

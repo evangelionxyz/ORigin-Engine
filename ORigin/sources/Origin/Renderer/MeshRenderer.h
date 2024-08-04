@@ -11,6 +11,8 @@ namespace origin
 	public:
 		static void Init();
 		static void Shutdown();
+		static void Begin(const glm::mat4 &viewProjection);
+		static void AttachShadow(uint32_t id = 0);
 		static void Begin(const Camera &camera, Shader *shader = nullptr);
         static void StartBatch();
         static void NextBatch();

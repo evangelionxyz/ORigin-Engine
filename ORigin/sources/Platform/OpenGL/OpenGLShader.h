@@ -126,8 +126,8 @@ namespace origin
 
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 		std::string ReadFile(const std::string& filepath);
-		void CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
-		void CompileOrGetOpenGLBinaries();
+		bool CompileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
+		bool CompileOrGetOpenGLBinaries();
 		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 		void CreateSpirvProgram();
 

@@ -35,7 +35,8 @@ namespace origin {
 
 	struct DirLightBufferData
 	{
-		glm::vec4 Direction = glm::vec4(0.0f);
+		glm::mat4 LightSpaceMat = glm::mat4(1.0f);
+		glm::vec4 Position = glm::vec4(0.0f);
 		glm::vec4 Color = glm::vec4(1.0f);
 		glm::vec4 Ambient = glm::vec4(0.2f);
 		float Diffuse = 1.0f;
@@ -47,26 +48,21 @@ namespace origin {
 	public:
 		Lighting(LightingType type);
 		~Lighting();
-
-		void OnRender(const TransformComponent& lightDirection);
-		void SetType(LightingType type);
-
-		DirLightBufferData m_DirLightData;
-
-		const std::shared_ptr<ShadowRenderer>& GetShadow() const { return m_ShadowRenderer; }
-
-		LightingType Type = LightingType::Directional;
+		ShadowRenderer& GetShadow() { return m_ShadowRenderer; }
 		std::string GetTypeString() { return Utils::LightingTypeToString(Type); }
 
+		LightingType Type = LightingType::Directional;
+		DirLightBufferData DirLightData;
+		std::shared_ptr<UniformBuffer> LightingUBO;
+		float NearPlane = 1.0f, FarPlane = 50.0f;
+		float OrthoSize = 20.0f;
 		static int SpotLightCount;
 		static int PointLightCount;
 
 		static std::shared_ptr<Lighting> Create(LightingType type);
 
 	private:
-		std::shared_ptr<ShadowRenderer> m_ShadowRenderer;
-		std::shared_ptr<UniformBuffer> m_TransformUniformBuffer;
-		std::shared_ptr<UniformBuffer> m_LightingUniformBuffer;
+		ShadowRenderer m_ShadowRenderer;
 	};
 }
 

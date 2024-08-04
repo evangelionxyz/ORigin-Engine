@@ -17,6 +17,16 @@ layout(std140, binding = 0) uniform Camera
     vec3 Position;
 } CameraBuffer;
 
+layout(std140, binding = 1) uniform Lighting
+{
+    mat4 LightSpaceMatrix;
+    vec4 Position;
+    vec4 Color;
+    vec4 Ambient;
+    float Diffuse;
+    float Specular;
+} LightBuffer;
+
 struct Vertex
 {
     vec3 Position;
@@ -34,9 +44,8 @@ layout(location = 7) out flat int vEntityID;
 void main()
 {
     gl_Position = CameraBuffer.ViewProjection * vec4(aPosition, 1.0);
-
     Out.Position = aPosition;
-    Out.Normals = normalize(aNormals);
+    Out.Normals = aNormals;
     Out.Color = aColor;
     Out.UV = aUV;
     Out.TilingFactor = aTilingFactor;
@@ -64,8 +73,7 @@ layout(location = 5) in flat float vAlbedoIndex;
 layout(location = 6) in flat float vSpecularIndex;
 layout(location = 7) in flat int vEntityID;
 
-layout(binding = 0) uniform sampler2D uAlbedoTextures[16];
-layout(binding = 1) uniform sampler2D uSpecularTextures[16];
+layout(binding = 0) uniform sampler2D uTextures[32];
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -73,7 +81,17 @@ layout(std140, binding = 0) uniform Camera
     vec3 Position;
 } CameraBuffer;
 
-layout(std140, binding = 1) uniform Material
+layout(std140, binding = 1) uniform Lighting
+{
+    mat4 LightSpaceMatrix;
+    vec4 Position;
+    vec4 Color;
+    vec4 Ambient;
+    float Diffuse;
+    float Specular;
+} LightBuffer;
+
+layout(std140, binding = 2) uniform Material
 {
     float Emission;
     float Metallic;
@@ -81,52 +99,45 @@ layout(std140, binding = 1) uniform Material
     bool UseNormalMaps;
 } MaterialBuffer;
 
-layout(std140, binding = 2) uniform Lighting
+float ShadowCalculation()
 {
-    vec4 Direction;
-    vec4 Color;
-    vec4 Ambient;
-    float Diffuse;
-    float Specular;
-} LightingBuffer;
-
-vec3 DirectionalLight(vec3 normal, vec3 viewDirection, vec3 specularTexture)
-{
-    vec3 lightDirection = normalize(LightingBuffer.Direction.xyz);
-    
-    // Ambient component
-    vec3 ambient = LightingBuffer.Ambient.rgb;
-
-    // Diffuse component
-    float diffuseFactor = max(dot(normal, lightDirection), 0.0);
-    vec3 diffuse = diffuseFactor * LightingBuffer.Diffuse * LightingBuffer.Color.rgb;
-
-    // Specular component
-    vec3 halfwayDir = normalize(lightDirection + viewDirection);
-    float specularFactor = pow(max(dot(normal, halfwayDir), 0.0), 32.0); // Shininess factor can be adjusted
-    vec3 specular = specularFactor * LightingBuffer.Specular * specularTexture * LightingBuffer.Color.rgb;
-
-    return ambient + diffuse + specular;
-}
-
-vec3 ApplyGammaCorrection(vec3 color, float gamma)
-{
-    return pow(color, vec3(1.0 / gamma));
+    vec4 fragPosLightSpace = LightBuffer.LightSpaceMatrix * vec4(In.Position, 1.0);
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    if (projCoords.z > 1.0)
+        return 0.0;
+    float bias = max(0.005 * (1.0 - dot(normalize(In.Normals), normalize(LightBuffer.Position.xyz - In.Position))), 0.005);
+    float shadow = 0.0;
+    float offset = 1.0 / 2048.0;
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(uTextures[1], projCoords.xy + vec2(x, y) * offset).r;
+            shadow += (projCoords.z - bias > pcfDepth) ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+    return shadow;
 }
 
 void main()
 {
-    // Compute the normal
-	vec3 viewDirection = normalize(CameraBuffer.Position - In.Position);
-    vec3 specularTexture = texture(uSpecularTextures[int(vSpecularIndex)], In.UV * In.TilingFactor).rgb;
-    vec3 textureColor = texture(uAlbedoTextures[int(vAlbedoIndex)], In.UV * In.TilingFactor).rgb;
-
-    vec3 lighting = DirectionalLight(In.Normals, viewDirection, specularTexture);
-
-    vec3 finalColor = (lighting * textureColor) * In.Color.rgb;
-    float gamma = 2.2;
-    //finalColor = ApplyGammaCorrection(finalColor, gamma);
-    oColor = vec4(finalColor, 1.0);
-
+    vec3 color = texture(uTextures[int(vAlbedoIndex)], In.UV * In.TilingFactor).rgb;
+    vec3 normal = normalize(In.Normals);
+    vec3 lightColor = LightBuffer.Color.rgb;
+    vec3 ambient = LightBuffer.Ambient.rgb * lightColor;
+    vec3 lightDir = normalize(LightBuffer.Position.xyz - In.Position);
+    float diff = max(dot(lightDir, normal), 0.0);
+    vec3 diffuse = diff * lightColor;
+    vec3 viewDir = normalize(CameraBuffer.Position - In.Position);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+    vec3 specular = spec * lightColor * LightBuffer.Specular;
+    float shadow = ShadowCalculation();
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
+    
+    oColor = vec4(lighting, 1.0) * In.Color;
     oEntityID = vEntityID;
 }

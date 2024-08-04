@@ -22,17 +22,5 @@ namespace origin
     private:
         void DrawGrid();
         EditorCamera m_Camera;
-        SceneCamera m_SceneCamera;
-        TransformComponent m_CamTC;
-        Frustum m_Frustum;
-
-        const int size = 20;
-        bool polygonMode = false;
-        float nPlane, fPlane, FOV;
-        float deltaTime = 0.0f;
-        float updateRate = 1.0f;
-        float timer = 1.0f;
-        float response = 0.0f;
-        float framerate = 0.0f;
     };
 }

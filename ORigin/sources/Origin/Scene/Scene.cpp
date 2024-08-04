@@ -31,6 +31,7 @@
 
 namespace origin
 {
+
 	Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
@@ -110,7 +111,7 @@ namespace origin
 			for (auto e : scriptView)
 			{
 				Entity entity = { e, this };
-				if (entity.IsValid())
+				if (entity)
 				{
 					ScriptEngine::OnUpdateEntity(entity, ts);
 				}
@@ -233,7 +234,7 @@ namespace origin
 		for (auto e : view)
 		{
 			Entity child = { e, this };
-			if (child.IsValid() && child.GetComponent<IDComponent>().Parent == entity.GetUUID())
+			if (child && child.GetComponent<IDComponent>().Parent == entity.GetUUID())
 			{
 				DuplicateEntityRecursive(child, newEntity);
 			}
@@ -653,7 +654,7 @@ namespace origin
 					if (camera.IsPerspective())
 					{
 						Entity primaryCam = GetPrimaryCameraEntity();
-						if (primaryCam.IsValid())
+						if (primaryCam)
 						{
 							const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
 							const auto &ccTC = primaryCam.GetComponent<TransformComponent>();
@@ -690,111 +691,106 @@ namespace origin
 		// ===============================
 		// 3D Scene
 		glEnable(GL_DEPTH_TEST);
-
-		MeshRenderer::Begin(camera);
 		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
 		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-		for (auto e : meshView)
-		{
-			const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
-			if (!tc.Visible)
+
+        for (auto &li : lightView)
+        {
+            const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(li);
+			if(!lightTC.Visible)
 				continue;
+			MeshRenderer::Begin(camera);
+            
+            lc.Light->DirLightData.LightSpaceMat = lc.Light->GetShadow().ViewProjection;
+            lc.Light->DirLightData.Position = glm::vec4(lightTC.WorldTranslation, 1.0f);
+            lc.Light->LightingUBO->Bind();
+            lc.Light->LightingUBO->SetData(&lc.Light->DirLightData, sizeof(lc.Light->DirLightData));
+			MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
 
-			std::shared_ptr<Material> material;
-			if (mc.HMaterial)
-			{
-				material = AssetManager::GetAsset<Material>(mc.HMaterial);
-			}
-			else
-			{
-				material = Renderer::GetMaterial("Mesh");
-			}
-
-			for (auto &li : lightView)
-			{
-				const auto &[tc, lc] = lightView.get<TransformComponent, LightComponent>(li);
-				lc.Light->OnRender(tc);
-			}
-
-			switch (mc.mType)
-			{
-			case StaticMeshComponent::Type::Cube:
-			{
-				MeshRenderer::DrawCube(tc.GetTransform(), material.get(), (int)e);
-				break;
-			}
-			case StaticMeshComponent::Type::Sphere:
-			{
-				MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
-				break;
-			}
-            case StaticMeshComponent::Type::Capsule:
+            for (auto e : meshView)
             {
-                MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), (int)e);
-                break;
+                const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
+                if (!tc.Visible)
+                    continue;
+
+                std::shared_ptr<Material> material;
+                if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
+                else material = Renderer::GetMaterial("Mesh");
+                switch (mc.mType)
+                {
+                case StaticMeshComponent::Type::Cube:
+                    MeshRenderer::DrawCube(tc.GetTransform(), material.get(), (int)e);
+                    break;
+                case StaticMeshComponent::Type::Sphere:
+                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
+                    break;
+                case StaticMeshComponent::Type::Capsule:
+                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), (int)e);
+                    break;
+                }
             }
-			}
-		}
-
-		MeshRenderer::End();
-
-#if 0
-		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-		const auto &modelView = m_Registry.view<TransformComponent, ModelComponent>();
-		for (const auto entity : modelView)
-		{
-			const auto &[tc, mc] = modelView.get<TransformComponent, ModelComponent>(entity);
-			if (!tc.Visible)
-				continue;
-
-			if (AssetManager::GetAssetType(mc.Handle) == AssetType::Model)
-			{
-				std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mc.Handle);
-				for (auto &light : lightView)
-				{
-					const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(light);
-					lc.Light->GetShadow()->OnAttachTexture(model->GetMaterial()->m_Shader);
-					lc.Light->OnRender(lightTC);
-				}
-				model->SetTransform(tc.GetTransform());
-				for (auto &mesh : model->GetMeshes())
-				{
-					mesh.HMesh->Draw(tc.GetTransform(), (int)e);
-				}
-			}
-		}
-#endif
+			MeshRenderer::End();
+        }
 	}
 	
-	void Scene::OnShadowRender()
+	void Scene::RenderShadow(const glm::mat4 &viewProjection)
 	{
-#if 0
 		OGN_PROFILER_RENDERING();
-
+        glEnable(GL_DEPTH_TEST);
 		const auto &dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto &light : dirLight)
 		{
-			const auto &[lightTransform, lc] = dirLight.get<TransformComponent, LightComponent>(light);
-			lc.Light->GetShadow()->BindFramebuffer();
+			const auto &[lightTC, lc] = dirLight.get<TransformComponent, LightComponent>(light);
+            if (!lightTC.Visible)
+                continue;
+		
+	        float size = lc.Light->OrthoSize;  // Adjust based on your scene size
+			glm::mat4 lightProjection = glm::ortho(-size, size, -size, size, lc.Light->NearPlane, lc.Light->FarPlane);
+			glm::mat4 lightView = glm::lookAt(lightTC.WorldTranslation,
+											  glm::eulerAngles(lightTC.Rotation),
+                                              glm::vec3(0.0f, 1.0f, 0.0f));
 
-			const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-			for (auto &entity : meshView)
+            //Combine the projection and view matrices
+            glm::mat4 lightViewProjection = lightProjection * lightView;
+			lc.Light->GetShadow().ViewProjection = lightProjection * lightView;
+
+			//lc.Light->GetShadow().CalculateViewProjection(lightTC, viewProjection);
+
+            std::shared_ptr<Shader> &shader = lc.Light->GetShadow().GetDepthShader();
+            shader->Enable();
+
+            lc.Light->GetShadow().BindFBO();
+
+            MeshRenderer::Begin(lc.Light->GetShadow().ViewProjection);
+            shader->SetMatrix("viewProjection", lc.Light->GetShadow().ViewProjection);
+
+			const auto &view = m_Registry.view<TransformComponent, StaticMeshComponent>();
+			for (auto &e : view)
 			{
-				const auto &[tc, mesh] = meshView.get<TransformComponent, StaticMeshComponent>(entity);
-
-				if (AssetManager::GetAssetType(mesh.Handle) == AssetType::Model)
+				const auto &[tc, mc] = view.get<TransformComponent, StaticMeshComponent>(e);
+				if (!tc.Visible)
 				{
-					std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(mesh.Handle);
-					lc.Light->GetShadow()->OnRenderBegin(lightTransform, tc.GetTransform());
-					model->SetTransform(tc.GetTransform());
-					model->Draw();
-					lc.Light->GetShadow()->OnRenderEnd();
+                    continue;
 				}
-			}
 
-			lc.Light->GetShadow()->UnbindFramebuffer();
+                switch (mc.mType)
+                {
+                case StaticMeshComponent::Type::Cube:
+					MeshRenderer::DrawCube(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    break;
+                case StaticMeshComponent::Type::Sphere:
+                    MeshRenderer::DrawSphere(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    break;
+                case StaticMeshComponent::Type::Capsule:
+                    MeshRenderer::DrawCapsule(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    break;
+                }
+			}
+			
+			MeshRenderer::End();
+			lc.Light->GetShadow().UnbindFBO();
+			shader->Disable();
 		}
-#endif
 	}
 
     void Scene::UpdateTransform()
@@ -808,7 +804,7 @@ namespace origin
 			if (idc.Parent)
 			{
 				auto parent = GetEntityWithUUID(idc.Parent);
-				if (parent.IsValid())
+				if (parent)
 				{
                     auto &ptc = parent.GetComponent<TransformComponent>();
                     glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;

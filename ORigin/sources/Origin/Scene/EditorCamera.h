@@ -67,7 +67,7 @@ namespace origin {
 	private:
         void UpdateProjection() override;
         void UpdateView() override;
-        CameraStyle m_CameraStyle = Pivot;
+        CameraStyle m_CameraStyle = FreeMove;
         float m_Distance = 8.0f;
         float m_Pitch = 0.0f, m_Yaw = 0.0f;
         bool m_IsInViewport = false;
