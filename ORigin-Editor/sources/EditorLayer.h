@@ -111,6 +111,5 @@ namespace origin
 		friend class UIEditor;
 		friend class ContentBrowserPanel;
 		friend class SceneHierarchyPanel;
-		void RenderStencilBuffer();
 	};
 }

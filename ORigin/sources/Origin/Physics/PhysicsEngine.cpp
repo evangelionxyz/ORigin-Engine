@@ -240,7 +240,7 @@ namespace origin
 
             if (body)
             {
-#if 1
+#if 0
                 glm::vec3 worldPosition = JoltToGlmVec3(body->GetPosition());
                 glm::quat worldRotation = JoltToGlmQuat(body->GetRotation());
 

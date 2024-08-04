@@ -80,8 +80,8 @@ namespace origin {
         const float MAX_SPEED = 100.0f;
 
         glm::vec2 m_AngularVelocity = glm::vec2(0.0f);
-        const float ROTATION_SPEED = 0.8f;
+        const float ROTATION_SPEED = 0.7f;
         const float DAMPING = 0.9f;
-        const float SENSITIVITY = 0.2f;
+        const float SENSITIVITY = 0.1f;
 	};
 }

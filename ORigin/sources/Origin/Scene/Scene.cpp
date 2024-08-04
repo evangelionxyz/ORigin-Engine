@@ -171,7 +171,8 @@ namespace origin
 			{
 				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 				glStencilMask(0x00);
-				glDisable(GL_DEPTH_TEST);
+                glEnable(GL_DEPTH_TEST);  // Enable depth testing
+                glDepthFunc(GL_LEQUAL);   // Change depth function to allow drawing on top of the object
 
 				Shader *outlineShader = Renderer::GetShader("Outline").get();
 				outlineShader->Enable();
@@ -298,11 +299,11 @@ namespace origin
 				}
 			}
 
-			PhysicsEngine::Simulate(ts, this);
-			m_Physics2D->Simulate(ts);
-
             // Update entire transform hierarchy
             UpdateTransform();
+
+			PhysicsEngine::Simulate(ts, this);
+			m_Physics2D->Simulate(ts);
 		}
 	}
 
@@ -529,7 +530,6 @@ namespace origin
 		}
 
 		// Audio Update
-		Renderer2D::Begin(editorCamera);
 		const auto &audioView = m_Registry.view<TransformComponent, AudioComponent>();
 		for (auto entity : audioView)
 		{
@@ -548,7 +548,6 @@ namespace origin
 				}
 			}
 		}
-		Renderer2D::End();
 
         // Update entire transform hierarchy
         UpdateTransform();
