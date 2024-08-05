@@ -14,9 +14,9 @@ namespace origin {
 		Texture,
 		Font,
 		Audio,
-		Model,
+		Mesh,
+		AnimatedMesh,
 		Material,
-		MeshSource,
 		Animation,
 		SpritesSheet
 	};

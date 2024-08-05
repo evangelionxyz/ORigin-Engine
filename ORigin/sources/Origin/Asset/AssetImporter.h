@@ -5,7 +5,6 @@
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Scene/SpriteSheet.h"
 #include "Origin/Renderer/Texture.h"
-#include "Origin/Renderer/Model.h"
 
 #include <queue>
 #include <future>
@@ -36,7 +35,7 @@ namespace origin
 			Future = std::async(std::launch::async, std::forward<Func>(func), std::forward<Args>(args)...);
 		}
 
-		// Move constructor to allow transfer of ownership of Future
+		// move constructor to allow transfer of ownership of Future
 		AssetTask(AssetTask &&other) noexcept
 			: Value(std::move(other.Value)), Future(std::move(other.Future))
 		{}
@@ -56,7 +55,7 @@ namespace origin
 			return false;
 		}
 
-		// Move assignment operator
+		// move assignment operator
 		AssetTask &operator=(AssetTask &&other) noexcept
 		{
 			if (this != &other)
@@ -67,7 +66,7 @@ namespace origin
 			return *this;
 		}
 
-		// Disable copy constructor and assignment operator
+		// disable copy constructor and assignment operator
 		AssetTask(const AssetTask &) = delete;
 		AssetTask &operator=(const AssetTask &) = delete;
 	};
@@ -131,8 +130,10 @@ namespace origin
 	class ModelImporter
 	{
 	public:
-		static std::shared_ptr<Model> Import(AssetHandle handle, const AssetMetadata &metadata);
-		static std::shared_ptr<Model> Load(const std::filesystem::path& path, Scene *scene);
+		static std::shared_ptr<MeshData> Import(AssetHandle handle, const AssetMetadata &metadata);
+		static std::shared_ptr<AnimatedMeshData> ImportAnimatedMesh(AssetHandle handle, const AssetMetadata &metadata);
+		static std::shared_ptr<MeshData> Load(const std::filesystem::path& filepath);
+		static std::shared_ptr<AnimatedMeshData> LoadAnimatedMesh(const std::filesystem::path& filepath);
 	};
 
 	class SpriteSheetImporter

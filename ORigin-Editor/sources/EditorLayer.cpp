@@ -2,7 +2,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.h"
-#include "Panels/ModelLoaderPanel.h"
 
 #include "Origin/EntryPoint.h"
 #include "Gizmos/Gizmos.h"
@@ -76,8 +75,7 @@ namespace origin
 		if (commandLineArgs.Count > 1)
 		{
 			m_ProjectDirectoryPath = commandLineArgs[1];
-			if (!OpenProject(m_ProjectDirectoryPath))
-				Application::Get().Close();
+			OpenProject(m_ProjectDirectoryPath);
 		}
 
 		m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
@@ -231,7 +229,6 @@ namespace origin
 		MenuBar();
 		SceneViewportToolbar();
 		GUIRender();
-		ModelLoaderPanel::OnUIRender();
 		if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
 		m_Dockspace.End();
 	}
@@ -342,6 +339,8 @@ namespace origin
 			return true;
 		}
 
+		OGN_CORE_ERROR("Failed to open project");
+		PUSH_CONSOLE_ERROR("Failed to open project");
 		return false;
 	}
 
@@ -560,18 +559,17 @@ namespace origin
 
 			if (ImGui::BeginMenu("Window"))
 			{
-				ImGui::MenuItem("Render Settings", nullptr, &guiRenderSettingsWindow);
-				ImGui::MenuItem("Console", nullptr, &guiConsoleWindow);
-				ImGui::MenuItem("Style Editor", nullptr, &guiMenuStyleWindow);
-				ImGui::MenuItem("Demo Window", nullptr, &guiImGuiDemoWindow);
-
+				ImGui::MenuItem("Render Settings", nullptr, &GuiRenderSettingsWindow);
+				ImGui::MenuItem("Console", nullptr, &GuiConsoleWindow);
+				ImGui::MenuItem("Style Editor", nullptr, &GuiMenuStyleWindow);
+				ImGui::MenuItem("Demo Window", nullptr, &GuiImGuiDemoWindow);
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("View"))
 			{
-				if (ImGui::MenuItem("Full Screen", "F11", &guiMenuFullscreen))
-					window.GetWindow().SetFullscreen(guiMenuFullscreen);
+				if (ImGui::MenuItem("Full Screen", "F11", &GuiMenuFullscreen))
+					window.GetWindow().SetFullscreen(GuiMenuFullscreen);
 				ImGui::EndMenu();
 			}
 
@@ -989,11 +987,11 @@ namespace origin
 			}
 		}
 
-		if (guiStatisticWindow)
+		if (GuiRenderSettingsWindow)
 		{
 			static ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-			ImGui::Begin("Render Settings", &guiStatisticWindow);
+			ImGui::Begin("Render Settings", &GuiRenderSettingsWindow);
 			if (ImGui::BeginTabBar("##render_settings"))
 			{
 				if (ImGui::BeginTabItem("Render Settings"))
@@ -1141,118 +1139,119 @@ namespace origin
 
 					ImGui::EndTabItem();
 				}
+
+				ImGui::EndTabBar();
 			}
-
-			ImGui::EndTabBar();
-			
+			ImGui::End();
 		}
-				
-		ImGui::End();
 
-		if (guiMenuStyleWindow)
+		if (GuiMenuStyleWindow)
 		{
-			ImGui::Begin("Style Editor", &guiMenuStyleWindow);
+			ImGui::Begin("Style Editor", &GuiMenuStyleWindow);
 			ImGui::ShowStyleEditor();
 			ImGui::End();
 		}
 
-		if (guiImGuiDemoWindow)
+		if (GuiImGuiDemoWindow)
 		{
-			ImGui::ShowDemoWindow(&guiImGuiDemoWindow);
+			ImGui::ShowDemoWindow(&GuiImGuiDemoWindow);
 		}
 	}
 
-    void EditorLayer::ConsoleWindow()
-    {
-        bool scrollToBottom = false;
-        static bool autoScroll = true;
+	void EditorLayer::ConsoleWindow()
+	{
+		bool scrollToBottom = false;
+		static bool autoScroll = true;
 		static size_t lastMessageCount = 0;
-		ImGui::Begin("Console", &guiConsoleWindow);
-        static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
-        ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f), 0, windowFlags);
-		if (UI::DrawButton("Clear"))
+
+		if (GuiConsoleWindow)
 		{
-			ConsoleManager::Get().Clear();
-			lastMessageCount = 0;
-		}
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Auto-scroll", &autoScroll))
-		{
-			lastMessageCount = 0;
-		}
-		ImGui::EndChild();
-		ImGui::BeginChild("CONSOLE_CONTENT", ImGui::GetContentRegionAvail(), 0, windowFlags);
+			ImGui::Begin("Console", &GuiConsoleWindow);
 
-        // By default, if we don't enable ScrollX the sizing policy for each column is "Stretch"
-        // All columns maintain a sizing weight, and they will occupy all available width.
-        static ImGuiTableFlags flags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersInnerH
-			| ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-
-        if (ImGui::BeginTable("CONSOLE_TABLE", 3, flags))
-        {
-            ImGui::TableSetupScrollFreeze(0, 1);
-
-            // Timestamp column: left-aligned, fixed size
-            ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_WidthFixed, 60.0f);
-
-            // Message column: stretches
-            ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_WidthStretch);
-
-            // Type column: right-aligned, fixed size
-            ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-
-            ImGui::TableHeadersRow();
-
-			ImGuiListClipper clipper;
-			const auto &messages = ConsoleManager::GetMessages();
-			clipper.Begin(messages.size());
-
-            // Check if there are new messages
-            if (messages.size() > lastMessageCount && autoScroll)
-            {
-                scrollToBottom = true;
-                lastMessageCount = messages.size();
-            }
-
-			while (clipper.Step())
+			static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+			ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f), 0, windowFlags);
+			if (UI::DrawButton("Clear"))
 			{
-				for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row)
-				{
-                    ImGui::TableNextRow();
-
-                    switch (messages[row].Type)
-                    {
-                    case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
-                    case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
-                    case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); break;
-                    }
-
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("%s", messages[row].Timestamp.c_str());
-					ImGui::TableSetColumnIndex(1);
-					ImGui::Text("%s", messages[row].Message.c_str());
-					ImGui::TableSetColumnIndex(2);
-
-					switch (messages[row].Type)
-                    {
-                    case ConsoleMessageType::Info:    ImGui::Text("INFO"); break;
-                    case ConsoleMessageType::Error:   ImGui::Text("ERROR"); break;
-                    case ConsoleMessageType::Warning: ImGui::Text("WARN"); break;
-                    }
-
-                    ImGui::PopStyleColor(1);
-				}
+				ConsoleManager::Get().Clear();
+				lastMessageCount = 0;
 			}
-            if (scrollToBottom)
-            {
-                ImGui::SetScrollHereY(1.0f);
-                scrollToBottom = false;
-            }
-            ImGui::EndTable();
-        }
-		ImGui::EndChild();
-		ImGui::End();
-    }
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Auto-scroll", &autoScroll))
+			{
+				lastMessageCount = 0;
+			}
+			ImGui::EndChild();
+
+			ImGui::BeginChild("CONSOLE_CONTENT", ImGui::GetContentRegionAvail(), 0, windowFlags);
+			// By default, if we don't enable ScrollX the sizing policy for each column is "Stretch"
+			// All columns maintain a sizing weight, and they will occupy all available width.
+			static ImGuiTableFlags flags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersInnerH
+				| ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+
+			if (ImGui::BeginTable("CONSOLE_TABLE", 3, flags))
+			{
+				ImGui::TableSetupScrollFreeze(0, 1);
+				// Timestamp column: left-aligned, fixed size
+				ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+				// Message column: stretches
+				ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_WidthStretch);
+				// Type column: right-aligned, fixed size
+				ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 40.0f);
+				ImGui::TableHeadersRow();
+
+				ImGuiListClipper clipper;
+				const auto &messages = ConsoleManager::GetMessages();
+				clipper.Begin(messages.size());
+
+				// Check if there are new messages
+				if (messages.size() > lastMessageCount && autoScroll)
+				{
+					scrollToBottom = true;
+					lastMessageCount = messages.size();
+				}
+
+				while (clipper.Step())
+				{
+					for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row)
+					{
+						ImGui::TableNextRow();
+
+						switch (messages[row].Type)
+						{
+						case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
+						case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
+						case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); break;
+						}
+
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text("%s", messages[row].Timestamp.c_str());
+						ImGui::TableSetColumnIndex(1);
+						ImGui::Text("%s", messages[row].Message.c_str());
+						ImGui::TableSetColumnIndex(2);
+
+						switch (messages[row].Type)
+						{
+						case ConsoleMessageType::Info:    ImGui::Text("INFO"); break;
+						case ConsoleMessageType::Error:   ImGui::Text("ERROR"); break;
+						case ConsoleMessageType::Warning: ImGui::Text("WARN"); break;
+						}
+
+						ImGui::PopStyleColor(1);
+					}
+				}
+				if (scrollToBottom)
+				{
+					ImGui::SetScrollHereY(1.0f);
+					scrollToBottom = false;
+				}
+				ImGui::EndTable();
+			}
+
+			ImGui::EndChild();
+
+			ImGui::End();
+		}
+	}
 
     bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
@@ -1525,8 +1524,8 @@ namespace origin
 
 		case Key::F11:
 		{
-			guiMenuFullscreen = !guiMenuFullscreen;
-			app.GetWindow().SetFullscreen(guiMenuFullscreen);
+			GuiMenuFullscreen = !GuiMenuFullscreen;
+			app.GetWindow().SetFullscreen(GuiMenuFullscreen);
 			break;
 		}
 

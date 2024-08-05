@@ -30,3 +30,5 @@ ORigin-Editor/Resources/Cache
 ORigin-Editor/Resources/ScriptCore
 ORigin-Runtime/Makefile
 Sandbox/Makefile
+SandboxGame/bin
+SandboxGame/bin-int

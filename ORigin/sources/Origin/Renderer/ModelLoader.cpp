@@ -125,35 +125,102 @@ namespace origin
 					vertex.UV = { 1.0f, 1.0f };
 				}
 				vertex.TilingFactor	 = glm::vec2(1.0f);
-				vertex.BoneIDs = glm::vec4(0.0f);
-				vertex.BoneWeights = glm::vec4(0.0f);
 				data->vertices.push_back(vertex);
 			}
 
-			// Bones
-			std::unordered_map<std::string, std::pair<int, glm::mat4>> boneInfo;
-			std::vector<uint32_t> boneCounts;
-			boneCounts.resize(data->vertices.size(), 0);
-			data->numBones = mesh->mNumBones;
+            // Faces
+            for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
+            {
+                aiFace face = mesh->mFaces[i];
+                for (uint32_t in = 0; in < face.mNumIndices; in++)
+                {
+                    data->indices.push_back(face.mIndices[in]);
+                }
+            }
+		}
 
-			for (uint32_t i = 0; i < data->numBones; ++i)
+        for (uint32_t i = 0; i < node->mNumChildren; ++i)
+        {
+            ProcessNode(node->mChildren[i], scene, data);
+        }
+	}
+
+	std::shared_ptr<MeshData> ModelLoader::LoadModel(const std::filesystem::path &filepath)
+	{
+		Assimp::Importer importer;
+		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
+			  aiProcess_Triangulate | aiProcess_GenSmoothNormals
+			| aiProcess_FlipUVs     | aiProcess_JoinIdenticalVertices
+		);
+
+		aiNode *node = scene->mRootNode;
+
+		std::shared_ptr<MeshData> data = std::make_shared<MeshData>();
+		ProcessNode(node, scene, data.get());
+
+		if (scene->mNumAnimations)
+		{
+			for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
 			{
-				aiBone *bone = mesh->mBones[i];
-				glm::mat4 offsetMatrix = AssimpToGlmMatrix(bone->mOffsetMatrix);
-				boneInfo[bone->mName.C_Str()] = { i, offsetMatrix };
+				Animation anim;
+				LoadAnimation(scene, &anim);
+				data->animations.push_back(anim);
+			}
+		}
 
-				for (uint32_t j = 0; j < bone->mNumWeights; j++)
-				{
-					uint32_t id = bone->mWeights[j].mVertexId;
-					float weight = bone->mWeights[j].mWeight;
-					boneCounts[id]++;
+		return data;
+	}
 
-					switch (boneCounts[id])
-					{
-					case 1:
-						data->vertices[id].BoneIDs.x = i;
-						data->vertices[id].BoneWeights.x = weight;
-						break;
+
+    static void ProcessAnimatedMeshNode(aiNode *node, const aiScene *scene, AnimatedMeshData *data)
+    {
+        for (uint32_t meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
+        {
+            aiMesh *mesh = scene->mMeshes[node->mMeshes[meshIndex]];
+
+            // Vertices
+            for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
+            {
+				AnimatedMeshVertexData vertex;
+                vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+                vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+                if (mesh->mTextureCoords[0])
+                {
+                    vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+                }
+                else
+                {
+                    vertex.UV = { 1.0f, 1.0f };
+                }
+                vertex.BoneIDs = glm::vec4(0.0f);
+                vertex.BoneWeights = glm::vec4(0.0f);
+                data->vertices.push_back(vertex);
+            }
+
+            // Bones
+            std::unordered_map<std::string, std::pair<int, glm::mat4>> boneInfo;
+            std::vector<uint32_t> boneCounts;
+            boneCounts.resize(data->vertices.size(), 0);
+            data->numBones = mesh->mNumBones;
+
+            for (uint32_t i = 0; i < data->numBones; ++i)
+            {
+                aiBone *bone = mesh->mBones[i];
+                glm::mat4 offsetMatrix = AssimpToGlmMatrix(bone->mOffsetMatrix);
+                boneInfo[bone->mName.C_Str()] = { i, offsetMatrix };
+
+                for (uint32_t j = 0; j < bone->mNumWeights; j++)
+                {
+                    uint32_t id = bone->mWeights[j].mVertexId;
+                    float weight = bone->mWeights[j].mWeight;
+                    boneCounts[id]++;
+
+                    switch (boneCounts[id])
+                    {
+                    case 1:
+                        data->vertices[id].BoneIDs.x = i;
+                        data->vertices[id].BoneWeights.x = weight;
+                        break;
                     case 2:
                         data->vertices[id].BoneIDs.y = i;
                         data->vertices[id].BoneWeights.y = weight;
@@ -166,27 +233,27 @@ namespace origin
                         data->vertices[id].BoneIDs.z = i;
                         data->vertices[id].BoneWeights.z = weight;
                         break;
-					}
-				}
-			}
+                    }
+                }
+            }
 
 
-			// Normalize weights
-			for(size_t i = 0; i < data->vertices.size(); ++i)
-			{
-				glm::vec4 &boneWeights = data->vertices[i].BoneWeights;
-				float totalWeight = boneWeights.x + boneWeights.y + boneWeights.z + boneWeights.w;
+            // Normalize weights
+            for (size_t i = 0; i < data->vertices.size(); ++i)
+            {
+                glm::vec4 &boneWeights = data->vertices[i].BoneWeights;
+                float totalWeight = boneWeights.x + boneWeights.y + boneWeights.z + boneWeights.w;
 
-				if (totalWeight > 0.0f)
-				{
-					data->vertices[i].BoneWeights = {
-						boneWeights.x / totalWeight,
-						boneWeights.y / totalWeight,
-						boneWeights.z / totalWeight,
-						boneWeights.w / totalWeight
-					};
-				}
-			}
+                if (totalWeight > 0.0f)
+                {
+                    data->vertices[i].BoneWeights = {
+                        boneWeights.x / totalWeight,
+                        boneWeights.y / totalWeight,
+                        boneWeights.z / totalWeight,
+                        boneWeights.w / totalWeight
+                    };
+                }
+            }
 
             // Faces
             for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
@@ -198,27 +265,27 @@ namespace origin
                 }
             }
 
-			ReadSkeleton(&data->bone, node, boneInfo);
-		}
+            ReadSkeleton(&data->bone, node, boneInfo);
+        }
 
         for (uint32_t i = 0; i < node->mNumChildren; ++i)
         {
-            ProcessNode(node->mChildren[i], scene, data);
+            ProcessAnimatedMeshNode(node->mChildren[i], scene, data);
         }
-	}
+    }
 
-	MeshData ModelLoader::LoadModel(const char *filepath)
-	{
+    std::shared_ptr<AnimatedMeshData> ModelLoader::LoadAnimatedModel(const std::filesystem::path &filepath)
+    {
 		Assimp::Importer importer;
-		const aiScene *scene = importer.ReadFile(filepath,
+		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
 			  aiProcess_Triangulate | aiProcess_GenSmoothNormals
-			| aiProcess_FlipUVs     | aiProcess_JoinIdenticalVertices
+			| aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
 		);
 
 		aiNode *node = scene->mRootNode;
 
-		MeshData data;
-		ProcessNode(node, scene, &data);
+		std::shared_ptr<AnimatedMeshData> data = std::make_shared<AnimatedMeshData>();
+		ProcessAnimatedMeshNode(node, scene, data.get());
 
 		if (scene->mNumAnimations)
 		{
@@ -226,17 +293,19 @@ namespace origin
 			{
 				Animation anim;
 				LoadAnimation(scene, &anim);
-				data.animations.push_back(anim);
+				data->animations.push_back(anim);
 			}
 		}
 
 		return data;
-	}
+    }
 
-	void ModelLoader::ProcessMesh(const MeshData &data, std::shared_ptr<VertexArray> &vertexArray, std::shared_ptr<VertexBuffer> &vertexBuffer)
+    void ModelLoader::ProcessMesh(const std::shared_ptr<MeshData> &data,
+		std::shared_ptr<VertexArray> &vertexArray, 
+		std::shared_ptr<VertexBuffer> &vertexBuffer)
 	{
 		vertexArray = VertexArray::Create();
-		vertexBuffer = VertexBuffer::Create((void *)data.vertices.data(), data.vertices.size() * sizeof(MeshVertexData));
+		vertexBuffer = VertexBuffer::Create((void *)data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
 
 		vertexBuffer->SetLayout
 		({
@@ -245,19 +314,41 @@ namespace origin
 			{ ShaderDataType::Float3, "aColor"        },
 			{ ShaderDataType::Float2, "aUV"           },
 			{ ShaderDataType::Float2, "aTilingFactor" },
-			{ ShaderDataType::Float4, "aBoneIDs"      },
-			{ ShaderDataType::Float4, "aBoneWeights"  },
 			{ ShaderDataType::Float,  "aAlbedoIndex"  },
 			{ ShaderDataType::Float,  "aSpecularIndex"},
 			{ ShaderDataType::Int,	  "aEntityID"     }
 		});
 
 		vertexArray->AddVertexBuffer(vertexBuffer);
-
-		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data.indices);
+		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices);
 		vertexArray->SetIndexBuffer(indexBuffer);
-
 		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
 	}
+
+    void ModelLoader::ProcessAnimatedMesh(const std::shared_ptr<AnimatedMeshData> &data, 
+		std::shared_ptr<VertexArray> &vertexArray, 
+		std::shared_ptr<VertexBuffer> &vertexBuffer)
+    {
+        vertexArray = VertexArray::Create();
+        vertexBuffer = VertexBuffer::Create((void *)data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
+
+        vertexBuffer->SetLayout
+        ({
+            { ShaderDataType::Float3, "aPosition"     },
+            { ShaderDataType::Float3, "aNormals"      },
+            { ShaderDataType::Float2, "aUV"           },
+            { ShaderDataType::Float2, "aTilingFactor" },
+            { ShaderDataType::Float4, "aBoneIDs"      },
+            { ShaderDataType::Float4, "aBoneWeights"  },
+            { ShaderDataType::Int,	  "aEntityID"     }
+        });
+
+        vertexArray->AddVertexBuffer(vertexBuffer);
+
+        std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices);
+        vertexArray->SetIndexBuffer(indexBuffer);
+
+        OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
+    }
 
 }

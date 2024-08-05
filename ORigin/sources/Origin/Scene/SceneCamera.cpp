@@ -70,6 +70,9 @@ namespace origin
     void SceneCamera::SetProjectionType(ProjectionType type)
     {
 		m_ProjectionType = type;
+        SceneCamera::SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        UpdateView(); 
+        UpdateProjection();
     }
 
     const glm::mat4 SceneCamera::GetViewProjection() const

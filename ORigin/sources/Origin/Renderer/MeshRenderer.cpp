@@ -17,8 +17,10 @@ namespace origin
 		static const uint32_t MaxCubeIndices = MaxTriangles * 36;
 		static const uint32_t MaxSphereVertices = MaxTriangles * 544;
 		static const uint32_t MaxSphereIndices = MaxTriangles * 768;
-        static const uint32_t MaxCapsuleVertices = MaxTriangles * 544;
-        static const uint32_t MaxCapsuleIndices = MaxTriangles * 768;
+
+        static const uint32_t MaxCapsuleTriangles = 500;
+        static const uint32_t MaxCapsuleVertices = MaxCapsuleTriangles * 1440;
+        static const uint32_t MaxCapsuleIndices = MaxCapsuleTriangles * 2004;
         static const uint32_t MaxTextureSlots = 32;
 	};
 
@@ -33,7 +35,8 @@ namespace origin
 		CameraBufferData CameraData;
 		std::shared_ptr<UniformBuffer> Ubo;
 
-		std::shared_ptr<Shader> Shader;
+        Shader *RenderShader = nullptr;
+		std::shared_ptr<Shader> BatchShader;
         std::array<std::shared_ptr<Texture2D>, 32> TextureSlots;
         uint32_t DepthMap = 0;
         // 0 White texture
@@ -43,7 +46,7 @@ namespace origin
 
 		// ===========================
 		// CUBE
-		MeshData CubeData;
+		std::shared_ptr<MeshData> CubeData;
 		uint32_t CubeIndexCount = 0;
 		std::shared_ptr<VertexArray> CubeVAO;
 		std::shared_ptr<VertexBuffer> CubeVBO;
@@ -52,7 +55,7 @@ namespace origin
 
 		// ===========================
 		// SPHERE
-		MeshData SphereData;
+        std::shared_ptr<MeshData> SphereData;
 		uint32_t SphereIndexCount = 0;
 		std::shared_ptr<VertexArray> SphereVAO;
 		std::shared_ptr<VertexBuffer> SphereVBO;
@@ -61,12 +64,14 @@ namespace origin
 
         // ===========================
         // CAPSULE
-        MeshData CapsuleData;
+        std::shared_ptr<MeshData> CapsuleData;
         uint32_t CapsuleIndexCount = 0;
         std::shared_ptr<VertexArray> CapsuleVAO;
         std::shared_ptr<VertexBuffer> CapsuleVBO;
         MeshVertexData *CapsuleVBOPtr = nullptr;
         MeshVertexData *CapsuleVBOBase = nullptr;
+
+        std::shared_ptr<Shader> TestShader;
 	};
 
 	MeshRendererData s_MeshRenderData;
@@ -79,8 +84,6 @@ namespace origin
 			{ ShaderDataType::Float3, "aColor"        },
 			{ ShaderDataType::Float2, "aUV"           },
 			{ ShaderDataType::Float2, "aTilingFactor" },
-			{ ShaderDataType::Float4, "aBoneIDs"      },
-			{ ShaderDataType::Float4, "aBoneWeights"  },
 			{ ShaderDataType::Float,  "aAlbedoIndex"  },
 			{ ShaderDataType::Float,  "aSpecularIndex"},
 			{ ShaderDataType::Int,    "aEntityID"     },
@@ -89,7 +92,6 @@ namespace origin
 		// ======================================
 		// ================ Cube ================
 		s_MeshRenderData.CubeData = ModelLoader::LoadModel("Resources/Models/cube.obj");
-
 		s_MeshRenderData.CubeVAO = VertexArray::Create();
 		s_MeshRenderData.CubeVBO = VertexBuffer::Create(MeshRenderData::MaxCubeVertices * sizeof(MeshVertexData));
 		s_MeshRenderData.CubeVBO->SetLayout(bufferLayout);
@@ -97,15 +99,15 @@ namespace origin
 		s_MeshRenderData.CubeVBOBase = new MeshVertexData[MeshRenderData::MaxCubeVertices];
 
         uint32_t *cubeIndices = new uint32_t[MeshRenderData::MaxCubeIndices];
-        uint32_t baseIndicesCount = s_MeshRenderData.CubeData.indices.size();
+        uint32_t baseIndicesCount = s_MeshRenderData.CubeData->indices.size();
         uint32_t maxCubes = MeshRenderData::MaxCubeIndices / baseIndicesCount;
 
         for (uint32_t cubeIndex = 0; cubeIndex < maxCubes; ++cubeIndex)
         {
-            uint32_t vertexOffset = cubeIndex * s_MeshRenderData.CubeData.vertices.size();
+            uint32_t vertexOffset = cubeIndex * s_MeshRenderData.CubeData->vertices.size();
             for (uint32_t i = 0; i < baseIndicesCount; ++i)
             {
-                cubeIndices[cubeIndex * baseIndicesCount + i] = s_MeshRenderData.CubeData.indices[i] + vertexOffset;
+                cubeIndices[cubeIndex * baseIndicesCount + i] = s_MeshRenderData.CubeData->indices[i] + vertexOffset;
             }
         }
 
@@ -123,15 +125,15 @@ namespace origin
         s_MeshRenderData.SphereVBOBase = new MeshVertexData[MeshRenderData::MaxSphereVertices];
 
         uint32_t *sphereIndices = new uint32_t[MeshRenderData::MaxSphereIndices];
-		baseIndicesCount = s_MeshRenderData.SphereData.indices.size();
+		baseIndicesCount = s_MeshRenderData.SphereData->indices.size();
 		uint32_t maxSpheres = MeshRenderData::MaxSphereIndices / baseIndicesCount;
 
         for (uint32_t sphereIndex = 0; sphereIndex < maxSpheres; ++sphereIndex)
         {
-            uint32_t vertexOffset = sphereIndex * s_MeshRenderData.SphereData.vertices.size();
+            uint32_t vertexOffset = sphereIndex * s_MeshRenderData.SphereData->vertices.size();
             for (uint32_t i = 0; i < baseIndicesCount; ++i)
             {
-                sphereIndices[sphereIndex * baseIndicesCount + i] = s_MeshRenderData.SphereData.indices[i] + vertexOffset;
+                sphereIndices[sphereIndex * baseIndicesCount + i] = s_MeshRenderData.SphereData->indices[i] + vertexOffset;
             }
         }
 
@@ -149,14 +151,14 @@ namespace origin
         s_MeshRenderData.CapsuleVBOBase = new MeshVertexData[MeshRenderData::MaxCapsuleVertices];
 
         uint32_t *capsuleIndices = new uint32_t[MeshRenderData::MaxCapsuleIndices];
-        baseIndicesCount = s_MeshRenderData.CapsuleData.indices.size();
+        baseIndicesCount = s_MeshRenderData.CapsuleData->indices.size();
         uint32_t maxCapsules = MeshRenderData::MaxCapsuleIndices / baseIndicesCount;
         for (uint32_t capsuleIndex = 0; capsuleIndex < maxCapsules; ++capsuleIndex)
         {
-            uint32_t vertexOffset = capsuleIndex * s_MeshRenderData.CapsuleData.vertices.size();
+            uint32_t vertexOffset = capsuleIndex * s_MeshRenderData.CapsuleData->vertices.size();
             for (uint32_t i = 0; i < baseIndicesCount; ++i)
             {
-                capsuleIndices[capsuleIndex * baseIndicesCount + i] = s_MeshRenderData.CapsuleData.indices[i] + vertexOffset;
+                capsuleIndices[capsuleIndex * baseIndicesCount + i] = s_MeshRenderData.CapsuleData->indices[i] + vertexOffset;
             }
         }
 
@@ -166,8 +168,9 @@ namespace origin
         
         s_MeshRenderData.Ubo = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 
-        s_MeshRenderData.Shader = Renderer::GetShader("Mesh");
+        s_MeshRenderData.BatchShader = Renderer::GetShader("BatchMesh");
         s_MeshRenderData.TextureSlots[0] = Renderer::WhiteTexture;
+        s_MeshRenderData.TestShader = Renderer::GetShader("TestShader");
 	}
 
 	void MeshRenderer::Begin(const Camera &camera, Shader *shader)
@@ -178,10 +181,14 @@ namespace origin
 		s_MeshRenderData.Ubo->Bind();
 		s_MeshRenderData.Ubo->SetData(&s_MeshRenderData.CameraData, sizeof(CameraBufferData));
 
-		if (!shader)
-			s_MeshRenderData.Shader->Enable();
-		else
-			shader->Enable();
+        if (shader)
+        {
+            s_MeshRenderData.RenderShader = shader;
+        }
+        else
+        {
+            s_MeshRenderData.RenderShader = s_MeshRenderData.BatchShader.get();
+        }
 
 		StartBatch();
 	}
@@ -194,7 +201,7 @@ namespace origin
         s_MeshRenderData.Ubo->Bind();
         s_MeshRenderData.Ubo->SetData(&s_MeshRenderData.CameraData, sizeof(CameraBufferData));
 
-        s_MeshRenderData.Shader->Enable();
+        s_MeshRenderData.RenderShader = s_MeshRenderData.BatchShader.get();
 
         StartBatch();
     }
@@ -227,6 +234,8 @@ namespace origin
 
 	void MeshRenderer::End()
 	{
+        s_MeshRenderData.RenderShader->Enable();
+
         if (s_MeshRenderData.CubeIndexCount)
         {
             uint32_t dataSize = (uint8_t *)s_MeshRenderData.CubeVBOPtr - (uint8_t *)s_MeshRenderData.CubeVBOBase;
@@ -291,28 +300,46 @@ namespace origin
         }
 	}
 
+    void MeshRenderer::DrawMesh(const glm::mat4 &viewProjection, const glm::mat4 &transform, const std::shared_ptr<VertexArray> &va, int entityId, Shader *shader)
+    {
+        if (!shader)
+        {
+            shader = s_MeshRenderData.TestShader.get();
+            shader->Enable();
+            shader->SetMatrix("viewProjection", viewProjection);
+            shader->SetMatrix("model", transform);
+            shader->SetInt("entityId", entityId);
+        }
+        else
+        {
+            shader->Enable();
+            shader->SetMatrix("viewProjection", viewProjection * transform);
+        }
+        
+        RenderCommand::DrawIndexed(va);
+        shader->Disable();
+    }
+
     void MeshRenderer::DrawCube(const glm::mat4 &transform, glm::vec4 color, int entityID)
 	{
 		if (s_MeshRenderData.CubeIndexCount >= MeshRenderData::MaxCubeIndices)
 			NextBatch();
 
-		for (size_t i = 0; i < s_MeshRenderData.CubeData.vertices.size(); i++)
+		for (size_t i = 0; i < s_MeshRenderData.CubeData->vertices.size(); i++)
 		{
-			s_MeshRenderData.CubeVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CubeData.vertices[i].Position, 1.0f);
+			s_MeshRenderData.CubeVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CubeData->vertices[i].Position, 1.0f);
 			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(transform)));
-			s_MeshRenderData.CubeVBOPtr->Normals = s_MeshRenderData.CubeData.vertices[i].Normals;
+			s_MeshRenderData.CubeVBOPtr->Normals = s_MeshRenderData.CubeData->vertices[i].Normals;
 			s_MeshRenderData.CubeVBOPtr->Color = color;
-			s_MeshRenderData.CubeVBOPtr->UV = s_MeshRenderData.CubeData.vertices[i].UV;
-			s_MeshRenderData.CubeVBOPtr->TilingFactor = s_MeshRenderData.CubeData.vertices[i].TilingFactor;
-			s_MeshRenderData.CubeVBOPtr->BoneIDs = glm::vec4(0.0f);
-			s_MeshRenderData.CubeVBOPtr->BoneWeights = glm::vec4(1.0f);
+			s_MeshRenderData.CubeVBOPtr->UV = s_MeshRenderData.CubeData->vertices[i].UV;
+			s_MeshRenderData.CubeVBOPtr->TilingFactor = s_MeshRenderData.CubeData->vertices[i].TilingFactor;
 			s_MeshRenderData.CubeVBOPtr->AlbedoIndex = 0.0f;
 			s_MeshRenderData.CubeVBOPtr->SpecularIndex = 0.0f;
 			s_MeshRenderData.CubeVBOPtr->EntityID = entityID;
 			s_MeshRenderData.CubeVBOPtr++;
 		}
 
-		s_MeshRenderData.CubeIndexCount += s_MeshRenderData.CubeData.indices.size();
+		s_MeshRenderData.CubeIndexCount += s_MeshRenderData.CubeData->indices.size();
 		Renderer::GetStatistics().CubeCount++;
 	}
 
@@ -384,23 +411,21 @@ namespace origin
             }
         }
 
-        for (size_t i = 0; i < s_MeshRenderData.CubeData.vertices.size(); i++)
+        for (size_t i = 0; i < s_MeshRenderData.CubeData->vertices.size(); i++)
         {
-            s_MeshRenderData.CubeVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CubeData.vertices[i].Position, 1.0f);
+            s_MeshRenderData.CubeVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CubeData->vertices[i].Position, 1.0f);
             glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transform)));
-            s_MeshRenderData.CubeVBOPtr->Normals = normalMatrix * s_MeshRenderData.CubeData.vertices[i].Normals;
+            s_MeshRenderData.CubeVBOPtr->Normals = normalMatrix * s_MeshRenderData.CubeData->vertices[i].Normals;
             s_MeshRenderData.CubeVBOPtr->Color = color;
-            s_MeshRenderData.CubeVBOPtr->UV = s_MeshRenderData.CubeData.vertices[i].UV;
+            s_MeshRenderData.CubeVBOPtr->UV = s_MeshRenderData.CubeData->vertices[i].UV;
             s_MeshRenderData.CubeVBOPtr->TilingFactor = tilingFactor;
-            s_MeshRenderData.CubeVBOPtr->BoneIDs = glm::vec4(0.0f);
-            s_MeshRenderData.CubeVBOPtr->BoneWeights = glm::vec4(1.0f);
             s_MeshRenderData.CubeVBOPtr->AlbedoIndex = albedoIndex;
             s_MeshRenderData.CubeVBOPtr->SpecularIndex = specularIndex;
             s_MeshRenderData.CubeVBOPtr->EntityID = entityID;
             s_MeshRenderData.CubeVBOPtr++;
         }
 
-        s_MeshRenderData.CubeIndexCount += s_MeshRenderData.CubeData.indices.size();
+        s_MeshRenderData.CubeIndexCount += s_MeshRenderData.CubeData->indices.size();
         Renderer::GetStatistics().CubeCount++;
     }
 
@@ -409,23 +434,21 @@ namespace origin
         if (s_MeshRenderData.SphereIndexCount >= MeshRenderData::MaxSphereIndices)
             NextBatch();
 
-        for (size_t i = 0; i < s_MeshRenderData.SphereData.vertices.size(); i++)
+        for (size_t i = 0; i < s_MeshRenderData.SphereData->vertices.size(); i++)
         {
-            s_MeshRenderData.SphereVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.SphereData.vertices[i].Position, 1.0f);
+            s_MeshRenderData.SphereVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.SphereData->vertices[i].Position, 1.0f);
             glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
-            s_MeshRenderData.SphereVBOPtr->Normals = transposeMat * s_MeshRenderData.SphereData.vertices[i].Normals;
+            s_MeshRenderData.SphereVBOPtr->Normals = transposeMat * s_MeshRenderData.SphereData->vertices[i].Normals;
             s_MeshRenderData.SphereVBOPtr->Color = color;
-            s_MeshRenderData.SphereVBOPtr->UV = s_MeshRenderData.SphereData.vertices[i].UV;
-            s_MeshRenderData.SphereVBOPtr->TilingFactor = s_MeshRenderData.SphereData.vertices[i].TilingFactor;
-            s_MeshRenderData.SphereVBOPtr->BoneIDs = glm::vec4(0.0f);
-            s_MeshRenderData.SphereVBOPtr->BoneWeights = glm::vec4(1.0f);
+            s_MeshRenderData.SphereVBOPtr->UV = s_MeshRenderData.SphereData->vertices[i].UV;
+            s_MeshRenderData.SphereVBOPtr->TilingFactor = s_MeshRenderData.SphereData->vertices[i].TilingFactor;
             s_MeshRenderData.SphereVBOPtr->AlbedoIndex = 0.0f;
             s_MeshRenderData.SphereVBOPtr->SpecularIndex = 0.0f;
             s_MeshRenderData.SphereVBOPtr->EntityID = entityID;
             s_MeshRenderData.SphereVBOPtr++;
         }
 
-        s_MeshRenderData.SphereIndexCount += s_MeshRenderData.SphereData.indices.size();
+        s_MeshRenderData.SphereIndexCount += s_MeshRenderData.SphereData->indices.size();
 		Renderer::GetStatistics().SphereCount++;
     }
 
@@ -442,23 +465,21 @@ namespace origin
         if (s_MeshRenderData.CapsuleIndexCount >= MeshRenderData::MaxCapsuleIndices)
             NextBatch();
 
-        for (size_t i = 0; i < s_MeshRenderData.CapsuleData.vertices.size(); i++)
+        for (size_t i = 0; i < s_MeshRenderData.CapsuleData->vertices.size(); i++)
         {
-            s_MeshRenderData.CapsuleVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CapsuleData.vertices[i].Position, 1.0f);
+            s_MeshRenderData.CapsuleVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CapsuleData->vertices[i].Position, 1.0f);
             glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
-            s_MeshRenderData.CapsuleVBOPtr->Normals = transposeMat * s_MeshRenderData.CapsuleData.vertices[i].Normals;
+            s_MeshRenderData.CapsuleVBOPtr->Normals = transposeMat * s_MeshRenderData.CapsuleData->vertices[i].Normals;
             s_MeshRenderData.CapsuleVBOPtr->Color = color;
-            s_MeshRenderData.CapsuleVBOPtr->UV = s_MeshRenderData.CapsuleData.vertices[i].UV;
-            s_MeshRenderData.CapsuleVBOPtr->TilingFactor = s_MeshRenderData.CapsuleData.vertices[i].TilingFactor;
-            s_MeshRenderData.CapsuleVBOPtr->BoneIDs = glm::vec4(0.0f);
-            s_MeshRenderData.CapsuleVBOPtr->BoneWeights = glm::vec4(1.0f);
+            s_MeshRenderData.CapsuleVBOPtr->UV = s_MeshRenderData.CapsuleData->vertices[i].UV;
+            s_MeshRenderData.CapsuleVBOPtr->TilingFactor = s_MeshRenderData.CapsuleData->vertices[i].TilingFactor;
             s_MeshRenderData.CapsuleVBOPtr->AlbedoIndex = 0.0f;
             s_MeshRenderData.CapsuleVBOPtr->SpecularIndex = 0.0f;
             s_MeshRenderData.CapsuleVBOPtr->EntityID = entityID;
             s_MeshRenderData.CapsuleVBOPtr++;
         }
 
-        s_MeshRenderData.CapsuleIndexCount += s_MeshRenderData.CapsuleData.indices.size();
+        s_MeshRenderData.CapsuleIndexCount += s_MeshRenderData.CapsuleData->indices.size();
         Renderer::GetStatistics().SphereCount++;
     }
 
@@ -472,7 +493,7 @@ namespace origin
 
     Shader *MeshRenderer::GetShader()
     {
-		return s_MeshRenderData.Shader.get();
+		return s_MeshRenderData.BatchShader.get();
     }
 
     void MeshRenderer::Shutdown()

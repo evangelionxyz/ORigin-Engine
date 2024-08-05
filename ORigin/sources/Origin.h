@@ -25,7 +25,6 @@
 #include "Origin/Renderer/Renderer3D.h"
 #include "Origin/Renderer/ShaderLibrary.h"
 #include "Origin/Renderer/MaterialLibrary.h"
-#include "Origin/Renderer/Model.h"
 #include "Origin/Renderer/Shader.h"
 #include "Origin/Renderer/ParticleSystem.h"
 #include "Origin/Renderer/Texture.h"

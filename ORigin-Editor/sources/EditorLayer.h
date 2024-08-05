@@ -26,12 +26,12 @@ namespace origin
 		SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
 		static EditorLayer &Get();
 
-		bool guiStatisticWindow = true;
-		bool guiMenuFullscreen = false;
-		bool guiMenuStyleWindow = false;
-		bool guiRenderSettingsWindow = true;
-		bool guiImGuiDemoWindow = false;
-		bool guiConsoleWindow = true;
+		bool GuiMenuFullscreen = false;
+		bool GuiMenuStyleWindow = false;
+		bool GuiRenderSettingsWindow = false;
+		bool GuiImGuiDemoWindow = false;
+		bool GuiConsoleWindow = false;
+
 		bool IsViewportHovered = false;
 		bool IsViewportFocused = false;
 

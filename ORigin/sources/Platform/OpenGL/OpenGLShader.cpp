@@ -24,7 +24,7 @@ namespace origin
             if (type == "vertex")                       return GL_VERTEX_SHADER;
             if (type == "fragment" || type == "pixel")  return GL_FRAGMENT_SHADER;
             if (type == "geometry")                     return GL_GEOMETRY_SHADER;
-            OGN_CORE_ASSERT(false, "Unkown Shader Type '{}'", filepath);
+            OGN_CORE_ASSERT(false, "[Shader] Unkown Shader Type '{}'", filepath);
             return 0;
         }
 
@@ -39,7 +39,7 @@ namespace origin
             case GL_GEOMETRY_SHADER:  return shaderc_glsl_geometry_shader;
             }
 
-            OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
             return (shaderc_shader_kind)0;
         }
 
@@ -54,7 +54,7 @@ namespace origin
             case GL_GEOMETRY_SHADER:  return "GL_GEOMETRY_SHADER";
             }
 
-            OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
             return nullptr;
         }
 
@@ -83,7 +83,7 @@ namespace origin
             case GL_GEOMETRY_SHADER:  return ".cached_opengl.geom";
             }
 
-            OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
             return nullptr;
         }
 
@@ -98,7 +98,7 @@ namespace origin
             case GL_GEOMETRY_SHADER:  return ".cached_vulkan.geom";
             }
 
-            OGN_CORE_ASSERT(false, "OpenGLShader: Invalid Shader Stage");
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
             return nullptr;
         }
 
@@ -174,8 +174,8 @@ namespace origin
         : m_Filepath(filepath), m_RendererID(0), m_EnableSpirv(enableSpirv), m_RecompileSPIRV(recompileSpirv)
     {
         OGN_PROFILER_RENDERING();
-        PUSH_CONSOLE_INFO("Trying to load Shader : {}", m_Filepath);
-        OGN_CORE_TRACE("Trying to load Shader : {}", m_Filepath);
+        PUSH_CONSOLE_INFO("[Shader] Trying to load Shader : {}", m_Filepath);
+        OGN_CORE_TRACE("[Shader] Trying to load Shader : {}", m_Filepath);
 
         // With SPIRV
         if (enableSpirv)
@@ -190,8 +190,8 @@ namespace origin
                 CompileOrGetVulkanBinaries(shaderSources);
                 CompileOrGetOpenGLBinaries();
                 CreateSpirvProgram();
-                PUSH_CONSOLE_INFO("Shader Creation took {0} ms", timer.ElapsedMillis());
-                OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
+                PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
+                OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
             }
         }
         else // Without SPIRV
@@ -278,8 +278,8 @@ namespace origin
             glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
             glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
             glAttachShader(program, shaderID);
-            PUSH_CONSOLE_INFO("{0} Shader Attached", Utils::ShaderDataTypeToString(stage));
-            OGN_CORE_WARN("{0} Shader Attached", Utils::ShaderDataTypeToString(stage));
+            PUSH_CONSOLE_INFO("[Shader] {0} Shader Attached", Utils::ShaderDataTypeToString(stage));
+            OGN_CORE_WARN("[Shader] {0} Shader Attached", Utils::ShaderDataTypeToString(stage));
         }
 
         glLinkProgram(program);
@@ -290,13 +290,13 @@ namespace origin
         glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
         if (isLinked < 0)
         {
-            OGN_CORE_ERROR("Shader Linked Status : {0}", isLinked);
-            PUSH_CONSOLE_ERROR("Shader Linked Status : {0}", isLinked);
+            OGN_CORE_ERROR("[Shader] Linked Status : {0}", isLinked);
+            PUSH_CONSOLE_ERROR("[Shader] Linked Status : {0}", isLinked);
         }
         else
         {
-            OGN_CORE_INFO("Shader Linked Status : {0}", isLinked);
-            PUSH_CONSOLE_ERROR("Shader Linked Status : {0}", isLinked);
+            OGN_CORE_INFO("[Shader] Linked Status : {0}", isLinked);
+            PUSH_CONSOLE_INFO("[Shader] Linked Status : {0}", isLinked);
         }
 
         if (isLinked == GL_FALSE)
@@ -338,14 +338,14 @@ namespace origin
             }
             else
             {
-                PUSH_CONSOLE_ERROR("Shader: Could not read from file '{0}'", filepath);
-                OGN_CORE_ERROR("Shader: Could not read from file '{0}'", filepath);
+                PUSH_CONSOLE_ERROR("[Shader] Could not read from file '{0}'", filepath);
+                OGN_CORE_ASSERT(false, "[Shader] Could not read from file '{0}'", filepath);
             }
         }
         else
         {
-            PUSH_CONSOLE_ERROR("Shader: Could not open file");
-            OGN_CORE_ERROR("Shader: Could not open file");
+            PUSH_CONSOLE_ERROR("[Shader] Could not open file {0}", filepath);
+            OGN_CORE_ASSERT(false, "[Shader] Could not open file {0}", filepath);
         }
         return result;
     }
@@ -366,24 +366,24 @@ namespace origin
 
             if (eol == std::string::npos)
             {
-                PUSH_CONSOLE_ERROR("Syntax error");
-                OGN_CORE_ASSERT(false, "Syntax error");
+                PUSH_CONSOLE_ERROR("[Shader] Syntax error");
+                OGN_CORE_ASSERT(false, "[Shader] Syntax error");
             }
             
             size_t begin = pos + typeTokenLength + 1;
             std::string type = source.substr(begin, eol - begin);
             if (!Utils::ShaderTypeFromString(type, m_Filepath))
             {
-                PUSH_CONSOLE_ERROR("Invalid shader type specified");
-                OGN_CORE_ASSERT(false, "Invalid shader type specified");
+                PUSH_CONSOLE_ERROR("[Shader] Invalid shader type specified");
+                OGN_CORE_ASSERT(false, "[Shader] Invalid shader type specified");
             }
             
 
             size_t nextLinePos = source.find_first_of("\r\n", eol);
             if (nextLinePos == std::string::npos)
             {
-                PUSH_CONSOLE_ERROR("Syntax Error");
-                OGN_CORE_ASSERT(false, "Syntax Error");
+                PUSH_CONSOLE_ERROR("[Shader] Syntax Error");
+                OGN_CORE_ASSERT(false, "[Shader] Syntax Error");
             }
             
             pos = source.find(typeToken, nextLinePos);
@@ -415,8 +415,8 @@ namespace origin
             std::ifstream infile(cachedPath, std::ios::in | std::ios::binary);
             if (infile.is_open() && !m_RecompileSPIRV)
             {
-                PUSH_CONSOLE_INFO("Get Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
-                OGN_CORE_WARN("Get Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
+                PUSH_CONSOLE_INFO("[Shader] Get Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
+                OGN_CORE_WARN("[Shader] et Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
                 infile.seekg(0, std::ios::end);
                 auto size = infile.tellg();
                 infile.seekg(0, std::ios::beg);
@@ -426,11 +426,11 @@ namespace origin
             }
             else
             {
-                OGN_CORE_WARN("Compile Vulkan {0} Shader To Binaries", Utils::ShaderDataTypeToString(stage));
+                OGN_CORE_WARN("[Shader] Compile Vulkan {0} Shader To Binaries", Utils::ShaderDataTypeToString(stage));
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
                 bool succsess = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
-                PUSH_CONSOLE_ERROR("[OpenGLShader] Failed to compile Vulkan {0}", module.GetErrorMessage().c_str());
+                PUSH_CONSOLE_ERROR("[Shader] Failed to compile Vulkan {0}", module.GetErrorMessage().c_str());
                 OGN_CORE_ASSERT(succsess, module.GetErrorMessage());
 
                 if (!succsess)
@@ -480,7 +480,7 @@ namespace origin
             std::ifstream infile(cachedPath, std::ios::in | std::ios::binary);
             if (infile.is_open() && !m_RecompileSPIRV)
             {
-                OGN_CORE_WARN("Get OpenGL {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
+                OGN_CORE_WARN("[Shader] Get OpenGL {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
                 infile.seekg(0, std::ios::end);
                 auto size = infile.tellg();
                 infile.seekg(0, std::ios::beg);
@@ -492,8 +492,8 @@ namespace origin
             else
             {
                 OGN_CORE_WARN("{0}", m_Filepath);
-                OGN_CORE_WARN("Compile OpenGL {0} Shader To Binaries", Utils::ShaderDataTypeToString(stage));
-                PUSH_CONSOLE_INFO("[OpenGLShader] Compiling {0} Shader To Binaries from {1}", Utils::ShaderDataTypeToString(stage), m_Filepath);
+                OGN_CORE_WARN("[Shader] Compile OpenGL {0} Shader To Binaries", Utils::ShaderDataTypeToString(stage));
+                PUSH_CONSOLE_INFO("[Shader] Compiling {0} Shader To Binaries from {1}", Utils::ShaderDataTypeToString(stage), m_Filepath);
                 spirv_cross::CompilerGLSL glslCompiler(spirv);
                 m_OpenGLSourceCode[stage] = glslCompiler.compile();
                 auto &source = m_OpenGLSourceCode[stage];
@@ -527,9 +527,9 @@ namespace origin
         spirv_cross::Compiler compiler(shaderData);
         spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
-        OGN_CORE_TRACE("OpenGLShader::Reflect - {0}", Utils::GLShaderStageToString(stage));
-        OGN_CORE_TRACE("    {0} uniform buffers", resources.uniform_buffers.size());
-        OGN_CORE_TRACE("    {0} resources", resources.sampled_images.size());
+        OGN_CORE_TRACE("[Shader] OpenGLShader::Reflect - {0}", Utils::GLShaderStageToString(stage));
+        OGN_CORE_TRACE("[Shader]     {0} uniform buffers", resources.uniform_buffers.size());
+        OGN_CORE_TRACE("[Shader]     {0} resources", resources.sampled_images.size());
 
         if (resources.uniform_buffers.size())
         {
@@ -540,10 +540,10 @@ namespace origin
                 uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
                 uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
                 int memberCount = bufferType.member_types.size();
-                OGN_CORE_WARN("     Name = {0}", resource.name);
-                OGN_CORE_TRACE("     Size = {0}", bufferSize);
-                OGN_CORE_TRACE("  Binding = {0}", binding);
-                OGN_CORE_TRACE("  Members = {0}", memberCount);
+                OGN_CORE_WARN("[Shader]      Name = {0}", resource.name);
+                OGN_CORE_TRACE("[Shader]      Size = {0}", bufferSize);
+                OGN_CORE_TRACE("[Shader]   Binding = {0}", binding);
+                OGN_CORE_TRACE("[Shader]   Members = {0}", memberCount);
             }
         }
     }
@@ -563,7 +563,7 @@ namespace origin
         if (!success)
         {
             glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
-            const char *m = "[OpenGLShader] Failed to Compile ";
+            const char *m = "[Shader] Failed to Compile ";
             const char *shaderType {};
 
             switch (type)
@@ -589,24 +589,24 @@ namespace origin
                 PUSH_CONSOLE_ERROR(msg);
                 free(msg);
             }
-            PUSH_CONSOLE_ERROR("[OpenGLShader] {0}", infoLog);
-            OGN_CORE_ASSERT(false, "[OpenGLShader] {0}", infoLog);
+            PUSH_CONSOLE_ERROR("[Shader] {0}", infoLog);
+            OGN_CORE_ASSERT(false, "[Shader] {0}", infoLog);
             return 0;
         }
 
         switch (type)
         {
         case GL_VERTEX_SHADER:
-            OGN_CORE_TRACE("VERTEX Succesfully Compiled");
-            PUSH_CONSOLE_INFO("VERTEX Succesfully Compiled");
+            OGN_CORE_TRACE("[Shader] VERTEX Succesfully Compiled");
+            PUSH_CONSOLE_INFO("[Shader] VERTEX Succesfully Compiled");
             break;
         case GL_FRAGMENT_SHADER:
-            OGN_CORE_TRACE("FRAGMENT Succesfully Compiled");
-            PUSH_CONSOLE_INFO("FRAGMENT Succesfully Compiled");
+            OGN_CORE_TRACE("[Shader] FRAGMENT Succesfully Compiled");
+            PUSH_CONSOLE_INFO("[Shader] FRAGMENT Succesfully Compiled");
             break;
         case GL_GEOMETRY_SHADER:
-            OGN_CORE_TRACE("GEOMETRY Succesfully Compiled");
-            PUSH_CONSOLE_INFO("GEOMETRY Succesfully Compiled");
+            OGN_CORE_TRACE("[Shader] GEOMETRY Succesfully Compiled");
+            PUSH_CONSOLE_INFO("[Shader] GEOMETRY Succesfully Compiled");
             break;
         }
 
@@ -664,8 +664,8 @@ namespace origin
                 CompileOrGetVulkanBinaries(shaderSources);
                 CompileOrGetOpenGLBinaries();
                 CreateSpirvProgram();
-                OGN_CORE_TRACE("Shader Creation took {0} ms", timer.ElapsedMillis());
-                PUSH_CONSOLE_INFO("Shader Creation took {0} ms", timer.ElapsedMillis());
+                OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
+                PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
             }
             m_RecompileSPIRV = false;
         }
@@ -853,8 +853,8 @@ namespace origin
         int location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
         {
-            OGN_CORE_WARN("[OpenGLShader]: '{0}' WARNING UNIFORM '{1}' does not exists or uninitialized", m_Name, name);
-            PUSH_CONSOLE_INFO("[OpenGLShader]: '{0}' WARNING UNIFORM '{1}' does not exists or uninitialized", m_Name, name);
+            OGN_CORE_WARN("[Shader] '{0}' WARNING UNIFORM '{1}' does not exists or uninitialized", m_Name, name);
+            PUSH_CONSOLE_INFO("[Shader] '{0}' WARNING UNIFORM '{1}' does not exists or uninitialized", m_Name, name);
         }
 
         m_UniformLocationCache[name] = location;

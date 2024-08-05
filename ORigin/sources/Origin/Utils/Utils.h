@@ -23,4 +23,18 @@ namespace origin::Utils
 		ImGui::TextWrappedV(fmt, args);
 		va_end(args);
 	}
+
+    static void ExecuteScript(const std::string &scriptPath)
+    {
+        if (std::filesystem::exists(scriptPath))
+        {
+            std::string absolutePath = std::filesystem::absolute(scriptPath).string();
+#ifdef _WIN32
+            std::string expandedCmd = "\"" + absolutePath + "\"";
+#elif __linux__
+            std::string expandedCmd = "bash " + absolutePath;
+#endif
+            std::system(expandedCmd.c_str());
+        }
+    }
 }

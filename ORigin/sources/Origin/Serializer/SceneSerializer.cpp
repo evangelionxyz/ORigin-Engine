@@ -10,8 +10,8 @@
 #include "Origin/Scene/Lighting.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Project/Project.h"
-#include "Origin/Renderer/Model.h"
 #include "Origin/Renderer/Shader.h"
+#include "Origin/Renderer/ModelLoader.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Asset/AssetManager.h"
@@ -367,6 +367,7 @@ namespace origin
 			const StaticMeshComponent sc = entity.GetComponent<StaticMeshComponent>();
 			out << YAML::Key << "Name" << sc.Name;
 			out << YAML::Key << "Type" << (int)sc.mType;
+			out << YAML::Key << "HMesh" << sc.HMesh;
 			out << YAML::Key << "HMaterial" << sc.HMaterial;
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
@@ -793,13 +794,20 @@ namespace origin
 
 				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
 				{
-					StaticMeshComponent &sc = deserializedEntity.AddComponent<StaticMeshComponent>();
-					sc.Name = staticMeshComponent["Name"].as<std::string>();
-					sc.HMaterial = staticMeshComponent["HMaterial"].as<uint64_t>();
-					if (sc.HMaterial) AssetManager::GetAsset<Material>(sc.HMaterial); // load material and store to memory
-					sc.mType = static_cast<StaticMeshComponent::Type>(staticMeshComponent["Type"].as<int>());
-
-					// TODO: Add create model
+					StaticMeshComponent &mc = deserializedEntity.AddComponent<StaticMeshComponent>();
+					mc.Name = staticMeshComponent["Name"].as<std::string>();
+					mc.HMaterial = staticMeshComponent["HMaterial"].as<uint64_t>();
+					mc.HMesh = staticMeshComponent["HMesh"].as<uint64_t>();
+					if (mc.HMaterial)
+					{
+						AssetManager::GetAsset<Material>(mc.HMaterial); // load material and store to memory
+					}
+					if (mc.HMesh)
+					{
+						mc.Data = AssetManager::GetAsset<MeshData>(mc.HMesh);
+						ModelLoader::ProcessMesh(mc.Data, mc.Va, mc.Vb);
+					}
+					mc.mType = static_cast<StaticMeshComponent::Type>(staticMeshComponent["Type"].as<int>());
 				}
 
 				if (YAML::Node particleComponent = entity["ParticleComponent"])

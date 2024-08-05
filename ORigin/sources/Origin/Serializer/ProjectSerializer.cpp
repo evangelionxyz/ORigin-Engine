@@ -64,6 +64,11 @@ namespace origin
 	{
 		OGN_PROFILER_FUNCTION();
 
+		if (!std::filesystem::exists(filepath))
+		{
+			return false;
+		}
+
 		auto& config = m_Project->GetConfig();
 
 		YAML::Node data = YAML::LoadFile(filepath.string());

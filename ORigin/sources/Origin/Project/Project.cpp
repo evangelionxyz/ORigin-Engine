@@ -7,6 +7,7 @@
 #include "Origin/Serializer/SceneSerializer.h"
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Profiler/Profiler.h"
+#include "Origin/Utils/Utils.h"
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
@@ -82,23 +83,7 @@ namespace origin {
 			OGN_CORE_ASSERT(std::filesystem::exists(scrPath), "[Project Copy File] Failed to copy file! {0}", scrPath);
 			std::filesystem::copy_file(scrPath, dstPath, std::filesystem::copy_options::overwrite_existing);
 		}
-
-		void ExecuteScript(const std::string &scriptPath)
-		{
-			if (std::filesystem::exists(scriptPath))
-			{
-				std::string absolutePath = std::filesystem::absolute(scriptPath).string();
-#ifdef _WIN32
-				std::string expandedCmd = "\"" + absolutePath + "\"";
-#elif __linux__
-				std::string expandedCmd = "bash " + absolutePath;
-#endif
-				std::system(expandedCmd.c_str());
-			}
-		}
 	}
-
-	
 
 	void Project::SetStartScene(AssetHandle handle)
 	{

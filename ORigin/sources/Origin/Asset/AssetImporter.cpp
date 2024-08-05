@@ -5,6 +5,7 @@
 #include "AssetImporter.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Project/Project.h"
+#include "Origin/Renderer/ModelLoader.h"
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Serializer/SceneSerializer.h"
 #include "Origin/Utils/PlatformUtils.h"
@@ -19,9 +20,9 @@ namespace origin {
 		{ AssetType::Audio, AudioImporter::Import },
 		{ AssetType::Texture, TextureImporter::ImportTexture2D },
 		{ AssetType::Scene, SceneImporter::Import },
-		{ AssetType::MeshSource, ModelImporter::Import },
 		{ AssetType::Material, MaterialImporter::Import },
-		{ AssetType::Model, ModelImporter::Import },
+		{ AssetType::Mesh, ModelImporter::Import },
+		{ AssetType::AnimatedMesh, ModelImporter::ImportAnimatedMesh },
 		{ AssetType::Font, FontImporter::Import },
 		{ AssetType::SpritesSheet, SpriteSheetImporter::Import }
 	};
@@ -201,17 +202,27 @@ namespace origin {
 		return texture;
 	}
 
-	std::shared_ptr<Model> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
+	std::shared_ptr<MeshData> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
 	{
-		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath, nullptr);
+		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-	std::shared_ptr<Model> ModelImporter::Load(const std::filesystem::path &filepath, Scene *scene)
+    std::shared_ptr<AnimatedMeshData> ModelImporter::ImportAnimatedMesh(AssetHandle handle, const AssetMetadata &metadata)
+    {
+		return LoadAnimatedMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
+    }
+
+    std::shared_ptr<MeshData> ModelImporter::Load(const std::filesystem::path &filepath)
 	{
-		return Model::Create(filepath.string().c_str(), scene);
+		return ModelLoader::LoadModel(filepath);
 	}
 
-	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
+    std::shared_ptr<AnimatedMeshData> ModelImporter::LoadAnimatedMesh(const std::filesystem::path& filepath)
+    {
+		return ModelLoader::LoadAnimatedModel(filepath);
+    }
+
+    std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
 	{
 		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}

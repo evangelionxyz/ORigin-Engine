@@ -44,6 +44,13 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	{
 		Renderer2D::DrawLine(e.first, e.second, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	}
+	glm::vec3 pos;
+	pos.x = frustum.GetPlanes()[Frustum::Plane::Near][0];
+	pos.y = frustum.GetPlanes()[Frustum::Plane::Near][1];
+	pos.z = frustum.GetPlanes()[Frustum::Plane::Near][2];
+
+	Renderer2D::DrawQuad(pos, glm::vec2(1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+
 	Renderer2D::End();
 
 }

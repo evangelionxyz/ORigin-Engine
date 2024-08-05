@@ -1,0 +1,194 @@
+Scene: TestScene.org
+Entities:
+  - Entity: 18351980026388686524
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Empty
+    RigidbodyComponent:
+      Mass: 1
+      CenterMass: [0, 0, 0]
+      Offset: [0, 0, 0]
+      UseGravity: true
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      IsStatic: false
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Restitution: 0.600000024
+      Friction: 0.600000024
+    TransformComponent:
+      Translation: [10.4590807, 14.4160366, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    StaticMeshComponent:
+      Name: ""
+      Type: 0
+      HMesh: 15569951670828566738
+      HMaterial: 0
+  - Entity: 18146361625917661274
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [14.1627216, 14.4160366, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    StaticMeshComponent:
+      Name: ""
+      Type: 0
+      HMesh: 15569951670828566738
+      HMaterial: 0
+  - Entity: 7916222134218068362
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [29.125021, 25.2961998, 29.1250286]
+      Rotation: [-0.239335269, 0.369619638, 0.0991358832, 0.892340779]
+      Scale: [0.99999994, 0.999997616, 0.999999821]
+      Visible: true
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        AspectRatioType: 1
+        FOV: 45
+        PerspectiveNear: 2.5
+        PerspectiveFar: 50
+        OrthoScale: 61.2000008
+        OrthoNear: 10
+        OrthoFar: 85.4000015
+        ViewportSize: [788.799988, 493]
+      Primary: true
+    AudioListenerComponent:
+      Enable: true
+  - Entity: 11688243430321544824
+    Type: Entity
+    Parent: 2723873067466865669
+    TagComponent:
+      Tag: Plane
+    RigidbodyComponent:
+      Mass: 1
+      CenterMass: [0, 0, 0]
+      Offset: [0, 0, 0]
+      UseGravity: false
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      IsStatic: true
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Restitution: 0.600000024
+      Friction: 0.600000024
+    TransformComponent:
+      Translation: [0, 0, 35.5452118]
+      Rotation: [0, 0, 0.000244479626, 0.99999994]
+      Scale: [8.41690826, 1, 5.38596869]
+      Visible: true
+    StaticMeshComponent:
+      Name: ""
+      Type: 1
+      HMesh: 0
+      HMaterial: 4580544633437848763
+  - Entity: 2723873067466865669
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Cubes
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+  - Entity: 3089457321010985007
+    Type: Entity
+    Parent: 2723873067466865669
+    TagComponent:
+      Tag: Red
+    RigidbodyComponent:
+      Mass: 1
+      CenterMass: [0, 0, 0]
+      Offset: [0, 0, 0]
+      UseGravity: false
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      IsStatic: false
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Restitution: 0.600000024
+      Friction: 0.600000024
+    TransformComponent:
+      Translation: [0, 6.99444246, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 0.999999881, 0.999999881]
+      Visible: true
+    StaticMeshComponent:
+      Name: ""
+      Type: 1
+      HMesh: 0
+      HMaterial: 7850902027858852768
+  - Entity: 4053462338176422244
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Lighting
+    TransformComponent:
+      Translation: [8.07791805, 26.3676605, 21.0956764]
+      Rotation: [0, 0, 0, 1]
+      Scale: [0.999992847, 0.999893725, 0.999991715]
+      Visible: true
+    LightComponent:
+      Type: DIRECTIONAL
+      Color: [0.77021277, 0.77021277, 0.77021277, 1]
+      Near: 1
+      Far: 50
+      OrthoSize: 50
+      Ambient: [0.621276617, 0.621276617, 0.621276617, 0.200000003]
+      Diffuse: 0
+      Specular: 0
+  - Entity: 4200692951670387674
+    Type: Entity
+    Parent: 2723873067466865669
+    TagComponent:
+      Tag: Plane
+    RigidbodyComponent:
+      Mass: 1
+      CenterMass: [0, 0, 0]
+      Offset: [0, 0, 0]
+      UseGravity: false
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      IsStatic: true
+    BoxColliderComponent:
+      Size: [0.5, 0.5, 0.5]
+      Restitution: 0.600000024
+      Friction: 0.600000024
+    TransformComponent:
+      Translation: [0.000977951451, 0, 0]
+      Rotation: [0, 0, 0.000244487863, 0.99999994]
+      Scale: [30, 1, 30]
+      Visible: true
+    StaticMeshComponent:
+      Name: ""
+      Type: 1
+      HMesh: 0
+      HMaterial: 4580544633437848763

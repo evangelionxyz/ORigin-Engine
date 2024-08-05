@@ -13,8 +13,17 @@ namespace origin
 	struct ModelLoader
 	{
 	public:
-		static MeshData LoadModel(const char *filepath);
-		static void ProcessMesh(const MeshData &data, std::shared_ptr<VertexArray> &vertexArray, std::shared_ptr<VertexBuffer> &vertexBuffer);
+		static std::shared_ptr<MeshData> LoadModel(const std::filesystem::path &filepath);
+		static std::shared_ptr<AnimatedMeshData> LoadAnimatedModel(const std::filesystem::path &);
+
+		static void ProcessMesh(const std::shared_ptr<MeshData> &data,
+			std::shared_ptr<VertexArray> &vertexArray,
+			std::shared_ptr<VertexBuffer> &vertexBuffer);
+
+
+        static void ProcessAnimatedMesh(const std::shared_ptr<AnimatedMeshData> &data,
+            std::shared_ptr<VertexArray> &vertexArray,
+            std::shared_ptr<VertexBuffer> &vertexBuffer);
 	};
 }
 

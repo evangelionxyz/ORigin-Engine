@@ -4,7 +4,6 @@
 
 #include "UIEditor.h"
 #include "SceneHierarchyPanel.h"
-#include "ModelLoaderPanel.h"
 #include "entt/entt.hpp"
 
 #include "Origin/GUI/UI.h"
@@ -340,7 +339,7 @@ namespace origin {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 		ImGui::PushItemWidth(-1);
 
-		if (ImGui::Button("Add Component"))
+		if (ImGui::Button("Add"))
 			ImGui::OpenPopup("AddComponent");
 
 		if (ImGui::BeginPopup("AddComponent"))
@@ -349,37 +348,39 @@ namespace origin {
 			char searchBuffer[256];
 			strncpy(searchBuffer, search.c_str(), sizeof(searchBuffer) - 1);
 			if (ImGui::InputText("##SearchComponent", searchBuffer, sizeof(searchBuffer)))
+			{
 				search = std::string(searchBuffer);
-
-			DisplayAddComponentEntry<ScriptComponent>("SCRIPT");
-			DisplayAddComponentEntry<CameraComponent>("CAMERA");
-			DisplayAddComponentEntry<AudioComponent>("AUDIO");
-			DisplayAddComponentEntry<AudioListenerComponent>("AUDIO LISTENER");
+			}
+			DisplayAddComponentEntry<ScriptComponent>("C# Script");
+			DisplayAddComponentEntry<CameraComponent>("Camera");
 			DisplayAddComponentEntry<UIComponent>("UI");
-			DisplayAddComponentEntry<SpriteRenderer2DComponent>("2D SPRITE RENDERER 2D");
-			DisplayAddComponentEntry<BoxCollider2DComponent>("2D BOX COLLIDER");
-			DisplayAddComponentEntry<CircleCollider2DComponent>("2D CIRCLE COLLIDER");
-			DisplayAddComponentEntry<RevoluteJoint2DComponent>("2D REVOLUTE JOINT");
-			DisplayAddComponentEntry<SpriteAnimationComponent>("2D SPRITE ANIMATION");
-			DisplayAddComponentEntry<CircleRendererComponent>("2D CIRCLE RENDERER 2D");
-			DisplayAddComponentEntry<Rigidbody2DComponent>("2D RIGIDBODY");
-			DisplayAddComponentEntry<StaticMeshComponent>("STATIC MESH");
-			DisplayAddComponentEntry<ModelComponent>("MODEL");
-			DisplayAddComponentEntry<ParticleComponent>("PARTICLE");
-			DisplayAddComponentEntry<TextComponent>("TEXT COMPONENT");
-			DisplayAddComponentEntry<LightComponent>("LIGHTING");
-            DisplayAddComponentEntry<RigidbodyComponent>("RIGIDBODY");
-            DisplayAddComponentEntry<BoxColliderComponent>("BOX COLLIDER");
-            DisplayAddComponentEntry<SphereColliderComponent>("SPHERE COLLIDER");
-            DisplayAddComponentEntry<CapsuleColliderComponent>("CAPSULE COLLIDER");
-
+			DisplayAddComponentEntry<TextComponent>("Text");
+			DisplayAddComponentEntry<ParticleComponent>("Particle");
+			DisplayAddComponentEntry<AudioComponent>("Audio Source");
+			DisplayAddComponentEntry<AudioListenerComponent>("Audio Listener");
+			ImGui::Separator();
+			DisplayAddComponentEntry<SpriteRenderer2DComponent>("Sprite Renderer");
+			DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
+			DisplayAddComponentEntry<RevoluteJoint2DComponent>("Revolute Joint 2D");
+			DisplayAddComponentEntry<SpriteAnimationComponent>("Sprite Animation");
+			DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
+			DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody 2D");
+			ImGui::Separator();
+			DisplayAddComponentEntry<StaticMeshComponent>("Static Mesh");
+			DisplayAddComponentEntry<AnimatedMeshComponent>("Animated Mesh");
+			DisplayAddComponentEntry<LightComponent>("Lighting");
+            DisplayAddComponentEntry<RigidbodyComponent>("Rigidbody");
+            DisplayAddComponentEntry<BoxColliderComponent>("Box Collider");
+            DisplayAddComponentEntry<SphereColliderComponent>("Sphere Collider");
+            DisplayAddComponentEntry<CapsuleColliderComponent>("Capsule Collider");
 			ImGui::EndPopup();
 		}
 
 		ImGui::PopStyleVar();
 		ImGui::PopItemWidth();
 
-		DrawComponent<TransformComponent>("TRANSFORM", entity, [&](auto &transform)
+		DrawComponent<TransformComponent>("Transform", entity, [&](auto &transform)
 		{
 			bool changed = false;
 
@@ -412,7 +413,31 @@ namespace origin {
 
 		DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
 		{
-			std::string label = "Default Material";
+			ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+
+            // Model Button
+            ImGui::Button("Drop model", buttonSize);
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                {
+					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+                    if (AssetManager::GetAssetType(handle) == AssetType::Mesh)
+                    {
+                        component.HMesh = handle;
+                        component.Data = AssetManager::GetAsset<MeshData>(handle);
+						ModelLoader::ProcessMesh(component.Data, component.Va, component.Vb);
+						component.mType = StaticMeshComponent::Type::Default;
+                    }
+                    else
+                    {
+                        OGN_CORE_WARN("Wrong asset type!");
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+			std::string materialLabel = "Default Material";
 
 			std::shared_ptr<Material> material;
 			if (component.HMaterial)
@@ -420,22 +445,22 @@ namespace origin {
 				material = AssetManager::GetAsset<Material>(component.HMaterial);
 				if (material)
 				{
-					label = material->GetName();
+					materialLabel = material->GetName();
 				}
 				else
 				{
-					label = "Invalid";
+					materialLabel = "Invalid";
 				}
 			}
 			else
 			{
                 material = Renderer::GetMaterial("Mesh");
-				label = material->GetName();
+				materialLabel = material->GetName();
 			}
 
-            ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
             // Material Button
-            ImGui::Button(label.c_str(), buttonSize);
+			ImGui::SameLine();
+            ImGui::Button(materialLabel.c_str(), buttonSize);
             if (ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -460,121 +485,41 @@ namespace origin {
 			}
 		});
 
-		DrawComponent<ModelComponent>("MODEL", entity, [&, scene = m_Scene](auto &component)
+        DrawComponent<AnimatedMeshComponent>("Animated Mesh", entity, [&](auto &component)
+        {
+            ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+
+            // Model Button
+            ImGui::Button("Drop model", buttonSize);
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                {
+                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+                    if (AssetManager::GetAssetType(handle) == AssetType::AnimatedMesh)
+                    {
+                        component.HMesh = handle;
+                        component.Data = AssetManager::GetAsset<AnimatedMeshData>(handle);
+                        ModelLoader::ProcessAnimatedMesh(component.Data, component.Va, component.Vb);
+                    }
+                    else
+                    {
+                        OGN_CORE_WARN("Wrong asset type!");
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+        });
+
+		DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
 		{
-			std::string label = "None";
-
-			ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
-			// Model Button
-			ImGui::Button(label.c_str(), buttonSize);
-			if (ImGui::BeginDragDropTarget())
+			if(ImGui::Button("Edit"))
 			{
-				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-				{
-					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-					if (AssetManager::GetAssetType(handle) == AssetType::Model)
-					{
-						component.Handle = handle;
-						UUID uuid = entity.GetUUID();
-						ModelLoaderPanel::Show(uuid, &component, handle, scene.get());
-					}
-					else
-					{
-						OGN_CORE_WARN("Wrong asset type!");
-					}
-				}
-				ImGui::EndDragDropTarget();
+				UIEditor::Get()->SetActive(&component);
 			}
+		});
 
-			const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
-			const float xSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-
-			if (component.Handle)
-			{
-				// model x button
-				{
-					ImGui::SameLine();
-					ImGui::PushID("model_delete");
-
-					if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
-					{
-						component.Handle = UUID(0);
-						UUID uuid = entity.GetUUID();
-
-						// TODO: Fix the removing itself
-						m_Scene->m_Registry.view<IDComponent>().each([&](entt::entity e, auto idc)
-						{
-							if (EntityManager::IsParent(idc.ID, uuid, m_Scene.get()))
-							{
-								Entity entt = { e, m_Scene.get() };
-								m_Scene->m_Registry.destroy(e);
-								m_Scene->m_EntityStorage.erase(std::remove_if(m_Scene->m_EntityStorage.begin(), m_Scene->m_EntityStorage.end(),
-									[&](auto e)
-								{
-									return e.first == idc.ID;
-								}), m_Scene->m_EntityStorage.end());
-							}
-						});
-					}
-							
-					ImGui::PopID();
-
-#if 0
-					if (component.HMaterial != 0)
-					{
-						if (AssetManager::IsAssetHandleValid(component.HMaterial) && AssetManager::GetAssetType(component.HMaterial) == AssetType::Material)
-						{
-							const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.HMaterial);
-							label = metadata.Filepath.filename().string();
-						}
-						else
-						{
-							label = "Default";
-						}
-					}
-#endif
-				}
-
-					
-#if 0
-				{
-					// Material Button
-					ImGui::Button(label.c_str(), buttonSize);
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-						{
-							AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-							if (AssetManager::GetAssetType(handle) == AssetType::Material)
-								component.HMaterial = handle;
-							else
-								OGN_CORE_WARN("Wrong asset type!");
-						}
-						ImGui::EndDragDropTarget();
-					}
-
-					if (component.HMaterial)
-					{
-						ImGui::SameLine();
-						ImGui::PushID("material_delete");
-						if (ImGui::Button("X", ImVec2(xSize, buttonSize.y)))
-							component.HMaterial = 0;
-						ImGui::PopID();
-					}
-				}
-#endif
-			}
-			});
-
-			DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
-			{
-				if(ImGui::Button("Edit"))
-				{
-					UIEditor::Get()->SetActive(&component);
-				}
-			});
-
-		DrawComponent<CameraComponent>("CAMERA", entity, [](auto &component)
+		DrawComponent<CameraComponent>("Camera", entity, [](auto &component)
 		{
 			bool changed = false;
             if (!IsDragging)
@@ -687,7 +632,7 @@ namespace origin {
             IsDragging = changed;
 		});
 
-		DrawComponent<SpriteAnimationComponent>("SPRITE ANIMATION", entity, [](auto &component)
+		DrawComponent<SpriteAnimationComponent>("Sprite Animation", entity, [](auto &component)
 		{
 			for (auto anim : component.State->GetStateStorage())
 			{
@@ -695,7 +640,7 @@ namespace origin {
 			}
 		});
 
-		DrawComponent<AudioComponent>("AUDIO SOURCE", entity, [entity, scene = m_Scene](auto &component)
+		DrawComponent<AudioComponent>("Audio Source", entity, [entity, scene = m_Scene](auto &component)
 			{
 				std::string label = "None";
 
@@ -788,7 +733,7 @@ namespace origin {
 				}
 			});
 
-		DrawComponent<TextComponent>("TEXT", entity, [](auto &component) 
+		DrawComponent<TextComponent>("Text", entity, [](auto &component) 
 			{
 				ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
 				if (ImGui::BeginDragDropTarget())
@@ -819,7 +764,7 @@ namespace origin {
 
 			});
 
-		DrawComponent<ParticleComponent>("PARTICLE", entity, [](auto &component)
+		DrawComponent<ParticleComponent>("Particle", entity, [](auto &component)
 			{
 				float columnWidth = 100.0f;
 
@@ -836,7 +781,7 @@ namespace origin {
 				UI::DrawFloatControl("Life Time", &component.LifeTime, 0.01f, 0.0f, 1000.0f, 1.0f, columnWidth);
 			});
 
-		DrawComponent<SpriteRenderer2DComponent>("SPRITE RENDERER 2D", entity, [](auto &component)
+		DrawComponent<SpriteRenderer2DComponent>("Sprite Renderer", entity, [](auto &component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
@@ -900,7 +845,7 @@ namespace origin {
 				}
 			});
 
-		DrawComponent<LightComponent>("LIGHTING", entity, [](auto &component)
+		DrawComponent<LightComponent>("Lighting", entity, [](auto &component)
 			{
 				const char* lightTypeString[3] = { "Spot", "Point", "Directional" };
 				const char* currentLightTypeString = lightTypeString[static_cast<int>(component.Light->Type)];
@@ -966,14 +911,14 @@ namespace origin {
 				
 			});
 
-		DrawComponent<CircleRendererComponent>("CIRCLE RENDERER", entity, [](auto &component)
+		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto &component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 				ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
 				ImGui::DragFloat("Fade", &component.Fade, 0.025f, 0.0f, 1.0f);
 			});
 
-		DrawComponent<Rigidbody2DComponent>("RIGID BODY 2D", entity, [](auto &component)
+		DrawComponent<Rigidbody2DComponent>("Rigidbody 2D", entity, [](auto &component)
 		{
 			UI::DrawCheckbox("Enabled", &component.Enabled);
 			const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic" };
@@ -1007,7 +952,7 @@ namespace origin {
 			UI::DrawCheckbox("Bullet", &component.Bullet);
 		});
 
-		DrawComponent<BoxCollider2DComponent>("BOX COLLIDER 2D", entity, [](auto &component)
+		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto &component)
 			{
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
@@ -1036,7 +981,7 @@ namespace origin {
 				}
 			});
 
-		DrawComponent<CircleCollider2DComponent>("CIRCLE COLLIDER 2D", entity, [](auto &component)
+		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto &component)
 			{
 				ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
@@ -1063,7 +1008,7 @@ namespace origin {
 				}
 			});
 
-		DrawComponent<RevoluteJoint2DComponent>("REVOLUTE JOINT 2D", entity, [&](auto &component)
+		DrawComponent<RevoluteJoint2DComponent>("Revolute Joint 2D", entity, [&](auto &component)
 			{
 				std::string label = "Connected Body";
 
@@ -1128,7 +1073,7 @@ namespace origin {
 				}
 				
 			});
-        DrawComponent<RigidbodyComponent>("RIGIDBODY", entity, [scene = m_Scene](auto &component)
+        DrawComponent<RigidbodyComponent>("Rigidbody", entity, [scene = m_Scene](auto &component)
         {
             const char *motionQuality[2] = { "Discrete", "LinearCast" };
             const char *currentMotionQuality = motionQuality[static_cast<int>(component.MotionQuality)];
@@ -1192,21 +1137,21 @@ namespace origin {
 			}
         });
 
-        DrawComponent<BoxColliderComponent>("BOX COLLIDER", entity, [](auto &component)
+        DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto &component)
         {
             UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
             UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
 
-        DrawComponent<SphereColliderComponent>("SPHERE COLLIDER", entity, [](auto &component)
+        DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto &component)
         {
             UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
             UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
 
-        DrawComponent<CapsuleColliderComponent>("CAPSULE COLLIDER", entity, [](auto &component)
+        DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, [](auto &component)
         {
             UI::DrawFloatControl("Half Height", &component.HalfHeight, 0.025f, 0.0f, 10.0f, 1.0f);
             UI::DrawFloatControl("Radius", &component.Radius, 0.025f, 0.0f, 10.0f, 1.0f);
@@ -1214,7 +1159,7 @@ namespace origin {
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });
 
-		DrawComponent<ScriptComponent>("SCRIPT", entity, [entity, scene = m_Scene](auto &component) mutable
+		DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_Scene](auto &component) mutable
 			{
 				bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
 				bool isSelected = false;
@@ -1543,7 +1488,7 @@ namespace origin {
 					ImGui::PopStyleColor();
 			});
 
-		DrawComponent<AudioListenerComponent>("AUDIO LISTENER", entity, [](auto &component)
+		DrawComponent<AudioListenerComponent>("Audio Listener", entity, [](auto &component)
 			{
 				UI::DrawCheckbox("Enable", &component.Enable);
 			});

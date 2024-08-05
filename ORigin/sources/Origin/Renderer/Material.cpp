@@ -17,7 +17,7 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		m_Shader = Shader::Create("Resources/Shaders/SPIR-V/Mesh.glsl", true);
+		m_Shader = Renderer::GetShader("BatchMesh");
 		m_Shader->Enable();
 		m_UniformBuffer = UniformBuffer::Create(sizeof(MaterialBufferData), MATERIAL_BINDING);
 

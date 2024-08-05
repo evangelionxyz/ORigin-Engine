@@ -6,12 +6,13 @@
 #include "Origin/Math/Math.h"
 #include "Origin/Core/UUID.h"
 #include "Origin/Renderer/Texture.h"
-#include "Origin/Renderer/Model.h"
 #include "Origin/Renderer/Font.h"
 #include "Origin/Renderer/ParticleSystem.h"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Renderer/MeshVertexData.h"
+#include "Origin/Renderer/VertexArray.h"
+#include "Origin/Renderer/Buffer.h"
 
 #include "Origin/Scene/Camera.h"
 #include "Origin/Scene/SceneCamera.h"
@@ -174,26 +175,38 @@ namespace origin
 	public:
 		enum class Type
 		{
-			Cube = 0,
+			Default = 0,
+			Cube,
 			Sphere,
 			Capsule
 		};
 
 		std::string Name;
-		MeshData Data;
+		std::shared_ptr<MeshData> Data;
 		AssetHandle HMaterial = UUID(0);
-		Type mType;
+		AssetHandle HMesh = UUID(0);
+		Type mType = Type::Default;
+
+		std::shared_ptr<VertexArray> Va;
+		std::shared_ptr<VertexBuffer> Vb;
 
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
 
-	class ModelComponent
+	class AnimatedMeshComponent
 	{
 	public:
-		AssetHandle Handle = UUID(0);
-		ModelComponent() = default;
-		ModelComponent(const ModelComponent &) = default;
+        std::string Name;
+        std::shared_ptr<AnimatedMeshData> Data;
+        AssetHandle HMaterial = UUID(0);
+        AssetHandle HMesh = UUID(0);
+
+        std::shared_ptr<VertexArray> Va;
+        std::shared_ptr<VertexBuffer> Vb;
+
+		AnimatedMeshComponent() = default;
+		AnimatedMeshComponent(const AnimatedMeshComponent &) = default;
 	};
 
 	class TextComponent
@@ -201,11 +214,9 @@ namespace origin
 	public:
 		AssetHandle FontHandle = UUID(0);
 		std::string TextString = "This is text component";
-
 		glm::vec4 Color = glm::vec4(1.0f);
 		float Kerning = 0.0f;
 		float LineSpacing = 0.0f;
-
 		bool ScreenSpace = false;
 
 		TextComponent() = default;
@@ -648,7 +659,7 @@ namespace origin
 		LightComponent,
 		SpriteRenderer2DComponent, 
 		StaticMeshComponent, 
-		ModelComponent, 
+		AnimatedMeshComponent, 
 		TextComponent,
 		CircleRendererComponent, 
 		ParticleComponent, 

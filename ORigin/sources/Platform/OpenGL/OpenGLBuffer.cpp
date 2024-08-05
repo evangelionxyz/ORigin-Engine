@@ -50,7 +50,7 @@ namespace origin
 		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
 		GLenum error = glGetError();
-		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer.ctor(void*,uint32_t)] {0}", error);
+		//OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer.ctor(void*,uint32_t)] {0}", error);
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()

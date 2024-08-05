@@ -18,6 +18,8 @@ namespace origin
         static void NextBatch();
 		static void End();
 
+		static void DrawMesh(const glm::mat4 &viewProjection, const glm::mat4 &transform, const std::shared_ptr<VertexArray> &va, int entityId, Shader *shader = nullptr);
+
 		static void DrawCube(const glm::mat4 &transform, glm::vec4 color = glm::vec4(1.0f), int entityID = -1);
 
 		static void DrawCube(const glm::mat4 &transform, 

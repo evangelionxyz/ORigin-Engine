@@ -9,6 +9,7 @@
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Core/Application.h"
+#include "Origin/Utils/Utils.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -286,8 +287,13 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		s_ScriptEngineData->AppAssemblyFilepath = filepath;
+		if (!std::filesystem::exists(filepath))
+		{
+			auto buildScriptPath = Project::GetActive()->GetProjectDirectory() / "build.bat";
+			Utils::ExecuteScript(buildScriptPath.generic_string());
+		}
 
+		s_ScriptEngineData->AppAssemblyFilepath = filepath;
 		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		if (!s_ScriptEngineData->AppAssembly)
 		{

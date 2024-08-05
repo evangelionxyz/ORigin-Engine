@@ -281,9 +281,6 @@ namespace origin {
 
 			RenderCommand::DrawIndexed(s_Render2DData.TextVertexArray, s_Render2DData.TextIndexCount);
 			Renderer::GetStatistics().DrawCalls++;
-
-			for (uint32_t i = 0; i < s_Render2DData.FontAtlasTextureIndex; i++)
-				s_Render2DData.FontAtlasTextureSlots[i]->Unbind();
 		}
 
 		if (s_Render2DData.LineVertexCount)
@@ -320,9 +317,6 @@ namespace origin {
 
 			RenderCommand::DrawIndexed(s_Render2DData.QuadVertexArray, s_Render2DData.QuadIndexCount);
 			Renderer::GetStatistics().DrawCalls++;
-
-			for (uint32_t i = 0; i < s_Render2DData.TextureSlotIndex; i++)
-				s_Render2DData.TextureSlots[i]->Unbind();
 		}
 	}
 

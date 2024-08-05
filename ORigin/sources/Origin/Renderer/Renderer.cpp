@@ -124,10 +124,12 @@ namespace origin {
 		s_ShaderLibrary.Load("Line2D", "Resources/Shaders/SPIR-V/Line2D.glsl", true);
 		s_ShaderLibrary.Load("Circle2D", "Resources/Shaders/SPIR-V/Circle2D.glsl", true);
 		s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true);
-		s_ShaderLibrary.Load("Mesh", "Resources/Shaders/SPIR-V/Mesh.glsl", true);
+		s_ShaderLibrary.Load("BatchMesh", "Resources/Shaders/SPIR-V/BatchMesh.glsl", true);
 		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true);
 		s_ShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true);
 
+		s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl");
+		s_ShaderLibrary.Load("AnimatedMesh", "Resources/Shaders/AnimatedMesh.glsl");
 		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl");
 		s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl");
 		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl");
@@ -136,7 +138,7 @@ namespace origin {
 
 	void Renderer::LoadMaterials()
 	{
-		std::shared_ptr<Material>material = Material::Create(Renderer::GetShader("Mesh"));
+		std::shared_ptr<Material>material = Material::Create(Renderer::GetShader("BatchMesh"));
 		material->SetName("Default Material");
 		s_MaterialLibrary.Add("Mesh", material);
 	}
