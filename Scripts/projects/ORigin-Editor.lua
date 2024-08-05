@@ -5,8 +5,6 @@ project "Editor"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
-    kind "ConsoleApp"
-
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
     objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
 
@@ -85,6 +83,7 @@ project "Editor"
     -- //////////////////////////////
     -- Default
     filter "configurations:Debug"
+        kind "ConsoleApp"
         runtime "Debug"
         optimize "off"
         symbols "on"
@@ -94,6 +93,7 @@ project "Editor"
         }
 
     filter "configurations:Release"
+        kind "ConsoleApp"
         runtime "Release"
         optimize "on"
         symbols "off"
@@ -103,10 +103,11 @@ project "Editor"
         }
 
     filter "configurations:Dist"
+        kind "WindowedApp"
         runtime "Release"
         optimize "on"
         symbols "off"
         defines {
             "GLFW_INCLUDE_NONE",
-            "OGN_RELEASE", "NDEBUG"
+            "OGN_DISTRIBUTION", "NDEBUG"
         }

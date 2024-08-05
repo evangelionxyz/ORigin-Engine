@@ -21,7 +21,13 @@ namespace origin
 	}
 }
 
-int main(int argc, char** argv)
+#ifdef OGN_DISTRIBUTION
+	#ifdef OGN_PLATFORM_WINDOWS
+		#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+	#endif
+#endif
+
+int main(int argc, char **argv)
 {
 	return origin::Main(argc, argv);
 }

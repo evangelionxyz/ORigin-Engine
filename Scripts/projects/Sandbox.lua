@@ -90,5 +90,5 @@ project "Sandbox"
         runtime "Release"
         defines {
             "GLFW_INCLUDE_NONE",
-            "OGN_RELEASE", "NDEBUG"
+            "OGN_DISTRIBUTION", "NDEBUG"
         }

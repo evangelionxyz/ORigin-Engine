@@ -152,5 +152,5 @@ project "ORigin"
         filter "configurations:Dist"
             runtime "Release"
             optimize "on"
-            defines { "OGN_RELEASE", "NDEBUG" }
+            defines { "OGN_DISTRIBUTION", "NDEBUG" }
   
