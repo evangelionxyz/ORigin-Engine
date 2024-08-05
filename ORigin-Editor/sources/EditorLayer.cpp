@@ -152,29 +152,24 @@ namespace origin
 
 		SystemUpdate(ts);
 
-        m_ActiveScene->RenderShadow(m_EditorCamera.GetViewProjection());
+		m_ActiveScene->PreRender(m_EditorCamera, ts);
 
-		m_ActiveScene->GetUIRenderer()->RenderFramebuffer();
+        m_Framebuffer->Bind();
+        RenderCommand::ClearColor(m_ClearColor);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        m_Framebuffer->ClearAttachment(1, -1);
+        Render(ts);
+        m_ActiveScene->GetUIRenderer()->Render();
+        if (IsViewportHovered && IsViewportFocused)
+        {
+            glReadBuffer(GL_BACK);
+            m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
+            m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
+            m_Gizmos->SetHovered(m_PixelData);
+        }
+        m_Framebuffer->Unbind();
 
-		{
-			m_Framebuffer->Bind();
-			RenderCommand::ClearColor(m_ClearColor);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-			m_Framebuffer->ClearAttachment(1, -1);
-
-			Render(ts);
-			m_ActiveScene->GetUIRenderer()->Render();
-
-			if (IsViewportHovered && IsViewportFocused)
-			{
-				glReadBuffer(GL_BACK);
-				m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
-				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-				m_Gizmos->SetHovered(m_PixelData);
-			}
-
-			m_Framebuffer->Unbind();
-		}
+		m_ActiveScene->PostRender(m_EditorCamera, ts);
 
 		InputProcedure(ts);
 	}
@@ -251,7 +246,6 @@ namespace origin
 		}
 
 		m_SceneState = SceneState::Play;
-
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart();
 		m_SceneHierarchy.SetActiveScene(m_ActiveScene);
@@ -283,7 +277,7 @@ namespace origin
 		m_SceneState = SceneState::Simulate;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
-		m_ActiveScene->OnSimulationStart();
+		m_ActiveScene->OnRuntimeStart();
 		m_SceneHierarchy.SetActiveScene(m_ActiveScene);
 	}
 
@@ -293,13 +287,9 @@ namespace origin
 
 		ScriptEngine::ClearSceneContext();
 
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
 		{
 			m_ActiveScene->OnRuntimeStop();
-		}
-		else if (m_SceneState == SceneState::Simulate)
-		{
-			m_ActiveScene->OnSimulationStop();
 		}
 
 		m_SceneHierarchy.SetActiveScene(m_EditorScene);
@@ -570,8 +560,9 @@ namespace origin
 
 			if (ImGui::BeginMenu("Window"))
 			{
-				ImGui::MenuItem("Style Editor", nullptr, &guiMenuStyle);
 				ImGui::MenuItem("Render Settings", nullptr, &guiRenderSettingsWindow);
+				ImGui::MenuItem("Console", nullptr, &guiConsoleWindow);
+				ImGui::MenuItem("Style Editor", nullptr, &guiMenuStyleWindow);
 				ImGui::MenuItem("Demo Window", nullptr, &guiImGuiDemoWindow);
 
 				ImGui::EndMenu();
@@ -613,7 +604,6 @@ namespace origin
 			{
 				CameraComponent cc = cam.GetComponent<CameraComponent>();
 				m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
-				m_ActiveScene->Render3DScene(cc.Camera, entt::null);
 			}
 			break;
 		}
@@ -623,8 +613,7 @@ namespace origin
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-			m_ActiveScene->OnEditorUpdate(ts, m_EditorCamera);
-			m_ActiveScene->Render3DScene(m_EditorCamera, m_SceneHierarchy.GetSelectedEntity());
+			m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
@@ -635,8 +624,7 @@ namespace origin
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-			m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
-			m_ActiveScene->Render3DScene(m_EditorCamera, m_SceneHierarchy.GetSelectedEntity());
+			m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
@@ -768,20 +756,24 @@ namespace origin
 			break;
 		}
 
+        // Gizmos
+        ImGuizmo::SetDrawlist();
+
+        glm::vec2 windowMin = { m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y };
+        glm::vec2 windowMax = { m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x, m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y };
+
+        ImGuizmo::SetRect(windowMin.x, windowMin.y, windowMax.x, windowMax.y);
+        ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
+
+        const glm::mat4 &cameraProjection = m_EditorCamera.GetProjectionMatrix();
+        const glm::mat4 &cameraView = m_EditorCamera.GetViewMatrix();
+
 		Entity entity = m_SceneHierarchy.GetSelectedEntity();
 		if (entity && m_Gizmos->GetType() != GizmoType::NONE)
 		{
-			// Gizmos
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y, m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x, m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y);
-			ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
-
 			auto &tc = entity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
 			auto &idc = entity.GetComponent<IDComponent>();
-
-			const glm::mat4 &cameraProjection = m_EditorCamera.GetProjectionMatrix();
-			const glm::mat4 &cameraView = m_EditorCamera.GetViewMatrix();
 
 			float snapValues[] = { snapValue, snapValue, snapValue };
 			float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
@@ -794,8 +786,7 @@ namespace origin
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				m_ImGuizmoOperation, static_cast<ImGuizmo::MODE>(m_GizmosMode), glm::value_ptr(transform), nullptr,
 				snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
-
-            
+			
 			static bool changed = false;
 			if (ImGuizmo::IsUsing())
 			{
@@ -837,7 +828,6 @@ namespace origin
 
 					tc.Scale = scale;
 				}
-
 				changed = true;
 			}
 
@@ -853,11 +843,6 @@ namespace origin
             }
 		}
 
-		if (ImGui::IsWindowFocused() && Input::Get().IsKeyPressed(Key::Escape))
-		{
-			m_Gizmos->SetType(GizmoType::NONE);
-		}
-
 		if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_SceneState == SceneState::Play)
 		{
 			m_ActiveScene->LockMouse();
@@ -870,10 +855,12 @@ namespace origin
 	void EditorLayer::SceneViewportToolbar()
 	{
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+		auto &style = ImGui::GetStyle();
+		
 		if (ImGui::Begin("Toolbar", nullptr, window_flags))
 		{
 			const auto canvasPos = ImGui::GetCursorScreenPos();
-			const auto canvasSize = ImGui::GetContentRegionAvail();
+			const auto canvasSize = ImVec2(ImGui::GetContentRegionAvail().x, 36.0f);
 
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
 
@@ -1060,14 +1047,35 @@ namespace origin
                     }
                     if (ImGui::TreeNodeEx("Camera Settings", treeFlags))
                     {
+						ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
+
+						// Projection Type Settings
+                        const char *CMPTypeString[] = { "Perspective", "Orthographic" };
+                        const char *currnentCMPTypeString = CMPTypeString[static_cast<int>(m_EditorCamera.GetProjectionType())];
+						ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
+						if (ImGui::BeginCombo("Projection", currnentCMPTypeString))
+						{
+							for (int i = 0; i < 2; i++)
+							{
+								const bool isSelected = currnentCMPTypeString == CMPTypeString[i];
+								if (ImGui::Selectable(CMPTypeString[i], isSelected))
+								{
+									currnentCMPTypeString = CMPTypeString[i];
+                                    m_EditorCamera.SetProjectionType(static_cast<ProjectionType>(i));
+
+                                } if (isSelected) ImGui::SetItemDefaultFocus();
+                            } ImGui::EndCombo();
+                        }
+
+
+						// Projection settings
                         switch (m_EditorCamera.GetProjectionType())
                         {
                         case ProjectionType::Perspective:
                         {
-                            const char *CMSTypeString[] = { "PIVOT", "FREE MOVE" };
+                            const char *CMSTypeString[] = { "Pivot", "Free Move" };
                             const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
-                            ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
-                            if (ImGui::BeginCombo("CAMERA STYLE", currentCMSTypeString))
+                            if (ImGui::BeginCombo("Camera Style", currentCMSTypeString))
                             {
                                 for (int i = 0; i < 2; i++)
                                 {
@@ -1078,16 +1086,21 @@ namespace origin
                                         m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
 
                                     } if (isSelected) ImGui::SetItemDefaultFocus();
-                                } ImGui::EndCombo();
+                                }
+								ImGui::EndCombo();
                             }
 
                             float fov = m_EditorCamera.GetFOV();
-                            if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
+							if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
+							{
                                 m_EditorCamera.SetFov(fov);
+							}
 
                             UI::DrawCheckbox("Grid 3D", &m_Draw3DGrid);
-                            if (m_Draw3DGrid)
+							if (m_Draw3DGrid)
+							{
                                 UI::DrawIntControl("Grid Size", &m_3DGridSize, 1.0f);
+							}
                             break;
                         }
                         case ProjectionType::Orthographic:
@@ -1095,26 +1108,7 @@ namespace origin
                             break;
                         }
 
-                        ImGui::ColorEdit4("Background Color", glm::value_ptr(m_ClearColor));
-
-                        const char *RTTypeString[] = { "Normal", "HDR" };
-                        const char *currentRTTypeString = RTTypeString[m_RenderTarget];
-
-                        if (ImGui::BeginCombo("Render Target", currentRTTypeString))
-                        {
-                            for (int i = 0; i < 2; i++)
-                            {
-                                const bool isSelected = currentRTTypeString == RTTypeString[i];
-                                if (ImGui::Selectable(RTTypeString[i], isSelected))
-                                {
-                                    currentRTTypeString = RTTypeString[i];
-                                    m_RenderTarget = i;
-                                }
-                                if (isSelected) ImGui::SetItemDefaultFocus();
-                            }
-                            ImGui::EndCombo();
-                        }
-
+                        ImGui::ColorEdit4("Background", glm::value_ptr(m_ClearColor));
                         ImGui::TreePop();
                     }
 					ImGui::EndTabItem();
@@ -1155,9 +1149,9 @@ namespace origin
 				
 		ImGui::End();
 
-		if (guiMenuStyle)
+		if (guiMenuStyleWindow)
 		{
-			ImGui::Begin("Style Editor", &guiMenuStyle);
+			ImGui::Begin("Style Editor", &guiMenuStyleWindow);
 			ImGui::ShowStyleEditor();
 			ImGui::End();
 		}
@@ -1173,12 +1167,10 @@ namespace origin
         bool scrollToBottom = false;
         static bool autoScroll = true;
 		static size_t lastMessageCount = 0;
-        ImGuiStyle &style = ImGui::GetStyle();
-
 		ImGui::Begin("Console", &guiConsoleWindow);
         static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
         ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 25.0f), 0, windowFlags);
-		if (UI::DrawButton("CLEAR"))
+		if (UI::DrawButton("Clear"))
 		{
 			ConsoleManager::Get().Clear();
 			lastMessageCount = 0;
@@ -1189,20 +1181,26 @@ namespace origin
 			lastMessageCount = 0;
 		}
 		ImGui::EndChild();
-
 		ImGui::BeginChild("CONSOLE_CONTENT", ImGui::GetContentRegionAvail(), 0, windowFlags);
 
         // By default, if we don't enable ScrollX the sizing policy for each column is "Stretch"
         // All columns maintain a sizing weight, and they will occupy all available width.
-        static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersInnerH
-			| ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX;
+        static ImGuiTableFlags flags = ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_BordersInnerH
+			| ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 
-        if (ImGui::BeginTable("table1", 3, flags))
+        if (ImGui::BeginTable("CONSOLE_TABLE", 3, flags))
         {
-			ImGui::TableSetupScrollFreeze(0, 1);
-            ImGui::TableSetupColumn("Timestamp");
-            ImGui::TableSetupColumn("Message");
-            ImGui::TableSetupColumn("Type");
+            ImGui::TableSetupScrollFreeze(0, 1);
+
+            // Timestamp column: left-aligned, fixed size
+            ImGui::TableSetupColumn("Timestamp", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+
+            // Message column: stretches
+            ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_WidthStretch);
+
+            // Type column: right-aligned, fixed size
+            ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 40.0f);
+
             ImGui::TableHeadersRow();
 
 			ImGuiListClipper clipper;
@@ -1232,7 +1230,7 @@ namespace origin
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("%s", messages[row].Timestamp.c_str());
 					ImGui::TableSetColumnIndex(1);
-					ImGui::TextWrapped("%s", messages[row].Message.c_str());
+					ImGui::Text("%s", messages[row].Message.c_str());
 					ImGui::TableSetColumnIndex(2);
 
 					switch (messages[row].Type)
@@ -1245,32 +1243,29 @@ namespace origin
                     ImGui::PopStyleColor(1);
 				}
 			}
-
             if (scrollToBottom)
             {
                 ImGui::SetScrollHereY(1.0f);
                 scrollToBottom = false;
             }
-
             ImGui::EndTable();
         }
-
 		ImGui::EndChild();
-
 		ImGui::End();
     }
 
     bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
 		OGN_PROFILER_INPUT();
-		
 		return false;
 	}
 
 	void EditorLayer::InputProcedure(Timestep time)
 	{
-		if (m_SceneState == SceneState::Play || !(IsViewportHovered && IsViewportFocused))
+		if (m_SceneState == SceneState::Play || !(IsViewportHovered && IsViewportFocused)  || !m_SceneHierarchy.GetContext())
+		{
 			return;
+		}
 
 		const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
 		const glm::vec2 delta = Input::Get().GetMouseDelta();
@@ -1399,10 +1394,11 @@ namespace origin
 			{
 				m_ActiveScene->UnlockMouse();
 			}
-			if (m_SceneState != SceneState::Play && IsViewportFocused)
-			{
-				m_SceneHierarchy.SetSelectedEntity({});
-			}
+            else 
+            {
+				if((IsViewportFocused))
+					m_Gizmos->SetType(GizmoType::NONE);
+            }
 			break;
 		}
 		case Key::D:
@@ -1552,5 +1548,4 @@ namespace origin
 
 		return false;
 	}
-
 }

@@ -102,316 +102,126 @@ namespace origin
 		return Entity();
 	}
 
-    void Scene::Render3DScene(const Camera &camera, entt::entity selectedId)
+    void Scene::PreRender(const Camera &camera, Timestep ts)
     {
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_STENCIL_TEST);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        OGN_PROFILER_FUNCTION();
 
-        const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-        const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
-
-        // First pass: Render all objects and mark the selected object in the stencil buffer
-        for (auto &li : lightView)
+        const auto &view = m_Registry.view<IDComponent, TransformComponent>();
+        for (auto entity : view)
         {
-            const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(li);
-            if (!lightTC.Visible)
-                continue;
-
-            lc.Light->DirLightData.LightSpaceMat = lc.Light->GetShadow().ViewProjection;
-            lc.Light->DirLightData.Position = glm::vec4(lightTC.WorldTranslation, 1.0f);
-            lc.Light->LightingUBO->Bind();
-            lc.Light->LightingUBO->SetData(&lc.Light->DirLightData, sizeof(lc.Light->DirLightData));
-            MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
-
-            for (auto e : meshView)
+            const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
+            if (idc.Parent)
             {
-                const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
-                if (!tc.Visible)
-                    continue;
-
-                std::shared_ptr<Material> material;
-                if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
-                else material = Renderer::GetMaterial("Mesh");
-
-                // Set stencil function based on whether this is the selected entity
-                if (e == selectedId)
+                auto parent = GetEntityWithUUID(idc.Parent);
+                if (parent)
                 {
-                    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-                    glStencilMask(0xFF);
+                    auto &ptc = parent.GetComponent<TransformComponent>();
+                    glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
+                    tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+                    tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
+                    tc.WorldScale = tc.Scale;
                 }
-                else
-                {
-                    glStencilFunc(GL_ALWAYS, 0, 0xFF);
-                    glStencilMask(0x00);
-                }
-
-                MeshRenderer::Begin(camera);
-                switch (mc.mType)
-                {
-                case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(tc.GetTransform(), material.get(), (int)e);
-                    break;
-                case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), (int)e);
-                    break;
-                case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), (int)e);
-                    break;
-                }
-                MeshRenderer::End();
+            }
+            else
+            {
+                tc.WorldTranslation = tc.Translation;
+                tc.WorldRotation = tc.Rotation;
+                tc.WorldScale = tc.Scale;
             }
         }
 
-        // Second pass: Draw the outline for the selected object
-        if (m_Registry.valid(selectedId))
-        {
-			Entity entity = { selectedId, this };
-			if (entity.HasComponent<StaticMeshComponent>())
-			{
-				glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-				glStencilMask(0x00);
-                glEnable(GL_DEPTH_TEST);  // Enable depth testing
-                glDepthFunc(GL_LEQUAL);   // Change depth function to allow drawing on top of the object
-
-				Shader *outlineShader = Renderer::GetShader("Outline").get();
-				outlineShader->Enable();
-				outlineShader->SetMatrix("viewProjection", camera.GetViewProjection());
-
-				MeshRenderer::Begin(camera, outlineShader);
-
-				const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(selectedId);
-
-				// Calculate distance-based outline thickness
-				glm::vec3 cameraPosition = camera.GetPosition();
-				glm::vec3 objectPosition = tc.WorldTranslation;
-				float distance = glm::distance(cameraPosition, objectPosition);
-
-				// Calculate the object's bounding sphere radius (approximation)
-				float objectRadius = glm::length(tc.WorldScale) * 0.5f;
-
-				// Calculate the outline thickness
-				float baseThickness = 0.02f; // Adjust this value to change the base thickness
-				float thicknessFactor = baseThickness * (distance / objectRadius);
-
-				// Clamp the thickness factor to a reasonable range
-				thicknessFactor = glm::clamp(thicknessFactor, 0.001f, 0.1f);
-
-				glm::mat4 trA = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
-					* glm::toMat4(tc.WorldRotation)
-					* glm::scale(glm::mat4(1.0f), tc.WorldScale * (1.0f + thicknessFactor));
-
-				switch (mc.mType)
-				{
-				case StaticMeshComponent::Type::Cube:
-					MeshRenderer::DrawCube(trA, glm::vec4(1.0f), (int)selectedId);
-					break;
-				case StaticMeshComponent::Type::Sphere:
-					MeshRenderer::DrawSphere(trA, glm::vec4(1.0f), (int)selectedId);
-					break;
-				case StaticMeshComponent::Type::Capsule:
-					MeshRenderer::DrawCapsule(trA, glm::vec4(1.0f), (int)selectedId);
-					break;
-				}
-
-				MeshRenderer::End();
-				outlineShader->Disable();
-
-				// Reset state
-				glStencilMask(0xFF);
-				glStencilFunc(GL_ALWAYS, 0, 0xFF);
-				glEnable(GL_DEPTH_TEST);
-			}
-        }
-
-        glDisable(GL_STENCIL_TEST);
+		OnRenderShadow();
+		m_UIRenderer->RenderFramebuffer();
     }
 
-    void Scene::UpdateRuntime(Timestep ts)
+    void Scene::PostRender(const Camera &camera, Timestep ts)
+    {
+
+    }
+
+    void Scene::Update(Timestep ts)
 	{
-		if (!m_Paused || m_StepFrames-- > 0)
-		{
-			// Update Scripts
-			auto scriptView = m_Registry.view<ScriptComponent>();
-			for (auto e : scriptView)
-			{
-				Entity entity = { e, this };
-				if (entity)
-				{
-					ScriptEngine::OnUpdateEntity(entity, ts);
-				}
-			}
-
-			m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto &nsc)
-			{
-				if (nsc.Instance)
-				{
-					nsc.Instance->OnUpdate(time);
-				}
-			});
-
-			// Particle Update
-			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto &pc)
-			{
-				pc.Particle.OnUpdate(time);
-			});
-
-
-			// Animation
-			const auto &animView = m_Registry.view<SpriteAnimationComponent>();
-			for (const auto entity : animView)
-			{
-				auto &ac = animView.get<SpriteAnimationComponent>(entity);
-				if (ac.State->IsCurrentAnimationExists())
-				{
-					ac.State->OnUpdateRuntime(ts);
-				}
-			}
-
-			// Audio Update
-			const auto &audioView = m_Registry.view<TransformComponent, AudioComponent>();
-			for (auto entity : audioView)
-			{
-				auto [tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-
-				if (std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
-				{
-					audio->SetVolume(ac.Volume);
-					audio->SetPitch(ac.Pitch);
-					audio->SetPaning(ac.Panning);
-					audio->SetLoop(ac.Looping);
-					audio->SetSpatial(ac.Spatializing);
-					if (ac.Spatializing)
-					{
-						audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
-						audio->SetPosition(tc.Translation);
-					}
-				}
-			}
-
-			const auto &audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
-			for (const auto entity : audioListenerView)
-			{
-				auto [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-				if (al.Enable)
-				{
-					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
-				}
-			}
-
-            // Update entire transform hierarchy
-            UpdateTransform();
-
-			PhysicsEngine::Simulate(ts, this);
-			m_Physics2D->Simulate(ts);
-		}
-	}
-
-    void Scene::DestroyEntityRecursive(UUID entityId)
-    {
-		std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
-		for (const auto &childId : childrenIds)
-		{
-			DestroyEntityRecursive(childId);
-		}
-		Entity entity = GetEntityWithUUID(entityId);
-		if (entity)
-		{
-			m_Registry.destroy((entt::entity)entity);
-            m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
-                [entityId](const auto &pair) { return pair.first == entityId; }),
-           m_EntityStorage.end());
-		}
-    }
-
-    void Scene::DestroyEntity(Entity entity)
-	{
-        UUID uuid = entity.GetUUID();
-        DestroyEntityRecursive(uuid);
-	}
-
-    void Scene::DeserializeDeletedEntity()
-    {
-
-    }
-
-    Entity Scene::DuplicateEntityRecursive(Entity entity, Entity newParent)
-    {
-		std::string name = entity.GetTag();
-		Entity newEntity = EntityManager::CreateEntity(name, this, entity.GetType());
-		EntityManager::CopyComponentIfExists(AllComponents {}, newEntity, entity);
-
-		auto &newEntityIDC = newEntity.GetComponent<IDComponent>();
-		if (newParent)
-		{
-			newEntityIDC.Parent = newParent.GetUUID();
-		}
-		else if (entity.HasParent())
-		{
-			newEntityIDC.Parent = entity.GetParentUUID();
-		}
-		else
-		{
-			newEntityIDC.Parent = UUID(0);
-		}
-
-		auto view = m_Registry.view<IDComponent>();
-		for (auto e : view)
-		{
-			Entity child = { e, this };
-			if (child && child.GetComponent<IDComponent>().Parent == entity.GetUUID())
-			{
-				DuplicateEntityRecursive(child, newEntity);
-			}
-		}
-		return newEntity;
-    }
-
-    Entity Scene::DuplicateEntity(Entity entity)
-    {
-		return DuplicateEntityRecursive(entity, {});
-    }
-
-    std::vector<origin::UUID> Scene::GetChildrenUUIDs(UUID parentId)
-    {
-        std::vector<UUID> childrenUUIDs;
-        m_Registry.view<IDComponent>().each([&](auto entity, const IDComponent idc)
+        const auto &view = m_Registry.view<TransformComponent>();
+        for (auto e : view)
         {
-            if (idc.Parent == parentId)
+            Entity entity = { e, this };
+            auto &tc = entity.GetComponent<TransformComponent>();
+            if (entity.HasComponent<SpriteAnimationComponent>())
             {
-                childrenUUIDs.push_back(idc.ID);
+                auto &ac = entity.GetComponent<SpriteAnimationComponent>();
+                if (ac.State->IsCurrentAnimationExists())
+                {
+                    ac.State->OnUpdateRuntime(ts);
+                }
             }
+
+            if (entity.HasComponent<ParticleComponent>())
+            {
+                auto &pc = entity.GetComponent<ParticleComponent>();
+                pc.Particle.OnUpdate(ts);
+            }
+
+            if (entity.HasComponent<AudioComponent>())
+            {
+                auto &ac = entity.GetComponent<AudioComponent>();
+                if (std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+                {
+                    audio->SetVolume(ac.Volume);
+                    audio->SetPitch(ac.Pitch);
+                    audio->SetPaning(ac.Panning);
+                    audio->SetLoop(ac.Looping);
+                    audio->SetSpatial(ac.Spatializing);
+                    if (ac.Spatializing)
+                    {
+                        audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
+                        audio->SetPosition(tc.Translation);
+                    }
+                }
+            }
+
+            if (entity.HasComponent<AudioListenerComponent>())
+            {
+                auto &al = entity.GetComponent<AudioListenerComponent>();
+                if (al.Enable)
+                {
+                    al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
+                }
+            }
+        }
+	}
+
+    void Scene::UpdateScripts(Timestep ts)
+    {
+		// Update Scripts
+        m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto &sc)
+        {
+            Entity entity { entityID, this };
+            ScriptEngine::OnUpdateEntity(entity, time);
         });
-        return childrenUUIDs;
+
+        m_Registry.view<NativeScriptComponent>().each([this, time = ts](auto entityID, auto &nsc)
+        {
+            nsc.Instance->OnUpdate(time);
+        });
     }
 
-	Entity Scene::GetPrimaryCameraEntity()
-	{
-		OGN_PROFILER_SCENE();
-
-		if (m_EntityStorage.size())
-		{
-			auto view = m_Registry.view<CameraComponent>();
-			for (auto &entity : view)
-			{
-				const CameraComponent &camera = view.get<CameraComponent>(entity);
-				if (camera.Primary)
-				{
-					return { entity, this };
-				}
-			}
-		}
-
-		return {entt::null, nullptr};
-	}
+    void Scene::UpdatePhysics(Timestep ts)
+    {
+        PhysicsEngine::Simulate(ts, this);
+        m_Physics2D->Simulate(ts);
+    }
 
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
 		OGN_PROFILER_SCENE();
 
-		UpdateRuntime(ts);
+        if (!m_Paused || m_StepFrames-- > 0)
+        {
+			UpdateScripts(ts);
+			Update(ts);
+			UpdatePhysics(ts);
+        }
 
-		// Rendering
 		auto cameraView = m_Registry.view<CameraComponent, TransformComponent>();
 		for (auto entity : cameraView)
 		{
@@ -419,7 +229,7 @@ namespace origin
 			if (cc.Primary)
 			{
 				cc.Camera.SetTransform(tc.GetTransform());
-				RenderScene(cc.Camera);
+				RenderScene(cc.Camera, entt::null);
 				break;
 			}
 		}
@@ -428,9 +238,7 @@ namespace origin
 	void Scene::OnRuntimeStart()
 	{
 		OGN_PROFILER_SCENE();
-
 		m_Running = true;
-
 		ScriptEngine::SetSceneContext(this);
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		for (auto e : scriptView)
@@ -459,23 +267,24 @@ namespace origin
 			}
 		}
 
-		PhysicsEngine::OnSimulateStart(this);
-		m_Physics2D->OnSimulationStart();
+#if 0
+        m_Registry.view<UIComponent>().each([this](entt::entity e, UIComponent ui)
+        {
+            auto cam = GetPrimaryCameraEntity();
+            auto cc = cam.GetComponent<CameraComponent>();
+            if (cc.Primary)
+            {
+                m_UIRenderer->AddUI(ui);
+                cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+                const glm::ivec2 &vp = cc.Camera.GetViewportSize();
+                const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
+                m_UIRenderer->CreateFramebuffer(vp.x, vp.y, ortho.x, ortho.y);
+            }
+        });
+#endif
 
-		m_Registry.view<UIComponent>().each([this](entt::entity e, UIComponent ui)
-		{
-			auto cam = GetPrimaryCameraEntity();
-			auto cc = cam.GetComponent<CameraComponent>();
-
-			if (cc.Primary)
-			{
-				m_UIRenderer->AddUI(ui);
-				cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
-				const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
-				m_UIRenderer->CreateFramebuffer(vp.x, vp.y, ortho.x, ortho.y);
-			}
-		});
+        PhysicsEngine::OnSimulateStart(this);
+        m_Physics2D->OnSimulationStart();
 	}
 
 	void Scene::OnRuntimeStop()
@@ -502,195 +311,28 @@ namespace origin
 
 		PhysicsEngine::OnSimulateStop(this);
 		m_Physics2D->OnSimulationStop();
-
 		m_UIRenderer->Unload();
 	}
 
-	void Scene::OnEditorUpdate(Timestep ts, Camera &editorCamera)
+	void Scene::OnUpdateEditor(const Camera &camera, Timestep ts, entt::entity selectedID)
 	{
-		OGN_PROFILER_RENDERING();
-
-		m_Registry.view<NativeScriptComponent>().each([time = ts](auto entity, auto &nsc)
-		{
-			nsc.Instance->OnUpdate(time);
-		});
-
-		m_Registry.view<ParticleComponent>().each([time = ts](auto entity, auto &pc)
-		{
-			pc.Particle.OnUpdate(time);
-		});
-
-		// Animation
-		const auto &animView = m_Registry.view<SpriteAnimationComponent>();
-		for (const auto entity : animView)
-		{
-			auto &ac = animView.get<SpriteAnimationComponent>(entity);
-			if (ac.State->IsCurrentAnimationExists())
-				ac.State->OnUpdateEditor(ts);
-		}
-
-		// Audio Update
-		const auto &audioView = m_Registry.view<TransformComponent, AudioComponent>();
-		for (auto entity : audioView)
-		{
-			const auto &[tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
-			{
-				audio->SetVolume(ac.Volume);
-				audio->SetPitch(ac.Pitch);
-				audio->SetPaning(ac.Panning);
-				audio->SetLoop(ac.Looping);
-				audio->SetSpatial(ac.Spatializing);
-				if (ac.Spatializing)
-				{
-					audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
-					audio->SetPosition(tc.Translation);
-				}
-			}
-		}
-
-        // Update entire transform hierarchy
-        UpdateTransform();
-
-		RenderScene(editorCamera);
+		Update(ts);
+		RenderScene(camera, selectedID);
 	}
 
-	void Scene::OnUpdateSimulation(Timestep ts, Camera &editorCamera)
+	void Scene::OnUpdateSimulation(const Camera &camera, Timestep ts, entt::entity selectedID)
 	{
-		OGN_PROFILER_RENDERING();
-
-		if (!m_Paused || m_StepFrames-- > 0)
-		{
-			// Update Scripts
-			m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto &sc)
-			{
-				Entity entity { entityID, this };
-				ScriptEngine::OnUpdateEntity(entity, time);
-			});
-
-			m_Registry.view<NativeScriptComponent>().each([this, time = ts](auto entityID, auto &nsc)
-			{
-				nsc.Instance->OnUpdate(time);
-			});
-
-			m_Registry.view<ParticleComponent>().each([this, time = ts](auto entity, auto &pc)
-			{
-				pc.Particle.OnUpdate(time);
-			});
-
-			// Animation
-			const auto &animView = m_Registry.view<SpriteAnimationComponent>();
-			for (auto e : animView)
-			{
-				auto ac = animView.get<SpriteAnimationComponent>(e);
-				if (ac.State->IsCurrentAnimationExists())
-					ac.State->OnUpdateRuntime(ts);
-			}
-
-			Renderer2D::Begin(editorCamera);
-			const auto &audioView = m_Registry.view<TransformComponent, AudioComponent>();
-			for (auto entity : audioView)
-			{
-				const auto &[tc, ac] = audioView.get<TransformComponent, AudioComponent>(entity);
-				if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
-				{
-					audio->SetVolume(ac.Volume);
-					audio->SetPitch(ac.Pitch);
-					audio->SetPaning(ac.Panning);
-					audio->SetLoop(ac.Looping);
-					audio->SetSpatial(ac.Spatializing);
-					if (ac.Spatializing)
-					{
-						audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
-						audio->SetPosition(tc.Translation);
-					}
-				}
-			}
-			Renderer2D::End();
-
-			const auto &audioListenerView = m_Registry.view<TransformComponent, AudioListenerComponent>();
-			for (const auto entity : audioListenerView)
-			{
-				auto [tc, al] = audioListenerView.get<TransformComponent, AudioListenerComponent>(entity);
-				if (al.Enable)
-					al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
-			}
-
-			PhysicsEngine::Simulate(ts, this);
-			m_Physics2D->Simulate(ts);
-		}
-
-        // Update entire transform hierarchy
-        UpdateTransform();
+        if (!m_Paused || m_StepFrames-- > 0)
+        {
+            UpdateScripts(ts);
+            Update(ts);
+			UpdatePhysics(ts);
+        }
 		
-		RenderScene(editorCamera);
+		RenderScene(camera, selectedID);
 	}
 
-	void Scene::OnSimulationStart()
-	{
-		OGN_PROFILER_SCENE();
-
-		m_Running = true;
-
-		ScriptEngine::SetSceneContext(this);
-		const auto &scriptView = m_Registry.view<ScriptComponent>();
-		for (auto e : scriptView)
-		{
-			Entity entity = { e, this };
-			ScriptEngine::OnCreateEntity(entity);
-		}
-
-		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
-		{
-			nsc.Instance = nsc.InstantiateScript();
-			nsc.Instance->m_Entity = Entity { entity, this };
-		});
-
-		PhysicsEngine::OnSimulateStart(this);
-		m_Physics2D->OnSimulationStart();
-
-		// Audio
-		const auto &audioView = m_Registry.view<AudioComponent>();
-		for (auto &e : audioView)
-		{
-			auto &ac = audioView.get<AudioComponent>(e);
-			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
-			if (ac.PlayAtStart)
-			{
-				audio->Play();
-			}
-		}
-	}
-
-	void Scene::OnSimulationStop()
-	{
-		OGN_PROFILER_SCENE();
-
-		m_Running = false;
-
-		ScriptEngine::ClearSceneContext();
-		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
-		{
-			nsc.DestroyScript(&nsc);
-		});
-
-		PhysicsEngine::OnSimulateStop(this);
-		m_Physics2D->OnSimulationStop();
-
-		// Audio
-		auto view = m_Registry.view<AudioComponent>();
-		for (auto &e : view)
-		{
-			auto &ac = view.get<AudioComponent>(e);
-
-			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
-			{
-				audio->Stop();
-			}
-		}
-	}
-
-	void Scene::RenderScene(const Camera &camera)
+	void Scene::RenderScene(const Camera &camera, entt::entity selectedID)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -703,6 +345,7 @@ namespace origin
 			return aLen < bLen;
 		});
 
+
         if (!camera.IsPerspective())
         {
             glDisable(GL_DEPTH_TEST);
@@ -711,10 +354,9 @@ namespace origin
         {
             glEnable(GL_DEPTH_TEST);
         }
-
+#pragma region 2DSCENE
 		Renderer2D::Begin(camera);
 
-		// Render All entities
 		for (auto &e : m_EntityStorage)
 		{
 			Entity entity { e.second, this };
@@ -805,31 +447,35 @@ namespace origin
 				}
 
 				if (text.FontHandle != 0)
+				{
 					Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e.second));
+				}
 			}
 		}
 
 		Renderer2D::End();
+#pragma endregion
 
-#if 0
-		// ===============================
-		// 3D Scene
-		glEnable(GL_DEPTH_TEST);
-		const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-		const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+#pragma region 3DSCENE
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
+        const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
+        const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+
+        // First pass: Render all objects and mark the selected object in the stencil buffer
         for (auto &li : lightView)
         {
             const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(li);
-			if(!lightTC.Visible)
-				continue;
-			MeshRenderer::Begin(camera);
-            
+            if (!lightTC.Visible)
+                continue;
+
             lc.Light->DirLightData.LightSpaceMat = lc.Light->GetShadow().ViewProjection;
             lc.Light->DirLightData.Position = glm::vec4(lightTC.WorldTranslation, 1.0f);
             lc.Light->LightingUBO->Bind();
             lc.Light->LightingUBO->SetData(&lc.Light->DirLightData, sizeof(lc.Light->DirLightData));
-			MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
+            MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
 
             for (auto e : meshView)
             {
@@ -840,6 +486,20 @@ namespace origin
                 std::shared_ptr<Material> material;
                 if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
                 else material = Renderer::GetMaterial("Mesh");
+
+                // Set stencil function based on whether this is the selected entity
+                if (e == selectedID)
+                {
+                    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+                    glStencilMask(0xFF);
+                }
+                else
+                {
+                    glStencilFunc(GL_ALWAYS, 0, 0xFF);
+                    glStencilMask(0x00);
+                }
+
+                MeshRenderer::Begin(camera);
                 switch (mc.mType)
                 {
                 case StaticMeshComponent::Type::Cube:
@@ -852,34 +512,88 @@ namespace origin
                     MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), (int)e);
                     break;
                 }
+                MeshRenderer::End();
             }
-			MeshRenderer::End();
         }
-#endif
+
+        // Second pass: Draw the outline for the selected object
+        if (m_Registry.valid(selectedID))
+        {
+            Entity entity = { selectedID, this };
+            if (entity.HasComponent<StaticMeshComponent>())
+            {
+                glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+                glStencilMask(0x00);
+                glEnable(GL_DEPTH_TEST);  // Enable depth testing
+                glDepthFunc(GL_LEQUAL);   // Change depth function to allow drawing on top of the object
+
+                Shader *outlineShader = Renderer::GetShader("Outline").get();
+                outlineShader->Enable();
+                outlineShader->SetMatrix("viewProjection", camera.GetViewProjection());
+
+                MeshRenderer::Begin(camera, outlineShader);
+
+                const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(selectedID);
+
+                glm::vec3 cameraPosition = camera.GetPosition();
+                glm::vec3 objectPosition = tc.WorldTranslation;
+                float distance = glm::distance(cameraPosition, objectPosition);
+                float objectRadius = glm::length(tc.WorldScale) * 0.5f;
+                float baseThickness = 0.02f; // Adjust this value to change the base thickness
+                float thicknessFactor = baseThickness * (distance / objectRadius);
+                thicknessFactor = glm::clamp(thicknessFactor, 0.001f, 0.1f);
+
+                glm::mat4 trA = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
+                    * glm::toMat4(tc.WorldRotation)
+                    * glm::scale(glm::mat4(1.0f), tc.WorldScale * (1.0f + thicknessFactor));
+
+                switch (mc.mType)
+                {
+                case StaticMeshComponent::Type::Cube:
+                    MeshRenderer::DrawCube(trA, glm::vec4(1.0f), (int)selectedID);
+                    break;
+                case StaticMeshComponent::Type::Sphere:
+                    MeshRenderer::DrawSphere(trA, glm::vec4(1.0f), (int)selectedID);
+                    break;
+                case StaticMeshComponent::Type::Capsule:
+                    MeshRenderer::DrawCapsule(trA, glm::vec4(1.0f), (int)selectedID);
+                    break;
+                }
+
+                MeshRenderer::End();
+                outlineShader->Disable();
+
+                // Reset state
+                glStencilMask(0xFF);
+                glStencilFunc(GL_ALWAYS, 0, 0xFF);
+                glEnable(GL_DEPTH_TEST);
+            }
+        }
+
+        glDisable(GL_STENCIL_TEST);
+#pragma endregion
 	}
 	
-	void Scene::RenderShadow(const glm::mat4 &viewProjection)
+	void Scene::OnRenderShadow()
 	{
-		OGN_PROFILER_RENDERING();
         glEnable(GL_DEPTH_TEST);
 		const auto &dirLight = m_Registry.view<TransformComponent, LightComponent>();
 		for (auto &light : dirLight)
 		{
 			const auto &[lightTC, lc] = dirLight.get<TransformComponent, LightComponent>(light);
-            if (!lightTC.Visible)
+			if (!lightTC.Visible)
+			{
                 continue;
+			}
 		
-	        float size = lc.Light->OrthoSize;  // Adjust based on your scene size
+	        float size = lc.Light->OrthoSize;
 			glm::mat4 lightProjection = glm::ortho(-size, size, -size, size, lc.Light->NearPlane, lc.Light->FarPlane);
 			glm::mat4 lightView = glm::lookAt(lightTC.WorldTranslation,
 											  glm::eulerAngles(lightTC.Rotation),
                                               glm::vec3(0.0f, 1.0f, 0.0f));
 
-            //Combine the projection and view matrices
             glm::mat4 lightViewProjection = lightProjection * lightView;
 			lc.Light->GetShadow().ViewProjection = lightProjection * lightView;
-
-			//lc.Light->GetShadow().CalculateViewProjection(lightTC, viewProjection);
 
             std::shared_ptr<Shader> &shader = lc.Light->GetShadow().GetDepthShader();
             shader->Enable();
@@ -918,33 +632,98 @@ namespace origin
 		}
 	}
 
-    void Scene::UpdateTransform()
+    void Scene::DestroyEntityRecursive(UUID entityId)
     {
-        OGN_PROFILER_FUNCTION();
-
-        const auto &view = m_Registry.view<IDComponent, TransformComponent>();
-        for (auto entity : view)
+        std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
+        for (const auto &childId : childrenIds)
         {
-            const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
-			if (idc.Parent)
-			{
-				auto parent = GetEntityWithUUID(idc.Parent);
-				if (parent)
-				{
-                    auto &ptc = parent.GetComponent<TransformComponent>();
-                    glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
-                    tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
-                    tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
-                    tc.WorldScale = tc.Scale;
-				}
-			}
-			else
-			{
-                tc.WorldTranslation = tc.Translation;
-                tc.WorldRotation = tc.Rotation;
-                tc.WorldScale = tc.Scale;
-			}
+            DestroyEntityRecursive(childId);
         }
+
+        Entity entity = GetEntityWithUUID(entityId);
+        if (entity)
+        {
+            m_Registry.destroy((entt::entity)entity);
+            m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
+                [entityId](const auto &pair) { return pair.first == entityId; }),
+           m_EntityStorage.end());
+        }
+    }
+
+    void Scene::DestroyEntity(Entity entity)
+    {
+        UUID uuid = entity.GetUUID();
+        DestroyEntityRecursive(uuid);
+    }
+
+    Entity Scene::DuplicateEntityRecursive(Entity entity, Entity newParent)
+    {
+        std::string name = entity.GetTag();
+        Entity newEntity = EntityManager::CreateEntity(name, this, entity.GetType());
+        EntityManager::CopyComponentIfExists(AllComponents {}, newEntity, entity);
+
+        auto &newEntityIDC = newEntity.GetComponent<IDComponent>();
+        if (newParent)
+        {
+            newEntityIDC.Parent = newParent.GetUUID();
+        }
+        else if (entity.HasParent())
+        {
+            newEntityIDC.Parent = entity.GetParentUUID();
+        }
+        else
+        {
+            newEntityIDC.Parent = UUID(0);
+        }
+
+        auto view = m_Registry.view<IDComponent>();
+        for (auto e : view)
+        {
+            Entity child = { e, this };
+            if (child && child.GetComponent<IDComponent>().Parent == entity.GetUUID())
+            {
+                DuplicateEntityRecursive(child, newEntity);
+            }
+        }
+        return newEntity;
+    }
+
+    Entity Scene::DuplicateEntity(Entity entity)
+    {
+        return DuplicateEntityRecursive(entity, {});
+    }
+
+    std::vector<origin::UUID> Scene::GetChildrenUUIDs(UUID parentId)
+    {
+        std::vector<UUID> childrenUUIDs;
+        m_Registry.view<IDComponent>().each([&](auto entity, const IDComponent idc)
+        {
+            if (idc.Parent == parentId)
+            {
+                childrenUUIDs.push_back(idc.ID);
+            }
+        });
+        return childrenUUIDs;
+    }
+
+    Entity Scene::GetPrimaryCameraEntity()
+    {
+        OGN_PROFILER_SCENE();
+
+        if (m_EntityStorage.size())
+        {
+            auto view = m_Registry.view<CameraComponent>();
+            for (auto &entity : view)
+            {
+                const CameraComponent &camera = view.get<CameraComponent>(entity);
+                if (camera.Primary)
+                {
+                    return { entity, this };
+                }
+            }
+        }
+
+        return { entt::null, nullptr };
     }
 
     void Scene::SetFocus(bool focus)

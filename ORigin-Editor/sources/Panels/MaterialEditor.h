@@ -11,8 +11,6 @@ namespace origin
 	public:
 		void SetSelectedMaterial(AssetHandle handle);
 		void OnImGuiRender();
-
-		bool Serialize(const std::filesystem::path &filepath);
 		bool Deserialize();
 
 	private:

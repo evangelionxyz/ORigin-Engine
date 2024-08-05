@@ -14,6 +14,7 @@ namespace origin
 		spec.Attachments = { FramebufferTextureFormat::RGBA8 };
 		spec.Width = vpW;
 		spec.Height = vpH;
+		spec.ReadBuffer = false;
 
 		for (auto &ui : m_UIs)
 		{

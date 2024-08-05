@@ -28,7 +28,7 @@ namespace origin
 
 		bool guiStatisticWindow = true;
 		bool guiMenuFullscreen = false;
-		bool guiMenuStyle = false;
+		bool guiMenuStyleWindow = false;
 		bool guiRenderSettingsWindow = true;
 		bool guiImGuiDemoWindow = false;
 		bool guiConsoleWindow = true;

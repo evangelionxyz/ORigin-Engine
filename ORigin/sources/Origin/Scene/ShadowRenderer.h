@@ -15,8 +15,6 @@ namespace origin
 		void OnCreate(LightingType type);
 		void BindFBO();
 		void UnbindFBO();
-		void CalculateViewProjection(const TransformComponent &tc, const glm::mat4 &camViewProjection);
-		void CalculateFrustumCorners(const glm::mat4 &viewProjection, std::array<glm::vec3, 8> &corners);
 		static std::shared_ptr<ShadowRenderer> Create(const std::shared_ptr<Shader>& depthShader, LightingType type);
 		glm::mat4 ViewProjection;
 		glm::mat4 ShadowProjection;

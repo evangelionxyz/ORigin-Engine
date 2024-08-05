@@ -133,16 +133,15 @@ namespace origin {
 		}
 		ImGui::EndChild();
 
-		ImGui::BeginChild("entity_hierarcy", ImGui::GetContentRegionAvail(), 0, windowFlags);
+		ImGui::BeginChild("entity_hierarchy", ImGui::GetContentRegionAvail(), 0, windowFlags);
 
-        static ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg 
-			| ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX;
+        static ImGuiTableFlags tableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_ScrollX;
         if (ImGui::BeginTable("ENTITY_HIERARCHY", 3, tableFlags))
         {
 			ImGui::TableSetupScrollFreeze(0, 1);
-            ImGui::TableSetupColumn("Name");
-            ImGui::TableSetupColumn("Type");
-            ImGui::TableSetupColumn("Active");
+            ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+            ImGui::TableSetupColumn("Active", ImGuiTableColumnFlags_WidthFixed, 40.0f);
             ImGui::TableHeadersRow();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 0.0f));
@@ -217,7 +216,8 @@ namespace origin {
 		}
 
 		ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+			| ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow 
+			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
 
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
@@ -245,7 +245,6 @@ namespace origin {
 					EntityManager::AddChild(entity, e, m_Scene.get());
 					SetSelectedEntity(e);
 				}
-
 				if (ImGui::MenuItem("Delete"))
 				{
 					DestroyEntity(entity);
@@ -257,11 +256,9 @@ namespace origin {
 			if (ImGui::BeginDragDropSource())
 			{
 				ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
-
 				ImGui::BeginTooltip();
 				ImGui::Text("%s %llu", entity.GetTag().c_str(), entity.GetUUID());
 				ImGui::EndTooltip();
-
 				ImGui::EndDragDropSource();
 			}
 
@@ -279,7 +276,7 @@ namespace origin {
 			ImGui::PopID();
 		}
 
-		if (ImGui::IsItemHovered())
+		if (ImGui::IsItemHovered(ImGuiMouseButton_Left))
 		{
 			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 			{
@@ -302,16 +299,13 @@ namespace origin {
 		{
 			if (!isDeleting)
 			{
-				for (auto e : m_Scene->m_EntityStorage)
+				for (auto e : m_Scene->m_Registry.view<TransformComponent>())
 				{
-					Entity ent = { e.second, m_Scene.get() };
-					if (ent)
-					{
-						if (ent.GetParentUUID() == entity.GetUUID())
-						{
-							DrawEntityNode({ e.second, m_Scene.get() }, index + 1);
-						}
-					}
+					Entity ent = { e, m_Scene.get() };
+                    if (ent.GetParentUUID() == entity.GetUUID())
+                    {
+                        DrawEntityNode(ent, index + 1);
+                    }
 				}
 			}
 			ImGui::TreePop();
@@ -1581,6 +1575,8 @@ namespace origin {
                     entity = EntityManager::CreateCube("Cube", m_Scene.get());
                 if (ImGui::MenuItem("Sphere"))
                     entity = EntityManager::CreateSphere("Sphere", m_Scene.get());
+                if (ImGui::MenuItem("Capsule"))
+                    entity = EntityManager::CreateCapsule("Capsule", m_Scene.get());
 				ImGui::EndMenu();
 			}
 

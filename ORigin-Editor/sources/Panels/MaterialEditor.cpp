@@ -25,14 +25,7 @@ namespace origin
 			ImGui::Begin("Material Editor", &m_IsOpened);
 
 			ImGui::Text("%s", m_CurrentFilepath.stem().string().c_str());
-			if (ImGui::Button("Save"))
-			{
-				OGN_CORE_INFO("[MaterialEditor] Material Saved");
-				MaterialSerializer::Serialize(m_CurrentFilepath, m_Material);
-			}
-
 			ImVec2 buttonSize = ImVec2(100.0f, 40.0f);
-
 			ImGui::ColorEdit4("Color", glm::value_ptr(m_Material->Color));
 
 			ImGui::Button("Albedo", buttonSize);
@@ -43,7 +36,7 @@ namespace origin
 					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
 					if (AssetManager::GetAssetType(handle) == AssetType::Texture)
 					{
-						OGN_CORE_INFO("[MaterialEditor] AlbedoMap Applied");
+						OGN_CORE_INFO("[Material Editor] AlbedoMap Applied");
 						m_Material->SetAlbedoMap(handle);
 					}
 					else
@@ -64,7 +57,7 @@ namespace origin
 					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
 					if (AssetManager::GetAssetType(handle) == AssetType::Texture)
 					{
-						OGN_CORE_INFO("[MaterialEditor] Metallic Applied");
+						OGN_CORE_INFO("[Material Editor] Metallic Applied");
 						m_Material->SetMetallicMap(handle);
 					}
 					else
@@ -100,15 +93,8 @@ namespace origin
 		}
 	}
 
-	bool MaterialEditor::Serialize(const std::filesystem::path &filepath)
-	{
-		m_CurrentFilepath = filepath;
-		return MaterialSerializer::Serialize(filepath, m_Material);
-	}
-
 	bool MaterialEditor::Deserialize()
 	{
 		return MaterialSerializer::Deserialize(m_CurrentFilepath, m_Material);
 	}
-
 }

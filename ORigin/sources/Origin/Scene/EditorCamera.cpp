@@ -221,7 +221,7 @@ namespace origin {
 
                         if (!Input::Get().IsKeyPressed(Key::LeftControl))
                         {
-                            if (Input::Get().IsKeyPressed(Key::A)) input -= GetRightDirection();
+							if (Input::Get().IsKeyPressed(Key::A)) input -= GetRightDirection();
                             if (Input::Get().IsKeyPressed(Key::D)) input += GetRightDirection();
                             if (Input::Get().IsKeyPressed(Key::W)) input += GetForwardDirection();
                             if (Input::Get().IsKeyPressed(Key::S)) input -= GetForwardDirection();
@@ -337,9 +337,9 @@ namespace origin {
 		}
 
 		return true;
-	}
+    }
 
-	void EditorCamera::MousePan(const glm::vec2& delta)
+    void EditorCamera::MousePan(const glm::vec2 &delta)
 	{
 		auto [xSpeed, ySpeed] = PanSpeed();
 
@@ -420,6 +420,25 @@ namespace origin {
     void EditorCamera::SetDistance(float distance)
     {
 		m_Distance = distance;
+    }
+
+    void EditorCamera::SetViewMatrix(const glm::mat4 &viewMatrix)
+    {
+		m_View = viewMatrix;
+
+        glm::mat4 inverseView = glm::inverse(m_View);
+
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::quat orientation;
+        glm::vec3 scale;
+
+        glm::decompose(inverseView, scale, orientation, m_Position, skew, perspective);
+
+        // Extract yaw and pitch from the orientation quaternion
+        glm::vec3 euler = glm::eulerAngles(orientation);
+        m_Yaw = -euler.y;
+        m_Pitch = -euler.x;
     }
 
     const glm::mat4 EditorCamera::GetProjectionMatrix() const

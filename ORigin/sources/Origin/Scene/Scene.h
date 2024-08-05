@@ -21,33 +21,28 @@ namespace origin
     {
     public:
         Scene();
-
         static std::shared_ptr<Scene> Copy(const std::shared_ptr<Scene> &other);
-
-        static AssetType GetStaticType() { return AssetType::Scene; }
-        AssetType GetType() const override { return GetStaticType(); }
 
         Entity GetPrimaryCameraEntity();
         Entity GetEntityWithUUID(UUID uuid);
         Entity FindEntityByName(std::string_view name);
-
-        void Render3DScene(const Camera &camera, entt::entity id);
-
-        void UpdateRuntime(Timestep ts);
-        void DestroyEntityRecursive(UUID entityId);
-        void DestroyEntity(Entity entity);
         Entity DuplicateEntityRecursive(Entity entity, Entity newParent);
         Entity DuplicateEntity(Entity entity);
+
+        void DestroyEntityRecursive(UUID entityId);
+        void DestroyEntity(Entity entity);
+
+        void PreRender(const Camera &camera, Timestep ts);
+        void PostRender(const Camera &camera, Timestep ts);
+        
         void OnRuntimeStart();
         void OnRuntimeStop();
         void OnUpdateRuntime(Timestep time);
-        void OnSimulationStart();
-        void OnSimulationStop();
-        void OnUpdateSimulation(Timestep time, Camera &camera);
-        void OnEditorUpdate(Timestep time, Camera &camera);
+        void OnUpdateSimulation(const Camera &camera, Timestep time, entt::entity selectedID);
+
+        void OnUpdateEditor(const Camera &camera, Timestep time, entt::entity selectedID);
         void OnViewportResize(const uint32_t width, const uint32_t height);
-        void RenderShadow(const glm::mat4 &viewProjection);
-        void UpdateTransform();
+        void OnRenderShadow();
 
         void SetFocus(bool focus);
         void LockMouse();
@@ -60,32 +55,36 @@ namespace origin
         const std::string &GetName() const { return m_Name; }
         void SetName(const std::string &name) { m_Name = name; }
         std::shared_ptr<UIRenderer> GetUIRenderer() { return m_UIRenderer; }
-
         const std::shared_ptr<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
-
+        
         uint32_t GetWidth() { return m_ViewportWidth; }
         uint32_t GetHeight() { return m_ViewportHeight; }
 
-        void DeserializeDeletedEntity();
-
+        static AssetType GetStaticType() { return AssetType::Scene; }
+        AssetType GetType() const override { return GetStaticType(); }
     private:
-        std::string m_Name = "untitled";
-        std::shared_ptr<UIRenderer> m_UIRenderer;
-        std::shared_ptr<Physics2D> m_Physics2D;
-        void RenderScene(const Camera &camera);
+        void Update(Timestep ts);
+        void UpdateScripts(Timestep ts);
+        void UpdatePhysics(Timestep ts);
+
+        void RenderScene(const Camera &camera, entt::entity selectedID);
         bool IsRunning() const { return m_Running; }
         bool IsPaused() const { return m_Paused; }
         void SetPaused(bool paused) { m_Paused = paused; }
         void Step(int frames);
-        std::vector<UUID> GetChildrenUUIDs(UUID parentId);
 
+        std::vector<UUID> GetChildrenUUIDs(UUID parentId);
         template <typename T>
         void OnComponentAdded(Entity entity, T &component);
         entt::registry m_Registry {};
+        std::string m_Name = "untitled";
+        std::shared_ptr<UIRenderer> m_UIRenderer;
+        std::shared_ptr<Physics2D> m_Physics2D;
         glm::vec4 m_GridColor = glm::vec4(1.0f);
         std::vector<std::pair<UUID, entt::entity>> m_EntityStorage;
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
         uint32_t m_GameViewportWidth = 0, m_GameViewportHeight = 0;
+
         bool m_Running = false;
         bool m_Paused = false;
         bool m_IsFocus = false;
@@ -97,7 +96,6 @@ namespace origin
         friend class Gizmos;
         friend class SceneSerializer;
         friend class SceneHierarchyPanel;
-
         friend class Physics2D;
         friend class PhysicsEngine;
     };

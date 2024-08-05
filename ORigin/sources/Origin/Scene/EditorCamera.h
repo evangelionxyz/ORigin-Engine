@@ -35,6 +35,7 @@ namespace origin {
         void MouseRotate(const glm::vec2 &delta, float dt);
         void MouseZoom(const float dela);
 		void SetDistance(float distance);
+        void SetViewMatrix(const glm::mat4 &viewMatrix) override;
         float RotationSpeed() const;
 
         std::pair<float, float> PanSpeed() const;

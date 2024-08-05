@@ -52,6 +52,7 @@ namespace origin
         virtual void SetOrthoNear(float nearClip) { }
         virtual void SetOrthoFar(float farClip) { }
         virtual void SetOrthoScaleMax(float size) { }
+        virtual void SetViewMatrix(const glm::mat4 &viewMatrix) { };
 
         virtual const glm::mat4 GetViewMatrix() const { return glm::mat4(1.0f); }
         virtual const glm::mat4 GetProjectionMatrix() const { return glm::mat4(1.0f); }
@@ -95,5 +96,6 @@ namespace origin
         float m_OrthoFarClip = 50.0f;
         float m_OrthoScale = 10.0f;
         float m_MaxOrthoScale = 100.0f;
+        bool m_ViewMatrixManipulated = false;
     };
 }

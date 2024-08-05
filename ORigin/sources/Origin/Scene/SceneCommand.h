@@ -22,7 +22,7 @@ namespace origin
 
         void Undo() override
         {
-            m_Scene->DeserializeDeletedEntity();
+            //m_Scene->DeserializeDeletedEntity();
 
         }
     private:

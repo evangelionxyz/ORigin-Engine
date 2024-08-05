@@ -134,7 +134,10 @@ namespace origin {
 			{
 				auto assetRelativePath = std::filesystem::relative(a.second.Filepath, Project::GetActiveAssetDirectory());
 				if (relativePath == assetRelativePath)
+				{
+					PUSH_CONSOLE_INFO("Scene loaded!");
 					return a.first;
+				}
 			}
 		}
 
@@ -146,7 +149,9 @@ namespace origin {
 	void SceneImporter::SaveScene(std::shared_ptr<Scene> scene, const std::filesystem::path& path)
 	{
 		SceneSerializer serializer(scene);
-		serializer.Serialize(Project::GetActiveAssetDirectory() / path);
+		auto filepath = Project::GetActiveAssetDirectory() / path;
+		serializer.Serialize(filepath);
+		PUSH_CONSOLE_INFO("Scene saved! {0}", filepath.generic_string());
 	}
 
 	std::shared_ptr<Texture2D> TextureImporter::ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)

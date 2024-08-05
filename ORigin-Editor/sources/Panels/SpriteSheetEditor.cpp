@@ -408,7 +408,10 @@ namespace origin
 		if (control)
 		{
 			if (e.GetKeyCode() == Key::D && m_SelectedIndex >= 0 && !m_Controls.empty())
+			{
 				Duplicate(m_SelectedIndex);
+			}
+
 			if (e.GetKeyCode() == Key::S)
 			{
 				Serialize(m_CurrentFilepath);
@@ -417,7 +420,9 @@ namespace origin
 		}
 
 		if (e.GetKeyCode() == Key::Delete && m_SelectedIndex >= 0 && !m_Controls.empty())
+		{
 			RemoveSprite(m_SelectedIndex);
+		}
 
 		return false;
 	}

@@ -466,7 +466,7 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(entityID);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0}", entity.GetTag(), entityID);
+			//OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0}", entity.GetTag(), entityID);
 			//PUSH_CONSOLE_ERROR("[Script Engine] Entity script instance is not attached! {0}", entityID);
 			return;
 		}

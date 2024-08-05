@@ -2,6 +2,9 @@
 #include "pch.h"
 
 #include "EditorAssetManager.h"
+#include "AssetManager.h"
+#include "Origin/Renderer/Material.h"
+#include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Core/ConsoleManager.h"
 #include "AssetImporter.h"
 #include "Origin/Project/Project.h"
@@ -30,8 +33,8 @@ namespace origin
 	{
 		if (s_AssetExtensionMap.find(extension) == s_AssetExtensionMap.end())
 		{
-			OGN_CORE_WARN("[EditorAssetManager] Could not find AssetType for {0}", extension);
-			PUSH_CONSOLE_WARNING("[EditorAssetManager] Could not find AssetType for {0}", extension);
+			OGN_CORE_WARN("[Editor Asset Manager] Could not find AssetType for {0}", extension);
+			PUSH_CONSOLE_WARNING("Invalid asset type{0}", extension);
 			return AssetType::None;
 		}
 
@@ -74,8 +77,8 @@ namespace origin
 
         if (!asset)
         {
-            OGN_CORE_ERROR("[EditorAssetManager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
-            PUSH_CONSOLE_ERROR("[EditorAssetManager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
+            OGN_CORE_ERROR("[Editor Asset Manager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
+            PUSH_CONSOLE_ERROR("Failed to import asset! {0}", metadata.Filepath.generic_string());
 			return nullptr;
         }
         else
@@ -117,8 +120,8 @@ namespace origin
 
 		if (metadata.Type == AssetType::None)
 		{
-			OGN_CORE_ERROR("[EditorAssetManager] Invalid Asset Type {0}", filepath);
-			PUSH_CONSOLE_ERROR("[EditorAssetManager] Invalid Asset Type {0}", filepath.generic_string());
+			OGN_CORE_ERROR("[Editor Asset Manager] Invalid Asset Type {0}", filepath);
+			PUSH_CONSOLE_ERROR("Invalid asset type! {0}", filepath.generic_string());
 			return 0;
 		}
 
@@ -208,8 +211,18 @@ namespace origin
 	{
 		auto path = Project::GetActiveAssetRegistryPath();
 
-		OGN_CORE_INFO("[EditorAssetManager] Serialize Registry {0}", path.string());
-		PUSH_CONSOLE_INFO("[EditorAssetManager] Serialize Registry {0}", path.generic_string());
+		OGN_CORE_INFO("[Editor Asset Manager] Serialize Registry {0}", path.string());
+		PUSH_CONSOLE_INFO("Assets Saved!");
+
+		for (const auto &[handle, metadata] : m_AssetRegistry)
+		{
+			if (metadata.Type == AssetType::Material)
+			{
+				std::filesystem::path filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
+				std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
+				MaterialSerializer::Serialize(filepath, mat);
+			}
+		}
 
 		YAML::Emitter out;
 		{
@@ -242,8 +255,8 @@ namespace origin
 
 		if (!std::filesystem::exists(path))
 		{
-			PUSH_CONSOLE_ERROR("[EditorAssetManager] Failed to deserialize AssetRegistry {0}", path.generic_string());
-			OGN_CORE_ASSERT(false, "[EditorAssetManager] Failed to deserialize AssetRegistry");
+			PUSH_CONSOLE_ERROR("[Editor Asset Manager] Failed to deserialize AssetRegistry {0}", path.generic_string());
+			OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to deserialize AssetRegistry");
 			return false;
 		}
 
@@ -253,7 +266,7 @@ namespace origin
 			data = YAML::LoadFile(path.generic_string());
 		} catch (YAML::ParserException e)
 		{
-			OGN_CORE_ASSERT(false, "[EditorAssetManager] Failed to load project file: {0}\n\t{1}", path, e.what());
+			OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to load project file: {0}\n\t{1}", path, e.what());
 			return false;
 		}
 
