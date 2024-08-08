@@ -25,8 +25,8 @@ namespace origin {
 		int xPos;
 		int yPos;
 		bool Maximized = false;
+		bool FullScreen = false;
 		bool VSync = false;
-		int Close = 0;
 		std::function<void(Event &)> EventCallback;
 	};
 	
@@ -40,9 +40,9 @@ namespace origin {
 
 		virtual void OnUpdate() = 0;
 		virtual bool IsLooping() = 0;
-		virtual void SetFullscreen(bool enable) = 0;
-		virtual void SetClose(bool close) = 0;
-		virtual void SetVSync(bool enable = false) = 0;
+		virtual void ToggleVSync() = 0;
+		virtual void ToggleFullScreen() = 0;
+		virtual void CloseWindow() = 0;
 		virtual void SetIcon(const char* filepath) = 0;
 		virtual void SetEventCallback(const std::function<void(Event&)>& callback) = 0;
 

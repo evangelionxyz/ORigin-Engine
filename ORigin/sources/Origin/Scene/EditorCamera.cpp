@@ -204,20 +204,31 @@ namespace origin {
                     switch (m_CameraStyle)
                     {
                     case CameraStyle::Pivot:
-                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && !Input::Get().IsKeyPressed(Key::LeftControl))
+						if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && !Input::Get().IsKeyPressed(Key::LeftControl))
+						{
                             MouseRotate(delta, ts);
-                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
+						}
+
+						if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight)
+							&& Input::Get().IsKeyPressed(Key::LeftControl)))
+						{
                             MousePan(delta);
+						}
 
                         m_Position = glm::lerp(m_Position, m_FocalPoint - GetForwardDirection() * m_Distance, 0.8f);
                         lastPosition = m_FocalPoint - GetForwardDirection() * m_Distance;
                         break;
 
                     case CameraStyle::FreeMove:
-                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
+						if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
+						{
                             MouseRotate(delta, ts);
-                        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
+						}
+
+						if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle))
+						{
                             MousePan(delta);
+						}
 
                         if (!Input::Get().IsKeyPressed(Key::LeftControl))
                         {
@@ -231,8 +242,12 @@ namespace origin {
                 }
                 else if (m_ProjectionType == ProjectionType::Orthographic)
                 {
-                    if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight) && Input::Get().IsKeyPressed(Key::LeftControl)))
+					if (Input::Get().IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight)
+						&& Input::Get().IsKeyPressed(Key::LeftControl)))
+					{
                         MousePan(delta);
+					}
+
                     lastPosition = m_Position;
                 }
             }
@@ -300,6 +315,16 @@ namespace origin {
 		dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(EditorCamera::OnMouseScroll));
 	}
 
+	void EditorCamera::SetOrthoScale(float value)
+	{
+		m_OrthoScale = value;
+	}
+
+	void EditorCamera::SetOrthoScaleMax(float max)
+	{
+		m_MaxOrthoScale = max;
+	}
+
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
 		if (!m_IsInViewport)
@@ -322,6 +347,7 @@ namespace origin {
 				if (Input::Get().IsMouseButtonPressed(Mouse::ButtonRight))
 				{
 					m_MoveSpeed += delta * 5.0f;
+					m_MoveSpeed = glm::clamp(m_MoveSpeed, 0.01f, MAX_SPEED);
 				}
 				else
 				{
@@ -396,8 +422,7 @@ namespace origin {
 			break;
 		case ProjectionType::Orthographic:
 			m_OrthoScale -= delta * GetZoomSpeed();
-			m_OrthoScale = std::max(m_OrthoScale, 1.0f);
-			m_OrthoScale = std::min(m_OrthoScale, m_MaxOrthoScale);
+			m_OrthoScale = glm::clamp(m_OrthoScale, 1.0f, m_MaxOrthoScale);
 			break;
 		}
 	}

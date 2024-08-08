@@ -6,6 +6,13 @@
 
 namespace origin
 {
+    class VertexBuffer;
+}
+
+namespace origin
+{
+    class VertexArray;
+
     struct MeshVertexData
     {
         glm::vec3 Position;
@@ -61,6 +68,8 @@ namespace origin
         std::vector<MeshVertexData> vertices;
         std::vector<uint32_t> indices;
         std::vector<Animation> animations;
+        std::shared_ptr<VertexArray> vertexArray;
+        std::shared_ptr<VertexBuffer> vertexBuffer;
 
         Bone bone;
         uint32_t numBones = 0;
@@ -75,6 +84,8 @@ namespace origin
         std::vector<AnimatedMeshVertexData> vertices;
         std::vector<uint32_t> indices;
         std::vector<Animation> animations;
+        std::shared_ptr<VertexArray> vertexArray;
+        std::shared_ptr<VertexBuffer> vertexBuffer;
 
         Bone bone;
         uint32_t numBones = 0;

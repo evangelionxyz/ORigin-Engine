@@ -1,11 +1,11 @@
 // type vertex
 #version 450 core
-layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec4 a_Color;
-layout(location = 2) in vec2 a_TexCoord;
-layout(location = 3) in float a_TexIndex;
-layout(location = 4) in vec2 a_TilingFactor;
-layout(location = 5) in int a_EntityID;
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec4 aColor;
+layout(location = 2) in vec2 aTexCoord;
+layout(location = 3) in vec2 aTilingFactor;
+layout(location = 4) in float aTexIndex;
+layout(location = 5) in int aEntityID;
 
 layout (std140, binding = 0) uniform Camera
 {
@@ -25,14 +25,14 @@ layout (location = 4) out flat int v_EntityID;
 
 void main()
 {
-	Output.Color = a_Color;
-	Output.TexCoord = a_TexCoord;
-	Output.TilingFactor = a_TilingFactor;
+	Output.Color = aColor;
+	Output.TexCoord = aTexCoord;
+	Output.TilingFactor = aTilingFactor;
 
-	v_TexIndex = a_TexIndex;
-	v_EntityID = a_EntityID;
+	v_TexIndex = aTexIndex;
+	v_EntityID = aEntityID;
 
-	gl_Position = CameraBuffer.ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = CameraBuffer.ViewProjection * vec4(aPosition, 1.0);
 }
 
 // type fragment
@@ -58,5 +58,9 @@ void main()
 	vec4 texColor = Input.Color;
 	texColor *= texture(u_Textures[int(v_TexIndex)], Input.TexCoord * Input.TilingFactor);
 	oColor = texColor;
+
+	if(oColor.a == 0.0)
+		discard;
+
 	oEntityID = v_EntityID;
 }

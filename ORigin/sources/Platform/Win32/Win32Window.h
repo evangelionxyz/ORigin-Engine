@@ -14,13 +14,13 @@ namespace origin
 		Win32Window(const char* title, uint32_t width, uint32_t height, bool maximized);
 		virtual ~Win32Window() override;
 		void OnUpdate() override;
-		bool IsLooping() override { return glfwWindowShouldClose(m_MainWindow) == m_Data.Close; }
+		bool IsLooping() override { return glfwWindowShouldClose(m_MainWindow) == 0; }
 
-		void SetClose(bool close = false) override;
-		void SetVSync(bool enable = false) override;
+		void CloseWindow() override;
+		void ToggleVSync() override;
+		void ToggleFullScreen() override;
 		void SetIcon(const char* filepath) override;
 		void WindowCallbacks();
-		void SetFullscreen(bool enable) override;
 		void SetEventCallback(const std::function<void(Event&)>& callback) override;
 
 		const char* GetTitle() const override { return m_Data.Title.c_str(); }

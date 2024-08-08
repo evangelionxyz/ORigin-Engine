@@ -72,14 +72,14 @@ namespace origin
         m_MinFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MinFilter);
         m_MagFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MagFilter);
 
-        glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-        glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+        glTextureStorage2D(m_TextureID, 1, m_InternalFormat, m_Width, m_Height);
 
-        glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
-        glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
+        glTexParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
+        glTexParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
 
-        glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         if (data)
         {
@@ -132,13 +132,13 @@ namespace origin
 
         OGN_CORE_ASSERT(m_InternalFormat & m_DataFormat, "Format not supported!");
 
-        glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-        glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+        glTextureStorage2D(m_TextureID, 1, m_InternalFormat, m_Width, m_Height);
 
-        glTexParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
-        glTexParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
-        glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
+        glTexParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
+        glTexParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         if (data)
         {
@@ -152,7 +152,7 @@ namespace origin
     OpenGLTexture2D::~OpenGLTexture2D()
     {
         Unbind();
-        glDeleteTextures(1, &m_RendererID);
+        glDeleteTextures(1, &m_TextureID);
     }
 
     void OpenGLTexture2D::SetData(Buffer data)
@@ -162,7 +162,7 @@ namespace origin
         // Verify the actual BPP
         uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
         OGN_CORE_ASSERT(data.Size == m_Width * m_Height * bpp, "[OpenGLTexture] Data must be entire texture!");
-        glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data.Data);
+        glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data.Data);
     }
 
     void OpenGLTexture2D::Bind(uint32_t index)
@@ -170,7 +170,7 @@ namespace origin
         OGN_PROFILER_RENDERING();
 
         m_Index = index;
-        glBindTextureUnit(index, m_RendererID); // bind texture index to renderID
+        glBindTextureUnit(index, m_TextureID); // bind texture index to renderID
     }
 
     void OpenGLTexture2D::Bind(uint32_t bindingPoint, uint32_t index, uint32_t arrayCount)
@@ -180,7 +180,7 @@ namespace origin
         uint32_t textureUnit = bindingPoint * arrayCount + index;
 
         m_Index = index;
-        glBindTextureUnit(textureUnit, m_RendererID); // bind texture index to renderID
+        glBindTextureUnit(textureUnit, m_TextureID); // bind texture index to renderID
     }
 
     void OpenGLTexture2D::Unbind()
@@ -194,7 +194,7 @@ namespace origin
     {
         OGN_PROFILER_RENDERING();
 
-        glDeleteTextures(1, &m_RendererID);
+        glDeleteTextures(1, &m_TextureID);
         OGN_CORE_WARN("[OpenGLTexture] \"{}\" at index {} has been deleted", m_Filepath, m_Index);
     }
 
@@ -216,7 +216,7 @@ namespace origin
         glCreateFramebuffers(2, fboIDs);
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, fboIDs[0]);
-        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_RendererID, 0);
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureID, 0);
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboIDs[1]);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, newTextureID, 0);
@@ -225,10 +225,10 @@ namespace origin
           0, 0, newWidth, newHeight,
           GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-        glDeleteTextures(1, &m_RendererID);
+        glDeleteTextures(1, &m_TextureID);
         glDeleteFramebuffers(2, fboIDs);
 
-        m_RendererID = newTextureID;
+        m_TextureID = newTextureID;
         m_Width = newWidth;
         m_Height = newHeight;
     }
@@ -238,7 +238,7 @@ namespace origin
     { }
 
     OpenGLTextureCube::OpenGLTextureCube(const std::string &filepath)
-        : m_RendererID(0), m_Filepath(filepath), m_Index(0)
+        : m_TextureID(0), m_Filepath(filepath), m_Index(0)
     {
         OGN_PROFILER_RENDERING();
 
@@ -286,8 +286,8 @@ namespace origin
         }
 
         // generate texture
-        glGenTextures(1, &m_RendererID);
-        glBindTexture(GL_TEXTURE_2D, m_RendererID);
+        glGenTextures(1, &m_TextureID);
+        glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -358,8 +358,8 @@ namespace origin
         OGN_CORE_TRACE("Internal Format: {0}, Data Format: {1}", internalFormat, dataFormat);*/
 
         // generate texture
-        glGenTextures(1, &m_RendererID);
-        glBindTexture(GL_TEXTURE_2D, m_RendererID);
+        glGenTextures(1, &m_TextureID);
+        glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

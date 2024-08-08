@@ -4,10 +4,8 @@
 #include "../EditorLayer.h"
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Renderer/Renderer2D.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/compatibility.hpp>
 
 namespace origin {
 
@@ -245,21 +243,6 @@ namespace origin {
                         * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
                     Renderer2D::DrawCircle(transform, glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), 100.0f);
-                }
-
-                if (entity.HasComponent<SpriteRenderer2DComponent>())
-                {
-                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z))
-                        * glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-                    Renderer2D::DrawRect(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-                }
-                else if (entity.HasComponent<CircleRendererComponent>())
-                {
-                    glm::vec3 translation = tc.WorldTranslation + glm::vec3(0.0f, 0.0f, 0.5f);
-                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-                        * glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-
-                    Renderer2D::DrawCircle(transform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), 0.05f);
                 }
 			}
 

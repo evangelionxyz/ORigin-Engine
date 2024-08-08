@@ -26,6 +26,7 @@ namespace origin
 		SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
 		static EditorLayer &Get();
 
+		bool GuiVSync = true;
 		bool GuiMenuFullscreen = false;
 		bool GuiMenuStyleWindow = false;
 		bool GuiRenderSettingsWindow = false;

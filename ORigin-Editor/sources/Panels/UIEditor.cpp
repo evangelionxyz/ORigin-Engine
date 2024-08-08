@@ -495,6 +495,15 @@ namespace origin
 
 	bool UIEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
+
+		if (IsViewportHovered && !IsViewportFocused)
+		{
+			if (e.Is(Mouse::ButtonMiddle) || e.Is(Mouse::ButtonRight) || e.Is(Mouse::ButtonLeft))
+			{
+				ImGui::SetWindowFocus("UI Editor");
+			}
+		}
+
 		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
 		{
 			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
@@ -505,11 +514,6 @@ namespace origin
 			{
 				m_SelectedIndex = -1;
 			}
-		}
-		
-		if (e.Is(Mouse::ButtonMiddle) && IsViewportHovered)
-		{
-			ImGui::SetWindowFocus("UI Editor");
 		}
 
 		return false;

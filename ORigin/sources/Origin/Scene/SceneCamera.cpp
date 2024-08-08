@@ -29,7 +29,6 @@ namespace origin
         UpdateProjection();
     }
 
-
     void SceneCamera::SetOrthoScale(float scale)
 	{
 		m_OrthoScale = scale;
@@ -44,16 +43,22 @@ namespace origin
     void SceneCamera::SetOrthoNear(float nearClip)
     {
         m_OrthoNearClip = nearClip;
+    	UpdateView();
+    	UpdateProjection();
     }
 
     void SceneCamera::SetOrthoFar(float farClip)
     {
         m_OrthoFarClip = farClip;
+    	UpdateView();
+    	UpdateProjection();
     }
 
     void SceneCamera::SetOrthoScaleMax(float max)
     {
         m_MaxOrthoScale = max;
+    	UpdateView();
+    	UpdateProjection();
     }
 
     void SceneCamera::SetAspectRatioType(AspectRatioType type)
@@ -129,16 +134,22 @@ namespace origin
     void SceneCamera::SetFov(float fovy)
     {
         m_FOV = fovy;
+    	UpdateView();
+    	UpdateProjection();
     }
 
     void SceneCamera::SetNear(float nearClip)
     {
         m_NearClip = nearClip;
+    	UpdateView();
+    	UpdateProjection();
     }
 
     void SceneCamera::SetFar(float farClip)
     {
         m_FarClip = farClip;
+    	UpdateView();
+    	UpdateProjection();
     }
 
     void SceneCamera::UpdateProjection()

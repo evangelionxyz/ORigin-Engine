@@ -275,7 +275,7 @@ namespace origin
 		{
 			s_ScriptEngineData->AssemblyReloadingPending = true;
 
-			Application::Get().SubmitToMainThread([]()
+			Application::Instance().SubmitToMainThread([]()
 			{
 				s_ScriptEngineData->AppAssemblyFilewatcher.reset();
 				ScriptEngine::ReloadAssembly();

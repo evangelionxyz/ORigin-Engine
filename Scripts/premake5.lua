@@ -9,13 +9,15 @@ workspace "OR1"
         "Release",
         "Dist"
     }
+
     flags{ "MultiProcessorCompile" }
+
     startproject "Editor"
     vendorProjectFiles = "%{wks.location}/ORigin/vendor/projectFiles"
     vendorOutputdir = "%{prj.location}/Binaries/%{cfg.buildcfg}/%{prj.name}"
     vendorIntOutputdir = "%{prj.location}/Binaries/Intermediates/%{cfg.buildcfg}/%{prj.name}"
     include "dependencies/Dependencies.lua"
-    
+
 group "Engine"
     include "projects/ORigin.lua"
     include "projects/ORigin-Editor.lua"

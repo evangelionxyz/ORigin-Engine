@@ -14,7 +14,7 @@ namespace origin {
 
 	struct RenderData
 	{
-		static const uint32_t MaxTriangles = 4096;
+		static const uint32_t MaxTriangles = 1024;
 		static const uint32_t MaxVertices = MaxTriangles * 24;
 		static const uint32_t MaxQuadIndices = MaxTriangles * 6;
 		static const uint32_t MaxTextureSlots = 32;

@@ -1,10 +1,34 @@
 Scene: TestScene.org
 Entities:
-  - Entity: 18351980026388686524
+  - Entity: 2941202280949679369
     Type: Entity
     Parent: 0
     TagComponent:
-      Tag: Empty
+      Tag: Sprite
+    TransformComponent:
+      Translation: [10.7058659, 23.2021599, 6.63314438]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    SpriteRenderer2DComponent:
+      Color: [1, 0, 0, 1]
+  - Entity: 5553397942616775100
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0.5, 23, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+  - Entity: 7618537728213144215
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Empty Mesh
     RigidbodyComponent:
       Mass: 1
       CenterMass: [0, 0, 0]
@@ -17,35 +41,47 @@ Entities:
       MoveY: true
       MoveZ: true
       IsStatic: false
+    TransformComponent:
+      Translation: [0, 5.70279026, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    StaticMeshComponent:
+      Name: ""
+      Type: 0
+      HMesh: 15569951670828566738
+      HMaterial: 0
+  - Entity: 9999676790130366509
+    Type: Entity
+    Parent: 2723873067466865669
+    TagComponent:
+      Tag: Red
+    RigidbodyComponent:
+      Mass: 1
+      CenterMass: [0, 0, 0]
+      Offset: [0, 0, 0]
+      UseGravity: false
+      RotateX: true
+      RotateY: true
+      RotateZ: true
+      MoveX: true
+      MoveY: true
+      MoveZ: true
+      IsStatic: false
     BoxColliderComponent:
       Size: [0.5, 0.5, 0.5]
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [10.4590807, 14.4160366, 0]
+      Translation: [0, 14.0462914, 0]
       Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
+      Scale: [6.67112684, 0.999999881, 3.3532238]
       Visible: true
     StaticMeshComponent:
       Name: ""
-      Type: 0
-      HMesh: 15569951670828566738
-      HMaterial: 0
-  - Entity: 18146361625917661274
-    Type: Entity
-    Parent: 0
-    TagComponent:
-      Tag: Empty
-    TransformComponent:
-      Translation: [14.1627216, 14.4160366, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
-      Visible: true
-    StaticMeshComponent:
-      Name: ""
-      Type: 0
-      HMesh: 15569951670828566738
-      HMaterial: 0
+      Type: 1
+      HMesh: 0
+      HMaterial: 7850902027858852768
   - Entity: 7916222134218068362
     Type: Entity
     Parent: 0
@@ -66,7 +102,7 @@ Entities:
         OrthoScale: 61.2000008
         OrthoNear: 10
         OrthoFar: 85.4000015
-        ViewportSize: [788.799988, 493]
+        ViewportSize: [517, 323.125]
       Primary: true
     AudioListenerComponent:
       Enable: true
@@ -133,9 +169,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [0, 6.99444246, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [1, 0.999999881, 0.999999881]
+      Translation: [9.59847069, 20.7366791, -8.49686432]
+      Rotation: [0, 0, 0.299684495, 0.954038382]
+      Scale: [6.6711278, 1, 3.3532238]
       Visible: true
     StaticMeshComponent:
       Name: ""

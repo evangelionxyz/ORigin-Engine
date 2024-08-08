@@ -5,11 +5,7 @@
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Serializer/SpriteSheetSerializer.h"
 #include "Origin/Asset/AssetManager.h"
-#include "Origin/Scene/EntityManager.h"
 #include "Origin/Core/Input.h"
-
-#include <glm/gtc/type_ptr.hpp>
-#include <yaml-cpp/yaml.h>
 #include <imgui.h>
 
 namespace origin
@@ -52,13 +48,14 @@ namespace origin
 		}
 
 		Reset();
+
 		m_SpriteSheet = AssetManager::GetAsset<SpriteSheet>(handle);
 		m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
 		if (Deserialize() && !m_IsOpened)
 		{
-			m_Camera.SetOrthoScale(static_cast<float>(m_Texture->GetHeight()) * 4.0f);
-			m_Camera.SetOrthoScaleMax(m_Texture->GetHeight() * 6.f);
+			m_Camera.SetOrthoScale(static_cast<float>(m_Texture->GetHeight()) * 1.5f);
+			m_Camera.SetOrthoScaleMax(m_Texture->GetHeight() * 3.0f);
 			m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
 			m_IsOpened = true;
 			ImGui::SetWindowFocus("Sprite Sheet Editor");
@@ -116,13 +113,13 @@ namespace origin
 
 			if (m_Texture)
 			{
-				texture = reinterpret_cast<ImTextureID>(m_Texture->GetRendererID());
+				texture = reinterpret_cast<ImTextureID>(m_Texture->GetTextureID());
 				ImVec2 atlasSize { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
 				if (ImGui::Button("Save"))
 				{
 					Serialize(m_CurrentFilepath);
-					OGN_CORE_TRACE("[SpriteSheetEditor] Saved in {}", m_CurrentFilepath);
+					OGN_CORE_TRACE("[Sprite Sheet Editor] Saved in {}", m_CurrentFilepath);
 				}
 
 				ImGui::SameLine();
@@ -241,6 +238,8 @@ namespace origin
 
 		if (m_Texture)
 		{
+			glDisable(GL_DEPTH_TEST);
+
 			Renderer2D::Begin(m_Camera);
 
 			int texX = m_Texture->GetWidth();
@@ -257,9 +256,9 @@ namespace origin
 				// Draw Rectangle Line
 				glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x, c.Position.y, 0.8f })
 					* glm::scale(glm::mat4(1.0f), { c.Size.x, c.Size.y, 1.0f });
-				glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-				Renderer2D::DrawRect(tf, col);
-				col = { 1.0f, 1.0f, 1.0f, 0.0f };
+				glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 0.1f) : glm::vec4(0.0f, 1.0f, 0.0f, 0.1f);
+				Renderer2D::DrawQuad(tf, col);
+				col = { 1.0f, 1.0f, 1.0f, 0.1f };
 				Renderer2D::DrawQuad(tf, col, offset);
 
 				// Draw corner
@@ -296,6 +295,7 @@ namespace origin
 			}
 
 			Renderer2D::End();
+			glEnable(GL_DEPTH_TEST);
 		}
 
 		if (IsViewportHovered && IsViewportFocused)
@@ -360,9 +360,12 @@ namespace origin
 
 	bool SpriteSheetEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
-		if (e.Is(Mouse::ButtonMiddle) && IsViewportHovered && !IsViewportFocused)
+		if (IsViewportHovered && !IsViewportFocused)
 		{
-			ImGui::SetWindowFocus("Sprite Sheet Editor");
+			if (e.Is(Mouse::ButtonMiddle) || e.Is(Mouse::ButtonRight) || e.Is(Mouse::ButtonLeft))
+			{
+				ImGui::SetWindowFocus("Sprite Sheet Editor");
+			}
 		}
 
 		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
@@ -386,10 +389,10 @@ namespace origin
 					m_MoveTranslation = m_Controls[m_SelectedIndex].Position;
 				}
 			}
-			else if (m_HoveredIndex < 0 && m_SelectedIndex > 0)
+			else if (m_HoveredIndex < 0 && m_SelectedIndex >= 0)
 			{
 				m_Controls[m_SelectedIndex].SelectedCorner = NONE;
-				m_SelectedIndex = -1;
+				//m_SelectedIndex = -1;
 			}
 		}
 
@@ -452,55 +455,61 @@ namespace origin
 			if (Input::Get().IsKeyPressed(Key::LeftShift))
 			{
 				if (Input::Get().IsKeyPressed(Key::LeftControl))
+				{
 					snapSize = 0.1f;
+				}
 
 				switch (c.SelectedCorner)
 				{
-					case NONE:
-						c.Position.x = round(m_MoveTranslation.x / snapSize) * snapSize;
-						c.Position.y = round(m_MoveTranslation.y / snapSize) * snapSize;
-						break;
+				case NONE:
+					c.Position.x = round(m_MoveTranslation.x / snapSize) * snapSize;
+					c.Position.y = round(m_MoveTranslation.y / snapSize) * snapSize;
+					break;
 				}
 			}
 			else
 			{
 				switch (c.SelectedCorner)
 				{
-					case NONE:
-						if (Input::Get().IsKeyPressed(Key::X))
-							c.Position.x += delta.x * orthoScale;
-						else if (Input::Get().IsKeyPressed(Key::Y))
-							c.Position.y -= delta.y * orthoScale;
-						else
-						{
-							c.Position.x += delta.x * orthoScale;
-							c.Position.y -= delta.y * orthoScale;
-						}
-						break;
-					case TOP_RIGHT:
-						c.Position.x += delta.x * orthoScale / 2.0f;
-						c.Size.x += delta.x * orthoScale;
-						c.Position.y -= delta.y * orthoScale / 2.0f;
-						c.Size.y -= delta.y * orthoScale;
-						break;
-					case BOTTOM_RIGHT:
-						c.Position.x += delta.x * orthoScale / 2.0f;
-						c.Size.x += delta.x * orthoScale;
-						c.Position.y -= delta.y * orthoScale / 2.0f;
-						c.Size.y += delta.y * orthoScale;
-						break;
-					case TOP_LEFT:
-						c.Position.x += delta.x * orthoScale / 2.0f;
-						c.Size.x -= delta.x * orthoScale;
-						c.Position.y -= delta.y * orthoScale / 2.0f;
-						c.Size.y -= delta.y * orthoScale;
-						break;
-					case BOTTOM_LEFT:
-						c.Position.x += delta.x * orthoScale / 2.0f;
-						c.Size.x -= delta.x * orthoScale;
-						c.Position.y -= delta.y * orthoScale / 2.0f;
-						c.Size.y += delta.y * orthoScale;
-						break;
+				case NONE:
+					if (Input::Get().IsKeyPressed(Key::X))
+					{
+						c.Position.x += delta.x * orthoScale;
+					}
+					else if (Input::Get().IsKeyPressed(Key::Y))
+					{
+						c.Position.y -= delta.y * orthoScale;
+					}
+					else
+					{
+						c.Position.x += delta.x * orthoScale;
+						c.Position.y -= delta.y * orthoScale;
+					}
+					break;
+				case TOP_RIGHT:
+					c.Position.x += delta.x * orthoScale / 2.0f;
+					c.Size.x += delta.x * orthoScale;
+					c.Position.y -= delta.y * orthoScale / 2.0f;
+					c.Size.y -= delta.y * orthoScale;
+					break;
+				case BOTTOM_RIGHT:
+					c.Position.x += delta.x * orthoScale / 2.0f;
+					c.Size.x += delta.x * orthoScale;
+					c.Position.y -= delta.y * orthoScale / 2.0f;
+					c.Size.y += delta.y * orthoScale;
+					break;
+				case TOP_LEFT:
+					c.Position.x += delta.x * orthoScale / 2.0f;
+					c.Size.x -= delta.x * orthoScale;
+					c.Position.y -= delta.y * orthoScale / 2.0f;
+					c.Size.y -= delta.y * orthoScale;
+					break;
+				case BOTTOM_LEFT:
+					c.Position.x += delta.x * orthoScale / 2.0f;
+					c.Size.x -= delta.x * orthoScale;
+					c.Position.y -= delta.y * orthoScale / 2.0f;
+					c.Size.y += delta.y * orthoScale;
+					break;
 				}
 			}
 		}

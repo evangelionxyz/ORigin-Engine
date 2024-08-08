@@ -131,7 +131,7 @@ Entities:
           Name: FPSCounter
           Anchor: -858993460
           FontHandle: 7705012376485170699
-          TextString: 79.53 FPS
+          TextString: 121.03 FPS
           LineSpacing: 0
           Kerning: 0
           Color: [1, 0, 0, 1]
@@ -142,7 +142,7 @@ Entities:
           Name: BulletCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 10 Total bullets
+          TextString: 0 Total bullets
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -153,7 +153,7 @@ Entities:
           Name: CubeCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 597 Total Cubes
+          TextString: 112 Total Cubes
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -187,9 +187,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [7.99892712, 12.0973673, -4.76916265]
+      Translation: [14.2491016, 10.3304634, 5.00991488]
       Rotation: [-0.323833615, -0.156385526, -0.405774742, 0.840251327]
-      Scale: [1.74999988, 10.145463, 1.75000012]
+      Scale: [1, 0.999999821, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -224,7 +224,17 @@ Entities:
     TagComponent:
       Tag: BlockSpawner
     ScriptComponent:
-      ClassName: Detached
+      ClassName: TestGame.BlockSpawner
+      ScriptFields:
+        - Name: block
+          Type: Entity
+          Data: 6592829467429759275
+        - Name: blockB
+          Type: Entity
+          Data: 5124889645444281284
+        - Name: uiEntity
+          Type: Entity
+          Data: 16653817252219590406
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
@@ -585,7 +595,7 @@ Entities:
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
-      Scale: [50, 0.999999881, 50]
+      Scale: [70, 0.999999881, 70]
       Visible: true
     StaticMeshComponent:
       Name: ""

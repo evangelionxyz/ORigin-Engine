@@ -805,7 +805,7 @@ namespace origin
 					if (mc.HMesh)
 					{
 						mc.Data = AssetManager::GetAsset<MeshData>(mc.HMesh);
-						ModelLoader::ProcessMesh(mc.Data, mc.Va, mc.Vb);
+						ModelLoader::ProcessMesh(mc.Data, mc.Data->vertexArray, mc.Data->vertexBuffer);
 					}
 					mc.mType = static_cast<StaticMeshComponent::Type>(staticMeshComponent["Type"].as<int>());
 				}

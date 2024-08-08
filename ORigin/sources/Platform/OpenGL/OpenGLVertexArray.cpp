@@ -4,6 +4,7 @@
 #include "OpenGLVertexArray.h"
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
+#include <glad/glad.h>
 
 namespace origin
 {
@@ -11,24 +12,23 @@ namespace origin
     {
         switch (type)
         {
-        case ShaderDataType::Float:      return GL_FLOAT;
-        case ShaderDataType::Float2:     return GL_FLOAT;
-        case ShaderDataType::Float3:     return GL_FLOAT;
-        case ShaderDataType::Float4:     return GL_FLOAT;
-        case ShaderDataType::Mat2:       return GL_FLOAT;
-        case ShaderDataType::Mat3:       return GL_FLOAT;
-        case ShaderDataType::Mat4:       return GL_FLOAT;
-        case ShaderDataType::Int:        return GL_INT;
-        case ShaderDataType::Int2:       return GL_INT;
-        case ShaderDataType::Int3:       return GL_INT;
-        case ShaderDataType::Int4:       return GL_INT;
-        case ShaderDataType::Boolean:    return GL_BOOL;
-        default:
-            OGN_CORE_ASSERT(false, "Unknown Shader Data Type");
-            return 0;
+        case ShaderDataType::Float:   return GL_FLOAT;
+        case ShaderDataType::Float2:  return GL_FLOAT;
+        case ShaderDataType::Float3:  return GL_FLOAT;
+        case ShaderDataType::Float4:  return GL_FLOAT;
+        case ShaderDataType::Mat2:    return GL_FLOAT;
+        case ShaderDataType::Mat3:    return GL_FLOAT;
+        case ShaderDataType::Mat4:    return GL_FLOAT;
+        case ShaderDataType::Int:     return GL_INT;
+        case ShaderDataType::Int2:    return GL_INT;
+        case ShaderDataType::Int3:    return GL_INT;
+        case ShaderDataType::Int4:    return GL_INT;
+        case ShaderDataType::Boolean: return GL_BOOL;
         }
-    }
 
+		OGN_CORE_ASSERT(false, "Unknown Shader Data Type");
+		return 0;
+    }
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
@@ -39,7 +39,7 @@ namespace origin
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
 		glDeleteVertexArrays(1, &m_RendererID);
-		glBindVertexArray(m_RendererID);
+		glBindVertexArray(0);
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
@@ -105,14 +105,15 @@ namespace origin
 			}
 			default:
 				OGN_CORE_ASSERT(false, "Unknown ShaderDataType!");
+				return;
 			}
 		}
 		m_VertexBuffer.push_back(vertexBuffer);
 	}
 	
-	void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+	void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer> &indexBuffer)
 	{
-		Bind();
+		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();
 		m_IndexBuffer = indexBuffer;
 	}

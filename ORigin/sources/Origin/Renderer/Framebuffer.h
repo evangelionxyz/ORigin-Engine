@@ -71,7 +71,7 @@ namespace origin
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
-		virtual uint32_t GetRendererID() const = 0;
+		virtual uint32_t GetBufferID() const = 0;
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
 

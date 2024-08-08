@@ -12,8 +12,8 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:			return nullptr;
-			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLVertexBuffer>(size);
+			case RendererAPI::API::None:   return nullptr;
+			case RendererAPI::API::OpenGL: return std::make_shared<OpenGLVertexBuffer>(size);
 		}
 
 		return nullptr;
@@ -23,8 +23,8 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:			return nullptr;
-		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLVertexBuffer>(vertices, size);
+		case RendererAPI::API::None:   return nullptr;
+		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLVertexBuffer>(vertices, size);
 		}
 
 		return nullptr;
@@ -34,33 +34,21 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:			return nullptr;
-		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLIndexBuffer>(size);
+		case RendererAPI::API::None:   return nullptr;
+		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLIndexBuffer>(size);
 		}
 
 		return nullptr;
 	}
 
-	std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
+	std::shared_ptr<IndexBuffer> IndexBuffer::Create(void* indices, uint32_t count)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:			return nullptr;
-		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLIndexBuffer>(indices, count);
+		case RendererAPI::API::None:   return nullptr;
+		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLIndexBuffer>(indices, count);
 		}
 
 		return nullptr;
 	}
-
-	std::shared_ptr<IndexBuffer> IndexBuffer::Create(const std::vector<uint32_t> &indices)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None:			return nullptr;
-		case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLIndexBuffer>(indices);
-		}
-
-		return nullptr;
-	}
-
 }

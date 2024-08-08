@@ -74,8 +74,6 @@ namespace origin {
 
 	void Application::Run()
 	{
-		m_Window->SetVSync(false);
-
 		while (m_Window->IsLooping())
 		{
 			OGN_PROFILER_BEGIN_FRAME("MainThread");
@@ -113,6 +111,11 @@ namespace origin {
 
 			m_Window->OnUpdate();
 		}
+	}
+
+	void Application::Close()
+	{ 
+		m_Window->CloseWindow();
 	}
 
 	void Application::PushOverlay(Layer* layer)

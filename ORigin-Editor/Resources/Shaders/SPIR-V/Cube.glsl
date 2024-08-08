@@ -2,11 +2,11 @@
 
 // type vertex
 #version 450 core
-layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec4 a_Color;
-layout(location = 2) in vec2 a_TexCoord;
-layout(location = 3) in float a_TexIndex;
-layout(location = 4) in int a_EntityID;
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec4 aColor;
+layout(location = 2) in vec2 aTexCoord;
+layout(location = 3) in float aTexIndex;
+layout(location = 4) in int aEntityID;
 
 layout (std140, binding = 0) uniform Camera
 {
@@ -28,13 +28,13 @@ layout (location = 4) out flat int v_EntityID;
 
 void main()
 {
-	Out.Position = a_Position;
-	Out.Color = a_Color;
-	Out.TexCoord = a_TexCoord;
-	v_TexIndex = a_TexIndex;
-	v_EntityID = a_EntityID;
+	Out.Position = aPosition;
+	Out.Color = aColor;
+	Out.TexCoord = aTexCoord;
+	v_TexIndex = aTexIndex;
+	v_EntityID = aEntityID;
 
-	gl_Position = CameraBuffer.ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = CameraBuffer.ViewProjection * vec4(aPosition, 1.0);
 }
 
 // type fragment

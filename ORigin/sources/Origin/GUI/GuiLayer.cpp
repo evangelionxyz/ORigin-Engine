@@ -205,7 +205,7 @@ namespace origin {
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		Application& app = Application::Get();
+		Application& app = Application::Instance();
 		io.DisplaySize = ImVec2(m_Width, m_Height);
 		
 		ImGui::Render();

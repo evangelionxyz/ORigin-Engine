@@ -43,13 +43,12 @@ bool RuntimeLayer::OnKeyPressed(origin::KeyPressedEvent &e)
 {
 	if (e.GetKeyCode() == Key::Escape)
 	{
-		Application::Get().Close();
+		Application::Instance().Close();
 	}
 
 	if (e.GetKeyCode() == Key::F11)
 	{
-		fullScreen = !fullScreen;
-		Application::Get().GetWindow().SetFullscreen(fullScreen);
+		Application::Instance().GetWindow().ToggleFullScreen();
 	}
 
 	return false;
@@ -97,8 +96,8 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
 	m_LoadingSound->SetLoop(true);
 
 	m_ScreenTexture = TextureImporter::LoadTexture2D("Resources/UITextures/runtime_loading_screen.png");
-	auto &app = Application::Get();
-	app.GetWindow().SetFullscreen(fullScreen);
+	auto &app = Application::Instance();
+	app.GetWindow().ToggleFullScreen();
 	float elapsedTime = 0.0f;
 	auto start = std::chrono::high_resolution_clock::now();
 	float lastFrame = 0.0f;
@@ -108,7 +107,7 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
 	{
 		if (!isLoaded)
 		{
-			const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+			const auto &commandLineArgs = Application::Instance().GetSpecification().CommandLineArgs;
 			if (commandLineArgs.Count > 1)
 				isLoaded = OpenProject(commandLineArgs[1]);
 			else
@@ -165,7 +164,7 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
 
 	if (isLoaded)
 	{
-		auto &window = Application::Get().GetWindow();
+		auto &window = Application::Instance().GetWindow();
 		m_ActiveScene->OnRuntimeStart();
 		Resize(window.GetWidth(), window.GetHeight());
 	}

@@ -18,7 +18,7 @@ namespace origin
 		static const uint32_t MaxSphereVertices = MaxTriangles * 544;
 		static const uint32_t MaxSphereIndices = MaxTriangles * 768;
 
-        static const uint32_t MaxCapsuleTriangles = 500;
+        static const uint32_t MaxCapsuleTriangles = 800;
         static const uint32_t MaxCapsuleVertices = MaxCapsuleTriangles * 1440;
         static const uint32_t MaxCapsuleIndices = MaxCapsuleTriangles * 2004;
         static const uint32_t MaxTextureSlots = 32;
@@ -163,7 +163,7 @@ namespace origin
         }
 
         std::shared_ptr<IndexBuffer> capsuleIBO = IndexBuffer::Create(capsuleIndices, MeshRenderData::MaxCapsuleIndices);
-        s_MeshRenderData.SphereVAO->SetIndexBuffer(capsuleIBO);
+        s_MeshRenderData.CapsuleVAO->SetIndexBuffer(capsuleIBO);
         delete[] capsuleIndices;
         
         s_MeshRenderData.Ubo = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
@@ -239,6 +239,7 @@ namespace origin
         if (s_MeshRenderData.CubeIndexCount)
         {
             uint32_t dataSize = (uint8_t *)s_MeshRenderData.CubeVBOPtr - (uint8_t *)s_MeshRenderData.CubeVBOBase;
+            s_MeshRenderData.CubeVBO->Bind();
             s_MeshRenderData.CubeVBO->SetData(s_MeshRenderData.CubeVBOBase, dataSize);
 
             for (uint32_t i = 0; i < s_MeshRenderData.AlbedoTextureSlotIndex; i++)
@@ -260,6 +261,7 @@ namespace origin
         if (s_MeshRenderData.SphereIndexCount)
         {
             uint32_t dataSize = (uint8_t *)s_MeshRenderData.SphereVBOPtr - (uint8_t *)s_MeshRenderData.SphereVBOBase;
+            s_MeshRenderData.SphereVBO->Bind();
             s_MeshRenderData.SphereVBO->SetData(s_MeshRenderData.SphereVBOBase, dataSize);
 
             for (uint32_t i = 0; i < s_MeshRenderData.AlbedoTextureSlotIndex; i++)
@@ -281,6 +283,7 @@ namespace origin
         if (s_MeshRenderData.CapsuleIndexCount)
         {
             uint32_t dataSize = (uint8_t *)s_MeshRenderData.CapsuleVBOPtr - (uint8_t *)s_MeshRenderData.CapsuleVBOBase;
+            s_MeshRenderData.CapsuleVBO->Bind();
             s_MeshRenderData.CapsuleVBO->SetData(s_MeshRenderData.CapsuleVBOBase, dataSize);
 
             for (uint32_t i = 0; i < s_MeshRenderData.AlbedoTextureSlotIndex; i++)
@@ -302,6 +305,9 @@ namespace origin
 
     void MeshRenderer::DrawMesh(const glm::mat4 &viewProjection, const glm::mat4 &transform, const std::shared_ptr<VertexArray> &va, int entityId, Shader *shader)
     {
+        if (!va)
+            return;
+
         if (!shader)
         {
             shader = s_MeshRenderData.TestShader.get();
@@ -339,7 +345,7 @@ namespace origin
 			s_MeshRenderData.CubeVBOPtr++;
 		}
 
-		s_MeshRenderData.CubeIndexCount += s_MeshRenderData.CubeData->indices.size();
+		s_MeshRenderData.CubeIndexCount += (uint32_t)s_MeshRenderData.CubeData->indices.size();
 		Renderer::GetStatistics().CubeCount++;
 	}
 
@@ -425,7 +431,7 @@ namespace origin
             s_MeshRenderData.CubeVBOPtr++;
         }
 
-        s_MeshRenderData.CubeIndexCount += s_MeshRenderData.CubeData->indices.size();
+        s_MeshRenderData.CubeIndexCount += (uint32_t)s_MeshRenderData.CubeData->indices.size();
         Renderer::GetStatistics().CubeCount++;
     }
 
@@ -448,11 +454,11 @@ namespace origin
             s_MeshRenderData.SphereVBOPtr++;
         }
 
-        s_MeshRenderData.SphereIndexCount += s_MeshRenderData.SphereData->indices.size();
+        s_MeshRenderData.SphereIndexCount += (uint32_t)s_MeshRenderData.SphereData->indices.size();
 		Renderer::GetStatistics().SphereCount++;
     }
 
-    void MeshRenderer::DrawSphere(const glm::mat4 &transform, Material *material, int entityID /*= -1*/)
+    void MeshRenderer::DrawSphere(const glm::mat4 &transform, Material *material, int entityID)
     {
         if (material)
 			DrawSphere(transform, material->Color, entityID);
@@ -479,7 +485,7 @@ namespace origin
             s_MeshRenderData.CapsuleVBOPtr++;
         }
 
-        s_MeshRenderData.CapsuleIndexCount += s_MeshRenderData.CapsuleData->indices.size();
+        s_MeshRenderData.CapsuleIndexCount += (uint32_t)s_MeshRenderData.CapsuleData->indices.size();
         Renderer::GetStatistics().SphereCount++;
     }
 

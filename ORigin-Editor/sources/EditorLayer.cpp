@@ -2,21 +2,18 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.h"
-
 #include "Origin/EntryPoint.h"
 #include "Gizmos/Gizmos.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Asset/AssetImporter.h"
-#include "Origin/Scene/EntityManager.h"
 #include "Panels/AnimationTimeline.h"
 #include "Origin/GUI/UI.h"
-
-#include <filesystem>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
+#include <filesystem>
 
 namespace origin
 {
@@ -70,7 +67,7 @@ namespace origin
 		m_EditorCamera.SetStyle(CameraStyle::FreeMove);
 
 		m_ActiveScene = std::make_shared<Scene>();
-		const auto &commandLineArgs = Application::Get().GetSpecification().CommandLineArgs;
+		const auto &commandLineArgs = Application::Instance().GetSpecification().CommandLineArgs;
 
 		if (commandLineArgs.Count > 1)
 		{
@@ -411,7 +408,6 @@ namespace origin
 
 		if (!filepath.empty())
 		{
-			OGN_CORE_INFO("[Scene Scene As]{0}", filepath);
 			SerializeScene(m_ActiveScene, filepath);
 			m_ScenePath = filepath;
 		}
@@ -429,7 +425,7 @@ namespace origin
 
 		if (m_SceneState != SceneState::Edit)
 		{
-			OnSceneStop();	
+			OnSceneStop();
 		}
 
 		auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
@@ -437,7 +433,8 @@ namespace origin
 
 		if (!readOnlyScene)
 		{
-			OGN_CORE_ERROR("[EditorLayer] Invalid Scene");
+			OGN_CORE_ERROR("[EditorLayer] Invalid scene!");
+			PUSH_CONSOLE_ERROR("Invalid scene!");
 			return;
 		}
 
@@ -486,7 +483,8 @@ namespace origin
 
 		if (!readOnlyScene)
 		{
-			OGN_CORE_ERROR("[EditorLayer] Invalid Scene");
+			OGN_CORE_ERROR("[EditorLayer] Invalid scene!");
+			PUSH_CONSOLE_ERROR("Invalid scene!");
 			return;
 		}
 
@@ -514,7 +512,7 @@ namespace origin
 	void EditorLayer::MenuBar()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
-		auto &window = Application::Get();
+		auto &application = Application::Instance();
 		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
@@ -539,7 +537,7 @@ namespace origin
 				if (ImGui::MenuItem("Open Scene", "Ctrl+O", nullptr, (bool)Project::GetActive())) OpenScene();
 				if (ImGui::MenuItem("Save Scene", "Ctrl+S", nullptr, (bool)Project::GetActive())) SaveScene();
 				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S", nullptr, (bool)Project::GetActive())) SaveSceneAs();
-				if (ImGui::MenuItem("Exit", "Alt+F4")) window.Close();
+				if (ImGui::MenuItem("Exit", "Alt+F4")) application.Close();
 
 				ImGui::EndMenu();
 			}
@@ -568,8 +566,8 @@ namespace origin
 
 			if (ImGui::BeginMenu("View"))
 			{
-				if (ImGui::MenuItem("Full Screen", "F11", &GuiMenuFullscreen))
-					window.GetWindow().SetFullscreen(GuiMenuFullscreen);
+				if (ImGui::MenuItem("Full Screen", "F11", &GuiMenuFullscreen)) application.GetWindow().ToggleFullScreen();
+				if (ImGui::MenuItem("VSync", nullptr, &GuiVSync)) application.GetWindow().ToggleVSync();
 				ImGui::EndMenu();
 			}
 
@@ -881,7 +879,7 @@ namespace origin
 			ImVec2 posMaxB = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
 			drawList->AddRectFilledMultiColor(posMinB, posMaxB, rectTransparentColor, rectColor, rectColor, rectTransparentColor);
 
-			ImTextureID origiEngineTex = reinterpret_cast<ImTextureID>(m_OriginEngineTex->GetRendererID());
+			ImTextureID origiEngineTex = reinterpret_cast<ImTextureID>(m_OriginEngineTex->GetTextureID());
 			float textureAspect = (float)m_OriginEngineTex->GetWidth() / (float)m_OriginEngineTex->GetHeight();
 
 			ImVec2 imagePosMin = ImVec2(canvasPos.x, canvasPos.y);
@@ -898,7 +896,7 @@ namespace origin
 
 			// Play Button
 			std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 25.0f, 25.0f }))
+			if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), { 25.0f, 25.0f }))
 			{
 				if (m_SceneHierarchy.GetContext())
 				{
@@ -917,7 +915,7 @@ namespace origin
 			ImGui::SameLine();
 			bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
 			icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-			if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), {25.0f, 25.0f}))
+			if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), {25.0f, 25.0f}))
 			{
 				if (m_SceneHierarchy.GetContext())
 				{
@@ -938,7 +936,7 @@ namespace origin
 				ImGui::SameLine();
 				bool isPaused = m_ActiveScene->IsPaused();
 				icon = m_UITextures.at("pause");
-				if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 25.0f, 25.0f }))
+				if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), { 25.0f, 25.0f }))
 				{
 					m_ActiveScene->SetPaused(!isPaused);
 				}
@@ -947,7 +945,7 @@ namespace origin
 				{
 					icon = m_UITextures.at("stepping");
 					ImGui::SameLine();
-					if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 25.0f, 25.0f }))
+					if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), { 25.0f, 25.0f }))
 					{
 						m_ActiveScene->Step(1);
 					}
@@ -960,7 +958,7 @@ namespace origin
 			ImGui::SetCursorPos({ btPos.x + 175.0f, btPos.y });
 			const auto &mode = m_EditorCamera.GetProjectionType();
 			icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
-			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetRendererID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
+			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetTextureID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
 			{
 				if (mode == ProjectionType::Perspective)
 					m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
@@ -1256,6 +1254,15 @@ namespace origin
     bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 	{
 		OGN_PROFILER_INPUT();
+
+		if (IsViewportHovered && !IsViewportFocused)
+		{
+			if (e.Is(Mouse::ButtonMiddle) || e.Is(Mouse::ButtonRight) || e.Is(Mouse::ButtonLeft))
+			{
+				ImGui::SetWindowFocus("Scene");
+			}
+		}
+
 		return false;
 	}
 
@@ -1378,7 +1385,7 @@ namespace origin
 	{
 		OGN_PROFILER_INPUT();
 
-		auto &app = Application::Get();
+		auto &app = Application::Instance();
 		const bool control = Input::Get().IsKeyPressed(Key::LeftControl) || Input::Get().IsKeyPressed(Key::RightControl);
 		const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
 
@@ -1524,8 +1531,7 @@ namespace origin
 
 		case Key::F11:
 		{
-			GuiMenuFullscreen = !GuiMenuFullscreen;
-			app.GetWindow().SetFullscreen(GuiMenuFullscreen);
+			app.GetWindow().ToggleFullScreen();
 			break;
 		}
 

@@ -29,10 +29,10 @@ namespace origin {
 
 		const FramebufferSpecification& GetSpecification() const override { return m_Spec; }
 
-		virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		virtual uint32_t GetBufferID() const override { return m_BufferID; }
 
 	private:
-		uint32_t m_RendererID = 0, m_Renderbuffer = 0;
+		uint32_t m_BufferID = 0, m_Renderbuffer = 0;
 		FramebufferSpecification m_Spec;
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
 		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;

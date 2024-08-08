@@ -2,7 +2,6 @@
 
 #pragma once
 #include "Origin/Renderer/VertexArray.h"
-#include <glad/glad.h>
 
 namespace origin
 {
@@ -10,16 +9,16 @@ namespace origin
 	{
 	public:
 		OpenGLVertexArray();
-		virtual ~OpenGLVertexArray();
+		~OpenGLVertexArray();
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
+		void Bind() const override;
+		void Unbind() const override;
 
-		virtual void AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) override;
-		virtual void SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) override;
+		void AddVertexBuffer(const std::shared_ptr<VertexBuffer> &vertexBuffer) override;
+		void SetIndexBuffer(const std::shared_ptr<IndexBuffer> &indexBuffer) override;
 
-		virtual const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffer() const override { return m_VertexBuffer;  }
-		virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
+		const std::vector<std::shared_ptr<VertexBuffer>>& GetVertexBuffer() const override { return m_VertexBuffer;  }
+		const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; }
 
 	private:
 		uint32_t m_RendererID;

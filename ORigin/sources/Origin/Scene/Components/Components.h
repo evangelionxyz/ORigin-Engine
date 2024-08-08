@@ -186,10 +186,7 @@ namespace origin
 		AssetHandle HMaterial = UUID(0);
 		AssetHandle HMesh = UUID(0);
 		Type mType = Type::Default;
-
-		std::shared_ptr<VertexArray> Va;
-		std::shared_ptr<VertexBuffer> Vb;
-
+		
 		StaticMeshComponent() = default;
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
@@ -202,11 +199,18 @@ namespace origin
         AssetHandle HMaterial = UUID(0);
         AssetHandle HMesh = UUID(0);
 
-        std::shared_ptr<VertexArray> Va;
-        std::shared_ptr<VertexBuffer> Vb;
-
 		AnimatedMeshComponent() = default;
 		AnimatedMeshComponent(const AnimatedMeshComponent &) = default;
+	};
+
+	class MeshRendererComponent
+	{
+	public:
+		std::shared_ptr<VertexArray> Va;
+		AssetHandle HMaterial = UUID(0);
+
+		MeshRendererComponent() = default;
+		MeshRendererComponent(const MeshRendererComponent &) = default;
 	};
 
 	class TextComponent
@@ -660,6 +664,7 @@ namespace origin
 		SpriteRenderer2DComponent, 
 		StaticMeshComponent, 
 		AnimatedMeshComponent, 
+		MeshRendererComponent,
 		TextComponent,
 		CircleRendererComponent, 
 		ParticleComponent, 

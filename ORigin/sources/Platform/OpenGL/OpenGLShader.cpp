@@ -261,7 +261,6 @@ namespace origin
     OpenGLShader::~OpenGLShader()
     {
         OGN_PROFILER_RENDERING();
-
         glDeleteProgram(m_RendererID);
     }
 
@@ -290,13 +289,9 @@ namespace origin
         glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
         if (isLinked < 0)
         {
-            OGN_CORE_ERROR("[Shader] Linked Status : {0}", isLinked);
-            PUSH_CONSOLE_ERROR("[Shader] Linked Status : {0}", isLinked);
-        }
-        else
-        {
-            OGN_CORE_INFO("[Shader] Linked Status : {0}", isLinked);
-            PUSH_CONSOLE_INFO("[Shader] Linked Status : {0}", isLinked);
+            OGN_CORE_ERROR("[Shader] Failed to linking shader");
+            PUSH_CONSOLE_ERROR("[Shader] Failed to linking shader");
+            return;
         }
 
         if (isLinked == GL_FALSE)
@@ -305,10 +300,10 @@ namespace origin
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
             std::vector<GLchar> infolog(maxLength);
             glGetProgramInfoLog(program, maxLength, &maxLength, infolog.data());
-
             glDeleteProgram(program);
-
             for (auto id : shaderIDs) glDeleteShader(id);
+
+            return;
         }
 
         for (auto id : shaderIDs)
@@ -416,7 +411,7 @@ namespace origin
             if (infile.is_open() && !m_RecompileSPIRV)
             {
                 PUSH_CONSOLE_INFO("[Shader] Get Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
-                OGN_CORE_WARN("[Shader] et Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
+                OGN_CORE_WARN("[Shader] Get Vulkan {0} Shader Binaries", Utils::ShaderDataTypeToString(stage));
                 infile.seekg(0, std::ios::end);
                 auto size = infile.tellg();
                 infile.seekg(0, std::ios::beg);
@@ -533,7 +528,7 @@ namespace origin
 
         if (resources.uniform_buffers.size())
         {
-            OGN_CORE_TRACE("Uniform buffers:");
+            OGN_CORE_TRACE("[Shader] Uniform buffers:");
             for (const auto &resource : resources.uniform_buffers)
             {
                 const auto &bufferType = compiler.get_type(resource.base_type_id);

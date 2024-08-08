@@ -40,14 +40,16 @@ namespace origin
 	{
 		if (vertexArray)
 		{
-			while (glGetError() != GL_NO_ERROR);
-
 			vertexArray->Bind();
 			uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-			vertexArray->Unbind();
 
+			// Ensure that the index buffer is correctly bound
+			OGN_CORE_ASSERT(count > 0, "Index count is zero");
 			GLenum error = glGetError();
+			OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLRendererAPI] {0}", error);
+
+			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+			error = glGetError();
 			OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLRendererAPI] {0}", error);
 		}
 	}

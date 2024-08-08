@@ -171,6 +171,31 @@ namespace origin
 		return data;
 	}
 
+	void ModelLoader::ProcessMesh(const std::shared_ptr<MeshData> &data,
+		std::shared_ptr<VertexArray> &vertexArray, 
+		std::shared_ptr<VertexBuffer> &vertexBuffer)
+	{
+		vertexArray = VertexArray::Create();
+		vertexBuffer = VertexBuffer::Create(data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
+
+		vertexBuffer->SetLayout
+		({
+			{ ShaderDataType::Float3, "aPosition"     },
+			{ ShaderDataType::Float3, "aNormals"      },
+			{ ShaderDataType::Float3, "aColor"        },
+			{ ShaderDataType::Float2, "aUV"           },
+			{ ShaderDataType::Float2, "aTilingFactor" },
+			{ ShaderDataType::Float,  "aAlbedoIndex"  },
+			{ ShaderDataType::Float,  "aSpecularIndex"},
+			{ ShaderDataType::Int,	  "aEntityID"     }
+		});
+
+		vertexArray->AddVertexBuffer(vertexBuffer);
+		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices.data(), data->indices.size());
+		vertexArray->SetIndexBuffer(indexBuffer);
+		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
+	}
+
 
     static void ProcessAnimatedMeshNode(aiNode *node, const aiScene *scene, AnimatedMeshData *data)
     {
@@ -300,37 +325,12 @@ namespace origin
 		return data;
     }
 
-    void ModelLoader::ProcessMesh(const std::shared_ptr<MeshData> &data,
-		std::shared_ptr<VertexArray> &vertexArray, 
-		std::shared_ptr<VertexBuffer> &vertexBuffer)
-	{
-		vertexArray = VertexArray::Create();
-		vertexBuffer = VertexBuffer::Create((void *)data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
-
-		vertexBuffer->SetLayout
-		({
-			{ ShaderDataType::Float3, "aPosition"     },
-			{ ShaderDataType::Float3, "aNormals"      },
-			{ ShaderDataType::Float3, "aColor"        },
-			{ ShaderDataType::Float2, "aUV"           },
-			{ ShaderDataType::Float2, "aTilingFactor" },
-			{ ShaderDataType::Float,  "aAlbedoIndex"  },
-			{ ShaderDataType::Float,  "aSpecularIndex"},
-			{ ShaderDataType::Int,	  "aEntityID"     }
-		});
-
-		vertexArray->AddVertexBuffer(vertexBuffer);
-		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices);
-		vertexArray->SetIndexBuffer(indexBuffer);
-		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
-	}
-
     void ModelLoader::ProcessAnimatedMesh(const std::shared_ptr<AnimatedMeshData> &data, 
 		std::shared_ptr<VertexArray> &vertexArray, 
 		std::shared_ptr<VertexBuffer> &vertexBuffer)
     {
         vertexArray = VertexArray::Create();
-        vertexBuffer = VertexBuffer::Create((void *)data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
+        vertexBuffer = VertexBuffer::Create(data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
 
         vertexBuffer->SetLayout
         ({
@@ -345,7 +345,7 @@ namespace origin
 
         vertexArray->AddVertexBuffer(vertexBuffer);
 
-        std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices);
+		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices.data(), data->indices.size());
         vertexArray->SetIndexBuffer(indexBuffer);
 
         OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());

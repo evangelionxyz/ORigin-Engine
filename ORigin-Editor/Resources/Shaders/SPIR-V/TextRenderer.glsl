@@ -77,6 +77,7 @@ void main()
 
 	vec4 bgColor = vec4(0.0);
     oColor = mix(bgColor, Input.Color, opacity);
+
 	if (oColor.a == 0.0)
 		discard;
 

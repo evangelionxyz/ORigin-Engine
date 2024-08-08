@@ -56,11 +56,11 @@ namespace origin {
 		s_Render3DData.CubeVertexArray = VertexArray::Create();
 		s_Render3DData.CubeVertexBuffer = VertexBuffer::Create(Renderer::s_RenderData.MaxVertices * sizeof(Vertex));
 		s_Render3DData.CubeVertexBuffer->SetLayout({
-			{ShaderDataType::Float3,	"a_Pos"			},
-			{ShaderDataType::Float4,	"a_Color"		},
-			{ShaderDataType::Float2,	"a_TexCoord"    },
-			{ShaderDataType::Float,		"a_TexIndex"    },
-			{ShaderDataType::Int,		"a_EntityID"    },
+			{ShaderDataType::Float3,	"a_Pos"      },
+			{ShaderDataType::Float4,	"a_Color"    },
+			{ShaderDataType::Float2,	"a_TexCoord" },
+			{ShaderDataType::Float,		"a_TexIndex" },
+			{ShaderDataType::Int,		"a_EntityID" },
 		});
 
 		s_Render3DData.CubeVertexArray->AddVertexBuffer(s_Render3DData.CubeVertexBuffer);

@@ -46,7 +46,6 @@ namespace origin
 		bool Normalized = false;
 
 		BufferElement()
-			: Type(ShaderDataType::None), Size(0), Offset(0), Normalized(false)
 		{
 		}
 
@@ -59,24 +58,23 @@ namespace origin
 		{
 			switch (Type)
 			{
-				case ShaderDataType::Int:		return 1;
-				case ShaderDataType::Int2:		return 2;
-				case ShaderDataType::Int3:		return 3;
-				case ShaderDataType::Int4:		return 4;
-				case ShaderDataType::Float:		return 1;
-				case ShaderDataType::Float2:	return 2;
-				case ShaderDataType::Float3:	return 3;
-				case ShaderDataType::Float4:	return 4;
-				case ShaderDataType::Mat2:		return 2;
-				case ShaderDataType::Mat3:		return 3;
-				case ShaderDataType::Mat4:		return 4;
+				case ShaderDataType::Int:     return 1;
+				case ShaderDataType::Int2:    return 2;
+				case ShaderDataType::Int3:    return 3;
+				case ShaderDataType::Int4:    return 4;
+				case ShaderDataType::Float:   return 1;
+				case ShaderDataType::Float2:  return 2;
+				case ShaderDataType::Float3:  return 3;
+				case ShaderDataType::Float4:  return 4;
+				case ShaderDataType::Mat2:    return 2;
+				case ShaderDataType::Mat3:    return 3;
+				case ShaderDataType::Mat4:    return 4;
 				case ShaderDataType::Boolean: return 1;
 			}
 
 			OGN_CORE_ASSERT(false, "Unknown Shader Data Type");
 			return 0;
 		}
-
 	};
 
 	class BufferLayout
@@ -90,8 +88,8 @@ namespace origin
 			CalculateOffsetAndStride();
 		}
 
-		inline uint32_t GetStride() const { return m_Stride; }
-		inline const std::vector<BufferElement>& GetElements() { return m_Elements; }
+		uint32_t GetStride() const { return m_Stride; }
+		const std::vector<BufferElement>& GetElements() { return m_Elements; }
 
 		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
@@ -109,7 +107,7 @@ namespace origin
 				m_Stride += element.Size;
 			}
 		}
-	private:
+
 		std::vector<BufferElement> m_Elements;
 		uint32_t m_Stride = 0;
 	};
@@ -117,13 +115,11 @@ namespace origin
 	class VertexBuffer
 	{
 	public:
-		virtual ~VertexBuffer() {}
+		virtual ~VertexBuffer() { };
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-
-		virtual void SetData(const void* data, uint32_t size) = 0;
-
+		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 
@@ -134,15 +130,14 @@ namespace origin
 	class IndexBuffer
 	{
 	public:
-		virtual ~IndexBuffer() {}
+		virtual ~IndexBuffer() {};
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-
 		virtual uint32_t GetCount() const = 0;
+		virtual uint32_t GetBufferID() const = 0;
 
 		static std::shared_ptr<IndexBuffer> Create(uint32_t size);
-		static std::shared_ptr<IndexBuffer> Create(uint32_t* indices, uint32_t count);
-		static std::shared_ptr<IndexBuffer> Create(const std::vector<uint32_t> &indices);
+		static std::shared_ptr<IndexBuffer> Create(void* indices, uint32_t count);
 	};
 }

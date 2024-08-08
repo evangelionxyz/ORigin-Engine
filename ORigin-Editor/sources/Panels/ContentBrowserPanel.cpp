@@ -58,7 +58,7 @@ namespace origin
 
 		// Backward Button
 		std::shared_ptr<Texture2D> navButtonTexture = m_IconMap.at("backward_button_icon");
-		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0))
+		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetTextureID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0))
 			&& !m_Project->GetActiveScene()->IsFocusing())
 		{
 			if (m_CurrentDirectory != Project::GetActiveAssetDirectory())
@@ -68,7 +68,7 @@ namespace origin
 		// Forward button
 		ImGui::SameLine();
 		navButtonTexture = m_IconMap.at("forward_button_icon");
-		ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetTextureID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::SameLine();
 		ImGui::PopStyleColor(3);
 
@@ -79,7 +79,7 @@ namespace origin
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, m_Mode == Mode::Asset ? ImVec4(0.0f, 0.8f, 0.0f, 1.0f) : ImVec4(0.8f, 0.0f, 0.8f, 1.0f));
 		const char* label = m_Mode == Mode::Asset ? "Asset" : "File";
 		navButtonTexture = m_Mode == Mode::Asset ? m_IconMap.at("asset_mode_icon") : m_IconMap.at("file_mode_icon");
-		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetRendererID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0))
+		if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(navButtonTexture->GetTextureID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0))
 			&& !m_Project->GetActiveScene()->IsFocusing())
 		{
 			m_Mode = m_Mode == Mode::Asset ? Mode::FileSystem : Mode::Asset;
@@ -143,7 +143,7 @@ namespace origin
 				float diff = (float)(m_ThumbnailSize - thumbnailHeight);
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
 
-				ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetRendererID()), { (float)m_ThumbnailSize, (float)thumbnailHeight }, { 0, 1 }, { 1, 0 });
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetTextureID()), { (float)m_ThumbnailSize, (float)thumbnailHeight }, { 0, 1 }, { 1, 0 });
 
 				if (ImGui::BeginDragDropSource())
 				{
@@ -341,7 +341,7 @@ namespace origin
 						float diff = (float)(m_ThumbnailSize - thumbnailHeight);
 						ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
 
-						ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetRendererID()), { (float)m_ThumbnailSize, (float)thumbnailHeight }, { 0, 1 }, { 1, 0 });
+						ImGui::ImageButton(reinterpret_cast<ImTextureID>(thumbnail->GetTextureID()), { (float)m_ThumbnailSize, (float)thumbnailHeight }, { 0, 1 }, { 1, 0 });
 						ImGui::PopStyleColor();
 
 						if (ImGui::IsItemHovered())

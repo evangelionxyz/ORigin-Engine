@@ -21,6 +21,8 @@ namespace origin {
         void SetProjectionType(ProjectionType type) override;
 		void OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax) override;
 		void OnEvent(Event& e) override;
+        void SetOrthoScale(float value) override;
+        void SetOrthoScaleMax(float max) override;
 		void SetViewportSize(float width, float height) override;
         void SetFov(float fovy) override;
         void SetNear(float nearClip) override;

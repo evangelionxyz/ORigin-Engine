@@ -415,8 +415,16 @@ namespace origin {
 		{
 			ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
 
+			std::string modelButtonLabel = "Drop Model";
+
+			if (component.HMesh)
+			{
+				auto &filepath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(component.HMesh);
+				modelButtonLabel = filepath.stem().string();
+			}
+
             // Model Button
-            ImGui::Button("Drop model", buttonSize);
+            ImGui::Button(modelButtonLabel.c_str(), buttonSize);
             if (ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -426,7 +434,9 @@ namespace origin {
                     {
                         component.HMesh = handle;
                         component.Data = AssetManager::GetAsset<MeshData>(handle);
-						ModelLoader::ProcessMesh(component.Data, component.Va, component.Vb);
+						ModelLoader::ProcessMesh(component.Data,
+							component.Data->vertexArray,
+							component.Data->vertexBuffer);
 						component.mType = StaticMeshComponent::Type::Default;
                     }
                     else
@@ -500,7 +510,9 @@ namespace origin {
                     {
                         component.HMesh = handle;
                         component.Data = AssetManager::GetAsset<AnimatedMeshData>(handle);
-                        ModelLoader::ProcessAnimatedMesh(component.Data, component.Va, component.Vb);
+                        ModelLoader::ProcessAnimatedMesh(component.Data,
+                        	component.Data->vertexArray,
+                        	component.Data->vertexBuffer);
                     }
                     else
                     {
@@ -1571,7 +1583,7 @@ namespace origin {
 			ImGui::PopStyleVar();
 
 			ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
-			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetRendererID());
+			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
 			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 				ImGui::OpenPopup("Component Settings");
 

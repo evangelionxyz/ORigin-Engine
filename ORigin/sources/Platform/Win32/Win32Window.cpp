@@ -41,23 +41,27 @@ namespace origin {
 			exit(EXIT_FAILURE);
 		}
 
+		m_Data.Width = width;
+		m_Data.Height = height;
+
+		int monitorWidth, monitorHeight;
+		glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &monitorWidth, &monitorHeight);
+
+		m_Data.xPos = (monitorWidth / 2) - (width / 2);
+		m_Data.yPos = (monitorHeight / 2) - (height / 2);
+		glfwSetWindowPos(m_MainWindow, m_Data.xPos, m_Data.yPos);
+
+		//glfwGetWindowPos(m_MainWindow, &m_Data.xPos, &m_Data.yPos);
 		glfwMakeContextCurrent(m_MainWindow);
 
 		m_GraphicsContext = GraphicsContext::Create();
 		m_GraphicsContext->Init(this);
-
-		int w, h;
-		glfwGetWindowSize(m_MainWindow, &w, &h);
-		m_Data.Width = static_cast<uint32_t>(w);
-		m_Data.Height = static_cast<uint32_t>(h);
-
-		glfwGetWindowPos(m_MainWindow, &m_Data.xPos, &m_Data.yPos);
 	}
 
 	Win32Window::~Win32Window()
 	{
-		glfwDestroyWindow(m_MainWindow);
 		glfwTerminate();
+		glfwDestroyWindow(m_MainWindow);
 	}
 
 	void Win32Window::SetEventCallback(const std::function<void(Event&)>& callback)
@@ -82,24 +86,25 @@ namespace origin {
 		}
 	}
 
-	void Win32Window::SetVSync(bool enable)
+	void Win32Window::ToggleVSync()
 	{
 		OGN_PROFILER_FUNCTION();
 
-		glfwSwapInterval(enable ? 1 : 0);
-		m_Data.VSync = enable;
+		m_Data.VSync = !m_Data.VSync;
+		glfwSwapInterval(m_Data.VSync ? 1 : 0);
 	}
 
-	void Win32Window::SetClose(bool close)
+	void Win32Window::CloseWindow()
 	{
-		m_Data.Close = close ? 1 : 0;
+		glfwSetWindowShouldClose(m_MainWindow, 1);
 	}
 
-	void Win32Window::SetFullscreen(bool enable)
+	void Win32Window::ToggleFullScreen()
 	{
 		OGN_PROFILER_FUNCTION();
 
-		if (enable)
+		m_Data.FullScreen = !m_Data.FullScreen;
+		if (m_Data.FullScreen)
 		{
 			int width, height;
 			glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &width, &height);
@@ -108,9 +113,9 @@ namespace origin {
 		else
 		{
 			glfwSetWindowMonitor(m_MainWindow, nullptr, m_Data.xPos, m_Data.yPos, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
+			glfwSetWindowSize(m_MainWindow, m_Data.Width, m_Data.Height);
 		}
 	}
-
 
 	void Win32Window::SetIcon(const char* filepath)
 	{
@@ -254,6 +259,4 @@ namespace origin {
 				data.EventCallback(event);
 			});
 	}
-
-	
 }

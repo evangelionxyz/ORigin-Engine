@@ -26,12 +26,18 @@ AssetRegistry:
   - Handle: 6214596605581812600
     Filepath: Textures/spritesheet.png
     Type: AssetType::Texture
+  - Handle: 6821532740312411557
+    Filepath: Textures/Overworld.sprite
+    Type: AssetType::SpritesSheet
   - Handle: 7705012376485170699
     Filepath: Fonts/Winter Memories.ttf
     Type: AssetType::Font
   - Handle: 7850902027858852768
     Filepath: Materials/M_Red.mat
     Type: AssetType::Material
+  - Handle: 8181227750157294016
+    Filepath: Textures/Overworld.png
+    Type: AssetType::Texture
   - Handle: 8231875520304726709
     Filepath: Materials/TestMaterial.mat
     Type: AssetType::Material

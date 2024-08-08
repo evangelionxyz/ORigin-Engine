@@ -46,13 +46,13 @@ namespace origin {
 		virtual ~Application();
 		void OnEvent(Event& e);
 		void Run();
-		void Close() { m_Window->SetClose(true); }
+		void Close();
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 		float GetTime();
 
 		void SubmitToMainThread(const std::function<void()>& function);
-		static Application& Get() { return *s_Instance; }
+		static Application& Instance() { return *s_Instance; }
 		bool GetMinimized() const { return m_Minimized; }
 		Window &GetWindow() const { return *m_Window.get(); }
 		const ApplicationSpecification& GetSpecification() const { return m_Spec; }

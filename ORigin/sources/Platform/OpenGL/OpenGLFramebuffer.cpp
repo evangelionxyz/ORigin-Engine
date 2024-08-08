@@ -156,7 +156,7 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		glDeleteFramebuffers(1, &m_RendererID);
+		glDeleteFramebuffers(1, &m_BufferID);
 		glDeleteRenderbuffers(1, &m_Renderbuffer);
 		glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
 		glDeleteTextures(1, &m_DepthAttachment);
@@ -166,9 +166,9 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		if (m_RendererID)
+		if (m_BufferID)
 		{
-			glDeleteFramebuffers(1, &m_RendererID);
+			glDeleteFramebuffers(1, &m_BufferID);
 			glDeleteRenderbuffers(1, &m_Renderbuffer);
 			glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
 			glDeleteTextures(1, &m_DepthAttachment);
@@ -177,8 +177,8 @@ namespace origin {
 			m_DepthAttachment = 0;
 		}
 
-		glCreateFramebuffers(1, &m_RendererID);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		glCreateFramebuffers(1, &m_BufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_BufferID);
 
 		bool multisample = m_Spec.Samples > 1;
 
@@ -250,7 +250,7 @@ namespace origin {
 
 	void OpenGL_Framebuffer::Bind()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_BufferID);
 		glViewport(0, 0, m_Spec.Width, m_Spec.Height);
 	}
 

@@ -46,7 +46,7 @@ namespace origin {
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetIndex() const = 0;
-		virtual uint32_t GetRendererID() const = 0;
+		virtual uint32_t GetTextureID() const = 0;
 
 		virtual std::string GetFilepath() = 0;
 		virtual std::string GetName() const = 0;

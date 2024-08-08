@@ -16,145 +16,116 @@ namespace origin
 		// Clear any existing errors
 		while (glGetError() != GL_NO_ERROR);
 
-		glCreateBuffers(1, &m_RendererID);
+		glCreateBuffers(1, &m_BufferID);
 		GLenum error = glGetError();
-		if (error != GL_NO_ERROR)
-		{
-			std::cerr << "[glGenBuffers] Error: " << error << std::endl;
-			OGN_CORE_ASSERT(false, "[glGenBuffers] {0}", error);
-		}
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer] glCreateBuffers GL_ARRAY_BUFFER {0}", error);
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 		error = glGetError();
-		if (error != GL_NO_ERROR)
-		{
-			std::cerr << "[glBindBuffer] Error: " << error << std::endl;
-			OGN_CORE_ASSERT(false, "[glBindBuffer] {0}", error);
-		}
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer] glBindBuffer GL_ARRAY_BUFFER {0}", error);
 
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 		error = glGetError();
-		if (error != GL_NO_ERROR)
-		{
-			std::cerr << "[glBufferData] Error: " << error << std::endl;
-			OGN_CORE_ASSERT(false, "[glBufferData] {0}", error);
-		}
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer] glBindBuffer glBufferData GL_ARRAY_BUFFER {0}", error);
 	}
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(void *vertices, uint32_t size)
 	{
 		OGN_PROFILER_RENDERING();
 
-		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+		// Clear any existing errors
+		while (glGetError() != GL_NO_ERROR);
 
+		glCreateBuffers(1, &m_BufferID);
 		GLenum error = glGetError();
-		//OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer.ctor(void*,uint32_t)] {0}", error);
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer] glCreateBuffers GL_ARRAY_BUFFER {0}", error);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
+		error = glGetError();
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer] glBindBuffer GL_ARRAY_BUFFER {0}", error);
+
+		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+		error = glGetError();
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer] glBindBuffer glBufferData GL_ARRAY_BUFFER {0}", error);
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
-		OGN_PROFILER_RENDERING();
-
-		OpenGLVertexBuffer::Unbind();
-		glDeleteBuffers(1, &m_RendererID);
+		glDeleteBuffers(1, &m_BufferID);
 	}
 
 	void OpenGLVertexBuffer::Bind() const
 	{
-		OGN_PROFILER_RENDERING();
-
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 	}
 
 	void OpenGLVertexBuffer::Unbind() const
 	{
-		OGN_PROFILER_RENDERING();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	void OpenGLVertexBuffer::SetData(const void *data, uint32_t size)
+	void OpenGLVertexBuffer::SetData(const void *data, uint32_t size, uint32_t offset)
 	{
-		// Clear any existing errors
+		OGN_PROFILER_RENDERING();
+
 		while (glGetError() != GL_NO_ERROR);
 
-		OGN_PROFILER_RENDERING();
-
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+		glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 		GLenum error = glGetError();
-		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[glBindBuffer] {0}", error);
-
-		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
-		error = glGetError();
-		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[glBufferSubData] {0}", error);
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLVertexBuffer] glBufferSubData GL_ARRAY_BUFFER {0}", error);
 	}
 
+	// ======================
 	// OpenGL Index Buffer
-	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t *indices, uint32_t count)
+
+	OpenGLIndexBuffer::OpenGLIndexBuffer(void *indices, uint32_t count)
 		: m_Count(count)
 	{
         OGN_PROFILER_RENDERING();
 
-        glCreateBuffers(1, &m_RendererID);
+        glCreateBuffers(1, &m_BufferID);
         GLenum error = glGetError();
-        OGN_CORE_ASSERT(error == GL_NO_ERROR, "OpenGL error after glGenBuffers: {0}", error);
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer] glCreateBuffer GL_ELEMENT_ARRAY_BUFFER {0}", error);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
         error = glGetError();
-        OGN_CORE_ASSERT(error == GL_NO_ERROR, "OpenGL error after glBindBuffer: {0}", error);
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer] glBindBuffer GL_ELEMENT_ARRAY_BUFFER {0}", error);
 
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
         error = glGetError();
-        OGN_CORE_ASSERT(error == GL_NO_ERROR, "OpenGL error after glBufferData: {0}", error);
-	}
-
-	OpenGLIndexBuffer::OpenGLIndexBuffer(const std::vector<uint32_t> &indices)
-		: m_Count(indices.size() * sizeof(uint32_t))
-	{
-		OGN_PROFILER_RENDERING();
-
-		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
-
-		GLenum error = glGetError();
-		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer.ctor(vector<uint32_t>) {0}", error);
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer] glBufferData GL_ELEMENT_ARRAY_BUFFER {0}", error);
 	}
 
     OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t size)
-		: m_Count(size)
+		: m_Count(0)
     {
 		OGN_PROFILER_RENDERING();
 
-		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-
+		glCreateBuffers(1, &m_BufferID);
         GLenum error = glGetError();
-        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer.ctor(uint32_t,uint32_t) {0}", error);
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer] glCreateBuffer GL_ELEMENT_ARRAY_BUFFER {0}", error);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
+		error = glGetError();
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer] glBindBuffer GL_ELEMENT_ARRAY_BUFFER {0}", error);
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+		error = glGetError();
+		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLIndexBuffer] glBufferData GL_ELEMENT_ARRAY_BUFFER {0}", error);
     }
 
     OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
-		OGN_PROFILER_RENDERING();
-
-		OpenGLIndexBuffer::Unbind();
-		glDeleteBuffers(1, &m_RendererID);
+		glDeleteBuffers(1, &m_BufferID);
 	}
 
 	void OpenGLIndexBuffer::Bind() const
 	{
-		OGN_PROFILER_RENDERING();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
 	}
 
 	void OpenGLIndexBuffer::Unbind() const
 	{
-		OGN_PROFILER_RENDERING();
-
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 

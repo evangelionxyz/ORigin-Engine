@@ -1,11 +1,11 @@
 // type vertex
 #version 450 core
-layout (location = 0) in vec3 a_WorldPosition;
-layout (location = 1) in vec3 a_LocalPosition;
-layout (location = 2) in vec4 a_Color;
-layout (location = 3) in float a_Thickness;
-layout (location = 4) in float a_Fade;
-layout (location = 5) in int a_EntityID;
+layout (location = 0) in vec3 aTransformedPosition;
+layout (location = 1) in vec3 aPosition;
+layout (location = 2) in vec4 aColor;
+layout (location = 3) in float aThickness;
+layout (location = 4) in float aFade;
+layout (location = 5) in int aEntityID;
 
 layout (std140, binding = 0) uniform Camera
 {
@@ -16,7 +16,7 @@ layout (std140, binding = 0) uniform Camera
 
 struct Vertex
 {
-	vec3 LocalPosition;
+	vec3 Position;
 	vec4 Color;
 	float Thickness;
 	float Fade;
@@ -27,13 +27,12 @@ layout (location = 4) out flat int v_EntityID;
 
 void main()
 {
-	outVertex.LocalPosition = a_LocalPosition;
-	outVertex.Color = a_Color;
-	outVertex.Thickness = a_Thickness;
-	outVertex.Fade = a_Fade;
-	v_EntityID = a_EntityID;
-
-	gl_Position = CameraBuffer.ViewProjection * vec4(a_WorldPosition, 1.0);
+	outVertex.Position = aPosition;
+	outVertex.Color = aColor;
+	outVertex.Thickness = aThickness;
+	outVertex.Fade = aFade;
+	v_EntityID = aEntityID;
+	gl_Position = CameraBuffer.ViewProjection * vec4(aTransformedPosition, 1.0);
 }
 
 // type fragment
@@ -43,7 +42,7 @@ layout(location = 2) out int oEntityID;
 
 struct Vertex
 {
-	vec3 LocalPosition;
+	vec3 Position;
 	vec4 Color;
 	float Thickness;
 	float Fade;
@@ -54,10 +53,9 @@ layout (location = 4) in flat int v_EntityID;
 
 void main()
 {
-  float distance = 1.0 - length(inVertex.LocalPosition);
+  float distance = 1.0 - length(inVertex.Position);
   float circle = smoothstep(0.0, inVertex.Fade, distance);
   circle *= smoothstep(inVertex.Thickness + inVertex.Fade, inVertex.Thickness, distance);
-  
   if (circle == 0.0)
     discard;
 
