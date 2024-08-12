@@ -25,8 +25,6 @@ namespace origin
 		spec.Attachments =
 		{
 			FramebufferTextureFormat::RGBA8,
-			FramebufferTextureFormat::RED_INTEGER,
-			FramebufferTextureFormat::DEPTH24STENCIL8
 		};
 
 		spec.Width = 1280;
@@ -259,7 +257,7 @@ namespace origin
 				glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 0.1f) : glm::vec4(0.0f, 1.0f, 0.0f, 0.1f);
 				Renderer2D::DrawQuad(tf, col);
 				col = { 1.0f, 1.0f, 1.0f, 0.1f };
-				Renderer2D::DrawQuad(tf, col, offset);
+				Renderer2D::DrawQuad(tf, col);
 
 				// Draw corner
 				if (selected)
@@ -273,22 +271,22 @@ namespace origin
 					glm::vec4 green = glm::vec4(0.1f, 0.8f, 0.1f, 1.0f);
 					col = c.SelectedCorner == ControllerCorner::BOTTOM_LEFT ? green : red;
 					glm::mat4 tf = glm::translate(glm::mat4(1.0f), { c.Position.x - c.Size.x / 2.0f, c.Position.y - c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-					Renderer2D::DrawQuad(tf, col, offset + 1);
+					Renderer2D::DrawQuad(tf, col);
 
 					// top left corner
 					col = c.SelectedCorner == ControllerCorner::TOP_LEFT ? green : red;
 					tf = glm::translate(glm::mat4(1.0f), { c.Position.x - c.Size.x / 2.0f, c.Position.y + c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-					Renderer2D::DrawQuad(tf, col, offset + 2);
+					Renderer2D::DrawQuad(tf, col);
 
 					// bottom right corner
 					col = c.SelectedCorner == ControllerCorner::BOTTOM_RIGHT ? green : red;
 					tf = glm::translate(glm::mat4(1.0f), { c.Position.x + c.Size.x / 2.0f, c.Position.y - c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-					Renderer2D::DrawQuad(tf, col, offset + 3);
+					Renderer2D::DrawQuad(tf, col);
 
 					// top right corner
 					col = c.SelectedCorner == ControllerCorner::TOP_RIGHT ? green : red;
 					tf = glm::translate(glm::mat4(1.0f), { c.Position.x + c.Size.x / 2.0f, c.Position.y + c.Size.y / 2.0f, 1.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-					Renderer2D::DrawQuad(tf, col, offset + 4);
+					Renderer2D::DrawQuad(tf, col);
 
 				}
 				offset += 5;
@@ -296,17 +294,6 @@ namespace origin
 
 			Renderer2D::End();
 			glEnable(GL_DEPTH_TEST);
-		}
-
-		if (IsViewportHovered && IsViewportFocused)
-		{
-			auto [mx, my] = ImGui::GetMousePos();
-			m_Mouse = { mx, my };
-			m_Mouse -= m_ViewportBounds[0];
-			const glm::ivec2 &viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-			m_Mouse.y = viewportSize.y - m_Mouse.y;
-			m_Mouse = glm::clamp(m_Mouse, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
-			m_HoveredIndex = m_Framebuffer->ReadPixel(1, m_Mouse.x, m_Mouse.y);
 		}
 
 		m_Framebuffer->Unbind();
@@ -368,33 +355,33 @@ namespace origin
 			}
 		}
 
-		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
-		{
-			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
-			{
-				int h = m_HoveredIndex / 5;
-				m_SelectedIndex = h;
-
-				if (m_HoveredIndex == h * 5 + 1)
-					m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_LEFT;
-				else if (m_HoveredIndex == h * 5 + 2)
-					m_Controls[m_SelectedIndex].SelectedCorner = TOP_LEFT;
-				else if (m_HoveredIndex == h * 5 + 3)
-					m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_RIGHT;
-				else if (m_HoveredIndex == h * 5 + 4)
-					m_Controls[m_SelectedIndex].SelectedCorner = TOP_RIGHT;
-				else
-				{
-					m_Controls[m_SelectedIndex].SelectedCorner = NONE;
-					m_MoveTranslation = m_Controls[m_SelectedIndex].Position;
-				}
-			}
-			else if (m_HoveredIndex < 0 && m_SelectedIndex >= 0)
-			{
-				m_Controls[m_SelectedIndex].SelectedCorner = NONE;
-				//m_SelectedIndex = -1;
-			}
-		}
+		// TODO: Fix Me!
+		//if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
+		//{
+		//	if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
+		//	{
+		//		int h = m_HoveredIndex / 5;
+		//		m_SelectedIndex = h;
+		//		if (m_HoveredIndex == h * 5 + 1)
+		//			m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_LEFT;
+		//		else if (m_HoveredIndex == h * 5 + 2)
+		//			m_Controls[m_SelectedIndex].SelectedCorner = TOP_LEFT;
+		//		else if (m_HoveredIndex == h * 5 + 3)
+		//			m_Controls[m_SelectedIndex].SelectedCorner = BOTTOM_RIGHT;
+		//		else if (m_HoveredIndex == h * 5 + 4)
+		//			m_Controls[m_SelectedIndex].SelectedCorner = TOP_RIGHT;
+		//		else
+		//		{
+		//			m_Controls[m_SelectedIndex].SelectedCorner = NONE;
+		//			m_MoveTranslation = m_Controls[m_SelectedIndex].Position;
+		//		}
+		//	}
+		//	else if (m_HoveredIndex < 0 && m_SelectedIndex >= 0)
+		//	{
+		//		m_Controls[m_SelectedIndex].SelectedCorner = NONE;
+		//		//m_SelectedIndex = -1;
+		//	}
+		//}
 
 		return false;
 	}

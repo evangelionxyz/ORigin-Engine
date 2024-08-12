@@ -102,7 +102,7 @@ namespace origin
 		{
 		}
 	};
-	
+
 	class SpriteAnimationComponent
 	{
 	public:

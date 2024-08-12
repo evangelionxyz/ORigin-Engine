@@ -340,7 +340,6 @@ namespace origin
             { ShaderDataType::Float2, "aTilingFactor" },
             { ShaderDataType::Float4, "aBoneIDs"      },
             { ShaderDataType::Float4, "aBoneWeights"  },
-            { ShaderDataType::Int,	  "aEntityID"     }
         });
 
         vertexArray->AddVertexBuffer(vertexBuffer);

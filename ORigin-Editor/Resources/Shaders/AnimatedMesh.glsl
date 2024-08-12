@@ -5,12 +5,10 @@ layout (location = 1) in vec3 Normals;
 layout (location = 2) in vec2 UV;
 layout (location = 3) in vec4 BoneIDs;
 layout (location = 4) in vec4 BoneWheights;
-layout (location = 5) in int EntityID;
 
 layout(location = 0) out vec2 vUV;
 layout(location = 1) out vec3 vNormals;
 layout(location = 2) out vec3 vPosition;
-layout(location = 3) out flat int vEntityID;
 
 uniform mat4 boneTransforms[50];
 uniform mat4 viewProjection;
@@ -31,18 +29,15 @@ void main()
 	vUV = UV;
 	vNormals = mat3(transpose(inverse(transform * boneTransform))) * Normals;
 	vNormals = normalize(vNormals);
-	vEntityID = EntityID;
 }
 
 // type fragment
 #version 450 core
 layout (location = 0) out vec4 oColor;
-layout (location = 1) out int oEntityID;
 
 layout(location = 0) in vec2 vUV;
 layout(location = 1) in vec3 vNormals;
 layout(location = 2) in vec3 vPosition;
-layout(location = 3) in flat int vEntityID;
 
 uniform sampler2D uTexture;
 
@@ -53,7 +48,5 @@ void main()
 	vec3 lightDir = normalize(lightPos - vPosition);
 	float diff = max(dot(vNormals, lightDir), 0.2);
 	vec3 dCol = diff * texture(uTexture, vUV).rgb;
-
 	oColor = vec4(dCol, 1);
-	oEntityID = vEntityID;
 }

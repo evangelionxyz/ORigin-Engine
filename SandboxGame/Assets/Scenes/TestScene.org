@@ -1,17 +1,5 @@
 Scene: TestScene.org
 Entities:
-  - Entity: 2941202280949679369
-    Type: Entity
-    Parent: 0
-    TagComponent:
-      Tag: Sprite
-    TransformComponent:
-      Translation: [10.7058659, 23.2021599, 6.63314438]
-      Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
-      Visible: true
-    SpriteRenderer2DComponent:
-      Color: [1, 0, 0, 1]
   - Entity: 5553397942616775100
     Type: Entity
     Parent: 0
@@ -24,33 +12,18 @@ Entities:
       Visible: true
     SpriteRenderer2DComponent:
       Color: [1, 1, 1, 1]
-  - Entity: 7618537728213144215
+  - Entity: 2941202280949679369
     Type: Entity
     Parent: 0
     TagComponent:
-      Tag: Empty Mesh
-    RigidbodyComponent:
-      Mass: 1
-      CenterMass: [0, 0, 0]
-      Offset: [0, 0, 0]
-      UseGravity: true
-      RotateX: true
-      RotateY: true
-      RotateZ: true
-      MoveX: true
-      MoveY: true
-      MoveZ: true
-      IsStatic: false
+      Tag: Sprite
     TransformComponent:
-      Translation: [0, 5.70279026, 0]
+      Translation: [10.7058659, 23.2021599, 6.63314438]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
       Visible: true
-    StaticMeshComponent:
-      Name: ""
-      Type: 0
-      HMesh: 15569951670828566738
-      HMaterial: 0
+    SpriteRenderer2DComponent:
+      Color: [1, 0, 0, 1]
   - Entity: 9999676790130366509
     Type: Entity
     Parent: 2723873067466865669
@@ -102,7 +75,7 @@ Entities:
         OrthoScale: 61.2000008
         OrthoNear: 10
         OrthoFar: 85.4000015
-        ViewportSize: [517, 323.125]
+        ViewportSize: [707.200012, 442]
       Primary: true
     AudioListenerComponent:
       Enable: true

@@ -42,7 +42,6 @@ namespace origin {
 		void OnEvent(Event &e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 		void SetSnapValue(float value) { m_SnapValue = value; }
-		void SetHovered(int hovered) { m_Hovered = hovered; }
 		void SetType(GizmoType type);
 		GizmoType GetType() const { return m_Type; }
 
@@ -55,8 +54,6 @@ namespace origin {
 	private:
 		Boundary2DCorner m_Boundary2DCorner = Boundary2DCorner::NONE;
 		GizmoType m_Type = GizmoType::NONE;
-
-		int m_Hovered = -1;
 		float m_SnapValue = 0.0f;
 	};
 

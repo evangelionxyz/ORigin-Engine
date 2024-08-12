@@ -6,8 +6,6 @@
 #include "Renderer2D.h"
 #include "UniformBuffer.h"
 
-#include "Origin/Asset/AssetManager.h"
-
 namespace origin {
 
 	struct CameraBufferData
@@ -25,8 +23,6 @@ namespace origin {
 		glm::vec4 Color;
 		glm::vec2 TexCoord;
 		float TexIndex;
-
-		int EntityID;
 	};
 
 	struct Renderer3DData
@@ -60,7 +56,6 @@ namespace origin {
 			{ShaderDataType::Float4,	"a_Color"    },
 			{ShaderDataType::Float2,	"a_TexCoord" },
 			{ShaderDataType::Float,		"a_TexIndex" },
-			{ShaderDataType::Int,		"a_EntityID" },
 		});
 
 		s_Render3DData.CubeVertexArray->AddVertexBuffer(s_Render3DData.CubeVertexBuffer);
@@ -170,7 +165,7 @@ namespace origin {
 		}
 	}
 
-	void Renderer3D::DrawCube(const glm::mat4& transform, const glm::vec4& color, int entityID)
+	void Renderer3D::DrawCube(const glm::mat4& transform, const glm::vec4& color)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -188,14 +183,13 @@ namespace origin {
 			s_Render3DData.CubeVertexBufferPtr->Color = color;
 			s_Render3DData.CubeVertexBufferPtr->TexCoord = textureCoords;
 			s_Render3DData.CubeVertexBufferPtr->TexIndex = textureIndex;
-			s_Render3DData.CubeVertexBufferPtr->EntityID = entityID;
 			s_Render3DData.CubeVertexBufferPtr++;
 		}
 		s_Render3DData.CubeIndexCount += 36;
 		Renderer::GetStatistics().CubeCount++;
 	}
 
-	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, int entityID)
+	void Renderer3D::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
 		glm::vec3 p1 = glm::vec3(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -208,7 +202,7 @@ namespace origin {
 		Renderer2D::DrawLine(p3, p0, color);
 	}
 
-	void Renderer3D::DrawRect(const glm::mat4& transform, const glm::vec4& color, int entityID)
+	void Renderer3D::DrawRect(const glm::mat4& transform, const glm::vec4& color)
 	{
 		glm::vec3 lineVertices[24];
 		for (size_t i = 0; i < 24; i++)
@@ -245,7 +239,7 @@ namespace origin {
 		Renderer2D::DrawLine(lineVertices[23], lineVertices[20], color);
 	}
 
-	void Renderer3D::DrawQuad(const glm::mat4& transform, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec4& color, int entityID)
+	void Renderer3D::DrawQuad(const glm::mat4& transform, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec4& color)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -255,7 +249,6 @@ namespace origin {
 			s_Render3DData.CubeVertexBufferPtr->Color = color;
 			s_Render3DData.CubeVertexBufferPtr->TexCoord = glm::vec2(0.0f);
 			s_Render3DData.CubeVertexBufferPtr->TexIndex = 0.0f;
-			s_Render3DData.CubeVertexBufferPtr->EntityID = entityID;
 			s_Render3DData.CubeVertexBufferPtr++;
 
 			s_Render3DData.CubeVertexBufferPtr->Position = transform * glm::vec4((i % 2 == 0 ? p1 : p3), 1.0f);
@@ -268,7 +261,7 @@ namespace origin {
 		}
 	}
 
-	void Renderer3D::DrawSphere(const glm::mat4& transform, const glm::vec4& color, float radius, int entityID, uint8_t segments, uint8_t stacks)
+	void Renderer3D::DrawSphere(const glm::mat4& transform, const glm::vec4& color, float radius, uint8_t segments, uint8_t stacks)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -299,12 +292,12 @@ namespace origin {
 				glm::vec3 p3(radius * sin(phi1) * cos(theta0), radius * cos(phi1), radius * sin(phi1) * sin(theta0));
 
 				// Draw the faces of the sphere
-				DrawQuad(transform, p0, p1, p2, p3, color, entityID);
+				DrawQuad(transform, p0, p1, p2, p3, color);
 			}
 		}
 	}
 
-	void Renderer3D::DrawCapsule(const glm::mat4& transform, const glm::vec4& color, float radius, float height, int entityID)
+	void Renderer3D::DrawCapsule(const glm::mat4& transform, const glm::vec4& color, float radius, float height)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -332,16 +325,16 @@ namespace origin {
 			glm::vec3 p3(radius * cos(angle0), height * 0.5f, radius * sin(angle0));
 
 			// Draw the faces of the cylinder
-			DrawQuad(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), p0, p1, p2, p3, color, entityID);
+			DrawQuad(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), p0, p1, p2, p3, color);
 		}
 
-		DrawHemisphere(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, height / 2.0f, 0.0f)), radius, segments, stacks, color, entityID);
+		DrawHemisphere(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, height / 2.0f, 0.0f)), radius, segments, stacks, color);
 		DrawHemisphere(transform * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -height / 2.0f, 0.0f))
-			* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f)), radius, segments, stacks, color, entityID);
+			* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f)), radius, segments, stacks, color);
 
 	}
 
-	void Renderer3D::DrawHemisphere(const glm::mat4& transform, float radius, uint8_t segments, uint8_t stacks, const glm::vec4& color, int entityID)
+	void Renderer3D::DrawHemisphere(const glm::mat4& transform, float radius, uint8_t segments, uint8_t stacks, const glm::vec4& color)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -364,7 +357,7 @@ namespace origin {
 				glm::vec3 p3(radius * sin(stackAngle - stackIncrement) * cos(angle0), radius * cos(stackAngle - stackIncrement), radius * sin(stackAngle - stackIncrement) * sin(angle0));
 
 				// Draw the faces of the hemisphere
-				DrawQuad(transform, p0, p1, p2, p3, color, entityID);
+				DrawQuad(transform, p0, p1, p2, p3, color);
 			}
 		}
 	}

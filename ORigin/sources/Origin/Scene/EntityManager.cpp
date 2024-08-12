@@ -56,7 +56,7 @@ namespace origin
 	{
 		Entity entity = { scene->m_Registry.create(), scene};
 		entity.AddComponent<IDComponent>(uuid).Type = type;
-		entity.AddComponent<TransformComponent>();
+		TransformComponent &tc = entity.AddComponent<TransformComponent>();
 		entity.AddComponent<TagComponent>().Tag = name;
 		scene->m_EntityStorage.push_back({ uuid, entity });
 		return entity;

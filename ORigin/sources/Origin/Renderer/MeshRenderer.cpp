@@ -86,7 +86,6 @@ namespace origin
 			{ ShaderDataType::Float2, "aTilingFactor" },
 			{ ShaderDataType::Float,  "aAlbedoIndex"  },
 			{ ShaderDataType::Float,  "aSpecularIndex"},
-			{ ShaderDataType::Int,    "aEntityID"     },
 		};
 
 		// ======================================
@@ -303,7 +302,7 @@ namespace origin
         }
 	}
 
-    void MeshRenderer::DrawMesh(const glm::mat4 &viewProjection, const glm::mat4 &transform, const std::shared_ptr<VertexArray> &va, int entityId, Shader *shader)
+    void MeshRenderer::DrawMesh(const glm::mat4 &viewProjection, const glm::mat4 &transform, const std::shared_ptr<VertexArray> &va, Shader *shader)
     {
         if (!va)
             return;
@@ -314,7 +313,6 @@ namespace origin
             shader->Enable();
             shader->SetMatrix("viewProjection", viewProjection);
             shader->SetMatrix("model", transform);
-            shader->SetInt("entityId", entityId);
         }
         else
         {
@@ -326,7 +324,7 @@ namespace origin
         shader->Disable();
     }
 
-    void MeshRenderer::DrawCube(const glm::mat4 &transform, glm::vec4 color, int entityID)
+    void MeshRenderer::DrawCube(const glm::mat4 &transform, glm::vec4 color)
 	{
 		if (s_MeshRenderData.CubeIndexCount >= MeshRenderData::MaxCubeIndices)
 			NextBatch();
@@ -341,7 +339,6 @@ namespace origin
 			s_MeshRenderData.CubeVBOPtr->TilingFactor = s_MeshRenderData.CubeData->vertices[i].TilingFactor;
 			s_MeshRenderData.CubeVBOPtr->AlbedoIndex = 0.0f;
 			s_MeshRenderData.CubeVBOPtr->SpecularIndex = 0.0f;
-			s_MeshRenderData.CubeVBOPtr->EntityID = entityID;
 			s_MeshRenderData.CubeVBOPtr++;
 		}
 
@@ -349,7 +346,7 @@ namespace origin
 		Renderer::GetStatistics().CubeCount++;
 	}
 
-    void MeshRenderer::DrawCube(const glm::mat4 &transform, Material *material, int entityID)
+    void MeshRenderer::DrawCube(const glm::mat4 &transform, Material *material)
     {
 		if (material)
 		{
@@ -357,18 +354,18 @@ namespace origin
                 material->Albedo.Texture,
                 material->Metallic.Texture,
                 material->TilingFactor, 
-                material->Color, entityID);
+                material->Color);
 		}
 		else
 		{
-			DrawCube(transform, glm::vec4(1.0f), entityID);
+			DrawCube(transform, glm::vec4(1.0f));
 		}
     }
 
 	void MeshRenderer::DrawCube(const glm::mat4 &transform,
 		const std::shared_ptr<Texture2D> &albedo,
 		const std::shared_ptr<Texture2D> &specular,
-		const glm::vec2 &tilingFactor, const glm::vec4 &color, int entityID)
+		const glm::vec2 &tilingFactor, const glm::vec4 &color)
 	{
 		if (s_MeshRenderData.CubeIndexCount >= MeshRenderData::MaxCubeIndices)
 			NextBatch();
@@ -427,7 +424,6 @@ namespace origin
             s_MeshRenderData.CubeVBOPtr->TilingFactor = tilingFactor;
             s_MeshRenderData.CubeVBOPtr->AlbedoIndex = albedoIndex;
             s_MeshRenderData.CubeVBOPtr->SpecularIndex = specularIndex;
-            s_MeshRenderData.CubeVBOPtr->EntityID = entityID;
             s_MeshRenderData.CubeVBOPtr++;
         }
 
@@ -435,7 +431,7 @@ namespace origin
         Renderer::GetStatistics().CubeCount++;
     }
 
-    void MeshRenderer::DrawSphere(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
+    void MeshRenderer::DrawSphere(const glm::mat4 &transform, const glm::vec4 &color)
     {
         if (s_MeshRenderData.SphereIndexCount >= MeshRenderData::MaxSphereIndices)
             NextBatch();
@@ -450,7 +446,6 @@ namespace origin
             s_MeshRenderData.SphereVBOPtr->TilingFactor = s_MeshRenderData.SphereData->vertices[i].TilingFactor;
             s_MeshRenderData.SphereVBOPtr->AlbedoIndex = 0.0f;
             s_MeshRenderData.SphereVBOPtr->SpecularIndex = 0.0f;
-            s_MeshRenderData.SphereVBOPtr->EntityID = entityID;
             s_MeshRenderData.SphereVBOPtr++;
         }
 
@@ -458,15 +453,13 @@ namespace origin
 		Renderer::GetStatistics().SphereCount++;
     }
 
-    void MeshRenderer::DrawSphere(const glm::mat4 &transform, Material *material, int entityID)
+    void MeshRenderer::DrawSphere(const glm::mat4 &transform, Material *material)
     {
-        if (material)
-			DrawSphere(transform, material->Color, entityID);
-        else
-			DrawSphere(transform, glm::vec4(1.0f), entityID);
+        if (material) DrawSphere(transform, material->Color);
+        else DrawSphere(transform, glm::vec4(1.0f));
     }
 
-    void MeshRenderer::DrawCapsule(const glm::mat4 &transform, const glm::vec4 &color, int entityID)
+    void MeshRenderer::DrawCapsule(const glm::mat4 &transform, const glm::vec4 &color)
     {
         if (s_MeshRenderData.CapsuleIndexCount >= MeshRenderData::MaxCapsuleIndices)
             NextBatch();
@@ -481,7 +474,6 @@ namespace origin
             s_MeshRenderData.CapsuleVBOPtr->TilingFactor = s_MeshRenderData.CapsuleData->vertices[i].TilingFactor;
             s_MeshRenderData.CapsuleVBOPtr->AlbedoIndex = 0.0f;
             s_MeshRenderData.CapsuleVBOPtr->SpecularIndex = 0.0f;
-            s_MeshRenderData.CapsuleVBOPtr->EntityID = entityID;
             s_MeshRenderData.CapsuleVBOPtr++;
         }
 
@@ -489,12 +481,10 @@ namespace origin
         Renderer::GetStatistics().SphereCount++;
     }
 
-    void MeshRenderer::DrawCapsule(const glm::mat4 &transform, Material *material, int entityID /*= -1*/)
+    void MeshRenderer::DrawCapsule(const glm::mat4 &transform, Material *material)
     {
-        if (material)
-            DrawCapsule(transform, material->Color, entityID);
-        else
-            DrawCapsule(transform, glm::vec4(1.0f), entityID);
+        if (material) DrawCapsule(transform, material->Color);
+        else DrawCapsule(transform, glm::vec4(1.0f));
     }
 
     Shader *MeshRenderer::GetShader()

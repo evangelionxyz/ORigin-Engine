@@ -18,21 +18,21 @@ namespace origin
         static void NextBatch();
 		static void End();
 
-		static void DrawMesh(const glm::mat4 &viewProjection, const glm::mat4 &transform, const std::shared_ptr<VertexArray> &va, int entityId, Shader *shader = nullptr);
+		static void DrawMesh(const glm::mat4 &viewProjection, const glm::mat4 &transform, const std::shared_ptr<VertexArray> &va, Shader *shader = nullptr);
 
-		static void DrawCube(const glm::mat4 &transform, glm::vec4 color = glm::vec4(1.0f), int entityID = -1);
+		static void DrawCube(const glm::mat4 &transform, glm::vec4 color = glm::vec4(1.0f));
 
 		static void DrawCube(const glm::mat4 &transform, 
 			const std::shared_ptr<Texture2D> &albedo, 
 			const std::shared_ptr<Texture2D> &specular, 
-			const glm::vec2 &tilingFactor, const glm::vec4 &color, int entityID = -1);
+			const glm::vec2 &tilingFactor, const glm::vec4 &color);
 
-		static void DrawCube(const glm::mat4 &transform, Material *material, int entityID = -1);
-		static void DrawSphere(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
-		static void DrawSphere(const glm::mat4 &transform, Material *material, int entityID = -1);
+		static void DrawCube(const glm::mat4 &transform, Material *material);
+		static void DrawSphere(const glm::mat4 &transform, const glm::vec4 &color);
+		static void DrawSphere(const glm::mat4 &transform, Material *material);
 
-        static void DrawCapsule(const glm::mat4 &transform, const glm::vec4 &color, int entityID = -1);
-        static void DrawCapsule(const glm::mat4 &transform, Material *material, int entityID = -1);
+        static void DrawCapsule(const glm::mat4 &transform, const glm::vec4 &color);
+        static void DrawCapsule(const glm::mat4 &transform, Material *material);
 
 		static Shader *GetShader();
 	};

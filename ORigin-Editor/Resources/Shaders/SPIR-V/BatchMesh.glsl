@@ -7,7 +7,6 @@ layout(location = 3) in vec2 aUV;
 layout(location = 4) in vec2 aTilingFactor;
 layout(location = 5) in float aAlbedoIndex;
 layout(location = 6) in float aSpecularIndex;
-layout(location = 7) in int aEntityID;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -37,7 +36,6 @@ struct Vertex
 layout(location = 0) out Vertex Out;
 layout(location = 5) out flat float vAlbedoIndex;
 layout(location = 6) out flat float vSpecularIndex;
-layout(location = 7) out flat int vEntityID;
 
 void main()
 {
@@ -49,13 +47,11 @@ void main()
     Out.TilingFactor = aTilingFactor;
     vAlbedoIndex = aAlbedoIndex;
     vSpecularIndex = aSpecularIndex;
-    vEntityID = aEntityID;
 }
 
 // type fragment
 #version 450 core
 layout(location = 0) out vec4 oColor;
-layout(location = 1) out int oEntityID;
 
 struct Vertex
 {
@@ -69,7 +65,6 @@ struct Vertex
 layout(location = 0) in Vertex In;
 layout(location = 5) in flat float vAlbedoIndex;
 layout(location = 6) in flat float vSpecularIndex;
-layout(location = 7) in flat int vEntityID;
 
 layout(binding = 0) uniform sampler2D uTextures[32];
 
@@ -137,5 +132,4 @@ void main()
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
     
     oColor = vec4(lighting, 1.0) * In.Color;
-    oEntityID = vEntityID;
 }

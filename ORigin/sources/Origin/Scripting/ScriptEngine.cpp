@@ -193,7 +193,7 @@ namespace origin
 		mono_jit_cleanup(s_ScriptEngineData->RootDomain);
 		s_ScriptEngineData->RootDomain = nullptr;
 
-		OGN_CORE_TRACE("[Script Engine] Mono  Shutdown");
+		OGN_CORE_TRACE("[Script Engine] Mono Shutdown");
 	}
 
 	void ScriptEngine::Init()

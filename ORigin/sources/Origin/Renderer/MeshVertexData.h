@@ -6,12 +6,8 @@
 
 namespace origin
 {
-    class VertexBuffer;
-}
-
-namespace origin
-{
     class VertexArray;
+    class VertexBuffer;
 
     struct MeshVertexData
     {
@@ -22,7 +18,6 @@ namespace origin
         glm::vec2 TilingFactor;
         float AlbedoIndex = 0.0f;
         float SpecularIndex = 0.0f;
-        int EntityID = -1;
     };
 
     struct AnimatedMeshVertexData
@@ -32,7 +27,6 @@ namespace origin
         glm::vec2 UV;
         glm::vec3 BoneIDs;
         glm::vec4 BoneWeights;
-        int EntityID = -1;
     };
 
     struct Bone

@@ -103,9 +103,8 @@ namespace origin
         OGN_PROFILER_FUNCTION();
 
         const auto &view = m_Registry.view<IDComponent, TransformComponent>();
-        for (auto entity : view)
+        for (auto [entity, idc, tc]: view.each())
         {
-            const auto &[idc, tc] = view.get<IDComponent, TransformComponent>(entity);
             if (idc.Parent)
             {
                 auto parent = GetEntityWithUUID(idc.Parent);
@@ -374,14 +373,13 @@ namespace origin
 						}
 					}
 				}
-				Renderer2D::DrawSprite(tc.GetTransform(), src, static_cast<int>(e));
+				Renderer2D::DrawSprite(tc.GetTransform(), src);
 			}
 
 			if (entity.HasComponent<CircleRendererComponent>())
 			{
 				auto &cc = entity.GetComponent<CircleRendererComponent>();
-				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade,
-															 static_cast<int>(e));
+				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade);
 			}
 
 			// Particles
@@ -392,7 +390,7 @@ namespace origin
 				{
 					pc.Particle.Emit(pc,
 						{ tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z + pc.ZAxis },
-						tc.WorldScale, pc.Rotation, static_cast<int>(e));
+						tc.WorldScale, pc.Rotation);
 				}
 
 				pc.Particle.OnRender();
@@ -439,7 +437,7 @@ namespace origin
 
 				if (text.FontHandle != 0)
 				{
-					Renderer2D::DrawString(text.TextString, transform, text, static_cast<int>(e));
+					Renderer2D::DrawString(text.TextString, transform, text);
 				}
 			}
 		}
@@ -476,18 +474,18 @@ namespace origin
                 switch (mc.mType)
                 {
                 case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(tc.GetTransform(), material.get(), static_cast<int>(e));
+                    MeshRenderer::DrawCube(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), static_cast<int>(e));
+                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), static_cast<int>(e));
+                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Default:
                     if (mc.Data)
                     {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray, static_cast<int>(e));
+                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray);
                     }
                     break;
                 }
@@ -529,7 +527,7 @@ namespace origin
                     }
                 }
 
-                Renderer2D::DrawSprite(tc.GetTransform(), sc, static_cast<int>(selectedID));
+                Renderer2D::DrawSprite(tc.GetTransform(), sc);
             }
 
             Renderer2D::End();
@@ -546,18 +544,18 @@ namespace origin
                 switch (mc.mType)
                 {
                 case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(tc.GetTransform(), material.get(), static_cast<int>(selectedID));
+                    MeshRenderer::DrawCube(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get(), static_cast<int>(selectedID));
+                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get(), static_cast<int>(selectedID));
+                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Default:
                     if (mc.Data)
                     {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray, static_cast<int>(selectedID));
+                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray);
                     }
                     break;
                 }
@@ -570,8 +568,9 @@ namespace origin
             // Second pass: Draw the outline for the selected object
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
-            glEnable(GL_DEPTH_TEST);  // Enable depth testing
-            glDepthFunc(GL_LEQUAL);   // Change depth function to allow drawing on top of the object
+            //glEnable(GL_DEPTH_TEST);  // Enable depth testing
+            glDisable(GL_DEPTH_TEST);  // Enable depth testing
+            //glDepthFunc(GL_LEQUAL);   // Change depth function to allow drawing on top of the object
 
             glm::vec3 cameraPosition = camera.GetPosition();
             glm::vec3 objectPosition = tc.WorldTranslation;
@@ -582,7 +581,7 @@ namespace origin
             thicknessFactor = glm::clamp(thicknessFactor, 0.001f, 0.1f);
             glm::mat4 scaledTransform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
                 * glm::toMat4(tc.WorldRotation)
-                * glm::scale(glm::mat4(1.0f), tc.WorldScale * (1.0f + thicknessFactor));
+                * glm::scale(glm::mat4(1.0f), tc.WorldScale + (1.0f * thicknessFactor));
 
             Shader *outlineShader = Renderer::GetShader("Outline").get();
             outlineShader->Enable();
@@ -607,7 +606,7 @@ namespace origin
                         }
                     }
                 }
-                Renderer2D::DrawSprite(scaledTransform, sc, static_cast<int>(selectedID));
+                Renderer2D::DrawSprite(scaledTransform, sc);
             }
             Renderer2D::End();
 
@@ -620,18 +619,18 @@ namespace origin
                 switch (mc.mType)
                 {
                 case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(scaledTransform, glm::vec4(1.0f), static_cast<int>(selectedID));
+                    MeshRenderer::DrawCube(scaledTransform, glm::vec4(1.0f));
                     break;
                 case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(scaledTransform, glm::vec4(1.0f), static_cast<int>(selectedID));
+                    MeshRenderer::DrawSphere(scaledTransform, glm::vec4(1.0f));
                     break;
                 case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(scaledTransform, glm::vec4(1.0f), static_cast<int>(selectedID));
+                    MeshRenderer::DrawCapsule(scaledTransform, glm::vec4(1.0f));
                     break;
                 case StaticMeshComponent::Type::Default:
                     if (mc.Data)
                     {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), scaledTransform, mc.Data->vertexArray, static_cast<int>(selectedID), outlineShader);
+                        MeshRenderer::DrawMesh(camera.GetViewProjection(), scaledTransform, mc.Data->vertexArray, outlineShader);
                     }
                     break;
                 }
@@ -853,29 +852,39 @@ namespace origin
 	template<>\
 	void Scene::OnComponentAdded<components>(Entity entity, components &component){}
 
-	OGN_ADD_COMPONENT(IDComponent)
-	OGN_ADD_COMPONENT(TagComponent)
-	OGN_ADD_COMPONENT(TransformComponent)
-	OGN_ADD_COMPONENT(UIComponent)
-	OGN_ADD_COMPONENT(AudioComponent)
-	OGN_ADD_COMPONENT(AudioListenerComponent)
-	OGN_ADD_COMPONENT(SpriteAnimationComponent)
-	OGN_ADD_COMPONENT(SpriteRenderer2DComponent)
-	OGN_ADD_COMPONENT(StaticMeshComponent)
-	OGN_ADD_COMPONENT(AnimatedMeshComponent)
-	OGN_ADD_COMPONENT(MeshRendererComponent)
-	OGN_ADD_COMPONENT(TextComponent)
-	OGN_ADD_COMPONENT(CircleRendererComponent)
-	OGN_ADD_COMPONENT(NativeScriptComponent)
-	OGN_ADD_COMPONENT(ScriptComponent)
-	OGN_ADD_COMPONENT(ParticleComponent)
-	// 2D Physics
-	OGN_ADD_COMPONENT(Rigidbody2DComponent)
-	OGN_ADD_COMPONENT(BoxCollider2DComponent)
-	OGN_ADD_COMPONENT(CircleCollider2DComponent)
-	OGN_ADD_COMPONENT(RevoluteJoint2DComponent)
-	// 3D Physics
-	OGN_ADD_COMPONENT(RigidbodyComponent)
+    OGN_ADD_COMPONENT(IDComponent);
+    OGN_ADD_COMPONENT(TagComponent);
+    OGN_ADD_COMPONENT(TransformComponent);
+    OGN_ADD_COMPONENT(UIComponent);
+    OGN_ADD_COMPONENT(AudioListenerComponent);
+
+    template<>
+    void Scene::OnComponentAdded<AudioComponent>(Entity entity, AudioComponent &component)
+    {
+    }
+
+    template<>
+    void Scene::OnComponentAdded<SpriteRenderer2DComponent>(Entity entity, SpriteRenderer2DComponent &component)
+    {
+    }
+
+    template<>
+    void Scene::OnComponentAdded<SpriteAnimationComponent>(Entity entity, SpriteAnimationComponent &component)
+    {
+    }
+
+	OGN_ADD_COMPONENT(AnimatedMeshComponent);
+	OGN_ADD_COMPONENT(MeshRendererComponent);
+	OGN_ADD_COMPONENT(TextComponent);
+	OGN_ADD_COMPONENT(CircleRendererComponent);
+	OGN_ADD_COMPONENT(NativeScriptComponent);
+	OGN_ADD_COMPONENT(ScriptComponent);
+	OGN_ADD_COMPONENT(ParticleComponent);
+	OGN_ADD_COMPONENT(Rigidbody2DComponent);
+	OGN_ADD_COMPONENT(BoxCollider2DComponent);
+	OGN_ADD_COMPONENT(CircleCollider2DComponent);
+	OGN_ADD_COMPONENT(RevoluteJoint2DComponent);
+    OGN_ADD_COMPONENT(RigidbodyComponent);
 
 	template<>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent &component)
@@ -886,31 +895,27 @@ namespace origin
 		}
 	}
 
+    template<>
+    void Scene::OnComponentAdded(Entity entity, BoxColliderComponent &component)
+    {
+        entity.AddOrReplaceComponent<RigidbodyComponent>();
+    }
+
 	template<>
-	void Scene::OnComponentAdded(Entity entity, BoxColliderComponent &component)
+	void Scene::OnComponentAdded(Entity entity, StaticMeshComponent &component)
 	{
-        if (!entity.HasComponent<RigidbodyComponent>())
-        {
-            entity.AddComponent<RigidbodyComponent>();
-        }
 	}
 
     template<>
     void Scene::OnComponentAdded(Entity entity, SphereColliderComponent &component)
     {
-		if (!entity.HasComponent<RigidbodyComponent>())
-		{
-			entity.AddComponent<RigidbodyComponent>();
-		}
+        entity.AddOrReplaceComponent<RigidbodyComponent>();
     }
 
     template<>
     void Scene::OnComponentAdded(Entity entity, CapsuleColliderComponent &component)
     {
-        if (!entity.HasComponent<RigidbodyComponent>())
-        {
-            entity.AddComponent<RigidbodyComponent>();
-        }
+        entity.AddOrReplaceComponent<RigidbodyComponent>();
     }
 
 	template<>

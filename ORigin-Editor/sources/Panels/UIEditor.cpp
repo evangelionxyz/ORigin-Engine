@@ -24,8 +24,6 @@ namespace origin
 		spec.Attachments =
 		{
 			FramebufferTextureFormat::RGBA8,
-			FramebufferTextureFormat::RED_INTEGER,
-			FramebufferTextureFormat::DEPTH24STENCIL8
 		};
 
 		spec.Width = 1280;
@@ -449,12 +447,12 @@ namespace origin
 					{
 						if (text->Component.FontHandle)
 						{
-							Renderer2D::DrawString(text->Component.TextString, text->Transform.GetTransform(), text->Component, i);
+							Renderer2D::DrawString(text->Component.TextString, text->Transform.GetTransform(), text->Component);
 						}
 					}
 					else if (UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(m_UICompHandler->Components[i]->Name))
 					{
-						Renderer2D::DrawSprite(sprite->Transform.GetTransform(), sprite->Component, i);
+						Renderer2D::DrawSprite(sprite->Transform.GetTransform(), sprite->Component);
 						if (m_SelectedIndex == i)
 						{
 							glLineWidth(2.0f);
@@ -466,17 +464,6 @@ namespace origin
 
 			Renderer2D::End();
 			glLineWidth(1.0);
-		}
-
-		if (IsViewportHovered && IsViewportFocused)
-		{
-			auto [mx, my] = ImGui::GetMousePos();
-			m_Mouse = { mx, my };
-			m_Mouse -= m_ViewportBounds[0];
-			const glm::ivec2 &viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-			m_Mouse.y = viewportSize.y - m_Mouse.y;
-			m_Mouse = glm::clamp(m_Mouse, { 0, 0 }, viewportSize - glm::ivec2 { 1, 1 });
-			m_HoveredIndex = m_Framebuffer->ReadPixel(1, m_Mouse.x, m_Mouse.y);
 		}
 
 		m_Framebuffer->Unbind();
@@ -506,14 +493,15 @@ namespace origin
 
 		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
 		{
-			if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
+			// TODO: Fix Me!
+			/*if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
 			{
 				m_SelectedIndex = m_HoveredIndex;
 			}
 			else if (m_HoveredIndex <= -1)
 			{
 				m_SelectedIndex = -1;
-			}
+			}*/
 		}
 
 		return false;

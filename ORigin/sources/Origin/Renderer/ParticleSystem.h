@@ -34,7 +34,7 @@ namespace origin {
 		void OnRender();
 
 		void Emit(const ParticleProps& particleProps);
-		void Emit(ParticleComponent& component, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation, int entityID = -1);
+		void Emit(ParticleComponent& component, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation);
 
 		static std::shared_ptr<ParticleSystem> Create();
 

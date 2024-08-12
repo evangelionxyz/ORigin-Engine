@@ -70,10 +70,8 @@ namespace origin
 		glm::ivec2 m_Mouse = { 0, 0 };
 		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
 		std::filesystem::path m_CurrentFilepath;
-
 		bool m_IsOpened = false;
 		int m_SelectedIndex = 0;
-		int m_HoveredIndex = -1;
 	};
 
 }

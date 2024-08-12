@@ -16,6 +16,7 @@
 #include "Origin/Core/KeyEvent.h"
 #include "Origin/Core/MouseEvent.h"
 #include "Origin/Math/Math.h"
+#include "Origin/Math/AABB.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Buffer.h"

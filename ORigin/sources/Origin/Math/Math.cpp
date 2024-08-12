@@ -173,32 +173,32 @@ namespace origin
 		return screenSpacePos;
     }
 
-    glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
+    glm::vec2 Math::GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
     {
         float x = (2.0f * mouse.x) / screen.x - 1;
         float y = 1.0f - (2.0f * mouse.y) / screen.y;
         return glm::vec2(x, y);
     }
 
-    glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc)
+    glm::vec4 Math::GetHomogeneouseClipCoord(const glm::vec2 &ndc)
     {
         return glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
     }
 
-    glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
+    glm::vec4 Math::GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
     {
         glm::mat4 inverseProjection = glm::inverse(projectionMatrix);
         glm::vec4 eyeCoords = inverseProjection * clipCoords;
         return glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
     }
 
-    glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
+    glm::vec3 Math::GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
     {
         glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
         return glm::normalize(glm::vec3(worldCoords));
     }
 
-    glm::vec3 GetRayOrthographic(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, glm::vec3 *rayOrigin, const glm::vec3 &camForward)
+    glm::vec3 Math::GetRayOrthographic(const glm::vec2 & coord, const glm::vec2 & screen, const glm::mat4 & projection, const glm::mat4 & view, glm::vec3 *rayOrigin, const glm::vec3 & camForward)
     {
         glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
         glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
@@ -216,27 +216,43 @@ namespace origin
         return rayDirection;
     }
 
-    glm::vec3 GetRayPerspective(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, const glm::vec3 camPosition, const glm::vec3 &camForward)
+    glm::vec3 Math::GetRayPerspective(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view)
     {
         glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
         glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
-        glm::vec3 rayDirection = glm::vec3(0.0f);
-
         glm::vec4 eye = GetEyeCoord(hmc, projection);
-        glm::vec3 worldRay = GetWorldCoord(eye, view);
-        rayDirection = worldRay;
 
-        return rayDirection;
+        return GetWorldCoord(eye, view);;
     }
 
-    bool RayIntersectsSphere(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)
-    {
-        glm::vec3 oc = rayOrigin - sphereCenter;
-        float a = glm::dot(rayDirection, rayDirection);
-        float b = 2.0f * glm::dot(oc, rayDirection);
-        float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
-        float discriminant = b * b - 4 * a * c;
-        return (discriminant > 0);
-    }
+	glm::vec3 Math::GetMouseRayWorldSpace(const glm::vec2 &rayNDC, const glm::mat4 &viewProjection)
+	{
+		glm::mat4 invViewProjection = glm::inverse(viewProjection);
+		glm::vec4 rayWorld = invViewProjection * glm::vec4(rayNDC.x, rayNDC.y, 1.0f , 1.0f);
+		return glm::normalize(glm::vec3(rayWorld));
+	}
+
+	bool Math::RaySphereIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)
+	{
+		glm::vec3 oc = rayOrigin - sphereCenter;
+		float a = glm::dot(rayDirection, rayDirection);
+		float b = 2.0f * glm::dot(oc, rayDirection);
+		float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
+		float discriminant = b * b - 4 * a * c;
+		return (discriminant > 0);
+	}
+
+	bool Math::RayAABBIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &boxMin, const glm::vec3 &boxMax)
+	{
+		glm::vec3 invDir = 1.0f / rayDirection;
+		glm::vec3 tMin = (boxMin - rayOrigin) * invDir;
+		glm::vec3 tMax = (boxMax - rayOrigin) * invDir;
+		glm::vec3 t1 = glm::min(tMin, tMax);
+		glm::vec3 t2 = glm::max(tMin, tMax);
+
+		float tNear = glm::max(glm::max(t1.x, t1.y), t1.z);
+		float tFar = glm::min(glm::min(t2.x, t2.y), t2.z);
+		return tNear <= tFar && tFar > 0;
+	}
 
 }

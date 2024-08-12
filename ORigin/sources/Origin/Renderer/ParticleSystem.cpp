@@ -63,7 +63,7 @@ namespace origin {
 				* glm::rotate(glm::mat4(1.0f), particle.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
 				* glm::scale(glm::mat4(1.0f), glm::vec3(particle.Scale * size));
 
-			Renderer2D::DrawQuad(transform, color, m_EntityID);
+			Renderer2D::DrawQuad(transform, color);
 		}
 	}
 
@@ -94,11 +94,9 @@ namespace origin {
 		m_PoolIndex = --m_PoolIndex % m_ParticlePool.size();
 	}
 
-	void ParticleSystem::Emit(ParticleComponent& component, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation, int entityID)
+	void ParticleSystem::Emit(ParticleComponent& component, const glm::vec3& position, const glm::vec3& scale, const glm::vec3& rotation)
 	{
 		OGN_PROFILER_RENDERING();
-
-		m_EntityID = entityID;
 
 		ParticleProps props;
 

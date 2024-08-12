@@ -50,9 +50,7 @@ namespace origin
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::ivec2 m_Mouse = { 0, 0 };
 		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
-
 		int m_SelectedIndex = 0;
-		int m_HoveredIndex = -1;
 	};
 
 }

@@ -50,7 +50,6 @@ namespace origin
 		fbSpec.Attachments =
 		{
 			  FramebufferTextureFormat::RGBA8,
-			  FramebufferTextureFormat::RED_INTEGER,
 			  FramebufferTextureFormat::DEPTH24STENCIL8
 		};
 
@@ -152,18 +151,9 @@ namespace origin
         m_Framebuffer->Bind();
         RenderCommand::ClearColor(m_ClearColor);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        m_Framebuffer->ClearAttachment(1, -1);
         Render(ts);
         m_ActiveScene->GetUIRenderer()->Render();
-        if (IsViewportHovered && IsViewportFocused)
-        {
-            glReadBuffer(GL_BACK);
-            m_PixelData = m_Framebuffer->ReadPixel(1, m_ViewportMousePos.x, m_ViewportMousePos.y);
-            m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(m_PixelData), m_ActiveScene.get());
-            m_Gizmos->SetHovered(m_PixelData);
-        }
         m_Framebuffer->Unbind();
-
 		m_ActiveScene->PostRender(m_EditorCamera, ts);
 
 		InputProcedure(ts);
@@ -1263,6 +1253,37 @@ namespace origin
 			}
 		}
 
+		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && IsViewportFocused && !ImGuizmo::IsOver())
+		{
+			glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+			glm::vec3 rayDirection = Math::GetRayPerspective(m_ViewportMousePos, viewportSize, 
+				m_EditorCamera.GetProjectionMatrix(), 
+				m_EditorCamera.GetViewMatrix());
+
+			glm::vec3 rayOrigin = m_EditorCamera.GetPosition();
+
+			Entity clickedEntity = { entt::null, nullptr };
+
+			float closestDistance = std::numeric_limits<float>::max();
+			auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
+			for (auto [entity, tc] : view.each())
+			{
+				AABB aabb = AABB::FromCenterAndSize(tc.WorldTranslation, tc.WorldScale);
+				if (Math::RayAABBIntersection(rayOrigin, rayDirection, aabb.Min, aabb.Max))
+				{
+					float distance = glm::distance(rayOrigin, tc.WorldTranslation);
+					if (distance < closestDistance)
+					{
+						closestDistance = distance;
+						clickedEntity = { entity, m_ActiveScene.get() };
+						break;
+					}
+				}
+			}
+
+			m_SceneHierarchy.SetSelectedEntity(clickedEntity);
+		}
+
 		return false;
 	}
 
@@ -1279,28 +1300,6 @@ namespace origin
 		if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft))
 		{
 			Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-
-            if (IsViewportHovered && !ImGui::IsMouseDragging(ImGuiMouseButton_Left) && 
-				((m_Gizmos->GetType() == GizmoType::NONE) || !ImGuizmo::IsOver()))
-			{
-                if (m_PixelData >= 0)
-                {
-					if (m_HoveredEntity != selectedEntity)
-					{
-						if (m_HoveredEntity)
-						{
-                            m_SceneHierarchy.SetSelectedEntity(m_HoveredEntity);
-                            selectedEntity = m_HoveredEntity;
-						}
-					}
-                }
-                else if (m_PixelData == -1)
-                {
-                    m_Gizmos->SetType(GizmoType::NONE);
-					m_SceneHierarchy.SetSelectedEntity({ entt::null, nullptr });
-					selectedEntity = { entt::null, nullptr };
-                }
-			}
 
 			if (selectedEntity && IsViewportFocused && IsViewportHovered)
 			{

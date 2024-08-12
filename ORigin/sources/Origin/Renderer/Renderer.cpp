@@ -74,7 +74,7 @@ namespace origin {
 		
 		RenderCommand::Init();
 
-		OGN_CORE_TRACE("[Renderer] Initalized");
+		OGN_CORE_TRACE("[Renderer] Initialized");
 		return true;
 	}
 
