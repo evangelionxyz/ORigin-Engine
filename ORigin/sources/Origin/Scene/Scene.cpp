@@ -902,7 +902,7 @@ namespace origin
     template<>
     void Scene::OnComponentAdded(Entity entity, BoxColliderComponent &component)
     {
-        entity.AddOrReplaceComponent<RigidbodyComponent>();
+        if(!entity.HasComponent<RigidbodyComponent>()) entity.AddComponent<RigidbodyComponent>();
     }
 
 	template<>
@@ -913,13 +913,13 @@ namespace origin
     template<>
     void Scene::OnComponentAdded(Entity entity, SphereColliderComponent &component)
     {
-        entity.AddOrReplaceComponent<RigidbodyComponent>();
+        if(!entity.HasComponent<RigidbodyComponent>()) entity.AddComponent<RigidbodyComponent>();
     }
 
     template<>
     void Scene::OnComponentAdded(Entity entity, CapsuleColliderComponent &component)
     {
-        entity.AddOrReplaceComponent<RigidbodyComponent>();
+        if(!entity.HasComponent<RigidbodyComponent>()) entity.AddComponent<RigidbodyComponent>();
     }
 
 	template<>

@@ -151,7 +151,7 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
 
 		RenderCommand::SetViewport(X, Y, Width, Height);
 		Renderer2D::Begin(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-		Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f)), m_ScreenTexture, -1, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, fadeTime });
+		Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f)), m_ScreenTexture, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, fadeTime });
 		Renderer2D::End();
 		m_LoadingSound->Play();
 		app.GetWindow().OnUpdate();

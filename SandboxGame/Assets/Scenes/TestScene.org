@@ -75,7 +75,7 @@ Entities:
         OrthoScale: 61.2000008
         OrthoNear: 10
         OrthoFar: 85.4000015
-        ViewportSize: [707.200012, 442]
+        ViewportSize: [724.799988, 453]
       Primary: true
     AudioListenerComponent:
       Enable: true
@@ -95,7 +95,7 @@ Entities:
       MoveX: true
       MoveY: true
       MoveZ: true
-      IsStatic: false
+      IsStatic: true
     BoxColliderComponent:
       Size: [0.5, 0.5, 0.5]
       Restitution: 0.600000024
@@ -186,7 +186,7 @@ Entities:
       MoveX: true
       MoveY: true
       MoveZ: true
-      IsStatic: false
+      IsStatic: true
     BoxColliderComponent:
       Size: [1, 1, 1]
       Restitution: 0.600000024
