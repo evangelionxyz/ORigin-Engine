@@ -91,6 +91,10 @@ namespace origin
 		// ======================================
 		// ================ Cube ================
 		s_MeshRenderData.CubeData = ModelLoader::LoadModel("Resources/Models/cube.obj");
+        for (auto &v : s_MeshRenderData.CubeData->vertices)
+        {
+            v.Position *= glm::vec3(0.5f);
+        }
 		s_MeshRenderData.CubeVAO = VertexArray::Create();
 		s_MeshRenderData.CubeVBO = VertexBuffer::Create(MeshRenderData::MaxCubeVertices * sizeof(MeshVertexData));
 		s_MeshRenderData.CubeVBO->SetLayout(bufferLayout);

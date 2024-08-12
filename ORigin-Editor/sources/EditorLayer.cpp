@@ -153,6 +153,7 @@ namespace origin
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         Render(ts);
         m_ActiveScene->GetUIRenderer()->Render();
+
         m_Framebuffer->Unbind();
 		m_ActiveScene->PostRender(m_EditorCamera, ts);
 
@@ -586,11 +587,16 @@ namespace origin
 			}
 			m_Gizmos->SetType(GizmoType::NONE);
 			m_ActiveScene->OnUpdateRuntime(ts);
-			if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
+
+			if (m_VisualizeCollider)
 			{
-				CameraComponent cc = cam.GetComponent<CameraComponent>();
-				m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
+				if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
+				{
+					CameraComponent cc = cam.GetComponent<CameraComponent>();
+					m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
+				}
 			}
+			
 			break;
 		}
 		case SceneState::Edit:
@@ -599,8 +605,9 @@ namespace origin
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
 			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-			m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
+
+			m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
 
@@ -609,9 +616,10 @@ namespace origin
 			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-			m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
+			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+
+			m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
 			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
 		}
@@ -1255,29 +1263,25 @@ namespace origin
 
 		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && IsViewportFocused && !ImGuizmo::IsOver())
 		{
-			glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
-			glm::vec3 rayDirection = Math::GetRayPerspective(m_ViewportMousePos, viewportSize, 
+			const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+			const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };
+
+			glm::vec3 rayDirection = Math::GetRayPerspective(mouse, viewportSize, 
 				m_EditorCamera.GetProjectionMatrix(), 
 				m_EditorCamera.GetViewMatrix());
 
 			glm::vec3 rayOrigin = m_EditorCamera.GetPosition();
 
 			Entity clickedEntity = { entt::null, nullptr };
-
-			float closestDistance = std::numeric_limits<float>::max();
 			auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
 			for (auto [entity, tc] : view.each())
 			{
-				AABB aabb = AABB::FromCenterAndSize(tc.WorldTranslation, tc.WorldScale);
-				if (Math::RayAABBIntersection(rayOrigin, rayDirection, aabb.Min, aabb.Max))
+				OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
+				float t;
+				if (obb.RayIntersection(rayOrigin, rayDirection, t))
 				{
-					float distance = glm::distance(rayOrigin, tc.WorldTranslation);
-					if (distance < closestDistance)
-					{
-						closestDistance = distance;
-						clickedEntity = { entity, m_ActiveScene.get() };
-						break;
-					}
+					clickedEntity = { entity, m_ActiveScene.get() };
+					break;
 				}
 			}
 

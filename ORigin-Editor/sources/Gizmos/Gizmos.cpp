@@ -126,9 +126,11 @@ namespace origin {
             }
         }
 
+#if 0
+		// AABB
 		for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
 		{
-			AABB aabb = AABB::FromCenterAndSize(tc.WorldTranslation, tc.WorldScale);
+			AABB aabb = AABB(tc.WorldTranslation, tc.WorldScale);
 			const glm::vec3 &min = aabb.Min;
 			const glm::vec3 &max = aabb.Max;
 			glm::vec4 color = { 1.0f, 0.7f, 0.0f, 1.0f }; // Orange color
@@ -161,6 +163,40 @@ namespace origin {
 			Renderer2D::DrawLine(corners[3], corners[7], color);
 		}
 
+		// OBB
+		for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
+		{
+			OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
+			glm::vec3 vertices[8];
+
+			// Calculate the vertices of the OBB
+			vertices[0] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, -obb.HalfExtents.y, -obb.HalfExtents.z);
+			vertices[1] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, -obb.HalfExtents.y, -obb.HalfExtents.z);
+			vertices[2] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, obb.HalfExtents.y, -obb.HalfExtents.z);
+			vertices[3] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, obb.HalfExtents.y, -obb.HalfExtents.z);
+			vertices[4] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, -obb.HalfExtents.y, obb.HalfExtents.z);
+			vertices[5] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, -obb.HalfExtents.y, obb.HalfExtents.z);
+			vertices[6] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, obb.HalfExtents.y, obb.HalfExtents.z);
+			vertices[7] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, obb.HalfExtents.y, obb.HalfExtents.z);
+
+			glm::vec4 color = { 0.0f, 1.0f, 0.0f, 1.0f }; // Orange color
+			// Draw the edges of the OBB
+			Renderer2D::DrawLine(vertices[0], vertices[1], color);
+			Renderer2D::DrawLine(vertices[1], vertices[2], color);
+			Renderer2D::DrawLine(vertices[2], vertices[3], color);
+			Renderer2D::DrawLine(vertices[3], vertices[0], color);
+
+			Renderer2D::DrawLine(vertices[4], vertices[5], color);
+			Renderer2D::DrawLine(vertices[5], vertices[6], color);
+			Renderer2D::DrawLine(vertices[6], vertices[7], color);
+			Renderer2D::DrawLine(vertices[7], vertices[4], color);
+
+			Renderer2D::DrawLine(vertices[0], vertices[4], color);
+			Renderer2D::DrawLine(vertices[1], vertices[5], color);
+			Renderer2D::DrawLine(vertices[2], vertices[6], color);
+			Renderer2D::DrawLine(vertices[3], vertices[7], color);
+		}
+#endif
         Renderer2D::End();
 	}
 
@@ -230,9 +266,8 @@ namespace origin {
 	{
 		OGN_PROFILER_RENDERING();
 
-		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 		Renderer2D::Begin(camera);
-
 		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
 		const auto &viewA = scene->GetAllEntitiesWith<TransformComponent>();
 		for (auto e : viewA)
@@ -333,7 +368,7 @@ namespace origin {
 					{
 						BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
 						transform *= glm::toMat4(tc.WorldRotation)
-							* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(cc.Size * 2.0f) * 2.0f);
+							* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(cc.Scale * 2.0f) * 2.0f);
 						Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 					}
 

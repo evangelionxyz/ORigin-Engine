@@ -1151,7 +1151,7 @@ namespace origin {
 
         DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto &component)
         {
-            UI::DrawVec3Control("Size", component.Size, 0.025f, 0.5f);
+            UI::DrawVec3Control("Scale", component.Scale, 0.025f, 1.0f);
             UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
             UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
         });

@@ -202,7 +202,7 @@ namespace origin
             out << YAML::Key << "BoxColliderComponent";
             out << YAML::BeginMap; // BoxColliderComponent
             const auto &bc = entity.GetComponent<BoxColliderComponent>();
-            out << YAML::Key << "Size" << YAML::Value << bc.Size;
+            out << YAML::Key << "Size" << YAML::Value << bc.Scale;
             out << YAML::Key << "Restitution" << YAML::Value << bc.Restitution;
             out << YAML::Key << "Friction" << YAML::Value << bc.Friction;
             out << YAML::EndMap; // !BoxColliderComponent
@@ -976,7 +976,7 @@ namespace origin
                 if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
                 {
                     auto &boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
-                    boxCollider.Size = boxColliderComponent["Size"].as<glm::vec3>();
+                    boxCollider.Scale = boxColliderComponent["Size"].as<glm::vec3>();
                     boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
                     boxCollider.Friction = boxColliderComponent["Friction"].as<float>();
                 }

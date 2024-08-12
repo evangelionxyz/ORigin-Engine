@@ -41,6 +41,7 @@ namespace origin
         void OnUpdateSimulation(const Camera &camera, Timestep time, entt::entity selectedID);
 
         void OnUpdateEditor(const Camera &camera, Timestep time, entt::entity selectedID);
+
         void OnViewportResize(const uint32_t width, const uint32_t height);
         void OnRenderShadow();
 
@@ -63,11 +64,14 @@ namespace origin
         static AssetType GetStaticType() { return AssetType::Scene; }
         AssetType GetType() const override { return GetStaticType(); }
     private:
+
         void Update(Timestep ts);
         void UpdateScripts(Timestep ts);
         void UpdatePhysics(Timestep ts);
 
-        void RenderScene(const Camera &camera, entt::entity selectedID);
+        void RenderScene(const Camera &camera);
+        void RenderStencilScene(const Camera &camera, entt::entity selectedId);
+
         bool IsRunning() const { return m_Running; }
         bool IsPaused() const { return m_Paused; }
         void SetPaused(bool paused) { m_Paused = paused; }

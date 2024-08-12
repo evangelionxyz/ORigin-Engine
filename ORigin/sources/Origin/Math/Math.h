@@ -14,6 +14,8 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/glm.hpp>
 
+#include "OBB.h"
+
 namespace origin
 {
 	class Math
@@ -25,7 +27,6 @@ namespace origin
 		static glm::vec3 Normalize(const glm::vec3 &v);
 		static glm::vec3 WorldToScreen(const glm::vec3 &worldPos, const glm::mat4 &modelTransform, const glm::mat4 &viewProjection, const glm::vec2 &screen);
         static glm::vec2 GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen);
-		static glm::vec4 GetHomogeneouseClipCoord(const glm::vec2 &ndc);
 		static glm::vec4 GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix);
         static glm::vec3 GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix);
         static glm::vec3 GetRayOrthographic(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, glm::vec3 *rayOrigin, const glm::vec3 &camForward);
@@ -33,7 +34,6 @@ namespace origin
 		static glm::vec3 GetMouseRayWorldSpace(const glm::vec2 &rayNDC, const glm::mat4 &viewProjection);
 
         static bool RaySphereIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius);
-		static bool RayAABBIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &boxMin, const glm::vec3 &boxMax);
 	};
 }
 

@@ -62,11 +62,11 @@ namespace origin
         JPH::Factory::sInstance = nullptr;
     }
 
-    void *PhysicsEngine::CreateBoxCollider(Entity entity, const glm::vec3 &size, RigidbodyComponent &rb)
+    void *PhysicsEngine::CreateBoxCollider(Entity entity, const glm::vec3 &scale, RigidbodyComponent &rb)
     {
         auto &tc = entity.GetComponent<TransformComponent>();
 
-        glm::vec3 halfExtents = tc.Scale * (size * 2.0f);
+        glm::vec3 halfExtents = (tc.Scale * 0.5f) * scale;
         JPH::BoxShapeSettings shapeSettings(GlmToJoltVec3(halfExtents));
 
         shapeSettings.mUserData = entity.GetUUID();
@@ -305,7 +305,7 @@ namespace origin
             if (entity.HasComponent<BoxColliderComponent>())
             {
                 BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
-                cc.Shape = CreateBoxCollider(entity, cc.Size, rb);
+                cc.Shape = CreateBoxCollider(entity, cc.Scale, rb);
                 rb.SetFriction(cc.Friction);
                 rb.SetRestitution(cc.Restitution);
             }

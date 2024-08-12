@@ -224,7 +224,7 @@ namespace origin
 			if (cc.Primary)
 			{
 				cc.Camera.SetTransform(tc.GetTransform());
-				RenderScene(cc.Camera, entt::null);
+				RenderScene(cc.Camera);
 				break;
 			}
 		}
@@ -312,7 +312,8 @@ namespace origin
 	void Scene::OnUpdateEditor(const Camera &camera, Timestep ts, entt::entity selectedID)
 	{
 		Update(ts);
-		RenderScene(camera, selectedID);
+		RenderScene(camera);
+        RenderStencilScene(camera, selectedID);
 	}
 
 	void Scene::OnUpdateSimulation(const Camera &camera, Timestep ts, entt::entity selectedID)
@@ -324,10 +325,11 @@ namespace origin
 			UpdatePhysics(ts);
         }
 		
-		RenderScene(camera, selectedID);
+		RenderScene(camera);
+        RenderStencilScene(camera, selectedID);
 	}
 
-	void Scene::RenderScene(const Camera &camera, entt::entity selectedID)
+	void Scene::RenderScene(const Camera &camera)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -355,9 +357,6 @@ namespace origin
 			// 2D Quads
 			if (entity.HasComponent<SpriteRenderer2DComponent>())
 			{
-                if (e == selectedID)
-                    continue;
-
 				auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
 				if (entity.HasComponent<SpriteAnimationComponent>())
 				{
@@ -465,7 +464,7 @@ namespace origin
             for (auto e : meshView)
             {
                 const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
-                if (!tc.Visible || e == selectedID)
+                if (!tc.Visible)
                     continue;
 
                 std::shared_ptr<Material> material;
@@ -493,13 +492,18 @@ namespace origin
             MeshRenderer::End();
         }
 
-#pragma region FIRST_PASS
-        if (m_Registry.valid(selectedID))
-        {
-            glEnable(GL_STENCIL_TEST);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	}
 
-            Entity entity = { selectedID, this };
+    void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
+    {
+
+        glEnable(GL_STENCIL_TEST);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+#pragma region FIRST_PASS
+        if (m_Registry.valid(selectedId))
+        {
+            Entity entity = { selectedId, this };
             TransformComponent &tc = entity.GetComponent<TransformComponent>();
 
             // First pass: Render all objects and mark the selected object in the stencil buffer
@@ -568,20 +572,20 @@ namespace origin
             // Second pass: Draw the outline for the selected object
             glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
             glStencilMask(0x00);
-            //glEnable(GL_DEPTH_TEST);  // Enable depth testing
-            glDisable(GL_DEPTH_TEST);  // Enable depth testing
-            //glDepthFunc(GL_LEQUAL);   // Change depth function to allow drawing on top of the object
+
+            glEnable(GL_DEPTH_TEST);  // Enable depth testing
+            glDepthFunc(GL_LEQUAL);   // Change depth function to allow drawing on top of the object
 
             glm::vec3 cameraPosition = camera.GetPosition();
             glm::vec3 objectPosition = tc.WorldTranslation;
             float distance = glm::distance(cameraPosition, objectPosition);
-            float objectRadius = glm::length(tc.WorldScale) * 0.5f;
-            float baseThickness = 0.02f; // Adjust this value to change the base thickness
-            float thicknessFactor = baseThickness * (distance / objectRadius);
-            thicknessFactor = glm::clamp(thicknessFactor, 0.001f, 0.1f);
+            float baseThickness = 0.01f; // Adjust this value to change the base thickness
+            float thicknessFactor = baseThickness * distance;
+            thicknessFactor = glm::clamp(thicknessFactor, 0.01f, 2.0f);
+
             glm::mat4 scaledTransform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
                 * glm::toMat4(tc.WorldRotation)
-                * glm::scale(glm::mat4(1.0f), tc.WorldScale + (1.0f * thicknessFactor));
+                * glm::scale(glm::mat4(1.0f), tc.WorldScale + thicknessFactor);
 
             Shader *outlineShader = Renderer::GetShader("Outline").get();
             outlineShader->Enable();
@@ -613,7 +617,7 @@ namespace origin
 
             // 3D Objects
             MeshRenderer::Begin(camera, outlineShader);
-            if(entity.HasComponent<StaticMeshComponent>())
+            if (entity.HasComponent<StaticMeshComponent>())
             {
                 StaticMeshComponent &mc = entity.GetComponent<StaticMeshComponent>();
                 switch (mc.mType)
@@ -643,10 +647,10 @@ namespace origin
             glStencilFunc(GL_ALWAYS, 0, 0xFF);
             glEnable(GL_DEPTH_TEST);
 #pragma endregion
-
-            glDisable(GL_STENCIL_TEST);
         }
-	}
+
+        glDisable(GL_STENCIL_TEST);
+    }
 	
 	void Scene::OnRenderShadow()
 	{

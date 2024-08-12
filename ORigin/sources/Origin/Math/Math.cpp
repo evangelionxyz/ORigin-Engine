@@ -175,21 +175,16 @@ namespace origin
 
     glm::vec2 Math::GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
     {
-        float x = (2.0f * mouse.x) / screen.x - 1;
+        float x = (2.0f * mouse.x) / screen.x - 1.0f;
         float y = 1.0f - (2.0f * mouse.y) / screen.y;
-        return glm::vec2(x, y);
-    }
-
-    glm::vec4 Math::GetHomogeneouseClipCoord(const glm::vec2 &ndc)
-    {
-        return glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
+		return { x, y };
     }
 
     glm::vec4 Math::GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMatrix)
     {
         glm::mat4 inverseProjection = glm::inverse(projectionMatrix);
         glm::vec4 eyeCoords = inverseProjection * clipCoords;
-        return glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+		return { eyeCoords.x, eyeCoords.y, -1.0f, 0.0f };
     }
 
     glm::vec3 Math::GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
@@ -201,7 +196,7 @@ namespace origin
     glm::vec3 Math::GetRayOrthographic(const glm::vec2 & coord, const glm::vec2 & screen, const glm::mat4 & projection, const glm::mat4 & view, glm::vec3 *rayOrigin, const glm::vec3 & camForward)
     {
         glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
-        glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
+        glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f); // Homogeneouse Clip Coord
         glm::vec3 rayDirection = glm::vec3(0.0f);
         *rayOrigin = glm::vec3(0.0f);
 
@@ -209,7 +204,7 @@ namespace origin
         glm::mat4 invViewProj = glm::inverse(projection * view);
 
         // ray origin (on near plane)
-        *rayOrigin = invViewProj * glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
+        *rayOrigin = invViewProj * hmc; // Homogeneouse Clip Coord
         *rayOrigin /= 1.0f;
         rayDirection = -glm::normalize(camForward);
 
@@ -219,7 +214,7 @@ namespace origin
     glm::vec3 Math::GetRayPerspective(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view)
     {
         glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
-        glm::vec4 hmc = GetHomogeneouseClipCoord({ ndc.x, -ndc.y });
+        glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f); // Homogeneouse Clip Coord
         glm::vec4 eye = GetEyeCoord(hmc, projection);
 
         return GetWorldCoord(eye, view);;
@@ -241,18 +236,4 @@ namespace origin
 		float discriminant = b * b - 4 * a * c;
 		return (discriminant > 0);
 	}
-
-	bool Math::RayAABBIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &boxMin, const glm::vec3 &boxMax)
-	{
-		glm::vec3 invDir = 1.0f / rayDirection;
-		glm::vec3 tMin = (boxMin - rayOrigin) * invDir;
-		glm::vec3 tMax = (boxMax - rayOrigin) * invDir;
-		glm::vec3 t1 = glm::min(tMin, tMax);
-		glm::vec3 t2 = glm::max(tMin, tMax);
-
-		float tNear = glm::max(glm::max(t1.x, t1.y), t1.z);
-		float tFar = glm::min(glm::min(t2.x, t2.y), t2.z);
-		return tNear <= tFar && tFar > 0;
-	}
-
 }

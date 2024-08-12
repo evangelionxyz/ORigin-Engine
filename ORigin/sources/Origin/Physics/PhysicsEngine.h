@@ -18,7 +18,7 @@ namespace origin {
 		static void Init();
 		static void Shutdown();
 
-        static void *CreateBoxCollider(Entity entity, const glm::vec3 &size, RigidbodyComponent &rb);
+        static void *CreateBoxCollider(Entity entity, const glm::vec3 &scale, RigidbodyComponent &rb);
         static void *CreateSphereCollider(Entity entity, float radius, RigidbodyComponent &rb);
         static void *CreateCapsuleCollider(Entity entity, float halfHeight, float radius, RigidbodyComponent &rb);
 

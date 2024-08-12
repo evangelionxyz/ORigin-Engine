@@ -99,7 +99,7 @@ namespace origin
     class BoxColliderComponent : public PhysicsCollider
     {
     public:
-        glm::vec3 Size = { 0.5f, 0.5f, 0.5f };
+        glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
         
         BoxColliderComponent() = default;
         BoxColliderComponent(const BoxColliderComponent &) = default;
