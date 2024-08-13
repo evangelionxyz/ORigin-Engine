@@ -6,6 +6,11 @@
 
 namespace origin {
 
+	AudioListener::AudioListener(const glm::vec3 &position, const glm::vec3 &velocity, const glm::vec3 &forward, const glm::vec3 &up)
+	{
+		Set(position, velocity, forward, up);
+	}
+
 	void AudioListener::Set(const glm::vec3& p, const glm::vec3& v, const glm::vec3& f, const glm::vec3& up)
 	{
 		ma_engine_listener_set_position(AudioEngine::GetEngine(), 0, p.x, p.y, p.z);

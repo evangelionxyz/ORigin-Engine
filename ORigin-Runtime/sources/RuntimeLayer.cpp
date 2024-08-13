@@ -89,7 +89,7 @@ void RuntimeLayer::Resize(uint32_t width, uint32_t height)
 
 void RuntimeLayer::OnLoadingScreen(float endTime)
 {
-	AudioEngine::SetListener(glm::vec3(0.0f), glm::vec3(0.0f), { 0.0f, 0.0f, -1.0f }, { 0.0f, 1.0f, 0.0f });
+	AudioListener listener(glm::vec3(0.0f), glm::vec3(0.0f), { 0.0f, 0.0f, -1.0f }, { 0.0f, 1.0f, 0.0f });
 	m_LoadingSound = AudioSource::Create();
 	m_LoadingSound->LoadSource("loading_screen", "Resources/Sounds/loading_screen.wav");
 	m_LoadingSound->SetVolume(5.0f);

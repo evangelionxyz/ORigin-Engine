@@ -7,8 +7,8 @@ Entities:
       Tag: Empty
     TransformComponent:
       Translation: [3.67583132, 11.1280804, 0.454862595]
-      Rotation: [0, 0, 0.0580402315, 0.998314261]
-      Scale: [1.8100028, 1.81000292, 1.80999982]
+      Rotation: [-0.341024399, -0.019826619, 0.0545487255, 0.938260972]
+      Scale: [1.80999827, 1.81000412, 1.80999529]
       Visible: true
     TextComponent:
       Handle: 7705012376485170699
@@ -92,9 +92,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-5.02315474, 5.76793528, 12.2718105]
+      Translation: [-2.65352201, 5.76793528, 10.9229736]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999975383, 0.999975085, 1]
+      Scale: [0.99996531, 0.999965012, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -185,9 +185,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-2.66414428, 6.31212759, 17.9908371]
+      Translation: [-2.66414428, 7.98488617, 17.9908371]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999976575, 0.999976277, 1]
+      Scale: [0.999973297, 0.999972999, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -495,9 +495,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-1.15095294, 6.31212711, 17.9908371]
+      Translation: [0.271167994, 6.31212711, 17.9908371]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999977052, 0.999976754, 1]
+      Scale: [0.999973476, 0.999973178, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -526,9 +526,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-3.12159204, 6.31212759, 17.9908371]
+      Translation: [-0.282689124, 6.31212759, 17.9908371]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999976993, 0.999976695, 1]
+      Scale: [0.999972701, 0.999972403, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -557,9 +557,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-1.38567066, 6.31212759, 17.9908371]
+      Translation: [-1.38567054, 8.3624897, 17.9908371]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999976754, 0.999976456, 1]
+      Scale: [0.999974847, 0.999974549, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -681,9 +681,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-5.0231514, 6.31212759, 17.9908371]
+      Translation: [-2.62132049, 6.31212759, 17.9908371]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999977648, 0.99997735, 1]
+      Scale: [0.999973178, 0.99997288, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -712,9 +712,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-5.0231514, 6.31212759, 17.9908371]
+      Translation: [-5.0231514, 6.31212759, 2.60229731]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999977648, 0.99997735, 1]
+      Scale: [0.999960542, 0.999960244, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -743,9 +743,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-5.0231514, 6.31212759, 17.9908371]
+      Translation: [2.75350809, 6.31212664, 7.03042698]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999977648, 0.99997735, 1]
+      Scale: [0.999969602, 0.999969304, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -774,9 +774,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-5.0231514, 6.31212759, 17.9908371]
+      Translation: [-1.07991922, 6.31212759, 9.45841694]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999977648, 0.99997735, 1]
+      Scale: [0.999967992, 0.999967694, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -838,7 +838,7 @@ Entities:
     TransformComponent:
       Translation: [0, 6.31212568, -3.50177288e-07]
       Rotation: [0, 0, 0.707106709, 0.707106829]
-      Scale: [0.999998212, 0.999997914, 1]
+      Scale: [0.999997735, 0.999997437, 1]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -858,14 +858,14 @@ Entities:
     CameraComponent:
       Camera:
         ProjectionType: 1
-        AspectRatioType: 1
+        AspectRatioType: 3
         FOV: 45
         PerspectiveNear: 2.5
         PerspectiveFar: 50
         OrthoScale: 40
         OrthoNear: 10
         OrthoFar: 85.4000015
-        ViewportSize: [529.600037, 331]
+        ViewportSize: [1110.40002, 475.885742]
       Primary: true
     AudioListenerComponent:
       Enable: true

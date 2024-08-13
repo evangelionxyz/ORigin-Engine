@@ -330,15 +330,7 @@ namespace origin
 	void Scene::RenderScene(const Camera &camera)
 	{
 		OGN_PROFILER_RENDERING();
-
-		if (!camera.IsPerspective())
-        {
-            glDisable(GL_DEPTH_TEST);
-        }
-        else
-        {
-            glEnable(GL_DEPTH_TEST);
-        }
+        glEnable(GL_DEPTH_TEST);
 
 		Renderer2D::Begin(camera);
         const auto &view = m_Registry.view<TransformComponent>();
@@ -448,8 +440,6 @@ namespace origin
 		}
 
 		Renderer2D::End();
-
-        glEnable(GL_DEPTH_TEST);
 
         const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
         const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();

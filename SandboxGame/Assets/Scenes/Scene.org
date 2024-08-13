@@ -6,9 +6,9 @@ Entities:
     TagComponent:
       Tag: Text
     TransformComponent:
-      Translation: [25.8657837, 2.08380198, -15.2229767]
-      Rotation: [-1.06262952e-07, 0.772589326, -1.06262952e-07, -0.634906113]
-      Scale: [11.0452118, 11.0451994, 11.0452118]
+      Translation: [21.7076721, 9.01122379, -18.8562469]
+      Rotation: [1.30168019e-08, -0.351401985, 1.28164984e-07, 0.936224699]
+      Scale: [8.83616924, 8.83615971, 8.83616924]
       Visible: true
     TextComponent:
       Handle: 7705012376485170699
@@ -148,7 +148,7 @@ Entities:
           Name: FPSCounter
           Anchor: -858993460
           FontHandle: 7705012376485170699
-          TextString: 47.63 FPS
+          TextString: 13.41 FPS
           LineSpacing: 0
           Kerning: 0
           Color: [1, 0, 0, 1]
@@ -159,7 +159,7 @@ Entities:
           Name: BulletCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 13 Total bullets
+          TextString: 116 Total bullets
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -170,7 +170,7 @@ Entities:
           Name: CubeCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 78 Total Cubes
+          TextString: 681 Total Cubes
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -612,7 +612,7 @@ Entities:
     TransformComponent:
       Translation: [-9.53674316e-07, -25, 0]
       Rotation: [0, 0.258818984, 0, 0.965925813]
-      Scale: [1000, 50, 1000]
+      Scale: [200, 50, 200]
       Visible: true
     StaticMeshComponent:
       Name: ""

@@ -401,7 +401,7 @@ namespace origin {
         m_AngularVelocity += acceleration;
 
         // Apply damping
-        m_AngularVelocity *= std::pow(DAMPING, dt * 60.0f); // Adjust damping based on frame rate
+        m_AngularVelocity *= std::pow(DAMPING, dt * (1.0f / dt)); // Adjust damping based on frame rate
 
         // Apply rotation
         m_Yaw += yawSign * m_AngularVelocity.x * RotationSpeed() * 2.0f;

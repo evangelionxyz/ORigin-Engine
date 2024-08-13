@@ -1040,6 +1040,73 @@ namespace origin
 						}
 						ImGui::TreePop();
 					}
+
+					if (ImGui::TreeNodeEx("Camera Settings", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
+					{
+						ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
+
+						// Projection Type Settings
+						const char *CMPTypeString[] = { "Perspective", "Orthographic" };
+						const char *currnentCMPTypeString = CMPTypeString[static_cast<int>(m_EditorCamera.GetProjectionType())];
+						if (ImGui::BeginCombo("Projection", currnentCMPTypeString))
+						{
+							for (int i = 0; i < 2; i++)
+							{
+								const bool isSelected = currnentCMPTypeString == CMPTypeString[i];
+								if (ImGui::Selectable(CMPTypeString[i], isSelected))
+								{
+									currnentCMPTypeString = CMPTypeString[i];
+									m_EditorCamera.SetProjectionType(static_cast<ProjectionType>(i));
+
+								} if (isSelected) ImGui::SetItemDefaultFocus();
+							} ImGui::EndCombo();
+						}
+
+
+						// Projection settings
+						switch (m_EditorCamera.GetProjectionType())
+						{
+						case ProjectionType::Perspective:
+						{
+							const char *CMSTypeString[] = { "Pivot", "Free Move" };
+							const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
+							if (ImGui::BeginCombo("Camera Style", currentCMSTypeString))
+							{
+								for (int i = 0; i < 2; i++)
+								{
+									const bool isSelected = currentCMSTypeString == CMSTypeString[i];
+									if (ImGui::Selectable(CMSTypeString[i], isSelected))
+									{
+										currentCMSTypeString = CMSTypeString[i];
+										m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
+
+									} if (isSelected) ImGui::SetItemDefaultFocus();
+								}
+								ImGui::EndCombo();
+							}
+
+							float fov = m_EditorCamera.GetFOV();
+							if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
+							{
+								m_EditorCamera.SetFov(fov);
+							}
+
+							UI::DrawCheckbox("Grid 3D", &m_Draw3DGrid);
+							if (m_Draw3DGrid)
+							{
+								UI::DrawIntControl("Grid Size", &m_3DGridSize, 1.0f);
+							}
+							break;
+						}
+						case ProjectionType::Orthographic:
+							UI::DrawCheckbox("Grid 2D", &m_Draw2DGrid);
+							break;
+						}
+
+						ImGui::ColorEdit4("Background", glm::value_ptr(m_ClearColor));
+						ImGui::TreePop();
+					}
+
                     if (ImGui::TreeNodeEx("Statistics", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
                     {
                         const auto renderStats = Renderer::GetStatistics();
@@ -1056,72 +1123,7 @@ namespace origin
                         ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
                         ImGui::TreePop();
                     }
-                    if (ImGui::TreeNodeEx("Camera Settings", treeFlags))
-                    {
-						ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
 
-						// Projection Type Settings
-                        const char *CMPTypeString[] = { "Perspective", "Orthographic" };
-                        const char *currnentCMPTypeString = CMPTypeString[static_cast<int>(m_EditorCamera.GetProjectionType())];
-						ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
-						if (ImGui::BeginCombo("Projection", currnentCMPTypeString))
-						{
-							for (int i = 0; i < 2; i++)
-							{
-								const bool isSelected = currnentCMPTypeString == CMPTypeString[i];
-								if (ImGui::Selectable(CMPTypeString[i], isSelected))
-								{
-									currnentCMPTypeString = CMPTypeString[i];
-                                    m_EditorCamera.SetProjectionType(static_cast<ProjectionType>(i));
-
-                                } if (isSelected) ImGui::SetItemDefaultFocus();
-                            } ImGui::EndCombo();
-                        }
-
-
-						// Projection settings
-                        switch (m_EditorCamera.GetProjectionType())
-                        {
-                        case ProjectionType::Perspective:
-                        {
-                            const char *CMSTypeString[] = { "Pivot", "Free Move" };
-                            const char *currentCMSTypeString = CMSTypeString[static_cast<int>(m_EditorCamera.GetStyle())];
-                            if (ImGui::BeginCombo("Camera Style", currentCMSTypeString))
-                            {
-                                for (int i = 0; i < 2; i++)
-                                {
-                                    const bool isSelected = currentCMSTypeString == CMSTypeString[i];
-                                    if (ImGui::Selectable(CMSTypeString[i], isSelected))
-                                    {
-                                        currentCMSTypeString = CMSTypeString[i];
-                                        m_EditorCamera.SetStyle(static_cast<CameraStyle>(i));
-
-                                    } if (isSelected) ImGui::SetItemDefaultFocus();
-                                }
-								ImGui::EndCombo();
-                            }
-
-                            float fov = m_EditorCamera.GetFOV();
-							if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
-							{
-                                m_EditorCamera.SetFov(fov);
-							}
-
-                            UI::DrawCheckbox("Grid 3D", &m_Draw3DGrid);
-							if (m_Draw3DGrid)
-							{
-                                UI::DrawIntControl("Grid Size", &m_3DGridSize, 1.0f);
-							}
-                            break;
-                        }
-                        case ProjectionType::Orthographic:
-                            UI::DrawCheckbox("Grid 2D", &m_Draw2DGrid);
-                            break;
-                        }
-
-                        ImGui::ColorEdit4("Background", glm::value_ptr(m_ClearColor));
-                        ImGui::TreePop();
-                    }
 					ImGui::EndTabItem();
 				}
 
