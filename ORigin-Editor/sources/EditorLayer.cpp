@@ -13,13 +13,21 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
+
+#include "Serializer/EditorSerializer.h"
+
 #include <filesystem>
 
 namespace origin
 {
 	static EditorLayer *s_Instance = nullptr;
 	EditorLayer::EditorLayer() : Layer("EditorLayer") { s_Instance = this; }
-	EditorLayer::~EditorLayer() { ScriptEngine::Shutdown(); }
+	EditorLayer::~EditorLayer() 
+	{
+		std::filesystem::path filepath = std::filesystem::current_path() / "Editor.cfg";
+		EditorSerializer::Serialize(this, filepath);
+		ScriptEngine::Shutdown(); 
+	}
 
 	void EditorLayer::OnAttach()
 	{
@@ -55,13 +63,12 @@ namespace origin
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
-		m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
-		m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 1000.0f);
-		m_EditorCamera.SetPosition({ 35.0f, 35.0f, 35.0f });
-		m_EditorCamera.SetDistance(58.0f);
-		m_EditorCamera.SetYaw(-0.7f);
-		m_EditorCamera.SetPitch(0.63f);
-		m_EditorCamera.SetStyle(CameraStyle::FreeMove);
+		std::filesystem::path filepath = std::filesystem::current_path() / "Editor.cfg";
+		if (!EditorSerializer::Deserialize(this, filepath))
+		{
+			m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 1000.0f);
+			m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
+		}
 
 		m_ActiveScene = std::make_shared<Scene>();
 		const auto &commandLineArgs = Application::Instance().GetSpecification().CommandLineArgs;
@@ -1045,7 +1052,6 @@ namespace origin
                         ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
                         ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
                         ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
-                        ImGui::Text("Hovered Pixel (%d)", m_PixelData);
                         ImGui::TreePop();
                     }
                     if (ImGui::TreeNodeEx("Camera Settings", treeFlags))

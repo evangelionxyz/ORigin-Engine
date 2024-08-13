@@ -31,7 +31,7 @@ namespace origin
 		}
 		out << YAML::EndMap;
 
-		std::ofstream outFile(filepath.string());
+		std::ofstream outFile(filepath);
 		outFile << out.c_str();
 		return true;
 	}

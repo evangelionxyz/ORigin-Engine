@@ -42,6 +42,7 @@ namespace origin {
 
         std::pair<float, float> PanSpeed() const;
         void UpdateAudioListener(Timestep ts);
+        const float GetDistance() const { return m_Distance; }
 		float GetZoomSpeed() const;
         const float GetYaw() const override { return m_Yaw; }
         const float GetPitch() const override { return m_Pitch; }

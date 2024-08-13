@@ -585,8 +585,14 @@ namespace origin
             glm::vec3 cameraPosition = camera.GetPosition();
             glm::vec3 objectPosition = tc.WorldTranslation;
             float distance = glm::distance(cameraPosition, objectPosition);
+            if (!camera.IsPerspective())
+            {
+                distance = camera.GetOrthoScale();
+            }
+
             float baseThickness = 0.01f; // Adjust this value to change the base thickness
             float thicknessFactor = baseThickness * distance;
+
             thicknessFactor = glm::clamp(thicknessFactor, 0.01f, 2.0f);
 
             glm::mat4 scaledTransform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)

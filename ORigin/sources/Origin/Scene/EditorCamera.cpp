@@ -39,6 +39,9 @@ namespace origin {
     void EditorCamera::SetProjectionType(ProjectionType type)
     {
 		m_ProjectionType = type;
+
+		UpdateView();
+		UpdateProjection();
     }
 
     void EditorCamera::UpdateAudioListener(Timestep ts)

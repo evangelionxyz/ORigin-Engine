@@ -6,7 +6,7 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [0.440073252, 9.61839104, 0]
+      Translation: [0.440073252, 9.64101505, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
       Visible: true
@@ -46,7 +46,7 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [0, 6.28950119, -3.57627869e-07]
+      Translation: [0, 6.31212568, -3.57627869e-07]
       Rotation: [0, 0, 0.707106709, 0.707106829]
       Scale: [0.99999851, 0.999998212, 1]
       Visible: true
@@ -101,9 +101,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [0, 0, 17.5452118]
-      Rotation: [0, 0, 0.000244474242, 0.99999994]
-      Scale: [8.55700016, 1, 5]
+      Translation: [4.25623322, -3.00439978, 17.5452118]
+      Rotation: [0, -0, -0.238994151, 0.971020997]
+      Scale: [20.2734814, 2.60080194, 5]
       Visible: true
     StaticMeshComponent:
       Name: ""
