@@ -29,9 +29,9 @@ namespace origin
 		bool GuiVSync = true;
 		bool GuiMenuFullscreen = false;
 		bool GuiMenuStyleWindow = false;
-		bool GuiRenderSettingsWindow = false;
+		bool GuiRenderSettingsWindow = true;
 		bool GuiImGuiDemoWindow = false;
-		bool GuiConsoleWindow = false;
+		bool GuiConsoleWindow = true;
 
 		bool IsViewportHovered = false;
 		bool IsViewportFocused = false;

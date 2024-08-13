@@ -6,9 +6,9 @@ Entities:
     TagComponent:
       Tag: Cube
     TransformComponent:
-      Translation: [-1.39418989e-06, 0.874694824, -0.863794327]
-      Rotation: [1.0658141e-14, -0.00024420023, -5.04506836e-08, 0.99999994]
-      Scale: [1.08960295, 0.394562602, 0.999997735]
+      Translation: [9.69078392e-05, 0.874694824, -1.06506729]
+      Rotation: [3.55271368e-15, -0.00024420023, -5.04506836e-08, 0.99999994]
+      Scale: [1.73821855, 0.523031592, 0.999991119]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -107,7 +107,7 @@ Entities:
       MoveZ: true
       IsStatic: false
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
@@ -131,7 +131,7 @@ Entities:
           Name: FPSCounter
           Anchor: -858993460
           FontHandle: 7705012376485170699
-          TextString: 121.03 FPS
+          TextString: 65.80 FPS
           LineSpacing: 0
           Kerning: 0
           Color: [1, 0, 0, 1]
@@ -142,7 +142,7 @@ Entities:
           Name: BulletCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 0 Total bullets
+          TextString: 438 Total bullets
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -153,7 +153,7 @@ Entities:
           Name: CubeCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 112 Total Cubes
+          TextString: 568 Total Cubes
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -183,7 +183,7 @@ Entities:
       MoveZ: true
       IsStatic: false
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
@@ -268,11 +268,11 @@ Entities:
       MoveZ: true
       IsStatic: false
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-8, 3.5, 0]
+      Translation: [-8, 3.5, 2.98023224e-08]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
       Visible: true
@@ -299,7 +299,7 @@ Entities:
       MoveZ: true
       IsStatic: false
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
@@ -330,7 +330,7 @@ Entities:
       MoveZ: true
       IsStatic: false
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 1.14999998
       Friction: 0.649999976
     TransformComponent:
@@ -389,7 +389,7 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-38.3045502, 2.82499981, 11.0463428]
+      Translation: [-29.1482296, 2.82499981, 11.0463428]
       Rotation: [0, 0, 0, 1]
       Scale: [5.77384377, 1.75, 4.52014828]
       Visible: true
@@ -438,11 +438,11 @@ Entities:
       MoveZ: true
       IsStatic: true
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 0
       Friction: 0
     TransformComponent:
-      Translation: [-22.8868389, 2.88205767, 35.6493721]
+      Translation: [-23.299612, 2.88205767, 25.2554684]
       Rotation: [0, -0.415135384, 0, 0.909759641]
       Scale: [12.70047, 3.05007243, 1.00000012]
       Visible: true
@@ -469,11 +469,11 @@ Entities:
       MoveZ: true
       IsStatic: true
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 0
       Friction: 0
     TransformComponent:
-      Translation: [4.94512081, 5, -32.4898796]
+      Translation: [7.13290739, 3.27531719, -27.7155819]
       Rotation: [0, -0.540099561, 0, 0.841601133]
       Scale: [12.7004585, 4, 0.999999642]
       Visible: true
@@ -589,11 +589,11 @@ Entities:
       MoveZ: true
       IsStatic: true
     BoxColliderComponent:
-      Size: [0.5, 0.5, 0.5]
+      Size: [1, 1, 1]
       Restitution: 0
       Friction: 1
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [-9.53674316e-07, 0, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [70, 0.999999881, 70]
       Visible: true

@@ -18,9 +18,7 @@
 namespace origin
 {
 	static EditorLayer *s_Instance = nullptr;
-
 	EditorLayer::EditorLayer() : Layer("EditorLayer") { s_Instance = this; }
-
 	EditorLayer::~EditorLayer() { ScriptEngine::Shutdown(); }
 
 	void EditorLayer::OnAttach()
@@ -153,7 +151,6 @@ namespace origin
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         Render(ts);
         m_ActiveScene->GetUIRenderer()->Render();
-
         m_Framebuffer->Unbind();
 		m_ActiveScene->PostRender(m_EditorCamera, ts);
 
@@ -163,6 +160,75 @@ namespace origin
 	EditorLayer &EditorLayer::Get()
 	{
 		return *s_Instance;
+	}
+
+	void EditorLayer::Render(Timestep ts)
+	{
+		OGN_PROFILER_RENDERING();
+
+		ProfilerTimer timer("EditorLayer::Render", [&](ProfilerResult result)
+		{
+			m_ProfilerResults.push_back(result);
+		});
+
+		switch (m_SceneState)
+		{
+		case SceneState::Play:
+		{
+			if (m_ActiveScene->IsFocusing())
+			{
+				Input::Get().SetMouseToCenter();
+			}
+
+			m_Gizmos->SetType(GizmoType::NONE);
+			m_ActiveScene->OnUpdateRuntime(ts);
+			if (m_VisualizeCollider)
+			{
+				if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
+				{
+					CameraComponent cc = cam.GetComponent<CameraComponent>();
+					m_Gizmos->DrawCollider(cc.Camera, m_ActiveScene.get());
+				}
+			}
+			break;
+		}
+
+		case SceneState::Edit:
+		{
+			// update camera
+			m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
+			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+
+			// draw gizmo
+			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
+			if (m_VisualizeCollider) m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
+			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
+			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+
+			// update scene
+			m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
+			break;
+		}
+
+		case SceneState::Simulate:
+		{
+			// update camera
+			m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
+			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+
+			// draw gizmo
+			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
+			if (m_VisualizeCollider)m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
+			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
+			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+
+			// update scene
+			m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
+			break;
+		}
+		}
 	}
 
 	void EditorLayer::SystemUpdate(Timestep ts)
@@ -566,63 +632,6 @@ namespace origin
 			ImGui::PopStyleVar();
 		}
 		ImGui::PopStyleVar();
-	}
-
-	void EditorLayer::Render(Timestep ts)
-	{
-		OGN_PROFILER_RENDERING();
-
-		ProfilerTimer timer("EditorLayer::Render", [&](ProfilerResult result)
-		{
-			m_ProfilerResults.push_back(result);
-		});
-
-		switch (m_SceneState)
-		{
-		case SceneState::Play:
-		{
-			if (m_ActiveScene->IsFocusing())
-			{
-				Input::Get().SetMouseToCenter();
-			}
-			m_Gizmos->SetType(GizmoType::NONE);
-			m_ActiveScene->OnUpdateRuntime(ts);
-
-			if (m_VisualizeCollider)
-			{
-				if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
-				{
-					CameraComponent cc = cam.GetComponent<CameraComponent>();
-					m_Gizmos->OnRender(cc.Camera, m_ActiveScene.get(), m_VisualizeCollider);
-				}
-			}
-			
-			break;
-		}
-		case SceneState::Edit:
-			m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
-			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
-			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
-
-			m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
-			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
-			break;
-
-		case SceneState::Simulate:
-			m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
-			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
-			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-			m_Gizmos->OnRender(m_EditorCamera, m_ActiveScene.get(), m_VisualizeCollider);
-			m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-
-			m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
-			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
-			break;
-		}
 	}
 
 	void EditorLayer::SceneViewport()
@@ -1261,16 +1270,19 @@ namespace origin
 			}
 		}
 
-		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && IsViewportFocused && !ImGuizmo::IsOver())
+		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && !ImGuizmo::IsOver())
 		{
 			const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
 			const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };
 
-			glm::vec3 rayDirection = Math::GetRayPerspective(mouse, viewportSize, 
-				m_EditorCamera.GetProjectionMatrix(), 
-				m_EditorCamera.GetViewMatrix());
+			glm::vec3 rayDirection = glm::vec3(0.0f);
+			glm::vec3 rayOrigin = glm::vec3(0.0f);
 
-			glm::vec3 rayOrigin = m_EditorCamera.GetPosition();
+			rayDirection = Math::GetRayFromScreenCoords(mouse, viewportSize,
+														m_EditorCamera.GetProjectionMatrix(),
+														m_EditorCamera.GetViewMatrix(),
+														m_EditorCamera.IsPerspective(),
+														rayOrigin);
 
 			Entity clickedEntity = { entt::null, nullptr };
 			auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
@@ -1284,7 +1296,6 @@ namespace origin
 					break;
 				}
 			}
-
 			m_SceneHierarchy.SetSelectedEntity(clickedEntity);
 		}
 

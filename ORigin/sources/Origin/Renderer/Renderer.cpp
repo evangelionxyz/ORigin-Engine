@@ -6,7 +6,6 @@
 #include "ShaderLibrary.h"
 #include "MeshRenderer.h"
 #include "Renderer2D.h"
-#include "Renderer3D.h"
 #include "MaterialLibrary.h"
 #include "Origin/Asset/AssetImporter.h"
 
@@ -57,7 +56,6 @@ namespace origin {
 
 				MeshRenderer::Init();
 				Renderer2D::Init();
-				Renderer3D::Init();
 			}
 			break;
 #ifdef OGN_PLATFORM_WINDOWS
@@ -84,7 +82,6 @@ namespace origin {
 
 		MeshRenderer::Shutdown();
 		Renderer2D::Shutdown();
-		Renderer3D::Shutdown();
 
 		OGN_CORE_TRACE("[Renderer] Shutdown");
 	}
@@ -126,8 +123,6 @@ namespace origin {
 		s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true);
 		s_ShaderLibrary.Load("BatchMesh", "Resources/Shaders/SPIR-V/BatchMesh.glsl", true);
 		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true);
-		s_ShaderLibrary.Load("Cube", "Resources/Shaders/SPIR-V/Cube.glsl", true);
-
 		s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl");
 		s_ShaderLibrary.Load("AnimatedMesh", "Resources/Shaders/AnimatedMesh.glsl");
 		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl");

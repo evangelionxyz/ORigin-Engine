@@ -193,38 +193,24 @@ namespace origin
         return glm::normalize(glm::vec3(worldCoords));
     }
 
-    glm::vec3 Math::GetRayOrthographic(const glm::vec2 & coord, const glm::vec2 & screen, const glm::mat4 & projection, const glm::mat4 & view, glm::vec3 *rayOrigin, const glm::vec3 & camForward)
-    {
-        glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
-        glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f); // Homogeneouse Clip Coord
-        glm::vec3 rayDirection = glm::vec3(0.0f);
-        *rayOrigin = glm::vec3(0.0f);
-
-        // calculate ray origin and direction for orthographic projection
-        glm::mat4 invViewProj = glm::inverse(projection * view);
-
-        // ray origin (on near plane)
-        *rayOrigin = invViewProj * hmc; // Homogeneouse Clip Coord
-        *rayOrigin /= 1.0f;
-        rayDirection = -glm::normalize(camForward);
-
-        return rayDirection;
-    }
-
-    glm::vec3 Math::GetRayPerspective(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view)
-    {
-        glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
-        glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f); // Homogeneouse Clip Coord
-        glm::vec4 eye = GetEyeCoord(hmc, projection);
-
-        return GetWorldCoord(eye, view);;
-    }
-
-	glm::vec3 Math::GetMouseRayWorldSpace(const glm::vec2 &rayNDC, const glm::mat4 &viewProjection)
+	glm::vec3 Math::GetRayFromScreenCoords(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, bool isPerspective, glm::vec3 &outRayOrigin)
 	{
-		glm::mat4 invViewProjection = glm::inverse(viewProjection);
-		glm::vec4 rayWorld = invViewProjection * glm::vec4(rayNDC.x, rayNDC.y, 1.0f , 1.0f);
-		return glm::normalize(glm::vec3(rayWorld));
+		glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
+		glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f); // Homogeneous Clip Coord
+
+		if (isPerspective)
+		{
+			glm::vec4 eye = GetEyeCoord(hmc, projection);
+			outRayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1)); // Camera position
+			return GetWorldCoord(eye, view);
+		}
+		else
+		{
+			glm::mat4 invViewProj = glm::inverse(projection * view);
+			glm::vec4 worldCoords = invViewProj * hmc;
+			outRayOrigin = glm::vec3(worldCoords) / worldCoords.w;
+			return -glm::normalize(glm::vec3(view[2])); // Forward direction in world space
+		}
 	}
 
 	bool Math::RaySphereIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius)

@@ -6,7 +6,7 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [0.5, 23, 0]
+      Translation: [0.440073252, 9.61839104, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
       Visible: true
@@ -18,7 +18,7 @@ Entities:
     TagComponent:
       Tag: Sprite
     TransformComponent:
-      Translation: [10.7058659, 23.2021599, 6.63314438]
+      Translation: [1.17123055, 12.9985676, 6.63314486]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
       Visible: true

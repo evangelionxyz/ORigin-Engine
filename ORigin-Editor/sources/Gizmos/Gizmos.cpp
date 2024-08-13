@@ -262,15 +262,15 @@ namespace origin {
 		}
 	}
 
-	void Gizmos::OnRender(const Camera &camera, Scene *scene, bool visualizeCollider)
+	void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
 	{
 		OGN_PROFILER_RENDERING();
 
 		glEnable(GL_DEPTH_TEST);
 		Renderer2D::Begin(camera);
 		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
-		const auto &viewA = scene->GetAllEntitiesWith<TransformComponent>();
-		for (auto e : viewA)
+		const auto view = scene->GetAllEntitiesWith<TransformComponent>();
+		for (auto e : view)
 		{
 			Entity entity = { e, scene };
 			auto &tc = entity.GetComponent<TransformComponent>();
@@ -320,79 +320,65 @@ namespace origin {
                 }
 			}
 
-            // visualizing collider
-            if (visualizeCollider)
-            {
-                // 2D Collider
-                if (entity.HasComponent<BoxCollider2DComponent>())
-                {
-                    BoxCollider2DComponent &cc = entity.GetComponent<BoxCollider2DComponent>();
+			// 2D Collider
+			if (entity.HasComponent<BoxCollider2DComponent>())
+			{
+				BoxCollider2DComponent &cc = entity.GetComponent<BoxCollider2DComponent>();
 
-                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc.Offset, tc.WorldTranslation.z))
-                        * glm::toMat4(tc.WorldRotation)
-                        * glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale) * cc.Size * 2.0f, 1.0f));
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc.Offset, tc.WorldTranslation.z))
+					* glm::toMat4(tc.WorldRotation)
+					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale) * cc.Size * 2.0f, 1.0f));
 
-                    Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-                }
+				Renderer2D::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			}
 
-                if (entity.HasComponent<CircleCollider2DComponent>())
-                {
-                    CircleCollider2DComponent &cc = entity.GetComponent<CircleCollider2DComponent>();
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				CircleCollider2DComponent &cc = entity.GetComponent<CircleCollider2DComponent>();
 
-                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc.Offset, tc.WorldTranslation.z))
-                        * glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale * cc.Radius * 2.0f), 1.0f));
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldTranslation) + cc.Offset, tc.WorldTranslation.z))
+					* glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale * cc.Radius * 2.0f), 1.0f));
 
-                    Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, 0.0f);
-                }
-            }
+				Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, 0.0f);
+			}
 		}
 
         Renderer2D::End();
 
-		if (visualizeCollider)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		MeshRenderer::Begin(camera);
+		const auto &viewB = scene->GetAllEntitiesWith<TransformComponent, RigidbodyComponent>();
+		for (auto [e, tc, rb] : viewB.each())
 		{
-			glEnable(GL_DEPTH_TEST);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			Renderer3D::Begin(camera);
-			const auto &viewB = scene->GetAllEntitiesWith<RigidbodyComponent>();
-			for (auto e : viewB)
+			Entity entity = { e, scene };
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + rb.Offset));
+
+			if (entity.HasComponent<BoxColliderComponent>())
 			{
-				// 3D Collider
-				Entity entity = { e, scene };
-				const TransformComponent &tc = entity.GetComponent<TransformComponent>();
-				const RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
-				if (camera.IsPerspective())
-				{
-					glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(tc.WorldTranslation + rb.Offset));
-					if (entity.HasComponent<BoxColliderComponent>())
-					{
-						BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
-						transform *= glm::toMat4(tc.WorldRotation)
-							* glm::scale(glm::mat4(1.0f), tc.WorldScale * glm::vec3(cc.Scale * 2.0f) * 2.0f);
-						Renderer3D::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-					}
-
-					if (entity.HasComponent<SphereColliderComponent>())
-					{
-						SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
-						transform *= glm::toMat4(tc.WorldRotation) 
-							* glm::scale(glm::mat4(1.0f), tc.WorldScale);
-						Renderer3D::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f);
-					}
-
-					if (entity.HasComponent<CapsuleColliderComponent>())
-					{
-						CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
-						transform *= glm::toMat4(tc.WorldRotation) 
-							* glm::scale(glm::mat4(1.0f), tc.WorldScale);
-						Renderer3D::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), cc.Radius * 2.0f, cc.HalfHeight * 2.0f);
-					}
-				}
+				BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
+				transform *= glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), tc.WorldScale * cc.Scale);
+				MeshRenderer::DrawCube(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 			}
-			Renderer3D::End();
-            glDisable(GL_DEPTH_TEST);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+			if (entity.HasComponent<SphereColliderComponent>())
+			{
+				SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
+				transform *= glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), tc.WorldScale * cc.Radius * 2.0f);
+				MeshRenderer::DrawSphere(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+			}
+
+			if (entity.HasComponent<CapsuleColliderComponent>())
+			{
+				// TODO: Fix Me!
+				CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
+				glm::vec3 scale = glm::vec3(tc.WorldScale * cc.Radius * 2.0f);
+				scale.y = cc.HalfHeight * tc.WorldScale.y;
+				transform *= glm::toMat4(tc.WorldRotation) * glm::scale(glm::mat4(1.0f), scale);
+				MeshRenderer::DrawCapsule(transform, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+			}
 		}
+		MeshRenderer::End();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 	void Gizmos::OnEvent(Event &e)

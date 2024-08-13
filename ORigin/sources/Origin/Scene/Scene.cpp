@@ -506,6 +506,12 @@ namespace origin
             Entity entity = { selectedId, this };
             TransformComponent &tc = entity.GetComponent<TransformComponent>();
 
+            if (!tc.Visible)
+            {
+                glDisable(GL_STENCIL_TEST);
+                return;
+            }
+
             // First pass: Render all objects and mark the selected object in the stencil buffer
 
             glStencilFunc(GL_ALWAYS, 1, 0xFF);

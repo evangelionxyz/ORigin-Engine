@@ -24,7 +24,6 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/RenderCommand.h"
 #include "Origin/Renderer/Renderer2D.h"
-#include "Origin/Renderer/Renderer3D.h"
 #include "Origin/Renderer/ShaderLibrary.h"
 #include "Origin/Renderer/MaterialLibrary.h"
 #include "Origin/Renderer/Shader.h"

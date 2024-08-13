@@ -38,7 +38,7 @@ namespace origin {
 	public:
 		Gizmos() = default;
 
-		void OnRender(const Camera &camera, Scene *scene, bool visualizeCollider);
+		void DrawCollider(const Camera &camera, Scene *scene);
 		void OnEvent(Event &e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 		void SetSnapValue(float value) { m_SnapValue = value; }
