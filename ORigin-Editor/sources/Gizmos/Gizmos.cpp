@@ -135,15 +135,13 @@ namespace origin {
 		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture)
 		{
 			glm::mat4 transform = glm::mat4(1.0f);
-			float scale = glm::clamp(glm::length(camera.GetPosition() - tc.WorldTranslation) * 0.05f, 1.0f, 10.0f);
-
 			switch (camera.GetProjectionType())
 			{
 			case ProjectionType::Perspective:
 				transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
 					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
 					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
+					* glm::scale(glm::mat4(1.0f), tc.WorldScale);
 				break;
 			case ProjectionType::Orthographic:
 				transform = translate(glm::mat4(1.0f), tc.WorldTranslation);
