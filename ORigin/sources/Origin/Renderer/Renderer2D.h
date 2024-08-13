@@ -50,8 +50,8 @@ namespace origin
 			float LineSpacing = 0.0f;
 		};
 
-		static void DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams);
-		static void DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& textComponent);
+		static void DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, glm::vec2 *size = nullptr);
+		static void DrawString(const std::string& string, const glm::mat4& transform, TextComponent& textComponent);
 	private:
 		static void StartBatch();
 		static void NextBatch();

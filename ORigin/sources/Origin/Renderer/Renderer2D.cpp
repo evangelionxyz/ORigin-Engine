@@ -653,7 +653,7 @@ namespace origin {
 		}
 	}
 
-	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams)
+	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, glm::vec2 *size)
 	{
 		OGN_PROFILER_RENDERING();
 
@@ -693,20 +693,24 @@ namespace origin {
 		}
 		
 		double x = 0.0;
-		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-
 		double y = 0.0;
-
+		double maxX = 0.0; // to track the maximum width
+		double minY = 0.0; // to track the minimum y position (since y dreases with line breaks)
+		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
 		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
 
 		for (size_t i = 0; i < string.size(); i++)
 		{
 			char character = string[i];
 			if (character == '\r')
+			{
 				continue;
+			}
 
 			if (character == '\n')
 			{
+				maxX = std::max(maxX, x);
+
 				x = 0.0;
 				y -= fsScale * metrics.lineHeight + textParams.LineSpacing;
 				continue;
@@ -735,19 +739,19 @@ namespace origin {
 
 			auto glyph = fontGeometry.getGlyph(character);
 			if (!glyph)
+			{
 				glyph = fontGeometry.getGlyph('?');
-			if (!glyph)
-				return;
+			}
 
-			double al, ab, ar, at;
-			glyph->getQuadAtlasBounds(al, ab, ar, at);
-			glm::vec2 texCoordMin(float(al), (float)ab);
-			glm::vec2 texCoordMax(float(ar), (float) at);
+			double atlasLeft, atlasBottom, atlasRight, atlasTop;
+			glyph->getQuadAtlasBounds(atlasLeft, atlasBottom, atlasRight, atlasTop);
+			glm::vec2 texCoordMin(float(atlasLeft), (float)atlasBottom);
+			glm::vec2 texCoordMax(float(atlasRight), (float) atlasTop);
 
-			double pl, pb, pr, pt;
-			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-			glm::vec2 quadMin((float)pl, (float)pb);
-			glm::vec2 quadMax((float)pr, (float)pt);
+			double planeLeft, planeBottom, planeRight, planeTop;
+			glyph->getQuadPlaneBounds(planeLeft, planeBottom, planeRight, planeTop);
+			glm::vec2 quadMin((float)planeLeft, (float)planeBottom);
+			glm::vec2 quadMax((float)planeRight, (float)planeTop);
 
 			quadMin *= fsScale, quadMax *= fsScale;
 			quadMin += glm::vec2(x, y);
@@ -759,49 +763,58 @@ namespace origin {
 			texCoordMin *= glm::vec2(texelWidth, texelHeight);
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
-			// Render Here
-			s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
-			s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
-			s_Render2DData.TextVertexBufferPtr->TexCoord = texCoordMin;
-			s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
-			s_Render2DData.TextVertexBufferPtr++;
+			{
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
+				s_Render2DData.TextVertexBufferPtr->TexCoord = texCoordMin;
+				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
+				s_Render2DData.TextVertexBufferPtr++;
 
-			s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
-			s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
-			s_Render2DData.TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
-			s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
-			s_Render2DData.TextVertexBufferPtr++;
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
+				s_Render2DData.TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
+				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
+				s_Render2DData.TextVertexBufferPtr++;
 
-			s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax, 0.0f, 1.0f);
-			s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
-			s_Render2DData.TextVertexBufferPtr->TexCoord = texCoordMax;
-			s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
-			s_Render2DData.TextVertexBufferPtr++;
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
+				s_Render2DData.TextVertexBufferPtr->TexCoord = texCoordMax;
+				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
+				s_Render2DData.TextVertexBufferPtr++;
 
-			s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
-			s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
-			s_Render2DData.TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
-			s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
-			s_Render2DData.TextVertexBufferPtr++;
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
+				s_Render2DData.TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
+				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
+				s_Render2DData.TextVertexBufferPtr++;
 
-			s_Render2DData.TextIndexCount += 6;
-			Renderer::GetStatistics().QuadCount++;
+				s_Render2DData.TextIndexCount += 6;
+				Renderer::GetStatistics().QuadCount++;
+			}
 
 			if (i < string.size() - 1)
 			{
 				double advance = glyph->getAdvance();
 				char nextCharacter = string[i + 1];
 				fontGeometry.getAdvance(advance, character, nextCharacter);
-
-				float kerningOffset = 0.0f;
 				x += fsScale * advance + textParams.Kerning;
 			}
+
+			maxX = std::max(maxX, x);
+			minY = std::min(minY, y);
+		}
+
+		if (size)
+		{
+			double totalWidth = maxX;
+			double totalHeight = std::abs(minY) + fsScale * metrics.lineHeight;
+			*size = { static_cast<float>(maxX), static_cast<float>(totalHeight) };
 		}
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component)
+	void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, TextComponent& component)
 	{
 		std::shared_ptr<Font> font = AssetManager::GetAsset<Font>(component.FontHandle);
-		DrawString(string, font, transform, { component.Color, component.Kerning, component.LineSpacing });
+		DrawString(string, font, transform, { component.Color, component.Kerning, component.LineSpacing }, &component.Size);
 	}
 }

@@ -429,7 +429,15 @@ namespace origin
 				}
 				else
 				{
-					transform = tc.GetTransform();
+                    glm::vec3 centerOffset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
+                    glm::vec3 scaledOffset = tc.WorldScale * centerOffset;
+                    glm::vec3 rotatedOffset = glm::toMat3(tc.WorldRotation) * scaledOffset;
+
+                    text.Position = tc.WorldTranslation - rotatedOffset;
+
+                    transform = glm::translate(glm::mat4(1.0f), text.Position)
+                        * glm::toMat4(tc.WorldRotation)
+                        * glm::scale(glm::mat4(1.0f), tc.WorldScale);
 				}
 
 				if (text.FontHandle != 0)

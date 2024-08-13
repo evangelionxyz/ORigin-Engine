@@ -13,9 +13,6 @@ namespace origin
         {
             PushLayer(new EditorLayer());
         }
-
-        ~EditorApp()
-        { }
     };
 
     Application *CreateApplication(ApplicationCommandLineArgs args)

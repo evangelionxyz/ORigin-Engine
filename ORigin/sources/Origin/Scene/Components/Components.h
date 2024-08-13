@@ -219,6 +219,9 @@ namespace origin
 		AssetHandle FontHandle = UUID(0);
 		std::string TextString = "This is text component";
 		glm::vec4 Color = glm::vec4(1.0f);
+		glm::vec2 Size = { 0.0f, 0.0f };
+		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+
 		float Kerning = 0.0f;
 		float LineSpacing = 0.0f;
 		bool ScreenSpace = false;

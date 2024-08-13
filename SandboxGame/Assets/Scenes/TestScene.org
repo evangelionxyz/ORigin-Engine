@@ -1,5 +1,44 @@
 Scene: TestScene.org
 Entities:
+  - Entity: 10338405357727980604
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [3.67583132, 11.1280804, 0.454862595]
+      Rotation: [0, 0, 0.0580402315, 0.998314261]
+      Scale: [1.8100028, 1.81000292, 1.80999982]
+      Visible: true
+    TextComponent:
+      Handle: 7705012376485170699
+      Text: "std::cout << \"Hello World\\n\";\nstd::cout << \"Hello World\\n\";\nstd::cout << \"Hello World\\n\";\nstd::cout << \"Hello World\\n\";"
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      ScreenSpace: false
+  - Entity: 8883320873860328031
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Audio
+    AudioComponent:
+      AudioHandle: 4316581694037097210
+      Name: 17. Mick Gordon - Transistor Fist.mp3
+      Volume: 1
+      Pitch: 1
+      Panning: 0
+      MinDistance: 10
+      MaxDistance: 20
+      Looping: false
+      Spatial: false
+      PlayAtStart: true
+      Overlapping: false
+    TransformComponent:
+      Translation: [0, 7.5, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
   - Entity: 4355993424349242155
     Type: Entity
     Parent: 2723873067466865669
@@ -826,7 +865,7 @@ Entities:
         OrthoScale: 40
         OrthoNear: 10
         OrthoFar: 85.4000015
-        ViewportSize: [724.799988, 453]
+        ViewportSize: [529.600037, 331]
       Primary: true
     AudioListenerComponent:
       Enable: true

@@ -189,13 +189,11 @@ namespace origin
 
 			m_Gizmos->SetType(GizmoType::NONE);
 			m_ActiveScene->OnUpdateRuntime(ts);
-			if (m_VisualizeCollider)
+			if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
 			{
-				if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
-				{
-					CameraComponent cc = cam.GetComponent<CameraComponent>();
-					m_Gizmos->DrawCollider(cc.Camera, m_ActiveScene.get());
-				}
+				CameraComponent cc = cam.GetComponent<CameraComponent>();
+				if(m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
+				if(m_VisualizeCollider) m_Gizmos->DrawCollider(cc.Camera, m_ActiveScene.get());
 			}
 			break;
 		}
@@ -208,13 +206,14 @@ namespace origin
 
 			// draw gizmo
 			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
+			if(m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
 			if (m_VisualizeCollider) m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 
 			// update scene
 			m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
+			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
 		}
 
@@ -226,13 +225,14 @@ namespace origin
 
 			// draw gizmo
 			m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
+			if (m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
 			if (m_VisualizeCollider)m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
 			if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
 			if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 
 			// update scene
 			m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
+			m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 			break;
 		}
 		}
@@ -1009,6 +1009,8 @@ namespace origin
 				if (ImGui::BeginTabItem("Render Settings"))
 				{
 					UI::DrawCheckbox("Visualize Collider", &m_VisualizeCollider);
+					UI::DrawCheckbox("Visualize Bounding Box", &m_VisualizeBoundingBox);
+
 					if (ImGui::TreeNodeEx("Shaders", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
 					{
 						if (ImGui::BeginTable("SHADERS_TABLE", 3))
@@ -1297,6 +1299,13 @@ namespace origin
 			for (auto [entity, tc] : view.each())
 			{
 				OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
+				if (m_ActiveScene->m_Registry.any_of<TextComponent>(entity))
+				{
+					auto text = m_ActiveScene->m_Registry.get<TextComponent>(entity);
+					glm::vec3 scale = tc.WorldScale * glm::vec3(text.Size.x, -text.Size.y, 1.0f);
+					obb = OBB(tc.WorldTranslation, scale, tc.WorldRotation);
+				}
+
 				float tIntersect;
 				if (obb.RayIntersection(rayOrigin, rayDirection, tIntersect))
 				{
@@ -1310,6 +1319,10 @@ namespace origin
 			}
 
 			m_SceneHierarchy.SetSelectedEntity(closestEntity);
+			if (!closestEntity)
+			{
+				m_Gizmos->SetType(GizmoType::NONE);
+			}
 		}
 
 		return false;

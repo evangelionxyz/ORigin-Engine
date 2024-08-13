@@ -126,6 +126,70 @@ namespace origin {
             }
         }
 
+        Renderer2D::End();
+	}
+
+	void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
+	{
+		OGN_PROFILER_RENDERING();
+		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture)
+		{
+			glm::mat4 transform = glm::mat4(1.0f);
+			float scale = glm::clamp(glm::length(camera.GetPosition() - tc.WorldTranslation) * 0.05f, 1.0f, 10.0f);
+
+			switch (camera.GetProjectionType())
+			{
+			case ProjectionType::Perspective:
+				transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
+					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
+					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
+					* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
+				break;
+			case ProjectionType::Orthographic:
+				transform = translate(glm::mat4(1.0f), tc.WorldTranslation);
+				break;
+			}
+
+			Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f));
+		};
+
+		// Draw ICONS
+		{
+			auto &textures = EditorLayer::Get().m_UITextures;
+			glEnable(GL_DEPTH_TEST);
+			Renderer2D::Begin(camera);
+			for (auto [e, tc] : scene->GetAllEntitiesWith<TransformComponent>().each())
+			{
+				Entity entity = { e, scene };
+				if (entity.HasComponent<CameraComponent>())
+				{
+					CameraComponent &cc = entity.GetComponent<CameraComponent>();
+					if (camera.IsPerspective())
+					{
+						drawIcon(tc, textures.at("camera"));
+					}
+					else if (!camera.IsPerspective() && camera.GetOrthoScale() > 15.0f)
+					{
+						drawIcon(tc, textures.at("camera"));
+					}
+				}
+				else if (entity.HasComponent<AudioComponent>())
+				{
+					drawIcon(tc, textures.at("audio"));
+				}
+				else if (entity.HasComponent<LightComponent>())
+				{
+					drawIcon(tc, textures.at("lighting"));
+				}
+			}
+			Renderer2D::End();
+		}
+	}
+
+	void Gizmos::DrawBoundingBox(const Camera &camera, Scene *scene)
+	{
+		glEnable(GL_DEPTH_TEST);
+		Renderer2D::Begin(camera);
 #if 0
 		// AABB
 		for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
@@ -162,11 +226,18 @@ namespace origin {
 			Renderer2D::DrawLine(corners[2], corners[6], color);
 			Renderer2D::DrawLine(corners[3], corners[7], color);
 		}
-
+#endif
 		// OBB
 		for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
 		{
 			OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
+			if (scene->m_Registry.any_of<TextComponent>(e))
+			{
+				auto text = scene->m_Registry.get<TextComponent>(e);
+				glm::vec3 scale = tc.WorldScale * glm::vec3(text.Size.x, -text.Size.y, 1.0f);
+				obb = OBB(tc.WorldTranslation, scale, tc.WorldRotation);
+			}
+
 			glm::vec3 vertices[8];
 
 			// Calculate the vertices of the OBB
@@ -196,70 +267,7 @@ namespace origin {
 			Renderer2D::DrawLine(vertices[2], vertices[6], color);
 			Renderer2D::DrawLine(vertices[3], vertices[7], color);
 		}
-#endif
-        Renderer2D::End();
-	}
-
-	void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
-	{
-		OGN_PROFILER_RENDERING();
-		auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture)
-		{
-			glm::mat4 transform = glm::mat4(1.0f);
-			float scale = glm::clamp(glm::length(camera.GetPosition() - tc.WorldTranslation) * 0.05f, 1.0f, 10.0f);
-
-			switch (camera.GetProjectionType())
-			{
-			case ProjectionType::Perspective:
-				transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
-					* glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-					* glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-					* glm::scale(glm::mat4(1.0f), glm::vec3(scale));
-				break;
-			case ProjectionType::Orthographic:
-				transform = translate(glm::mat4(1.0f), tc.WorldTranslation);
-				break;
-			}
-
-			Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f));
-		};
-
-		// Draw ICONS
-		{
-			auto &textures = EditorLayer::Get().m_UITextures;
-			const glm::vec2 &screen = EditorLayer::Get().m_SceneViewportSize;
-			glEnable(GL_DEPTH_TEST);
-			Renderer2D::Begin(camera);
-			for (auto &e : scene->GetAllEntitiesWith<TransformComponent>())
-			{
-				Entity entity = { e, scene };
-				if (!entity.IsValid())
-					continue;
-
-				TransformComponent &tc = entity.GetComponent<TransformComponent>();
-				if (entity.HasComponent<CameraComponent>())
-				{
-					CameraComponent &cc = entity.GetComponent<CameraComponent>();
-					if (camera.IsPerspective())
-					{
-						drawIcon(tc, textures.at("camera"));
-					}
-					else if (!camera.IsPerspective() && camera.GetOrthoScale() > 15.0f)
-					{
-						drawIcon(tc, textures.at("camera"));
-					}
-				}
-				else if (entity.HasComponent<AudioComponent>())
-				{
-					drawIcon(tc, textures.at("audio"));
-				}
-				else if (entity.HasComponent<LightComponent>())
-				{
-					drawIcon(tc, textures.at("lighting"));
-				}
-			}
-			Renderer2D::End();
-		}
+		Renderer2D::End();
 	}
 
 	void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
@@ -270,10 +278,9 @@ namespace origin {
 		Renderer2D::Begin(camera);
 		Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
 		const auto view = scene->GetAllEntitiesWith<TransformComponent>();
-		for (auto e : view)
+		for (auto [e, tc] : view.each())
 		{
 			Entity entity = { e, scene };
-			auto &tc = entity.GetComponent<TransformComponent>();
 
 			// Selected entity
 			if (entity == selectedEntity && selectedEntity.IsValid())
