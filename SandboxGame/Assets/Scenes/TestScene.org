@@ -1,5 +1,22 @@
 Scene: TestScene.org
 Entities:
+  - Entity: 5668425260168570253
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Test
+    TransformComponent:
+      Translation: [0, 12.6699409, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    TextComponent:
+      Handle: 7705012376485170699
+      Text: This is text component
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 0
+      ScreenSpace: false
   - Entity: 5553397942616775100
     Type: Entity
     Parent: 0

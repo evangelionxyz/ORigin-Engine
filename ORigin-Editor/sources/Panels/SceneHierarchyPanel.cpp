@@ -756,6 +756,8 @@ namespace origin {
 						if (AssetManager::GetAssetType(handle) == AssetType::Font)
 							component.FontHandle = handle;
 					}
+
+					ImGui::EndDragDropTarget();
 				}
 
 				if (component.FontHandle)
