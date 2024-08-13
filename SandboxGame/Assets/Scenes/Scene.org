@@ -1,5 +1,22 @@
 Scene: Scene.org
 Entities:
+  - Entity: 12113411850747970251
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Text
+    TransformComponent:
+      Translation: [25.8657837, 2.08380198, -15.2229767]
+      Rotation: [-1.06262952e-07, 0.772589326, -1.06262952e-07, -0.634906113]
+      Scale: [11.0452118, 11.0451994, 11.0452118]
+      Visible: true
+    TextComponent:
+      Handle: 7705012376485170699
+      Text: This is text component
+      Color: [1, 0.35744679, 0, 1]
+      Kerning: 0
+      LineSpacing: 0
+      ScreenSpace: false
   - Entity: 16552497849877828178
     Type: Entity
     Parent: 8340299619255721845
@@ -8,7 +25,7 @@ Entities:
     TransformComponent:
       Translation: [9.69078392e-05, 0.874694824, -1.06506729]
       Rotation: [3.55271368e-15, -0.00024420023, -5.04506836e-08, 0.99999994]
-      Scale: [1.73821855, 0.523031592, 0.999991119]
+      Scale: [1.73821771, 0.676156759, 0.999990702]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -21,7 +38,7 @@ Entities:
     TagComponent:
       Tag: GFX
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [7.17118382e-08, 0, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
       Visible: true
@@ -63,7 +80,7 @@ Entities:
     TagComponent:
       Tag: Soundbank
     TransformComponent:
-      Translation: [0, 0, 0]
+      Translation: [0, 6.12631035, 0]
       Rotation: [0, 0, 0, 1]
       Scale: [1, 1, 1]
       Visible: true
@@ -131,7 +148,7 @@ Entities:
           Name: FPSCounter
           Anchor: -858993460
           FontHandle: 7705012376485170699
-          TextString: 65.80 FPS
+          TextString: 47.63 FPS
           LineSpacing: 0
           Kerning: 0
           Color: [1, 0, 0, 1]
@@ -142,7 +159,7 @@ Entities:
           Name: BulletCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 438 Total bullets
+          TextString: 13 Total bullets
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -153,7 +170,7 @@ Entities:
           Name: CubeCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 568 Total Cubes
+          TextString: 78 Total Cubes
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -272,9 +289,9 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-8, 3.5, 2.98023224e-08]
+      Translation: [-8, 3.5, 4.47034836e-08]
       Rotation: [0, 0, 0, 1]
-      Scale: [1, 1, 1]
+      Scale: [4.92000008, 4.92000008, 4.92000008]
       Visible: true
     StaticMeshComponent:
       Name: ""
@@ -356,14 +373,14 @@ Entities:
     CameraComponent:
       Camera:
         ProjectionType: 0
-        AspectRatioType: 1
+        AspectRatioType: 3
         FOV: 0.69813168
         PerspectiveNear: 2.5
         PerspectiveFar: 200
         OrthoScale: 10
         OrthoNear: -1
         OrthoFar: 100
-        ViewportSize: [755.199951, 471.999969]
+        ViewportSize: [1302, 558]
       Primary: true
     AudioListenerComponent:
       Enable: true
@@ -389,7 +406,7 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-29.1482296, 2.82499981, 11.0463428]
+      Translation: [-9.31245232, 2.04106331, 11.0463438]
       Rotation: [0, 0, 0, 1]
       Scale: [5.77384377, 1.75, 4.52014828]
       Visible: true
@@ -442,7 +459,7 @@ Entities:
       Restitution: 0
       Friction: 0
     TransformComponent:
-      Translation: [-23.299612, 2.88205767, 25.2554684]
+      Translation: [-23.299612, 2.38205767, 25.2554684]
       Rotation: [0, -0.415135384, 0, 0.909759641]
       Scale: [12.70047, 3.05007243, 1.00000012]
       Visible: true
@@ -473,7 +490,7 @@ Entities:
       Restitution: 0
       Friction: 0
     TransformComponent:
-      Translation: [7.13290739, 3.27531719, -27.7155819]
+      Translation: [7.13507414, 1.85479331, -27.7203426]
       Rotation: [0, -0.540099561, 0, 0.841601133]
       Scale: [12.7004585, 4, 0.999999642]
       Visible: true
@@ -560,15 +577,15 @@ Entities:
     TransformComponent:
       Translation: [-23.7951241, 26.8204727, -23.4735966]
       Rotation: [-7.52316313e-36, 8.88178335e-15, 8.47032947e-22, 1]
-      Scale: [0.999993563, 0.999991298, 0.999986887]
+      Scale: [1.00999343, 1.00999117, 1.00998676]
       Visible: true
     LightComponent:
       Type: DIRECTIONAL
-      Color: [0.76170212, 0.76170212, 0.76170212, 1]
+      Color: [0.625531912, 0.625531912, 0.625531912, 1]
       Near: -20
       Far: 100
       OrthoSize: 60
-      Ambient: [0.0419013202, 0.245428056, 0.378723383, 0.200000003]
+      Ambient: [0.842553198, 0.842553198, 0.842553198, 0.200000003]
       Diffuse: 1
       Specular: 1
   - Entity: 17647203071355584766
@@ -593,9 +610,9 @@ Entities:
       Restitution: 0
       Friction: 1
     TransformComponent:
-      Translation: [-9.53674316e-07, 0, 0]
-      Rotation: [0, 0, 0, 1]
-      Scale: [70, 0.999999881, 70]
+      Translation: [-9.53674316e-07, -25, 0]
+      Rotation: [0, 0.258818984, 0, 0.965925813]
+      Scale: [1000, 50, 1000]
       Visible: true
     StaticMeshComponent:
       Name: ""

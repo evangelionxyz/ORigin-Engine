@@ -46,6 +46,7 @@ namespace origin
         out << YAML::Key << "Draw3DGrid" << YAML::Value << editor->m_Draw3DGrid;
         out << YAML::Key << "Draw2DGrid" << YAML::Value << editor->m_Draw2DGrid;
         out << YAML::Key << "VisualizeCollider" << YAML::Value << editor->m_VisualizeCollider;
+        out << YAML::Key << "ClearColor" << YAML::Value << editor->m_ClearColor;
         out << YAML::Key << "DrawLineMode" << YAML::Value << editor->m_DrawLineModeActive;
         out << YAML::EndMap;
 
@@ -110,6 +111,7 @@ namespace origin
             editor->m_Draw3DGrid = settingsNode["Draw3DGrid"].as<bool>();
             editor->m_Draw2DGrid = settingsNode["Draw2DGrid"].as<bool>();
             editor->m_VisualizeCollider = settingsNode["VisualizeCollider"].as<bool>();
+            editor->m_ClearColor = settingsNode["ClearColor"].as<glm::vec4>();
             editor->m_DrawLineModeActive = settingsNode["DrawLineMode"].as<bool>();
         }
 

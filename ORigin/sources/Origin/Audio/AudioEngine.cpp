@@ -53,13 +53,4 @@ namespace origin {
 	{
 		ma_sound_init_from_file(s_AudioData.Engine, filepath, MA_SOUND_FLAG_STREAM, nullptr, nullptr, sound);
 	}
-
-	void AudioEngine::SetListener(const glm::vec3 &p, const glm::vec3 &v, const glm::vec3 &f, const glm::vec3 &up)
-	{
-		ma_engine_listener_set_position(s_AudioData.Engine, 0, p.x, p.y, p.z);
-		ma_engine_listener_set_velocity(s_AudioData.Engine, 0, v.x, v.y, v.z);
-		ma_engine_listener_set_direction(s_AudioData.Engine, 0, f.x, f.y, f.z);
-		ma_engine_listener_set_world_up(s_AudioData.Engine, 0, up.x, up.y, up.z);
-	}
-
 }

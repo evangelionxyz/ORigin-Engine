@@ -1281,6 +1281,9 @@ namespace origin
 			const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
 			const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };
 
+			float closestT = std::numeric_limits<float>::max();
+			Entity closestEntity = { entt::null, nullptr };
+
 			glm::vec3 rayDirection = glm::vec3(0.0f);
 			glm::vec3 rayOrigin = glm::vec3(0.0f);
 
@@ -1290,19 +1293,23 @@ namespace origin
 														m_EditorCamera.IsPerspective(),
 														rayOrigin);
 
-			Entity clickedEntity = { entt::null, nullptr };
 			auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
 			for (auto [entity, tc] : view.each())
 			{
 				OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
-				float t;
-				if (obb.RayIntersection(rayOrigin, rayDirection, t))
+				float tIntersect;
+				if (obb.RayIntersection(rayOrigin, rayDirection, tIntersect))
 				{
-					clickedEntity = { entity, m_ActiveScene.get() };
-					break;
+					// find the closest entity
+					if (tIntersect < closestT)
+					{
+						closestT = tIntersect;
+						closestEntity = { entity, m_ActiveScene.get() };
+					}
 				}
 			}
-			m_SceneHierarchy.SetSelectedEntity(clickedEntity);
+
+			m_SceneHierarchy.SetSelectedEntity(closestEntity);
 		}
 
 		return false;

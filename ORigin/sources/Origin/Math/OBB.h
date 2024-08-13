@@ -43,7 +43,7 @@ namespace origin
 
         bool RayIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, float &tIntersect)
         {
-            glm::vec3 d = Center - rayOrigin;
+            glm::vec3 delta = Center - rayOrigin;
             float tNear = std::numeric_limits<float>::lowest();  // start with lowest possible value
             float tFar = std::numeric_limits<float>::max();  // start with max possible value
 
@@ -51,7 +51,7 @@ namespace origin
 
             for (int i = 0; i < axes.size(); ++i)
             {
-                float e = glm::dot(axes[i], d);
+                float e = glm::dot(axes[i], delta);
                 float f = glm::dot(axes[i], rayDirection);
 
                 // ray is not parallel to the slab
@@ -68,7 +68,7 @@ namespace origin
                     // check if ray misses the box
                     if (tNear > tFar || tFar < 0.0f) return false;
                 }
-                else // cay is parallel to the slab
+                else // ray is parallel to the slab
                 {
                     if (-e - HalfExtents[i] > 0.0f || -e + HalfExtents[i] < 0.0f)
                         return false;  // no intersection

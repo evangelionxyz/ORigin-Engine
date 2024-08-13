@@ -177,10 +177,8 @@ namespace origin
             if (entity.HasComponent<AudioListenerComponent>())
             {
                 auto &al = entity.GetComponent<AudioListenerComponent>();
-                if (al.Enable)
-                {
-                    al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
-                }
+                al.Listener.SetEnable(al.Enable);
+                if (al.Enable) al.Listener.Set(tc.Translation, glm::vec3(0.0f), tc.GetForward(), tc.GetUp());
             }
         }
 	}
