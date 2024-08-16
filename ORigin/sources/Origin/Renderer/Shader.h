@@ -30,12 +30,14 @@ namespace origin
 		virtual void SetInt(const std::string& name, int v0, int v1, int v2) = 0;
 		virtual void SetInt(const std::string& name, int v0, int v1, int v2, int v3) = 0;
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t count) = 0;
-		virtual void SetVector(const std::string& name, const glm::vec2& vector2) = 0;
-		virtual void SetVector(const std::string& name, const glm::vec3& vector3) = 0;
-		virtual void SetVector(const std::string& name, const glm::vec4& vector4) = 0;
-		virtual void SetMatrix(const std::string& name, const glm::mat2& matrices) = 0;
-		virtual void SetMatrix(const std::string& name, const glm::mat3& matrices) = 0;
-		virtual void SetMatrix(const std::string& name, const glm::mat4& matrices) = 0;
+		virtual void SetVector(const std::string& name, const glm::vec2& vector2, int count = 1) = 0;
+		virtual void SetVector(const std::string& name, const glm::vec3& vector3, int count = 1) = 0;
+		virtual void SetVector(const std::string& name, const glm::vec4& vector4, int count = 1) = 0;
+		virtual void SetMatrix(const std::string& name, const glm::mat2& matrices, int count = 1) = 0;
+		virtual void SetMatrix(const std::string& name, const glm::mat3& matrices, int count = 1) = 0;
+		virtual void SetMatrix(const std::string& name, const glm::mat4& matrices, int count = 1) = 0;
+
+		virtual int GetUniformLocation(const std::string &name) = 0;
 
 		virtual bool IsSpirvEnabled() const = 0;
 		virtual bool IsRecompilerSpirv() const = 0;

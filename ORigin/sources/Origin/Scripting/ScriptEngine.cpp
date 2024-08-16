@@ -228,7 +228,7 @@ namespace origin
 		s_ScriptEngineData->EntityClass = ScriptClass("ORiginEngine", "Entity", true);
 		ScriptGlue::RegisterComponents();
 
-		OGN_CORE_TRACE("[Script Engine]: Initialized");
+		OGN_CORE_TRACE("[Script Engine] Initialized");
 	}
 
 	void ScriptEngine::Shutdown()

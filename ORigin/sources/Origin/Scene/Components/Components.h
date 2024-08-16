@@ -1,7 +1,11 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 #pragma once
 
+#include "Origin/Animation/Animator.h"
 #include "Origin/Animation/AnimationState.h"
+#include "Origin/Animation/SpriteAnimation.h"
+#include "Origin/Animation/ModelAnimation.h"
+
 #include "Origin/Audio/AudioListener.h"
 #include "Origin/Math/Math.h"
 #include "Origin/Core/UUID.h"
@@ -182,7 +186,7 @@ namespace origin
 		};
 
 		std::string Name;
-		std::shared_ptr<MeshData> Data;
+		std::shared_ptr<StaticMeshData> Data;
 		AssetHandle HMaterial = UUID(0);
 		AssetHandle HMesh = UUID(0);
 		Type mType = Type::Default;
@@ -191,16 +195,18 @@ namespace origin
 		StaticMeshComponent(const StaticMeshComponent&) = default;
 	};
 
-	class AnimatedMeshComponent
+	class MeshComponent
 	{
 	public:
         std::string Name;
-        std::shared_ptr<AnimatedMeshData> Data;
+        std::shared_ptr<MeshData> Data;
         AssetHandle HMaterial = UUID(0);
         AssetHandle HMesh = UUID(0);
+		float PlaybackSpeed = 1.0f;
+		Animator Animator;
 
-		AnimatedMeshComponent() = default;
-		AnimatedMeshComponent(const AnimatedMeshComponent &) = default;
+		MeshComponent() = default;
+		MeshComponent(const MeshComponent &) = default;
 	};
 
 	class MeshRendererComponent
@@ -666,7 +672,7 @@ namespace origin
 		LightComponent,
 		SpriteRenderer2DComponent, 
 		StaticMeshComponent, 
-		AnimatedMeshComponent, 
+		MeshComponent, 
 		MeshRendererComponent,
 		TextComponent,
 		CircleRendererComponent, 

@@ -16,8 +16,8 @@ namespace origin
 		ma_result result = ma_sound_start(m_Sounds[0]);
 		if (result != MA_SUCCESS)
 		{
-            OGN_CORE_ERROR("[AudioSource] Failed to start sound: {0}", result);
-            PUSH_CONSOLE_ERROR("[AudioSource] Failed to start sound: {0}", result);
+            OGN_CORE_ERROR("[Audio Source] Failed to start sound: {0}", result);
+            PUSH_CONSOLE_ERROR("[Audio Source] Failed to start sound: {0}", result);
 			return;
 		}
 	}
@@ -49,16 +49,16 @@ namespace origin
     {
 		if (!m_OverlappingAllowed)
 		{
-            OGN_CORE_ERROR("[AudioSource] Sound {0} overlapping is not allowed", m_Name);
-			PUSH_CONSOLE_ERROR("[AudioSource] Sound {0} overlapping is not allowed", m_Name);
+            OGN_CORE_ERROR("[Audio Source] Sound overlapping is not allowed", m_Name);
+			PUSH_CONSOLE_ERROR("[Audio Source] Sound overlapping is not allowed", m_Name);
 			return;
 		}
 
         ma_result result = ma_sound_start(m_Sounds[m_OverlapIndex]);
         if (result != MA_SUCCESS)
         {
-            OGN_CORE_ERROR("[AudioSource] Failed to start overlapping: {0}", result);
-            PUSH_CONSOLE_ERROR("[AudioSource] Failed to start overlapping: {0}", result);
+            OGN_CORE_ERROR("[Audio Source] Failed to start overlapping: {0}", result);
+            PUSH_CONSOLE_ERROR("[Audio Source] Failed to start overlapping: {0}", result);
         }
 
 		m_OverlapIndex++;
@@ -255,8 +255,8 @@ namespace origin
             SetMinMaxDistance(defMin, defMax);
         }
 		m_OverlappingAllowed = true;
-		OGN_CORE_TRACE("[AudioSource] Sound {0} overlapping activated", m_Name);
-		PUSH_CONSOLE_INFO("[AudioSource] Sound {0} overlapping activated", m_Name);
+		OGN_CORE_TRACE("[Audio Source] Sound {0} overlapping activated", m_Name);
+		PUSH_CONSOLE_INFO("[Audio Source] Sound {0} overlapping activated", m_Name);
     }
 
     void AudioSource::DeactivateOverlapping()
@@ -264,8 +264,8 @@ namespace origin
 		m_Sounds.erase(m_Sounds.begin() + 1, m_Sounds.end());
 		m_OverlapIndex = 0;
 		m_OverlappingAllowed = false;
-        OGN_CORE_TRACE("[AudioSource] Sound {0} overlapping deactivated", m_Name);
-        PUSH_CONSOLE_INFO("[AudioSource] Sound {0} overlapping deactivated", m_Name);
+        OGN_CORE_TRACE("[Audio Source] Sound {0} overlapping deactivated", m_Name);
+        PUSH_CONSOLE_INFO("[Audio Source] Sound {0} overlapping deactivated", m_Name);
     }
 
     std::shared_ptr<AudioSource> AudioSource::Create()

@@ -3,6 +3,7 @@
 #include "Material.h"
 #include "Texture.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
 
 namespace origin
 {

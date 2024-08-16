@@ -3,6 +3,8 @@
 #pragma once
 #include "Origin/Scene/Camera.h"
 
+#include <assimp/postprocess.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -32,6 +34,10 @@ namespace origin
         static glm::vec3 GetRayFromScreenCoords(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, bool isPerspective, glm::vec3 &rayOrigin);
 
         static bool RaySphereIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &sphereCenter, float sphereRadius);
+
+		static glm::mat4 AssimpToGlmMatrix(aiMatrix4x4 mat);
+        static glm::vec3 AssimpToGlmVec3(aiVector3D vec);
+        static glm::quat AssimpToGlmQuat(aiQuaternion quat);
 	};
 }
 

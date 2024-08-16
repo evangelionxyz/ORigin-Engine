@@ -74,14 +74,16 @@ namespace origin
 		void SetIntArray(const std::string& name, int* values, uint32_t count) override;
 
 		// VECTOR UNIFORM
-		void SetVector(const std::string& name, const glm::vec2& vectors)override;
-		void SetVector(const std::string& name, const glm::vec3& vectors) override;
-		void SetVector(const std::string& name, const glm::vec4& vectors) override;
+		void SetVector(const std::string& name, const glm::vec2& vectors, int count)override;
+		void SetVector(const std::string& name, const glm::vec3& vectors, int count) override;
+		void SetVector(const std::string& name, const glm::vec4& vectors, int count) override;
 
 		// MATRIX UNIFORM
-		void SetMatrix(const std::string& name, const glm::mat2& matrices) override;
-		void SetMatrix(const std::string& name, const glm::mat3& matrices) override;
-		void SetMatrix(const std::string& name, const glm::mat4& matrices) override;
+		void SetMatrix(const std::string& name, const glm::mat2& matrices, int count) override;
+		void SetMatrix(const std::string& name, const glm::mat3& matrices, int count) override;
+		void SetMatrix(const std::string& name, const glm::mat4& matrices, int count) override;
+
+		int GetUniformLocation(const std::string &name) override;
 
 	private:
 		// BOOLEAN UNIFORM
@@ -102,18 +104,18 @@ namespace origin
 		void SetUniformIntArray(const std::string& name, int* values, uint32_t count);
 
 		// VECTOR UNIFORM
-		void SetUniformVector(const std::string& name, const glm::vec2& vectors);
-		void SetUniformVector(const std::string& name, const glm::vec3& vectors);
-		void SetUniformVector(const std::string& name, const glm::vec4& vectors);
+		void SetUniformVector(const std::string& name, const glm::vec2& vectors, int count);
+		void SetUniformVector(const std::string& name, const glm::vec3& vectors, int count);
+		void SetUniformVector(const std::string& name, const glm::vec4& vectors, int count);
 
 		// MATRIX UNIFORM
-		void SetUniformMatrix(const std::string& name, const glm::mat2& matrices);
-		void SetUniformMatrix(const std::string& name, const glm::mat3& matrices);
-		void SetUniformMatrix(const std::string& name, const glm::mat4& matrices);
+		void SetUniformMatrix(const std::string& name, const glm::mat2& matrices, int count);
+		void SetUniformMatrix(const std::string& name, const glm::mat3& matrices, int count);
+		void SetUniformMatrix(const std::string& name, const glm::mat4& matrices, int count);
 
 		std::string m_Filepath;
 		uint32_t m_RendererID;
-		bool m_EnableSpirv;
+		bool m_EnableSpirv = false;
 		bool m_RecompileSPIRV;
 
 		std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
@@ -134,6 +136,5 @@ namespace origin
 		ShaderProgramSources ParseShader(const std::string& filePath);
 		uint32_t CompileShader(uint32_t type, const std::string& source);
 		uint32_t CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc);
-		int GetUniformLocation(const std::string& name);
 	};
 }

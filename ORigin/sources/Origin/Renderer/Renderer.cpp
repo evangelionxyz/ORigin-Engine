@@ -123,12 +123,13 @@ namespace origin {
 		s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true);
 		s_ShaderLibrary.Load("BatchMesh", "Resources/Shaders/SPIR-V/BatchMesh.glsl", true);
 		s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true);
-		s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl");
-		s_ShaderLibrary.Load("AnimatedMesh", "Resources/Shaders/AnimatedMesh.glsl");
-		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl");
-		s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl");
-		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl");
-		s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl");
+
+		s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl", false);
+		s_ShaderLibrary.Load("AnimatedMesh", "Resources/Shaders/AnimatedMesh.glsl", false);
+		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl", false);
+		s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl", false);
+		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);
+		s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
 	}
 
 	void Renderer::LoadMaterials()

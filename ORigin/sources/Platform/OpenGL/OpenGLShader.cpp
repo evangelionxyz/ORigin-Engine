@@ -728,34 +728,34 @@ namespace origin
         SetUniformIntArray(name, values, count);
     }
 
-    void OpenGLShader::SetVector(const std::string &name, const glm::vec2 &vectors)
+    void OpenGLShader::SetVector(const std::string &name, const glm::vec2 &vectors, int count)
     {
-        SetUniformVector(name, vectors);
+        SetUniformVector(name, vectors, count);
     }
 
-    void OpenGLShader::SetVector(const std::string &name, const glm::vec3 &vectors)
+    void OpenGLShader::SetVector(const std::string &name, const glm::vec3 &vectors, int count)
     {
-        SetUniformVector(name, vectors);
+        SetUniformVector(name, vectors, count);
     }
 
-    void OpenGLShader::SetVector(const std::string &name, const glm::vec4 &vectors)
+    void OpenGLShader::SetVector(const std::string &name, const glm::vec4 &vectors, int count)
     {
-        SetUniformVector(name, vectors);
+        SetUniformVector(name, vectors, count);
     }
 
-    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat2 &matrices)
+    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat2 &matrices, int count)
     {
-        SetUniformMatrix(name, matrices);
+        SetUniformMatrix(name, matrices, count);
     }
 
-    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat3 &matrices)
+    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat3 &matrices, int count)
     {
-        SetUniformMatrix(name, matrices);
+        SetUniformMatrix(name, matrices, count);
     }
 
-    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat4 &matrices)
+    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat4 &matrices, int count)
     {
-        SetUniformMatrix(name, matrices);
+        SetUniformMatrix(name, matrices, count);
     }
 
     // private
@@ -809,35 +809,35 @@ namespace origin
     }
 
     // VECTOR UNIFORM
-    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec2 &vector2)
+    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec2 &vector2, int count)
     {
-        glUniform2fv(GetUniformLocation(name), 1, glm::value_ptr(vector2));
+        glUniform2fv(GetUniformLocation(name), count, glm::value_ptr(vector2));
     }
 
-    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec3 &vector3)
+    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec3 &vector3, int count)
     {
-        glUniform3fv(GetUniformLocation(name), 1, glm::value_ptr(vector3));
+        glUniform3fv(GetUniformLocation(name), count, glm::value_ptr(vector3));
     }
 
-    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec4 &vector4)
+    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec4 &vector4, int count)
     {
-        glUniform4fv(GetUniformLocation(name), 1, glm::value_ptr(vector4));
-    }
-
-    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat2 &matrices)
-    {
-        glUniformMatrix3fv(GetUniformLocation(name), 1, false, glm::value_ptr(matrices));
+        glUniform4fv(GetUniformLocation(name), count, glm::value_ptr(vector4));
     }
 
     // MATRIX UNIFORM
-    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat3 &matrices)
+    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat2 &matrices, int count)
     {
-        glUniformMatrix3fv(GetUniformLocation(name), 1, false, glm::value_ptr(matrices));
+        glUniformMatrix3fv(GetUniformLocation(name), count, false, glm::value_ptr(matrices));
     }
 
-    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat4 &matrices)
+    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat3 &matrices, int count)
     {
-        glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrices));
+        glUniformMatrix3fv(GetUniformLocation(name), count, false, glm::value_ptr(matrices));
+    }
+
+    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat4 &matrices, int count)
+    {
+        glUniformMatrix4fv(GetUniformLocation(name), count, false, glm::value_ptr(matrices));
     }
 
     int OpenGLShader::GetUniformLocation(const std::string &name)

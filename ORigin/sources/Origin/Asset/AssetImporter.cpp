@@ -21,8 +21,8 @@ namespace origin {
 		{ AssetType::Texture, TextureImporter::ImportTexture2D },
 		{ AssetType::Scene, SceneImporter::Import },
 		{ AssetType::Material, MaterialImporter::Import },
-		{ AssetType::Mesh, ModelImporter::Import },
-		{ AssetType::AnimatedMesh, ModelImporter::ImportAnimatedMesh },
+		{ AssetType::StaticMesh, ModelImporter::ImportStaticMesh },
+		{ AssetType::Mesh, ModelImporter::ImportMesh },
 		{ AssetType::Font, FontImporter::Import },
 		{ AssetType::SpritesSheet, SpriteSheetImporter::Import }
 	};
@@ -99,6 +99,9 @@ namespace origin {
 
 	std::shared_ptr<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
 	{
+		if (!std::filesystem::exists(filepath))
+			return nullptr;
+
 		std::shared_ptr<AudioSource> source = AudioSource::Create();
 		source->LoadSource("Audio", filepath, false, false);
 		return source;
@@ -106,6 +109,9 @@ namespace origin {
 
 	std::shared_ptr<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
 	{
+		if (!std::filesystem::exists(filepath))
+			return nullptr;
+
 		std::shared_ptr<AudioSource> source = AudioSource::Create();
 		source->LoadStreamingSource("Streaming Audio", filepath, false, false);
 		return source;
@@ -162,6 +168,9 @@ namespace origin {
 
 	std::shared_ptr<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path &filepath)
 	{
+		if (!std::filesystem::exists(filepath))
+			return nullptr;
+
 		int width, height, channels;
 
 		stbi_set_flip_vertically_on_load(1);
@@ -182,8 +191,8 @@ namespace origin {
 		TextureSpecification spec;
 		spec.Width = width;
 		spec.Height = height;
-		spec.MinFilter = ImageFilter::Nearest;
-		spec.MagFilter = ImageFilter::Nearest;
+		spec.MinFilter = ImageFilter::LinearMipmapLinear;
+		spec.MagFilter = ImageFilter::NearestMipmapNearest;
 
 		switch (channels)
 		{
@@ -202,24 +211,29 @@ namespace origin {
 		return texture;
 	}
 
-	std::shared_ptr<MeshData> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
+	std::shared_ptr<StaticMeshData> ModelImporter::ImportStaticMesh(AssetHandle handle, const AssetMetadata& metadata)
 	{
-		return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+		return LoadStaticMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
 	}
 
-    std::shared_ptr<AnimatedMeshData> ModelImporter::ImportAnimatedMesh(AssetHandle handle, const AssetMetadata &metadata)
-    {
-		return LoadAnimatedMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
-    }
-
-    std::shared_ptr<MeshData> ModelImporter::Load(const std::filesystem::path &filepath)
+    std::shared_ptr<StaticMeshData> ModelImporter::LoadStaticMesh(const std::filesystem::path &filepath)
 	{
+		if (!std::filesystem::exists(filepath))
+			return nullptr;
+		return ModelLoader::LoadStaticModel(filepath);
+	}
+
+	std::shared_ptr<MeshData> ModelImporter::ImportMesh(AssetHandle handle, const AssetMetadata &metadata)
+	{
+		return LoadMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
+	}
+
+    std::shared_ptr<MeshData> ModelImporter::LoadMesh(const std::filesystem::path& filepath)
+    {
+		if (!std::filesystem::exists(filepath))
+			return nullptr;
+
 		return ModelLoader::LoadModel(filepath);
-	}
-
-    std::shared_ptr<AnimatedMeshData> ModelImporter::LoadAnimatedMesh(const std::filesystem::path& filepath)
-    {
-		return ModelLoader::LoadAnimatedModel(filepath);
     }
 
     std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
@@ -229,6 +243,9 @@ namespace origin {
 
 	std::shared_ptr<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
 	{
+		if (!std::filesystem::exists(filepath))
+			return nullptr;
+
 		return SpriteSheet::Create(filepath);
 	}
 
@@ -239,6 +256,9 @@ namespace origin {
 
 	std::shared_ptr<Material> MaterialImporter::Load(const std::filesystem::path &filepath)
 	{
+		if (!std::filesystem::exists(filepath))
+			return nullptr;
+
 		std::shared_ptr<Material> material = Material::Create(filepath.stem().string());
 		MaterialSerializer::Deserialize(filepath, material);
 		return material;

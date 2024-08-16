@@ -14,8 +14,8 @@ namespace origin {
 		Texture,
 		Font,
 		Audio,
+		StaticMesh,
 		Mesh,
-		AnimatedMesh,
 		Material,
 		Animation,
 		SpritesSheet

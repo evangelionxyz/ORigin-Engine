@@ -46,30 +46,30 @@ namespace origin
 
 		// ===========================
 		// CUBE
-		std::shared_ptr<MeshData> CubeData;
+		std::shared_ptr<StaticMeshData> CubeData;
 		uint32_t CubeIndexCount = 0;
 		std::shared_ptr<VertexArray> CubeVAO;
 		std::shared_ptr<VertexBuffer> CubeVBO;
-		MeshVertexData *CubeVBOPtr = nullptr;
-		MeshVertexData *CubeVBOBase = nullptr;
+		StaticMeshVertexData *CubeVBOPtr = nullptr;
+		StaticMeshVertexData *CubeVBOBase = nullptr;
 
 		// ===========================
 		// SPHERE
-        std::shared_ptr<MeshData> SphereData;
+        std::shared_ptr<StaticMeshData> SphereData;
 		uint32_t SphereIndexCount = 0;
 		std::shared_ptr<VertexArray> SphereVAO;
 		std::shared_ptr<VertexBuffer> SphereVBO;
-		MeshVertexData *SphereVBOPtr = nullptr;
-		MeshVertexData *SphereVBOBase = nullptr;
+		StaticMeshVertexData *SphereVBOPtr = nullptr;
+		StaticMeshVertexData *SphereVBOBase = nullptr;
 
         // ===========================
         // CAPSULE
-        std::shared_ptr<MeshData> CapsuleData;
+        std::shared_ptr<StaticMeshData> CapsuleData;
         uint32_t CapsuleIndexCount = 0;
         std::shared_ptr<VertexArray> CapsuleVAO;
         std::shared_ptr<VertexBuffer> CapsuleVBO;
-        MeshVertexData *CapsuleVBOPtr = nullptr;
-        MeshVertexData *CapsuleVBOBase = nullptr;
+        StaticMeshVertexData *CapsuleVBOPtr = nullptr;
+        StaticMeshVertexData *CapsuleVBOBase = nullptr;
 
         std::shared_ptr<Shader> TestShader;
 	};
@@ -90,16 +90,16 @@ namespace origin
 
 		// ======================================
 		// ================ Cube ================
-		s_MeshRenderData.CubeData = ModelLoader::LoadModel("Resources/Models/cube.obj");
+		s_MeshRenderData.CubeData = ModelLoader::LoadStaticModel("Resources/Models/cube.obj");
         for (auto &v : s_MeshRenderData.CubeData->vertices)
         {
             v.Position *= glm::vec3(0.5f);
         }
 		s_MeshRenderData.CubeVAO = VertexArray::Create();
-		s_MeshRenderData.CubeVBO = VertexBuffer::Create(MeshRenderData::MaxCubeVertices * sizeof(MeshVertexData));
+		s_MeshRenderData.CubeVBO = VertexBuffer::Create(MeshRenderData::MaxCubeVertices * sizeof(StaticMeshVertexData));
 		s_MeshRenderData.CubeVBO->SetLayout(bufferLayout);
 		s_MeshRenderData.CubeVAO->AddVertexBuffer(s_MeshRenderData.CubeVBO);
-		s_MeshRenderData.CubeVBOBase = new MeshVertexData[MeshRenderData::MaxCubeVertices];
+		s_MeshRenderData.CubeVBOBase = new StaticMeshVertexData[MeshRenderData::MaxCubeVertices];
 
         uint32_t *cubeIndices = new uint32_t[MeshRenderData::MaxCubeIndices];
         uint32_t baseIndicesCount = s_MeshRenderData.CubeData->indices.size();
@@ -120,12 +120,12 @@ namespace origin
 
         // ======================================
         // ================ Sphere ==============
-        s_MeshRenderData.SphereData = ModelLoader::LoadModel("Resources/Models/sphere.obj");
+        s_MeshRenderData.SphereData = ModelLoader::LoadStaticModel("Resources/Models/sphere.obj");
         s_MeshRenderData.SphereVAO = VertexArray::Create();
-        s_MeshRenderData.SphereVBO = VertexBuffer::Create(MeshRenderData::MaxSphereVertices * sizeof(MeshVertexData));
+        s_MeshRenderData.SphereVBO = VertexBuffer::Create(MeshRenderData::MaxSphereVertices * sizeof(StaticMeshVertexData));
         s_MeshRenderData.SphereVBO->SetLayout(bufferLayout);
         s_MeshRenderData.SphereVAO->AddVertexBuffer(s_MeshRenderData.SphereVBO);
-        s_MeshRenderData.SphereVBOBase = new MeshVertexData[MeshRenderData::MaxSphereVertices];
+        s_MeshRenderData.SphereVBOBase = new StaticMeshVertexData[MeshRenderData::MaxSphereVertices];
 
         uint32_t *sphereIndices = new uint32_t[MeshRenderData::MaxSphereIndices];
 		baseIndicesCount = s_MeshRenderData.SphereData->indices.size();
@@ -146,12 +146,12 @@ namespace origin
 
         // ======================================
        // ================ Capsule ==============
-        s_MeshRenderData.CapsuleData = ModelLoader::LoadModel("Resources/Models/capsule.obj");
+        s_MeshRenderData.CapsuleData = ModelLoader::LoadStaticModel("Resources/Models/capsule.obj");
         s_MeshRenderData.CapsuleVAO = VertexArray::Create();
-        s_MeshRenderData.CapsuleVBO = VertexBuffer::Create(MeshRenderData::MaxCapsuleVertices * sizeof(MeshVertexData));
+        s_MeshRenderData.CapsuleVBO = VertexBuffer::Create(MeshRenderData::MaxCapsuleVertices * sizeof(StaticMeshVertexData));
         s_MeshRenderData.CapsuleVBO->SetLayout(bufferLayout);
         s_MeshRenderData.CapsuleVAO->AddVertexBuffer(s_MeshRenderData.CapsuleVBO);
-        s_MeshRenderData.CapsuleVBOBase = new MeshVertexData[MeshRenderData::MaxCapsuleVertices];
+        s_MeshRenderData.CapsuleVBOBase = new StaticMeshVertexData[MeshRenderData::MaxCapsuleVertices];
 
         uint32_t *capsuleIndices = new uint32_t[MeshRenderData::MaxCapsuleIndices];
         baseIndicesCount = s_MeshRenderData.CapsuleData->indices.size();

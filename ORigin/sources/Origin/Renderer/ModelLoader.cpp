@@ -3,108 +3,11 @@
 #include "pch.h"
 #include "ModelLoader.h"
 
+#include "Origin/Math/Math.h"
+
 namespace origin
 {
-	inline glm::mat4 AssimpToGlmMatrix(aiMatrix4x4 mat)
-	{
-		glm::mat4 m;
-		for (int y = 0; y < 4; y++)
-		{
-			for (int x = 0; x < 4; x++)
-			{
-				m[x][y] = mat[y][x];
-			}
-		}
-		return m;
-	}
-
-	inline glm::vec3 AssimpToGlmVec3(aiVector3D vec)
-	{
-		return glm::vec3(vec.x, vec.y, vec.z);
-	}
-
-	inline glm::quat AssimpToGlmQuat(aiQuaternion quat)
-	{
-		glm::quat q;
-		q.x = quat.x;
-		q.y = quat.y;
-		q.z = quat.z;
-		q.w = quat.w;
-		return q;
-	}
-
-	static void LoadAnimation(const aiScene *scene, Animation *animation)
-	{
-		aiAnimation *anim = scene->mAnimations[0];
-        animation->TickPersecond = anim->mTicksPerSecond;
-		if (anim->mTicksPerSecond == 0.0f)
-		{
-			animation->TickPersecond = 1.0f;
-		}
-
-		animation->Duration = anim->mDuration;
-		animation->BoneTransforms = {};
-
-		for (uint32_t i = 0; i < anim->mNumChannels; ++i)
-		{
-			aiNodeAnim *channel = anim->mChannels[i];
-			BoneTransformTrack track;
-
-			for (uint32_t j = 0; j < channel->mNumPositionKeys; ++j)
-			{
-				track.PositionTs.push_back(channel->mPositionKeys[j].mTime);
-				track.Positions.push_back(AssimpToGlmVec3(channel->mPositionKeys[j].mValue));
-			}
-
-            for (uint32_t j = 0; j < channel->mNumRotationKeys; ++j)
-            {
-                track.RotationTs.push_back(channel->mRotationKeys[j].mTime);
-                track.Rotations.push_back(AssimpToGlmQuat(channel->mRotationKeys[j].mValue));
-            }
-
-            for (uint32_t j = 0; j < channel->mNumScalingKeys; ++j)
-            {
-                track.ScaleTs.push_back(channel->mScalingKeys[j].mTime);
-                track.Scales.push_back(AssimpToGlmVec3(channel->mScalingKeys[j].mValue));
-            }
-
-			animation->BoneTransforms[channel->mNodeName.C_Str()] = track;
-		}
-	}
-
-	static bool ReadSkeleton(Bone *bone, const aiNode *node, 
-		std::unordered_map<std::string, std::pair<int, glm::mat4>> &boneInfo)
-	{
-		if (boneInfo.find(node->mName.C_Str()) != boneInfo.end())
-		{
-			bone->Name = node->mName.C_Str();
-			bone->ID = boneInfo[bone->Name].first;
-			bone->Offset = boneInfo[bone->Name].second;
-
-			for (uint32_t i = 0; i < node->mNumChildren; ++i)
-			{
-				Bone child;
-				ReadSkeleton(&child, node->mChildren[i], boneInfo);
-				bone->Children.push_back(child);
-			}
-
-			return true;
-		}
-		else
-		{
-			for (uint32_t i = 0; i < node->mNumChildren; ++i)
-			{
-				if (ReadSkeleton(bone, node->mChildren[i], boneInfo))
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	static void ProcessNode(aiNode *node, const aiScene *scene, MeshData *data)
+	static void ProcessStaticMeshNode(aiNode *node, const aiScene *scene, StaticMeshData *data)
 	{
 		for (uint32_t meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
 		{
@@ -113,7 +16,7 @@ namespace origin
 			// Vertices
 			for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
 			{
-				MeshVertexData vertex;
+				StaticMeshVertexData vertex;
 				vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 				vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 				if (mesh->mTextureCoords[0])
@@ -141,11 +44,11 @@ namespace origin
 
         for (uint32_t i = 0; i < node->mNumChildren; ++i)
         {
-            ProcessNode(node->mChildren[i], scene, data);
+			ProcessStaticMeshNode(node->mChildren[i], scene, data);
         }
 	}
 
-	std::shared_ptr<MeshData> ModelLoader::LoadModel(const std::filesystem::path &filepath)
+	std::shared_ptr<StaticMeshData> ModelLoader::LoadStaticModel(const std::filesystem::path &filepath)
 	{
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
@@ -154,31 +57,17 @@ namespace origin
 		);
 
 		aiNode *node = scene->mRootNode;
-
-		std::shared_ptr<MeshData> data = std::make_shared<MeshData>();
-		ProcessNode(node, scene, data.get());
-
-		if (scene->mNumAnimations)
-		{
-			for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
-			{
-				Animation anim;
-				LoadAnimation(scene, &anim);
-				data->animations.push_back(anim);
-			}
-		}
-
+		std::shared_ptr<StaticMeshData> data = std::make_shared<StaticMeshData>();
+		ProcessStaticMeshNode(node, scene, data.get());
+		ProcessStaticMesh(data);
 		return data;
 	}
 
-	void ModelLoader::ProcessMesh(const std::shared_ptr<MeshData> &data,
-		std::shared_ptr<VertexArray> &vertexArray, 
-		std::shared_ptr<VertexBuffer> &vertexBuffer)
+	void ModelLoader::ProcessStaticMesh(const std::shared_ptr<StaticMeshData> &data)
 	{
-		vertexArray = VertexArray::Create();
-		vertexBuffer = VertexBuffer::Create(data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
-
-		vertexBuffer->SetLayout
+		data->vertexArray = VertexArray::Create();
+		data->vertexBuffer = VertexBuffer::Create(data->vertices.data(), data->vertices.size() * sizeof(StaticMeshVertexData));
+		data->vertexBuffer->SetLayout
 		({
 			{ ShaderDataType::Float3, "aPosition"     },
 			{ ShaderDataType::Float3, "aNormals"      },
@@ -187,167 +76,148 @@ namespace origin
 			{ ShaderDataType::Float2, "aTilingFactor" },
 			{ ShaderDataType::Float,  "aAlbedoIndex"  },
 			{ ShaderDataType::Float,  "aSpecularIndex"},
-			{ ShaderDataType::Int,	  "aEntityID"     }
 		});
 
-		vertexArray->AddVertexBuffer(vertexBuffer);
+		data->vertexArray->AddVertexBuffer(data->vertexBuffer);
 		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices.data(), data->indices.size());
-		vertexArray->SetIndexBuffer(indexBuffer);
-		OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
+		data->vertexArray->SetIndexBuffer(indexBuffer);
 	}
 
 
-    static void ProcessAnimatedMeshNode(aiNode *node, const aiScene *scene, AnimatedMeshData *data)
-    {
-        for (uint32_t meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
-        {
-            aiMesh *mesh = scene->mMeshes[node->mMeshes[meshIndex]];
+	// ======================================
+	// Dynamic Mesh
 
-            // Vertices
-            for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
-            {
-				AnimatedMeshVertexData vertex;
-                vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-                vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-                if (mesh->mTextureCoords[0])
-                {
-                    vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-                }
-                else
-                {
-                    vertex.UV = { 1.0f, 1.0f };
-                }
-                vertex.BoneIDs = glm::vec4(0.0f);
-                vertex.BoneWeights = glm::vec4(0.0f);
-                data->vertices.push_back(vertex);
-            }
-
-            // Bones
-            std::unordered_map<std::string, std::pair<int, glm::mat4>> boneInfo;
-            std::vector<uint32_t> boneCounts;
-            boneCounts.resize(data->vertices.size(), 0);
-            data->numBones = mesh->mNumBones;
-
-            for (uint32_t i = 0; i < data->numBones; ++i)
-            {
-                aiBone *bone = mesh->mBones[i];
-                glm::mat4 offsetMatrix = AssimpToGlmMatrix(bone->mOffsetMatrix);
-                boneInfo[bone->mName.C_Str()] = { i, offsetMatrix };
-
-                for (uint32_t j = 0; j < bone->mNumWeights; j++)
-                {
-                    uint32_t id = bone->mWeights[j].mVertexId;
-                    float weight = bone->mWeights[j].mWeight;
-                    boneCounts[id]++;
-
-                    switch (boneCounts[id])
-                    {
-                    case 1:
-                        data->vertices[id].BoneIDs.x = i;
-                        data->vertices[id].BoneWeights.x = weight;
-                        break;
-                    case 2:
-                        data->vertices[id].BoneIDs.y = i;
-                        data->vertices[id].BoneWeights.y = weight;
-                        break;
-                    case 3:
-                        data->vertices[id].BoneIDs.z = i;
-                        data->vertices[id].BoneWeights.z = weight;
-                        break;
-                    case 4:
-                        data->vertices[id].BoneIDs.z = i;
-                        data->vertices[id].BoneWeights.z = weight;
-                        break;
-                    }
-                }
-            }
-
-
-            // Normalize weights
-            for (size_t i = 0; i < data->vertices.size(); ++i)
-            {
-                glm::vec4 &boneWeights = data->vertices[i].BoneWeights;
-                float totalWeight = boneWeights.x + boneWeights.y + boneWeights.z + boneWeights.w;
-
-                if (totalWeight > 0.0f)
-                {
-                    data->vertices[i].BoneWeights = {
-                        boneWeights.x / totalWeight,
-                        boneWeights.y / totalWeight,
-                        boneWeights.z / totalWeight,
-                        boneWeights.w / totalWeight
-                    };
-                }
-            }
-
-            // Faces
-            for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
-            {
-                aiFace face = mesh->mFaces[i];
-                for (uint32_t in = 0; in < face.mNumIndices; in++)
-                {
-                    data->indices.push_back(face.mIndices[in]);
-                }
-            }
-
-            ReadSkeleton(&data->bone, node, boneInfo);
-        }
-
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-        {
-            ProcessAnimatedMeshNode(node->mChildren[i], scene, data);
-        }
-    }
-
-    std::shared_ptr<AnimatedMeshData> ModelLoader::LoadAnimatedModel(const std::filesystem::path &filepath)
+    std::shared_ptr<MeshData> ModelLoader::LoadModel(const std::filesystem::path &filepath)
     {
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
-			  aiProcess_Triangulate | aiProcess_GenSmoothNormals
-			| aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
-		);
+			  aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 
-		aiNode *node = scene->mRootNode;
-
-		std::shared_ptr<AnimatedMeshData> data = std::make_shared<AnimatedMeshData>();
-		ProcessAnimatedMeshNode(node, scene, data.get());
-
-		if (scene->mNumAnimations)
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
+			OGN_CORE_ASSERT(false, importer.GetErrorString());
+			return nullptr;
+		}
+
+		aiMesh *mesh = scene->mMeshes[0];
+		std::shared_ptr<MeshData> data = std::make_shared<MeshData>();
+
+        // load position, normal, uv
+        for (uint32_t i = 0; i < mesh->mNumVertices; i++)
+        {
+            MeshVertexData vertex;
+
+			// set default bones value
+			for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
 			{
-				Animation anim;
-				LoadAnimation(scene, &anim);
+				vertex.IDs[i] = -1;
+				vertex.Weights[i] = 0.0f;
+			}
+
+			vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+			vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+			if (mesh->mTextureCoords[0])
+			{
+				vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+			}
+			else
+			{
+				vertex.UV = { 1.0f, 1.0f };
+			}
+
+			data->vertices.push_back(vertex);
+        }
+
+		// load bones weight and apply it to vertices
+		ExtractBoneWeightForVertices(data.get(), mesh, scene);
+
+        // load faces
+        for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; faceIndex++)
+        {
+            aiFace &face = mesh->mFaces[faceIndex];
+			for (uint32_t indicesIndex = 0; indicesIndex < face.mNumIndices; indicesIndex++)
+			{
+                data->indices.push_back(face.mIndices[indicesIndex]);
+			}
+        }
+
+		// load animations
+		if (scene->HasAnimations())
+		{
+			for (uint32_t animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
+			{
+				ModelAnimation anim = ModelAnimation(data.get(), scene->mAnimations[animIndex], scene);
 				data->animations.push_back(anim);
 			}
 		}
 
+		ProcessMesh(data);
 		return data;
     }
 
-    void ModelLoader::ProcessAnimatedMesh(const std::shared_ptr<AnimatedMeshData> &data, 
-		std::shared_ptr<VertexArray> &vertexArray, 
-		std::shared_ptr<VertexBuffer> &vertexBuffer)
+    void ModelLoader::ProcessMesh(const std::shared_ptr<MeshData> &data)
     {
-        vertexArray = VertexArray::Create();
-        vertexBuffer = VertexBuffer::Create(data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
+        data->vertexArray = VertexArray::Create();
+        data->vertexBuffer = VertexBuffer::Create(data->vertices.data(), data->vertices.size() * sizeof(MeshVertexData));
 
-        vertexBuffer->SetLayout
+        data->vertexBuffer->SetLayout
         ({
             { ShaderDataType::Float3, "aPosition"     },
             { ShaderDataType::Float3, "aNormals"      },
             { ShaderDataType::Float2, "aUV"           },
-            { ShaderDataType::Float2, "aTilingFactor" },
-            { ShaderDataType::Float4, "aBoneIDs"      },
+            { ShaderDataType::Int4,   "aBoneIDs"      },
             { ShaderDataType::Float4, "aBoneWeights"  },
         });
 
-        vertexArray->AddVertexBuffer(vertexBuffer);
-
+        data->vertexArray->AddVertexBuffer(data->vertexBuffer);
 		std::shared_ptr<IndexBuffer> indexBuffer = IndexBuffer::Create(data->indices.data(), data->indices.size());
-        vertexArray->SetIndexBuffer(indexBuffer);
-
-        OGN_CORE_WARN("INDEX COUNT: {}", indexBuffer->GetCount());
+        data->vertexArray->SetIndexBuffer(indexBuffer);
     }
 
+	void ModelLoader::ExtractBoneWeightForVertices(MeshData *data, aiMesh *mesh, const aiScene *scene)
+	{
+		// load bones weight and apply it to vertices
+		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+		{
+			int boneId = -1;
+			aiBone *bone = mesh->mBones[boneIndex];
+			std::string boneName = bone->mName.data;
+
+			if (data->boneInfoMap.find(boneName) == data->boneInfoMap.end())
+			{
+				BoneInfo newBoneInfo;
+				newBoneInfo.ID = data->boneCount;
+				newBoneInfo.OffsetMatrix = Math::AssimpToGlmMatrix(bone->mOffsetMatrix);
+
+				data->boneInfoMap[boneName] = newBoneInfo;
+				boneId = data->boneCount;
+				data->boneCount++;
+			}
+			else
+			{
+				boneId = data->boneInfoMap[boneName].ID;
+			}
+
+			OGN_CORE_ASSERT(boneId != -1, "Invalid bone id");
+
+			auto weights = bone->mWeights;
+			for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
+			{
+				int vertexId = weights[weightIndex].mVertexId;
+				float weight = weights[weightIndex].mWeight;
+
+				OGN_CORE_ASSERT(vertexId < data->vertices.size(), "Invalid vertex id");
+				MeshVertexData &vertex = data->vertices[vertexId];
+
+				for (int boneIndex = 0; boneIndex < MAX_BONE_INFLUENCE; ++boneIndex)
+				{
+					if (vertex.IDs[boneIndex] < 0)
+					{
+						vertex.Weights[boneIndex] = weight;
+						vertex.IDs[boneIndex] = boneId;
+					}
+				}
+			}
+		}
+	}
 }

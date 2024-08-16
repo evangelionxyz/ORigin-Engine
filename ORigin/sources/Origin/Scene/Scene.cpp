@@ -125,6 +125,14 @@ namespace origin
             }
         }
 
+        for (auto [e, tc, mesh] : m_Registry.view<TransformComponent, MeshComponent>().each())
+        {
+            if (mesh.Data)
+            {
+                mesh.Animator.UpdateAnimation(ts, mesh.PlaybackSpeed);
+            }
+        }
+
 		OnRenderShadow();
 		m_UIRenderer->RenderFramebuffer();
     }
@@ -233,26 +241,23 @@ namespace origin
 		OGN_PROFILER_SCENE();
 		m_Running = true;
 		ScriptEngine::SetSceneContext(this);
-		auto scriptView = m_Registry.view<ScriptComponent>();
-		for (auto e : scriptView)
+		for (auto [e, sc] : m_Registry.view<ScriptComponent>().each())
 		{
 			Entity entity = { e, this };
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		m_Registry.view<NativeScriptComponent>().each([this](auto entity, auto &nsc)
+		for (auto [e, nsc] : m_Registry.view<NativeScriptComponent>().each())
 		{
 			if (!nsc.Instance)
 			{
 				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity { entity, this };
+				nsc.Instance->m_Entity = { e, this };
 			}
-		});
+		};
 
-		auto audioView = m_Registry.view<AudioComponent>();
-		for (auto &e : audioView)
+		for (auto [e, ac] : m_Registry.view<AudioComponent>().each())
 		{
-			auto &ac = audioView.get<AudioComponent>(e);
 			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 			if (ac.PlayAtStart)
 			{
@@ -327,100 +332,100 @@ namespace origin
         RenderStencilScene(camera, selectedID);
 	}
 
-	void Scene::RenderScene(const Camera &camera)
-	{
-		OGN_PROFILER_RENDERING();
+    void Scene::RenderScene(const Camera &camera)
+    {
+        OGN_PROFILER_RENDERING();
         glEnable(GL_DEPTH_TEST);
 
-		Renderer2D::Begin(camera);
+        Renderer2D::Begin(camera);
         const auto &view = m_Registry.view<TransformComponent>();
-		for (auto e : view)
-		{
-			Entity entity { e, this };
-			auto &tc = view.get<TransformComponent>(e);
+        for (auto e : view)
+        {
+            Entity entity { e, this };
+            auto &tc = view.get<TransformComponent>(e);
 
             if (!tc.Visible)
             {
-				continue;
+                continue;
             }
 
-			// 2D Quads
-			if (entity.HasComponent<SpriteRenderer2DComponent>())
-			{
-				auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
-				if (entity.HasComponent<SpriteAnimationComponent>())
-				{
-					auto &ac = entity.GetComponent<SpriteAnimationComponent>();
-					if (ac.State->IsCurrentAnimationExists())
-					{
-						if (ac.State->GetAnimation()->HasFrame())
-						{
-							auto &anim = ac.State->GetAnimation();
-							src.Texture = anim->GetCurrentFrame().Handle;
-							src.Min = anim->GetCurrentFrame().Min;
-							src.Max = anim->GetCurrentFrame().Max;
-						}
-					}
-				}
-				Renderer2D::DrawSprite(tc.GetTransform(), src);
-			}
+            // 2D Quads
+            if (entity.HasComponent<SpriteRenderer2DComponent>())
+            {
+                auto &src = entity.GetComponent<SpriteRenderer2DComponent>();
+                if (entity.HasComponent<SpriteAnimationComponent>())
+                {
+                    auto &ac = entity.GetComponent<SpriteAnimationComponent>();
+                    if (ac.State->IsCurrentAnimationExists())
+                    {
+                        if (ac.State->GetAnimation()->HasFrame())
+                        {
+                            auto &anim = ac.State->GetAnimation();
+                            src.Texture = anim->GetCurrentFrame().Handle;
+                            src.Min = anim->GetCurrentFrame().Min;
+                            src.Max = anim->GetCurrentFrame().Max;
+                        }
+                    }
+                }
+                Renderer2D::DrawSprite(tc.GetTransform(), src);
+            }
 
-			if (entity.HasComponent<CircleRendererComponent>())
-			{
-				auto &cc = entity.GetComponent<CircleRendererComponent>();
-				Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade);
-			}
+            if (entity.HasComponent<CircleRendererComponent>())
+            {
+                auto &cc = entity.GetComponent<CircleRendererComponent>();
+                Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade);
+            }
 
-			// Particles
-			if (entity.HasComponent<ParticleComponent>())
-			{
-				auto &pc = entity.GetComponent<ParticleComponent>();
-				for (int i = 0; i < 5; i++)
-				{
-					pc.Particle.Emit(pc,
-						{ tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z + pc.ZAxis },
-						tc.WorldScale, pc.Rotation);
-				}
+            // Particles
+            if (entity.HasComponent<ParticleComponent>())
+            {
+                auto &pc = entity.GetComponent<ParticleComponent>();
+                for (int i = 0; i < 5; i++)
+                {
+                    pc.Particle.Emit(pc,
+                        { tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z + pc.ZAxis },
+                        tc.WorldScale, pc.Rotation);
+                }
 
-				pc.Particle.OnRender();
-			}
+                pc.Particle.OnRender();
+            }
 
-			// Text
-			if (entity.HasComponent<TextComponent>())
-			{
-				auto &text = entity.GetComponent<TextComponent>();
-				glm::mat4 transform = glm::mat4(1.0f);
-				glm::mat4 invertedCamTransform = glm::mat4(1.0f);
+            // Text
+            if (entity.HasComponent<TextComponent>())
+            {
+                auto &text = entity.GetComponent<TextComponent>();
+                glm::mat4 transform = glm::mat4(1.0f);
+                glm::mat4 invertedCamTransform = glm::mat4(1.0f);
 
-				if (text.ScreenSpace)
-				{
-					if (camera.IsPerspective())
-					{
-						Entity primaryCam = GetPrimaryCameraEntity();
-						if (primaryCam)
-						{
-							const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
-							const auto &ccTC = primaryCam.GetComponent<TransformComponent>();
-							const float ratio = cc.GetAspectRatio();
-							glm::vec2 scale = glm::vec2(tc.WorldScale.x, tc.WorldScale.y * ratio);
-							transform = glm::translate(glm::mat4(1.0f), { tc.WorldTranslation.x, tc.WorldTranslation.y, 0.0f })
-								* glm::toMat4(ccTC.Rotation)
-								* glm::scale(glm::mat4(1.0f), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
+                if (text.ScreenSpace)
+                {
+                    if (camera.IsPerspective())
+                    {
+                        Entity primaryCam = GetPrimaryCameraEntity();
+                        if (primaryCam)
+                        {
+                            const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
+                            const auto &ccTC = primaryCam.GetComponent<TransformComponent>();
+                            const float ratio = cc.GetAspectRatio();
+                            glm::vec2 scale = glm::vec2(tc.WorldScale.x, tc.WorldScale.y * ratio);
+                            transform = glm::translate(glm::mat4(1.0f), { tc.WorldTranslation.x, tc.WorldTranslation.y, 0.0f })
+                                * glm::toMat4(ccTC.Rotation)
+                                * glm::scale(glm::mat4(1.0f), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
 
-							invertedCamTransform = glm::inverse(cc.GetViewProjection());
-						}
-					}
-					else
-					{
-						const float ratio = camera.GetAspectRatio();
-						transform = glm::scale(tc.GetTransform(), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
-						invertedCamTransform = glm::inverse(camera.GetViewProjection());
-					}
+                            invertedCamTransform = glm::inverse(cc.GetViewProjection());
+                        }
+                    }
+                    else
+                    {
+                        const float ratio = camera.GetAspectRatio();
+                        transform = glm::scale(tc.GetTransform(), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
+                        invertedCamTransform = glm::inverse(camera.GetViewProjection());
+                    }
 
-					transform = invertedCamTransform * transform;
-				}
-				else
-				{
+                    transform = invertedCamTransform * transform;
+                }
+                else
+                {
                     glm::vec3 centerOffset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
                     glm::vec3 scaledOffset = tc.WorldScale * centerOffset;
                     glm::vec3 rotatedOffset = glm::toMat3(tc.WorldRotation) * scaledOffset;
@@ -430,19 +435,44 @@ namespace origin
                     transform = glm::translate(glm::mat4(1.0f), text.Position)
                         * glm::toMat4(tc.WorldRotation)
                         * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-				}
+                }
 
-				if (text.FontHandle != 0)
-				{
-					Renderer2D::DrawString(text.TextString, transform, text);
-				}
-			}
-		}
+                if (text.FontHandle != 0)
+                {
+                    Renderer2D::DrawString(text.TextString, transform, text);
+                }
+            }
+        }
 
-		Renderer2D::End();
+        Renderer2D::End();
+
+        const auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
+        for (auto [e, tc, mesh] : meshView.each())
+        {
+            // Render
+            if (mesh.Data && tc.Visible)
+            {
+                Shader *shader = Renderer::GetShader("AnimatedMesh").get();
+                shader->Enable();
+                glActiveTexture(0);
+                Renderer::WhiteTexture->Bind(0);
+                shader->SetInt("uTexture", Renderer::WhiteTexture->GetTextureID());
+                shader->SetMatrix("viewProjection", camera.GetViewProjection());
+                shader->SetMatrix("model", tc.GetTransform());
+
+                shader->SetMatrix("boneTransforms", 
+                    mesh.Animator.m_FinalBoneMatrices[0], 
+                    mesh.Animator.m_FinalBoneMatrices.size());
+
+                mesh.Data->vertexArray->Bind();
+                glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
+
+                shader->Disable();
+            }
+        }
 
         const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-        const auto &meshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
+        const auto &sMeshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
         for (auto &li : lightView)
         {
             const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(li);
@@ -457,9 +487,9 @@ namespace origin
             MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
 
             MeshRenderer::Begin(camera);
-            for (auto e : meshView)
+            for (auto e : sMeshView)
             {
-                const auto [tc, mc] = meshView.get<TransformComponent, StaticMeshComponent>(e);
+                const auto [tc, mc] = sMeshView.get<TransformComponent, StaticMeshComponent>(e);
                 if (!tc.Visible)
                     continue;
 
@@ -562,6 +592,29 @@ namespace origin
             Renderer2D::End();
 
             // 3D Objects
+            //if(entity.HasComponent<MeshComponent>())
+            //{
+            //    MeshComponent &mesh = entity.GetComponent<MeshComponent>();
+            //    if (mesh.Data && tc.Visible)
+            //    {
+            //        Shader *shader = Renderer::GetShader("AnimatedMesh").get();
+            //        shader->Enable();
+            //        glActiveTexture(0);
+            //        Renderer::WhiteTexture->Bind(0);
+            //        shader->SetInt("uTexture", Renderer::WhiteTexture->GetTextureID());
+            //        shader->SetMatrix("viewProjection", camera.GetViewProjection());
+            //        shader->SetMatrix("model", tc.GetTransform());
+
+            //        //auto transforms = mesh.Animator.GetFinalBoneMatrices();
+            //        //shader->SetMatrix("boneTransforms", transforms[0], transforms.size());
+
+            //        mesh.Data->vertexArray->Bind();
+            //        glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
+
+            //        shader->Disable();
+            //    }
+            //}
+
             if (entity.HasComponent<StaticMeshComponent>())
             {
                 StaticMeshComponent &mc = entity.GetComponent<StaticMeshComponent>();
@@ -671,6 +724,18 @@ namespace origin
 
 
             // 3D Objects
+
+            /*if (entity.HasComponent<MeshComponent>())
+            {
+                MeshComponent &mesh = entity.GetComponent<MeshComponent>();
+                if (mesh.Data && tc.Visible)
+                {
+                    outlineShader->SetMatrix("viewProjection", camera.GetViewProjection() * scaledTransform);
+                    mesh.Data->vertexArray->Bind();
+                    glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
+                }
+            }*/
+
             MeshRenderer::Begin(camera, outlineShader);
             if (entity.HasComponent<StaticMeshComponent>())
             {
@@ -932,7 +997,7 @@ namespace origin
     {
     }
 
-	OGN_ADD_COMPONENT(AnimatedMeshComponent);
+	OGN_ADD_COMPONENT(MeshComponent);
 	OGN_ADD_COMPONENT(MeshRendererComponent);
 	OGN_ADD_COMPONENT(TextComponent);
 	OGN_ADD_COMPONENT(CircleRendererComponent);

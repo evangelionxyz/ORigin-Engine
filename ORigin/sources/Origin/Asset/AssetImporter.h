@@ -130,10 +130,11 @@ namespace origin
 	class ModelImporter
 	{
 	public:
-		static std::shared_ptr<MeshData> Import(AssetHandle handle, const AssetMetadata &metadata);
-		static std::shared_ptr<AnimatedMeshData> ImportAnimatedMesh(AssetHandle handle, const AssetMetadata &metadata);
-		static std::shared_ptr<MeshData> Load(const std::filesystem::path& filepath);
-		static std::shared_ptr<AnimatedMeshData> LoadAnimatedMesh(const std::filesystem::path& filepath);
+		static std::shared_ptr<StaticMeshData> ImportStaticMesh(AssetHandle handle, const AssetMetadata &metadata);
+		static std::shared_ptr<StaticMeshData> LoadStaticMesh(const std::filesystem::path& filepath);
+
+		static std::shared_ptr<MeshData> ImportMesh(AssetHandle handle, const AssetMetadata &metadata);
+		static std::shared_ptr<MeshData> LoadMesh(const std::filesystem::path& filepath);
 	};
 
 	class SpriteSheetImporter

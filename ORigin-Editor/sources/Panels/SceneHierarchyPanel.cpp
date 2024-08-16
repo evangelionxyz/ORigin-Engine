@@ -360,16 +360,16 @@ namespace origin {
 			DisplayAddComponentEntry<AudioListenerComponent>("Audio Listener");
 			ImGui::Separator();
 			DisplayAddComponentEntry<SpriteRenderer2DComponent>("Sprite Renderer");
-			DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
-			DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
-			DisplayAddComponentEntry<RevoluteJoint2DComponent>("Revolute Joint 2D");
 			DisplayAddComponentEntry<SpriteAnimationComponent>("Sprite Animation");
 			DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
 			DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody 2D");
+			DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
+			DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
+			DisplayAddComponentEntry<RevoluteJoint2DComponent>("Revolute Joint 2D");
 			ImGui::Separator();
-			DisplayAddComponentEntry<StaticMeshComponent>("Static Mesh");
-			DisplayAddComponentEntry<AnimatedMeshComponent>("Animated Mesh");
 			DisplayAddComponentEntry<LightComponent>("Lighting");
+			DisplayAddComponentEntry<MeshComponent>("Mesh");
+			DisplayAddComponentEntry<StaticMeshComponent>("Static Mesh");
             DisplayAddComponentEntry<RigidbodyComponent>("Rigidbody");
             DisplayAddComponentEntry<BoxColliderComponent>("Box Collider");
             DisplayAddComponentEntry<SphereColliderComponent>("Sphere Collider");
@@ -430,13 +430,10 @@ namespace origin {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
                 {
 					AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                    if (AssetManager::GetAssetType(handle) == AssetType::Mesh)
+                    if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
                     {
                         component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<MeshData>(handle);
-						ModelLoader::ProcessMesh(component.Data,
-							component.Data->vertexArray,
-							component.Data->vertexBuffer);
+                        component.Data = AssetManager::GetAsset<StaticMeshData>(handle);
 						component.mType = StaticMeshComponent::Type::Default;
                     }
                     else
@@ -495,7 +492,7 @@ namespace origin {
 			}
 		});
 
-        DrawComponent<AnimatedMeshComponent>("Animated Mesh", entity, [&](auto &component)
+        DrawComponent<MeshComponent>("Mesh", entity, [&](auto &component)
         {
             ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
 
@@ -506,13 +503,14 @@ namespace origin {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
                 {
                     AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                    if (AssetManager::GetAssetType(handle) == AssetType::AnimatedMesh)
+                    if (AssetManager::GetAssetType(handle) == AssetType::Mesh)
                     {
                         component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<AnimatedMeshData>(handle);
-                        ModelLoader::ProcessAnimatedMesh(component.Data,
-                        	component.Data->vertexArray,
-                        	component.Data->vertexBuffer);
+                        component.Data = AssetManager::GetAsset<MeshData>(handle);
+						if (!component.Data->animations.empty())
+						{
+							component.Animator = Animator(&component.Data->animations[0]);
+						}
                     }
                     else
                     {
@@ -521,6 +519,18 @@ namespace origin {
                 }
                 ImGui::EndDragDropTarget();
             }
+
+			UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f);
+
+			ImGui::Text("Elapsed Time: %.2f", component.Animator.m_CurrentTime);
+			ImGui::Text("Ticks Per Second: %.2f", component.Animator.m_CurrentAnimation->GetTicksPersecond());
+			ImGui::Text("Animation Duration: %.2f", component.Animator.m_CurrentAnimation->GetDuration());
+			for (size_t i = 0; i < component.Animator.m_FinalBoneMatrices.size(); ++i)
+			{
+				auto mat = component.Animator.m_FinalBoneMatrices[i];
+				ImGui::Text("Bone %zu Transform", i);
+				ImGui::InputFloat4("Transform", glm::value_ptr(mat), "%.2f");
+			}
         });
 
 		DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)

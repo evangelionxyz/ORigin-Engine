@@ -24,8 +24,8 @@ namespace origin {
 
 		s_AudioData.Engine = new ma_engine();
 		ma_result result = ma_engine_init(&s_AudioData.Config, s_AudioData.Engine);
-		OGN_CORE_ASSERT(result == MA_SUCCESS, "[MiniaudioEngine] Failed To Initialized");
-		OGN_CORE_INFO("[MiniaudioEngine] Initialized");
+		OGN_CORE_ASSERT(result == MA_SUCCESS, "[Miniaudio Engine] Failed To Initialized");
+		OGN_CORE_INFO("[Miniaudio Engine] Initialized");
 	}
 
 	void AudioEngine::Shutdown()
@@ -35,7 +35,7 @@ namespace origin {
 		delete s_AudioData.Engine;
 		s_AudioData.Engine = nullptr;
 
-		OGN_CORE_WARN("[MiniaudioEngine] Shutdown");
+		OGN_CORE_WARN("[Miniaudio Engine] Shutdown");
 	}
 
 	ma_engine *AudioEngine::GetEngine()
@@ -46,7 +46,7 @@ namespace origin {
 	void AudioEngine::CreateSound(const char *name, const char *filepath, ma_sound* sound)
 	{
 		ma_result result = ma_sound_init_from_file(s_AudioData.Engine, filepath, 0, nullptr, nullptr, sound);
-		OGN_CORE_ASSERT(result == MA_SUCCESS, "[MiniaudioEngine] Failed to create sound");
+		OGN_CORE_ASSERT(result == MA_SUCCESS, "[Miniaudio Engine] Failed to create sound");
 	}
 
 	void AudioEngine::CreateStreaming(const char *name, const char *filepath, ma_sound* sound)

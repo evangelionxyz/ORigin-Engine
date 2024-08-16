@@ -372,6 +372,18 @@ namespace origin
 			out << YAML::EndMap; // !StaticMeshComponent
 		}
 
+		if (entity.HasComponent<MeshComponent>())
+		{
+			out << YAML::Key << "MeshComponent";
+			out << YAML::BeginMap; // MeshComponent
+
+			const MeshComponent sc = entity.GetComponent<MeshComponent>();
+			out << YAML::Key << "Name" << sc.Name;
+			out << YAML::Key << "HMesh" << sc.HMesh;
+			out << YAML::Key << "HMaterial" << sc.HMaterial;
+			out << YAML::EndMap; // !MeshComponent
+		}
+
 		if (entity.HasComponent<AudioListenerComponent>())
 		{
 			out << YAML::Key << "AudioListenerComponent";
@@ -798,16 +810,34 @@ namespace origin
 					mc.Name = staticMeshComponent["Name"].as<std::string>();
 					mc.HMaterial = staticMeshComponent["HMaterial"].as<uint64_t>();
 					mc.HMesh = staticMeshComponent["HMesh"].as<uint64_t>();
+
 					if (mc.HMaterial)
 					{
 						AssetManager::GetAsset<Material>(mc.HMaterial); // load material and store to memory
 					}
 					if (mc.HMesh)
 					{
-						mc.Data = AssetManager::GetAsset<MeshData>(mc.HMesh);
-						ModelLoader::ProcessMesh(mc.Data, mc.Data->vertexArray, mc.Data->vertexBuffer);
+						mc.Data = AssetManager::GetAsset<StaticMeshData>(mc.HMesh);
 					}
+
 					mc.mType = static_cast<StaticMeshComponent::Type>(staticMeshComponent["Type"].as<int>());
+				}
+
+				if (YAML::Node meshComponent = entity["MeshComponent"])
+				{
+					MeshComponent &mc = deserializedEntity.AddComponent<MeshComponent>();
+					mc.Name = meshComponent["Name"].as<std::string>();
+					mc.HMaterial = meshComponent["HMaterial"].as<uint64_t>();
+					mc.HMesh = meshComponent["HMesh"].as<uint64_t>();
+
+					if (mc.HMesh)
+					{
+						mc.Data = AssetManager::GetAsset<MeshData>(mc.HMesh);
+						if (!mc.Data->animations.empty())
+						{
+							mc.Animator = Animator(&mc.Data->animations[0]);
+						}
+					}
 				}
 
 				if (YAML::Node particleComponent = entity["ParticleComponent"])

@@ -1,9 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-#include "pch.h"
-#include "Animation.h"
 
-namespace origin {
-	
+#include "pch.h"
+#include "SpriteAnimation.h"
+
+namespace origin
+{
 	void SpriteAnimation::AddFrame(SpriteAnimationFrame frame)
 	{
 		AnimFrames.push_back(std::move(frame));
@@ -26,7 +27,7 @@ namespace origin {
 				CurrentFrame += ts * 60.0f * (Speed * 0.1f);
 
 			if (CurrentFrame >= MaxFrame)
-				CurrentFrame = Looping ? 0.0f: MaxFrame;
+				CurrentFrame = Looping ? 0.0f : MaxFrame;
 		}
 
 		for (int i = 0; i < AnimFrames.size(); i++)

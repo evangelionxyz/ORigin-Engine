@@ -10,11 +10,21 @@
 #include "Origin/Utils/Utils.h"
 #include "Origin/Utils/StringUtils.h"
 
-#include <imgui.h>
+#ifdef OGN_PLATFORM_WINDOWS
+	#include <Windows.h>
+	#include <shellapi.h>
+#endif
 
 namespace origin
 {
 	static uint32_t itemRenderCount = 0;
+
+	static void OpenFile(const std::filesystem::path &filepath)
+	{
+#ifdef OGN_PLATFORM_WINDOWS
+		ShellExecuteA(nullptr, "open", filepath.string().c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
+#endif
+	}
 
 	ContentBrowserPanel::ContentBrowserPanel(const std::shared_ptr<Project>& project)
 		: m_Project(project), m_ThumbnailCache(std::make_shared<ThumbnailCache>(project)), m_BaseDirectory(m_Project->GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory)
@@ -436,6 +446,11 @@ namespace origin
 						RefreshAssetTree();
                     }
                 }
+
+				if (ImGui::MenuItem("Open in Explorer", nullptr))
+				{
+					OpenFile(m_CurrentDirectory);
+				}
 
                 ImGui::EndMenu();
             }

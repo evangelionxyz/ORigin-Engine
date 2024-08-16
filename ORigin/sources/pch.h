@@ -36,4 +36,5 @@
 
 #ifdef OGN_PLATFORM_WINDOWS
 	#include <Windows.h>
+	#include <shellapi.h>
 #endif
