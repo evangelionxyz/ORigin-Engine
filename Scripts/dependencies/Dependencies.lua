@@ -8,7 +8,7 @@ VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
 
 IncludeDir["GLFW"]                     = "%{wks.location}/ORigin/vendor/origin-glfw/include"
 IncludeDir["GLAD"]                     = "%{wks.location}/ORigin/vendor/glad/include"
-IncludeDir["ASSIMP"]                   = "%{wks.location}/ORigin/vendor/assimp/include"
+IncludeDir["ASSIMP"]                   = "%{wks.location}/ORigin/vendor/Assimp/include"
 IncludeDir["IMGUI"]                    = "%{wks.location}/ORigin/vendor/imgui"
 IncludeDir["IMGUIZMO"]                 = "%{wks.location}/ORigin/vendor/ImGuizmo"
 IncludeDir["BOX2D"]                    = "%{wks.location}/ORigin/vendor/Box2D/include"

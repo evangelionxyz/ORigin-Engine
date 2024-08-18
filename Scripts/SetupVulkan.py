@@ -33,18 +33,18 @@ class VulkanConfiguration:
                     print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
                     cls.__InstallVulkanSDK()
                     return False
-        elif platform.system() == "Linux":
-            vulkanSDK = os.path.abspath(f"ORigin/vendor/VulkanSDK/{cls.installVulkanVersion}/vulkansdk")
-            if not os.path.exists(vulkanSDK):
-                print(">> You don't have the Vulkan SDK installed!")
-                cls.__InstallVulkanSDK()
-                return False
-            else:
-                print(f">> Located Vulkan SDK at {vulkanSDK}")
-                if (cls.requiredVulkanVersion not in vulkanSDK):
-                    print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
-                    cls.__InstallVulkanSDK()
-                    return False
+        # elif platform.system() == "Linux":
+        #     vulkanSDK = os.path.abspath(f"ORigin/vendor/VulkanSDK/{cls.installVulkanVersion}/vulkansdk")
+        #     if not os.path.exists(vulkanSDK):
+        #         print(">> You don't have the Vulkan SDK installed!")
+        #         cls.__InstallVulkanSDK()
+        #         return False
+        #     else:
+        #         print(f">> Located Vulkan SDK at {vulkanSDK}")
+        #         if (cls.requiredVulkanVersion not in vulkanSDK):
+        #             print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
+        #             cls.__InstallVulkanSDK()
+        #             return False
 
 
         print(f">> Correct Vulkan SDK located at {vulkanSDK}")
@@ -58,9 +58,9 @@ class VulkanConfiguration:
         if platform.system() == "Window":
             vulkanInstallURL = f"https://sdk.lunarg.com/sdk/download/{cls.installVulkanVersion}/windows/VulkanSDK-{cls.installVulkanVersion}-Installer.exe"
             vulkanDownloadFilepath = f"{cls.vulkanDirectory}/VulkanSDK-{cls.installVulkanVersion}-Installer.exe"
-        elif platform.system() == "Linux":
-            vulkanInstallURL = f"https://sdk.lunarg.com/sdk/download/{cls.installVulkanVersion}/linux/vulkansdk-linux-x86_64-{cls.installVulkanVersion}.tar.xz"
-            vulkanDownloadFilepath = f"{cls.vulkanDirectory}/VulkanSDK-{cls.installVulkanVersion}.tar.xz"
+        # elif platform.system() == "Linux":
+        #     vulkanInstallURL = f"https://sdk.lunarg.com/sdk/download/{cls.installVulkanVersion}/linux/vulkansdk-linux-x86_64-{cls.installVulkanVersion}.tar.xz"
+        #     vulkanDownloadFilepath = f"{cls.vulkanDirectory}/VulkanSDK-{cls.installVulkanVersion}.tar.xz"
 
 
         # check if not downloaded
@@ -83,10 +83,9 @@ class VulkanConfiguration:
             print(">> Running Vulkan SDK installer...")
             os.startfile(os.path.abspath(vulkanDownloadFilepath))
             print(">> Re-run this script after installation!")
-            
-        elif platform.system() == "Linux":
-            Utils.ExtractArchiveFile(vulkanDownloadFilepath, deleteArchiveFile = False)
-            print(">> Re-run this script after completely extracted !")
+        # elif platform.system() == "Linux":
+        #     Utils.ExtractArchiveFile(vulkanDownloadFilepath, deleteArchiveFile = False)
+        #     print(">> Re-run this script after completely extracted !")
             
         quit()
 
@@ -96,12 +95,11 @@ class VulkanConfiguration:
             vulkanSDK = os.environ.get("VULKAN_SDK")
             shadercdLib = Path(f"{vulkanSDK}/Lib/shaderc_sharedd.lib")
             return shadercdLib.exists()
-        elif platform.system() == "Linux":
-            shadercdLib = "ORigin/vendor/VulkanSDK/x86_64//lib/libshaderc_sharedd.a"
-            # TODO: Check the debug lib
-            # return shadercdLib.exists()
-            return False
-    
+        # elif platform.system() == "Linux":
+        #     shadercdLib = "ORigin/vendor/VulkanSDK/x86_64//lib/libshaderc_sharedd.a"
+        #     # TODO: Check the debug lib
+        #     # return shadercdLib.exists()
+        #     return False
 
 if __name__ == "__main__":
     VulkanConfiguration.Validate()

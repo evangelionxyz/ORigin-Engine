@@ -5,7 +5,8 @@ import Utils
 
 os.chdir('./../')
 from SetupPython import PythonConfiguration as PythonRequirements
-PythonRequirements.Validate()
+if platform.system() == "Windows":
+    PythonRequirements.Validate()
 
 from SetupVulkan import VulkanConfiguration as VulkanRequirements
 VulkanRequirements.Validate()
