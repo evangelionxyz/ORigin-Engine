@@ -25,9 +25,6 @@
 [submodule "Origin/vendor/origin-glfw"]
 	path = ORigin/vendor/origin-glfw
 	url = https://github.com/evangelionmanuhutu/origin-glfw.git
-[submodule "Origin/vendor/assimp"]
-	path = ORigin/vendor/assimp
-	url = https://github.com/evangelionmanuhutu/assimp.git
 [submodule "Origin/vendor/imgui"]
 	path = ORigin/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
