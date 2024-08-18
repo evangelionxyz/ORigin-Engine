@@ -129,7 +129,7 @@ namespace origin
         {
             if (mesh.Data)
             {
-                mesh.Animator.UpdateAnimation(ts, mesh.PlaybackSpeed);
+                mesh.AAnimator.UpdateAnimation(ts, mesh.PlaybackSpeed);
             }
         }
 
@@ -463,8 +463,8 @@ namespace origin
                 shader->SetMatrix("model", tc.GetTransform());
 
                 shader->SetMatrix("boneTransforms", 
-                    mesh.Animator.m_FinalBoneMatrices[0], 
-                    mesh.Animator.m_FinalBoneMatrices.size());
+                    mesh.AAnimator.m_FinalBoneMatrices[0], 
+                    mesh.AAnimator.m_FinalBoneMatrices.size());
 
                 mesh.Data->vertexArray->Bind();
                 glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
@@ -607,7 +607,7 @@ namespace origin
             //        shader->SetMatrix("viewProjection", camera.GetViewProjection());
             //        shader->SetMatrix("model", tc.GetTransform());
 
-            //        //auto transforms = mesh.Animator.GetFinalBoneMatrices();
+            //        //auto transforms = mesh.AAnimator.GetFinalBoneMatrices();
             //        //shader->SetMatrix("boneTransforms", transforms[0], transforms.size());
 
             //        mesh.Data->vertexArray->Bind();

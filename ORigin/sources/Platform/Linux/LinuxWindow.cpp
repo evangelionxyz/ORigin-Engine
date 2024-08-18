@@ -70,24 +70,25 @@ namespace origin {
 		glfwSwapBuffers(m_MainWindow);
 	}
 
-	void LinuxWindow::SetVSync(bool enable)
+	void LinuxWindow::ToggleVSync()
 	{
 		OGN_PROFILER_FUNCTION();
 
-		glfwSwapInterval(enable ? 1 : 0);
-		m_Data.VSync = enable;
+		m_Data.VSync = !m_Data.VSync;
+		glfwSwapInterval(m_Data.VSync ? 1 : 0);
 	}
 
-	void LinuxWindow::SetClose(bool close)
+	void LinuxWindow::CloseWindow()
 	{
-		m_Data.Close = close ? 1 : 0;
+		glfwSetWindowShouldClose(m_MainWindow, 1);
 	}
 
-	void LinuxWindow::SetFullscreen(bool enable)
+	void LinuxWindow::ToggleFullScreen()
 	{
 		OGN_PROFILER_FUNCTION();
 
-		if (enable)
+		m_Data.FullScreen = !m_Data.FullScreen;
+		if (m_Data.FullScreen)
 		{
 			int width, height;
 			glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &width, &height);
@@ -96,9 +97,9 @@ namespace origin {
 		else
 		{
 			glfwSetWindowMonitor(m_MainWindow, nullptr, m_Data.xPos, m_Data.yPos, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
+			glfwSetWindowSize(m_MainWindow, m_Data.Width, m_Data.Height);
 		}
 	}
-
 
 	void LinuxWindow::SetIcon(const char* filepath)
 	{

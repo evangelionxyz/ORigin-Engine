@@ -20,10 +20,15 @@ IncludeDir["MONO"]                     = "%{wks.location}/ORigin/vendor/mono/inc
 IncludeDir["MINIAUDIO"]                = "%{wks.location}/ORigin/vendor/miniaudio"
 IncludeDir["FILEWATCHER"]              = "%{wks.location}/ORigin/vendor/Filewatcher/include"
 IncludeDir["YAMLCPP"]                  = "%{wks.location}/ORigin/vendor/yaml-cpp/include"
-IncludeDir["MSDFATLASGEN"]              = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen"
+IncludeDir["MSDFATLASGEN"]             = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen"
 IncludeDir["MSDFGEN"]                  = "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["JOLT"]                     = "%{wks.location}/ORigin/vendor/JoltPhysics"
 IncludeDir["OPTICK"]                   = "%{wks.location}/ORigin/vendor/Optick/src/"
+
+-- Linux
+IncludeDir["LinuxVulkanSDK"]           = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/include"
+LibraryDir["LinuxVulkanSDK"]           = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/lib"
+LibraryDir["LinuxMono"]                = "%{wks.location}/ORigin/vendor/mono/linux/lib"
 
 -- Windows
 Library["MONO"]                        = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}/libmono-static-sgen.lib"
@@ -39,6 +44,7 @@ Library["SPIRV_Tools_Debug"]           = "%{LibraryDir.VulkanSDK}/SPIRV-Toolsd.l
 Library["ShaderC_Release"]             = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
 Library["SPIRV_Cross_Release"]         = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_Cross_GLSL_Release"]    = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+
 
 Library["WinSock"]                     = "Ws2_32.lib"
 Library["WinMM"]                       = "Winmm.lib"
