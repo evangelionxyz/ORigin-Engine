@@ -47,12 +47,21 @@ AssetRegistry:
   - Handle: 8266440228153610938
     Filepath: Scenes/Scene.org
     Type: AssetType::Scene
+  - Handle: 8967047327140205176
+    Filepath: KayKit_Medieval_Hexagon/Assets/obj/buildings/neutral/fence_wood_straight_gate.obj
+    Type: AssetType::Mesh
   - Handle: 11658048532699140974
     Filepath: Materials/M_LightBlue.mat
     Type: AssetType::Material
+  - Handle: 14306587234073350043
+    Filepath: Models/diffuse.png
+    Type: AssetType::Texture
   - Handle: 14643549996337942512
     Filepath: Materials/M_LavaBlock.mat
     Type: AssetType::Material
+  - Handle: 14836320472521713005
+    Filepath: Models/silly_dancing.fbx
+    Type: AssetType::Mesh
   - Handle: 15641753581354529481
     Filepath: Textures/spritesheet.sprite
     Type: AssetType::SpritesSheet

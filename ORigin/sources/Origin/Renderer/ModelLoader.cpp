@@ -2,8 +2,10 @@
 
 #include "pch.h"
 #include "ModelLoader.h"
-
 #include "Origin/Math/Math.h"
+
+#include "Renderer.h"
+#include "Texture.h"
 
 namespace origin
 {
@@ -91,7 +93,9 @@ namespace origin
     {
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
-			  aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+			  aiProcess_Triangulate | aiProcess_GenSmoothNormals
+			| aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices
+		);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -101,6 +105,7 @@ namespace origin
 
 		aiMesh *mesh = scene->mMeshes[0];
 		std::shared_ptr<MeshData> data = std::make_shared<MeshData>();
+		data->DiffuseTexture = Renderer::WhiteTexture;
 
         // load position, normal, uv
         for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -198,8 +203,6 @@ namespace origin
 				boneId = data->boneInfoMap[boneName].ID;
 			}
 
-			OGN_CORE_ASSERT(boneId != -1, "Invalid bone id");
-
 			auto weights = bone->mWeights;
 			for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
 			{
@@ -209,13 +212,59 @@ namespace origin
 				OGN_CORE_ASSERT(vertexId < data->vertices.size(), "Invalid vertex id");
 				MeshVertexData &vertex = data->vertices[vertexId];
 
-				for (int boneIndex = 0; boneIndex < MAX_BONE_INFLUENCE; ++boneIndex)
+				// Find the first available slot for bone influence
+				int availableSlot = -1;
+				for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
 				{
-					if (vertex.IDs[boneIndex] < 0)
+					if (vertex.IDs[i] < 0)
 					{
-						vertex.Weights[boneIndex] = weight;
-						vertex.IDs[boneIndex] = boneId;
+						availableSlot = i;
+						break;
 					}
+				}
+
+				// If a slot is found, assign the bone weight
+				if (availableSlot != -1)
+				{
+					vertex.IDs[availableSlot] = boneId;
+					vertex.Weights[availableSlot] = weight;
+				}
+				else
+				{
+					// If no available slot, find the smallest weight and replace it if the current weight is larger
+					int smallestWeightIndex = 0;
+					for (int i = 1; i < MAX_BONE_INFLUENCE; ++i)
+					{
+						if (vertex.Weights[i] < vertex.Weights[smallestWeightIndex])
+						{
+							smallestWeightIndex = i;
+						}
+					}
+
+					// Replace if the current weight is larger
+					if (vertex.Weights[smallestWeightIndex] < weight)
+					{
+						vertex.IDs[smallestWeightIndex] = boneId;
+						vertex.Weights[smallestWeightIndex] = weight;
+					}
+				}
+			}
+		}
+
+		// Normalize the weights so that they sum to 1 for each vertex
+		for (auto &vertex : data->vertices)
+		{
+			float totalWeight = 0.0f;
+			for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+			{
+				totalWeight += vertex.Weights[i];
+			}
+
+			if (totalWeight > 0.0f)
+			{
+				for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+				{
+					vertex.Weights[i] /= totalWeight;
 				}
 			}
 		}

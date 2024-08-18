@@ -1,7 +1,6 @@
 #pragma once
 #include "Origin/Asset/Asset.h"
 #include "Origin/Animation/ModelAnimation.h"
-
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <vector>
@@ -11,9 +10,9 @@
 
 namespace origin
 {
-    
     class VertexArray;
     class VertexBuffer;
+    class Texture2D;
 
     struct StaticMeshVertexData
     {
@@ -68,6 +67,8 @@ namespace origin
         std::vector<ModelAnimation> animations;
         std::map<std::string, BoneInfo> boneInfoMap;
         int boneCount = 0;
+
+        std::shared_ptr<Texture2D> DiffuseTexture;
 
         static AssetType GetStaticType() { return AssetType::Mesh; }
         virtual AssetType GetType() const { return GetStaticType(); }

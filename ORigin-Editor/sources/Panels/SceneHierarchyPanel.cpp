@@ -497,7 +497,7 @@ namespace origin {
             ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
 
             // Model Button
-            ImGui::Button("Drop model", buttonSize);
+            ImGui::Button("Drop Here", buttonSize);
             if (ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -512,6 +512,10 @@ namespace origin {
 							component.Animator = Animator(&component.Data->animations[0]);
 						}
                     }
+					if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+					{
+						component.Data->DiffuseTexture = AssetManager::GetAsset<Texture2D>(handle);
+					}
                     else
                     {
                         OGN_CORE_WARN("Wrong asset type!");

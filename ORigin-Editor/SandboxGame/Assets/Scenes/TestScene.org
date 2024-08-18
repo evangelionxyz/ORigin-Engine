@@ -1,18 +1,18 @@
 Scene: TestScene.org
 Entities:
-  - Entity: 15026679980035348752
+  - Entity: 5250407228004231412
     Type: Entity
     Parent: 0
     TagComponent:
       Tag: Test
     TransformComponent:
-      Translation: [-6, 3.98558235, 3.1554451]
+      Translation: [-11, 3.98558235, 3.1554451]
       Rotation: [0, 0, 0, 1]
       Scale: [0.610000014, 0.609999061, 0.609999061]
       Visible: true
     MeshComponent:
       Name: ""
-      HMesh: 4852161394507491661
+      HMesh: 14836320472521713005
       HMaterial: 0
   - Entity: 4355993424349242155
     Type: Entity
@@ -113,7 +113,7 @@ Entities:
     TagComponent:
       Tag: Test
     TransformComponent:
-      Translation: [0, 3.98558235, 3.1554451]
+      Translation: [-3.57180429, 3.98558235, 3.1554451]
       Rotation: [0, 0, 0, 1]
       Scale: [0.610000014, 0.609999061, 0.609999061]
       Visible: true
@@ -128,8 +128,8 @@ Entities:
       Tag: Camera
     TransformComponent:
       Translation: [35, 22, 35]
-      Rotation: [-0.239117593, 0.369643837, 0.0990457386, 0.892399073]
-      Scale: [0.99999994, 0.999997616, 0.999999821]
+      Rotation: [-0.239117578, 0.369643807, 0.0990457162, 0.892399132]
+      Scale: [0.99999994, 0.999997616, 0.999999762]
       Visible: true
     CameraComponent:
       Camera:
@@ -229,11 +229,11 @@ Entities:
       Visible: true
     LightComponent:
       Type: DIRECTIONAL
-      Color: [0.674205482, 0.739507079, 0.804255307, 1]
+      Color: [0.791489363, 0.791489363, 0.791489363, 1]
       Near: 1
       Far: 50
       OrthoSize: 50
-      Ambient: [0, 0.114078827, 0.268085122, 0.200000003]
+      Ambient: [0.617021263, 0.617021263, 0.617021263, 0.200000003]
       Diffuse: 0
       Specular: 0
   - Entity: 4200692951670387674

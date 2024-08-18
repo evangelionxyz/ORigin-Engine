@@ -454,9 +454,11 @@ namespace origin
             {
                 Shader *shader = Renderer::GetShader("AnimatedMesh").get();
                 shader->Enable();
+
                 glActiveTexture(0);
-                Renderer::WhiteTexture->Bind(0);
-                shader->SetInt("uTexture", Renderer::WhiteTexture->GetTextureID());
+                mesh.Data->DiffuseTexture->Bind(0);
+                shader->SetInt("uTexture", mesh.Data->DiffuseTexture->GetTextureID());
+
                 shader->SetMatrix("viewProjection", camera.GetViewProjection());
                 shader->SetMatrix("model", tc.GetTransform());
 

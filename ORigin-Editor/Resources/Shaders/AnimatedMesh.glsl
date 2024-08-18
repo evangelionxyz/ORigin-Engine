@@ -19,36 +19,6 @@ layout(location = 2) out vec3 vPosition;
 
 void main()
 {
-
-	//vec4 totalPosition = vec4(0.0);
-    //vec3 totalNormal = vec3(0.0);
-    //
-    //for(int i = 0; i < MAX_BONE_INFLUENCE; i++)
-    //{
-    //    if(BoneIDs[i] == -1)
-    //    {
-    //        continue;
-    //    }
-    //    
-    //    if(BoneIDs[i] >= MAX_BONES)
-    //    {
-    //        totalPosition = vec4(Position, 1.0);
-    //        totalNormal = Normals;
-    //        break;
-    //    }
-    //
-    //    vec4 localPosition = boneTransforms[BoneIDs[i]] * vec4(Position, 1.0);
-    //    totalPosition += localPosition * Weights[i];
-    //
-    //    vec3 localNormal = mat3(transpose(inverse(boneTransforms[BoneIDs[i]]))) * Normals;
-    //    totalNormal += localNormal * Weights[i];
-    //}
-    //
-    //gl_Position = viewProjection * model * totalPosition;
-    //vPosition = vec3(model * vec4(Position, 1.0));
-    //vUV = UV;
-    //vNormals = normalize(totalNormal);
-
 	mat4 boneTransform = boneTransforms[BoneIDs[0]] * Weights[0];
 	boneTransform     += boneTransforms[BoneIDs[1]] * Weights[1];
 	boneTransform     += boneTransforms[BoneIDs[2]] * Weights[2];

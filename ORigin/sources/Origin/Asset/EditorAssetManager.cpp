@@ -21,8 +21,6 @@ namespace origin
 		{ ".otf", AssetType::Font },
 
 		{ ".obj", AssetType::Mesh },
-		{ ".gltf", AssetType::Mesh },
-		{ ".fbx", AssetType::Mesh },
 		{ ".dae", AssetType::Mesh },
 
 		{ ".mat", AssetType::Material },
