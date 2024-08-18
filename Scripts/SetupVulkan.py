@@ -33,6 +33,8 @@ class VulkanConfiguration:
                     print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
                     cls.__InstallVulkanSDK()
                     return False
+        print(f">> Correct Vulkan SDK located at {vulkanSDK}")
+        return True
         # elif platform.system() == "Linux":
         #     vulkanSDK = os.path.abspath(f"ORigin/vendor/VulkanSDK/{cls.installVulkanVersion}/vulkansdk")
         #     if not os.path.exists(vulkanSDK):
@@ -45,10 +47,8 @@ class VulkanConfiguration:
         #             print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.requiredVulkanVersion})")
         #             cls.__InstallVulkanSDK()
         #             return False
-
-
-        print(f">> Correct Vulkan SDK located at {vulkanSDK}")
-        return True
+        # print(f">> Correct Vulkan SDK located at {vulkanSDK}")
+        # return True
 
     @classmethod
     def __InstallVulkanSDK(cls):

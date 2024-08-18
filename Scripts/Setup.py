@@ -5,11 +5,11 @@ import Utils
 
 os.chdir('./../')
 from SetupPython import PythonConfiguration as PythonRequirements
-if platform.system() == "Windows":
-    PythonRequirements.Validate()
+PythonRequirements.Validate()
 
 from SetupVulkan import VulkanConfiguration as VulkanRequirements
-VulkanRequirements.Validate()
+if platform.system() == "Windows":
+    VulkanRequirements.Validate()
 
 from SetupPremake import PremakeConfiguration as PremakeRequirements
 premakeInstalled = PremakeRequirements.Validate()
@@ -17,18 +17,16 @@ premakeInstalled = PremakeRequirements.Validate()
 print(">> Updating submodules...")
 subprocess.call(["git", "submodule", "update", "--init", "--recursive"])
 
+
+# Registering ORigin Engine to Environment
+# To handle project builder
 def RegisterEngineEnvVariable():
     variable_name = "ORiginEngine"
     variable_path = os.getcwd()
-    if os.environ.get(variable_name) is None:
+    if os.environ.get(variable_path) is None:
         print(">> Registering Origin Engine path...")
         if platform.system() == "Windows":
             Utils.SetWindowsSystemEnvironmentVariable(variable_name, variable_path)
-        elif platform.system() == "Linux":
-            Utils.SetLinuxSystemEnvironmentVariable(variable_name, variable_path)
-
-    print(f">> Engine path is registered to {variable_path} as {variable_name}")
-
 
 # Windows Only
 def RegisterMSBuild():
@@ -51,7 +49,6 @@ if premakeInstalled:
         premake_path = os.path.abspath("./Scripts/premake5.bat")
         subprocess.call([premake_path, "nopause"])
         RegisterMSBuild()
-
     elif platform.system() == "Linux":
         print("\n>> Generating GNU Makefiles...")
         premake_path = os.path.abspath("./Scripts/premake5.sh")

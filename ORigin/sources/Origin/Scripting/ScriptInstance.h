@@ -1,4 +1,5 @@
 #pragma once
+#include "ScriptField.h"
 #include "ScriptClass.h"
 
 extern "C" {
@@ -11,24 +12,6 @@ namespace origin
 {
     class Entity;
     class ScriptClass;
-
-    enum class ScriptFieldType
-    {
-        Invalid = 0,
-        Entity,
-        Float, Double,
-        Bool, Char, Byte, Short, Int, Long,
-        UByte, UShort, UInt, ULong,
-        Vector2, Vector3, Vector4
-    };
-
-    struct ScriptField
-    {
-        ScriptFieldType Type = ScriptFieldType::Invalid;
-        std::string Name;
-
-        MonoClassField *ClassField = nullptr;
-    };
 
     // script field + data storage
     struct ScriptFieldInstance

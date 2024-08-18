@@ -57,47 +57,6 @@ def AddNewWindowsSystemPathEnvironment(new_path):
     return new_path not in current_path
 # !Windows
 
-# Linux
-def SetLinuxSystemEnvironmentVariable(variable_name, directory_path):
-    os.environ[variable_name] = directory_path
-
-    with open('/etc/environment', 'a') as file:
-        file.write(f'\n{variable_name}="{directory_path}"\n')
-
-
-def GetLinuxSystemEnviromentVariable(name):
-    value = os.environ.get(name)
-    if value is not None:
-        return True
-    
-    try:
-        with open('/etc/environment', 'r') as file:
-            for line in file:
-                if line.startswith(f'{name}='):
-                    return line.split('=', 1)[1].strip().strip('"')
-    except FileNotFoundError:
-        pass
-
-    return None
-
-def GetLinuxUserEnvironmentVariable(name):
-    return os.environ.get(name)
-
-def AddNeLinuxSystemPathEnvironment(new_path):
-    current_path = os.environ.get('PATH', '')
-    if new_path not in current_path.split(':'):
-        new_path = f'{current_path}:{new_path}'
-
-        os.environ['PATH'] = new_path
-
-        with open('/etc/environment', 'a') as file:
-            file.write(f'\nPATH="{new_path}"\n')
-
-        return True
-    return False
-# !Linux
-
-
 def DownloadFile(url, filepath):
     path = filepath
     filepath = os.path.abspath(filepath)

@@ -15,27 +15,17 @@ namespace origin {
 
 	namespace Utils
 	{
-		std::string GetEnvironment(const char *var)
-		{
-			const char *value = std::getenv(var);
-			if (!value)
-			{
-				OGN_CORE_ASSERT(false, "[Project] Engine environment variable not found!");
-				return "";
-			}
-			return std::string(value);
-		}
-
 		std::string ReadFile(const std::string &filepath)
 		{
 			std::ifstream file(filepath);
 			if (!file.is_open())
 			{
-				OGN_CORE_ASSERT(false, "[Project] Failed to open file! {0}", filepath);
+				OGN_CORE_ASSERT(false, "[Project] Failed to open read file! {0}", filepath);
 				return "";
 			}
 			std::stringstream stream;
 			stream << file.rdbuf();
+			file.close();
 			return stream.str();
 		}
 
@@ -44,11 +34,12 @@ namespace origin {
 			std::ofstream file(filepath);
 			if (!file.is_open())
 			{
-				OGN_CORE_ASSERT(false, "[Project] Failed to open file! {0}", filepath);
+				OGN_CORE_ASSERT(false, "[Project] Failed to open and write file! {0}", filepath);
 				return false;
 			}
 
 			file << content;
+			file.close();
 			return true;
 		}
 
@@ -74,7 +65,7 @@ namespace origin {
 			ReplaceAll(content, "{PROJECT_NAME}", projectName);
 			if (!WriteFile(outputPath, content))
 			{
-				OGN_CORE_ASSERT(false, "[Project] Failed to write file! {0}", outputPath);
+				OGN_CORE_ASSERT(false, "[Project] Failed to generate file! {0}", outputPath);
 			}
 		}
 
@@ -106,10 +97,8 @@ namespace origin {
 		std::filesystem::path projectFilepath = FileDialogs::SaveFile("ORigin Project (*.oxproj)\0*.oxproj\0");
 #elif __linux__
 		std::filesystem::path projectFilepath = FileDialogs::SaveFile("ORigin Project | *.oxproj");
-		projectFilepath = projectFilepath.string() + ".oxproj";
 #endif
-
-		if (projectFilepath.empty())
+		if (projectFilepath == "")
 			return nullptr;
 
 		OGN_CORE_INFO("[Project New] {0}", projectFilepath.string());
@@ -129,27 +118,25 @@ namespace origin {
 		}
 
 		// Get premake5.lua template
-		std::string enginePath = Utils::GetEnvironment("ORiginEngine");
-		std::string premakeFilepath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/premake_template.lua").generic_string();
-		std::string projectPremakeLocation = filepath.string() + "/premake5.lua";
+		std::string premakeFilepath = std::filesystem::absolute("Resources/ScriptProjectGen/premake_template.lua").generic_string();
+		std::string projectPremakeLocation = std::filesystem::absolute(filepath.string() + "/premake5.lua");
 		Utils::GenerateFile(premakeFilepath, projectPremakeLocation, projectName);
 
-#ifdef _WIN32
+#if defined(_WIN32)
 		// Copying the build.bat
-		std::string buildScriptPath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/build.bat").generic_string();
+		std::string buildScriptPath = std::filesystem::absolute("Resources/ScriptProjectGen/build.bat").generic_string();
 		std::string projectBuildScriptPath = filepath.string() + "/build.bat";
 		Utils::GenerateFile(buildScriptPath, projectBuildScriptPath, projectName);
 		
-#elif __linux__
+#elif defined(OGN_PLATFORM_LINUX)
 		// Copying the build.sh
-		std::string buildScriptPath = std::filesystem::absolute(enginePath + "/ORigin-Editor/Resources/ScriptProjectGen/build.sh").generic_string();
+		std::string buildScriptPath = std::filesystem::absolute("Resources/ScriptProjectGen/build.sh").generic_string();
 		std::string projectBuildScriptPath = filepath.string() + "/build.sh";
 		Utils::CopyFile(buildScriptPath, projectBuildScriptPath);
 #endif
 		Utils::ExecuteScript(projectBuildScriptPath);
 
 		std::shared_ptr<Project> newProject = std::make_shared<Project>();
-
 		newProject->GetConfig().Name = projectName;
 		// No start scene in new project
 		newProject->GetConfig().StartScene = 0;

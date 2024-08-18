@@ -6,21 +6,21 @@
 
 namespace origin
 {
-	void AudioSource::Play()
-	{
-		if (ma_sound_is_playing(m_Sounds[0]))
-		{
-			return;
-		}
+    void AudioSource::Play()
+    {
+        if (ma_sound_is_playing(m_Sounds[0]))
+        {
+            return;
+        }
 
-		ma_result result = ma_sound_start(m_Sounds[0]);
-		if (result != MA_SUCCESS)
-		{
+        ma_result result = ma_sound_start(m_Sounds[0]);
+        if (result != MA_SUCCESS)
+        {
             OGN_CORE_ERROR("[Audio Source] Failed to start sound: {0}", result);
             PUSH_CONSOLE_ERROR("[Audio Source] Failed to start sound: {0}", result);
-			return;
-		}
-	}
+            return;
+        }
+    }
 
 	void AudioSource::Pause()
 	{
@@ -61,55 +61,55 @@ namespace origin
             PUSH_CONSOLE_ERROR("[Audio Source] Failed to start overlapping: {0}", result);
         }
 
-		m_OverlapIndex++;
-		if (m_OverlapIndex >= m_MaxOverlap - 1)
-		{
-			m_OverlapIndex = 0;
-		}
+        m_OverlapIndex++;
+        if (m_OverlapIndex >= m_MaxOverlap - 1)
+        {
+            m_OverlapIndex = 0;
+        }
     }
 
     void AudioSource::SetVolume(float volume)
-	{
+    {
         for (ma_sound *sound : m_Sounds)
         {
             ma_sound_set_volume(sound, volume);
         }
-	}
+    }
 
-	void AudioSource::SetPitch(float pitch)
-	{
+    void AudioSource::SetPitch(float pitch)
+    {
         for (ma_sound *sound : m_Sounds)
         {
-			ma_sound_set_pitch(sound, pitch);
+            ma_sound_set_pitch(sound, pitch);
         }
-	}
+    }
 
-	void AudioSource::SetPaning(float pan)
-	{
+    void AudioSource::SetPaning(float pan)
+    {
         for (ma_sound *sound : m_Sounds)
         {
-			ma_sound_set_pan(sound, pan);
+            ma_sound_set_pan(sound, pan);
         }
-	}
+    }
 
-	void AudioSource::SetPosition(const glm::vec3 &position, int index, ma_positioning mode)
-	{
-		if (index == -1)
-		{
+    void AudioSource::SetPosition(const glm::vec3 &position, int index, ma_positioning mode)
+    {
+        if (index == -1)
+        {
             for (ma_sound *sound : m_Sounds)
             {
                 ma_sound_set_position(sound, position.x, position.y, position.z);
-				ma_sound_set_positioning(sound, mode);
+                ma_sound_set_positioning(sound, mode);
             }
-		}
-		else
-		{
+        }
+        else
+        {
             ma_sound_set_position(m_Sounds[index], position.x, position.y, position.z);
             ma_sound_set_positioning(m_Sounds[index], mode);
-		}
-	}
+        }
+    }
 
-	bool AudioSource::IsPlaying()
+    bool AudioSource::IsPlaying()
 	{
 		return ma_sound_is_playing(m_Sounds[0]) != 0;
 	}

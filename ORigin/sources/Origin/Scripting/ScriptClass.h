@@ -1,5 +1,6 @@
 #pragma once
 #include "ScriptInstance.h"
+#include "ScriptField.h"
 
 extern "C" {
     typedef struct _MonoClass MonoClass;
@@ -9,7 +10,6 @@ extern "C" {
 
 namespace origin
 {
-    struct ScriptField;
     class ScriptClass
     {
     public:

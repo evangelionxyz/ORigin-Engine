@@ -1963,7 +1963,7 @@ namespace origin
 		([]()
 		{
 			std::string_view typeName = typeid(Component).name();
-#if defined(__GNUG__)
+#ifdef OGN_PLATFORM_LINUX
 			int status = 0;
 			char* demangledName = abi::__cxa_demangle(typeName.data(), nullptr, nullptr, &status);
 			if (status == 0 && demangledName != nullptr)
@@ -1994,7 +1994,7 @@ namespace origin
 			}
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
 			s_EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddOrReplaceComponent<Component>(); };
-#if defined(__GNUG__)
+#ifdef OGN_PLATFORM_LINUX
 			free(demangledName);
 #endif
 

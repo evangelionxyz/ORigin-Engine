@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <string>
+#include <unordered_map>
 
 extern "C" {
 	typedef struct _MonoClass MonoClass;

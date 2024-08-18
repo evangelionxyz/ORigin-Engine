@@ -7,7 +7,7 @@
 	#ifndef OGN_PLATFORM_WINDOWS
 		#define OGN_PLATFORM_WINDOWS
 	#endif
-#elif __linux__
+#elif __linux__ || __GNUG__
 	#ifndef OGN_PLATFORM_LINUX
 		#define OGN_PLATFORM_LINUX
 	#endif

@@ -2,7 +2,13 @@
 #pragma once
 #include <vector>
 #include <chrono>
-#include <format>
+#include <sstream>
+
+#if defined(OGN_PLATFORM_WINDOWS)
+    #include <format>
+#elif defined(OGN_PLATFORM_LINUX)
+    #include <fmt/format.h>
+#endif
 
 #include "Base.h"
 
@@ -41,7 +47,6 @@ namespace origin
             PushMessage(type, message);
         }
 
-        // Overload for when no formatting is needed
         void PushFormattedMessage(ConsoleMessageType type, const std::string &message)
         {
             PushMessage(type, message);

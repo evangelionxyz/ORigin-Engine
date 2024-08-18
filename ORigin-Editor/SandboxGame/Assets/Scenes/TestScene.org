@@ -1,19 +1,5 @@
 Scene: TestScene.org
 Entities:
-  - Entity: 5250407228004231412
-    Type: Entity
-    Parent: 0
-    TagComponent:
-      Tag: Test
-    TransformComponent:
-      Translation: [-11, 3.98558235, 3.1554451]
-      Rotation: [0, 0, 0, 1]
-      Scale: [0.610000014, 0.609999061, 0.609999061]
-      Visible: true
-    MeshComponent:
-      Name: ""
-      HMesh: 14836320472521713005
-      HMaterial: 0
   - Entity: 4355993424349242155
     Type: Entity
     Parent: 2723873067466865669
@@ -69,12 +55,12 @@ Entities:
     ScriptComponent:
       ClassName: TestGame.Player
       ScriptFields:
-        - Name: camera
-          Type: Entity
-          Data: 7916222134218068362
         - Name: Speed
           Type: Float
           Data: 10
+        - Name: camera
+          Type: Entity
+          Data: 7916222134218068362
     TransformComponent:
       Translation: [6.5170126, 6, 8.15002251]
       Rotation: [0, 0, 0, 1]
