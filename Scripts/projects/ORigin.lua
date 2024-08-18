@@ -132,8 +132,8 @@ project "ORigin"
         pic "On"
         files { "%{prj.location}/sources/Platform/Linux/**.cpp" }
         includedirs { "%{IncludeDir.LinuxVulkanSDK}" }
+        libdirs { "/usr/lib", "%{LibraryDir.LinuxVulkanSDK}", "%{LibraryDir.LinuxMono}" }
         defines { "OGN_PLATFORM_LINUX" }
-        libdirs { "/usr/lib" }
         links {
             "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
             "monosgen-2.0", "pthread", "dl", "m", "rt", "glib-2.0"

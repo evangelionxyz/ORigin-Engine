@@ -58,6 +58,8 @@ project "Sandbox"
 
     filter "system:linux"
         pic "On"
+        includedirs { "%{IncludeDir.LinuxVulkanSDK}" }
+        libdirs { "/usr/lib", "%{LibraryDir.LinuxVulkanSDK}" }
         links {
             "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
             "monosgen-2.0", "pthread", "dl", "m", "rt"

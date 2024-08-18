@@ -238,7 +238,7 @@ namespace origin
 					{
 						m_Renaming = true;
 						m_RenamePath = item;
-						strncpy_s(m_RenameBuffer, filenameStr.c_str(), sizeof(m_RenameBuffer));
+						strncpy(m_RenameBuffer, filenameStr.c_str(), sizeof(m_RenameBuffer) - 1);
 					}
 
 					ImGui::EndPopup();

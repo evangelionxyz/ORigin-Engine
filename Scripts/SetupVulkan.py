@@ -72,7 +72,7 @@ class VulkanConfiguration:
                     return
                 permissionGranted = (reply == 'y')
             
-            print("Downloading {0:s} to {1:s}".format(vulkanInstallURL, vulkanDownloadFilepath))
+            print("Downloading {0:s} to {1:s}".format("Vulkan SDK", vulkanDownloadFilepath))
             print("Please Wait...")
             Utils.DownloadFile(vulkanInstallURL, vulkanDownloadFilepath)
         else:

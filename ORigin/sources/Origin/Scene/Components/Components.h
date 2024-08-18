@@ -203,7 +203,7 @@ namespace origin
         AssetHandle HMaterial = UUID(0);
         AssetHandle HMesh = UUID(0);
 		float PlaybackSpeed = 1.0f;
-		Animator Animator;
+		Animator AAnimator;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent &) = default;
