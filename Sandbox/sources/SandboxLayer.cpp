@@ -5,8 +5,6 @@
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/GUI/UI.h"
 
-#include "Platform/Vulkan/VulkanShader.h"
-
 #include "SandboxLayer.h"
 
 #include <iostream>
@@ -19,7 +17,7 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
 
 void SandboxLayer::OnAttach()
 {
-	VulkanShader shader = VulkanShader("Resources/Shaders/Vulkan/vert.spv", "Resources/Shaders/Vulkan/frag.spv");
+	std::shared_ptr<Shader> shader = Shader::Create("Resources/Shaders/Vulkan/shader.glsl");
 }
 
 SandboxLayer::~SandboxLayer()

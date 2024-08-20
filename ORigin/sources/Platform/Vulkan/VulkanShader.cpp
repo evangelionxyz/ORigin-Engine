@@ -7,61 +7,69 @@
 
 namespace origin
 {
-    VulkanShader::VulkanShader(const std::string &vertexPath, const std::string &fragmentPath)
+    static VkShaderStageFlagBits GetShaderStage(uint32_t stage)
     {
-        VkShaderModule vertexShader = CreateModule(vertexPath);
-        VkShaderModule fragmentShader = CreateModule(fragmentPath);
+        switch(stage)
+        {
+        case GL_VERTEX_SHADER:   return VK_SHADER_STAGE_VERTEX_BIT;
+        case GL_FRAGMENT_SHADER: return VK_SHADER_STAGE_FRAGMENT_BIT;
+        }
 
-        VkPipelineShaderStageCreateInfo vertexStageInfo{};
-        vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertexStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertexStageInfo.module = vertexShader;
-        vertexStageInfo.pName = "main";
+        OGN_CORE_ASSERT(false, "[Vulkan Shader] Invalid stage.");
+        return (VkShaderStageFlagBits)0;
+    }
 
-        VkPipelineShaderStageCreateInfo fragmentStageInfo{};
-        fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragmentStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragmentStageInfo.module = fragmentShader;
-        fragmentStageInfo.pName = "main";
+    VulkanShader::VulkanShader(const std::filesystem::path &filepath, bool recompile)
+        : m_Filepath(filepath), m_IsRecompile(recompile)
+    {
+        OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Vulkan Shader] Filepath does not exists {}", filepath);
 
-        VkPipelineShaderStageCreateInfo shaderStage[] = { vertexStageInfo, fragmentStageInfo };
+        ShaderUtils::CreateCachedDirectoryIfNeeded();
+        std::string source = Shader::ReadFile(filepath);
+        ShaderSource shaderSources = Shader::PreProcess(source, filepath);
+        m_SPRIV = Shader::CompileOrGetVulkanBinaries(shaderSources, filepath);
 
         VulkanContext *context = VulkanContext::GetInstance();
-        vkDestroyShaderModule(context->m_Device,vertexShader, nullptr);
-        vkDestroyShaderModule(context->m_Device, fragmentShader, nullptr);
+        for (auto &[stage, spirv] : m_SPRIV)
+        {
+            VkShaderModule shaderModule = CreateModule(spirv);
+            VkPipelineShaderStageCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            createInfo.stage = GetShaderStage(stage);
+            createInfo.module = shaderModule;
+            createInfo.pName = "main";
+
+            m_Stages.push_back(createInfo);
+
+            vkDestroyShaderModule(context->m_Device, shaderModule, nullptr);
+        }
     }
 
     VulkanShader::~VulkanShader()
     {
-        //VulkanContext *context = VulkanContext::GetInstance();
-        //vkDestroyShaderModule(context->m_Device, m_VertexShader, nullptr);
-        //vkDestroyShaderModule(context->m_Device, m_FragmentShader, nullptr);
     }
 
-    VkShaderModule VulkanShader::CreateModule(const std::string &filepath)
+    VkShaderModule VulkanShader::CreateModule(const std::vector<uint32_t> &spirv)
     {
-        OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Vulkan Shader] Filepath does not exists {}", filepath);
-
-        // std::ios::ate -> start reading at the end (ate)
-        // std::ios::binary -> read file as binary file (avoid text transformations)
-        std::ifstream file(filepath, std::ios::ate | std::ios::binary);
-        size_t fileSize = (size_t)file.tellg();
-        std::vector<char> code(fileSize);
-
-        // seek back to beggining of the file and read all the bytes at once
-        file.seekg(0);
-        file.read(code.data(), fileSize);
-        file.close();
-
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = code.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+        createInfo.codeSize = spirv.size() * sizeof(uint32_t);
+        createInfo.pCode = spirv.data();
 
         VulkanContext *context = VulkanContext::GetInstance();
         VkShaderModule shaderModule;
         vkCreateShaderModule(context->m_Device, &createInfo, nullptr, &shaderModule);
 
         return shaderModule;
+    }
+
+    void VulkanShader::Reload()
+    {
+
+    }
+
+    const std::filesystem::path &VulkanShader::GetFilepath() const
+    {
+        return m_Filepath;
     }
 }

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "(gdb) Launch Sandbox",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Binaries/Debug/Sandbox/Sandbox",
@@ -15,7 +15,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "preLaunchTask": "build",
+            "preLaunchTask": "build_sandbox",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

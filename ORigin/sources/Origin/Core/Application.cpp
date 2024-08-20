@@ -96,18 +96,18 @@ namespace origin {
 				}
 			}
 
-			if (!m_Spec.Runtime)
+			if (!m_Spec.Runtime && m_GuiLayer)
 			{
-				// m_GuiLayer->Begin();
-				// for (Layer *layer : m_LayerStack)
-				// {
-				// 	layer->OnGuiRender();
-				// }
-				// m_GuiLayer->SetDisplaySize(
-				// 	static_cast<float>(m_Window->GetWidth()),
-				// 	static_cast<float>(m_Window->GetHeight())
-				// );
-				// m_GuiLayer->End();
+				m_GuiLayer->Begin();
+				for (Layer *layer : m_LayerStack)
+				{
+					layer->OnGuiRender();
+				}
+				m_GuiLayer->SetDisplaySize(
+					static_cast<float>(m_Window->GetWidth()),
+					static_cast<float>(m_Window->GetHeight())
+				);
+				m_GuiLayer->End();
 			}
 
 			m_Window->OnUpdate();

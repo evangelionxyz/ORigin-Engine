@@ -3,19 +3,33 @@
 #ifndef VULKAN_SHADER_H
 #define VULKAN_SHADER_H
 
+#include "Origin/Renderer/Shader.h"
+
 #include <vulkan.h>
 #include <vector>
 #include <filesystem>
 
 namespace origin
 {
-    class VulkanShader
+    class VulkanShader : public Shader
     {
     public:
-        VulkanShader(const std::string &vertexPath, const std::string &fragmentPath);
+        VulkanShader(const std::filesystem::path &filepath, bool recompile);
+
         ~VulkanShader();
-        
-        VkShaderModule CreateModule(const std::string &filepath);
+
+        void Reload() override;
+        bool IsSPIRV() const override { return true; }
+        bool IsRecompile() const override { return m_IsRecompile; }
+        const std::filesystem::path &GetFilepath() const override;
+
+    private:
+        VkShaderModule CreateModule(const std::vector<uint32_t> &spirv);
+
+        ShaderData m_SPRIV;
+        std::filesystem::path m_Filepath;
+        std::vector<VkPipelineShaderStageCreateInfo> m_Stages;
+        bool m_IsRecompile = false;
     };
 }
 

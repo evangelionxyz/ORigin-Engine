@@ -1028,7 +1028,7 @@ namespace origin
 								ImGui::TableNextColumn();
 								ImGui::TextWrapped(name.c_str());
 								ImGui::TableNextColumn();
-								ImGui::TextWrapped(shader->IsSpirvEnabled() ? "SPIR-V" : "-");
+								ImGui::TextWrapped(shader->IsSPIRV() ? "SPIR-V" : "-");
 								ImGui::TableNextColumn();
 								if (ImGui::Button("Reload"))
 								{

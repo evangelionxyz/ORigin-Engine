@@ -3,7 +3,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "build",
+            "label": "build_sandbox",
             "command": "make",
             "args": [
                 "-j",
