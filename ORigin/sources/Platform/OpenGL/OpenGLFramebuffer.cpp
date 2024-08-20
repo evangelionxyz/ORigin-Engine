@@ -48,7 +48,7 @@ namespace origin {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, spec.WrapMode);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, spec.WrapMode);
 			
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, Texture2DTarget(multisampled), textureID, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, Texture2DTarget(multisampled), textureID, 0);
 		}
 
 		static void AttachDepthTexture2D(uint32_t textureID, GLenum textureFormat, GLenum attachmentType, FramebufferSpecification spec)
@@ -76,7 +76,7 @@ namespace origin {
 			float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, Texture2DTarget(multisampled), textureID, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, Texture2DTarget(multisampled), textureID, 0);
 		}
 
 		// ============ CUBE MAP ============
@@ -107,7 +107,7 @@ namespace origin {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, spec.WrapMode);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, spec.WrapMode);
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_CUBE_MAP, textureID, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_CUBE_MAP, textureID, 0);
 		}
 
 		static bool IsDepthFormat(FramebufferTextureFormat format)
@@ -256,7 +256,7 @@ namespace origin {
 
 	void OpenGL_Framebuffer::Unbind()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void OpenGL_Framebuffer::Resize(uint32_t width, uint32_t height)

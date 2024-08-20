@@ -1,5 +1,5 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
-
+require "cmake"
 project "Runtime"
     location "%{wks.location}/ORigin-Runtime"
     language "C++"

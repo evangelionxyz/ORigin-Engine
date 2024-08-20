@@ -1,3 +1,4 @@
+require "cmake"
 project "FreeType"
     location (vendorProjectFiles)
     kind "StaticLib"

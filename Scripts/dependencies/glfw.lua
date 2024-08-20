@@ -1,5 +1,5 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
-
+require "cmake"
 project "GLFW"
     location (vendorProjectFiles)
 	kind "StaticLib"
@@ -42,11 +42,6 @@ project "GLFW"
 			"%{wks.location}/ORigin/vendor/origin-glfw/src/xkb_unicode.c",
 			"%{wks.location}/ORigin/vendor/origin-glfw/src/glx_context.c",
 		}
-		defines {
-			"VK_VERSION_1_0",
-			"GLFW_INCLUDE_VULKAN",
-			"_GLFW_X11",
-		}
 
 	-- ==============================
 	-- Windows
@@ -63,7 +58,6 @@ project "GLFW"
 		}
 
 		defines {
-			"_GLFW_WIN32",
 			"_CRT_SECURE_NO_WARNINGS"
 		}
 

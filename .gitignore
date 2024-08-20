@@ -11,16 +11,20 @@
 *.cdr
 *.opt
 *.codelite
+camke_install.cmake
+CMakeCache.txt
 
 # Visual Studio extension resources
 ORigin.sln.startup.json
 ORigin.sln.licenseheader
 
 # folders
-Binaries/
+build
+Binaries
 Makefile
+CMakeFiles
 Scripts/__pycache__
-Scripts/premake
+
 ORigin/vendor/VulkanSDK
 ORigin/Makefile
 ORigin/vendor/projectFiles
@@ -31,3 +35,7 @@ ORigin-Runtime/Makefile
 Sandbox/Makefile
 SandboxGame/bin
 SandboxGame/bin-int
+/Scripts/premake/example.so
+/Scripts/premake/libluasocket.so
+/Scripts/premake/premake5
+/Scripts/premake/README.md

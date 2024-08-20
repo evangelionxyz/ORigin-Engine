@@ -41,6 +41,6 @@ namespace origin {
 
     void ShadowRenderer::UnbindFBO()
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 }

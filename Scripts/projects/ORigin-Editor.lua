@@ -1,5 +1,5 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
-
+require "cmake"
 project "Editor"
     location "%{wks.location}/ORigin-Editor"
     language "C++"

@@ -1,5 +1,5 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
-
+require "cmake"
 project "YAMLCPP"
 	location (vendorProjectFiles)
 	kind "StaticLib"

@@ -1,5 +1,5 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
-
+require "cmake"
 project "JOLT"
     location (vendorProjectFiles)
     kind "StaticLib"

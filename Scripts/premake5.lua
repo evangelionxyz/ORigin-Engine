@@ -2,6 +2,7 @@
 
 -- Solution's Settings
 workspace "OR1"
+
     location "../"
     architecture "x64"
     configurations{

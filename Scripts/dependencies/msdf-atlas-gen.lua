@@ -1,3 +1,4 @@
+require "cmake"
 project "MSDFATLASGEN"
 	location (vendorProjectFiles)
 	kind "StaticLib"

@@ -1,5 +1,5 @@
 -- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-
+if _ACTION ~= "cmake" then
 project "ORigin-ScriptCore"
     kind "SharedLib"
     language "C#"
@@ -25,3 +25,4 @@ project "ORigin-ScriptCore"
     filter "configurations:Dist"
         optimize "Full"
         symbols "Off"
+end
