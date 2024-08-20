@@ -32,8 +32,11 @@ namespace origin
         void CreateVkSurface();
         void CreateVkDevice();
         void CreateVkSwapchain();
+        void CreateVkImageViews();
+        void CreateGraphicsPipeline();
+        void Test();
 
-        void CreateSwapchain();
+        static VulkanContext *GetInstance();
 
     private:
         // Context
@@ -48,6 +51,10 @@ namespace origin
         GLFWwindow *m_WindowHandle;
         uint32_t m_QueueFamilyIndex = 0;
         Swapchain m_Swapchain;
+
+        friend class VulkanShader;
+
+        static VulkanContext *s_Instance;
     };
 }
 

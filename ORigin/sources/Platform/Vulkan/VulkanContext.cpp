@@ -124,12 +124,22 @@ namespace origin
     }
 
     // Vulkan context
+    VulkanContext *VulkanContext::s_Instance = nullptr;
     VulkanContext::VulkanContext()
     {
+        s_Instance = this;
+    }
+
+    VulkanContext *VulkanContext::GetInstance()
+    {
+        return s_Instance;
     }
 
     void VulkanContext::Shutdown()
     {
+        for (auto imageView : m_Swapchain.ImageViews)
+            vkDestroyImageView(m_Device, imageView, nullptr);
+
         vkDestroySwapchainKHR(m_Device, m_Swapchain.Handle, nullptr);
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyDevice(m_Device, nullptr);
@@ -139,22 +149,31 @@ namespace origin
     void VulkanContext::Init(Window *window)
     {
         m_WindowHandle = (GLFWwindow *)window->GetNativeWindow();
-        
+
+        CreateVkInstance();
+        CreateVkPhysicalDevice();
+
         uint32_t instanceApiVersion = 0;
         vkEnumerateInstanceVersion(&instanceApiVersion);
         OGN_CORE_ASSERT(instanceApiVersion, "[Vulkan Context] Couldn't enumerate instance version");
+
+        VkPhysicalDeviceProperties deviceProerties;
+        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProerties);
 
         uint32_t apiVersionVariant = VK_API_VERSION_VARIANT(instanceApiVersion);
         uint32_t apiVersionMajor   = VK_API_VERSION_MAJOR(instanceApiVersion);
         uint32_t apiVersionMinor   = VK_API_VERSION_MINOR(instanceApiVersion);
         uint32_t apiVersionPatch   = VK_API_VERSION_PATCH(instanceApiVersion);
-        OGN_CORE_INFO("[Vulkan Context] Vulkan API {}.{}.{}.{} ", apiVersionVariant, apiVersionMajor, apiVersionMinor, apiVersionPatch);
+        OGN_CORE_INFO("Vulkan Info:");
+        OGN_CORE_INFO(" API Version   : {}.{}.{}.{}", apiVersionVariant, apiVersionMajor, apiVersionMinor, apiVersionPatch);
+        OGN_CORE_INFO(" Vendor ID     : {}", deviceProerties.vendorID);
+        OGN_CORE_INFO(" Renderer      : {}", deviceProerties.deviceName);
+        OGN_CORE_INFO(" Driver Version: {}", deviceProerties.driverVersion);
 
-        CreateVkInstance();
-        CreateVkPhysicalDevice();
         CreateVkSurface();
         CreateVkDevice();
-        CreateSwapchain();
+        CreateVkSwapchain();
+        CreateVkImageViews();
     }
 
     void VulkanContext::CreateVkInstance()
@@ -297,6 +316,98 @@ namespace origin
 
     void VulkanContext::CreateVkSwapchain()
     {
+        SwapchainSupportDetails swapchainSupport = QuerySwapchainCapabilities(m_PhysicalDevice, m_Surface);
+        VkSurfaceFormatKHR surfaceFormat = ChooseSurfaceFormat(swapchainSupport.Formats);
+        VkPresentModeKHR presentMode = ChoosePresentMode(swapchainSupport.PresentModes);
+
+        int width, height;
+        glfwGetFramebufferSize(m_WindowHandle, &width, &height);
+        VkExtent2D extent = ChooseSwpaExtent(swapchainSupport.Capabilities, width, height);
+
+        uint32_t imageCount = swapchainSupport.Capabilities.minImageCount + 1;
+        if (swapchainSupport.Capabilities.maxImageCount > 0 && imageCount > swapchainSupport.Capabilities.maxImageCount)
+        {
+            imageCount = swapchainSupport.Capabilities.maxImageCount;
+        }
+
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = m_Surface;
+
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice, m_Surface);
+        uint32_t queueFamilyIndices[] = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
+
+        if (indices.GraphicsFamily != indices.PresentFamily)
+        {
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        }
+        else
+        {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+
+        createInfo.preTransform = swapchainSupport.Capabilities.currentTransform;
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE;
+        createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+        VkResult result = vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_Swapchain.Handle);
+        OGN_CORE_ASSERT(result == VK_SUCCESS, "[Vulkan Context] Failed to create swapchain.");
+
+        vkGetSwapchainImagesKHR(m_Device, m_Swapchain.Handle, &imageCount, nullptr);
+        m_Swapchain.Images.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_Device, m_Swapchain.Handle, &imageCount, m_Swapchain.Images.data());
+
+        m_Swapchain.ImageFormat = surfaceFormat.format;
+        m_Swapchain.Extent = extent;
+
+    }
+
+    void VulkanContext::CreateVkImageViews()
+    {
+        m_Swapchain.ImageViews.resize(m_Swapchain.Images.size());
+
+        for (size_t i = 0; i < m_Swapchain.Images.size(); ++i)
+        {
+            VkImageViewCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = m_Swapchain.Images[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = m_Swapchain.ImageFormat;
+
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+            VkResult result = vkCreateImageView(m_Device, &createInfo, nullptr, &m_Swapchain.ImageViews[i]);
+            OGN_CORE_ASSERT(result == VK_SUCCESS, "[Vulkan Context] Failed to create image views.");
+        }
+    }
+
+    void VulkanContext::CreateGraphicsPipeline()
+    {
+        
+    }
+
+    void VulkanContext::Test()
+    {
         // query surface capabilities
         VkSurfaceCapabilitiesKHR capabilities;
         VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_PhysicalDevice, m_Surface, &capabilities);
@@ -421,62 +532,4 @@ namespace origin
         }
     }
 
-    void VulkanContext::CreateSwapchain()
-    {
-        SwapchainSupportDetails swapchainSupport = QuerySwapchainCapabilities(m_PhysicalDevice, m_Surface);
-        VkSurfaceFormatKHR surfaceFormat = ChooseSurfaceFormat(swapchainSupport.Formats);
-        VkPresentModeKHR presentMode = ChoosePresentMode(swapchainSupport.PresentModes);
-
-        int width, height;
-        glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-        VkExtent2D extent = ChooseSwpaExtent(swapchainSupport.Capabilities, width, height);
-
-        uint32_t imageCount = swapchainSupport.Capabilities.minImageCount + 1;
-        if (swapchainSupport.Capabilities.maxImageCount > 0 && imageCount > swapchainSupport.Capabilities.maxImageCount)
-        {
-            imageCount = swapchainSupport.Capabilities.maxImageCount;
-        }
-
-        VkSwapchainCreateInfoKHR createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = m_Surface;
-
-        createInfo.minImageCount = imageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
-        createInfo.imageExtent = extent;
-        createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice, m_Surface);
-        uint32_t queueFamilyIndices[] = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
-
-        if (indices.GraphicsFamily != indices.PresentFamily)
-        {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices = queueFamilyIndices;
-        }
-        else
-        {
-            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        }
-
-        createInfo.preTransform = swapchainSupport.Capabilities.currentTransform;
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        createInfo.presentMode = presentMode;
-        createInfo.clipped = VK_TRUE;
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-        VkResult result = vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_Swapchain.Handle);
-        OGN_CORE_ASSERT(result == VK_SUCCESS, "[Vulkan Context] Failed to create swapchain.");
-
-        vkGetSwapchainImagesKHR(m_Device, m_Swapchain.Handle, &imageCount, nullptr);
-        m_Swapchain.Images.resize(imageCount);
-        vkGetSwapchainImagesKHR(m_Device, m_Swapchain.Handle, &imageCount, m_Swapchain.Images.data());
-
-        m_Swapchain.ImageFormat = surfaceFormat.format;
-        m_Swapchain.Extent = extent;
-
-    }
 }

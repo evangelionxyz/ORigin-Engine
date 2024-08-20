@@ -4,6 +4,9 @@
 #include "Origin/Core/KeyCodes.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/GUI/UI.h"
+
+#include "Platform/Vulkan/VulkanShader.h"
+
 #include "SandboxLayer.h"
 
 #include <iostream>
@@ -16,6 +19,7 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
 
 void SandboxLayer::OnAttach()
 {
+	VulkanShader shader = VulkanShader("Resources/Shaders/Vulkan/vert.spv", "Resources/Shaders/Vulkan/frag.spv");
 }
 
 SandboxLayer::~SandboxLayer()
