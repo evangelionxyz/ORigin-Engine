@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef APPLICATION_H
+#define APPLICATION_H
+
 #include "Window.h"
 #include "Input.h"
 #include "AppEvent.h"
@@ -80,3 +82,5 @@ namespace origin {
 
 	Application* CreateApplication(ApplicationCommandLineArgs args);
 }
+
+#endif

@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef LINUX_WINDOW_H
+#define LINUX_WINDOW_H
+
 #include "Origin/Core/Window.h"
 
 namespace origin
@@ -30,3 +34,5 @@ namespace origin
 		std::shared_ptr<GraphicsContext> m_GraphicsContext;
     };
 }
+
+#endif

@@ -1,6 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef EVENT_H
+#define EVENT_H
 
 #include "Origin/Core/Base.h"
 
@@ -78,3 +79,5 @@ namespace origin {
 		return os << e.ToString();
 	}
 }
+
+#endif

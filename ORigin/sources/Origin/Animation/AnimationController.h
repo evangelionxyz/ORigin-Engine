@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef ANIMATION_CONTROLLER_H
+#define ANIMATION_CONTROLLER_H
+
 #include "Animation.h"
 #include "AnimationState.h"
 
@@ -28,3 +30,4 @@ namespace origin {
 	};
 }
 
+#endif

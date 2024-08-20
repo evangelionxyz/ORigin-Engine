@@ -29,4 +29,9 @@ namespace origin
 		int minor = GLVersion.minor;
 		OGN_CORE_ASSERT(major == 4 && minor >= 5, "ORigin requires at least OpenGL version 4.5!");
 	}
+
+	void OpenGLContext::Shutdown()
+	{
+		
+	}
 }

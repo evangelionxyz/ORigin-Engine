@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef ENTRY_PINT_H
+#define ENTRY_PINT_H
+
 #include "Origin/Core/Application.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Core/Log.h"
@@ -29,5 +31,8 @@ namespace origin
 
 int main(int argc, char **argv)
 {
-	return origin::Main(argc, argv);
+	origin::Main(argc, argv);
+	return 0;
 }
+
+#endif

@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef MESH_VERTEX_DATA_H
+#define MESH_VERTEX_DATA_H
+
 #include "Origin/Asset/Asset.h"
 #include "Origin/Animation/ModelAnimation.h"
 #include <assimp/Importer.hpp>
@@ -73,7 +77,6 @@ namespace origin
         static AssetType GetStaticType() { return AssetType::Mesh; }
         virtual AssetType GetType() const { return GetStaticType(); }
     };
-
-    
 }
 
+#endif

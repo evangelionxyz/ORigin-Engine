@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/ORigin/vendor/origin-glfw/include",
+                "${workspaceFolder}/ORigin/sources",
+                "${workspaceFolder}/ORigin/sources/Origin",
+                "${workspaceFolder}/ORigin-Editor/sources/**",
+                "${workspaceFolder}/ORigin-Runtime/sources/**",
+                "${workspaceFolder}/Sandbox/sources/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

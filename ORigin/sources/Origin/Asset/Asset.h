@@ -1,5 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef ASSET_H
+#define ASSET_H
 
 #include "Origin/Core/UUID.h"
 #include <string>
@@ -32,3 +34,5 @@ namespace origin {
 		virtual AssetType GetType() const = 0;
 	};
 }
+
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef VERTEX_ARRAY_H
+#define VERTEX_ARRAY_H
+
 #include "Origin/Renderer/Buffer.h"
 
 namespace origin {
@@ -19,5 +21,6 @@ namespace origin {
 		virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const = 0;
 		static std::shared_ptr<VertexArray> Create();
 	};
-
 }
+
+#endif

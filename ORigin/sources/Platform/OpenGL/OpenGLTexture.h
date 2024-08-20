@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OPENGL_TEXTURE_H
+#define OPENGL_TEXTURE_H
+
 #include "Origin/Renderer/Texture.h"
 #include <glad/glad.h>
 
@@ -107,3 +109,5 @@ namespace origin {
 		const std::string &GetMaterialTypeName() const override { return m_MaterialTypeName; }
 	};
 }
+
+#endif

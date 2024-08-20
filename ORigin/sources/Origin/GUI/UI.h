@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef UI_H
+#define UI_H
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -579,3 +580,5 @@ namespace origin::UI
 		return changed;
 	}
 }
+
+#endif

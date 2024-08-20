@@ -1988,8 +1988,8 @@ namespace origin
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
-				OGN_CORE_ERROR("[ScriptGlue] Could not find component type {0}", managedTypename);
-				PUSH_CONSOLE_ERROR("[ScriptGlue] Could not find component type {0}", managedTypename);
+				OGN_CORE_ERROR("[Script Glue] Could not find component type {0}", managedTypename);
+				PUSH_CONSOLE_ERROR("[Scrip tGlue] Could not find component type {0}", managedTypename);
 				return;
 			}
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };

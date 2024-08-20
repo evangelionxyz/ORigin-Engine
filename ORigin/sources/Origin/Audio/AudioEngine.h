@@ -1,5 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef AUDIO_ENGINE_H
+#define AUDIO_ENGINE_H
 
 #include <string>
 #include "miniaudio.h"
@@ -19,3 +21,4 @@ namespace origin {
 	};
 }
 
+#endif

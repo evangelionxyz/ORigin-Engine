@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef PHYSICS_2D_H
+#define PHYSICS_2D_H
+
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/Components/Components.h"
 #include "box2d/b2_body.h"
@@ -32,3 +36,4 @@ namespace origin {
 	};
 }
 
+#endif

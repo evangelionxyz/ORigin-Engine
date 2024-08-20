@@ -58,8 +58,11 @@ project "Sandbox"
 
     filter "system:linux"
         pic "On"
-        includedirs { "%{IncludeDir.LinuxVulkanSDK}" }
-        libdirs { "/usr/lib", "%{LibraryDir.LinuxVulkanSDK}" }
+        includedirs { 
+            "/usr/include/",
+            "/usr/include/vulkan",
+        }
+        libdirs { "/usr/lib" }
         links {
             "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
             "monosgen-2.0", "pthread", "dl", "m", "rt"
@@ -67,7 +70,12 @@ project "Sandbox"
 
     filter "system:windows"
         systemversion "latest"
-        defines { "NV_USE_STATIC_WINCRT", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
+        defines {
+            "NV_USE_STATIC_WINCRT",
+            "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
+            "GLFW_INCLUDE_VULKAN",
+            
+        }
 
    -- //////////////////////////////
     -- Default
@@ -75,7 +83,6 @@ project "Sandbox"
         runtime "Debug"
         symbols "On"
         defines {
-            "GLFW_INCLUDE_NONE",
             "OGN_DEBUG", "_DEBUG"
         }
 
@@ -83,7 +90,6 @@ project "Sandbox"
         optimize "On"
         runtime "Release"
         defines {
-            "GLFW_INCLUDE_NONE",
             "OGN_RELEASE", "NDEBUG"
         }
 
@@ -91,6 +97,5 @@ project "Sandbox"
         optimize "On"
         runtime "Release"
         defines {
-            "GLFW_INCLUDE_NONE",
             "OGN_DISTRIBUTION", "NDEBUG"
         }

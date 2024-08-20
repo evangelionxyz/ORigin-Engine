@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SHADER_H
+#define SHADER_H
+
 #include <glm/glm.hpp>
 #include <string>
 #include <memory>
@@ -48,3 +50,5 @@ namespace origin
 		static std::shared_ptr<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& geometrySrc);
 	};
 }
+
+#endif

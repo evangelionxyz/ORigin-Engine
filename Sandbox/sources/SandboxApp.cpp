@@ -22,7 +22,7 @@ namespace origin
 		spec.Name = "Sandbox";
 		spec.Width = 1280;
 		spec.Height = 820;
-		spec.WorkingDirectory = "../ORigin-Editor";
+		//spec.WorkingDirectory = "../ORigin-Editor";
 		spec.CommandLineArgs = args;
 
 		OGN_CORE_INFO(spec.Name);

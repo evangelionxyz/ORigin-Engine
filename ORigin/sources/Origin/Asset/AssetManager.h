@@ -1,5 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef ASSET_MANAGER_H
+#define ASSET_MANAGER_H
+
 #include "AssetManagerBase.h"
 #include "Origin/Project/Project.h"
 
@@ -31,5 +34,6 @@ namespace origin {
 			return Project::GetActive()->GetAssetManager()->GetAssetType(handle);
 		}
 	};
-
 }
+
+#endif

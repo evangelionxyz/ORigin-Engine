@@ -1,4 +1,7 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef ANIMATOR_H
+#define ANIMATOR_H
 
 #include "ModelAnimation.h"
 
@@ -23,3 +26,5 @@ namespace origin
         float m_DeltaTime;
     };
 }
+
+#endif

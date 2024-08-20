@@ -1,6 +1,8 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef PARTICLE_SYSTEM_H
+#define PARTICLE_SYSTEM_H
+
 #include "Shader.h"
 
 #include <vector>
@@ -63,3 +65,5 @@ namespace origin {
 	};
 
 }
+
+#endif

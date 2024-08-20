@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef COMMAND_MANAGER_H
+#define COMMAND_MANAGER_H
+
 #include "ConsoleManager.h"
 #include "Origin/Scene/Components/Components.h"
 
@@ -75,3 +77,5 @@ namespace origin
 		std::stack<std::unique_ptr<Command>> m_RedoStack;
 	};
 }
+
+#endif

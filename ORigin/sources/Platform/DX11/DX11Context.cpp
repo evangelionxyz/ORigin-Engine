@@ -76,6 +76,11 @@ namespace origin
 		//OGN_CORE_TRACE(" Renderer    : {0}", glGetString(GL_RENDERER));
 	}
 
+	void DX11Context::Shutdown()
+	{
+		
+	}
+
 	DX11Context* DX11Context::Get()
 	{
 		return s_Instance;

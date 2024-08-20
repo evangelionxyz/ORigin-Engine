@@ -1,4 +1,7 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef FRUSTUM_H
+#define FRUSTUM_H
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -38,3 +41,5 @@ namespace origin
         glm::mat4 m_ViewProjectionInverse;
     };
 }
+
+#endif

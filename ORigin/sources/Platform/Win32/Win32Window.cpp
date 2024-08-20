@@ -60,6 +60,8 @@ namespace origin {
 
 	Win32Window::~Win32Window()
 	{
+		m_GraphicsContext->Shutdown();
+
 		glfwTerminate();
 		glfwDestroyWindow(m_MainWindow);
 	}
@@ -80,9 +82,12 @@ namespace origin {
 
 		switch (RendererAPI::GetAPI())
 		{
-		case RendererAPI::API::DX11: std::reinterpret_pointer_cast
-			<DX11Context>(m_GraphicsContext)->SwapChain->Present(1u, 0u); break;
-		default: glfwSwapBuffers(m_MainWindow); break;
+		case RendererAPI::API::DX11:
+			std::reinterpret_pointer_cast<DX11Context>(m_GraphicsContext)->SwapChain->Present(1u, 0u);
+			break;
+		default:
+			glfwSwapBuffers(m_MainWindow);
+			break;
 		}
 	}
 

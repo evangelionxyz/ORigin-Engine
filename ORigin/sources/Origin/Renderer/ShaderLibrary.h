@@ -1,5 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SHADER_LIBRARY_H
+#define SHADER_LIBRARY_H
+
 #include "Shader.h"
 
 namespace origin
@@ -27,3 +30,5 @@ namespace origin
 		std::unordered_map<std::string, std::shared_ptr<Shader>> m_ShaderMap;
 	};
 }
+
+#endif

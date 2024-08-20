@@ -26,6 +26,8 @@ project "GLFW"
 		"%{wks.location}/ORigin/vendor/origin-glfw/src/egl_context.c",
 	}
 
+	-- ==============================
+	-- Windows
 	filter "system:linux"
 		pic "On"
 		files {
@@ -41,9 +43,13 @@ project "GLFW"
 			"%{wks.location}/ORigin/vendor/origin-glfw/src/glx_context.c",
 		}
 		defines {
-			"_GLFW_X11"
+			"VK_VERSION_1_0",
+			"GLFW_INCLUDE_VULKAN",
+			"_GLFW_X11",
 		}
 
+	-- ==============================
+	-- Windows
 	filter "system:windows"
 		systemversion "latest"
 		files {

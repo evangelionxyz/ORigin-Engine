@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef KEY_EVENT_H
+#define KEY_EVENT_H
+
 #include "KeyCodes.h"
 
 namespace origin {
@@ -69,3 +71,5 @@ namespace origin {
 		EVENT_CLASS_TYPE(KeyTyped)
 	};
 }
+
+#endif

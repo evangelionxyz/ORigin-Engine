@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef MATERIAL_H
+#define MATERIAL_H
+
 #include "Shader.h"
 #include "Texture.h"
 #include "UniformBuffer.h"
@@ -108,3 +110,5 @@ namespace origin
 		std::string m_Name = "Material";
 	};
 }
+
+#endif

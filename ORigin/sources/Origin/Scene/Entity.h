@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef ENTITY_H
+#define ENTITY_H
+
 #include "entt/entt.hpp"
 #include "Origin/Core/ConsoleManager.h"
 #include "Components/PhysicsComponents.h"
@@ -100,3 +102,5 @@ namespace origin {
 		Scene* m_Scene = nullptr;
 	};
 }
+
+#endif

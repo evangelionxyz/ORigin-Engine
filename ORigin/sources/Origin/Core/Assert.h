@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef ASSERT_H
+#define ASSERT_H
+
 #include "Base.h"
 #include "Log.h"
 
@@ -27,4 +29,6 @@
 #else
 #define OGN_CORE_ASSERT(...)
 #define OGN_CORE_ASSERT_SIMPLE(check)
+#endif
+
 #endif

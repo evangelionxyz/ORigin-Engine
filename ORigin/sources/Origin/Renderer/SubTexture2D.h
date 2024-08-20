@@ -1,6 +1,8 @@
-﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SUB_TEXTURE_2D_H
+#define SUB_TEXTURE_2D_H
+
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Scene/SpriteSheet.h"
 #include <glm/glm.hpp>
@@ -22,5 +24,6 @@ namespace origin {
 		std::shared_ptr<Texture2D> m_Texture;
 		glm::vec2 m_TexCoords[4];
 	};
-
 }
+
+#endif

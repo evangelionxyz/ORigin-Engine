@@ -1,5 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef AUDIO_LISTENER_H
+#define AUDIO_LISTENER_H
+
 #include <glm/glm.hpp>
 
 namespace origin
@@ -15,4 +18,4 @@ namespace origin
 	};
 }
 
-
+#endif

@@ -1,6 +1,7 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef TEXTURE_H
+#define TEXTURE_H
 
 #include <string>
 #include <memory>
@@ -91,3 +92,5 @@ namespace origin {
 		virtual AssetType GetType() const { return GetStaticType(); }
 	};
 }
+
+#endif

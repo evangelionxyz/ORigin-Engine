@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef ASSET_IMPORTER_H
+#define ASSET_IMPORTER_H
+
 #include "AssetMetadata.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Scene/SpriteSheet.h"
@@ -150,5 +152,6 @@ namespace origin
 		static std::shared_ptr<Material> Import(AssetHandle handle, const AssetMetadata &metadata);
 		static std::shared_ptr<Material> Load(const std::filesystem::path &filepath);
 	};
-
 }
+
+#endif

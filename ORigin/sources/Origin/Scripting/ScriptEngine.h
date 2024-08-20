@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SCRIPT_ENGINE_H
+#define SCRIPT_ENGINE_H
+
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
 #include "ScriptInstance.h"
@@ -116,3 +118,5 @@ namespace origin {
 		}
 	}
 }
+
+#endif

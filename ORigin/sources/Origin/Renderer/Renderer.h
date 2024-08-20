@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef RENDERER_H
+#define RENDERER_H
+
 #include "RenderCommand.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Scene/Components/Components.h"
@@ -71,3 +73,5 @@ namespace origin {
 		static std::shared_ptr<Shader> s_GlobalShader;
 	};
 }
+
+#endif

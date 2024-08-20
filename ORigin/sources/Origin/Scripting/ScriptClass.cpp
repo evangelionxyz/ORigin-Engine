@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "ScriptClass.h"
 #include "Origin/Core/ConsoleManager.h"
+#include "ScriptEngine.h"
 
 #include <mono/jit/jit.h>
-
-#include "ScriptEngine.h"
+#include <mono/metadata/debug-helpers.h>
 
 namespace origin
 {
@@ -32,6 +32,8 @@ namespace origin
 
         if (exception)
         {
+            OGN_CORE_ERROR("[Script Class] Invoking method {0}", mono_method_full_name(method, true));
+
             HandleException(exception);
             return nullptr;
         }
@@ -54,10 +56,10 @@ namespace origin
         MonoString *stackTraceString = (MonoString *)mono_runtime_invoke(getStackTraceMethod, exception, nullptr, nullptr);
 
         const char *stackTrace = mono_string_to_utf8(stackTraceString);
-        OGN_CORE_ERROR("[ScriptClass] {0}", message);
-        OGN_CORE_ERROR("[ScriptClass] {0}", stackTrace);
-        PUSH_CONSOLE_ERROR("[ScriptClass] Exception Message {0}", message);
-        PUSH_CONSOLE_ERROR("[ScriptClass] Exception StackTrace {0}", stackTrace);
+        OGN_CORE_ERROR("[Script Class] {0}", message);
+        OGN_CORE_ERROR("[Script Class] {0}", stackTrace);
+        PUSH_CONSOLE_ERROR("[Script Class] Exception Message {0}", message);
+        PUSH_CONSOLE_ERROR("[Script Class] Exception StackTrace {0}", stackTrace);
 
         mono_free((void *)message);
         mono_free((void *)stackTrace);

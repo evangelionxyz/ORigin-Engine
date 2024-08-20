@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SCENE_H
+#define SCENE_H
 
 #include "UIRenderer.h"
 #include "EditorCamera.h"
@@ -104,3 +105,5 @@ namespace origin
         friend class PhysicsEngine;
     };
 }
+
+#endif

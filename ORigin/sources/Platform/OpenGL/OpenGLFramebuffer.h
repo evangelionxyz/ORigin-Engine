@@ -1,6 +1,8 @@
-﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OPENGK_FRAMEBUFFER_H
+#define OPENGK_FRAMEBUFFER_H
+
 #include "Origin/Renderer/Framebuffer.h"
 
 namespace origin {
@@ -42,6 +44,6 @@ namespace origin {
 		uint32_t m_DepthAttachment = 0;
 		uint32_t m_DepthCubeAttachment = 0;
 	};
-
-
 }
+
+#endif

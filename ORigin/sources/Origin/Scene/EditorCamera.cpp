@@ -395,19 +395,11 @@ namespace origin {
 	void EditorCamera::MouseRotate(const glm::vec2& delta, float dt)
     {
         float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
-
-        // Apply new input
         glm::vec2 acceleration = delta * SENSITIVITY;
         m_AngularVelocity += acceleration;
-
-        // Apply damping
-        m_AngularVelocity *= std::pow(DAMPING, dt * (1.0f / dt)); // Adjust damping based on frame rate
-
-        // Apply rotation
+        m_AngularVelocity *= std::pow(DAMPING, dt);
         m_Yaw += yawSign * m_AngularVelocity.x * RotationSpeed() * 2.0f;
         m_Pitch += m_AngularVelocity.y * RotationSpeed() * 2.0f;
-
-        // Clamp pitch to avoid flipping
         m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
 	}
 

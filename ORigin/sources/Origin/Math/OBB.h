@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OBB_H
+#define OBB_H
+
 #include <glm/glm.hpp>
 #include <array>
 
@@ -81,3 +83,5 @@ namespace origin
         }
     };
 }
+
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef PLATFORM_UTILS_H
+#define PLATFORM_UTILS_H
+
 #include <string>
 
 namespace origin
@@ -12,3 +14,5 @@ namespace origin
 		static std::string SaveFile(const char* filter);
 	};
 }
+
+#endif

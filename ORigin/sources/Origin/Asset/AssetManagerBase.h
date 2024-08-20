@@ -1,6 +1,8 @@
-﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef ASSET_MANAGER_BASE_H
+#define ASSET_MANAGER_BASE_H
+
 #include "Asset.h"
 
 #include <memory>
@@ -19,5 +21,6 @@ namespace origin {
 		virtual bool IsAssetLoaded(AssetHandle handle) const = 0;
 		virtual AssetType GetAssetType(AssetHandle handle) const = 0;
 	};
-
 }
+
+#endif

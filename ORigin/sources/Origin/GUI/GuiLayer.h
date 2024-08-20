@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef GUI_LAYER_H
+#define GUI_LAYER_H
+
 #include "Origin/Core/Layer.h"
 #include "Origin/Core/AppEvent.h"
 #include "Origin/Core/KeyEvent.h"
@@ -35,5 +37,6 @@ namespace origin
 		bool m_BlockEvents = false;
 		float m_Time = 0.0f;
 	};
-
 }
+
+#endif

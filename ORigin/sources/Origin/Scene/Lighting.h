@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef LIGHTING_H
+#define LIGHTING_H
+
 #include "ShadowRenderer.h"
 #include "Origin/Renderer/UniformBuffer.h"
 #include "Components/Components.h"
@@ -66,3 +70,4 @@ namespace origin {
 	};
 }
 
+#endif

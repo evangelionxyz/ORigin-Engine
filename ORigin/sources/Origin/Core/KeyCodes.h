@@ -1,6 +1,8 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef KEY_CODES_H
+#define KEY_CODES_H
+
 #include <cstdint>
 
 namespace origin
@@ -274,3 +276,5 @@ namespace origin
 #define OGN_KEY_MENU               348
 
 #define OGN_KEY_LAST               OGN_KEY_MENU
+
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OPENGL_BUFFER_H
+#define OPENGL_BUFFER_H
+
 #include "Origin/Renderer/Buffer.h"
 
 namespace origin
@@ -39,3 +41,5 @@ namespace origin
 		uint32_t m_Count = 0;
 	};
 }
+
+#endif

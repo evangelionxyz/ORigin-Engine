@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef RENDERER_2D_H
+#define RENDERER_2D_H
+
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/SubTexture2D.h"
 #include "Origin/Scene/Components/Components.h"
@@ -57,3 +59,5 @@ namespace origin
 		static void NextBatch();
 	};
 }
+
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef PROFILER_H
+#define PROFILER_H
+
 #include "optick.h"
 #include "Origin/Core/Time.h"
 
@@ -82,3 +84,5 @@ namespace origin
 	#define OGN_PROFILER_SCENE()
 #endif
 }
+
+#endif

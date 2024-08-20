@@ -1,4 +1,7 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SCRIPT_FIELDS_H
+#define SCRIPT_FIELDS_H
 
 extern "C" {
     typedef struct _MonoClassField MonoClassField;
@@ -24,3 +27,5 @@ namespace origin
         MonoClassField *ClassField = nullptr;
     };
 }
+
+#endif

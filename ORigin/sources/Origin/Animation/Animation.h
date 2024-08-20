@@ -1,5 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef ANIMATION_H
+#define ANIMATION_H
 
 #include "Origin/Core/Base.h"
 
@@ -36,3 +38,5 @@ namespace origin
 		virtual AnimationType GetType() const = 0;
 	};
 }
+
+#endif

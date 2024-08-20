@@ -1,6 +1,8 @@
-// Copyright (c) 2023 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef RANDOM_H
+#define RANDOM_H
+
 #include <random>
 
 namespace origin {
@@ -30,3 +32,5 @@ namespace origin {
 		static std::uniform_int_distribution<std::mt19937::result_type> s_Distribution;
 	};
 }
+
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef DX11_CONTEXT_H
+#define DX11_CONTEXT_H
+
 #include "Origin/Renderer/GraphicsContext.h"
 #include <d3d11.h>
 
@@ -15,6 +17,7 @@ namespace origin
 		~DX11Context() override;
 		
 		void Init(Window *window) override;
+		void Shutdown() override;
 
 		void ResizeSwapChain(uint32_t width, uint32_t height);
 		void CreateSwapChain();
@@ -28,9 +31,10 @@ namespace origin
 		ID3D11RenderTargetView *RenderTargetView = nullptr;
 		ID3D11DepthStencilView *DepthStencilView = nullptr;
 		D3D11_VIEWPORT Viewport {};
-	private:
 		
+	private:
 		friend class DX11RendererAPI;
 	};
 }
 
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OPENGL_CONTEXT_H
+#define OPENGL_CONTEXT_H
+
 #include "Origin/Renderer/GraphicsContext.h"
 
 namespace origin
@@ -10,5 +12,8 @@ namespace origin
 	public:
 		OpenGLContext();
 		void Init(Window *window) override;
+		void Shutdown() override;
 	};
 }
+
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef RENDER_COMMAND_H
+#define RENDER_COMMAND_H
+
 #include "RendererAPI.h"
 
 namespace origin {
@@ -8,7 +10,6 @@ namespace origin {
 	class RenderCommand
 	{
 	public:
-
 		static void Init()
 		{
 			s_RendererAPI->Init();
@@ -59,3 +60,4 @@ namespace origin {
 
 }
 
+#endif

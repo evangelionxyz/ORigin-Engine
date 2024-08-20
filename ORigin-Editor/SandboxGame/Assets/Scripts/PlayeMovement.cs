@@ -65,11 +65,13 @@ namespace TestGame
                 UI ui = uiEntity.GetComponent<UI>();
                 if(uiRefresh <= 0.0f)
                 {
-                    float fps = 1.0f / dt;
-                    ui.SetTextString("FPSCounter", $"{fps:F2} FPS");
+                    if(dt > 0.0f)
+                    {
+                        float fps = 1.0f / dt;
+                        ui.SetTextString("FPSCounter", $"{fps:F2} FPS");
+                    }
                     uiRefresh = uiRefresRate;
                 }
-
                 ui.SetTextString("BulletCount", $"{bulletCount} Total bullets");
             }
         }
@@ -80,7 +82,7 @@ namespace TestGame
             jumpTime -= dt;
 
             UpdateMouse(dt);
-            UpdateUI(dt);
+            //UpdateUI(dt);
 
             Vector3 forward = GetForward().Normalized();
             Vector3 right = GetRight().Normalized();

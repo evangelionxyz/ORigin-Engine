@@ -1,6 +1,7 @@
-﻿// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef FRAMEBUFFER_H
+#define FRAMEBUFFER_H
 
 #include <glad/glad.h>
 
@@ -79,3 +80,5 @@ namespace origin
 	};
 
 }
+
+#endif

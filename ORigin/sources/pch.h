@@ -1,5 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef PCH_H
+#define PCH_H
+
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -37,4 +40,6 @@
 #ifdef OGN_PLATFORM_WINDOWS
 	#include <Windows.h>
 	#include <shellapi.h>
+#endif
+
 #endif

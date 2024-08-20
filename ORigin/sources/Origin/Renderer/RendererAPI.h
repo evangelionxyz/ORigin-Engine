@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef RENDERER_API_H
+#define RENDERER_API_H
+
 #include "VertexArray.h"
 #include <glm/glm.hpp>
 
@@ -32,5 +34,6 @@ namespace origin {
 		static API GetAPI();
 		static void SetAPI(API api);
 	};
-
 }
+
+#endif

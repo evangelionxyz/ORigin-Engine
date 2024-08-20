@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef COMPONENTS_COMMAND_H
+#define COMPONENTS_COMMAND_H
+
 #include "Components.h"
 #include "Origin/Core/CommandManager.h"
 #include "Origin/Core/ConsoleManager.h"
@@ -35,3 +39,5 @@ namespace origin
         T m_NewComponent;
     };
 }
+
+#endif

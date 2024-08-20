@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SCRIPT_GLUE_H
+#define SCRIPT_GLUE_H
 
 namespace origin
 {
@@ -11,3 +12,5 @@ namespace origin
 		static void RegisterFunctions();
 	};
 }
+
+#endif

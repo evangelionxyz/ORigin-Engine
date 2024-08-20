@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef BASE_H
+#define BASE_H
+
 #include <memory>
 
 #ifdef _WIN32
@@ -37,3 +39,4 @@
 #include "Origin/Core/Log.h"
 #include "Origin/Core/Assert.h"
 
+#endif

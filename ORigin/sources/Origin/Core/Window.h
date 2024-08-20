@@ -1,17 +1,15 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef WINDOW_H
+#define WINDOW_H
 
-#ifdef __linux__
-	#define _GLFW_X11
-#endif
-
-#include <GLFW/glfw3.h>
 #include "Event.h"
 
 #ifdef OGN_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif
+
+#include <GLFW/glfw3.h>
 
 namespace origin {
 
@@ -53,3 +51,5 @@ namespace origin {
 		static std::shared_ptr<Window> Create(const char *title, uint32_t width, uint32_t heigth, bool maximized = false);
 	};
 }
+
+#endif

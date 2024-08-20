@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OPENGL_RENDERER_API_H
+#define OPENGL_RENDERER_API_H
+
 #include "Origin/Renderer/RendererAPI.h"
 #include <glm/glm.hpp>
 
@@ -23,3 +25,5 @@ namespace origin
 		virtual void SetLineWidth(float width) override;
 	};
 }
+
+#endif

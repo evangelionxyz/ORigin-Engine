@@ -1,5 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+#ifndef CONSOLE_MANAGER_H
+#define CONSOLE_MANAGER_H
+
 #include <vector>
 #include <chrono>
 #include <sstream>
@@ -61,3 +63,5 @@ namespace origin
 #define PUSH_CONSOLE_WARNING(...) origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Warning, __VA_ARGS__)
 #define PUSH_CONSOLE_INFO(...)    origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Info, __VA_ARGS__)
 #define PUSH_CONSOLE_ERROR(...)   origin::ConsoleManager::Get().PushFormattedMessage(origin::ConsoleMessageType::Error, __VA_ARGS__)
+
+#endif

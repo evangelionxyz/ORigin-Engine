@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BUFFER_H
+#define BUFFER_H
+
 #include <stdlib.h>
 
 #include <stdint.h>
@@ -91,3 +93,5 @@ namespace origin {
 	};
 
 }
+
+#endif

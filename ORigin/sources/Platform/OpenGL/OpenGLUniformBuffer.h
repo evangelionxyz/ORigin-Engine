@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OPENGL_UNIFORM_BUFFER_H
+#define OPENGL_UNIFORM_BUFFER_H
+
 #include "Origin/Renderer/UniformBuffer.h"
 
 namespace origin
@@ -23,4 +25,4 @@ namespace origin
 	};
 }
 
-
+#endif

@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef ANIMATION_STATE_H
+#define ANIMATION_STATE_H
+
 #include "Animation.h"
 #include <unordered_map>
 
@@ -148,3 +150,4 @@ namespace origin {
 	};
 }
 
+#endif

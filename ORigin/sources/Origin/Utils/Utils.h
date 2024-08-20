@@ -1,4 +1,8 @@
-﻿#pragma once
+﻿// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef UTILS_H
+#define UTILS_H
+
 #include "imgui.h"
 #include <string>
 
@@ -9,7 +13,7 @@ namespace origin::Utils
 		const auto windowWidth = ImGui::GetWindowSize().x;
 		const auto textWidth = ImGui::CalcTextSize(text).x;
 		ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
-		ImGui::Text(text);
+		ImGui::Text("%s", text);
 	}
 
 	static void CenteredWrappedText(const char* fmt, ...)
@@ -38,3 +42,5 @@ namespace origin::Utils
         }
     }
 }
+
+#endif

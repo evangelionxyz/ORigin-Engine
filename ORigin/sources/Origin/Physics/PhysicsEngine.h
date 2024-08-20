@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef PHYSICS_ENGINE_H
+#define PHYSICS_ENGINE_H
+
 #include "Origin/Core/Time.h"
 #include "Origin/Scene/Entity.h"
 #include <glm/glm.hpp>
@@ -107,3 +111,4 @@ namespace origin {
     };
 }
 
+#endif

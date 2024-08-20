@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef LAYER_H
+#define LAYER_H
 
 #include "Event.h"
 
@@ -25,3 +26,5 @@ namespace origin {
 		inline const std::string& GetName() const { return m_Name; }
 	};
 }
+
+#endif

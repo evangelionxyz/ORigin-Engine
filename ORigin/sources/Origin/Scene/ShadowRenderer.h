@@ -1,4 +1,7 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SHADOW_RENDERER_H
+#define SHADOW_RENDERER_H
 
 #include "Components/Components.h"
 #include "Origin/Renderer/Framebuffer.h"
@@ -26,7 +29,6 @@ namespace origin
 		std::shared_ptr<Shader> m_DepthMapShader;
 		friend class Lighting;
 	};
-
-
 }
 
+#endif

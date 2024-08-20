@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef JOLT_CONTACT_LISTENER_H
+#define JOLT_CONTACT_LISTENER_H
+
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
@@ -13,3 +17,5 @@ namespace origin
         virtual void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override;
     };
 }
+
+#endif

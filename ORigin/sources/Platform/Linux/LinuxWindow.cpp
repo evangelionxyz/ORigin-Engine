@@ -1,15 +1,15 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-
 #include "pch.h"
-#include "LinuxWindow.h"
 
+#include "LinuxWindow.h"
 #include "Origin/Core/KeyEvent.h"
 #include "Origin/Core/MouseEvent.h"
 #include "Origin/Core/AppEvent.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Asset/AssetImporter.h"
+#include "Platform/Vulkan/VulkanContext.h"
 
-#include "stb_image.h"
+#include <stb_image.h>
 
 namespace origin {
 
@@ -20,7 +20,12 @@ namespace origin {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::OpenGL:
+#if defined(OGN_DEBUG)
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+			break;
+#endif
+		case RendererAPI::API::VULKAN:
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			break;
 		}
 		
@@ -31,27 +36,29 @@ namespace origin {
 		if (!m_MainWindow)
 		{
 			glfwTerminate();
-            OGN_CORE_ASSERT(false, "[LinuxWindow] Failed to create window");
+            OGN_CORE_ASSERT(false, "[Linux Window] Failed to create window");
 			exit(EXIT_FAILURE);
 		}
 
 		glfwMakeContextCurrent(m_MainWindow);
-
+		
 		m_GraphicsContext = GraphicsContext::Create();
 		m_GraphicsContext->Init(this);
 
-		int w, h;
-		glfwGetWindowSize(m_MainWindow, &w, &h);
-		m_Data.Width = static_cast<uint32_t>(w);
-		m_Data.Height = static_cast<uint32_t>(h);
+		// int w, h;
+		// glfwGetWindowSize(m_MainWindow, &w, &h);
+		// m_Data.Width = static_cast<uint32_t>(w);
+		// m_Data.Height = static_cast<uint32_t>(h);
 
-		glfwGetWindowPos(m_MainWindow, &m_Data.xPos, &m_Data.yPos);
+		// glfwGetWindowPos(m_MainWindow, &m_Data.xPos, &m_Data.yPos);
 	}
 
 	LinuxWindow::~LinuxWindow()
 	{
 		glfwDestroyWindow(m_MainWindow);
 		glfwTerminate();
+
+		m_GraphicsContext->Shutdown();
 	}
 
 	void LinuxWindow::SetEventCallback(const std::function<void(Event&)>& callback)
@@ -65,9 +72,9 @@ namespace origin {
 	void LinuxWindow::OnUpdate()
 	{
 		OGN_PROFILER_FUNCTION();
-
 		glfwPollEvents();
-		glfwSwapBuffers(m_MainWindow);
+
+		//glfwSwapBuffers(m_MainWindow);
 	}
 
 	void LinuxWindow::ToggleVSync()
@@ -124,124 +131,124 @@ namespace origin {
 		glfwSetWindowUserPointer(m_MainWindow, &m_Data);
 
 		glfwSetWindowMaximizeCallback(m_MainWindow, [](GLFWwindow* window, int maximized)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.Maximized = (bool)maximized;
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Maximized = (bool)maximized;
+		});
 
 		glfwSetWindowPosCallback(m_MainWindow, [](GLFWwindow* window, int xpos, int ypos)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.xPos = xpos;
-				data.yPos = ypos;
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.xPos = xpos;
+			data.yPos = ypos;
+		});
 
 		glfwSetFramebufferSizeCallback(m_MainWindow, [](GLFWwindow* window, int width, int height)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				FramebufferResizeEvent event(width, height);
-				data.EventCallback(event);
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			FramebufferResizeEvent event(width, height);
+			data.EventCallback(event);
+		});
 
 		glfwSetWindowSizeCallback(m_MainWindow, [](GLFWwindow* window, int width, int height)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.Width = width;
-				data.Height = height;
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Width = width;
+			data.Height = height;
 
-				WindowResizeEvent event(width, height);
-				data.EventCallback(event);
-			});
+			WindowResizeEvent event(width, height);
+			data.EventCallback(event);
+		});
 
 		glfwSetWindowCloseCallback(m_MainWindow, [](GLFWwindow* window)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				WindowCloseEvent event;
-				data.EventCallback(event);
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowCloseEvent event;
+			data.EventCallback(event);
+		});
 
 		glfwSetKeyCallback(m_MainWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action)
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-				switch (action)
+				case GLFW_PRESS:
 				{
-					case GLFW_PRESS:
-					{
-						KeyPressedEvent event(key, 0);
-						data.EventCallback(event);
-						break;
-					}
-
-					case GLFW_RELEASE:
-					{
-						KeyReleasedEvent event(key);
-						data.EventCallback(event);
-						break;
-					}
-
-					case GLFW_REPEAT:
-					{
-						KeyPressedEvent event(key, 1);
-						data.EventCallback(event);
-						break;
-					}
+					KeyPressedEvent event(key, 0);
+					data.EventCallback(event);
+					break;
 				}
-			});
+
+				case GLFW_RELEASE:
+				{
+					KeyReleasedEvent event(key);
+					data.EventCallback(event);
+					break;
+				}
+
+				case GLFW_REPEAT:
+				{
+					KeyPressedEvent event(key, 1);
+					data.EventCallback(event);
+					break;
+				}
+			}
+		});
 
 		glfwSetCharCallback(m_MainWindow, [](GLFWwindow* window, unsigned int keycode)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				KeyTypedEvent event(keycode);
-				data.EventCallback(event);
-			});
+			KeyTypedEvent event(keycode);
+			data.EventCallback(event);
+		});
 
 		glfwSetMouseButtonCallback(m_MainWindow, [](GLFWwindow* window, int button, int action, int mods)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				switch (action)
+			switch (action)
+			{
+				case GLFW_PRESS:
 				{
-					case GLFW_PRESS:
-					{
-						MouseButtonPressedEvent event(button);
-						data.EventCallback(event);
-						break;
-					}
-					case GLFW_RELEASE:
-					{
-						MouseButtonReleasedEvent event(button);
-						data.EventCallback(event);
-						break;
-					}
+					MouseButtonPressedEvent event(button);
+					data.EventCallback(event);
+					break;
 				}
-			});
+				case GLFW_RELEASE:
+				{
+					MouseButtonReleasedEvent event(button);
+					data.EventCallback(event);
+					break;
+				}
+			}
+		});
 
 		glfwSetScrollCallback(m_MainWindow, [](GLFWwindow* window, double xOffset, double yOffset)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				MouseScrolledEvent event((float)xOffset, (float)yOffset);
-				data.EventCallback(event);
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			MouseScrolledEvent event((float)xOffset, (float)yOffset);
+			data.EventCallback(event);
+		});
 
 		glfwSetCursorPosCallback(m_MainWindow, [](GLFWwindow* window, double xPos, double yPos)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				MouseMovedEvent event((float)xPos, (float)yPos);
-				data.EventCallback(event);
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			MouseMovedEvent event((float)xPos, (float)yPos);
+			data.EventCallback(event);
+		});
 
 		glfwSetDropCallback(m_MainWindow, [](GLFWwindow* window, int pathCount, const char* paths[])
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				std::vector<std::filesystem::path> filepaths(pathCount);
-				for (int i = 0; i < pathCount; i++)
-					filepaths[i] = paths[i];
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			std::vector<std::filesystem::path> filepaths(pathCount);
+			for (int i = 0; i < pathCount; i++)
+				filepaths[i] = paths[i];
 
-				WindowDropEvent event(std::move(filepaths));
-				data.EventCallback(event);
-			});
+			WindowDropEvent event(std::move(filepaths));
+			data.EventCallback(event);
+		});
 	}
 
 	

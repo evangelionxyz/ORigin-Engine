@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef FONT_H
+#define FONT_H
+
 #include "Origin/Asset/Asset.h"
 #include "Texture.h"
 
@@ -45,3 +47,5 @@ namespace origin {
 		std::shared_ptr<Texture2D> m_AtlasTexture;
 	};
 }
+
+#endif

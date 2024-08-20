@@ -1,5 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef ASSET_METADATA_H
+#define ASSET_METADATA_H
+
 #include "Asset.h"
 #include <filesystem>
 
@@ -14,3 +17,5 @@ namespace origin {
 	};
 
 }
+
+#endif

@@ -1,5 +1,7 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef PROJECT_H
+#define PROJECT_H
 
 #include "Origin/Core/Assert.h"
 #include "Origin/Asset/Asset.h"
@@ -98,3 +100,4 @@ namespace origin
 
 }
 
+#endif

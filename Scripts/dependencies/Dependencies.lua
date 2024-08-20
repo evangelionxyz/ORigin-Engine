@@ -25,11 +25,6 @@ IncludeDir["MSDFGEN"]                  = "%{wks.location}/ORigin/vendor/msdf-atl
 IncludeDir["JOLT"]                     = "%{wks.location}/ORigin/vendor/JoltPhysics"
 IncludeDir["OPTICK"]                   = "%{wks.location}/ORigin/vendor/Optick/src/"
 
--- Linux
-IncludeDir["LinuxVulkanSDK"]           = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/include"
-LibraryDir["LinuxVulkanSDK"]           = "%{wks.location}/ORigin/vendor/VulkanSDK/1.3.261.1/x86_64/lib"
-LibraryDir["LinuxMono"]                = "%{wks.location}/ORigin/vendor/mono/linux/lib"
-
 -- Windows
 Library["MONO"]                        = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}/libmono-static-sgen.lib"
 IncludeDir["VulkanSDK"]                = "%{VULKAN_SDK}/Include" -- includes

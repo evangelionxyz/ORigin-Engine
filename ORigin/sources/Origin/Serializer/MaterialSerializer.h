@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef MATERIAL_SERIALIZER_H
+#define MATERIAL_SERIALIZER_H
+
 #include "Origin/Renderer/Material.h"
 #include <filesystem>
 
@@ -13,3 +15,5 @@ namespace origin
 		static bool Deserialize(const std::filesystem::path &filepath, std::shared_ptr<Material> &mat);
 	};
 }
+
+#endif

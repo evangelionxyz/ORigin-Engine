@@ -31,9 +31,8 @@ namespace origin {
 		if (!m_Spec.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Spec.WorkingDirectory);
 
-		RendererAPI::SetAPI(RendererAPI::API::OpenGL);
+		RendererAPI::SetAPI(RendererAPI::API::VULKAN);
 		Window::GLFWInit();
-
 		m_ConsoleManager = std::make_unique<ConsoleManager>();
 
 		switch (RendererAPI::GetAPI())
@@ -44,18 +43,20 @@ namespace origin {
 		case RendererAPI::API::OpenGL:
 			spec.Name.insert(spec.Name.size(), " <OpenGL>");
 			break;
+		case RendererAPI::API::VULKAN:
+			spec.Name.insert(spec.Name.size(), " <Vulkan>");
+			break;
 		}
 
 		m_Window = Window::Create(spec.Name.c_str(), spec.Width, spec.Height, spec.Maximize);
-
 		m_Window->SetIcon(spec.IconPath.c_str());
 		m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
 		m_InputHandle.Init(m_Window->GetNativeWindow());
 
 		if (!spec.Runtime)
 		{
-			m_GuiLayer = new GuiLayer(m_Window);
-			PushOverlay(m_GuiLayer);
+			//m_GuiLayer = new GuiLayer(m_Window);
+			//PushOverlay(m_GuiLayer);
 		}
 
 		PhysicsEngine::Init();
@@ -97,16 +98,16 @@ namespace origin {
 
 			if (!m_Spec.Runtime)
 			{
-				m_GuiLayer->Begin();
-				for (Layer *layer : m_LayerStack)
-				{
-					layer->OnGuiRender();
-				}
-				m_GuiLayer->SetDisplaySize(
-					static_cast<float>(m_Window->GetWidth()),
-					static_cast<float>(m_Window->GetHeight())
-				);
-				m_GuiLayer->End();
+				// m_GuiLayer->Begin();
+				// for (Layer *layer : m_LayerStack)
+				// {
+				// 	layer->OnGuiRender();
+				// }
+				// m_GuiLayer->SetDisplaySize(
+				// 	static_cast<float>(m_Window->GetWidth()),
+				// 	static_cast<float>(m_Window->GetHeight())
+				// );
+				// m_GuiLayer->End();
 			}
 
 			m_Window->OnUpdate();

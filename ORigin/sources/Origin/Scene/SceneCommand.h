@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SCENE_COMMAND_H
+#define SCENE_COMMAND_H
+
 #include "Scene.h"
 #include "Entity.h"
 #include "EntityManager.h"
@@ -30,3 +34,5 @@ namespace origin
         Entity m_Entity;
     };
 }
+
+#endif

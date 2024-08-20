@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SCRIPT_CLASS_H
+#define SCRIPT_CLASS_H
+
 #include "ScriptInstance.h"
 #include "ScriptField.h"
 
@@ -32,3 +36,4 @@ namespace origin
     };
 }
 
+#endif

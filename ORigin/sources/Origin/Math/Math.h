@@ -1,6 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef MATH_H
+#define MATH_H
+
 #include "Origin/Scene/Camera.h"
 
 #include <assimp/postprocess.h>
@@ -41,4 +43,4 @@ namespace origin
 	};
 }
 
-
+#endif

@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SPRITE_SHEET_H
+#define SPRITE_SHEET_H
+
 #include "Origin/Asset/Asset.h"
 
 #include <filesystem>
@@ -35,3 +39,4 @@ namespace origin
 	};
 }
 
+#endif

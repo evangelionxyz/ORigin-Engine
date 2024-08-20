@@ -1,4 +1,7 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef MODEL_LOADER_H
+#define MODEL_LOADER_H
 
 #include "MeshVertexData.h"
 #include "Origin/Renderer/VertexArray.h"
@@ -17,4 +20,4 @@ namespace origin
 	};
 }
 
-
+#endif

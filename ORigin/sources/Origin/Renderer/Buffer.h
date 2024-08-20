@@ -1,6 +1,7 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef RENDER_BUFFER_H
+#define RENDER_BUFFER_H
 
 #include "Origin/Core/Assert.h"
 
@@ -141,3 +142,5 @@ namespace origin
 		static std::shared_ptr<IndexBuffer> Create(void* indices, uint32_t count);
 	};
 }
+
+#endif

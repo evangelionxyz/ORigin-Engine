@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SPRITE_ANIMATION_H
+#define SPRITE_ANIMATION_H
+
 #include "Animation.h"
 #include "Origin/Asset/Asset.h"
 
@@ -56,3 +58,4 @@ namespace origin
 	};
 }
 
+#endif

@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef ENTITY_MANAGER_H
+#define ENTITY_MANAGER_H
+
 #include "Entity.h"
 #include "Origin/Core/UUID.h"
 #include "entt/entt.hpp"
@@ -73,3 +77,5 @@ namespace origin
         }
 	};
 }
+
+#endif

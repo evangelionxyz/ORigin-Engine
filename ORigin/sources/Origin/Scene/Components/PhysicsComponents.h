@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef PHYSICS_COMPONENTS_H
+#define PHYSICS_COMPONENTS_H
+
 #include <Jolt/Jolt.h>
 
 #include <glm/glm.hpp>
@@ -124,3 +128,5 @@ namespace origin
         CapsuleColliderComponent(const CapsuleColliderComponent &) = default;
     };
 }
+
+#endif

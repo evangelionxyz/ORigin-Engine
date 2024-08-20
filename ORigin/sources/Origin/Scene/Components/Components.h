@@ -1,5 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef COMPONENTS_H
+#define COMPONENTS_H
 
 #include "Origin/Animation/Animator.h"
 #include "Origin/Animation/AnimationState.h"
@@ -688,3 +690,6 @@ namespace origin
         SphereColliderComponent,
         CapsuleColliderComponent>;
 }
+
+
+#endif

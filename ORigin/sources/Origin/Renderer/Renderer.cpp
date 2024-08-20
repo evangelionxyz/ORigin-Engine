@@ -13,6 +13,7 @@
 	#include "Platform/DX11/DX11RendererAPI.h"
 #endif
 
+#include "Platform/Vulkan/VulkanRendererAPI.h"
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 
 namespace origin {
@@ -44,34 +45,36 @@ namespace origin {
 		{
 		default:
 		case RendererAPI::API::OpenGL:
-			{
-				RenderCommand::s_RendererAPI = new OpenGLRendererAPI;
-				WhiteTexture = Texture2D::Create(TextureSpecification());
-				WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
-				BlackTexture = Texture2D::Create(TextureSpecification());
-				BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
-
-				LoadShaders();
-				LoadMaterials();
-
-				MeshRenderer::Init();
-				Renderer2D::Init();
-			}
-			break;
+		{
+			RenderCommand::s_RendererAPI = new OpenGLRendererAPI;
+			WhiteTexture = Texture2D::Create(TextureSpecification());
+			WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
+			BlackTexture = Texture2D::Create(TextureSpecification());
+			BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
+			LoadShaders();
+			LoadMaterials();
+			MeshRenderer::Init();
+			Renderer2D::Init();
+		}
+		break;
+		case RendererAPI::API::VULKAN:
+		{
+			RenderCommand::s_RendererAPI = new VulkanRendererAPI;
+		}
+		break;
 #ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11:
-			{
-				RenderCommand::s_RendererAPI = new DX11RendererAPI;
-				break;
-			}
+		{
+			RenderCommand::s_RendererAPI = new DX11RendererAPI;
+			
+		}
+		break;
 #endif
 		}
 
-		if (!RenderCommand::s_RendererAPI)
-			return false;
+		OGN_CORE_ASSERT(RenderCommand::s_RendererAPI, "[Renderer] Renderer API is null");
 		
 		RenderCommand::Init();
-
 		OGN_CORE_TRACE("[Renderer] Initialized");
 		return true;
 	}

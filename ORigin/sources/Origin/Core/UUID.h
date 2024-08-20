@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef UUID_H
+#define UUID_H
 
 #ifdef OGN_PLATFORM_WINDOWS
 	#include <xhash>
@@ -36,3 +37,5 @@ namespace std
 		}
 	};
 }
+
+#endif

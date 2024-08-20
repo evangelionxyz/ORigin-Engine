@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef CONTACT_2D_LISTENER_H
+#define CONTACT_2D_LISTENER_H
 
 #include "box2d/box2d.h"
 
@@ -20,3 +21,4 @@ namespace origin {
 
 }
 
+#endif

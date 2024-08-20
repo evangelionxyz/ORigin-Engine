@@ -1,6 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef TIME_H
+#define TIME_H
+
 #include <chrono>
 
 namespace origin
@@ -52,3 +54,5 @@ namespace origin
 	};
 
 }
+
+#endif

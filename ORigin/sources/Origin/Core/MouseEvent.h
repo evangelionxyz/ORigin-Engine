@@ -1,6 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef MOUSE_EVENT_H
+#define MOUSE_EVENT_H
+
 #include "Event.h"
 #include "MouseCodes.h"
 
@@ -96,3 +98,5 @@ namespace origin {
 		EVENT_CLASS_TYPE(MouseButtonReleased)
 	};
 }
+
+#endif

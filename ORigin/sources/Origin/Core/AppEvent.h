@@ -1,6 +1,8 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef APP_EVENT_H
+#define APP_EVENT_H
+
 #include "Event.h"
 
 namespace origin {
@@ -105,3 +107,5 @@ namespace origin {
 		std::vector<std::filesystem::path> m_Paths;
 	};
 }
+
+#endif

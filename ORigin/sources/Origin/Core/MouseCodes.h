@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef MOUSE_CODES_H
+#define MOUSE_CODES_H
+
 #include <cstdint>
 
 namespace origin
@@ -44,3 +46,4 @@ namespace origin
 
 }
 
+#endif

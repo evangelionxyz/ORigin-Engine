@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef OPENGL_SHADER_H
+#define OPENGL_SHADER_H
 
 #include "Origin/Renderer/Shader.h"
 
@@ -138,3 +139,5 @@ namespace origin
 		uint32_t CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc);
 	};
 }
+
+#endif

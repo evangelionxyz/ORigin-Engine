@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef PROJECT_SERIALIZER_H
+#define PROJECT_SERIALIZER_H
+
 #include "Origin/Project/Project.h"
 
 namespace origin
@@ -15,3 +19,5 @@ namespace origin
 		std::shared_ptr<Project> m_Project;
 	};
 }
+
+#endif

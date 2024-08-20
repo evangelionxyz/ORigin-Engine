@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef MESH_RENDERER_H
+#define MESH_RENDERER_H
+
 #include "MeshVertexData.h"
 #include "Material.h"
 #include "Texture.h"
@@ -39,4 +43,4 @@ namespace origin
 	};
 }
 
-
+#endif

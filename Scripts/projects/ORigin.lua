@@ -19,9 +19,10 @@ project "ORigin"
         "%{prj.location}/sources/Origin.h",
         "%{prj.location}/sources/Origin/**.cpp",
         "%{prj.location}/sources/Origin/**.h",
-
         "%{prj.location}/sources/Platform/OpenGL/**.cpp",
         "%{prj.location}/sources/Platform/OpenGL/**.h",
+        "%{prj.location}/sources/Platform/Vulkan/**.cpp",
+        "%{prj.location}/sources/Platform/Vulkan/**.h",
     }
 
     includedirs {
@@ -129,11 +130,14 @@ project "ORigin"
     -- ////////////////////////////////
     -- Linux
     filter "system:linux"
+        defines { "OGN_PLATFORM_LINUX", "VK_VERSION_1_0", "GLFW_INCLUDE_VULKAN" }
         pic "On"
         files { "%{prj.location}/sources/Platform/Linux/**.cpp" }
-        includedirs { "%{IncludeDir.LinuxVulkanSDK}" }
-        libdirs { "/usr/lib", "%{LibraryDir.LinuxVulkanSDK}", "%{LibraryDir.LinuxMono}" }
-        defines { "OGN_PLATFORM_LINUX" }
+        libdirs { "/usr/lib" }
+        includedirs { 
+            "/usr/include/",
+            "/usr/include/vulkan",
+        }
         links {
             "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
             "monosgen-2.0", "pthread", "dl", "m", "rt", "glib-2.0"

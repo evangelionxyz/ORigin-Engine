@@ -1,6 +1,7 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef LOG_H
+#define LOG_H
 
 #define GLM_ENABLE_EXEPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -55,3 +56,5 @@ inline OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion)
 #define OGN_INFO(...)         Log::GetClientLogger()->info(__VA_ARGS__)
 #define OGN_TRACE(...)        Log::GetClientLogger()->trace(__VA_ARGS__)
 #define OGN_CRITICAL(...)     Log::GetClientLogger()->critical(__VA_ARGS__)
+
+#endif

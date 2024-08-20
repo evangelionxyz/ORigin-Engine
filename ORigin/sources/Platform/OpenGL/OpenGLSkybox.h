@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef OPENGL_SKYBOX_H
+#define OPENGL_SKYBOX_H
+
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Shader.h"
 #include "Origin/Renderer/Buffer.h"
@@ -32,3 +36,5 @@ namespace origin
 		float m_BlurFactor = 0.005f;
 	};
 }
+
+#endif

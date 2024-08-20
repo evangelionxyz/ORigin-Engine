@@ -1,6 +1,8 @@
-// Copyright 2022 Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SCENE_SERIALIZER_H
+#define SCENE_SERIALIZER_H
+
 #include "Origin/Scene/Scene.h"
 #include <filesystem>
 
@@ -24,4 +26,4 @@ namespace origin
 	};
 }
 
-
+#endif

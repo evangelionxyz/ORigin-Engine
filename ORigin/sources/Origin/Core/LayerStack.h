@@ -1,6 +1,8 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef LAYER_STACK_H
+#define LAYER_STACK_H
+
 #include "Layer.h"
 
 namespace origin {
@@ -29,3 +31,4 @@ namespace origin {
 	};
 }
 
+#endif

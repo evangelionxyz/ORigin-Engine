@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SERIALIZER_H
+#define SERIALIZER_H
+
 #include "Origin/Core/UUID.h"
 #include <yaml-cpp/yaml.h>
 #include <glm/glm.hpp>
@@ -223,3 +227,5 @@ namespace origin
         return out;
     }
 }
+
+#endif

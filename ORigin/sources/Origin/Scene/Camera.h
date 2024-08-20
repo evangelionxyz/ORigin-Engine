@@ -1,5 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef CAMERA_H
+#define CAMERA_H
+
 #include "Origin/Core/MouseEvent.h"
 #include "Origin/Core/Event.h"
 #include "Origin/Core/Time.h"
@@ -99,3 +102,5 @@ namespace origin
         bool m_ViewMatrixManipulated = false;
     };
 }
+
+#endif

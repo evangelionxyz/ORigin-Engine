@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef UI_RENDERER_H
+#define UI_RENDERER_H
+
 #include "Components/Components.h"
 #include "Origin/Renderer/Shader.h"
 
@@ -26,5 +28,4 @@ namespace origin
 		glm::mat4 m_Projection;
 	};
 }
-
-
+#endif

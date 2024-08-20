@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef INPUT_H
+#define INPUT_H
 
 #include "KeyCodes.h"
 #include "MouseCodes.h"
@@ -48,3 +49,5 @@ namespace origin
 		friend class EditorCamera;
 	};
 }
+
+#endif

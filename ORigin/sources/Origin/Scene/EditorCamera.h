@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef EDITOR_CAMERA_H
+#define EDITOR_CAMERA_H
+
 #include "Origin/Core/Event.h"
 #include "Origin/Core/MouseEvent.h"
 #include "Origin/Audio/AudioListener.h"
@@ -89,3 +91,5 @@ namespace origin {
         const float SENSITIVITY = 0.1f;
 	};
 }
+
+#endif

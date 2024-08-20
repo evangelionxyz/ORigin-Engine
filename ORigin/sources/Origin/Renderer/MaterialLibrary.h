@@ -1,6 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef MATERIAL_LIBRARY_H
+#define MATERIAL_LIBRARY_H
+
 #include "Material.h"
 
 namespace origin
@@ -21,3 +23,5 @@ namespace origin
 		std::unordered_map<std::string, std::shared_ptr<Material>> m_MaterialMap;
 	};
 }
+
+#endif

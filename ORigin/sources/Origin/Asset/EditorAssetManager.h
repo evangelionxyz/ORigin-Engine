@@ -1,5 +1,8 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef EDITOR_ASSET_MANAGER_H
+#define EDITOR_ASSET_MANAGER_H
+
 #include "AssetManagerBase.h"
 #include "AssetMetadata.h"
 #include <map>
@@ -36,3 +39,5 @@ namespace origin {
 		AssetMap m_LoadedAssets;
 	};
 }
+
+#endif

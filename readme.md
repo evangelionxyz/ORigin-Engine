@@ -18,4 +18,7 @@ Run [gen.bat](gen.bat) to generate Visual Studio .sln file or Makefile.
     sudo apt install build-essential mono-complete mono-devel mono-dbg libicu-dev
 ```
 #### Install [Vulkan](https://vulkan.lunarg.com/doc/view/latest/linux/getting_started_ubuntu.html)
+```bash
+    sudo aapt install libvulkan1 mesa-vulkan-drivers vulkan-utils
+```
 Then run `bash gen.sh` to generate Makefile.

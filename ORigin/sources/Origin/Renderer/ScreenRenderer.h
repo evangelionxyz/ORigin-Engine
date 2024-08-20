@@ -1,4 +1,8 @@
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SCREEN_RENDERER_H
+#define SCREEN_RENDERER_H
+
 #include "Framebuffer.h"
 
 namespace origin
@@ -16,4 +20,4 @@ namespace origin
 	};
 }
 
-
+#endif

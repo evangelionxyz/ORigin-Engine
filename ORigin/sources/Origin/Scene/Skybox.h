@@ -1,5 +1,8 @@
-// Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-#pragma once
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SKYBOX_H
+#define SKYBOX_H
+
 #include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/SceneCamera.h"
 
@@ -16,6 +19,6 @@ namespace origin
 		virtual void SetBlur(float blur) = 0;
 		static std::shared_ptr<Skybox> Create(const std::string& filepath, const std::string& format);
 	};
-
 }
 
+#endif
