@@ -7,8 +7,10 @@ project "ORigin"
     staticruntime "off"
     location "%{wks.location}/ORigin"
 
-    pchheader "pch.h"
-    pchsource "%{prj.location}/sources/pch.cpp"
+    if _ACTION ~= "cmake" then
+        pchheader "pch.h"
+        pchsource "%{prj.location}/sources/pch.cpp"
+    end
 
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
     objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
