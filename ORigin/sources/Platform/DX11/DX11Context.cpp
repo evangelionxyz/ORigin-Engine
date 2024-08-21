@@ -10,7 +10,7 @@
 
 namespace origin
 {
-	static DX11Context *s_Instance = nullptr;
+	DX11Context *DX11Context::s_Instance = nullptr;
 	
 	DX11Context::DX11Context()
 	{

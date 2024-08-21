@@ -30,9 +30,12 @@ namespace origin
 		ID3D11DeviceContext *DeviceContext = nullptr;
 		ID3D11RenderTargetView *RenderTargetView = nullptr;
 		ID3D11DepthStencilView *DepthStencilView = nullptr;
+
 		D3D11_VIEWPORT Viewport {};
 		
 	private:
+		static DX11Context *s_Instance;
+
 		friend class DX11RendererAPI;
 	};
 }

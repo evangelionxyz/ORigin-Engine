@@ -5,6 +5,9 @@
 
 #include <optional>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 namespace origin
 {
 
@@ -235,8 +238,17 @@ namespace origin
 
     void VulkanContext::CreateVkSurface()
     {
-        glfwCreateWindowSurface(m_Instance, m_WindowHandle, nullptr, &m_Surface);
 
+#ifdef OGN_PLATFORM_WINDOWS
+        VkWin32SurfaceCreateInfoKHR surfaceCreateInfo{};
+        surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+        surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
+        surfaceCreateInfo.hwnd = glfwGetWin32Window(m_WindowHandle);
+
+        vkCreateWin32SurfaceKHR(m_Instance, &surfaceCreateInfo, nullptr, &m_Surface);
+#else
+        glfwCreateWindowSurface(m_Instance, m_WindowHandle, nullptr, &m_Surface);
+#endif
         m_QueueFamilyIndex = UINT32_MAX;
 
         uint32_t count = 0;
@@ -249,8 +261,11 @@ namespace origin
         for (uint32_t index = 0; index < count; ++index)
         {
             VkQueueFamilyProperties properties = queueFamilies[index];
+#ifdef OGN_PLATFORM_WINDOWS
+            int isSupport = vkGetPhysicalDeviceWin32PresentationSupportKHR(m_PhysicalDevice, index);
+#elif
             int isSupport = glfwGetPhysicalDevicePresentationSupport(m_Instance, m_PhysicalDevice, index);
-
+#endif
             if ((properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) && isSupport) 
             {
                 m_QueueFamilyIndex = index;

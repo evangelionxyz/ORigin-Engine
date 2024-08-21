@@ -25,9 +25,9 @@ namespace origin
         OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Vulkan Shader] Filepath does not exists {}", filepath);
 
         ShaderUtils::CreateCachedDirectoryIfNeeded();
-        std::string source = Shader::ReadFile(filepath);
-        ShaderSource shaderSources = Shader::PreProcess(source, filepath);
-        m_SPRIV = Shader::CompileOrGetVulkanBinaries(shaderSources, filepath);
+        std::string source = Shader::ReadFile(filepath.string());
+        ShaderSource shaderSources = Shader::PreProcess(source, filepath.string());
+        m_SPRIV = Shader::CompileOrGetVulkanBinaries(shaderSources, filepath.string());
 
         VulkanContext *context = VulkanContext::GetInstance();
         for (auto &[stage, spirv] : m_SPRIV)

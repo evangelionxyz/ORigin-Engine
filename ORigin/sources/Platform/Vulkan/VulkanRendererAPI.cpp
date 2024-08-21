@@ -4,9 +4,6 @@
 #include "VulkanRendererAPI.h"
 #include "VulkanContext.h"
 
-#include <vulkan.h>
-#include <GLFW/glfw3.h>
-
 namespace origin
 {
 	void VulkanRendererAPI::Init()

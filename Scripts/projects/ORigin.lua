@@ -71,7 +71,7 @@ project "ORigin"
         systemversion "latest"
         links {
             "opengl32.lib",
-            "%{Library.Vulkan}",
+            "%{Library.Vulkan1Lib}",
             "%{Library.MONO}",
             "%{Library.WinSock}",
             "%{Library.WinMM}",
@@ -84,9 +84,7 @@ project "ORigin"
             "%{prj.location}/sources/Platform/Win32/**.cpp",
             "%{prj.location}/sources/Platform/Win32/**.h",
         }
-        includedirs { 
-          "%{IncludeDir.VulkanSDK}"
-        }
+        includedirs { "%{IncludeDir.VulkanSDK}" }
 
         defines {
             "OGN_PLATFORM_WINDOWS",
@@ -138,7 +136,6 @@ project "ORigin"
         libdirs { "/usr/lib" }
         includedirs { 
             "/usr/include/",
-            "/usr/include/vulkan",
         }
         links {
             "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",

@@ -5,7 +5,13 @@
 
 #include "Origin/Renderer/GraphicsContext.h"
 
-#include <vulkan.h>
+#ifdef OGN_PLATFORM_WINDOWS
+    #define VK_USE_PLATFORM_WIN32_KHR
+#endif
+
+#include <vulkan/vulkan.h>
+
+#include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 namespace origin

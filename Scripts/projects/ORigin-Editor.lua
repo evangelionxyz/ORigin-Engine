@@ -72,7 +72,6 @@ project "Editor"
         pic "On"
         includedirs { 
             "/usr/include/",
-            "/usr/include/vulkan",
         }
         libdirs { "/usr/lib" }
         links {

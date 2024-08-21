@@ -19,10 +19,9 @@ namespace origin
 		{ ".png", AssetType::Texture },
 		{ ".ttf", AssetType::Font },
 		{ ".otf", AssetType::Font },
-
+		{ ".gltf", AssetType::Mesh },
 		{ ".obj", AssetType::Mesh },
 		{ ".dae", AssetType::Mesh },
-
 		{ ".mat", AssetType::Material },
 		{ ".ogg", AssetType::Audio },
 		{ ".mp3", AssetType::Audio },

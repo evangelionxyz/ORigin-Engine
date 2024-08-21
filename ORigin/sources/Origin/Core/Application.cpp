@@ -31,7 +31,7 @@ namespace origin {
 		if (!m_Spec.WorkingDirectory.empty())
 			std::filesystem::current_path(m_Spec.WorkingDirectory);
 
-		RendererAPI::SetAPI(RendererAPI::API::VULKAN);
+		RendererAPI::SetAPI(RendererAPI::API::OpenGL);
 		Window::GLFWInit();
 		m_ConsoleManager = std::make_unique<ConsoleManager>();
 

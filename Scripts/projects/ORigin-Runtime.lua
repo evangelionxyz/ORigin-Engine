@@ -55,11 +55,13 @@ project "Runtime"
         "_CRT_SECURE_NO_WARNINGS",
     }
 
+    filter "system:windows"
+        includedirs {  "%{IncludeDir.VulkanSDK}" }
+
     filter "system:linux"
         pic "On"
         includedirs { 
             "/usr/include/",
-            "/usr/include/vulkan",
         }
         libdirs { "/usr/lib" }
         links {

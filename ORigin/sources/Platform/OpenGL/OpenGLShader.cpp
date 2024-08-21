@@ -7,6 +7,9 @@
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
 
+#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -19,11 +22,11 @@ namespace origin
         OGN_CORE_TRACE("[Shader] Trying to load Shader {}", m_Filepath);
 
         ShaderUtils::CreateCachedDirectoryIfNeeded();
-        std::string source = Shader::ReadFile(filepath);
+        std::string source = Shader::ReadFile(filepath.string());
         {
-            auto shaderSources = Shader::PreProcess(source, filepath);
+            auto shaderSources = Shader::PreProcess(source, filepath.string());
             Timer timer;
-            m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, filepath);
+            m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
             m_OpenGLSPIRV = CompileOrGetOpenGLBinaries();
             CreateSpirvProgram();
             PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
@@ -43,9 +46,9 @@ namespace origin
         {
             Timer timer;
             ShaderUtils::CreateCachedDirectoryIfNeeded();
-            std::string source = Shader::ReadFile(filepath);
-            ShaderSource shaderSources = Shader::PreProcess(source, filepath);
-            m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, filepath);
+            std::string source = Shader::ReadFile(filepath.string());
+            ShaderSource shaderSources = Shader::PreProcess(source, filepath.string());
+            m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
             m_OpenGLSPIRV = CompileOrGetOpenGLBinaries();
             CreateSpirvProgram();
             PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
@@ -53,7 +56,7 @@ namespace origin
         }
         else // Without SPIRV
         {
-            m_ShaderSource = Shader::ParseShader(filepath);
+            m_ShaderSource = Shader::ParseShader(filepath.string());
             m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
         }
     }
@@ -146,7 +149,7 @@ namespace origin
                 spirv_cross::CompilerGLSL glslCompiler(spirv);
                 m_OpenGLSourceCode[stage] = glslCompiler.compile();
                 auto &source = m_OpenGLSourceCode[stage];
-                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, ShaderUtils::GLShaderStageToShaderC(stage), m_Filepath.c_str());
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, ShaderUtils::GLShaderStageToShaderC(stage), m_Filepath.string().c_str());
                 bool success = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
                 shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -272,12 +275,12 @@ namespace origin
         {
             ShaderUtils::CreateCachedDirectoryIfNeeded();
             m_IsRecompile = true;
-            std::string source = Shader::ReadFile(m_Filepath);
+            std::string source = Shader::ReadFile(m_Filepath.string());
             {
-                auto shaderSources = Shader::PreProcess(source, m_Filepath);
+                auto shaderSources = Shader::PreProcess(source, m_Filepath.string());
 
                 Timer timer;
-                m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, m_Filepath);
+                m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, m_Filepath.string());
                 m_OpenGLSPIRV = CompileOrGetOpenGLBinaries();
                 CreateSpirvProgram();
                 OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
@@ -287,7 +290,7 @@ namespace origin
         }
         else
         {
-            m_ShaderSource = Shader::ParseShader(m_Filepath);
+            m_ShaderSource = Shader::ParseShader(m_Filepath.string());
             m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
         }
     }

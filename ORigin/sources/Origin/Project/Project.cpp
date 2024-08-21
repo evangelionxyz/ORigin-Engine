@@ -119,19 +119,19 @@ namespace origin {
 
 		// Get premake5.lua template
 		std::string premakeFilepath = std::filesystem::absolute("Resources/ScriptProjectGen/premake_template.lua").generic_string();
-		std::string projectPremakeLocation = std::filesystem::absolute(filepath.string() + "/premake5.lua");
+		std::string projectPremakeLocation = std::filesystem::absolute(filepath.generic_string() + "/premake5.lua").generic_string();
 		Utils::GenerateFile(premakeFilepath, projectPremakeLocation, projectName);
 
 #if defined(_WIN32)
 		// Copying the build.bat
 		std::string buildScriptPath = std::filesystem::absolute("Resources/ScriptProjectGen/build.bat").generic_string();
-		std::string projectBuildScriptPath = filepath.string() + "/build.bat";
+		std::string projectBuildScriptPath = filepath.generic_string() + "/build.bat";
 		Utils::GenerateFile(buildScriptPath, projectBuildScriptPath, projectName);
 		
 #elif defined(OGN_PLATFORM_LINUX)
 		// Copying the build.sh
 		std::string buildScriptPath = std::filesystem::absolute("Resources/ScriptProjectGen/build.sh").generic_string();
-		std::string projectBuildScriptPath = filepath.string() + "/build.sh";
+		std::string projectBuildScriptPath = filepath.generic_string() + "/build.sh";
 		Utils::CopyFile(buildScriptPath, projectBuildScriptPath);
 #endif
 		Utils::ExecuteScript(projectBuildScriptPath);

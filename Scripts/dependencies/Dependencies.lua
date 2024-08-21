@@ -27,9 +27,9 @@ IncludeDir["OPTICK"]                   = "%{wks.location}/ORigin/vendor/Optick/s
 
 -- Windows
 Library["MONO"]                        = "%{wks.location}/ORigin/vendor/mono/lib/%{cfg.buildcfg}/libmono-static-sgen.lib"
-IncludeDir["VulkanSDK"]                = "%{VULKAN_SDK}/Include" -- includes
-LibraryDir["VulkanSDK"]                = "%{VULKAN_SDK}/Lib" -- library
-Library["Vulkan"]                      = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
+IncludeDir["VulkanSDK"]                = "%{VULKAN_SDK}/Include/" -- includes
+LibraryDir["VulkanSDK"]                = "%{VULKAN_SDK}/Lib/" -- library
+Library["Vulkan1Lib"]                      = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 
 Library["ShaderC_Debug"]               = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
 Library["SPIRV_Cross_Debug"]           = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"

@@ -3,6 +3,8 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include "Origin/Core/Assert.h"
+
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
@@ -12,8 +14,6 @@
 
 #include <glad/glad.h>
 #include <shaderc/shaderc.hpp>
-#include <spirv_cross/spirv_cross.hpp>
-#include <spirv_cross/spirv_glsl.hpp>
 
 namespace origin
 {

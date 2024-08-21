@@ -1,12 +1,14 @@
 // Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Origin/Core/Assert.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
 #include "Origin/Core/ConsoleManager.h"
+
+#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
 
 namespace origin
 {
