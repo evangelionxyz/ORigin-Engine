@@ -140,17 +140,22 @@ namespace origin
 
     void VulkanContext::Shutdown()
     {
+#ifdef OGN_PLATFORM_LINUX
         for (auto imageView : m_Swapchain.ImageViews)
+        {
             vkDestroyImageView(m_Device, imageView, nullptr);
+        }
 
         vkDestroySwapchainKHR(m_Device, m_Swapchain.Handle, nullptr);
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyDevice(m_Device, nullptr);
         vkDestroyInstance(m_Instance, nullptr);
+#endif
     }
 
     void VulkanContext::Init(Window *window)
     {
+#ifdef OGN_PLATFORM_LINUX
         m_WindowHandle = (GLFWwindow *)window->GetNativeWindow();
 
         CreateVkInstance();
@@ -177,6 +182,7 @@ namespace origin
         CreateVkDevice();
         CreateVkSwapchain();
         CreateVkImageViews();
+#endif
     }
 
     void VulkanContext::CreateVkInstance()

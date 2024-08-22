@@ -12,65 +12,10 @@
 #include <cstdint>
 #include <vector>
 
-#include <glad/glad.h>
-#include <shaderc/shaderc.hpp>
-
 namespace origin
 {
-    enum class ShaderType
-    {
-        NONE = -1,
-        VERTEX,
-        FRAGMENT,
-        GEOMTERY
-    };
-
     namespace ShaderUtils
     {
-        static GLenum ShaderTypeFromString(const std::string &type, const std::string &filepath = std::string())
-        {
-            if (type == "vertex")
-                return GL_VERTEX_SHADER;
-            if (type == "fragment" || type == "pixel")
-                return GL_FRAGMENT_SHADER;
-            if (type == "geometry")
-                return GL_GEOMETRY_SHADER;
-            OGN_CORE_ASSERT(false, "[Shader] Unkown Shader Type '{}'", filepath);
-            return 0;
-        }
-
-        static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
-        {
-            switch (stage)
-            {
-            case GL_VERTEX_SHADER:
-                return shaderc_glsl_vertex_shader;
-            case GL_FRAGMENT_SHADER:
-                return shaderc_glsl_fragment_shader;
-            case GL_GEOMETRY_SHADER:
-                return shaderc_glsl_geometry_shader;
-            }
-
-            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-            return (shaderc_shader_kind)0;
-        }
-
-        static std::string GLShaderStageToString(GLenum stage)
-        {
-            switch (stage)
-            {
-            case GL_VERTEX_SHADER:
-                return "GL_VERTEX_SHADER";
-            case GL_FRAGMENT_SHADER:
-                return "GL_FRAGMENT_SHADER";
-            case GL_GEOMETRY_SHADER:
-                return "GL_GEOMETRY_SHADER";
-            }
-
-            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-            return nullptr;
-        }
-
         static const char *GetCacheDirectory()
         {
             return "Resources/Cache/Shaders/SPIRV";
@@ -80,69 +25,19 @@ namespace origin
         {
             std::string cachedDirectory = GetCacheDirectory();
             if (!std::filesystem::exists(cachedDirectory))
+            {
                 std::filesystem::create_directories(cachedDirectory);
-        }
-
-        static const char *GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
-        {
-            switch (stage)
-            {
-            case GL_VERTEX_SHADER:
-                return ".cached_opengl.vert";
-            case GL_FRAGMENT_SHADER:
-                return ".cached_opengl.frag";
-            case GL_GEOMETRY_SHADER:
-                return ".cached_opengl.geom";
             }
-
-            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-            return nullptr;
-        }
-
-        static const char *GLShaderStageCachedVulkanFileExtension(uint32_t stage)
-        {
-            switch (stage)
-            {
-            case GL_VERTEX_SHADER:
-                return ".cached_vulkan.vert";
-            case GL_FRAGMENT_SHADER:
-                return ".cached_vulkan.frag";
-            case GL_GEOMETRY_SHADER:
-                return ".cached_vulkan.geom";
-            }
-
-            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-            return nullptr;
-        }
-
-        static const char *ShaderDataTypeToString(GLenum type)
-        {
-            switch (type)
-            {
-            case GL_VERTEX_SHADER:
-                return "Vertex";
-            case GL_FRAGMENT_SHADER:
-                return "Fragment";
-            case GL_GEOMETRY_SHADER:
-                return "Geometry";
-            }
-            return nullptr;
-        }
-
-        static const char *ShaderDataTypeToString(ShaderType type)
-        {
-            switch (type)
-            {
-            case ShaderType::VERTEX:
-                return "VERTEX";
-            case ShaderType::FRAGMENT:
-                return "FRAGMENT";
-            case ShaderType::GEOMTERY:
-                return "GEOMETRY";
-            }
-            return nullptr;
         }
     }
+
+    enum class ShaderType
+    {
+        NONE = -1,
+        VERTEX,
+        FRAGMENT,
+        GEOMTERY
+    };
 
     struct ShaderProgramSources
     {
@@ -151,8 +46,8 @@ namespace origin
         std::string GeometrySources;
     };
 
-    using ShaderData = std::unordered_map<GLenum, std::vector<uint32_t>>;
-    using ShaderSource = std::unordered_map<GLenum, std::string>;
+    using ShaderData = std::unordered_map<uint32_t, std::vector<uint32_t>>;
+    using ShaderSource = std::unordered_map<uint32_t, std::string>;
 
     class Shader
     {
@@ -190,8 +85,10 @@ namespace origin
         static ShaderProgramSources ParseShader(const std::string &filepath);
         static std::string ReadFile(const std::string &filepath);
         static ShaderSource PreProcess(const std::string &source, const std::string &filepath);
+
         static ShaderData CompileOrGetVulkanBinaries(const ShaderSource &shaderSources, const std::string &filepath);
-        static void Reflect(GLenum stage, const std::vector<uint32_t> &code);
+        static ShaderData CompileOrGetOpenGLBinaries(ShaderSource &openglCode, const ShaderData &vulkanSpirv, const std::string &filepath);
+        static void Reflect(uint32_t stage, const std::vector<uint32_t> &code);
     };
 }
 

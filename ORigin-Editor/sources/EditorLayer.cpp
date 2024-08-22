@@ -730,7 +730,7 @@ namespace origin
 			m_GameViewportSize.y = m_SceneViewportSize.y;
 		}
 
-		ImTextureID viewportID = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget));
+		ImTextureID viewportID = (void*)(uintptr_t)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget);
 		ImGui::Image(viewportID, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -893,7 +893,7 @@ namespace origin
 			ImVec2 posMaxB = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
 			drawList->AddRectFilledMultiColor(posMinB, posMaxB, rectTransparentColor, rectColor, rectColor, rectTransparentColor);
 
-			ImTextureID origiEngineTex = reinterpret_cast<ImTextureID>(m_OriginEngineTex->GetTextureID());
+			ImTextureID origiEngineTex = (void*)(uintptr_t)m_OriginEngineTex->GetTextureID();
 			float textureAspect = (float)m_OriginEngineTex->GetWidth() / (float)m_OriginEngineTex->GetHeight();
 
 			ImVec2 imagePosMin = ImVec2(canvasPos.x, canvasPos.y);
@@ -910,7 +910,7 @@ namespace origin
 
 			// Play Button
 			std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-			if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), { 25.0f, 25.0f }))
+			if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
 			{
 				if (m_SceneHierarchy.GetContext())
 				{
@@ -929,7 +929,7 @@ namespace origin
 			ImGui::SameLine();
 			bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
 			icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-			if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), {25.0f, 25.0f}))
+			if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), {25.0f, 25.0f}))
 			{
 				if (m_SceneHierarchy.GetContext())
 				{
@@ -950,7 +950,7 @@ namespace origin
 				ImGui::SameLine();
 				bool isPaused = m_ActiveScene->IsPaused();
 				icon = m_UITextures.at("pause");
-				if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), { 25.0f, 25.0f }))
+				if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
 				{
 					m_ActiveScene->SetPaused(!isPaused);
 				}
@@ -959,7 +959,7 @@ namespace origin
 				{
 					icon = m_UITextures.at("stepping");
 					ImGui::SameLine();
-					if (ImGui::ImageButton((ImTextureID)icon->GetTextureID(), { 25.0f, 25.0f }))
+					if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
 					{
 						m_ActiveScene->Step(1);
 					}
@@ -972,7 +972,7 @@ namespace origin
 			ImGui::SetCursorPos({ btPos.x + 175.0f, btPos.y });
 			const auto &mode = m_EditorCamera.GetProjectionType();
 			icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
-			if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(icon->GetTextureID()), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
+			if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
 			{
 				if (mode == ProjectionType::Perspective)
 					m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
@@ -1280,7 +1280,7 @@ namespace origin
 			}
 		}
 
-		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && !ImGuizmo::IsOver())
+		if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && !ImGuizmo::IsOver() && m_SceneHierarchy.GetContext())
 		{
 			const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
 			const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };

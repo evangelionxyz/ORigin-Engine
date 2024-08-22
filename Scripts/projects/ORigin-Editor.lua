@@ -1,5 +1,5 @@
--- Copyright (c) Evangelion Manuhutu | ORigin Engine
-require "cmake"
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "Editor"
     location "%{wks.location}/ORigin-Editor"
     language "C++"
@@ -15,7 +15,6 @@ project "Editor"
         "GLFW",
         "GLAD",
         "IMGUI",
-        "OPTICK",
         "MSDFATLASGEN",
         "MSDFGEN",
         "FreeType",
@@ -43,7 +42,6 @@ project "Editor"
         "%{IncludeDir.IMGUIZMO}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.YAMLCPP}",
-        "%{IncludeDir.OPTICK}",
         "%{IncludeDir.JOLT}",
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",

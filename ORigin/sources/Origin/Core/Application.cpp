@@ -55,8 +55,8 @@ namespace origin {
 
 		if (!spec.Runtime)
 		{
-			//m_GuiLayer = new GuiLayer(m_Window);
-			//PushOverlay(m_GuiLayer);
+			m_GuiLayer = new GuiLayer(m_Window);
+			PushOverlay(m_GuiLayer);
 		}
 
 		PhysicsEngine::Init();

@@ -8,14 +8,12 @@
 
 namespace origin {
 
-	struct AssetMetadata
-	{
-		AssetType Type = AssetType::None;
-		std::filesystem::path Filepath;
-
-		operator bool() const { return Type != AssetType::None; }
-	};
-
+    struct AssetMetadata
+    {
+        AssetType             Type = AssetType::None;
+        std::filesystem::path Filepath;
+        operator bool() const { return Type != AssetType::None; }
+   };
 }
 
 #endif

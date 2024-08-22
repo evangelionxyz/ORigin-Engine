@@ -1,5 +1,5 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-require "cmake"
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "ORigin"
     kind "StaticLib"
     language "C++"
@@ -40,7 +40,6 @@ project "ORigin"
         "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.ENTT}",
         "%{IncludeDir.FILEWATCHER}",
-        "%{IncludeDir.OPTICK}",
         "%{IncludeDir.YAMLCPP}",
         "%{IncludeDir.ASSIMP}",
         "%{IncludeDir.JOLT}",
@@ -55,7 +54,6 @@ project "ORigin"
         "GLFW",
         "GLAD",
         "IMGUI",
-        "OPTICK",
         "MSDFATLASGEN",
         "MSDFGEN",
         "FreeType",

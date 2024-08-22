@@ -7,6 +7,7 @@
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
+#include <cstdint>
 
 namespace origin
 {
@@ -115,7 +116,7 @@ namespace origin
 			m_EditorViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
 			// Framebuffer Texture
-			ImTextureID texture = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID());
+			ImTextureID texture = (void *)(uintptr_t)(m_Framebuffer->GetColorAttachmentRendererID());
 			ImGui::Image(texture, { m_EditorViewportSize.x, m_EditorViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 
@@ -248,7 +249,7 @@ namespace origin
 									}
 									else
 									{
-										OGN_CORE_WARN("[UIEditor] Wrong asset type!");
+										OGN_CORE_WARN(       "[UIEditor] Wrong asset type!");
 										PUSH_CONSOLE_WARNING("[UIEditor] Wrong asset type!");
 									}
 								}

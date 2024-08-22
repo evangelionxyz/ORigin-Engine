@@ -7,6 +7,7 @@
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
 
+#include <glad/glad.h>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 
@@ -26,8 +27,8 @@ namespace origin
         {
             auto shaderSources = Shader::PreProcess(source, filepath.string());
             Timer timer;
-            m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
-            m_OpenGLSPIRV = CompileOrGetOpenGLBinaries();
+            ShaderData vulkanSpirv = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
+            m_OpenGLSPIRV = Shader::CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkanSpirv, filepath.string());
             CreateSpirvProgram();
             PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
             OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
@@ -48,8 +49,8 @@ namespace origin
             ShaderUtils::CreateCachedDirectoryIfNeeded();
             std::string source = Shader::ReadFile(filepath.string());
             ShaderSource shaderSources = Shader::PreProcess(source, filepath.string());
-            m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
-            m_OpenGLSPIRV = CompileOrGetOpenGLBinaries();
+            ShaderData vulkanSpirv = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
+            m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkanSpirv, filepath.string());
             CreateSpirvProgram();
             PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
             OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
@@ -77,7 +78,6 @@ namespace origin
         OGN_PROFILER_RENDERING();
 
         uint32_t program = glCreateProgram();
-
         std::vector<uint32_t> shaderIDs;
         for (auto &&[stage, spirv] : m_OpenGLSPIRV)
         {
@@ -107,7 +107,9 @@ namespace origin
             glGetProgramInfoLog(program, maxLength, &maxLength, infolog.data());
             glDeleteProgram(program);
             for (auto id : shaderIDs)
+            {
                 glDeleteShader(id);
+            }
 
             return;
         }
@@ -116,55 +118,6 @@ namespace origin
             glDeleteShader(id);
 
         m_RendererID = program;
-    }
-
-    ShaderData OpenGLShader::CompileOrGetOpenGLBinaries()
-    {
-        OGN_PROFILER_RENDERING();
-        ShaderData shaderData;
-
-        shaderc::Compiler compiler;
-        shaderc::CompileOptions options;
-        options.SetOptimizationLevel(shaderc_optimization_level_performance);
-        std::filesystem::path cacheDirectory = ShaderUtils::GetCacheDirectory();
-
-        m_OpenGLSourceCode.clear();
-        for (auto &&[stage, spirv] : m_VulkanSPIRV)
-        {
-            std::filesystem::path shaderFilepath = m_Filepath;
-            std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + ShaderUtils::GLShaderStageCachedOpenGLFileExtension(stage));
-
-            std::ifstream infile(cachedPath, std::ios::in | std::ios::binary);
-            if (infile.is_open() && !m_IsRecompile)
-            {
-                infile.seekg(0, std::ios::end);
-                auto size = infile.tellg();
-                infile.seekg(0, std::ios::beg);
-                auto &data = shaderData[stage];
-                data.resize(size / sizeof(uint32_t));
-                infile.read((char *)data.data(), size);
-            }
-            else
-            {
-                spirv_cross::CompilerGLSL glslCompiler(spirv);
-                m_OpenGLSourceCode[stage] = glslCompiler.compile();
-                auto &source = m_OpenGLSourceCode[stage];
-                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, ShaderUtils::GLShaderStageToShaderC(stage), m_Filepath.string().c_str());
-                bool success = module.GetCompilationStatus() == shaderc_compilation_status_success;
-
-                shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-                std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary);
-                if (outfile.is_open())
-                {
-                    auto &data = shaderData[stage];
-                    outfile.write((char *)data.data(), data.size() * sizeof(uint32_t));
-                    outfile.flush();
-                    outfile.close();
-                }
-            }
-        }
-
-        return shaderData;
     }
 
     uint32_t OpenGLShader::CompileShader(uint32_t type, const std::string &source)
@@ -280,8 +233,8 @@ namespace origin
                 auto shaderSources = Shader::PreProcess(source, m_Filepath.string());
 
                 Timer timer;
-                m_VulkanSPIRV = CompileOrGetVulkanBinaries(shaderSources, m_Filepath.string());
-                m_OpenGLSPIRV = CompileOrGetOpenGLBinaries();
+                ShaderData vulkanSpirv = CompileOrGetVulkanBinaries(shaderSources, m_Filepath.string());
+                m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkanSpirv, m_Filepath.string());
                 CreateSpirvProgram();
                 OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
                 PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());

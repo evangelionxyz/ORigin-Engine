@@ -1,5 +1,5 @@
--- Copyright (c) Evangelion Manuhutu | ORigin Engine
-require "cmake"
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "IMGUI"
   location (vendorProjectFiles)
   kind "StaticLib"

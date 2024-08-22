@@ -1,5 +1,5 @@
--- Copyright (c) Evangelion Manuhutu | ORigin Engine
-require "cmake"
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "Sandbox"
     location "%{wks.location}/Sandbox"
     language "C++"
@@ -14,7 +14,6 @@ project "Sandbox"
         "GLFW",
         "GLAD",
         "IMGUI",
-        "OPTICK",
         "MSDFATLASGEN",
         "MSDFGEN",
         "FreeType",
@@ -44,7 +43,6 @@ project "Sandbox"
         "%{IncludeDir.IMGUIZMO}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.YAMLCPP}",
-        "%{IncludeDir.OPTICK}",
         "%{IncludeDir.JOLT}",
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",

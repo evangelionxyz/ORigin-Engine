@@ -1,5 +1,5 @@
--- Copyright (c) Evangelion Manuhutu | ORigin Engine
-require "cmake"
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "Runtime"
     location "%{wks.location}/ORigin-Runtime"
     language "C++"
@@ -17,7 +17,6 @@ project "Runtime"
         "GLFW",
         "GLAD",
         "IMGUI",
-        "OPTICK",
         "MSDFATLASGEN",
         "MSDFGEN",
         "FreeType",
@@ -44,7 +43,6 @@ project "Runtime"
         "%{IncludeDir.IMGUIZMO}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.YAMLCPP}",
-        "%{IncludeDir.OPTICK}",
         "%{IncludeDir.JOLT}",
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",

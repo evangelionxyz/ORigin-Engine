@@ -19,9 +19,6 @@
 [submodule "Origin/vendor/JoltPhysics"]
 	path = ORigin/vendor/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "Origin/vendor/Optick"]
-	path = ORigin/vendor/Optick
-	url = https://github.com/bombomby/optick.git
 [submodule "Origin/vendor/origin-glfw"]
 	path = ORigin/vendor/origin-glfw
 	url = https://github.com/evangelionmanuhutu/origin-glfw.git

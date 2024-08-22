@@ -103,7 +103,7 @@ namespace origin
 			m_ViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 			
 			// Framebuffer Texture
-			ImTextureID texture = reinterpret_cast<ImTextureID>(m_Framebuffer->GetColorAttachmentRendererID());
+			ImTextureID texture = (void *)(uintptr_t)(m_Framebuffer->GetColorAttachmentRendererID());
 			ImGui::Image(texture, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
 			ImGui::End();
 
@@ -111,7 +111,7 @@ namespace origin
 
 			if (m_Texture)
 			{
-				texture = reinterpret_cast<ImTextureID>(m_Texture->GetTextureID());
+				texture = (void *)(uintptr_t)(m_Texture->GetTextureID());
 				ImVec2 atlasSize { (float)m_Texture->GetWidth(), (float)m_Texture->GetHeight() };
 
 				if (ImGui::Button("Save"))

@@ -31,8 +31,7 @@ namespace origin
 
 int main(int argc, char **argv)
 {
-	origin::Main(argc, argv);
-	return 0;
+	return origin::Main(argc, argv);
 }
 
 #endif

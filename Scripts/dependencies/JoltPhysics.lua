@@ -1,5 +1,5 @@
--- Copyright (c) Evangelion Manuhutu | ORigin Engine
-require "cmake"
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "JOLT"
     location (vendorProjectFiles)
     kind "StaticLib"
@@ -10,13 +10,12 @@ project "JOLT"
     targetdir (vendorOutputdir)
     objdir (vendorIntOutputdir)
 
-    includedirs{
-        "%{wks.location}/ORigin/vendor/JoltPhysics/"
-    }
-
     files{
         "%{wks.location}/ORigin/vendor/JoltPhysics/Jolt/**.cpp",
-        "%{wks.location}/ORigin/vendor/JoltPhysics/Jolt/**.h"
+    }
+
+    includedirs{
+        "%{wks.location}/ORigin/vendor/JoltPhysics/"
     }
 
     filter "system:windows"

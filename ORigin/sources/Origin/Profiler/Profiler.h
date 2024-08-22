@@ -3,7 +3,7 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
-#include "optick.h"
+//#include "optick.h"
 #include "Origin/Core/Time.h"
 
 #include <vector>

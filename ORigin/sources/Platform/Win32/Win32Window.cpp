@@ -37,7 +37,7 @@ namespace origin {
 		if (!m_MainWindow)
 		{
 			glfwTerminate();
-			MessageBox(NULL, L"Failed to create window", L"Win32Window.cpp", 0);
+			MessageBox(nullptr, L"Failed to create window", L"glfwCreateWindow", 0);
 			exit(EXIT_FAILURE);
 		}
 

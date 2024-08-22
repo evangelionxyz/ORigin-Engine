@@ -1,4 +1,5 @@
-require "cmake"
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "FreeType"
     location (vendorProjectFiles)
     kind "StaticLib"

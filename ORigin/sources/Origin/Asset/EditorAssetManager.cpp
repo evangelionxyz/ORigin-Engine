@@ -12,50 +12,51 @@
 
 namespace origin
 {
-	static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap = {
-		{ ".org", AssetType::Scene },
-		{ ".jpg", AssetType::Texture },
-		{ ".jpeg", AssetType::Texture },
-		{ ".png", AssetType::Texture },
-		{ ".ttf", AssetType::Font },
-		{ ".otf", AssetType::Font },
-		{ ".gltf", AssetType::Mesh },
-		{ ".obj", AssetType::Mesh },
-		{ ".dae", AssetType::Mesh },
-		{ ".mat", AssetType::Material },
-		{ ".ogg", AssetType::Audio },
-		{ ".mp3", AssetType::Audio },
-		{ ".wav", AssetType::Audio },
-		{ ".sprite", AssetType::SpritesSheet },
-	};
+    static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap =
+    {
+        { ".org", AssetType::Scene },
+        { ".jpg", AssetType::Texture },
+        { ".jpeg", AssetType::Texture },
+        { ".png", AssetType::Texture },
+        { ".ttf", AssetType::Font },
+        { ".otf", AssetType::Font },
+        { ".gltf", AssetType::Mesh },
+        { ".obj", AssetType::Mesh },
+        { ".dae", AssetType::Mesh },
+        { ".mat", AssetType::Material },
+        { ".ogg", AssetType::Audio },
+        { ".mp3", AssetType::Audio },
+        { ".wav", AssetType::Audio },
+        { ".sprite", AssetType::SpritesSheet },
+    };
 
-	static AssetType GetAssetTypeFromFileExtension(const std::string_view extension)
-	{
-		if (s_AssetExtensionMap.find(extension) == s_AssetExtensionMap.end())
-		{
-			OGN_CORE_WARN("[Editor Asset Manager] Could not find AssetType for {0}", extension);
-			PUSH_CONSOLE_WARNING("Invalid asset type{0}", extension);
-			return AssetType::None;
-		}
+    static AssetType GetAssetTypeFromFileExtension(const std::string_view extension)
+    {
+        if (s_AssetExtensionMap.find(extension) == s_AssetExtensionMap.end())
+        {
+            OGN_CORE_WARN("[Editor Asset Manager] Could not find AssetType for {0}", extension);
+            PUSH_CONSOLE_WARNING("Invalid asset type{0}", extension);
+            return AssetType::None;
+        }
 
-		return s_AssetExtensionMap.at(extension);
-	}
+        return s_AssetExtensionMap.at(extension);
+    }
 
-	YAML::Emitter &operator<<(YAML::Emitter &out, const std::string_view &v)
-	{
-		out << std::string(v.data(), v.size());
-		return out;
-	}
+    YAML::Emitter &operator<<(YAML::Emitter &out, const std::string_view &v)
+    {
+        out << std::string(v.data(), v.size());
+        return out;
+    }
 
-	std::shared_ptr<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
-	{
-		if (!IsAssetHandleValid(handle))
-			return nullptr;
+    std::shared_ptr<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
+    {
+        if (!IsAssetHandleValid(handle))
+            return nullptr;
 
-		if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
-		{
-			return m_LoadedAssets.at(handle);
-		}
+        if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
+        {
+            return m_LoadedAssets.at(handle);
+        }
 
         std::shared_ptr<Asset> asset;
         const AssetMetadata &metadata = GetMetadata(handle);
@@ -67,104 +68,104 @@ namespace origin
             auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
             m_LoadedAssets[handle] = asset;
             FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
-			return nullptr;
+            return nullptr;
             break;
         }
         default:
             asset = AssetImporter::ImportAsset(handle, metadata);
-			break;
+            break;
         }
 
         if (!asset)
         {
             OGN_CORE_ERROR("[Editor Asset Manager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
             PUSH_CONSOLE_ERROR("Failed to import asset! {0}", metadata.Filepath.generic_string());
-			return nullptr;
+            return nullptr;
         }
         else
         {
             m_LoadedAssets[handle] = asset;
         }
 
-		return asset;
-	}
+        return asset;
+    }
 
-	bool EditorAssetManager::IsAssetHandleValid(AssetHandle handle) const
-	{
-		if (handle != 0 && m_AssetRegistry.find(handle) != m_AssetRegistry.end())
-			return true;
+    bool EditorAssetManager::IsAssetHandleValid(AssetHandle handle) const
+    {
+        if (handle != 0 && m_AssetRegistry.find(handle) != m_AssetRegistry.end())
+            return true;
 
-		return false;
-	}
+        return false;
+    }
 
-	bool EditorAssetManager::IsAssetLoaded(AssetHandle handle) const
-	{
-		return m_LoadedAssets.find(handle) != m_LoadedAssets.end();
-	}
+    bool EditorAssetManager::IsAssetLoaded(AssetHandle handle) const
+    {
+        return m_LoadedAssets.find(handle) != m_LoadedAssets.end();
+    }
 
-	AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
-	{
-		if (!IsAssetHandleValid(handle))
-			return AssetType::None;
+    AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
+    {
+        if (!IsAssetHandleValid(handle))
+            return AssetType::None;
 
-		return m_AssetRegistry.at(handle).Type;
-	}
+        return m_AssetRegistry.at(handle).Type;
+    }
 
-	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepath)
-	{
-		AssetHandle handle;
-		AssetMetadata metadata;
+    AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepath)
+    {
+        AssetHandle handle;
+        AssetMetadata metadata;
 
-		metadata.Filepath = filepath;
-		metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
+        metadata.Filepath = filepath;
+        metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
 
-		if (metadata.Type == AssetType::None)
-		{
-			OGN_CORE_ERROR("[Editor Asset Manager] Invalid Asset Type {0}", filepath);
-			PUSH_CONSOLE_ERROR("Invalid asset type! {0}", filepath.generic_string());
-			return 0;
-		}
+        if (metadata.Type == AssetType::None)
+        {
+            OGN_CORE_ERROR("[Editor Asset Manager] Invalid Asset Type {0}", filepath);
+            PUSH_CONSOLE_ERROR("Invalid asset type! {0}", filepath.generic_string());
+            return 0;
+        }
 
-		std::shared_ptr<Asset> asset;
-		if (metadata.Type == AssetType::Font)
-		{
-			auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
+        std::shared_ptr<Asset> asset;
+        if (metadata.Type == AssetType::Font)
+        {
+            auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
 
-			OGN_CORE_TRACE(handle);
-			m_LoadedAssets[handle] = asset;
-			m_AssetRegistry[handle] = metadata;
-			FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
+            OGN_CORE_TRACE(handle);
+            m_LoadedAssets[handle] = asset;
+            m_AssetRegistry[handle] = metadata;
+            FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
 
-			SerializeAssetRegistry();
-			return handle;
-		}
-		else
-		{
-			asset = AssetImporter::ImportAsset(handle, metadata);
-			if (asset)
-			{
-				asset->Handle = handle;
-				m_LoadedAssets[handle] = asset;
-				m_AssetRegistry[handle] = metadata;
+            SerializeAssetRegistry();
+            return handle;
+        }
+        else
+        {
+            asset = AssetImporter::ImportAsset(handle, metadata);
+            if (asset)
+            {
+                asset->Handle = handle;
+                m_LoadedAssets[handle] = asset;
+                m_AssetRegistry[handle] = metadata;
 
-				SerializeAssetRegistry();
-				return handle;
-			}
-		}
+                SerializeAssetRegistry();
+                return handle;
+            }
+        }
 
-		return 0;
-	}
+        return 0;
+    }
 
     void EditorAssetManager::InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<std::shared_ptr<Asset>()> loader)
     {
-		std::shared_ptr<Asset> asset;
+        std::shared_ptr<Asset> asset;
         if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
         {
             asset = m_LoadedAssets.at(handle);
-			return;
+            return;
         }
 
-		asset = loader();
+        asset = loader();
         if (asset)
         {
             asset->Handle = handle;
@@ -176,113 +177,113 @@ namespace origin
     }
 
     void EditorAssetManager::RemoveAsset(AssetHandle handle)
-	{
-		if (m_AssetRegistry.find(handle) != m_AssetRegistry.end())
-			m_AssetRegistry.erase(handle);
+    {
+        if (m_AssetRegistry.find(handle) != m_AssetRegistry.end())
+            m_AssetRegistry.erase(handle);
 
-		if (m_LoadedAssets.find(handle) != m_LoadedAssets.end())
-			m_LoadedAssets.erase(handle);
+        if (m_LoadedAssets.find(handle) != m_LoadedAssets.end())
+            m_LoadedAssets.erase(handle);
 
-		SerializeAssetRegistry();
-	}
+        SerializeAssetRegistry();
+    }
 
-	void EditorAssetManager::RemoveLoadedAsset(AssetHandle handle)
-	{
-		if (m_LoadedAssets.find(handle) != m_LoadedAssets.end())
-			m_LoadedAssets.erase(handle);
-	}
+    void EditorAssetManager::RemoveLoadedAsset(AssetHandle handle)
+    {
+        if (m_LoadedAssets.find(handle) != m_LoadedAssets.end())
+            m_LoadedAssets.erase(handle);
+    }
 
-	const origin::AssetMetadata &EditorAssetManager::GetMetadata(AssetHandle handle) const
-	{
-		static AssetMetadata s_NullMetadata;
-		auto it = m_AssetRegistry.find(handle);
-		if (it == m_AssetRegistry.end())
-			return s_NullMetadata;
+    const origin::AssetMetadata &EditorAssetManager::GetMetadata(AssetHandle handle) const
+    {
+        static AssetMetadata s_NullMetadata;
+        auto it = m_AssetRegistry.find(handle);
+        if (it == m_AssetRegistry.end())
+            return s_NullMetadata;
 
-		return it->second;
-	}
+        return it->second;
+    }
 
-	const std::filesystem::path &EditorAssetManager::GetFilepath(AssetHandle handle)
-	{
-		return GetMetadata(handle).Filepath;
-	}
+    const std::filesystem::path &EditorAssetManager::GetFilepath(AssetHandle handle)
+    {
+        return GetMetadata(handle).Filepath;
+    }
 
-	void EditorAssetManager::SerializeAssetRegistry()
-	{
-		auto path = Project::GetActiveAssetRegistryPath();
+    void EditorAssetManager::SerializeAssetRegistry()
+    {
+        auto path = Project::GetActiveAssetRegistryPath();
 
-		OGN_CORE_INFO("[Editor Asset Manager] Serialize Registry {0}", path.string());
-		PUSH_CONSOLE_INFO("Assets Saved!");
+        OGN_CORE_INFO("[Editor Asset Manager] Serialize Registry {0}", path.string());
+        PUSH_CONSOLE_INFO("Assets Saved!");
 
-		for (const auto &[handle, metadata] : m_AssetRegistry)
-		{
-			if (metadata.Type == AssetType::Material)
-			{
-				std::filesystem::path filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
-				std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
-				MaterialSerializer::Serialize(filepath, mat);
-			}
-		}
+        for (const auto &[handle, metadata] : m_AssetRegistry)
+        {
+            if (metadata.Type == AssetType::Material)
+            {
+                std::filesystem::path filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
+                std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
+                MaterialSerializer::Serialize(filepath, mat);
+            }
+        }
 
-		YAML::Emitter out;
-		{
-			out << YAML::BeginMap; // Root
-			out << YAML::Key << "AssetRegistry" << YAML::Value;
+        YAML::Emitter out;
+        {
+            out << YAML::BeginMap; // Root
+            out << YAML::Key << "AssetRegistry" << YAML::Value;
 
-			out << YAML::BeginSeq;
-			for (const auto &[handle, metadata] : m_AssetRegistry)
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "Handle" << YAML::Value << handle;
-				out << YAML::Key << "Filepath" << YAML::Value << metadata.Filepath.generic_string();
-				out << YAML::Key << "Type" << YAML::Value << AssetTypeToString(metadata.Type);
-				out << YAML::EndMap;
-			}
+            out << YAML::BeginSeq;
+            for (const auto &[handle, metadata] : m_AssetRegistry)
+            {
+                out << YAML::BeginMap;
+                out << YAML::Key << "Handle" << YAML::Value << handle;
+                out << YAML::Key << "Filepath" << YAML::Value << metadata.Filepath.generic_string();
+                out << YAML::Key << "Type" << YAML::Value << AssetTypeToString(metadata.Type);
+                out << YAML::EndMap;
+            }
 
-			out << YAML::EndSeq;
-			out << YAML::EndMap; // !Root
-		}
+            out << YAML::EndSeq;
+            out << YAML::EndMap; // !Root
+        }
 
-		std::ofstream fout(path);
-		fout << out.c_str();
+        std::ofstream fout(path);
+        fout << out.c_str();
 
-		fout.close();
-	}
+        fout.close();
+    }
 
-	bool EditorAssetManager::DeserializeAssetRegistry()
-	{
-		auto path = Project::GetActiveAssetRegistryPath();
+    bool EditorAssetManager::DeserializeAssetRegistry()
+    {
+        auto path = Project::GetActiveAssetRegistryPath();
 
-		if (!std::filesystem::exists(path))
-		{
-			PUSH_CONSOLE_ERROR("[Editor Asset Manager] Failed to deserialize AssetRegistry {0}", path.generic_string());
-			OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to deserialize AssetRegistry");
-			return false;
-		}
+        if (!std::filesystem::exists(path))
+        {
+            PUSH_CONSOLE_ERROR("[Editor Asset Manager] Failed to deserialize AssetRegistry {0}", path.generic_string());
+            OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to deserialize AssetRegistry");
+            return false;
+        }
 
-		YAML::Node data;
-		try
-		{
-			data = YAML::LoadFile(path.generic_string());
-		} catch (YAML::ParserException e)
-		{
-			OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to load project file: {0}\n\t{1}", path, e.what());
-			return false;
-		}
+        YAML::Node data;
+        try
+        {
+            data = YAML::LoadFile(path.generic_string());
+        } catch (YAML::ParserException e)
+        {
+            OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to load project file: {0}\n\t{1}", path, e.what());
+            return false;
+        }
 
-		auto rootNode = data["AssetRegistry"];
-		if (!rootNode)
-			return false;
+        auto rootNode = data["AssetRegistry"];
+        if (!rootNode)
+            return false;
 
-		for (const auto &node : rootNode)
-		{
-			AssetHandle handle = node["Handle"].as<uint64_t>();
-			auto &metadata = m_AssetRegistry[handle];
-			metadata.Filepath = node["Filepath"].as<std::string>();
-			metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());
-		}
+        for (const auto &node : rootNode)
+        {
+            AssetHandle handle = node["Handle"].as<uint64_t>();
+            auto &metadata = m_AssetRegistry[handle];
+            metadata.Filepath = node["Filepath"].as<std::string>();
+            metadata.Type = AssetTypeFromString(node["Type"].as<std::string>());
+        }
 
-		return true;
-	}
+        return true;
+    }
 
 }

@@ -395,11 +395,8 @@ namespace origin {
 	void EditorCamera::MouseRotate(const glm::vec2& delta, float dt)
     {
         float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
-        glm::vec2 acceleration = delta * SENSITIVITY;
-        m_AngularVelocity += acceleration;
-        m_AngularVelocity *= std::pow(DAMPING, dt);
-        m_Yaw += yawSign * m_AngularVelocity.x * RotationSpeed() * 2.0f;
-        m_Pitch += m_AngularVelocity.y * RotationSpeed() * 2.0f;
+        m_Yaw += yawSign * RotationSpeed() * delta.x;
+        m_Pitch += RotationSpeed() * delta.y;
         m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
 	}
 

@@ -1,9 +1,10 @@
 // Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 #include "pch.h"
 #include "VulkanShader.h"
+#include "VulkanContext.h"
 
 #include <fstream>
-#include "VulkanContext.h"
+#include <glad/glad.h>
 
 namespace origin
 {
@@ -23,22 +24,22 @@ namespace origin
         : m_Filepath(filepath), m_IsRecompile(recompile)
     {
         OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Vulkan Shader] Filepath does not exists {}", filepath);
-
         ShaderUtils::CreateCachedDirectoryIfNeeded();
-        std::string source = Shader::ReadFile(filepath.string());
-        ShaderSource shaderSources = Shader::PreProcess(source, filepath.string());
-        m_SPRIV = Shader::CompileOrGetVulkanBinaries(shaderSources, filepath.string());
 
-        VulkanContext *context = VulkanContext::GetInstance();
-        for (auto &[stage, spirv] : m_SPRIV)
+        std::string source         = Shader::ReadFile(filepath.string());
+        ShaderSource shaderSources = Shader::PreProcess(source, filepath.string());
+        ShaderData vulkanSpirv     = Shader::CompileOrGetVulkanBinaries(shaderSources, filepath.string());
+        VulkanContext *context     = VulkanContext::GetInstance();
+
+        for (auto &[stage, spirv] : vulkanSpirv)
         {
             VkShaderModule shaderModule = CreateModule(spirv);
-            VkPipelineShaderStageCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            createInfo.stage = GetShaderStage(stage);
-            createInfo.module = shaderModule;
-            createInfo.pName = "main";
 
+            VkPipelineShaderStageCreateInfo createInfo{};
+            createInfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            createInfo.stage  = GetShaderStage(stage);
+            createInfo.module = shaderModule;
+            createInfo.pName  = "main";
             m_Stages.push_back(createInfo);
 
             vkDestroyShaderModule(context->m_Device, shaderModule, nullptr);

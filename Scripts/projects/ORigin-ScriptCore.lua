@@ -1,13 +1,13 @@
--- Copyright (c) 2022 Evangelion Manuhutu | ORigin Engine
-if _ACTION ~= "cmake" then
+-- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
 project "ORigin-ScriptCore"
     kind "SharedLib"
     language "C#"
     dotnetframework "4.8"
-    location "../../ORigin-ScriptCore"
+    location "%{wks.location}/ORigin-ScriptCore"
 
-    targetdir ("../../ORigin-Editor/Resources/ScriptCore")
-    objdir ("../../ORigin-Editor/Resources/ScriptCore/Int")
+    targetdir ("%{wks.location}/ORigin-Editor/Resources/ScriptCore")
+    objdir ("%{wks.location}/ORigin-Editor/Resources/ScriptCore/Int")
 
     files {
         "%{prj.location}/sources/**.cs",
@@ -25,4 +25,3 @@ project "ORigin-ScriptCore"
     filter "configurations:Dist"
         optimize "Full"
         symbols "Off"
-end

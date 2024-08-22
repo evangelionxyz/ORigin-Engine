@@ -1599,7 +1599,7 @@ namespace origin {
 			ImGui::PopStyleVar();
 
 			ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
-			ImTextureID texId = reinterpret_cast<ImTextureID>(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
+			ImTextureID texId = (void *)(uintptr_t)(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
 			if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
 				ImGui::OpenPopup("Component Settings");
 

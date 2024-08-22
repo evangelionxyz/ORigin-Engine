@@ -5,6 +5,7 @@
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
 #include <glad/glad.h>
+#include <cstdint>
 
 namespace origin
 {
@@ -65,7 +66,7 @@ namespace origin
 					ShaderDataType_OpenGL(element.Type),
 					element.Normalized ? GL_TRUE : GL_FALSE,
 					layout.GetStride(),
-					(const void*)element.Offset);
+					(const void*)(const uintptr_t)element.Offset);
 				m_VertexBufferIndex++;
 				break;
 			}
@@ -80,7 +81,7 @@ namespace origin
 					element.GetComponentCount(),
 					ShaderDataType_OpenGL(element.Type),
 					layout.GetStride(),
-					(const void*)element.Offset);
+					(const void*)(const uintptr_t)element.Offset);
 				m_VertexBufferIndex++;
 				break;
 			}
@@ -88,8 +89,8 @@ namespace origin
 			case ShaderDataType::Mat3:
 			case ShaderDataType::Mat4:
 			{
-				uint8_t count = element.GetComponentCount();
-				for (uint8_t i = 0; i < count; i++)
+				const uint8_t count = element.GetComponentCount();
+				for (uint8_t i = 0; i < count; ++i)
 				{
 					glEnableVertexAttribArray(m_VertexBufferIndex);
 					glVertexAttribPointer(m_VertexBufferIndex,
@@ -97,7 +98,7 @@ namespace origin
 						ShaderDataType_OpenGL(element.Type),
 						element.Normalized ? GL_TRUE : GL_FALSE,
 						layout.GetStride(),
-						(const void*)(element.Offset + sizeof(float) * count * i));
+						(const void*)(const uintptr_t)(element.Offset + sizeof(float) * count * i));
 					glVertexAttribDivisor(m_VertexBufferIndex, 1);
 					m_VertexBufferIndex++;
 				}

@@ -64,16 +64,11 @@ namespace origin
         bool m_IsSPIRV = false;
         bool m_IsRecompile;
 
-        ShaderData m_VulkanSPIRV;
         ShaderData m_OpenGLSPIRV;
         ShaderSource m_OpenGLSourceCode;
         std::unordered_map<std::string, int> m_UniformLocationCache;
 
-        ShaderData CompileOrGetOpenGLBinaries();
-
-        void Reflect(GLenum stage, const std::vector<uint32_t> &shaderData);
         void CreateSpirvProgram();
-
         uint32_t CompileShader(uint32_t type, const std::string &source);
         uint32_t CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc);
     };

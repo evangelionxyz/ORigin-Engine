@@ -11,7 +11,7 @@ Run [gen.bat](gen.bat) to generate Visual Studio .sln file or Makefile.
 #### Install 
 ```bash 
     sudo chown -R $USER: $HOME
-    sudo apt install libwayland-dev libxkbcommon-dev xorg-dev zlib1g-dev libfmt-dev zenity gdb
+    sudo apt install libwayland-dev libxkbcommon-dev xorg-dev zlib1g-dev libfmt-dev zenity gdb libgmock-dev
 ```
 #### Install Mono from [Mono Project](https://www.mono-project.com/download/stable/#download-lin) and execute
 ```bash

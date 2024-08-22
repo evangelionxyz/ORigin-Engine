@@ -10,10 +10,11 @@
 #include "Origin/Asset/AssetImporter.h"
 
 #ifdef OGN_PLATFORM_WINDOWS
-	#include "Platform/DX11/DX11RendererAPI.h"
+#	include "Platform/DX11/DX11RendererAPI.h"
+#elif OGN_PLATFORM_LINUX
+#	include "Platform/Vulkan/VulkanRendererAPI.h"
 #endif
 
-#include "Platform/Vulkan/VulkanRendererAPI.h"
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 
 namespace origin {
@@ -57,11 +58,13 @@ namespace origin {
 			Renderer2D::Init();
 		}
 		break;
+#ifdef OGN_PLATFORM_LINUX
 		case RendererAPI::API::VULKAN:
 		{
 			RenderCommand::s_RendererAPI = new VulkanRendererAPI;
 		}
 		break;
+#endif
 #ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11:
 		{

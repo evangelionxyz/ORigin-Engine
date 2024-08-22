@@ -5,7 +5,7 @@ setlocal
 echo Choose the build system:
 echo [1] Visual Studio 2022
 echo [2] GNU Make (gmake)
-set /p choice="Enter your choice (1 or 2): "
+set /p choice="Enter your choice: "
 
 if %choice%==1 (
     set build_system=vs2022
