@@ -296,7 +296,7 @@ namespace origin
 				}
 				else
 				{
-					ImGui::TextWrapped(filenameStr.c_str());
+					ImGui::TextWrapped("%s", filenameStr.c_str());
 				}
 
 				ImGui::NextColumn();
@@ -397,7 +397,7 @@ namespace origin
 							ImGui::EndPopup();
 						}
 
-						ImGui::TextWrapped(filenameStr.c_str());
+						ImGui::TextWrapped("%s", filenameStr.c_str());
 						ImGui::NextColumn();
 
 						ImGui::PopID();

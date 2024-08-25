@@ -134,7 +134,7 @@ namespace origin::UI
 
 		ImGui::BeginColumns(label, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 		ImGui::NextColumn();
 
 		ret = ImGui::Button(text, btSize);
@@ -159,7 +159,7 @@ namespace origin::UI
 
 		ImGui::BeginColumns(label, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 		ImGui::NextColumn();
 
 		ret = ImGui::Checkbox("##check_box", value);
@@ -177,7 +177,7 @@ namespace origin::UI
 
         ImGui::BeginColumns(label, 3, ImGuiOldColumnFlags_GrowParentContentsSize);
         ImGui::SetColumnWidth(0, coloumnWidth);
-        ImGui::Text(label);
+        ImGui::Text("%s", label);
         ImGui::NextColumn();
         if (ImGui::Checkbox("X", x))
         {
@@ -202,7 +202,7 @@ namespace origin::UI
 
         ImGui::BeginColumns(label, 4, ImGuiOldColumnFlags_GrowParentContentsSize);
         ImGui::SetColumnWidth(0, coloumnWidth);
-        ImGui::Text(label);
+        ImGui::Text("%s", label);
         ImGui::NextColumn();
 		if (ImGui::Checkbox("X", x))
 		{
@@ -231,7 +231,7 @@ namespace origin::UI
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
@@ -343,7 +343,7 @@ namespace origin::UI
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
@@ -433,7 +433,7 @@ namespace origin::UI
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
@@ -502,7 +502,7 @@ namespace origin::UI
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
@@ -544,7 +544,7 @@ namespace origin::UI
 
 		ImGui::Columns(2);
 		ImGui::SetColumnWidth(0, coloumnWidth);
-		ImGui::Text(label);
+		ImGui::Text("%s", label);
 		ImGui::NextColumn();
 
 		ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());

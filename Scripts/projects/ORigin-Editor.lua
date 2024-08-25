@@ -6,7 +6,7 @@ project "Editor"
     cppdialect "C++20"
     staticruntime "off"
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
-    objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
+    objdir ("%{wks.location}/Bin-Int/%{cfg.buildcfg}/ORigin")
 
     links {
         "ORigin",

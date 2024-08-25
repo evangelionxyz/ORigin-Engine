@@ -1026,7 +1026,7 @@ namespace origin
 								ImGui::PushID(name.c_str());
 								ImGui::TableNextRow();
 								ImGui::TableNextColumn();
-								ImGui::TextWrapped(name.c_str());
+								ImGui::TextWrapped("%s", name.c_str());
 								ImGui::TableNextColumn();
 								ImGui::TextWrapped(shader->IsSPIRV() ? "SPIR-V" : "-");
 								ImGui::TableNextColumn();

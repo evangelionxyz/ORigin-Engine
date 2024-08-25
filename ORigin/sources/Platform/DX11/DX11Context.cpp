@@ -81,7 +81,7 @@ namespace origin
 		
 	}
 
-	DX11Context* DX11Context::Get()
+	DX11Context* DX11Context::GetInstance()
 	{
 		return s_Instance;
 	}

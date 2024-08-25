@@ -15,7 +15,7 @@ namespace origin {
 		{
 			None = 0,
 			OpenGL,
-			VULKAN,
+			Vulkan,
 			DX11,
 			Metal
 		};

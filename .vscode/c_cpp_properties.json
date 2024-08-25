@@ -12,6 +12,11 @@
                 "${workspaceFolder}/Sandbox/sources/",
                 "/usr/include/"
             ],
+            "defines": [
+                "OGN_PLATFORM_LINUX",
+                "_GLFW_X11",
+                "VK_VERSION_1_0"
+            ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "c++20",
@@ -29,6 +34,9 @@
                 "${workspaceFolder}/ORigin-Runtime/sources/",
                 "${workspaceFolder}/Sandbox/sources/",
                 "${VULKAN_SDK}/Include/"
+            ],
+            "defines": [
+                "OGN_PLATFORM_WINDOWS"
             ],
             "cStandard": "c17",
             "cppStandard": "gnu++20",

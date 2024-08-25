@@ -56,22 +56,22 @@ namespace origin {
 			LoadMaterials();
 			MeshRenderer::Init();
 			Renderer2D::Init();
+
+			break;
 		}
-		break;
 #ifdef OGN_PLATFORM_LINUX
-		case RendererAPI::API::VULKAN:
+		case RendererAPI::API::Vulkan:
 		{
 			RenderCommand::s_RendererAPI = new VulkanRendererAPI;
+			break;
 		}
-		break;
 #endif
 #ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11:
 		{
 			RenderCommand::s_RendererAPI = new DX11RendererAPI;
-			
+			break;
 		}
-		break;
 #endif
 		}
 

@@ -21,7 +21,7 @@ ORigin.sln.licenseheader
 build
 Binaries
 bin
-bin-int
+Bin-Int
 Makefile
 Scripts/__pycache__
 Scripts/premake

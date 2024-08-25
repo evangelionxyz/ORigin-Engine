@@ -129,7 +129,7 @@ namespace origin
         case RendererAPI::API::OpenGL:
             return std::make_shared<OpenGLShader>(filepath, recompile);
 #ifdef OGN_PLATFORM_LINUX
-        case RendererAPI::API::VULKAN:
+        case RendererAPI::API::Vulkan:
             return std::make_shared<VulkanShader>(filepath, recompile);
 #endif
         }
@@ -147,7 +147,7 @@ namespace origin
         case RendererAPI::API::OpenGL:
             return std::make_shared<OpenGLShader>(filepath, isSpirv, recompile);
 #ifdef OGN_PLATFORM_LINUX
-        case RendererAPI::API::VULKAN:
+        case RendererAPI::API::Vulkan:
             return nullptr; // std::make_shared<VulkanShader>(filepath, recompile);
 #endif
         }

@@ -21,8 +21,8 @@ project "Sandbox"
         "JOLT",
     }
 
-    targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/Sandbox")
-    objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/Sandbox")
+    targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
+    objdir ("%{wks.location}/Bin-Int/%{cfg.buildcfg}/ORigin")
 
     files {
         "%{prj.location}/sources/**.cpp",

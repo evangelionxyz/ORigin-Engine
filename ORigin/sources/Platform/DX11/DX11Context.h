@@ -23,7 +23,7 @@ namespace origin
 		void CreateSwapChain();
 		void CleanupDevice();
 
-		static DX11Context *Get();
+		static DX11Context *GetInstance();
 
 		ID3D11Device *Device = nullptr;
 		IDXGISwapChain *SwapChain = nullptr;

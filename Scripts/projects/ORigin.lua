@@ -7,13 +7,11 @@ project "ORigin"
     staticruntime "off"
     location "%{wks.location}/ORigin"
 
-    if _ACTION ~= "cmake" then
-        pchheader "pch.h"
-        pchsource "%{prj.location}/sources/pch.cpp"
-    end
+    pchheader "pch.h"
+    pchsource "%{prj.location}/sources/pch.cpp"
 
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")
-    objdir ("%{wks.location}/Binaries/Intermediates/%{cfg.buildcfg}/ORigin")
+    objdir ("%{wks.location}/Bin-Int/%{cfg.buildcfg}/ORigin")
 
     files {
         "%{prj.location}/sources/pch.cpp",
@@ -128,7 +126,12 @@ project "ORigin"
     -- ////////////////////////////////
     -- Linux
     filter "system:linux"
-        defines { "OGN_PLATFORM_LINUX", "VK_VERSION_1_0", "GLFW_INCLUDE_VULKAN" }
+        defines { 
+            "OGN_PLATFORM_LINUX", 
+            "VK_VERSION_1_0", 
+            "GLFW_INCLUDE_VULKAN",
+            "_GLFW_X11"
+        }
         pic "On"
         files { "%{prj.location}/sources/Platform/Linux/**.cpp" }
         libdirs { "/usr/lib" }

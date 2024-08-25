@@ -18,13 +18,14 @@ project "IMGUI"
     "%{wks.location}/ORigin/vendor/imgui/imgui.cpp",
     "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_opengl3.cpp",
     "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_glfw.cpp",
+    "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_vulkan.cpp",
+    "%{wks.location}/ORigin/vendor/imgui/backends/imgui_impl_vulkan.h",
     "%{wks.location}/ORigin/vendor/imgui/imconfig.h",
     "%{wks.location}/ORigin/vendor/imgui/imgui.h",
     "%{wks.location}/ORigin/vendor/imgui/imgui_internal.h",
     "%{wks.location}/ORigin/vendor/imgui/imstb_rectpack.h",
     "%{wks.location}/ORigin/vendor/imgui/imstb_textedit.h",
     "%{wks.location}/ORigin/vendor/imgui/imstb_truetype.h",
-
     -- include ImGuizmo src to compile
     "%{IncludeDir.IMGUIZMO}/ImGuizmo.cpp",
     "%{IncludeDir.IMGUIZMO}/ImGradient.cpp",

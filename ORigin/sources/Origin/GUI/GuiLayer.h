@@ -8,35 +8,32 @@
 #include "Origin/Core/KeyEvent.h"
 #include "Origin/Core/MouseEvent.h"
 
+#include <vulkan/vulkan.h>
+
 namespace origin
 {
-	class Window;
-	class GuiLayer : public Layer
-	{
-	public:
-		GuiLayer(const std::shared_ptr<Window> &window);
-		~GuiLayer();
+    class Window;
+    class GuiLayer : public Layer
+    {
+    public:
+        GuiLayer(const std::shared_ptr<Window> &window);
+        ~GuiLayer();
 
-		void Init();
-		void Detach();
-		void OnAttach() override;
-		void OnDetach() override;
-		void OnEvent(Event& e) override;
-		void BlockEvents(bool block) { m_BlockEvents = block; }
+        void Init();
+        void OnAttach() override;
+        void OnDetach() override;
+        void OnEvent(Event& e) override;
+        void BlockEvents(bool block) { m_BlockEvents = block; }
+        void Begin();
+        void End();
 
-		void SetDisplaySize(float width, float height);
-		void Begin();
-		void End() const;
+        uint32_t GetActiveWidgetID();
 
-		uint32_t GetActiveWidgetID();
-
-	private:
-		std::shared_ptr<Window> m_WindowContext;
-		
-		float m_Width = 0.0f, m_Height = 0.0f;
-		bool m_BlockEvents = false;
-		float m_Time = 0.0f;
-	};
+    private:
+        std::shared_ptr<Window> m_WindowContext;
+        bool m_BlockEvents = false;
+        float m_Time = 0.0f;
+    };
 }
 
 #endif
