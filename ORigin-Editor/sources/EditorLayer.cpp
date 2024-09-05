@@ -152,7 +152,7 @@ namespace origin
 
         m_Framebuffer->Bind();
         RenderCommand::ClearColor(m_ClearColor);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		RenderCommand::Clear();
         Render(ts);
         m_ActiveScene->GetUIRenderer()->Render();
         m_Framebuffer->Unbind();
@@ -1108,9 +1108,6 @@ namespace origin
                         ImGui::Text("Cubes: %d", renderStats.CubeCount);
                         ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
                         ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
-                        ImGui::Text("OpenGL Version: (%s)", glGetString(GL_VERSION));
-                        ImGui::Text("ImGui version: (%s)", IMGUI_VERSION);
-                        ImGui::Text("ImGuizmo Hovered (%d)", ImGuizmo::IsOver());
                         ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
                         ImGui::TreePop();
                     }

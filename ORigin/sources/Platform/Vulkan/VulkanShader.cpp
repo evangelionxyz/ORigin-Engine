@@ -4,7 +4,6 @@
 #include "VulkanContext.h"
 
 #include <fstream>
-#include <glad/glad.h>
 
 namespace origin
 {
@@ -17,7 +16,6 @@ namespace origin
         }
 
         OGN_CORE_ASSERT(false, "[Vulkan Shader] Invalid stage.");
-        return static_cast<VkShaderStageFlagBits>(0);
     }
 
     VulkanShader::VulkanShader(const std::filesystem::path &filepath, const bool recompile)

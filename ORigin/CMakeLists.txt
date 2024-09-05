@@ -320,8 +320,6 @@ if (WIN32)
 
     target_compile_definitions(ORigin PRIVATE
         OGN_PLATFORM_WINDOWS
-        VK_VERSION_1_0
-        GLFW_INCLUDE_VULKAN
 
         _CRT_SECURE_NO_WARNINGS
         _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
@@ -374,27 +372,22 @@ elseif (UNIX AND NOT APPLE)
 
         target_compile_definitions(ORigin PRIVATE
             OGN_PLATFORM_LINUX
-            VK_VERSION_1_0 
-            GLFW_INCLUDE_VULKAN
         )
         target_link_directories(ORigin PRIVATE usr/lib)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     target_compile_definitions(ORigin PRIVATE
-        GLFW_INCLUDE_NONE
         OGN_DEBUG
         _DEBUG
     )
 elseif (CMAKE_BUILD_TYPE STREQUAL Release)
     target_compile_definitions(ORigin PRIVATE
-        GLFW_INCLUDE_NONE
         OGN_RELEASE
         _NDEBUG
     )
 elseif (CMAKE_BUILD_TYPE STREQUAL Dist)
      target_compile_definitions(ORigin PRIVATE
-        GLFW_INCLUDE_NONE
         OGN_RELEASE
         OGN_DIST
         _NDEBUG

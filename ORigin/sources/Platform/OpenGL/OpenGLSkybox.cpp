@@ -8,6 +8,8 @@
 
 #include "stb_image.h"
 
+#include <glad/glad.h>
+
 namespace origin
 {
 	OpenGLSkybox::OpenGLSkybox(const std::string& filepath, const std::string& format)

@@ -3,7 +3,7 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
-#include <glad/glad.h>
+#include "Texture.h"
 
 #include <vector>
 #include <memory>
@@ -48,8 +48,8 @@ namespace origin
 		FramebufferAttachmentSpecification Attachments;
 		uint32_t Width = 0, Height = 0;
 		uint32_t Samples = 1;
-		GLenum WrapMode = GL_CLAMP_TO_EDGE;
-		GLenum FilterMode = GL_NEAREST;
+		ImageWrapMode WrapMode = ImageWrapMode::CLAMP_TO_EDGE;
+		ImageFilter FilterMode = ImageFilter::Linear;
 		bool ReadBuffer = true;
 		bool SwapChainTarget = false;
 	};

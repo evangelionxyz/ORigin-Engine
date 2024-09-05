@@ -27,6 +27,7 @@ SandboxLayer::~SandboxLayer()
 
 void SandboxLayer::OnUpdate(Timestep ts)
 {
+    RenderCommand::Clear();
     RenderCommand::ClearColor(clear_color);
 }
 

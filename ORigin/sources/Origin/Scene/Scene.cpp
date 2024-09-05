@@ -21,6 +21,9 @@
 #include "Entity.h"
 #include "ScriptableEntity.h"
 #include "Origin/Physics/PhysicsEngine.h"
+
+#include <glad/glad.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>

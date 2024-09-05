@@ -7,6 +7,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include <glad/glad.h>
+
 namespace origin {
 
 	void Gizmos::Draw2DGrid(const Camera &camera)

@@ -3,10 +3,10 @@
 #ifndef GRAPHICS_CONTEXT_H
 #define GRAPHICS_CONTEXT_H
 
-#include "Origin/Core/Window.h"
-
-namespace origin 
+namespace origin
 {
+	class Window;
+
 	class GraphicsContext
 	{
 	public:

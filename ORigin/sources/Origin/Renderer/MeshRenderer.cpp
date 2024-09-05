@@ -8,6 +8,8 @@
 #include "MeshRenderer.h"
 #include "ModelLoader.h"
 
+#include <glad/glad.h>
+
 namespace origin
 {
 	struct MeshRenderData

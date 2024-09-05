@@ -8,11 +8,45 @@
 
 #include <glad/glad.h>
 
-namespace origin {
-
+namespace origin
+{
 	static const uint32_t s_MaxFramebufferSize = 8192;
 
+	static i32 GetGLImageWrapMode(ImageWrapMode mode)
+	{
+		switch (mode)
+		{
+		case ImageWrapMode::REPEAT: return GL_REPEAT;
+		case ImageWrapMode::CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
+		}
+	}
+
+	static i32 GetGLImageFilter(ImageFilter filter)
+	{
+		switch (filter)
+		{
+		case ImageFilter::Linear: return GL_LINEAR;
+		case ImageFilter::Nearest: return GL_NEAREST;
+		case ImageFilter::NearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
+		case ImageFilter::NearestMipmapLinear: return GL_NEAREST_MIPMAP_LINEAR;
+		case ImageFilter::LinearMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
+		case ImageFilter::LinearMipmapNearest: return GL_LINEAR_MIPMAP_NEAREST;
+		}
+	}
+
+	static u32 GetGLImageFormat(ImageFormat format)
+	{
+		switch (format)
+		{
+		case ImageFormat::R8: return GL_R8;
+		case ImageFormat::RGBA8: return GL_RGBA;
+		case ImageFormat::RGB8: return GL_RGB8;
+		case ImageFormat::RGBA32F: return GL_RGBA32F;
+		}
+	}
+
 	namespace Utils	{
+
 		// ================ Texture 2D ================
 		static GLenum Texture2DTarget(bool multisampled) 
 		{ 
@@ -43,11 +77,11 @@ namespace origin {
 				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, spec.Width, spec.Height, 0, format, GL_UNSIGNED_BYTE, nullptr);
 			}
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, spec.FilterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, spec.FilterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, spec.WrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, spec.WrapMode);
-			
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GetGLImageFilter(spec.FilterMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GetGLImageFilter(spec.FilterMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GetGLImageWrapMode(spec.WrapMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GetGLImageWrapMode(spec.WrapMode));
+
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, Texture2DTarget(multisampled), textureID, 0);
 		}
 
@@ -68,10 +102,10 @@ namespace origin {
 					glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, spec.Width, spec.Height, 0, textureFormat, GL_FLOAT, nullptr);
 			}
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, spec.FilterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, spec.FilterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, spec.WrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, spec.WrapMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GetGLImageFilter(spec.FilterMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GetGLImageFilter(spec.FilterMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GetGLImageWrapMode(spec.WrapMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GetGLImageWrapMode(spec.WrapMode));
 
 			float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
@@ -101,11 +135,11 @@ namespace origin {
 					0, textureFormat, spec.Width, spec.Height, 0, textureFormat, GL_FLOAT, nullptr);
 			}
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, spec.FilterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, spec.FilterMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, spec.WrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, spec.WrapMode);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, spec.WrapMode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GetGLImageFilter(spec.FilterMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GetGLImageFilter(spec.FilterMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GetGLImageWrapMode(spec.WrapMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GetGLImageWrapMode(spec.WrapMode));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GetGLImageWrapMode(spec.WrapMode));
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_CUBE_MAP, textureID, 0);
 		}
@@ -126,13 +160,11 @@ namespace origin {
 		{
 			switch (format)
 			{
-				case origin::FramebufferTextureFormat::RGBA16F: return GL_RGBA16F;
-				case origin::FramebufferTextureFormat::RGBA8: return GL_RGBA8;
-				case origin::FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+				case FramebufferTextureFormat::RGBA16F: return GL_RGBA16F;
+				case FramebufferTextureFormat::RGBA8: return GL_RGBA8;
+				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
 			}
-
-			OGN_CORE_ASSERT(false, "Unkown Framebuffer Format");
-			return 0;
+			OGN_CORE_ASSERT(false, "Unknown Framebuffer Format");
 		}
 	}
 

@@ -22,10 +22,6 @@ namespace origin {
         {
         case RendererAPI::API::OpenGL:
         {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
             m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
                 title, nullptr, nullptr);
             if (!m_MainWindow)
@@ -35,15 +31,16 @@ namespace origin {
                 exit(EXIT_FAILURE);
             }
 
+            glfwMakeContextCurrent(m_MainWindow);
+            
             m_GraphicsContext = GraphicsContext::Create();
             m_GraphicsContext->Init(this);
-            glfwMakeContextCurrent(m_MainWindow);
+            
             return;
         }
         case RendererAPI::API::Vulkan:
         {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
             m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
                 title, nullptr, nullptr);
 
@@ -61,10 +58,10 @@ namespace origin {
         }
     }
 
-    LinuxWindow::~LinuxWindow()
+    void LinuxWindow::DestroyWindow()
     {
-        glfwDestroyWindow(m_MainWindow);
         m_GraphicsContext->Shutdown();
+        glfwDestroyWindow(m_MainWindow);
     }
 
     void LinuxWindow::SetEventCallback(const std::function<void(Event&)>& callback)

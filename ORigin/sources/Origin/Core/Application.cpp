@@ -63,11 +63,14 @@ namespace origin {
 
     Application::~Application()
     {
+        m_Window->DestroyWindow();
+        m_LayerStack.Shutdown();
+
         Renderer::Shutdown();
         AudioEngine::Shutdown();
         PhysicsEngine::Shutdown();
+
         Window::GLFWShutdown();
-        s_Instance = nullptr;
     }
 
     void Application::Run()

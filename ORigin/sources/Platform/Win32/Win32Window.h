@@ -12,8 +12,8 @@ namespace origin
     {
     public:
         Win32Window(const char* title, uint32_t width, uint32_t height, bool maximized);
-        virtual ~Win32Window() override;
 
+        void DestroyWindow() override;
         void UpdateEvents() override;
         void OnUpdate() override;
         bool IsLooping() override { return glfwWindowShouldClose(m_MainWindow) == 0; }

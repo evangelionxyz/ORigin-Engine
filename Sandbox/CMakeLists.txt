@@ -6,15 +6,6 @@
 
 add_dependencies(Sandbox ORigin)
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  set_target_properties(Sandbox PROPERTIES
-    OUTPUT_NAME Sandbox
-    ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/debug/origin
-    LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/debug/origin
-    RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/debug/origin
-  )
-endif()
-
 target_include_directories(Sandbox PRIVATE
   sources
   ${ROOT_DIR}/ORigin/sources
@@ -49,6 +40,7 @@ target_link_libraries(Sandbox
   FreeType
   YAMLCPP
   JOLT
+  fmt
 )
 
 if (WIN32)
@@ -98,19 +90,16 @@ endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     target_compile_definitions(Sandbox PRIVATE
-        GLFW_INCLUDE_NONE
         OGN_DEBUG
         _DEBUG
     )
 elseif (CMAKE_BUILD_TYPE STREQUAL Release)
     target_compile_definitions(Sandbox PRIVATE
-        GLFW_INCLUDE_NONE
         OGN_RELEASE
         _NDEBUG
     )
 elseif (CMAKE_BUILD_TYPE STREQUAL Dist)
      target_compile_definitions(Sandbox PRIVATE
-        GLFW_INCLUDE_NONE
         OGN_RELEASE
         OGN_DIST
         _NDEBUG

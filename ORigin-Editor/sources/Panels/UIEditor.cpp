@@ -418,8 +418,8 @@ namespace origin
 		OnMouse(ts);
 
 		m_Framebuffer->Bind();
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		RenderCommand::Clear();
+		RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 		m_Framebuffer->ClearAttachment(1, -1);
 
@@ -456,7 +456,7 @@ namespace origin
 						Renderer2D::DrawSprite(sprite->Transform.GetTransform(), sprite->Component);
 						if (m_SelectedIndex == i)
 						{
-							glLineWidth(2.0f);
+							RenderCommand::SetLineWidth(2.0f);
 							Renderer2D::DrawRect(sprite->Transform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 						}
 					}
@@ -464,7 +464,7 @@ namespace origin
 			}
 
 			Renderer2D::End();
-			glLineWidth(1.0);
+			RenderCommand::SetLineWidth(1.0f);
 		}
 
 		m_Framebuffer->Unbind();

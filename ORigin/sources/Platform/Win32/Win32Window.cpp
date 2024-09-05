@@ -60,7 +60,7 @@ namespace origin {
         m_GraphicsContext->Init(this);
     }
 
-    Win32Window::~Win32Window()
+    void Win32Window::DestroyWindow()
     {
         m_GraphicsContext->Shutdown();
         glfwDestroyWindow(m_MainWindow);

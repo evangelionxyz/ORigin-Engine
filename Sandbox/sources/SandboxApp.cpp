@@ -12,8 +12,6 @@ namespace origin
 		{
 			PushLayer(new SandboxLayer());
 		}
-
-		~SandboxApp() { }
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)

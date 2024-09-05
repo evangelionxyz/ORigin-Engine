@@ -350,10 +350,11 @@ namespace origin
             ImGui_ImplVulkanH_DestroyWindow(vk_context->GetVkInstance(), 
                 vk_context->GetVkDevice(), &s_VulkanWindowData, vk_context->GetVkAllocator());
             ImGui_ImplVulkan_Shutdown();
+            
             break;
         }
         }
-
+        
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }

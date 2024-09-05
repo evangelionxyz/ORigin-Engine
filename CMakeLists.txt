@@ -42,5 +42,5 @@ add_subdirectory(${VENDOR_DIR}/FMT)
 
 add_subdirectory(ORigin)
 add_subdirectory(ORigin-Editor)
-#add_subdirectory(Sandbox)
+add_subdirectory(Sandbox)
 #include(ORigin-Runtime/Runtime.cmake)

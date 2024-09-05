@@ -11,6 +11,8 @@
 #   include <GLFW/glfw3native.h>
 #endif
 
+#include "Origin/Core/Window.h"
+
 namespace origin
 {
     // Swapchain helpers

@@ -12,6 +12,8 @@
 #include <imgui.h>
 #include <cmath>
 
+#include <glad/glad.h>
+
 namespace origin
 {
 	static SpriteSheetEditor *s_Instance = nullptr;

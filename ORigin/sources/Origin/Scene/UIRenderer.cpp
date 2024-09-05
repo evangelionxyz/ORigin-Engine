@@ -6,6 +6,8 @@
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Renderer.h"
 
+#include <glad/glad.h>
+
 namespace origin
 {
 	void UIRenderer::CreateFramebuffer(uint32_t vpW, uint32_t vpH, float orthoW, float orthoH)

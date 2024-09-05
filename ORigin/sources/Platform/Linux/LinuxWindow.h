@@ -11,8 +11,8 @@ namespace origin
     {
 	public:
         LinuxWindow(const char* title, uint32_t width, uint32_t height, bool maximized);
-		virtual ~LinuxWindow() override;
 
+		void DestroyWindow() override;
 		void UpdateEvents() override;
 		void OnUpdate() override;
 		bool IsLooping() override { return glfwWindowShouldClose(m_MainWindow) == 0; }

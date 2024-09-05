@@ -9,6 +9,7 @@
     #include <Windows.h>
 #endif
 
+#define GLFW_INVLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 namespace origin {
@@ -31,11 +32,10 @@ namespace origin {
     class Window
     {
     public:
-        virtual ~Window() {};
-
         static void GLFWInit();
         static void GLFWShutdown();
 
+        virtual void DestroyWindow() = 0;
         virtual void UpdateEvents() = 0;
         virtual void OnUpdate() = 0;
         virtual bool IsLooping() = 0;
