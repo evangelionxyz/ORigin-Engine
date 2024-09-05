@@ -121,36 +121,32 @@ namespace origin
 
         if (metadata.Type == AssetType::None)
         {
-            OGN_CORE_ERROR("[Editor Asset Manager] Invalid Asset Type {0}", filepath);
-            PUSH_CONSOLE_ERROR("Invalid asset type! {0}", filepath.generic_string());
+            OGN_CORE_ERROR("[Editor Asset Manager] Invalid Asset Type {}", filepath.generic_string());
+            PUSH_CONSOLE_ERROR("Invalid asset type! {}", filepath.generic_string());
             return 0;
         }
 
         std::shared_ptr<Asset> asset;
         if (metadata.Type == AssetType::Font)
         {
-            auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
-
-            OGN_CORE_TRACE(handle);
+            OGN_CORE_TRACE("{}", handle);
             m_LoadedAssets[handle] = asset;
             m_AssetRegistry[handle] = metadata;
-            FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
 
+            const auto asset_to_path = Project::GetActiveAssetDirectory() / metadata.Filepath;
+            FontImporter::LoadAsync(&m_LoadedAssets[handle], asset_to_path);
             SerializeAssetRegistry();
             return handle;
         }
-        else
-        {
-            asset = AssetImporter::ImportAsset(handle, metadata);
-            if (asset)
-            {
-                asset->Handle = handle;
-                m_LoadedAssets[handle] = asset;
-                m_AssetRegistry[handle] = metadata;
 
-                SerializeAssetRegistry();
-                return handle;
-            }
+        asset = AssetImporter::ImportAsset(handle, metadata);
+        if (asset)
+        {
+            asset->Handle = handle;
+            m_LoadedAssets[handle] = asset;
+            m_AssetRegistry[handle] = metadata;
+            SerializeAssetRegistry();
+            return handle;
         }
 
         return 0;
@@ -265,9 +261,9 @@ namespace origin
         try
         {
             data = YAML::LoadFile(path.generic_string());
-        } catch (YAML::ParserException e)
+        } catch (const YAML::ParserException e)
         {
-            OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to load project file: {0}\n\t{1}", path, e.what());
+            OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to load project file: {}\n\t{}", path.generic_string(), e.what());
             return false;
         }
 

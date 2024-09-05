@@ -10,7 +10,8 @@ namespace origin
 	class OpenGLContext : public GraphicsContext
 	{
 	public:
-		OpenGLContext();
+		OpenGLContext() = default;
+
 		void Init(Window *window) override;
 		void Shutdown() override;
 	};

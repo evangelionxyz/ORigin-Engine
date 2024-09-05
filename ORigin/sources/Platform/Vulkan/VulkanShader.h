@@ -11,11 +11,11 @@
 
 namespace origin
 {
-    class VulkanShader : public Shader
+    class VulkanShader final : public Shader
     {
     public:
         VulkanShader(const std::filesystem::path &filepath, bool recompile);
-        ~VulkanShader();
+        ~VulkanShader() override;
 
         void                         Reload()      override;
         bool                         IsSPIRV()     const override { return true; }
@@ -23,7 +23,7 @@ namespace origin
         const std::filesystem::path &GetFilepath() const override;
 
     private:
-        VkShaderModule CreateModule(const std::vector<uint32_t> &spirv);
+        VkShaderModule CreateModule(const std::vector<u32> &spirv);
         bool                                         m_IsRecompile = false;
         std::filesystem::path                        m_Filepath;
         std::vector<VkPipelineShaderStageCreateInfo> m_Stages;

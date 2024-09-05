@@ -22,7 +22,7 @@ namespace origin
 			case RendererAPI::API::OpenGL: 
 			{
 				s_Instance = std::make_shared<OpenGLContext>();
-				return std::make_shared<OpenGLContext>();
+				return s_Instance;
 			}
 			case RendererAPI::API::Vulkan:
 			{

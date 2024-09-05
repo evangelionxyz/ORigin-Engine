@@ -12,44 +12,46 @@ namespace origin
     {
     public:
         AudioSource() = default;
-        ~AudioSource();
+        ~AudioSource() override;
 
-        void LoadSource(const std::string &name, const std::filesystem::path &filepath, bool looping = false, bool spatializing = false);
-        void LoadStreamingSource(const std::string &name, const std::filesystem::path &filepath, bool looping = false, bool spatializing = false);
+        void LoadSource(const std::string &name, const std::filesystem::path &filepath, bool looping = false, bool spatial = false);
+        void LoadStreamingSource(const std::string &name, const std::filesystem::path &filepath, bool looping = false, bool spatial = false);
         void ActivateOverlapping();
         void DeactivateOverlapping();
 
         void SetLoop(bool enable);
         void SetVolume(float value);
         void SetPitch(float value);
-        void SetPaning(float pan);
+        void SetPanning(float pan);
         void SetPosition(const glm::vec3 &position,int index = -1, ma_positioning mode = ma_positioning_absolute);
         void SetName(const char* name);
         void SetSpatial(bool enable);
         void SetMinMaxDistance(float minVal, float maxVal);
 
-        void Play();
+        void Play() const;
         void Pause();
         void Stop();
-        void PlayLooped();
+        void PlayLooped() const;
         void PlayOverlapping();
-        bool IsPlaying();
-        bool IsPaused();
-        bool IsLooping();
-        bool IsSpatial();
-        float GetVolume();
-        float GetPitch();
-        float GetMinDistance();
-        float GetMaxDistance();
+
+        [[nodiscard]] bool IsPlaying() const;
+        [[nodiscard]] bool IsPaused() const;
+        [[nodiscard]] bool IsLooping() const;
+        [[nodiscard]] bool IsSpatial() const;
+        [[nodiscard]] float GetVolume() const;
+        [[nodiscard]] float GetPitch() const;
+        [[nodiscard]] float GetMinDistance() const;
+        [[nodiscard]] float GetMaxDistance() const;
+
         bool IsLoaded = false;
 
-        const glm::vec3 GetPosition(int index = 0) const;
+        [[nodiscard]] glm::vec3 GetPosition(int index = 0) const;
 
         const std::string &GetName() { return m_Name; }
-        const std::filesystem::path GetFilepath() { return m_Filepath; }
+        std::filesystem::path GetFilepath() { return m_Filepath; }
 
         static AssetType GetStaticType() { return AssetType::Audio; }
-        virtual AssetType GetType() const { return GetStaticType(); }
+        [[nodiscard]] AssetType GetType() const override { return GetStaticType(); }
 
         static std::shared_ptr<AudioSource> Create();
     private:
@@ -58,7 +60,7 @@ namespace origin
         std::vector<ma_sound*> m_Sounds;
         int m_OverlapIndex = 0;
         int m_MaxOverlap = 50;
-        bool m_IsSpatializing = false;
+        bool m_IsSpatial = false;
         bool m_OverlappingAllowed = false;
     };
 

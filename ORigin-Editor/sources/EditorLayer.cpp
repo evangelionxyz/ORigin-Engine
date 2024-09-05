@@ -10,9 +10,6 @@
 #include "Origin/Asset/AssetImporter.h"
 #include "Panels/AnimationTimeline.h"
 #include "Origin/GUI/UI.h"
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/compatibility.hpp>
 
 #include "Serializer/EditorSerializer.h"
 
@@ -63,19 +60,19 @@ namespace origin
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
-		std::filesystem::path filepath = std::filesystem::current_path() / "Editor.cfg";
-		if (!EditorSerializer::Deserialize(this, filepath))
+		if (const auto filepath = std::filesystem::current_path() / "Editor.cfg";
+			!EditorSerializer::Deserialize(this, filepath))
 		{
 			m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 1000.0f);
 			m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
 		}
 
 		m_ActiveScene = std::make_shared<Scene>();
-		const auto &commandLineArgs = Application::Instance().GetSpecification().CommandLineArgs;
 
-		if (commandLineArgs.Count > 1)
+		if (const auto &cmdline_args = Application::Instance().GetSpecification().CommandLineArgs;
+			cmdline_args.Count > 1)
 		{
-			m_ProjectDirectoryPath = commandLineArgs[1];
+			m_ProjectDirectoryPath = cmdline_args[1];
 			OpenProject(m_ProjectDirectoryPath);
 		}
 
@@ -102,7 +99,7 @@ namespace origin
 		m_UIEditor->OnEvent(e);
 	}
 
-	void EditorLayer::OnUpdate(Timestep ts)
+	void EditorLayer::OnUpdate(const Timestep ts)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -113,7 +110,7 @@ namespace origin
         m_ViewportMousePos.y = m_SceneViewportSize.y - m_ViewportMousePos.y;
         m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_SceneViewportSize - glm::vec2(1.0f, 1.0f));
 
-		ProfilerTimer timer("EditorLayer::OnUpdate", [&](ProfilerResult result)
+		ProfilerTimer timer("EditorLayer::OnUpdate", [&](const ProfilerResult result)
 		{
 			m_ProfilerResults.push_back(result);
 		});
@@ -123,27 +120,27 @@ namespace origin
 		case SceneState::Edit:
 		case SceneState::Simulate:
 		{
-			const auto &fbSpec = m_Framebuffer->GetSpecification();
-			if (m_SceneViewportSize.x != fbSpec.Width || m_SceneViewportSize.y != fbSpec.Height)
+			if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_SceneViewportSize.x != fb_spec.Width || m_SceneViewportSize.y != fb_spec.Height)
 			{
 				if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
 				{
-					m_Framebuffer->Resize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+					m_Framebuffer->Resize(static_cast<u32>(m_SceneViewportSize.x), static_cast<u32>(m_SceneViewportSize.y));
 					m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-					m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+					m_ActiveScene->OnViewportResize(static_cast<u32>(m_SceneViewportSize.x), static_cast<u32>(m_SceneViewportSize.y));
 				}
 
 			}
 			break;
 		}
 		case SceneState::Play:
-			uint32_t width = m_ActiveScene->GetWidth();
-			uint32_t height = m_ActiveScene->GetHeight();
+			const u32 width = m_ActiveScene->GetWidth();
+			const u32 height = m_ActiveScene->GetHeight();
 			if (m_SceneViewportSize.x != width && m_SceneViewportSize.y != height)
 			{
 				if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
 				{
-					m_ActiveScene->OnViewportResize(static_cast<uint32_t>(m_SceneViewportSize.x), static_cast<uint32_t>(m_SceneViewportSize.y));
+					m_ActiveScene->OnViewportResize(static_cast<u32>(m_SceneViewportSize.x),
+						static_cast<u32>(m_SceneViewportSize.y));
 				}
 				break;
 			}
@@ -238,9 +235,9 @@ namespace origin
 		}
 	}
 
-	void EditorLayer::SystemUpdate(Timestep ts)
+	void EditorLayer::SystemUpdate(const Timestep ts)
 	{
-		m_Time += ts.Seconds();
+		m_Time += Timestep::Seconds();
 
 		Renderer::GetStatistics().Reset();
 		if (m_SceneState != SceneState::Play)
@@ -257,10 +254,9 @@ namespace origin
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-		if (selectedEntity)
+		if (const Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
 		{
-			Entity entity = m_ActiveScene->DuplicateEntity(selectedEntity);
+			const Entity entity = m_ActiveScene->DuplicateEntity(selectedEntity);
 			m_SceneHierarchy.SetSelectedEntity(entity);
 		}
 	}
@@ -270,8 +266,7 @@ namespace origin
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
-		if (selectedEntity)
+		if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
 		{
 			m_ActiveScene->DestroyEntity(selectedEntity);
 			//CommandManager::Instance().ExecuteCommand(std::make_unique<DestoryEntityCommand>(m_ActiveScene, selectedEntity));
@@ -310,7 +305,7 @@ namespace origin
 		m_ActiveScene->LockMouse();
 	}
 
-	void EditorLayer::OnScenePause()
+	void EditorLayer::OnScenePause() const
 	{
 		OGN_PROFILER_SCENE();
 
@@ -477,7 +472,7 @@ namespace origin
 		}
 	}
 
-	void EditorLayer::OpenScene(AssetHandle handle)
+	void EditorLayer::OpenScene(const AssetHandle handle)
 	{
 		OGN_PROFILER_SCENE();
 
@@ -492,17 +487,17 @@ namespace origin
 			OnSceneStop();
 		}
 
-		auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
-		std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+		const auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
+		std::shared_ptr<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
 
-		if (!readOnlyScene)
+		if (!read_only_scene)
 		{
 			OGN_CORE_ERROR("[EditorLayer] Invalid scene!");
 			PUSH_CONSOLE_ERROR("Invalid scene!");
 			return;
 		}
 
-		m_EditorScene = Scene::Copy(readOnlyScene);
+		m_EditorScene = Scene::Copy(read_only_scene);
 		m_HoveredEntity = {};
 
 		m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
@@ -537,15 +532,15 @@ namespace origin
 		if(filepath.empty())
 			return;
 
-		AssetHandle handle = SceneImporter::OpenScene(filepath);
+		const AssetHandle handle = SceneImporter::OpenScene(filepath);
 		if (handle == 0 || filepath.empty())
 			return;
 
-		std::shared_ptr<Scene> readOnlyScene = AssetManager::GetAsset<Scene>(handle);
+		std::shared_ptr<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
 		std::string name = filepath.stem().string();
-		readOnlyScene->SetName(name);
+		read_only_scene->SetName(name);
 
-		if (!readOnlyScene)
+		if (!read_only_scene)
 		{
 			OGN_CORE_ERROR("[EditorLayer] Invalid scene!");
 			PUSH_CONSOLE_ERROR("Invalid scene!");
@@ -553,7 +548,7 @@ namespace origin
 		}
 
 		m_HoveredEntity = {};
-		m_EditorScene = Scene::Copy(readOnlyScene);
+		m_EditorScene = Scene::Copy(read_only_scene);
 		m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
 		m_ActiveScene = m_EditorScene;
 
@@ -575,9 +570,7 @@ namespace origin
 
 	void EditorLayer::MenuBar()
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
 		auto &application = Application::Instance();
-		ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
 
@@ -590,17 +583,17 @@ namespace origin
 				if (ImGui::MenuItem("New Project")) NewProject();
 				if (ImGui::MenuItem("Open Project")) OpenProject();
 
-				if (ImGui::MenuItem("Save Project", "", nullptr, (bool)Project::GetActive()))
+				if (ImGui::MenuItem("Save Project", "", nullptr, static_cast<bool>(Project::GetActive())))
 				{
 					SaveScene();
 					Project::SaveActive();
 				}
 
 				ImGui::Separator();
-				if (ImGui::MenuItem("New Scene", "Ctrl+N", nullptr, (bool)Project::GetActive())) NewScene();
-				if (ImGui::MenuItem("Open Scene", "Ctrl+O", nullptr, (bool)Project::GetActive())) OpenScene();
-				if (ImGui::MenuItem("Save Scene", "Ctrl+S", nullptr, (bool)Project::GetActive())) SaveScene();
-				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S", nullptr, (bool)Project::GetActive())) SaveSceneAs();
+				if (ImGui::MenuItem("New Scene", "Ctrl+N", nullptr, static_cast<bool>(Project::GetActive()))) NewScene();
+				if (ImGui::MenuItem("Open Scene", "Ctrl+O", nullptr, static_cast<bool>(Project::GetActive()))) OpenScene();
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S", nullptr, static_cast<bool>(Project::GetActive()))) SaveScene();
+				if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S", nullptr, static_cast<bool>(Project::GetActive()))) SaveSceneAs();
 				if (ImGui::MenuItem("Exit", "Alt+F4")) application.Close();
 
 				ImGui::EndMenu();
@@ -662,12 +655,9 @@ namespace origin
 
 		if (m_SceneState == SceneState::Play)
 		{
-			auto camView = m_ActiveScene->m_Registry.view<CameraComponent>();
-			for (auto &e : camView)
+			for (auto cam_view = m_ActiveScene->m_Registry.view<CameraComponent>(); auto &e : cam_view)
 			{
-				auto &cc = camView.get<CameraComponent>(e);
-
-				if (cc.Primary)
+				if (auto &cc = cam_view.get<CameraComponent>(e); cc.Primary)
 				{
 					switch (cc.Camera.GetAspectRatioType())
 					{
@@ -730,7 +720,7 @@ namespace origin
 			m_GameViewportSize.y = m_SceneViewportSize.y;
 		}
 
-		ImTextureID viewportID = (void*)(uintptr_t)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget);
+		ImTextureID viewportID = reinterpret_cast<void*>((uintptr_t)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget));
 		ImGui::Image(viewportID, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -738,7 +728,7 @@ namespace origin
 			{
 				if (m_SceneState == SceneState::Edit)
 				{
-					AssetHandle handle = *(AssetHandle *)payload->Data;
+					AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
 					OpenScene(handle);
 				}
 			}
@@ -811,8 +801,7 @@ namespace origin
 
 				if (entity.HasParent())
 				{
-					auto parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
-					if (parent)
+					if (auto parent = m_ActiveScene->GetEntityWithUUID(idc.Parent))
 					{
 						auto &ptc = parent.GetComponent<TransformComponent>();
 						glm::vec4 localTranslation = glm::inverse(ptc.GetTransform()) * glm::vec4(translation, 1.0f);
@@ -865,8 +854,7 @@ namespace origin
 	void EditorLayer::SceneViewportToolbar()
 	{
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-		auto &style = ImGui::GetStyle();
-		
+
 		if (ImGui::Begin("Toolbar", nullptr, window_flags))
 		{
 			const auto canvasPos = ImGui::GetCursorScreenPos();
@@ -874,31 +862,34 @@ namespace origin
 
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-			ImVec2 posMinA = ImVec2(canvasPos);
-			ImVec2 posMaxA = ImVec2(canvasPos.x + 600.0f, canvasPos.y + canvasSize.y);
+			const ImVec2 pos_min_a = ImVec2(canvasPos);
+			const ImVec2 pos_max_a = ImVec2(canvasPos.x + 600.0f, canvasPos.y + canvasSize.y);
 
 			static float hue = 0.0f;
 			hue += ImGui::GetIO().DeltaTime * 0.1f;
 			if (hue >= 360.0f)
 				hue -= 360.0f;
-			uint32_t rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);
+			u32 rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);
 
-			//uint32_t rectColor = ImColor(0.2231f, 0.44321f, 0.1f);
+			//u32 rectColor = ImColor(0.2231f, 0.44321f, 0.1f);
 			if (m_SceneState != SceneState::Play)
 				rectColor = ImColor(0.7213f, 0.2321f, 0.1f);
 
-			uint32_t rectTransparentColor = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
-			drawList->AddRectFilledMultiColor(posMinA, posMaxA, rectColor, rectTransparentColor, rectTransparentColor, rectColor);
-			ImVec2 posMinB = ImVec2(canvasPos.x + canvasSize.x - 600.0f, canvasPos.y);
-			ImVec2 posMaxB = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
-			drawList->AddRectFilledMultiColor(posMinB, posMaxB, rectTransparentColor, rectColor, rectColor, rectTransparentColor);
+			const u32 rect_transparent_color = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
+			drawList->AddRectFilledMultiColor(pos_min_a, pos_max_a, rectColor, rect_transparent_color, rect_transparent_color, rectColor);
 
-			ImTextureID origiEngineTex = (void*)(uintptr_t)m_OriginEngineTex->GetTextureID();
-			float textureAspect = (float)m_OriginEngineTex->GetWidth() / (float)m_OriginEngineTex->GetHeight();
+			const auto posMinB = ImVec2(canvasPos.x + canvasSize.x - 600.0f, canvasPos.y);
+			const auto posMaxB = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
 
-			ImVec2 imagePosMin = ImVec2(canvasPos.x, canvasPos.y);
-			ImVec2 imagePosMax = ImVec2(canvasPos.x + (canvasSize.y * textureAspect), canvasPos.y + canvasSize.y);
-			drawList->AddImage(origiEngineTex, imagePosMin, imagePosMax, 
+			drawList->AddRectFilledMultiColor(posMinB, posMaxB, rect_transparent_color, rectColor, rectColor, rect_transparent_color);
+
+			ImTextureID texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_OriginEngineTex->GetTextureID()));
+			const float texture_aspect_ratio = static_cast<float>(m_OriginEngineTex->GetWidth()) / static_cast<float>(m_OriginEngineTex->GetHeight());
+
+			const auto image_pos_min = ImVec2(canvasPos.x, canvasPos.y);
+			const auto image_pos_max = ImVec2(canvasPos.x + (canvasSize.y * texture_aspect_ratio), canvasPos.y + canvasSize.y);
+
+			drawList->AddImage(texture, image_pos_min, image_pos_max,
 				{ 0.0f, 1.0f }, { 1.0f, 0.0f });
 			
 			ImVec2 btPos = { (canvasSize.x / 2.0f) - 175.0f, (canvasSize.y - 30.0f) / 2.0f };
@@ -910,7 +901,7 @@ namespace origin
 
 			// Play Button
 			std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-			if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
+			if (ImGui::ImageButton(reinterpret_cast<void*>(static_cast<uintptr_t>(icon->GetTextureID())), { 25.0f, 25.0f }))
 			{
 				if (m_SceneHierarchy.GetContext())
 				{
@@ -929,7 +920,7 @@ namespace origin
 			ImGui::SameLine();
 			bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
 			icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-			if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), {25.0f, 25.0f}))
+			if (ImGui::ImageButton(reinterpret_cast<void*>(static_cast<uintptr_t>(icon->GetTextureID())), {25.0f, 25.0f}))
 			{
 				if (m_SceneHierarchy.GetContext())
 				{
@@ -1231,11 +1222,11 @@ namespace origin
 					{
 						ImGui::TableNextRow();
 
-						switch (messages[row].Type)
+						switch (messages[row].Level)
 						{
-						case ConsoleMessageType::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
-						case ConsoleMessageType::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
-						case ConsoleMessageType::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); break;
+						case LogLevel::Info:    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); break;
+						case LogLevel::Error:   ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.0f, 0.0f, 1.0f)); break;
+						case LogLevel::Warning: ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.2f, 1.0f)); break;
 						}
 
 						ImGui::TableSetColumnIndex(0);
@@ -1244,11 +1235,11 @@ namespace origin
 						ImGui::Text("%s", messages[row].Message.c_str());
 						ImGui::TableSetColumnIndex(2);
 
-						switch (messages[row].Type)
+						switch (messages[row].Level)
 						{
-						case ConsoleMessageType::Info:    ImGui::Text("INFO"); break;
-						case ConsoleMessageType::Error:   ImGui::Text("ERROR"); break;
-						case ConsoleMessageType::Warning: ImGui::Text("WARN"); break;
+						case LogLevel::Info:    ImGui::Text("INFO"); break;
+						case LogLevel::Error:   ImGui::Text("ERROR"); break;
+						case LogLevel::Warning: ImGui::Text("WARN"); break;
 						}
 
 						ImGui::PopStyleColor(1);
@@ -1288,16 +1279,16 @@ namespace origin
 			float closestT = std::numeric_limits<float>::max();
 			Entity closestEntity = { entt::null, nullptr };
 
-			glm::vec3 rayDirection = glm::vec3(0.0f);
-			glm::vec3 rayOrigin = glm::vec3(0.0f);
+			auto ray_direction = glm::vec3(0.0f);
+			auto ray_origin = glm::vec3(0.0f);
 
-			rayDirection = Math::GetRayFromScreenCoords(mouse, viewportSize,
+			ray_direction = Math::GetRayFromScreenCoords(mouse, viewportSize,
 														m_EditorCamera.GetProjectionMatrix(),
 														m_EditorCamera.GetViewMatrix(),
 														m_EditorCamera.IsPerspective(),
-														rayOrigin);
+														ray_origin);
 
-			auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
+			const auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
 			for (auto [entity, tc] : view.each())
 			{
 				OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
@@ -1308,13 +1299,13 @@ namespace origin
 					obb = OBB(tc.WorldTranslation, scale, tc.WorldRotation);
 				}
 
-				float tIntersect;
-				if (obb.RayIntersection(rayOrigin, rayDirection, tIntersect))
+				float t_intersect;
+				if (obb.RayIntersection(ray_origin, ray_direction, t_intersect))
 				{
 					// find the closest entity
-					if (tIntersect < closestT)
+					if (t_intersect < closestT)
 					{
-						closestT = tIntersect;
+						closestT = t_intersect;
 						closestEntity = { entity, m_ActiveScene.get() };
 					}
 				}
@@ -1349,34 +1340,33 @@ namespace origin
 				if (m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic && !ImGuizmo::IsUsing())
 				{
 					auto &tc = selectedEntity.GetComponent<TransformComponent>();
-					auto &idc = selectedEntity.GetComponent<IDComponent>();
-					float viewportHeight = m_EditorCamera.GetViewportSize().y;
-					float orthoScale = m_EditorCamera.GetOrthoScale() / viewportHeight;
+					const auto &idc = selectedEntity.GetComponent<IDComponent>();
+					float viewport_height = m_EditorCamera.GetViewportSize().y;
+					float orthographic_scale = m_EditorCamera.GetOrthoScale() / viewport_height;
 					if (m_SceneState == SceneState::Play)
 					{
-						Entity cam = m_ActiveScene->GetPrimaryCameraEntity();
-						if (cam)
+						if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
 						{
-							CameraComponent &cc = cam.GetComponent<CameraComponent>();
-							orthoScale = cc.Camera.GetOrthoScale() / cc.Camera.GetViewportSize().y;
+							const auto &cc = cam.GetComponent<CameraComponent>();
+							orthographic_scale = cc.Camera.GetOrthoScale() / cc.Camera.GetViewportSize().y;
 						}
 					}
 
 					static glm::vec3 translation = tc.Translation;
 					if (selectedEntity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
 					{
-						glm::vec3 velocity = glm::vec3(0.0f);
+						auto velocity = glm::vec3(0.0f);
 						auto &rb2d = selectedEntity.GetComponent<Rigidbody2DComponent>();
 						auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
 						if (selectedEntity.HasParent())
 						{
 							Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
-							auto &parentTC = parent.GetComponent<TransformComponent>();
-							velocity += glm::inverse(parentTC.WorldRotation) * glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
+							const auto &parent_tc = parent.GetComponent<TransformComponent>();
+							velocity += inverse(parent_tc.WorldRotation) * glm::vec3(delta.x * orthographic_scale * 0.5f, -delta.y * orthographic_scale * 0.5f, 0.0f);
 						}
 						else
 						{
-							velocity += glm::vec3(delta.x * orthoScale * 0.5f, -delta.y * orthoScale * 0.5f, 0.0f);
+							velocity += glm::vec3(delta.x * orthographic_scale * 0.5f, -delta.y * orthographic_scale * 0.5f, 0.0f);
 						}
 
 						body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
@@ -1385,35 +1375,38 @@ namespace origin
 					{
 						if (Input::Get().IsKeyPressed(Key::LeftShift))
 						{
-							float snapeValue = 0.5f;
+							float snap_value = 0.5f;
 							if (Input::Get().IsKeyPressed(Key::LeftControl))
-								snapeValue = 0.1f;
+							{
+								snap_value = 0.1f;
+							}
 
 							if (selectedEntity.HasParent())
 							{
 								Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
-								auto &parentTC = parent.GetComponent<TransformComponent>();
-
-								translation += glm::inverse(parentTC.WorldRotation) * glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+								auto &parent_tc = parent.GetComponent<TransformComponent>();
+								translation += inverse(parent_tc.WorldRotation) * glm::vec3(delta.x * orthographic_scale, -delta.y * orthographic_scale, 0.0f);
 							}
 							else
 							{
-								translation += glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+								translation += glm::vec3(delta.x * orthographic_scale, -delta.y * orthographic_scale, 0.0f);
 							}
 
-							tc.Translation.x = round(translation.x / snapeValue) * snapeValue;
-							tc.Translation.y = round(translation.y / snapeValue) * snapeValue;
+							tc.Translation.x = round(translation.x / snap_value) * snap_value;
+							tc.Translation.y = round(translation.y / snap_value) * snap_value;
 						}
 						else
 						{
-							translation = glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
+							translation = glm::vec3(delta.x * orthographic_scale, -delta.y * orthographic_scale, 0.0f);
 
 							if (selectedEntity.HasParent())
 							{
 								Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
-								auto &parentTC = parent.GetComponent<TransformComponent>();
-								translation = glm::inverse(parentTC.WorldRotation) * translation;
+								auto &parent_tc = parent.GetComponent<TransformComponent>();
+
+								translation = inverse(parent_tc.WorldRotation) * translation;
 							}
+
 							tc.Translation += glm::vec3(glm::vec2(translation), 0.0f);
 							translation = tc.Translation;
 						}

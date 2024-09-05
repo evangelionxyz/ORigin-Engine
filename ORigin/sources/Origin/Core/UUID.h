@@ -3,13 +3,10 @@
 #ifndef UUID_H
 #define UUID_H
 
-#ifdef OGN_PLATFORM_WINDOWS
-	#include <xhash>
-#else
-	#include <functional>
-#endif
+#include "Types.h"
 
-#include <cstdint>
+#include <functional>
+#include <string>
 
 namespace origin
 {
@@ -17,25 +14,21 @@ namespace origin
 	{
 	public:
 		UUID();
-		UUID(uint64_t uuid);
+		UUID(u64 uuid);
 		UUID(const UUID &uuid) = default;
-		operator uint64_t() const { return m_UUID; }
-
+		operator u64() const { return m_UUID; }
 	private:
-		uint64_t m_UUID;
+		u64 m_UUID;
 	};
 }
 
-namespace std
+template<>
+struct std::hash<origin::UUID>
 {
-	template<>
-	struct hash<origin::UUID>
+	std::size_t operator() (const origin::UUID& uuid) const noexcept
 	{
-		std::size_t operator() (const origin::UUID& uuid) const
-		{
-			return hash<uint64_t>()((uint64_t)uuid);
-		}
-	};
-}
+		return hash<u64>()(static_cast<u64>(uuid));
+	}
+};
 
 #endif

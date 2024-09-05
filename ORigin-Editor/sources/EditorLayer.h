@@ -58,7 +58,7 @@ namespace origin
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 		void OnGuiRender() override;
 		void OnScenePlay();
-		void OnScenePause();
+		void OnScenePause() const;
 		void OnSceneSimulate();
 		void OnSceneStop();
 		void InputProcedure(Timestep time);

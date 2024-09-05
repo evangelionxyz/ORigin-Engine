@@ -1,5 +1,8 @@
-#pragma once
-#include "Origin/Core/UUID.h"
+// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+
+#ifndef SPRITE_SHEET_EDITOR_H
+#define SPRITE_SHEET_EDITOR_H
+
 #include "Origin/Core/Event.h"
 #include "Origin/Core/KeyEvent.h"
 #include "Origin/Scene/SpriteSheet.h"
@@ -12,9 +15,15 @@
 
 namespace origin
 {
+	class SpriteSheet;
+
 	enum ControllerCorner
 	{
-		NONE = -1, TOP_LEFT, BOTTOM_LEFT, TOP_RIGHT, BOTTOM_RIGHT
+		NONE = -1,
+		TOP_LEFT,
+		BOTTOM_LEFT,
+		TOP_RIGHT,
+		BOTTOM_RIGHT
 	};
 
 	struct SpriteSheetController
@@ -34,11 +43,11 @@ namespace origin
 
 		void CreateNewSpriteSheet();
 		void SetSelectedSpriteSheet(AssetHandle handle);
-		void SetMainTexture(AssetHandle handle);
+		void SetMainTexture(AssetHandle handle) const;
 
-		void AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max);;
-		void RemoveSprite(int index);
-		void Duplicate(int index);
+		void AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max) const;;
+		void RemoveSprite(i32 index);
+		void Duplicate(i32 index);
 
 		void OnImGuiRender();
 		void OnUpdate(Timestep ts);
@@ -47,9 +56,9 @@ namespace origin
 		bool Deserialize();
 
 		void OnEvent(Event &e);
-		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
-		bool OnKeyPressed(KeyPressedEvent &e);
-		void OnMouse(float ts);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent &e) const;
+		bool OnKeyPressed(const KeyPressedEvent &e);
+		void OnMouse(f32 ts);
 
 		static SpriteSheetEditor *Get();
 
@@ -71,8 +80,10 @@ namespace origin
 		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
 		std::filesystem::path m_CurrentFilepath;
 		bool m_IsOpened = false;
-		int m_SelectedIndex = 0;
+		i32 m_SelectedIndex = 0;
 	};
 
 }
+
+#endif
 

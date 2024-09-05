@@ -16,49 +16,55 @@
 
 namespace origin
 {
-    OpenGLShader::OpenGLShader(const std::filesystem::path &filepath, bool recompile)
+    OpenGLShader::OpenGLShader(const std::filesystem::path &filepath, const bool recompile)
         : m_Filepath(filepath), m_RendererID(0), m_IsSPIRV(true), m_IsRecompile(recompile)
     {
-        PUSH_CONSOLE_INFO("[Shader] Trying to load Shader {}", m_Filepath);
-        OGN_CORE_TRACE("[Shader] Trying to load Shader {}", m_Filepath);
+        PUSH_CONSOLE_INFO("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
+        OGN_CORE_TRACE("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
 
         ShaderUtils::CreateCachedDirectoryIfNeeded();
-        std::string source = Shader::ReadFile(filepath.string());
         {
-            auto shaderSources = Shader::PreProcess(source, filepath.string());
             Timer timer;
-            ShaderData vulkanSpirv = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
-            m_OpenGLSPIRV = Shader::CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkanSpirv, filepath.string());
+            const std::string source          = ReadFile(filepath.generic_string());
+            const ShaderSource shader_sources = PreProcess(source, filepath.generic_string());
+            const ShaderData vulkan_spirv     = CompileOrGetVulkanBinaries(shader_sources, filepath.generic_string());
+
+            m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkan_spirv, filepath.generic_string());
+
             CreateSpirvProgram();
-            PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
-            OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
+
+            PUSH_CONSOLE_INFO("[Shader] Shader Creation took {} ms", timer.ElapsedMillis());
+            OGN_CORE_TRACE("[Shader] Shader Creation took {} ms", timer.ElapsedMillis());
         }
     }
 
-    OpenGLShader::OpenGLShader(const std::filesystem::path &filepath, bool spirv, bool recompile)
+    OpenGLShader::OpenGLShader(const std::filesystem::path &filepath, const bool spirv, const bool recompile)
         : m_Filepath(filepath), m_RendererID(0), m_IsSPIRV(spirv), m_IsRecompile(recompile)
     {
         OGN_PROFILER_RENDERING();
-        PUSH_CONSOLE_INFO("[Shader] Trying to load Shader {}", m_Filepath);
-        OGN_CORE_TRACE("[Shader] Trying to load Shader {}", m_Filepath);
+        PUSH_CONSOLE_INFO("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
+        OGN_CORE_TRACE("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
 
         // With SPIRV
         if (spirv)
         {
             Timer timer;
             ShaderUtils::CreateCachedDirectoryIfNeeded();
-            std::string source = Shader::ReadFile(filepath.string());
-            ShaderSource shaderSources = Shader::PreProcess(source, filepath.string());
-            ShaderData vulkanSpirv = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
-            m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkanSpirv, filepath.string());
+
+            const std::string source          = ReadFile(filepath.generic_string());
+            const ShaderSource shader_sources = PreProcess(source, filepath.generic_string());
+            const ShaderData vulkanSpirv      = CompileOrGetVulkanBinaries(shader_sources, filepath.generic_string());
+
+            m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkanSpirv, filepath.generic_string());
+
             CreateSpirvProgram();
-            PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
-            OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
+            PUSH_CONSOLE_INFO("[Shader] Shader Creation took {} ms", timer.ElapsedMillis());
+            OGN_CORE_TRACE("[Shader] Shader Creation took {} ms", timer.ElapsedMillis());
         }
         else // Without SPIRV
         {
-            m_ShaderSource = Shader::ParseShader(filepath.string());
-            m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
+            m_ShaderSource = ParseShader(filepath.string());
+            m_RendererID   = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
         }
     }
 
@@ -77,64 +83,76 @@ namespace origin
     {
         OGN_PROFILER_RENDERING();
 
-        uint32_t program = glCreateProgram();
-        std::vector<uint32_t> shaderIDs;
+        const u32 program = glCreateProgram();
+        std::vector<u32> shader_ids;
+
         for (auto &&[stage, spirv] : m_OpenGLSPIRV)
         {
-            uint32_t shaderID = shaderIDs.emplace_back(glCreateShader(stage));
-            glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
-            glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-            glAttachShader(program, shaderID);
+            u32 shader_id = shader_ids.emplace_back(glCreateShader(stage));
+
+            glShaderBinary(1, &shader_id, GL_SHADER_BINARY_FORMAT_SPIR_V,
+                spirv.data(), spirv.size() * sizeof(u32));
+
+            glSpecializeShader(shader_id, "main", 0, nullptr, nullptr);
+            glAttachShader(program, shader_id);
         }
 
         glLinkProgram(program);
         glValidateProgram(program);
 
-        int isLinked = 0;
-        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-        if (isLinked < 0)
+        i32 is_linked = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &is_linked);
+
+        if (is_linked < 0)
         {
             OGN_CORE_ERROR("[Shader] Failed to linking shader");
             PUSH_CONSOLE_ERROR("[Shader] Failed to linking shader");
             return;
         }
 
-        if (isLinked == GL_FALSE)
+        if (is_linked == GL_FALSE)
         {
-            int maxLength;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-            std::vector<GLchar> infolog(maxLength);
-            glGetProgramInfoLog(program, maxLength, &maxLength, infolog.data());
+            i32 max_length;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
+
+            char info_log[max_length];
+            glGetProgramInfoLog(program, max_length, &max_length, reinterpret_cast<GLchar*>(info_log));
             glDeleteProgram(program);
-            for (auto id : shaderIDs)
-            {
+
+            for (const auto id : shader_ids)
                 glDeleteShader(id);
-            }
 
             return;
         }
 
-        for (auto id : shaderIDs)
+        for (const auto id : shader_ids)
             glDeleteShader(id);
 
         m_RendererID = program;
     }
 
-    uint32_t OpenGLShader::CompileShader(uint32_t type, const std::string &source)
+    u32 OpenGLShader::CompileShader(const u32 type, const std::string &source)
     {
         OGN_PROFILER_RENDERING();
 
-        uint32_t shaderID = glCreateShader(type);
-        const char *src = source.c_str();
-        glShaderSource(shaderID, 1, &src, nullptr);
-        glCompileShader(shaderID);
+        const u32 shader_id = glCreateShader(type);
 
-        int success;
-        char infoLog[512];
-        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+        const char *src = source.c_str();
+
+        glShaderSource(shader_id, 1, &src, nullptr);
+        glCompileShader(shader_id);
+
+
+        i32 success;
+        glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
         if (!success)
         {
-            glGetShaderInfoLog(shaderID, 512, NULL, infoLog);
+            i32 max_length;
+            glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &max_length);
+
+            char *info_log = new char[max_length];
+            glGetShaderInfoLog(shader_id, max_length, &max_length, info_log);
+
             const char *m = "[Shader] Failed to Compile ";
             const char *shaderType{};
 
@@ -150,66 +168,73 @@ namespace origin
                 shaderType = "GEOMETRY TYPE";
                 break;
             }
-            size_t len = strlen(m) + strlen(shaderType) + 1;
-            char *msg = (char *)malloc(len);
 
-            if (msg != NULL)
+            const size_t len = strlen(m) + strlen(shaderType) + 1;
+
+            if (const auto msg = static_cast<char*>(malloc(len)); msg != nullptr)
             {
                 strcpy(msg, m);
                 strcat(msg, shaderType);
-                OGN_CORE_ERROR(msg);
-                PUSH_CONSOLE_ERROR(msg);
+
+                OGN_CORE_ERROR("[Shader] Error: {}", msg);
+                PUSH_CONSOLE_ERROR("[Shader] Error: {}", msg);
+
                 free(msg);
             }
-            PUSH_CONSOLE_ERROR("[Shader] {0}", infoLog);
-            OGN_CORE_ASSERT(false, "[Shader] {0}", infoLog);
+
+            PUSH_CONSOLE_ERROR("[Shader] Error {}", info_log);
+            OGN_CORE_ASSERT(false, "[Shader] Error {}", info_log);
+
+            delete[] info_log;
             return 0;
         }
 
         switch (type)
         {
         case GL_VERTEX_SHADER:
-            OGN_CORE_TRACE("[Shader] VERTEX Succesfully Compiled");
-            PUSH_CONSOLE_INFO("[Shader] VERTEX Succesfully Compiled");
+            OGN_CORE_TRACE("[Shader] VERTEX Successfully Compiled");
+            PUSH_CONSOLE_INFO("[Shader] VERTEX Successfully Compiled");
             break;
         case GL_FRAGMENT_SHADER:
-            OGN_CORE_TRACE("[Shader] FRAGMENT Succesfully Compiled");
-            PUSH_CONSOLE_INFO("[Shader] FRAGMENT Succesfully Compiled");
+            OGN_CORE_TRACE("[Shader] FRAGMENT Successfully Compiled");
+            PUSH_CONSOLE_INFO("[Shader] FRAGMENT Successfully Compiled");
             break;
         case GL_GEOMETRY_SHADER:
-            OGN_CORE_TRACE("[Shader] GEOMETRY Succesfully Compiled");
-            PUSH_CONSOLE_INFO("[Shader] GEOMETRY Succesfully Compiled");
+            OGN_CORE_TRACE("[Shader] GEOMETRY Successfully Compiled");
+            PUSH_CONSOLE_INFO("[Shader] GEOMETRY Successfully Compiled");
             break;
         }
 
-        return shaderID;
+        return shader_id;
     }
 
-    uint32_t OpenGLShader::CreateProgram(std::string vertexSrc, std::string fragmentSrc, std::string geometrySrc)
+    u32 OpenGLShader::CreateProgram(const std::string& vertex_source, const std::string &fragment_source,
+        const std::string &geometry_source)
     {
         OGN_PROFILER_RENDERING();
 
         // Create Program
-        uint32_t shaderProgram = glCreateProgram();
-        uint32_t vShader = CompileShader(GL_VERTEX_SHADER, vertexSrc);
-        uint32_t fShader = CompileShader(GL_FRAGMENT_SHADER, fragmentSrc);
-        if (!geometrySrc.empty())
+        const u32 shader_program  = glCreateProgram();
+        const u32 vertex_shader   = CompileShader(GL_VERTEX_SHADER, vertex_source);
+        const u32 fragment_shader = CompileShader(GL_FRAGMENT_SHADER, fragment_source);
+
+        if (!geometry_source.empty())
         {
-            uint32_t gShader = CompileShader(GL_GEOMETRY_SHADER, geometrySrc);
-            glAttachShader(shaderProgram, gShader);
+            const u32 geometry_shader = CompileShader(GL_GEOMETRY_SHADER, geometry_source);
+            glAttachShader(shader_program, geometry_shader);
         }
 
         // Attach and Link Shader->Program
-        glAttachShader(shaderProgram, vShader);
-        glAttachShader(shaderProgram, fShader);
-        glLinkProgram(shaderProgram);
+        glAttachShader(shader_program, vertex_shader);
+        glAttachShader(shader_program, fragment_shader);
+        glLinkProgram(shader_program);
 
-        glValidateProgram(shaderProgram);
+        glValidateProgram(shader_program);
 
-        glDeleteShader(vShader);
-        glDeleteShader(fShader);
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
 
-        return shaderProgram;
+        return shader_program;
     }
 
     void OpenGLShader::Enable() const
@@ -228,194 +253,197 @@ namespace origin
         {
             ShaderUtils::CreateCachedDirectoryIfNeeded();
             m_IsRecompile = true;
-            std::string source = Shader::ReadFile(m_Filepath.string());
             {
-                auto shaderSources = Shader::PreProcess(source, m_Filepath.string());
-
                 Timer timer;
-                ShaderData vulkanSpirv = CompileOrGetVulkanBinaries(shaderSources, m_Filepath.string());
-                m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkanSpirv, m_Filepath.string());
+                const std::string source          = ReadFile(m_Filepath.generic_string());
+                const ShaderSource shader_sources = PreProcess(source, m_Filepath.generic_string());
+                const ShaderData vulkan_spirv     = CompileOrGetVulkanBinaries(shader_sources, m_Filepath.generic_string());
+
+                m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkan_spirv, m_Filepath.generic_string());
                 CreateSpirvProgram();
                 OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
                 PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
             }
+
             m_IsRecompile = false;
         }
         else
         {
-            m_ShaderSource = Shader::ParseShader(m_Filepath.string());
-            m_RendererID = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
+            m_ShaderSource = ParseShader(m_Filepath.string());
+            m_RendererID   = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
         }
     }
 
-    void OpenGLShader::SetBool(const std::string &name, bool boolean)
+    void OpenGLShader::SetBool(const std::string &name, const bool boolean)
     {
         SetUniformBool(name, boolean);
     }
 
-    void OpenGLShader::SetFloat(const std::string &name, float v0)
+    void OpenGLShader::SetFloat(const std::string &name, const f32 v0)
     {
         SetUniformFloat(name, v0);
     }
 
-    void OpenGLShader::SetFloat(const std::string &name, float v0, float v1)
+    void OpenGLShader::SetFloat(const std::string &name, const f32 v0, const f32 v1)
     {
         SetUniformFloat(name, v0, v1);
     }
 
-    void OpenGLShader::SetFloat(const std::string &name, float v0, float v1, float v2)
+    void OpenGLShader::SetFloat(const std::string &name, const f32 v0, const f32 v1, const f32 v2)
     {
         SetUniformFloat(name, v0, v1, v2);
     }
 
-    void OpenGLShader::SetFloat(const std::string &name, float v0, float v1, float v2, float v3)
+    void OpenGLShader::SetFloat(const std::string &name, const f32 v0, const f32 v1, const f32 v2, const f32 v3)
     {
         SetUniformFloat(name, v0, v1, v2, v3);
     }
 
-    void OpenGLShader::SetInt(const std::string &name, int v0)
+    void OpenGLShader::SetInt(const std::string &name, const i32 v0)
     {
         SetUniformInt(name, v0);
     }
 
-    void OpenGLShader::SetInt(const std::string &name, int v0, int v1)
+    void OpenGLShader::SetInt(const std::string &name, const i32 v0, const i32 v1)
     {
         SetUniformInt(name, v0, v1);
     }
 
-    void OpenGLShader::SetInt(const std::string &name, int v0, int v1, int v2)
+    void OpenGLShader::SetInt(const std::string &name, const i32 v0, const i32 v1, const i32 v2)
     {
         SetUniformInt(name, v0, v1, v2);
     }
 
-    void OpenGLShader::SetInt(const std::string &name, int v0, int v1, int v2, int v3)
+    void OpenGLShader::SetInt(const std::string &name, const i32 v0, const i32 v1, const i32 v2, const i32 v3)
     {
         SetUniformInt(name, v0, v1, v2, v3);
     }
 
-    void OpenGLShader::SetIntArray(const std::string &name, int *values, uint32_t count)
+    void OpenGLShader::SetIntArray(const std::string &name, i32 *values, const i32 count)
     {
         SetUniformIntArray(name, values, count);
     }
 
-    void OpenGLShader::SetVector(const std::string &name, const glm::vec2 &vectors, int count)
+    void OpenGLShader::SetVector(const std::string &name, const glm::vec2 &vectors, const i32 count)
     {
         SetUniformVector(name, vectors, count);
     }
 
-    void OpenGLShader::SetVector(const std::string &name, const glm::vec3 &vectors, int count)
+    void OpenGLShader::SetVector(const std::string &name, const glm::vec3 &vectors, const i32 count)
     {
         SetUniformVector(name, vectors, count);
     }
 
-    void OpenGLShader::SetVector(const std::string &name, const glm::vec4 &vectors, int count)
+    void OpenGLShader::SetVector(const std::string &name, const glm::vec4 &vectors, const i32 count)
     {
         SetUniformVector(name, vectors, count);
     }
 
-    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat2 &matrices, int count)
+    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat2 &matrices, const i32 count)
     {
         SetUniformMatrix(name, matrices, count);
     }
 
-    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat3 &matrices, int count)
+    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat3 &matrices, const i32 count)
     {
         SetUniformMatrix(name, matrices, count);
     }
 
-    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat4 &matrices, int count)
+    void OpenGLShader::SetMatrix(const std::string &name, const glm::mat4 &matrices, const i32 count)
     {
         SetUniformMatrix(name, matrices, count);
     }
 
     // private
     // BOOLEAN UNIFORM
-    void OpenGLShader::SetUniformBool(const std::string &name, bool boolean)
+    void OpenGLShader::SetUniformBool(const std::string &name, const bool boolean)
     {
         glUniform1i(GetUniformLocation(name), boolean);
     }
 
     // FLOAT UNIFORM
-    void OpenGLShader::SetUniformFloat(const std::string &name, float v0)
+    void OpenGLShader::SetUniformFloat(const std::string &name, const f32 v0)
     {
         glUniform1f(GetUniformLocation(name), v0);
     }
-    void OpenGLShader::SetUniformFloat(const std::string &name, float v0, float v1)
+    void OpenGLShader::SetUniformFloat(const std::string &name, const f32 v0, const f32 v1)
     {
         glUniform2f(GetUniformLocation(name), v0, v1);
     }
-    void OpenGLShader::SetUniformFloat(const std::string &name, float v0, float v1, float v2)
+    void OpenGLShader::SetUniformFloat(const std::string &name, const f32 v0, const f32 v1, const f32 v2)
     {
         glUniform3f(GetUniformLocation(name), v0, v1, v2);
     }
-    void OpenGLShader::SetUniformFloat(const std::string &name, float v0, float v1, float v2, float v3)
+    void OpenGLShader::SetUniformFloat(const std::string &name, const f32 v0, const f32 v1, const f32 v2, const f32 v3)
     {
         glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
     }
     // INT UNIFORM
-    void OpenGLShader::SetUniformInt(const std::string &name, int v0)
+    void OpenGLShader::SetUniformInt(const std::string &name, const i32 v0)
     {
         glUniform1i(GetUniformLocation(name), v0);
     }
 
-    void OpenGLShader::SetUniformInt(const std::string &name, int v0, int v1)
+    void OpenGLShader::SetUniformInt(const std::string &name, const i32 v0, const i32 v1)
     {
         glUniform2i(GetUniformLocation(name), v0, v1);
     }
 
-    void OpenGLShader::SetUniformInt(const std::string &name, int v0, int v1, int v2)
+    void OpenGLShader::SetUniformInt(const std::string &name,const i32 v0, const i32 v1,const i32 v2)
     {
         glUniform3i(GetUniformLocation(name), v0, v1, v2);
     }
 
-    void OpenGLShader::SetUniformInt(const std::string &name, int v0, int v1, int v2, int v3)
+    void OpenGLShader::SetUniformInt(const std::string &name, const i32 v0, const i32 v1, const i32 v2, const i32 v3)
     {
         glUniform4i(GetUniformLocation(name), v0, v1, v2, v3);
     }
 
-    void OpenGLShader::SetUniformIntArray(const std::string &name, int *values, uint32_t count)
+    void OpenGLShader::SetUniformIntArray(const std::string &name, i32 *values, const i32 count)
     {
         glUniform1iv(GetUniformLocation(name), count, values);
     }
 
     // VECTOR UNIFORM
-    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec2 &vector2, int count)
+    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec2 &vectors, const i32 count)
     {
-        glUniform2fv(GetUniformLocation(name), count, glm::value_ptr(vector2));
+        glUniform2fv(GetUniformLocation(name), count, glm::value_ptr(vectors));
     }
 
-    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec3 &vector3, int count)
+    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec3 &vectors, const i32 count)
     {
-        glUniform3fv(GetUniformLocation(name), count, glm::value_ptr(vector3));
+        glUniform3fv(GetUniformLocation(name), count, glm::value_ptr(vectors));
     }
 
-    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec4 &vector4, int count)
+    void OpenGLShader::SetUniformVector(const std::string &name, const glm::vec4 &vectors, const i32 count)
     {
-        glUniform4fv(GetUniformLocation(name), count, glm::value_ptr(vector4));
+        glUniform4fv(GetUniformLocation(name), count, glm::value_ptr(vectors));
     }
 
     // MATRIX UNIFORM
-    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat2 &matrices, int count)
+    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat2 &matrices, const i32 count)
     {
         glUniformMatrix3fv(GetUniformLocation(name), count, false, glm::value_ptr(matrices));
     }
 
-    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat3 &matrices, int count)
+    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat3 &matrices, const i32 count)
     {
         glUniformMatrix3fv(GetUniformLocation(name), count, false, glm::value_ptr(matrices));
     }
 
-    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat4 &matrices, int count)
+    void OpenGLShader::SetUniformMatrix(const std::string &name, const glm::mat4 &matrices, const i32 count)
     {
         glUniformMatrix4fv(GetUniformLocation(name), count, false, glm::value_ptr(matrices));
     }
 
-    int OpenGLShader::GetUniformLocation(const std::string &name)
+    i32 OpenGLShader::GetUniformLocation(const std::string &name)
     {
-        if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
+        if (m_UniformLocationCache.contains(name))
+        {
             return m_UniformLocationCache[name];
+        }
 
-        int location = glGetUniformLocation(m_RendererID, name.c_str());
+        const i32 location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
         {
             OGN_CORE_WARN("[Shader] WARNING UNIFORM '{}' does not exists or uninitialized", name);

@@ -9,7 +9,7 @@
 namespace origin {
     
     using AssetHandle = UUID;
-    enum class AssetType : uint16_t
+    enum class AssetType : u16
     {
         None = 0,
         Scene,
@@ -31,7 +31,7 @@ namespace origin {
     public:
         virtual ~Asset() = default;
         AssetHandle Handle;
-        virtual AssetType GetType() const = 0;
+        [[nodiscard]] virtual AssetType GetType() const = 0;
     };
 }
 

@@ -8,14 +8,10 @@
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/JobSystemSingleThreaded.h>
 #include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Physics/PhysicsSettings.h>
-#include <Jolt/Physics/StateRecorderImpl.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
-#include <Jolt/Physics/Collision/Shape/TaperedCapsuleShape.h>
 
 #include "Origin/Scene/Scene.h"
 #include "Origin/Profiler/Profiler.h"
@@ -32,9 +28,9 @@ namespace origin
         std::unique_ptr<JPH::JobSystem> JobSystem;
         std::unique_ptr<JPH::BodyActivationListener> BodyActivationListener;
         std::unique_ptr<JPH::ContactListener> ContactListener;
-        JPH::BodyInterface *BodyInterface;
+        JPH::BodyInterface *BodyInterface{};
         JoltBroadPhaseLayerInterfaceImpl BroadPhaseLayerInterface;
-        JoltObjectVsBroadPhaseLayerFilterImpl ObjectVsBroadPaheLayerFilter;
+        JoltObjectVsBroadPhaseLayerFilterImpl ObjectVsBroadPhaseLayerFilter;
         JoltObjectLayerPairFilterImpl ObjectLayerPairFilter;
     };
 
@@ -44,7 +40,7 @@ namespace origin
     static constexpr unsigned int cNumBodyMutexes = 0; // Autodetect
     static constexpr unsigned int cMaxBodyPairs = 64000;
     static constexpr unsigned int cMaxContactConstraints = 20480;
-    static const int cMaxPhysicsJobs = 2048;
+    static constexpr int cMaxPhysicsJobs = 2048;
 
     void PhysicsEngine::Init()
     {
@@ -52,7 +48,8 @@ namespace origin
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();
         s_Data.TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(32 * 1024 * 1024);
-        s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, 8, std::thread::hardware_concurrency() - 1);
+        s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, 8,
+            std::thread::hardware_concurrency() - 1);
     }
 
     void PhysicsEngine::Shutdown()
@@ -71,10 +68,14 @@ namespace origin
 
         shapeSettings.mUserData = entity.GetUUID();
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
-        OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
+
+        const char *error_msg = shapeResult.GetError().c_str();
+        OGN_CORE_ASSERT(shapeResult.IsValid(), "[Jolt] Error {}", error_msg);
+
         JPH::ShapeRefC shape = shapeResult.Get();
 
-        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset),
+            GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
         
@@ -86,8 +87,6 @@ namespace origin
         if (rb.MoveY) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationY;
         if (rb.MoveZ) bodySettings.mAllowedDOFs |= JPH::EAllowedDOFs::TranslationZ;
 
-        JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
-
         switch (rb.MotionQuality)
         {
         case RigidbodyComponent::EMotionQuality::Discrete:
@@ -98,7 +97,7 @@ namespace origin
             break;
         }
 
-        if (body)
+        if (JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings))
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
@@ -116,10 +115,14 @@ namespace origin
         shapeSettings.mUserData = entity.GetUUID();
 
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
-        OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
+
+        const char *error_msg = shapeResult.GetError().c_str();
+        OGN_CORE_ASSERT(shapeResult.IsValid(), "[Jolt] Error {}", error_msg);
+
         JPH::ShapeRefC shape = shapeResult.Get();
 
-        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset),
+            GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
 
@@ -141,8 +144,7 @@ namespace origin
             break;
         }
 
-        JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
-        if (body)
+        if (JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings))
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
@@ -160,10 +162,14 @@ namespace origin
         shapeSettings.mUserData = entity.GetUUID();
 
         JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
-        OGN_CORE_ASSERT(shapeResult.IsValid(), shapeResult.GetError());
+
+        const char *error_msg = shapeResult.GetError().c_str();
+        OGN_CORE_ASSERT(shapeResult.IsValid(), "[Jolt] Error {}", error_msg);
+
         JPH::ShapeRefC shape = shapeResult.Get();
 
-        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset), GlmToJoltQuat(tc.WorldRotation),
+        JPH::BodyCreationSettings bodySettings(shape, GlmToJoltVec3(tc.WorldTranslation + rb.Offset),
+            GlmToJoltQuat(tc.WorldRotation),
             rb.IsStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
             rb.IsStatic ? Layers::NON_MOVING : Layers::MOVING);
 
@@ -185,8 +191,7 @@ namespace origin
             break;
         }
 
-        JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings);
-        if (body)
+        if (JPH::Body *body = s_Data.BodyInterface->CreateBody(bodySettings))
         {
             JPH::BodyID bodyId = body->GetID();
             s_Data.BodyInterface->AddBody(bodyId, JPH::EActivation::Activate);
@@ -202,7 +207,7 @@ namespace origin
         s_Data.ContactListener = std::make_unique<JoltContactListener>();
 
         s_Data.PhysicsSystem = std::make_unique<JPH::PhysicsSystem>();
-        s_Data.PhysicsSystem->Init(cNumBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, s_Data.BroadPhaseLayerInterface, s_Data.ObjectVsBroadPaheLayerFilter, s_Data.ObjectLayerPairFilter);
+        s_Data.PhysicsSystem->Init(cNumBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, s_Data.BroadPhaseLayerInterface, s_Data.ObjectVsBroadPhaseLayerFilter, s_Data.ObjectLayerPairFilter);
         s_Data.PhysicsSystem->SetBodyActivationListener(s_Data.BodyActivationListener.get());
         s_Data.PhysicsSystem->SetContactListener(s_Data.ContactListener.get());
         s_Data.PhysicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
@@ -211,34 +216,31 @@ namespace origin
         s_Data.BodyInterface = &s_Data.PhysicsSystem->GetBodyInterface();
 
         // Create Components
-        for (auto id : scene->m_Registry.view<RigidbodyComponent>())
+        for (const auto id : scene->m_Registry.view<RigidbodyComponent>())
         {
-            Entity entity = { id, scene };
-            InstantiateEntity(entity);
+            InstantiateEntity({ id, scene });
         }
     }
 
     void PhysicsEngine::OnSimulateStop(Scene *scene)
     {
-        for (auto id : scene->m_Registry.view<RigidbodyComponent>())
+        for (const auto id : scene->m_Registry.view<RigidbodyComponent>())
         {
-            Entity entity = { id, scene };
-            DestroyEntity(entity);
+            DestroyEntity({ id, scene });
         }
     }
 
-    void PhysicsEngine::Simulate(Timestep ts, Scene *scene)
+    void PhysicsEngine::Simulate(const Timestep ts, Scene *scene)
     {
-        for (auto id : scene->m_Registry.view<RigidbodyComponent>())
+        for (const auto id : scene->m_Registry.view<RigidbodyComponent>())
         {
             Entity entity = { id, scene };
-            TransformComponent &tc = entity.GetComponent<TransformComponent>();
-            RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
-            IDComponent &idc = entity.GetComponent<IDComponent>();
 
-            JPH::Body *body = reinterpret_cast<JPH::Body *>(rb.Body);
+            const auto &rb = entity.GetComponent<RigidbodyComponent>();
+            auto &tc = entity.GetComponent<TransformComponent>();
+            auto &idc = entity.GetComponent<IDComponent>();
 
-            if (body)
+            if (auto *body = reinterpret_cast<JPH::Body *>(rb.Body))
             {
 #if 0
                 glm::vec3 worldPosition = JoltToGlmVec3(body->GetPosition());
@@ -277,18 +279,18 @@ namespace origin
 
             if (entity.HasComponent<BoxColliderComponent>())
             {
-                BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
-                if (cc.Shape)
+                if (const auto &cc = entity.GetComponent<BoxColliderComponent>(); cc.Shape)
                 {
-                    JPH::BoxShape *shape = reinterpret_cast<JPH::BoxShape *>(cc.Shape);
+                    auto shape = reinterpret_cast<JPH::BoxShape *>(cc.Shape);
+                    // TODO: Unimplemented
                 }
             }
             else if (entity.HasComponent<SphereColliderComponent>())
             {
-                SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
-                if (cc.Shape)
+                if (const SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>(); cc.Shape)
                 {
-                    JPH::SphereShape *shape = reinterpret_cast<JPH::SphereShape *>(cc.Shape);
+                    auto shape = reinterpret_cast<JPH::SphereShape *>(cc.Shape);
+                    // TODO: Unimplemented
                 }
             }
         }
@@ -300,25 +302,25 @@ namespace origin
     {
         if (entity.HasComponent<RigidbodyComponent>())
         {
-            RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
+            auto &rb = entity.GetComponent<RigidbodyComponent>();
 
             if (entity.HasComponent<BoxColliderComponent>())
             {
-                BoxColliderComponent &cc = entity.GetComponent<BoxColliderComponent>();
+                auto &cc = entity.GetComponent<BoxColliderComponent>();
                 cc.Shape = CreateBoxCollider(entity, cc.Scale, rb);
                 rb.SetFriction(cc.Friction);
                 rb.SetRestitution(cc.Restitution);
             }
             else if (entity.HasComponent<CapsuleColliderComponent>())
             {
-                CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
+                auto &cc = entity.GetComponent<CapsuleColliderComponent>();
                 cc.Shape = CreateCapsuleCollider(entity, cc.HalfHeight, cc.Radius, rb);
                 rb.SetFriction(cc.Friction);
                 rb.SetRestitution(cc.Restitution);
             }
             else if (entity.HasComponent<SphereColliderComponent>())
             {
-                SphereColliderComponent &cc = entity.GetComponent<SphereColliderComponent>();
+                auto &cc = entity.GetComponent<SphereColliderComponent>();
                 cc.Shape = CreateSphereCollider(entity, cc.Radius, rb);
                 rb.SetFriction(cc.Friction);
                 rb.SetRestitution(cc.Restitution);
@@ -330,9 +332,9 @@ namespace origin
     {
         if (entity.HasComponent<RigidbodyComponent>())
         {
-            RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
+            const auto &rb = entity.GetComponent<RigidbodyComponent>();
 
-            JPH::Body *body = reinterpret_cast<JPH::Body *>(rb.Body);
+            const auto body = reinterpret_cast<JPH::Body *>(rb.Body);
             s_Data.BodyInterface->RemoveBody(body->GetID());
             s_Data.BodyInterface->DestroyBody(body->GetID());
         }

@@ -171,7 +171,7 @@ namespace origin
                 {
                     audio->SetVolume(ac.Volume);
                     audio->SetPitch(ac.Pitch);
-                    audio->SetPaning(ac.Panning);
+                    audio->SetPanning(ac.Panning);
                     audio->SetLoop(ac.Looping);
                     audio->SetSpatial(ac.Spatializing);
                     if (ac.Spatializing)

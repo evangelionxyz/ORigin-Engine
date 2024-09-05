@@ -22,6 +22,10 @@ namespace origin {
         {
         case RendererAPI::API::OpenGL:
         {
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
             m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
                 title, nullptr, nullptr);
             if (!m_MainWindow)

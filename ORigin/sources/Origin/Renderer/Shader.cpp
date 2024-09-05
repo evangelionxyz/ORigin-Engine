@@ -3,10 +3,10 @@
 #include "pch.h"
 #include "Shader.h"
 #include "RendererAPI.h"
+
 #include "Platform/OpenGL/OpenGLShader.h"
-#ifdef OGN_PLATFORM_LINUX
-#   include "Platform/Vulkan/VulkanShader.h"
-#endif
+#include "Platform/Vulkan/VulkanShader.h"
+
 #include "Origin/Core/ConsoleManager.h"
 
 #include <glad/glad.h>
@@ -24,11 +24,12 @@ namespace origin
             return GL_FRAGMENT_SHADER;
         if (type == "geometry")
             return GL_GEOMETRY_SHADER;
-        OGN_CORE_ASSERT(false, "[Shader] Unkown Shader Type '{}'", filepath);
+
+        OGN_CORE_ASSERT(false, "[Shader] Unknown Shader Type '{}'", filepath);
         return 0;
     }
 
-    static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
+    static shaderc_shader_kind GLShaderStageToShaderC(const GLenum stage)
     {
         switch (stage)
         {
@@ -38,13 +39,13 @@ namespace origin
             return shaderc_glsl_fragment_shader;
         case GL_GEOMETRY_SHADER:
             return shaderc_glsl_geometry_shader;
+        default:
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
+            return static_cast<shaderc_shader_kind>(0);
         }
-
-        OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-        return (shaderc_shader_kind)0;
     }
 
-    static std::string GLShaderStageToString(GLenum stage)
+    static std::string GLShaderStageToString(const GLenum stage)
     {
         switch (stage)
         {
@@ -54,13 +55,13 @@ namespace origin
             return "GL_FRAGMENT_SHADER";
         case GL_GEOMETRY_SHADER:
             return "GL_GEOMETRY_SHADER";
+        default:
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
+            return "";
         }
-
-        OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-        return nullptr;
     }
 
-    static const char *GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
+    static const char *GLShaderStageCachedOpenGLFileExtension(const u32 stage)
     {
         switch (stage)
         {
@@ -70,13 +71,13 @@ namespace origin
             return ".cached_opengl.frag";
         case GL_GEOMETRY_SHADER:
             return ".cached_opengl.geom";
+        default:
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
+            return nullptr;
         }
-
-        OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-        return nullptr;
     }
 
-    static const char *GLShaderStageCachedVulkanFileExtension(uint32_t stage)
+    static const char *GLShaderStageCachedVulkanFileExtension(const u32 stage)
     {
         switch (stage)
         {
@@ -86,13 +87,13 @@ namespace origin
             return ".cached_vulkan.frag";
         case GL_GEOMETRY_SHADER:
             return ".cached_vulkan.geom";
+        default:
+            OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
+            return nullptr;
         }
-
-        OGN_CORE_ASSERT(false, "[Shader] Invalid Shader Stage");
-        return nullptr;
     }
 
-    static const char *ShaderDataTypeToString(GLenum type)
+    static const char *ShaderDataTypeToString(const GLenum type)
     {
         switch (type)
         {
@@ -102,11 +103,12 @@ namespace origin
             return "Fragment";
         case GL_GEOMETRY_SHADER:
             return "Geometry";
+        default:
+            return nullptr;
         }
-        return nullptr;
     }
 
-    static const char *ShaderDataTypeToString(ShaderType type)
+    static const char *ShaderDataTypeToString(const ShaderType type)
     {
         switch (type)
         {
@@ -114,10 +116,11 @@ namespace origin
             return "VERTEX";
         case ShaderType::FRAGMENT:
             return "FRAGMENT";
-        case ShaderType::GEOMTERY:
+        case ShaderType::GEOMETRY:
             return "GEOMETRY";
+        default:
+            return nullptr;
         }
-        return nullptr;
     }
 
     std::shared_ptr<Shader> Shader::Create(const std::filesystem::path &filepath, bool recompile)
@@ -128,14 +131,11 @@ namespace origin
             return nullptr;
         case RendererAPI::API::OpenGL:
             return std::make_shared<OpenGLShader>(filepath, recompile);
-#ifdef OGN_PLATFORM_LINUX
         case RendererAPI::API::Vulkan:
             return std::make_shared<VulkanShader>(filepath, recompile);
-#endif
+        default: OGN_CORE_ASSERT(false, "Unknown RendererAPI");
+            return nullptr;
         }
-        OGN_CORE_ASSERT(false, "Unkown RendererAPI");
-        return nullptr;
-
     }
 
     std::shared_ptr<Shader> Shader::Create(const std::filesystem::path &filepath, bool isSpirv, bool recompile)
@@ -146,14 +146,12 @@ namespace origin
             return nullptr;
         case RendererAPI::API::OpenGL:
             return std::make_shared<OpenGLShader>(filepath, isSpirv, recompile);
-#ifdef OGN_PLATFORM_LINUX
         case RendererAPI::API::Vulkan:
-            return nullptr; // std::make_shared<VulkanShader>(filepath, recompile);
-#endif
+            return std::make_shared<VulkanShader>(filepath, recompile);
+        default:
+            OGN_CORE_ASSERT(false, "Unknown RendererAPI");
+            return nullptr;
         }
-
-        OGN_CORE_ASSERT(false, "Unkown RendererAPI");
-        return nullptr;
     }
 
     ShaderProgramSources Shader::ParseShader(const std::string &filepath)
@@ -164,7 +162,7 @@ namespace origin
 
         std::string line;
         std::stringstream ss[3];
-        ShaderType type = ShaderType::NONE;
+        auto type = ShaderType::NONE;
 
         while (getline(stream, line))
         {
@@ -183,14 +181,14 @@ namespace origin
                 }
                 else if (line.find("geometry") != std::string::npos)
                 {
-                    type = ShaderType::GEOMTERY;
+                    type = ShaderType::GEOMETRY;
                     ShaderDataTypeToString(type);
                 }
             }
             else
             {
                 // Fill the source code to stream
-                ss[(int)type] << line << "\n";
+                ss[static_cast<int>(type)] << line << "\n";
             }
         }
 
@@ -202,12 +200,11 @@ namespace origin
         OGN_PROFILER_RENDERING();
 
         std::string result;
-        std::ifstream in(filepath, std::ios::in | std::ios::binary);
-        if (in)
+        if (std::ifstream in(filepath, std::ios::in | std::ios::binary); in)
         {
             in.seekg(0, std::ios::end);
-            size_t size = in.tellg();
-            if (size != -1)
+
+            if (const auto size = in.tellg(); size != -1)
             {
                 result.resize(size);
                 in.seekg(0, std::ios::beg);
@@ -232,47 +229,49 @@ namespace origin
     {
         OGN_PROFILER_RENDERING();
 
-        std::unordered_map<GLenum, std::string> shaderSources;
+        std::unordered_map<GLenum, std::string> shader_sources;
 
-        const char *typeToken  = "// type";
-        size_t typeTokenLength = strlen(typeToken);
-        size_t pos             = source.find(typeToken, 0);
+        const auto type_token     = "// type";
+        const size_t token_length = strlen(type_token);
+        size_t pos                = source.find(type_token, 0);
 
         while (pos != std::string::npos)
         {
-            size_t eol = source.find_first_of("\r\n", pos);
+            const size_t eol = source.find_first_of("\r\n", pos);
             if (eol == std::string::npos)
             {
                 PUSH_CONSOLE_ERROR(    "[Shader] Syntax error");
                 OGN_CORE_ASSERT(false, "[Shader] Syntax error");
             }
 
-            size_t begin     = pos + typeTokenLength + 1;
-            std::string type = source.substr(begin, eol - begin);
+            const size_t begin = pos + token_length + 1;
+            std::string type   = source.substr(begin, eol - begin);
+
             if (!ShaderTypeFromString(type, filepath))
             {
                 PUSH_CONSOLE_ERROR(    "[Shader] Invalid shader type specified");
                 OGN_CORE_ASSERT(false, "[Shader] Invalid shader type specified");
             }
 
-            size_t nextLinePos = source.find_first_of("\r\n", eol);
-            if (nextLinePos == std::string::npos)
+            const size_t next_line_pos = source.find_first_of("\r\n", eol);
+            if (next_line_pos == std::string::npos)
             {
                 PUSH_CONSOLE_ERROR(    "[Shader] Syntax Error");
                 OGN_CORE_ASSERT(false, "[Shader] Syntax Error");
             }
 
-            pos = source.find(typeToken, nextLinePos);
-            shaderSources[ShaderTypeFromString(type, filepath)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+            pos = source.find(type_token, next_line_pos);
+            shader_sources[ShaderTypeFromString(type, filepath)] = (pos == std::string::npos)
+                ? source.substr(next_line_pos)
+                : source.substr(next_line_pos, pos - next_line_pos);
         }
 
-        return shaderSources;
+        return shader_sources;
     }
 
     ShaderData Shader::CompileOrGetVulkanBinaries(const ShaderSource &shaderSources, const std::string &filepath)
     {
         ShaderData              shaderData;
-        shaderc::Compiler       compiler;
         shaderc::CompileOptions options;
         std::filesystem::path   cacheDirectory = ShaderUtils::GetCacheDirectory();
 
@@ -283,30 +282,32 @@ namespace origin
         {
             std::filesystem::path shaderFilepath = filepath;
             std::filesystem::path cachedPath     = cacheDirectory / (shaderFilepath.filename().string() + GLShaderStageCachedVulkanFileExtension(stage));
-            std::ifstream         infile(cachedPath, std::ios::in | std::ios::binary);
-            if (infile.is_open())
+            if (std::ifstream infile(cachedPath, std::ios::in | std::ios::binary); infile.is_open())
             {
                 infile.seekg(0, std::ios::end);
                 auto size = infile.tellg();
+
                 infile.seekg(0, std::ios::beg);
+
                 auto &data = shaderData[stage];
-                data.resize(size / sizeof(uint32_t));
-                infile.read((char *)data.data(), size);
+                data.resize(size / sizeof(u32));
+
+                infile.read(reinterpret_cast<char*>(data.data()), size);
             }
             else
             {
+                shaderc::Compiler compiler;
                 shaderc::SpvCompilationResult module   = compiler.CompileGlslToSpv(source, GLShaderStageToShaderC(stage), filepath.c_str());
-                bool                          succsess = module.GetCompilationStatus() == shaderc_compilation_status_success;
+                bool                          success = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
                 PUSH_CONSOLE_ERROR("[Shader] Failed to compile Vulkan {0}", module.GetErrorMessage().c_str());
-                OGN_CORE_ASSERT(succsess, module.GetErrorMessage());
+                OGN_CORE_ASSERT(success, module.GetErrorMessage());
 
-                shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-                std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-                if (out.is_open())
+                shaderData[stage] = std::vector<u32>(module.cbegin(), module.cend());
+                if (std::ofstream out(cachedPath, std::ios::out | std::ios::binary); out.is_open())
                 {
                     auto &data = shaderData[stage];
-                    out.write((char *)data.data(), data.size() * sizeof(uint32_t));
+                    out.write(reinterpret_cast<char*>(data.data()), data.size() * sizeof(u32));
                     out.flush();
                     out.close();
                 }
@@ -314,7 +315,7 @@ namespace origin
         }
         for (auto &&[stage, data] : shaderData)
         {
-            Shader::Reflect(stage, data);
+            Reflect(stage, data);
         }
 
         return shaderData;
@@ -323,7 +324,6 @@ namespace origin
     ShaderData Shader::CompileOrGetOpenGLBinaries(ShaderSource &openglCode, const ShaderData &vulkanSpirv, const std::string &filepath)
     {
         ShaderData              shaderData;
-        shaderc::Compiler       compiler;
         shaderc::CompileOptions options;
         std::filesystem::path   cacheDirectory = ShaderUtils::GetCacheDirectory();
 
@@ -334,29 +334,31 @@ namespace origin
             std::filesystem::path shaderFilepath = filepath;
             std::filesystem::path cachedPath     = cacheDirectory / (shaderFilepath.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
 
-            std::ifstream infile(cachedPath, std::ios::in | std::ios::binary);
-            if (infile.is_open())
+            if (std::ifstream infile(cachedPath, std::ios::in | std::ios::binary); infile.is_open())
             {
                 infile.seekg(0, std::ios::end);
                 auto size = infile.tellg();
+
                 infile.seekg(0, std::ios::beg);
+
                 auto &data = shaderData[stage];
-                data.resize(size / sizeof(uint32_t));
-                infile.read((char *)data.data(), size);
+                data.resize(size / sizeof(u32));
+                infile.read(reinterpret_cast<char*>(data.data()), size);
             }
             else
             {
+                shaderc::Compiler compiler;
                 spirv_cross::CompilerGLSL glslCompiler(spirv);
                 openglCode[stage]                    = glslCompiler.compile();
                 auto &source                         = openglCode[stage];
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, GLShaderStageToShaderC(stage), filepath.c_str());
                 bool success                         = module.GetCompilationStatus() == shaderc_compilation_status_success;
-                shaderData[stage]                    = std::vector<uint32_t>(module.cbegin(), module.cend());
-                std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary);
-                if (outfile.is_open())
+                shaderData[stage]                    = std::vector<u32>(module.cbegin(), module.cend());
+
+                if (std::ofstream outfile(cachedPath, std::ios::out | std::ios::binary); outfile.is_open())
                 {
                     auto &data = shaderData[stage];
-                    outfile.write((char *)data.data(), data.size() * sizeof(uint32_t));
+                    outfile.write(reinterpret_cast<char*>(data.data()), data.size() * sizeof(u32));
                     outfile.flush();
                     outfile.close();
                 }
@@ -366,27 +368,34 @@ namespace origin
         return shaderData;
     }
 
-    void Shader::Reflect(uint32_t stage, const std::vector<uint32_t> &code)
+    void Shader::Reflect(const u32 stage, const std::vector<u32> &code)
     {
         OGN_PROFILER_RENDERING();
 
-        spirv_cross::Compiler        compiler(code);
-        spirv_cross::ShaderResources resources = compiler.get_shader_resources();
-        OGN_CORE_TRACE("[Shader] Shader Reflect - {0}", GLShaderStageToString(stage));
-        OGN_CORE_TRACE("[Shader]     {0} uniform buffers", resources.uniform_buffers.size());
-        OGN_CORE_TRACE("[Shader]     {0} resources", resources.sampled_images.size());
+        const spirv_cross::Compiler        compiler(code);
+        auto [uniform_buffers, storage_buffers, stage_inputs,
+            stage_outputs, subpass_inputs, storage_images,
+            sampled_images, atomic_counters, acceleration_structures,
+            gl_plain_uniforms, push_constant_buffers,
+            shader_record_buffers, separate_images,
+            separate_samplers, builtin_inputs,
+            builtin_outputs] = compiler.get_shader_resources();
 
-        if (resources.uniform_buffers.size())
+        OGN_CORE_TRACE("[Shader] Shader Reflect - {0}", GLShaderStageToString(stage));
+        OGN_CORE_TRACE("[Shader]     {0} uniform buffers", uniform_buffers.size());
+        OGN_CORE_TRACE("[Shader]     {0} resources", sampled_images.size());
+
+        if (!uniform_buffers.empty())
         {
             OGN_CORE_TRACE("[Shader] Uniform buffers:");
-            for (const auto &resource : resources.uniform_buffers)
+            for (const auto & [id, type_id, base_type_id, name] : uniform_buffers)
             {
-                const auto &bufferType = compiler.get_type(resource.base_type_id);
-                uint32_t bufferSize    = compiler.get_declared_struct_size(bufferType);
-                uint32_t binding       = compiler.get_decoration(resource.id, spv::DecorationBinding);
-                int memberCount        = bufferType.member_types.size();
+                const auto &bufferType = compiler.get_type(base_type_id);
+                u32 bufferSize         = compiler.get_declared_struct_size(bufferType);
+                u32 binding            = compiler.get_decoration(id, spv::DecorationBinding);
+                size_t memberCount     = bufferType.member_types.size();
 
-                OGN_CORE_WARN( "[Shader]      Name = {0}", resource.name);
+                OGN_CORE_WARN( "[Shader]      Name = {0}", name);
                 OGN_CORE_TRACE("[Shader]      Size = {0}", bufferSize);
                 OGN_CORE_TRACE("[Shader]   Binding = {0}", binding);
                 OGN_CORE_TRACE("[Shader]   Members = {0}", memberCount);

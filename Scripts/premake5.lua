@@ -1,5 +1,7 @@
 -- Copyright (c) Evangelion Manuhutu | ORigin Engine
 -- Solution's Settings
+
+require "cmake"
 workspace "OR1"
     location "../"
     architecture "x64"

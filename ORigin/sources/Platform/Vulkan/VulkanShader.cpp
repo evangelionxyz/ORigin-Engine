@@ -8,7 +8,7 @@
 
 namespace origin
 {
-    static VkShaderStageFlagBits GetShaderStage(uint32_t stage)
+    static VkShaderStageFlagBits GetShaderStage(const u32 stage)
     {
         switch(stage)
         {
@@ -17,29 +17,32 @@ namespace origin
         }
 
         OGN_CORE_ASSERT(false, "[Vulkan Shader] Invalid stage.");
-        return (VkShaderStageFlagBits)0;
+        return static_cast<VkShaderStageFlagBits>(0);
     }
 
-    VulkanShader::VulkanShader(const std::filesystem::path &filepath, bool recompile)
+    VulkanShader::VulkanShader(const std::filesystem::path &filepath, const bool recompile)
         : m_Filepath(filepath), m_IsRecompile(recompile)
     {
-        OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Vulkan Shader] Filepath does not exists {}", filepath);
+        OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Vulkan Shader] Filepath does not exists {}",
+            filepath.generic_string());
+
         ShaderUtils::CreateCachedDirectoryIfNeeded();
-        std::string source         = Shader::ReadFile(filepath.string());
-        ShaderSource shaderSources = Shader::PreProcess(source, filepath.string());
-        ShaderData vulkanSpirv     = Shader::CompileOrGetVulkanBinaries(shaderSources, filepath.string());
-        VulkanContext *context     = VulkanContext::GetInstance();
+        const std::string source         = ReadFile(filepath.string());
+        const ShaderSource shaderSources = PreProcess(source, filepath.string());
+        ShaderData vulkanSpirv           = CompileOrGetVulkanBinaries(shaderSources, filepath.string());
+        const VulkanContext *context           = VulkanContext::GetInstance();
 
         for (auto &[stage, spirv] : vulkanSpirv)
         {
-            VkShaderModule shaderModule = CreateModule(spirv);
-            VkPipelineShaderStageCreateInfo createInfo{};
-            createInfo.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            createInfo.stage  = GetShaderStage(stage);
-            createInfo.module = shaderModule;
-            createInfo.pName  = "main";
-            m_Stages.push_back(createInfo);
-            vkDestroyShaderModule(context->m_Device, shaderModule, nullptr);
+            VkShaderModule shader_module = CreateModule(spirv);
+
+            VkPipelineShaderStageCreateInfo create_info{};
+            create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            create_info.stage  = GetShaderStage(stage);
+            create_info.module = shader_module;
+            create_info.pName  = "main";
+            m_Stages.push_back(create_info);
+            vkDestroyShaderModule(context->m_Device, shader_module, nullptr);
         }
     }
 
@@ -47,17 +50,18 @@ namespace origin
     {
     }
 
-    VkShaderModule VulkanShader::CreateModule(const std::vector<uint32_t> &spirv)
+    VkShaderModule VulkanShader::CreateModule(const std::vector<u32> &spirv)
     {
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = spirv.size() * sizeof(uint32_t);
-        createInfo.pCode = spirv.data();
-        VulkanContext *context = VulkanContext::GetInstance();
-        VkShaderModule shaderModule;
-        vkCreateShaderModule(context->m_Device, &createInfo, nullptr, &shaderModule);
+        VkShaderModuleCreateInfo create_info{};
+        create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        create_info.codeSize = spirv.size() * sizeof(u32);
+        create_info.pCode    = spirv.data();
 
-        return shaderModule;
+        const VulkanContext *vk_context = VulkanContext::GetInstance();
+        VkShaderModule module;
+        vkCreateShaderModule(vk_context->m_Device, &create_info, vk_context->m_Allocator, &module);
+
+        return module;
     }
 
     void VulkanShader::Reload()

@@ -7,13 +7,11 @@
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Core/Log.h"
 
-extern origin::Application* origin::CreateApplication(ApplicationCommandLineArgs args);
-
 namespace origin
 {
-	int Main(int argc, char** argv)
+	int Main(const int argc, char** argv)
 	{
-		Log::Init();
+		auto logger = Log();
 		OGN_PROFILER_START("ORiginEngine");
 		Application* app = CreateApplication({ argc, argv });
 		app->Run();
@@ -29,7 +27,7 @@ namespace origin
 	#endif
 #endif
 
-int main(int argc, char **argv)
+int main(const int argc, char **argv)
 {
 	return origin::Main(argc, argv);
 }

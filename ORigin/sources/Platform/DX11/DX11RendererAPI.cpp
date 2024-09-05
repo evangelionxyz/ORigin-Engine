@@ -14,12 +14,12 @@ namespace origin
 
 	void DX11RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
-		DX11Context::Get()->ResizeSwapChain(width, height);
+		DX11Context::GetInstance()->ResizeSwapChain(width, height);
 	}
 
 	void DX11RendererAPI::ClearColor(const glm::vec4 &color)
 	{
-		DX11Context::Get()->DeviceContext->ClearRenderTargetView(DX11Context::Get()->RenderTargetView, glm::value_ptr(color));
+		DX11Context::GetInstance()->DeviceContext->ClearRenderTargetView(DX11Context::GetInstance()->RenderTargetView, glm::value_ptr(color));
 	}
 
 	void DX11RendererAPI::ClearColor(float r, float g, float b, float a)
@@ -29,7 +29,7 @@ namespace origin
 
 	void DX11RendererAPI::Clear()
 	{
-		DX11Context::Get()->DeviceContext->OMSetRenderTargets(1, &DX11Context::Get()->RenderTargetView, nullptr);
+		DX11Context::GetInstance()->DeviceContext->OMSetRenderTargets(1, &DX11Context::GetInstance()->RenderTargetView, nullptr);
 	}
 
 	void DX11RendererAPI::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray, uint32_t IndexCount)

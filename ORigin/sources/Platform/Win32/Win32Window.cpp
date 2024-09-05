@@ -37,7 +37,9 @@ namespace origin {
         if (!m_MainWindow)
         {
             glfwTerminate();
-            MessageBox(nullptr, L"Failed to create window", L"glfwCreateWindow", 0);
+
+            MessageBox(nullptr, (const CHAR *)"Failed to create window",
+                (const CHAR *)"glfwCreateWindow", 0);
             exit(EXIT_FAILURE);
         }
 

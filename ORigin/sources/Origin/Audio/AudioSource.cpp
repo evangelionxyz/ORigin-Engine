@@ -6,19 +6,15 @@
 
 namespace origin
 {
-    void AudioSource::Play()
+    void AudioSource::Play() const
     {
         if (ma_sound_is_playing(m_Sounds[0]))
-        {
             return;
-        }
 
-        ma_result result = ma_sound_start(m_Sounds[0]);
-        if (result != MA_SUCCESS)
+        if (const ma_result result = ma_sound_start(m_Sounds[0]); result != MA_SUCCESS)
         {
             OGN_CORE_ERROR("[Audio Source] Failed to start sound: {0}", result);
             PUSH_CONSOLE_ERROR("[Audio Source] Failed to start sound: {0}", result);
-            return;
         }
     }
 
@@ -39,7 +35,7 @@ namespace origin
 		}
 	}
 
-    void AudioSource::PlayLooped()
+    void AudioSource::PlayLooped() const
     {
 		ma_sound_set_looping(m_Sounds[0], MA_TRUE);
 		ma_sound_start(m_Sounds[0]);
@@ -49,13 +45,12 @@ namespace origin
     {
 		if (!m_OverlappingAllowed)
 		{
-            OGN_CORE_ERROR("[Audio Source] Sound overlapping is not allowed", m_Name);
-			PUSH_CONSOLE_ERROR("[Audio Source] Sound overlapping is not allowed", m_Name);
+            OGN_CORE_ERROR("[Audio Source] Sound overlapping is not allowed {0}", m_Name);
+			PUSH_CONSOLE_ERROR("[Audio Source] Sound overlapping is not allowed {0}", m_Name);
 			return;
 		}
 
-        ma_result result = ma_sound_start(m_Sounds[m_OverlapIndex]);
-        if (result != MA_SUCCESS)
+		if (const ma_result result = ma_sound_start(m_Sounds[m_OverlapIndex]); result != MA_SUCCESS)
         {
             OGN_CORE_ERROR("[Audio Source] Failed to start overlapping: {0}", result);
             PUSH_CONSOLE_ERROR("[Audio Source] Failed to start overlapping: {0}", result);
@@ -68,7 +63,7 @@ namespace origin
         }
     }
 
-    void AudioSource::SetVolume(float volume)
+    void AudioSource::SetVolume(const float volume)
     {
         for (ma_sound *sound : m_Sounds)
         {
@@ -76,7 +71,7 @@ namespace origin
         }
     }
 
-    void AudioSource::SetPitch(float pitch)
+    void AudioSource::SetPitch(const float pitch)
     {
         for (ma_sound *sound : m_Sounds)
         {
@@ -84,7 +79,7 @@ namespace origin
         }
     }
 
-    void AudioSource::SetPaning(float pan)
+    void AudioSource::SetPanning(const float pan)
     {
         for (ma_sound *sound : m_Sounds)
         {
@@ -92,7 +87,7 @@ namespace origin
         }
     }
 
-    void AudioSource::SetPosition(const glm::vec3 &position, int index, ma_positioning mode)
+    void AudioSource::SetPosition(const glm::vec3 &position, const int index, const ma_positioning mode)
     {
         if (index == -1)
         {
@@ -109,47 +104,47 @@ namespace origin
         }
     }
 
-    bool AudioSource::IsPlaying()
-	{
+    bool AudioSource::IsPlaying() const
+    {
 		return ma_sound_is_playing(m_Sounds[0]) != 0;
 	}
 
-	bool AudioSource::IsPaused()
+	bool AudioSource::IsPaused() const
 	{
 		return ma_sound_is_playing(m_Sounds[0]) == 0;
 	}
 
-	bool AudioSource::IsLooping()
+	bool AudioSource::IsLooping() const
 	{
 		return ma_sound_is_looping(m_Sounds[0]);
 	}
 
-	bool AudioSource::IsSpatial()
+	bool AudioSource::IsSpatial() const
 	{
 		return ma_sound_is_spatialization_enabled(m_Sounds[0]);
 	}
 
-	float AudioSource::GetVolume()
+	float AudioSource::GetVolume() const
 	{
 		return ma_sound_get_volume(m_Sounds[0]);
 	}
 
-	float AudioSource::GetPitch()
+	float AudioSource::GetPitch() const
 	{
 		return ma_sound_get_pitch(m_Sounds[0]);
 	}
 
-	float AudioSource::GetMinDistance()
+	float AudioSource::GetMinDistance() const
 	{
 		return ma_sound_get_min_distance(m_Sounds[0]);
 	}
 
-	float AudioSource::GetMaxDistance()
+	float AudioSource::GetMaxDistance() const
 	{
 		return ma_sound_get_max_distance(m_Sounds[0]);
 	}
 
-	const glm::vec3 AudioSource::GetPosition(int index) const
+	glm::vec3 AudioSource::GetPosition(const int index) const
 	{
 		ma_vec3f p = ma_sound_get_position(m_Sounds[index]);
 		return { p.x, p.y, p.z };
@@ -168,7 +163,7 @@ namespace origin
 		m_Name = name;
 	}
 
-	void AudioSource::SetSpatial(bool enable)
+	void AudioSource::SetSpatial(const bool enable)
 	{
         for (ma_sound *sound : m_Sounds)
         {
@@ -176,7 +171,7 @@ namespace origin
         }
 	}
 
-	void AudioSource::SetMinMaxDistance(float minVal, float maxVal)
+	void AudioSource::SetMinMaxDistance(const float minVal, const float maxVal)
 	{
         for (ma_sound *sound : m_Sounds)
         {
@@ -187,44 +182,46 @@ namespace origin
 
     AudioSource::~AudioSource()
     {
-		for (ma_sound *sound : m_Sounds)
+		for (const ma_sound *sound : m_Sounds)
 		{
 			delete sound;
 		}
     }
 
-    void AudioSource::LoadSource(const std::string &name, const std::filesystem::path &filepath, bool looping, bool spatializing)
+    void AudioSource::LoadSource(const std::string &name, const std::filesystem::path &filepath,
+    	const bool looping, bool const spatial)
 	{
 		m_Filepath = filepath;
 
-		ma_sound *sound = new ma_sound;
+		auto *sound = new ma_sound;
 		AudioEngine::CreateSound(name.c_str(), filepath.generic_string().c_str(), sound);
-		m_Sounds.push_back(std::move(sound));
+		m_Sounds.push_back(sound);
 		SetLoop(looping);
-		SetSpatial(spatializing);
-		if (spatializing)
+		SetSpatial(spatial);
+		if (spatial)
 		{
-			float defMin = 10.0f;
-			float defMax = 20.0f;
+			constexpr float defMin = 10.0f;
+			constexpr float defMax = 20.0f;
 			SetMinMaxDistance(defMin, defMax);
 		}
 		IsLoaded = true;
 	}
 
-	void AudioSource::LoadStreamingSource(const std::string &name, const std::filesystem::path &filepath, bool looping, bool spatializing)
+	void AudioSource::LoadStreamingSource(const std::string &name, const std::filesystem::path &filepath,
+		const bool looping, const bool spatial)
 	{
 		m_Filepath = filepath;
 		m_Name = std::string(name);
 
-		ma_sound *sound = new ma_sound;
+		auto *sound = new ma_sound;
 		AudioEngine::CreateStreaming(name.c_str(), filepath.generic_string().c_str(), sound);
-		m_Sounds.push_back(std::move(sound));
+		m_Sounds.push_back(sound);
 		SetLoop(looping);
-		SetSpatial(spatializing);
-		if (spatializing)
+		SetSpatial(spatial);
+		if (spatial)
 		{
-			float defMin = 10.0f;
-			float defMax = 20.0f;
+			constexpr float defMin = 10.0f;
+			constexpr float defMax = 20.0f;
 			SetMinMaxDistance(defMin, defMax);
 		}
 		IsLoaded = true;
@@ -242,18 +239,19 @@ namespace origin
 		m_OverlapIndex = 0;
         for (int i = 0; i < m_MaxOverlap; ++i)
         {
-			ma_sound *sound = new ma_sound;
+			auto *sound = new ma_sound;
             AudioEngine::CreateStreaming(m_Name.c_str(), m_Filepath.generic_string().c_str(), sound);
-			m_Sounds.push_back(std::move(sound));
+			m_Sounds.push_back(sound);
         }
 
-        SetSpatial(m_IsSpatializing);
-        if (m_IsSpatializing)
+        SetSpatial(m_IsSpatial);
+        if (m_IsSpatial)
         {
-            float defMin = 10.0f;
-            float defMax = 20.0f;
+            constexpr float defMin = 10.0f;
+            constexpr float defMax = 20.0f;
             SetMinMaxDistance(defMin, defMax);
         }
+
 		m_OverlappingAllowed = true;
 		OGN_CORE_TRACE("[Audio Source] Sound {0} overlapping activated", m_Name);
 		PUSH_CONSOLE_INFO("[Audio Source] Sound {0} overlapping activated", m_Name);
@@ -264,6 +262,7 @@ namespace origin
 		m_Sounds.erase(m_Sounds.begin() + 1, m_Sounds.end());
 		m_OverlapIndex = 0;
 		m_OverlappingAllowed = false;
+
         OGN_CORE_TRACE("[Audio Source] Sound {0} overlapping deactivated", m_Name);
         PUSH_CONSOLE_INFO("[Audio Source] Sound {0} overlapping deactivated", m_Name);
     }

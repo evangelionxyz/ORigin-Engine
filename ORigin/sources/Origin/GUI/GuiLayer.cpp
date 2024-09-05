@@ -282,8 +282,9 @@ namespace origin
 #ifdef OGN_PLATFORM_WINDOWS
         case RendererAPI::API::DX11:
         {
+            DX11Context *dx_context = DX11Context::GetInstance();
             ImGui_ImplGlfw_InitForOther((GLFWwindow *)m_WindowContext->GetNativeWindow(), true);
-            ImGui_ImplDX11_Init(DX11Context::Get()->Device, DX11Context::Get()->DeviceContext);
+            ImGui_ImplDX11_Init(dx_context->Device, dx_context->DeviceContext);
             break;
         }
 #endif

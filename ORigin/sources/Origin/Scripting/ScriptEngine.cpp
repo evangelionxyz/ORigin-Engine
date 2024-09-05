@@ -16,8 +16,6 @@
 #include <mono/metadata/object.h>
 #include <mono/metadata/tabledefs.h>
 #include <mono/metadata/debug-helpers.h>
-#include <mono/metadata/mono-config.h>
-#include <mono/metadata/mono-gc.h>
 #include <cstdlib>
 #include <FileWatch.hpp>
 
@@ -45,7 +43,7 @@ namespace origin
 
 	namespace Utils
 	{
-		static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* outSize)
+		static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* out_size)
 		{
 			OGN_PROFILER_FUNCTION();
 
@@ -55,18 +53,21 @@ namespace origin
 			if (!stream)
 				return nullptr;
 
-			std::streampos end = stream.tellg();
+			const size_t end = stream.tellg();
 			stream.seekg(0, std::ios::beg);
-			uint32_t size = end - stream.tellg();
+
+			const u32 size = end - stream.tellg();
 
 			// file is empty
-			if (size == 0)
+			if (!size)
+			{
 				return nullptr;
+			}
 
-			auto* buffer = new char[size];
-			stream.read((char*)buffer, size);
+			char* buffer = new char[size];
+			stream.read(static_cast<std::istream::char_type*>(reinterpret_cast<void *>(buffer)), size);
 
-			*outSize = size;
+			*out_size = size;
 			return buffer;
 		}
 
@@ -75,22 +76,24 @@ namespace origin
 			OGN_PROFILER_FUNCTION();
 
 			uint32_t fileSize = 0;
-			char* fileData = ReadBytes(filepath, &fileSize);
+			char* file_data = ReadBytes(filepath, &fileSize);
 
 			MonoImageOpenStatus status;
-			MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
+			MonoImage* image = mono_image_open_from_data_full(file_data, fileSize, 1, &status, 0);
 
 			if (status != MONO_IMAGE_OK)
 			{
-				const char* errorMessage = mono_image_strerror(status);
+				const char* error_message = mono_image_strerror(status);
+				OGN_CORE_ERROR("{}", error_message);
 				return nullptr;
 			}
-			std::string assemblyPath = filepath.string();
-			MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.c_str(), &status, 0);
+
+			const std::string &assembly_path = filepath.generic_string();
+			MonoAssembly* assembly = mono_assembly_load_from_full(image, assembly_path.c_str(), &status, 0);
 			mono_image_close(image);
 
 			// don't forget to free the file data
-			delete[] fileData;
+			delete[] file_data;
 
 			return assembly;
 		}
@@ -100,31 +103,31 @@ namespace origin
 			OGN_PROFILER_FUNCTION();
 
 			MonoImage* image = mono_assembly_get_image(assembly);
-			const MonoTableInfo* typeDefinitionTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-			int32_t numTypes = mono_table_info_get_rows(typeDefinitionTable);
+			const MonoTableInfo* type_definition_table = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+			const i32 num_types = mono_table_info_get_rows(type_definition_table);
 
-			for (int32_t i = 0; i < numTypes; i++)
+			for (i32 i = 0; i < num_types; i++)
 			{
-				uint32_t cols[MONO_TYPEDEF_SIZE];
-				mono_metadata_decode_row(typeDefinitionTable, i, cols, MONO_TYPEDEF_SIZE);
+				u32 cols[MONO_TYPEDEF_SIZE];
+				mono_metadata_decode_row(type_definition_table, i, cols, MONO_TYPEDEF_SIZE);
 
-				const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+				const char* name_space = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 
-				OGN_CORE_TRACE("{0}.{1}", nameSpace, name);
+				OGN_CORE_TRACE("{0}.{1}", name_space, name);
 			}
 		}
 
-		ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
+		ScriptFieldType MonoTypeToScriptFieldType(MonoType* mono_type)
 		{
 			OGN_PROFILER_LOGIC();
 
-			std::string typeName = mono_type_get_name(monoType);
+			std::string type_name = mono_type_get_name(mono_type);
 
-			auto it = s_ScriptFieldTypeMap.find(typeName);
+			const auto it = s_ScriptFieldTypeMap.find(type_name);
 			if (it == s_ScriptFieldTypeMap.end())
 			{
-				OGN_CORE_ERROR("Unkown Field Type : {}", typeName);
+				OGN_CORE_ERROR("Unkown Field Type : {}", type_name);
 				return ScriptFieldType::Invalid;
 			}
 			return it->second;
@@ -169,10 +172,12 @@ namespace origin
 		mono_set_dirs("/usr/lib", "/etc/mono");
 		setenv("LD_LIBRARY_PATH", "/usr/lib", 1);
 #endif
-		MonoDomain *rootDomain = mono_jit_init("ORiginJITRuntime");
-		OGN_CORE_ASSERT(rootDomain, "[Script Engine] Mono Domain is NULL!");
-		s_ScriptEngineData->RootDomain = rootDomain;
+		MonoDomain *root_domain = mono_jit_init("ORiginJITRuntime");
+		OGN_CORE_ASSERT(root_domain, "[Script Engine] Mono Domain is NULL!");
+
+		s_ScriptEngineData->RootDomain = root_domain;
 		OGN_CORE_TRACE("[Script Engine] MONO Initialized");
+
 		const char *mono_version = mono_get_runtime_build_info();
 		OGN_CORE_TRACE("[Script Engine] MONO Version: {0}", mono_version);
 	}
@@ -182,7 +187,9 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		if (!s_ScriptEngineData)
+		{
 			return;
+		}
 
 		mono_domain_set(mono_get_root_domain(), false);
 
@@ -200,12 +207,11 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		std::filesystem::path appAssemblyPath = Project::GetActiveProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
+		const auto app_assembly_path = Project::GetActiveProjectDirectory() / Project::GetActive()->GetConfig().ScriptModulePath;
 
 		if (s_ScriptEngineData)
 		{
-			s_ScriptEngineData->AppAssemblyFilepath = appAssemblyPath.generic_string();
-
+			s_ScriptEngineData->AppAssemblyFilepath = app_assembly_path.generic_string();
 			ReloadAssembly();
 			return;
 		}
@@ -218,7 +224,7 @@ namespace origin
 		// Script Core Assembly
 		OGN_CORE_ASSERT(std::filesystem::exists("Resources/ScriptCore/ORigin-ScriptCore.dll"), "[Script Engine] Script core assembly not found!");
 		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
-		LoadAppAssembly(appAssemblyPath);
+		LoadAppAssembly(app_assembly_path);
 		LoadAssemblyClasses();
 
 		// storing classes name into storage
@@ -236,8 +242,12 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 
 		ShutdownMono();
+
 		if (!s_ScriptEngineData)
+		{
 			return;
+		}
+
 		s_ScriptEngineData->EntityClasses.clear();
 		s_ScriptEngineData->EntityInstances.clear();
 
@@ -261,7 +271,9 @@ namespace origin
 
 		s_ScriptEngineData->CoreAssembly = Utils::LoadMonoAssembly(filepath);
 		if (s_ScriptEngineData->CoreAssembly == nullptr)
+		{
 			return false;
+		}
 
 		s_ScriptEngineData->CoreAssemblyImage = mono_assembly_get_image(s_ScriptEngineData->CoreAssembly);
 		return true;
@@ -287,17 +299,17 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		if (!std::filesystem::exists(filepath))
+		if (!exists(filepath))
 		{
-			auto buildScriptPath = Project::GetActive()->GetProjectDirectory() / "build.bat";
-			Utils::ExecuteScript(buildScriptPath.generic_string());
+			const auto build_path = Project::GetActive()->GetProjectDirectory() / "build.bat";
+			Utils::ExecuteScript(build_path.generic_string());
 		}
 
 		s_ScriptEngineData->AppAssemblyFilepath = filepath;
 		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		if (!s_ScriptEngineData->AppAssembly)
 		{
-			OGN_CORE_ASSERT(false, "[Script Engine] App Assembly is empty {0}", filepath);
+			OGN_CORE_ASSERT(false, "[Script Engine] App Assembly is empty {}", filepath.generic_string());
 			return false;
 		}
 
@@ -358,7 +370,7 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 		if(s_ScriptEngineData)
 		{
-			return s_ScriptEngineData->EntityClasses.find(fullClassName) != s_ScriptEngineData->EntityClasses.end();
+			return !s_ScriptEngineData->EntityClasses.contains(fullClassName);
 		}
 		return false;		
 	}
@@ -367,18 +379,17 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		auto &sc = entity.GetComponent<ScriptComponent>();
-		if (EntityClassExists(sc.ClassName))
+		if (const auto &sc = entity.GetComponent<ScriptComponent>(); EntityClassExists(sc.ClassName))
 		{
-			UUID entityID = entity.GetUUID();
+			const UUID entity_id = entity.GetUUID();
 
-			std::shared_ptr<ScriptInstance> instance = std::make_shared<ScriptInstance>(s_ScriptEngineData->EntityClasses[sc.ClassName], entity);
-			s_ScriptEngineData->EntityInstances[entityID] = instance;
+			const auto instance = std::make_shared<ScriptInstance>(s_ScriptEngineData->EntityClasses[sc.ClassName], entity);
+			s_ScriptEngineData->EntityInstances[entity_id] = instance;
 
 			// Copy Fields Value from Editor to Runtime
-			if (s_ScriptEngineData->EntityScriptFields.find(entityID) != s_ScriptEngineData->EntityScriptFields.end())
+			if (s_ScriptEngineData->EntityScriptFields.contains(entity_id))
 			{
-				ScriptFieldMap &fieldMap = s_ScriptEngineData->EntityScriptFields.at(entityID);
+				ScriptFieldMap &fieldMap = s_ScriptEngineData->EntityScriptFields.at(entity_id);
 				const auto classFields = instance->GetScriptClass()->GetFields();
 
 				if (fieldMap.size() != classFields.size())
@@ -387,7 +398,7 @@ namespace origin
                     std::vector<std::string> keysToRemove;
                     for (const auto &[fieldName, field] : fieldMap)
                     {
-                        if (classFields.find(fieldName) == classFields.end())
+                        if (!classFields.contains(fieldName))
                         {
                             keysToRemove.push_back(fieldName);
                         }
@@ -405,7 +416,7 @@ namespace origin
 					// Check invalid type
 					if (fieldInstance.Field.Type == ScriptFieldType::Invalid)
 					{
-						ScriptFieldType type = instance->GetScriptClass()->GetFields()[name].Type;
+						const ScriptFieldType type = instance->GetScriptClass()->GetFields()[name].Type;
 						fieldInstance.Field.Type = type;
 						OGN_CORE_WARN("[Script Engine] Checking invalid type {0}", name);
 						PUSH_CONSOLE_WARNING("[Script Engine] Checking invalid type {0}", name);
@@ -415,19 +426,19 @@ namespace origin
 					{
 					case ScriptFieldType::Entity:
 					{
-						uint64_t uuid = *(uint64_t *)fieldInstance.m_Buffer;
+						uint64_t uuid = *reinterpret_cast<uint64_t*>(fieldInstance.m_Buffer);
 						if (uuid == 0)
 						{
-							OGN_CORE_ERROR("[Script Engine] Field '{0}' (Entity class) is not assigned yet", name);
-							PUSH_CONSOLE_ERROR("[Script Engine] Field '{0}' (Entity class) is not assigned yet", name);
+							OGN_CORE_ERROR("[Script Engine] Field '{}' (Entity class) is not assigned yet", name);
+							PUSH_CONSOLE_ERROR("[Script Engine] Field '{}' (Entity class) is not assigned yet", name);
 							continue;
 						}
 
 						MonoMethod *ctorMethod = s_ScriptEngineData->EntityClass.GetMethod(".ctor", 1);
 						if (!ctorMethod)
 						{
-							OGN_CORE_ERROR("[Script Engine] Failed to find constructor");
-							PUSH_CONSOLE_ERROR("[Script Engine] Failed to find constructor {0}", name);
+							OGN_CORE_ERROR("[Script Engine] Failed to find constructor {}", name);
+							PUSH_CONSOLE_ERROR("[Script Engine] Failed to find constructor {}", name);
 							continue;
 						}
 
@@ -435,8 +446,8 @@ namespace origin
 						MonoObject *entityInstance = ScriptEngine::InstantiateObject(s_ScriptEngineData->EntityClass.m_MonoClass);
 						if (!entityInstance)
 						{
-							OGN_CORE_ERROR("[Script Engine] Failed to create Entity instance.");
-							PUSH_CONSOLE_ERROR("[Script Engine] Failed to create Entity instance. {0}", name);
+							OGN_CORE_ERROR("[Script Engine] Failed to create Entity instance. {}", name);
+							PUSH_CONSOLE_ERROR("[Script Engine] Failed to create Entity instance. {}", name);
 							continue;
 						}
 
@@ -468,16 +479,15 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		UUID entityID = entity.GetUUID();
-		const auto &it = s_ScriptEngineData->EntityInstances.find(entityID);
-		if (it == s_ScriptEngineData->EntityInstances.end())
+		const UUID entity_id = entity.GetUUID();
+		if (const auto &it = s_ScriptEngineData->EntityInstances.find(entity_id); it == s_ScriptEngineData->EntityInstances.end())
 		{
-			//OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0}", entity.GetTag(), entityID);
-			//PUSH_CONSOLE_ERROR("[Script Engine] Entity script instance is not attached! {0}", entityID);
+			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {} {}", entity.GetTag(), entity_id);
+			PUSH_CONSOLE_ERROR("[Script Engine] Entity script instance is not attached! {}", entity_id);
 			return;
 		}
 
-		std::shared_ptr<ScriptInstance> instance = s_ScriptEngineData->EntityInstances.at(entityID);
+		const auto instance = s_ScriptEngineData->EntityInstances.at(entity_id);
 		instance->InvokeOnUpdate(time);
 	}
 
@@ -493,8 +503,10 @@ namespace origin
 
     std::shared_ptr<ScriptClass> ScriptEngine::GetEntityClassesByName(const std::string &name)
 	{
-		if (s_ScriptEngineData->EntityClasses.find(name) == s_ScriptEngineData->EntityClasses.end())
+		if (!s_ScriptEngineData->EntityClasses.contains(name))
+		{
 			return nullptr;
+		}
 
 		return s_ScriptEngineData->EntityClasses.at(name);
 	}
@@ -510,8 +522,8 @@ namespace origin
 
 		OGN_CORE_ASSERT(entity.IsValid(), "[Script Engine] Failed to get entity");
 
-		UUID entityID = entity.GetUUID();
-		return s_ScriptEngineData->EntityScriptFields[entityID];
+		const UUID entity_id = entity.GetUUID();
+		return s_ScriptEngineData->EntityScriptFields[entity_id];
 	}
 
 	std::vector<std::string> ScriptEngine::GetScriptClassStorage()
@@ -526,8 +538,8 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Failed to find {0}", uuid);
-			PUSH_CONSOLE_ERROR("[Script Engine] Failed to find {0} ", (uint64_t)uuid);
+			OGN_CORE_ERROR("[Script Engine] Failed to find {}", uuid);
+			PUSH_CONSOLE_ERROR("[Script Engine] Failed to find {} ", uuid);
 			return nullptr;
 		}
 
@@ -553,10 +565,10 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 
-		if (s_ScriptEngineData->EntityInstances.find(uuid) == s_ScriptEngineData->EntityInstances.end())
+		if (!s_ScriptEngineData->EntityInstances.contains(uuid))
 		{
-			PUSH_CONSOLE_ERROR("[Script Engine] Invalid Script Instance {0}", (uint64_t)uuid);
-			OGN_CORE_ASSERT(false, "[Script Engine] Invalid Script Instance");
+			PUSH_CONSOLE_ERROR("[Script Engine] Invalid Script Instance {}", uuid);
+			OGN_CORE_ASSERT(false, "[Script Engine] Invalid Script Instance {}", uuid);
 		}
 
 		return s_ScriptEngineData->EntityInstances.at(uuid)->GetMonoObject();
@@ -582,54 +594,57 @@ namespace origin
 
 		s_ScriptEngineData->EntityClasses.clear();
 
-		const MonoTableInfo *typeDefinitionTable = mono_image_get_table_info(s_ScriptEngineData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
-		int32_t numTypes = mono_table_info_get_rows(typeDefinitionTable);
-		MonoClass *entityClass = mono_class_from_name(s_ScriptEngineData->CoreAssemblyImage, "ORiginEngine", "Entity");
+		const MonoTableInfo *typeDefinitionTable = mono_image_get_table_info(s_ScriptEngineData->AppAssemblyImage,
+			MONO_TABLE_TYPEDEF);
 
-		for (int32_t i = 0; i < numTypes; i++)
+		const i32 num_types = mono_table_info_get_rows(typeDefinitionTable);
+		MonoClass *entity_class = mono_class_from_name(s_ScriptEngineData->CoreAssemblyImage,
+			"ORiginEngine", "Entity");
+
+		for (i32 i = 0; i < num_types; i++)
 		{
-			uint32_t cols[MONO_TYPEDEF_SIZE];
+			u32 cols[MONO_TYPEDEF_SIZE];
 			mono_metadata_decode_row(typeDefinitionTable, i, cols, MONO_TYPEDEF_SIZE);
 
 			const char *nameSpace = mono_metadata_string_heap(s_ScriptEngineData->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
 			const char *className = mono_metadata_string_heap(s_ScriptEngineData->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
 
-			std::string fullName;
+			std::string full_name = className;
+
 			if (strlen(nameSpace) != 0)
 			{
-				fullName = fmt::format("{}.{}", nameSpace, className);
+				full_name = fmt::format("{}.{}", nameSpace, className);
 			}
-			else
+
+			MonoClass *mono_class = mono_class_from_name(s_ScriptEngineData->AppAssemblyImage, nameSpace, className);
+			if (mono_class == entity_class)
 			{
-				fullName = className;
+				continue;
 			}
 
-			MonoClass *monoClass = mono_class_from_name(s_ScriptEngineData->AppAssemblyImage, nameSpace, className);
+			if (const bool is_entity_master_class = mono_class_is_subclass_of(mono_class,
+				entity_class, false); !is_entity_master_class)
+			{
+				continue;
+			}
 
-			if (monoClass == entityClass) continue;
+			const auto script_class = std::make_shared<ScriptClass>(nameSpace, className);
+			s_ScriptEngineData->EntityClasses[full_name] = script_class;
 
-			const bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
-			if (!isEntity) continue;
-
-			std::shared_ptr<ScriptClass> scriptClass = std::make_shared<ScriptClass>(nameSpace, className);
-			s_ScriptEngineData->EntityClasses[fullName] = scriptClass;
-
-			int fieldCount = mono_class_num_fields(monoClass);
 			void *iterator = nullptr;
 
-			while (MonoClassField *field = mono_class_get_fields(monoClass, &iterator))
+			while (MonoClassField *field = mono_class_get_fields(mono_class, &iterator))
 			{
 				const char *fieldName = mono_field_get_name(field);
-				uint32_t flags = mono_field_get_flags(field);
-				if (flags & FIELD_ATTRIBUTE_PUBLIC)
+				if (const uint32_t flags = mono_field_get_flags(field); flags & FIELD_ATTRIBUTE_PUBLIC)
 				{
 					MonoType *type = mono_field_get_type(field);
-					ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
-					scriptClass->m_Fields[fieldName] = { fieldType, fieldName, field };
+					const ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+					script_class->m_Fields[fieldName] = { fieldType, fieldName, field };
 				}
 			}
 		}
 
-		auto &entityClasses = s_ScriptEngineData->EntityClasses;
+		auto &entity_classes = s_ScriptEngineData->EntityClasses;
 	}
 }

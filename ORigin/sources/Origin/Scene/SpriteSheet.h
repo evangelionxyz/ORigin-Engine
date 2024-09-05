@@ -21,7 +21,7 @@ namespace origin
 	{
 	public:
 		SpriteSheet() = default;
-		SpriteSheet(const std::filesystem::path &filepath);
+		explicit SpriteSheet(const std::filesystem::path &filepath);
 
 		void SetMainTexture(AssetHandle handle);
 
@@ -29,9 +29,9 @@ namespace origin
 		static std::shared_ptr<SpriteSheet> Create(const std::filesystem::path &filepath);
 
 		static AssetType GetStaticType() { return AssetType::SpritesSheet; }
-		virtual AssetType GetType() const { return GetStaticType(); }
+		[[nodiscard]] AssetType GetType() const override { return GetStaticType(); }
 
-		const AssetHandle GetTextureHandle() const { return m_TextureHandle; }
+		[[nodiscard]] AssetHandle GetTextureHandle() const { return m_TextureHandle; }
 		std::vector<SpriteSheetData> Sprites;
 	private:
 		std::filesystem::path m_Filepath;

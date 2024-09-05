@@ -5,18 +5,11 @@
 
 #include "Origin/Renderer/GraphicsContext.h"
 
-#ifdef OGN_PLATFORM_WINDOWS
-    #define VK_USE_PLATFORM_WIN32_KHR
-#endif
-
-#include <vulkan/vulkan.h>
-
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 namespace origin
 {
-
     static void VkErrorCheck(VkResult err)
     {
         if (err == 0)
@@ -38,7 +31,7 @@ namespace origin
         VkExtent2D Extent;
     };
 
-    class VulkanContext : public GraphicsContext
+    class VulkanContext final : public GraphicsContext
     {
     public:
         VulkanContext();
@@ -59,7 +52,7 @@ namespace origin
         void SetRebuildSwapchain(bool enable)   { m_RebuildSwapchain = enable; }
         bool IsRebuildSwapcahin()               { return m_RebuildSwapchain; }
         int GetVkMinImageCount()                { return m_MinImageCount; }
-        uint32_t GetVkQueueFamily()             { return m_QueueFamily; }
+        u32 GetVkQueueFamily()                  { return m_QueueFamily; }
         VkAllocationCallbacks *GetVkAllocator() { return m_Allocator;}
         VkDevice GetVkDevice()                  { return m_Device; }
         VkInstance GetVkInstance()              { return m_Instance; }
@@ -72,23 +65,23 @@ namespace origin
 
     private:
         // Context
-        VkAllocationCallbacks *m_Allocator      = NULL;
+        VkAllocationCallbacks *m_Allocator      = VK_NULL_HANDLE;
         VkInstance             m_Instance       = VK_NULL_HANDLE;
         VkSurfaceKHR           m_Surface        = VK_NULL_HANDLE;
         VkPhysicalDevice       m_PhysicalDevice = VK_NULL_HANDLE;
         VkDevice               m_Device         = VK_NULL_HANDLE;
         VkDescriptorPool       m_DescriptorPool = VK_NULL_HANDLE;
         VkQueue                m_Queue          = VK_NULL_HANDLE;
-        uint32_t               m_QueueFamily    = (uint32_t)-1;
+        u32                    m_QueueFamily    = (u32)-1;
         VkPipelineCache        m_PipelineCache  = VK_NULL_HANDLE;
-        VkComponentMapping     m_SwapchainComponentsMapping;
-        uint32_t               m_SwapchainBuffering;
-        VkClearValue           m_ClearValue;
-        GLFWwindow            *m_WindowHandle;
+        VkComponentMapping     m_SwapchainComponentsMapping{};
+        u32                    m_SwapchainBuffering = 0;
+        VkClearValue           m_ClearValue{};
+        GLFWwindow            *m_WindowHandle  = nullptr;
         Swapchain              m_Swapchain;
         bool                   m_RebuildSwapchain = false;
         int                    m_MinImageCount = 2;
-        static inline uint32_t s_CurrentFrameIndex = 0;
+        static inline u32 s_CurrentFrameIndex = 0;
 
         friend class VulkanShader;
         friend class VulkanRendererAPI;

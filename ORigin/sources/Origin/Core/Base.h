@@ -38,5 +38,6 @@
 
 #include "Origin/Core/Log.h"
 #include "Origin/Core/Assert.h"
+#include "Origin/Core/Types.h"
 
 #endif
