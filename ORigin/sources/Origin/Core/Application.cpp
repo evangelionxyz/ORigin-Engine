@@ -53,8 +53,8 @@ namespace origin {
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
         m_InputHandle.Init(m_Window->GetNativeWindow());
 
-        m_GuiLayer = std::make_unique<GuiLayer>(m_Window);
-        PushOverlay(m_GuiLayer.get());
+        m_GuiLayer = new GuiLayer(m_Window);
+        PushOverlay(m_GuiLayer);
 
         PhysicsEngine::Init();
         AudioEngine::Init();

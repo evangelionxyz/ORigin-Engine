@@ -19,6 +19,7 @@ project "Sandbox"
         "FreeType",
         "YAMLCPP",
         "JOLT",
+        "FMT",
     }
 
     targetdir ("%{wks.location}/Binaries/%{cfg.buildcfg}/ORigin")

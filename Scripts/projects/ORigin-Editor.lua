@@ -20,6 +20,7 @@ project "Editor"
         "FreeType",
         "YAMLCPP",
         "JOLT",
+        "FMT",
     }
 
     files {

@@ -45,15 +45,15 @@ def RegisterMSBuild():
 if premakeInstalled:
     RegisterEngineEnvVariable()
     if platform.system() == "Windows":
-        print("\n>> Generating OR1.sln...")
-        premake_path = os.path.abspath("./Scripts/premake5.bat")
-        subprocess.call([premake_path, "nopause"])
+        #print("\n>> Generating OR1.sln...")
+        #premake_path = os.path.abspath("./Scripts/premake5.bat")
+        #subprocess.call([premake_path, "nopause"])
         RegisterMSBuild()
     elif platform.system() == "Linux":
-        print("\n>> Generating GNU Makefiles...")
-        premake_path = os.path.abspath("./Scripts/premake5.sh")
-        os.chmod(premake_path, 0o755)
-        subprocess.call([premake_path])
+        #print("\n>> Generating GNU Makefiles...")
+        #premake_path = os.path.abspath("./Scripts/premake5.sh")
+        #os.chmod(premake_path, 0o755)
+        #subprocess.call([premake_path])
     else:
         print(">> Unsupported platform.")
 

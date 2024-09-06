@@ -22,6 +22,7 @@ project "Runtime"
         "FreeType",
         "YAMLCPP",
         "JOLT",
+        "FMT",
     }
 
     files {

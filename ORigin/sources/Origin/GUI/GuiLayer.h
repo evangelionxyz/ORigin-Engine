@@ -17,7 +17,6 @@ namespace origin
     {
     public:
         GuiLayer(const std::shared_ptr<Window> &window);
-        ~GuiLayer();
 
         void Init();
         void OnAttach() override;

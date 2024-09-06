@@ -57,14 +57,14 @@ namespace origin {
         bool GetMinimized() const { return m_Minimized; }
         Window &GetWindow() const { return *m_Window.get(); }
         const ApplicationSpecification& GetSpecification() const { return m_Spec; }
-        GuiLayer *GetGuiLayer() { return m_GuiLayer.get(); }
+        GuiLayer *GetGuiLayer() { return m_GuiLayer; }
         bool SetVSync = false;
 
     private:
         std::unique_ptr<ConsoleManager> m_ConsoleManager;
         ApplicationSpecification m_Spec;
         LayerStack m_LayerStack;
-        std::unique_ptr<GuiLayer> m_GuiLayer, *m_SplashScreenGui;
+        GuiLayer *m_GuiLayer;
         Input m_InputHandle;
         std::shared_ptr<Window> m_Window;
         static Application* s_Instance;

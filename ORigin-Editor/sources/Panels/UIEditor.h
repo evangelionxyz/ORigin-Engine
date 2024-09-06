@@ -9,48 +9,48 @@
 
 namespace origin
 {
-	class UIComponent;
-	class UIEditor
-	{
-	public:
-		UIEditor(Scene *scene);
-		void SetContext(Scene *scene);
-		void SetActive(UIComponent *component);
-		void CreateNewText();
-		void CreateNewTexture();
-		bool RenameComponent(int index, const std::string &newName);
+    class UIComponent;
+    class UIEditor
+    {
+    public:
+        UIEditor(Scene *scene);
+        void SetContext(Scene *scene);
+        void SetActive(UIComponent *component);
+        void CreateNewText();
+        void CreateNewTexture();
+        bool RenameComponent(int index, const std::string &newName);
 
-		void OnUpdate(Timestep ts);
-		void OnImGuiRender();
+        void OnUpdate(Timestep ts);
+        void OnImGuiRender();
 
-		void OnEvent(Event &e);
-		bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
-		bool OnKeyPressed(KeyPressedEvent &e);
-		void OnMouse(float ts);
+        void OnEvent(Event &e);
+        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+        bool OnKeyPressed(KeyPressedEvent &e);
+        void OnMouse(float ts);
 
-		void Open();
+        void Open();
 
-		static UIEditor *Get();
+        static UIEditor *Get();
 
-		bool IsViewportFocused = false;
-		bool IsViewportHovered = false;
-		bool IsOpened = false;
+        bool IsViewportFocused = false;
+        bool IsViewportHovered = false;
+        bool IsOpened = false;
 
-	private:
-		void DrawInspector();
-		void DrawHierarchy();
+    private:
+        void DrawInspector();
+        void DrawHierarchy();
 
-		Scene *m_Scene = nullptr;
-		EditorCamera m_Camera;
-		UIComponent *m_UICompHandler = nullptr;
+        Scene *m_Scene = nullptr;
+        EditorCamera m_Camera;
+        UIComponent *m_UICompHandler = nullptr;
 
-		std::shared_ptr<Framebuffer> m_Framebuffer;
+        std::shared_ptr<Framebuffer> m_Framebuffer;
 
-		glm::vec2 m_EditorViewportSize = { 1.0f, 1.0f };
-		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
-		glm::ivec2 m_Mouse = { 0, 0 };
-		glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
-		int m_SelectedIndex = 0;
-	};
+        glm::vec2 m_EditorViewportSize = { 1.0f, 1.0f };
+        glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+        glm::ivec2 m_Mouse = { 0, 0 };
+        glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
+        int m_SelectedIndex = 0;
+    };
 
 }

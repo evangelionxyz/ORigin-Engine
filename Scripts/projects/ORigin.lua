@@ -57,9 +57,10 @@ project "ORigin"
         "FreeType",
         "YAMLCPP",
         "JOLT",
+        "FMT",
     }
     
-    defines { "GLFW_INCLUDE_NONE", "_CRT_SECURE_NO_WARNINGS" }
+    defines { "_CRT_SECURE_NO_WARNINGS" }
 
     -- ////////////////////////////////
     -- Windows

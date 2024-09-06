@@ -364,11 +364,6 @@ namespace origin
         Init();
     }
 
-    GuiLayer::~GuiLayer()
-    {
-        OnDetach();
-    }
-
     void GuiLayer::Begin()
     {
         ImGui_ImplGlfw_NewFrame();

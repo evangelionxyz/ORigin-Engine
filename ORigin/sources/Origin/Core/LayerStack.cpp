@@ -38,6 +38,10 @@ namespace origin
     void LayerStack::Shutdown()
     {
         for (Layer* layer : m_Layers) 
+        {
+            layer->OnDetach();
             delete layer;
+        }
+            
     }
 }

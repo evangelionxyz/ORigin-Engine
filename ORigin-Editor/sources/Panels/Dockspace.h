@@ -4,11 +4,11 @@
 
 namespace origin {
 
-	class Dockspace
-	{
-	public:
-		Dockspace() = default;
-		void Begin();
-		void End();
-	};
+    class Dockspace
+    {
+    public:
+        Dockspace() = default;
+        void Begin();
+        void End();
+    };
 }

@@ -10,7 +10,6 @@ namespace origin
     {
     public:
         SandboxLayer();
-        ~SandboxLayer();
 
         void OnAttach() override;
         void OnUpdate(Timestep ts) override;

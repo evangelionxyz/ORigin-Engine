@@ -5,17 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch Sandbox",
+            "name": "(gdb) Launch Editor",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Binaries/Debug/ORigin/Sandbox",
+            "program": "${workspaceFolder}/out/build/linux-debug/ORigin-Editor/Editor",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/ORigin-Editor/",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "preLaunchTask": "build_sandbox",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

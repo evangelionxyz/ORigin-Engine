@@ -21,10 +21,6 @@ void SandboxLayer::OnAttach()
 {
 }
 
-SandboxLayer::~SandboxLayer()
-{
-}
-
 void SandboxLayer::OnUpdate(Timestep ts)
 {
     RenderCommand::Clear();
