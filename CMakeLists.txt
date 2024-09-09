@@ -4,22 +4,12 @@ project(OR1)
 set(CMAKE_CXX_STANDARD 20)
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(THIRD_PARTY_DIR ${ROOT_DIR}/Engine/ThirdParty)
-
-set(BUILD_DIR ${ROOT_DIR}/Engine/Build)
-set(THIRD_BUILD_PARTY_DIR ${ROOT_DIR}/Engine/Build/ThirdParty)
+set(EDITOR_LIB_DIR ${ROOT_DIR}/Engine/Editor/Lib)
+set(BUILD_DIR ${ROOT_DIR}/Engine/Build/CMake)
+set(THIRD_BUILD_PARTY_DIR ${ROOT_DIR}/Engine/Build/CMake/ThirdParty)
 
 if (WIN32)
-    if(NOT DEFINED ENV{VULKAN_SDK})
-        message(FATAL_ERROR "[ORigin] VULKAN_SDK environment variable not defined. Please install the Vulkan SDK and set the environment variable.")
-    endif()
-    
-    set(VULKAN_INCLUDE_DIR $ENV{VULKAN_SDK}/Include)
-    set(VULKAN_LIBRARY_DIR $ENV{VULKAN_SDK}/Lib)
-
     message("[ORigin] Platform: Win32")
-    message("[ORigin] Vulkan include dir: ${VULKAN_INCLUDE_DIR}")
-    message("[ORigin] Vulkan lib dir: ${VULKAN_LIBRARY_DIR}")
-
     # Enable Hot Reload for MSVC compilers if supported.
     if (POLICY CMP0141)
     cmake_policy(SET CMP0141 NEW)

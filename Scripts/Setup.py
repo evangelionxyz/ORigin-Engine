@@ -7,16 +7,11 @@ os.chdir('./../')
 from SetupPython import PythonConfiguration as PythonRequirements
 PythonRequirements.Validate()
 
-from SetupVulkan import VulkanConfiguration as VulkanRequirements
-if platform.system() == "Windows":
-    VulkanRequirements.Validate()
-
 from SetupPremake import PremakeConfiguration as PremakeRequirements
 premakeInstalled = PremakeRequirements.Validate()
 
 print(">> Updating submodules...")
 subprocess.call(["git", "submodule", "update", "--init", "--recursive"])
-
 
 # Registering ORigin Engine to Environment
 # To handle project builder

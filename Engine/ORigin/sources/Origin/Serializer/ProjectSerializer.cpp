@@ -56,7 +56,7 @@ namespace origin
 			m_Project->GetEditorAssetManager()->SerializeAssetRegistry();
 		}
 
-		OGN_CORE_INFO("[ProjectSerialzier] Project serialized in {0}", filepath.string());
+		OGN_CORE_INFO("[Project Serialzer] Project serialized in {0}", filepath.string());
 		return true;
 	}
 

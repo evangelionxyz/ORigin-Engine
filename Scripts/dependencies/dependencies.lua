@@ -4,8 +4,6 @@ IncludeDir = {}
 LibraryDir = {}
 Library = {}
 
-VULKAN_SDK = os.getenv("VULKAN_SDK" or "VK_SDK_PATH")
-
 IncludeDir["GLFW"]                     = "%{THIRD_PARTY_DIR}/origin-glfw/include"
 IncludeDir["GLAD"]                     = "%{THIRD_PARTY_DIR}/glad/include"
 IncludeDir["ASSIMP"]                   = "%{THIRD_PARTY_DIR}/Assimp/include"
@@ -26,17 +24,20 @@ IncludeDir["MSDFGEN"]                  = "%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdf
 IncludeDir["JOLT"]                     = "%{THIRD_PARTY_DIR}/JoltPhysics"
 
 -- Windows
-Library["MONO"]                        = "%{THIRD_PARTY_DIR}/mono/win32/libmono-static-sgen.lib"
-IncludeDir["VulkanSDK"]                = "%{VULKAN_SDK}/Include/" -- includes
-LibraryDir["VulkanSDK"]                = "%{VULKAN_SDK}/Lib/" -- library
-Library["Vulkan1Lib"]                  = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
-Library["ShaderC_Debug"]               = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
-Library["SPIRV_Cross_Debug"]           = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"
-Library["SPIRV_Cross_GLSL_Debug"]      = "%{LibraryDir.VulkanSDK}/spirv-cross-glsld.lib"
-Library["SPIRV_Tools_Debug"]           = "%{LibraryDir.VulkanSDK}/SPIRV-Toolsd.lib"
-Library["ShaderC_Release"]             = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
-Library["SPIRV_Cross_Release"]         = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
-Library["SPIRV_Cross_GLSL_Release"]    = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+EDITOR_LIB_DIR                         = "%{wks.location}Engine/Editor/Lib/"
+Library["MONO"]                        = "%{EDITOR_LIB_DIR}/Mono/Win32/libmono-static-sgen.lib"
+
+IncludeDir["VulkanSDK"]                = "%{THIRD_PARTY_DIR}/Vulkan/Include" -- includes
+LibraryDir["VulkanSDK"]                = "%{EDITOR_LIB_DIR}/Vulkan/Win32" -- library
+Library["Vulkan1Lib"]                  = "%{EDITOR_LIB_DIR}/Vulkan/Win32/vulkan-1.lib"
+
+Library["ShaderC_Debug"]               = "%{EDITOR_LIB_DIR}/ShaderC/Win32/shaderc_sharedd.lib"
+Library["SPIRV_Cross_Debug"]           = "%{EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-cored.lib"
+Library["SPIRV_Cross_GLSL_Debug"]      = "%{EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-glsld.lib"
+Library["SPIRV_Tools_Debug"]           = "%{EDITOR_LIB_DIR}/ShaderC/Win32/SPIRV-Toolsd.lib"
+Library["ShaderC_Release"]             = "%{EDITOR_LIB_DIR}/ShaderC/Win32/shaderc_shared.lib"
+Library["SPIRV_Cross_Release"]         = "%{EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-core.lib"
+Library["SPIRV_Cross_GLSL_Release"]    = "%{EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-glsl.lib"
 
 Library["WinSock"]                     = "Ws2_32.lib"
 Library["WinMM"]                       = "Winmm.lib"

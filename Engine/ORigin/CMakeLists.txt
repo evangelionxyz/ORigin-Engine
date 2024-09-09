@@ -244,7 +244,7 @@ if (WIN32)
 
     target_include_directories(ORigin PRIVATE
         ${THIRD_PARTY_DIR}/mono/include
-        ${VULKAN_INCLUDE_DIR}
+        ${THIRD_PARTY_DIR}/Vulkan/Include
     )
 
     target_compile_definitions(ORigin PRIVATE
@@ -262,21 +262,21 @@ if (WIN32)
         Winmm.lib
         Version.lib
         Bcrypt.lib
-        ${THIRD_PARTY_DIR}/mono/win32/libmono-static-sgen.lib
+        ${EDITOR_LIB_DIR}/Mono/Win32/libmono-static-sgen.lib
     )
 
     # Vulkan
     if (CMAKE_BUILD_TYPE STREQUAL Debug)
         target_link_libraries(ORigin
-            ${VULKAN_LIBRARY_DIR}/shaderc_sharedd.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-cored.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-glsld.lib
+            ${EDITOR_LIB_DIR}/ShaderC/Win32/shaderc_sharedd.lib
+            ${EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-cored.lib
+            ${EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-glsld.lib
         )
     else()
         target_link_libraries(ORigin
-            ${VULKAN_LIBRARY_DIR}/shaderc_shared.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-core.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-glsl.lib
+            ${EDITOR_LIB_DIR}/ShaderC/Win32/shaderc_shared.lib
+            ${EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-core.lib
+            ${EDITOR_LIB_DIR}/ShaderC/Win32/spirv-cross-glsl.lib
         )
     endif()
 elseif (UNIX AND NOT APPLE)

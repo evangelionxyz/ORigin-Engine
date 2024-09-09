@@ -8,7 +8,7 @@ project "ORigin"
     location "%{wks.location}/Engine/ORigin"
 
     pchheader "pch.h"
-    pchsource "%{prj.location}/sources/pch.cpp"
+    pchsource "sources/pch.cpp"
 
     targetdir (outputDir)
     objdir (intOutputDir)
@@ -21,6 +21,8 @@ project "ORigin"
         "sources/Origin/**.h",
         "sources/Platform/OpenGL/**.cpp",
         "sources/Platform/OpenGL/**.h",
+        "sources/Platform/Vulkan/**.cpp",
+        "sources/Platform/Vulkan/**.h",
     }
 
     includedirs {

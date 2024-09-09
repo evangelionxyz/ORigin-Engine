@@ -22,7 +22,7 @@
 target_include_directories(IMGUI PRIVATE
     ${THIRD_PARTY_DIR}/imgui
     ${THIRD_PARTY_DIR}/origin-glfw/include
-    ${VULKAN_INCLUDE_DIR}
+    ${THIRD_PARTY_DIR}/Vulkan/Include
 )
 
 if (WIN32)

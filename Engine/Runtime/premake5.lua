@@ -7,6 +7,7 @@ project "Runtime"
     kind "ConsoleApp"
     location "%{wks.location}/Engine/Runtime"
 
+    debugdir (outputDir)
     targetdir (outputDir)
     objdir (intOutputDir)
 

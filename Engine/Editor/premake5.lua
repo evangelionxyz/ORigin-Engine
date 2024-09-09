@@ -6,6 +6,7 @@ project "Editor"
     staticruntime "off"
     location "%{wks.location}/Engine/Editor"
 
+    debugdir (outputDir)
     targetdir (outputDir)
     objdir (intOutputDir)
 

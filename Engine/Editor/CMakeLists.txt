@@ -45,17 +45,13 @@ target_include_directories(Editor PRIVATE
 )
 
 add_dependencies(Editor ORigin)
-
-target_link_libraries(Editor
-    ORigin
-)
+target_link_libraries(Editor ORigin)
 
 if (WIN32)
     target_include_directories(Editor PRIVATE
         ${THIRD_PARTY_DIR}/mono/include
-        ${VULKAN_INCLUDE_DIR}
+        ${THIRD_PARTY_DIR}/Vulkan/Include
     )
-
     target_compile_definitions(Editor PRIVATE
         NOMINMAX
         _CRT_SECURE_NO_WARNINGS
@@ -64,43 +60,12 @@ if (WIN32)
         _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
         _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
     )
-
-    target_link_libraries(Editor
-        opengl32.lib
-        Ws2_32.lib
-        Winmm.lib
-        Version.lib
-        Bcrypt.lib
-        ${THIRD_PARTY_DIR}/mono/win32/libmono-static-sgen.lib
-    )
-
-    # Vulkan
-    if (CMAKE_BUILD_TYPE STREQUAL Debug)
-        target_link_libraries(Editor
-            ${VULKAN_LIBRARY_DIR}/shaderc_sharedd.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-cored.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-glsld.lib
-        )
-    else()
-        target_link_libraries(Editor
-            ${VULKAN_LIBRARY_DIR}/shaderc_shared.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-core.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-glsl.lib
-        )
-    endif()
 elseif (UNIX AND NOT APPLE)
         target_include_directories(Editor PRIVATE
-            ${THIRD_PARTY_DIR}/mono/include
             /usr/include
-        )
-        target_link_libraries(Editor
-            vulkan
-            shaderc_shared
-            spirv-cross-core
-            spirv-cross-glsl
+            ${THIRD_PARTY_DIR}/mono/include
         )
         target_compile_definitions(Editor PRIVATE OGN_PLATFORM_LINUX)
-        target_link_directories(Editor PRIVATE usr/lib)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)

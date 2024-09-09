@@ -1,5 +1,5 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
-project "ORigin-ScriptCore"
+project "ScriptCore"
     kind "SharedLib"
     language "C#"
     dotnetframework "4.8"

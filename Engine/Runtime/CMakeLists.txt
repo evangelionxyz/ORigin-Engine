@@ -32,9 +32,8 @@ target_link_libraries(Runtime ORigin)
 if (WIN32)
     target_include_directories(Runtime PRIVATE
         ${THIRD_PARTY_DIR}/mono/include
-        ${VULKAN_INCLUDE_DIR}
+        ${THIRD_PARTY_DIR}/Vulkan/Include
     )
-
     target_compile_definitions(Runtime PRIVATE
         NOMINMAX
         _CRT_SECURE_NO_WARNINGS
@@ -42,33 +41,6 @@ if (WIN32)
         _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
         _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
     )
-
-    target_link_libraries(Runtime
-        opengl32.lib
-        Ws2_32.lib
-        Winmm.lib
-        Version.lib
-        Bcrypt.lib
-        ${THIRD_PARTY_DIR}/mono/win32/libmono-static-sgen.lib
-        ${VULKAN_LIBRARY_DIR}/vulkan-1.lib
-    )
-
-    # Vulkan
-    if (CMAKE_BUILD_TYPE STREQUAL Debug)
-        target_link_libraries(Runtime
-            ${VULKAN_LIBRARY_DIR}/shaderc_sharedd.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-cored.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-glsld.lib
-            ${VULKAN_LIBRARY_DIR}/SPIRV-Toolsd.lib
-        )
-    else()
-        target_link_libraries(Runtime
-            ${VULKAN_LIBRARY_DIR}/shaderc_shared.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-core.lib
-            ${VULKAN_LIBRARY_DIR}/spirv-cross-glsl.lib
-            ${VULKAN_LIBRARY_DIR}/SPIRV-Tools.lib
-        )
-    endif()
 elseif (UNIX AND NOT APPLE)
         target_include_directories(Runtime PRIVATE /usr/include)
         target_compile_definitions(Runtime PRIVATE OGN_PLATFORM_LINUX)

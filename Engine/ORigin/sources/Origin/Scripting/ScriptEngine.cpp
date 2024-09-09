@@ -166,7 +166,7 @@ namespace origin
 	{
 		OGN_PROFILER_LOGIC();
 #ifdef _WIN32
-    	mono_set_assemblies_path("lib");
+    	mono_set_assemblies_path("Lib");
 #elif __linux__
     	mono_set_assemblies_path("/usr/lib");
 		mono_set_dirs("/usr/lib", "/etc/mono");
@@ -222,8 +222,8 @@ namespace origin
 		ScriptGlue::RegisterFunctions();
 
 		// Script Core Assembly
-		OGN_CORE_ASSERT(std::filesystem::exists("Resources/ScriptCore/ORigin-ScriptCore.dll"), "[Script Engine] Script core assembly not found!");
-		LoadAssembly("Resources/ScriptCore/ORigin-ScriptCore.dll");
+		OGN_CORE_ASSERT(std::filesystem::exists("ScriptCore.dll"), "[Script Engine] Script core assembly not found!");
+		LoadAssembly("ScriptCore.dll");
 		LoadAppAssembly(app_assembly_path);
 		LoadAssemblyClasses();
 
