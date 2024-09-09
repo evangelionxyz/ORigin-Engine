@@ -1,15 +1,15 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "GLAD"
-    location (vendorProjectFiles)
+    location (ThirdPartyProjectFiles)
     kind "StaticLib"
 	language "C"
     staticruntime "off"
 
-    targetdir (vendorOutputdir)
-    objdir (vendorIntOutputdir)
+    targetdir (ThirdPartyOutputdir)
+    objdir (ThirdPartyIntOutputdir)
 
-    files { "%{wks.location}/ORigin/vendor/glad/src/glad.c"}
+    files { "%{THIRD_PARTY_DIR}/glad/src/glad.c"}
     includedirs { "%{IncludeDir.GLAD}" }
     flags { 'NoPCH' }
 

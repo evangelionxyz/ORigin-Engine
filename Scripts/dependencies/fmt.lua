@@ -1,21 +1,21 @@
 project "FMT"
-    location (vendorProjectFiles)
+    location (ThirdPartyProjectFiles)
     kind "StaticLib"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
 
-    targetdir (vendorOutputdir)
-    objdir (vendorIntOutputdir)
+    targetdir (ThirdPartyOutputdir)
+    objdir (ThirdPartyIntOutputdir)
 
     files {
-        "%{wks.location}/ORigin/vendor/FMT/src/fmt.cc",
-        "%{wks.location}/ORigin/vendor/FMT/src/format",
-        "%{wks.location}/ORigin/vendor/FMT/src/os.cc",
+        "%{THIRD_PARTY_DIR}/FMT/src/format.cc",
+        "%{THIRD_PARTY_DIR}/FMT/src/os.cc",
+        "%{THIRD_PARTY_DIR}/FMT/include/**.h",
     }
 
     includedirs {
-        "%{wks.location}/ORigin/vendor/FMT/include"
+        "%{THIRD_PARTY_DIR}/FMT/include"
     }
 
     filter "system:linux"
@@ -23,16 +23,21 @@ project "FMT"
 
     filter "system:windows"
         systemversion "latest"
+        defines { "WIN32", "_WINDOWS", "_UNICODE" }
+        buildoptions { "/utf-8" }
 
     filter "configurations:Debug"
+        defines "DEBUG"
         runtime "Debug"
         symbols "on"
 
     filter "configurations:Release"
+        defines "NDEBUG"
         runtime "Release"
-        optimize "on"
+        symbols "on"
+        optimize "full"
 
     filter "configurations:Dist"
+        defines "NDEBUG"
         runtime "Release"
-        optimize "on"
-    
+        optimize "full"

@@ -1,6 +1,5 @@
 *.ipch
 *.vcxproj
-*.csproj
 *.filters
 *.user
 *.vcxproj.filters
@@ -11,25 +10,12 @@
 *.cdr
 *.opt
 *.codelite
+Makefile
 CMakeCache.txt
 
-# Visual Studio extension resources
-ORigin.sln.startup.json
-ORigin.sln.licenseheader
-
-# folders
-build
-Binaries
-bin
-Bin-Int
-Makefile
+Engine/Build
 Scripts/__pycache__
 Scripts/premake
-ORigin/vendor/VulkanSDK
-ORigin/vendor/projectFiles
-ORigin-Editor/Resources/Cache
-ORigin-Editor/Resources/ScriptCore
-Sandbox/Makefile
-SandboxGame/bin
-SandboxGame/bin-int
-out
+Engine/ThirdParty/VulkanSDK
+Engine/Editor/Resources/Cache
+Engine/Editor/Resources/ScriptCore

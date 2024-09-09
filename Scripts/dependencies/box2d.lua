@@ -1,22 +1,22 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "BOX2D"
-  location (vendorProjectFiles)
+  location (ThirdPartyProjectFiles)
   kind "StaticLib"
     language "C++"
     cppdialect "C++11"
     staticruntime "off"
 
-    targetdir (vendorOutputdir)
-    objdir (vendorIntOutputdir)
+    targetdir (ThirdPartyOutputdir)
+    objdir (ThirdPartyIntOutputdir)
 
    files {
-        "%{wks.location}/ORigin/vendor/Box2D/src/**.cpp",
+        "%{THIRD_PARTY_DIR}/Box2D/src/**.cpp",
     }
 
     includedirs {
-        "%{wks.location}/ORigin/vendor/Box2D/include",
-        "%{wks.location}/ORigin/vendor/Box2D/src"
+        "%{THIRD_PARTY_DIR}/Box2D/include",
+        "%{THIRD_PARTY_DIR}/Box2D/src"
     }
 
     filter "system:linux"

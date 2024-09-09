@@ -1,7 +1,7 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "MSDFGEN"
-	location (vendorProjectFiles)
+	location (ThirdPartyProjectFiles)
 	kind "StaticLib"
 	language "C++"
 	cppdialect "c++11"
@@ -9,42 +9,42 @@ project "MSDFGEN"
 
 	links "freetype"
 
-	targetdir (vendorOutputdir)
-	objdir (vendorIntOutputdir)
+	targetdir (ThirdPartyOutputdir)
+	objdir (ThirdPartyIntOutputdir)
 
 	files {
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Contour.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/contour-combiners.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/edge-coloring.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/EdgeHolder.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/edge-segments.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/edge-selectors.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/equation-solver.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/msdf-error-correction.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/MSDFErrorCorrection.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/msdfgen.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Projection.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/rasterization.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/render-sdf.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/save-bmp.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/save-tiff.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Scanline.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/sdf-error-estimation.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Shape.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/shape-description.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/SignedDistance.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/core/Vector2.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/import-font.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/import-svg.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/resolve-shape-geometry.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/ext/save-png.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/lib/lodepng.cpp",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/lib/tinyxml2.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/Contour.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/contour-combiners.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/edge-coloring.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/EdgeHolder.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/edge-segments.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/edge-selectors.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/equation-solver.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/msdf-error-correction.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/MSDFErrorCorrection.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/msdfgen.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/Projection.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/rasterization.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/render-sdf.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/save-bmp.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/save-tiff.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/Scanline.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/sdf-error-estimation.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/Shape.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/shape-description.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/SignedDistance.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/core/Vector2.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/ext/import-font.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/ext/import-svg.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/ext/resolve-shape-geometry.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/ext/save-png.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/lib/lodepng.cpp",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/lib/tinyxml2.cpp",
 	}
 
 	includedirs {
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/include",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/freetype/include"
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/include",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/freetype/include"
 	}
 
 	defines { "MSDF_USE_CPP11" }

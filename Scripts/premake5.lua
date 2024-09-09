@@ -13,15 +13,22 @@ workspace "OR1"
     flags{ "MultiProcessorCompile" }
 
     startproject "Editor"
-    vendorProjectFiles = "%{wks.location}/ORigin/vendor/projectFiles"
-    vendorOutputdir = "%{prj.location}/bin/%{cfg.buildcfg}/%{prj.name}"
-    vendorIntOutputdir = "%{prj.location}/bin-int/%{cfg.buildcfg}/%{prj.name}"
+    BUILD_DIR              = "%{wks.location}/Engine/Build"
+    THIRD_PARTY_DIR        = "%{wks.location}/Engine/ThirdParty"
+
+    outputDir              = "%{BUILD_DIR}/%{cfg.buildcfg}/Binaries"
+    intOutputDir           = "%{BUILD_DIR}/%{cfg.buildcfg}/Objs/%{prj.name}"
+
+    ThirdPartyProjectFiles = "%{THIRD_PARTY_DIR}/ProjectFiles"
+    ThirdPartyOutputdir    = "%{BUILD_DIR}/%{cfg.buildcfg}Binaries/ThirdParty/%{prj.name}"
+    ThirdPartyIntOutputdir = "%{BUILD_DIR}/%{cfg.buildcfg}Objs/ThirdParty/%{prj.name}"
+    
     include "dependencies/dependencies.lua"
 
 group "Engine"
-    include "projects/ORigin.lua"
-    include "projects/ORigin-Editor.lua"
-    include "projects/ORigin-Runtime.lua"
-    include "projects/ORigin-ScriptCore.lua"
-    include "projects/Sandbox.lua"
+    include "../Engine/ORigin/premake5.lua"
+    include "../Engine/Editor/premake5.lua"
+    include "../Engine/Runtime/premake5.lua"
+    include "../Engine/ScriptCore/premake5.lua"
+    include "../Engine/Sandbox/premake5.lua"
 group ""
