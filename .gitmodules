@@ -1,31 +1,31 @@
-[submodule "Engine/ThirdParty/glm"]
-	path = Engine/ThirdParty/glm
+[submodule "ORigin/vendor/glm"]
+	path = ORigin/vendor/glm
 	url = https://github.com/kaks-ev/glm.git
-[submodule "Engine/ThirdParty/ImGuizmo"]
-	path = Engine/ThirdParty/ImGuizmo
+[submodule "ORigin/vendor/ImGuizmo"]
+	path = ORigin/vendor/ImGuizmo
 	url = https://github.com/kaks-ev/ImGuizmo.git
-[submodule "Engine/ThirdParty/Box2D"]
-	path = Engine/ThirdParty/Box2D
+[submodule "ORigin/vendor/Box2D"]
+	path = ORigin/vendor/Box2D
 	url = https://github.com/erincatto/box2d.git
-[submodule "Engine/ThirdParty/yaml-cpp"]
-	path = Engine/ThirdParty/yaml-cpp
+[submodule "ORigin/vendor/yaml-cpp"]
+	path = ORigin/vendor/yaml-cpp
 	url = https://github.com/kaks-ev/yaml-cpp.git
-[submodule "Engine/ThirdParty/mono"]
-	path = Engine/ThirdParty/mono
+[submodule "ORigin/vendor/mono"]
+	path = ORigin/vendor/mono
 	url = https://github.com/kaks-ev/mono.git
-[submodule "Engine/ThirdParty/msdf-atlas-gen"]
-	path = Engine/ThirdParty/msdf-atlas-gen
+[submodule "ORigin/vendor/msdf-atlas-gen"]
+	path = ORigin/vendor/msdf-atlas-gen
 	url = https://github.com/kaks-ev/msdf-atlas-gen.git
-[submodule "Engine/ThirdParty/JoltPhysics"]
-	path = Engine/ThirdParty/JoltPhysics
+[submodule "ORigin/vendor/JoltPhysics"]
+	path = ORigin/vendor/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "Engine/ThirdParty/origin-glfw"]
-	path = Engine/ThirdParty/origin-glfw
+[submodule "ORigin/vendor/origin-glfw"]
+	path = ORigin/vendor/origin-glfw
 	url = https://github.com/evangelionmanuhutu/origin-glfw.git
-[submodule "Engine/ThirdParty/imgui"]
-	path = Engine/ThirdParty/imgui
+[submodule "ORigin/vendor/imgui"]
+	path = ORigin/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "Engine/ThirdParty/FMT"]
-	path = Engine/ThirdParty/FMT
+[submodule "ORigin/vendor/FMT"]
+	path = ORigin/vendor/FMT
 	url = https://github.com/fmtlib/fmt.git
