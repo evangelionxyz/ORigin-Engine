@@ -1,31 +1,3 @@
-[submodule "ORigin/vendor/glm"]
-	path = ORigin/vendor/glm
-	url = https://github.com/kaks-ev/glm.git
-[submodule "ORigin/vendor/ImGuizmo"]
-	path = ORigin/vendor/ImGuizmo
-	url = https://github.com/kaks-ev/ImGuizmo.git
-[submodule "ORigin/vendor/Box2D"]
-	path = ORigin/vendor/Box2D
-	url = https://github.com/erincatto/box2d.git
-[submodule "ORigin/vendor/yaml-cpp"]
-	path = ORigin/vendor/yaml-cpp
-	url = https://github.com/kaks-ev/yaml-cpp.git
-[submodule "ORigin/vendor/mono"]
-	path = ORigin/vendor/mono
-	url = https://github.com/kaks-ev/mono.git
-[submodule "ORigin/vendor/msdf-atlas-gen"]
-	path = ORigin/vendor/msdf-atlas-gen
-	url = https://github.com/kaks-ev/msdf-atlas-gen.git
-[submodule "ORigin/vendor/JoltPhysics"]
-	path = ORigin/vendor/JoltPhysics
-	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "ORigin/vendor/origin-glfw"]
-	path = ORigin/vendor/origin-glfw
-	url = https://github.com/evangelionmanuhutu/origin-glfw.git
-[submodule "ORigin/vendor/imgui"]
-	path = ORigin/vendor/imgui
+[submodule "Engine/ThirdParty/IMGUI"]
+	path = Engine/ThirdParty/IMGUI
 	url = https://github.com/ocornut/imgui.git
-	branch = docking
-[submodule "ORigin/vendor/FMT"]
-	path = ORigin/vendor/FMT
-	url = https://github.com/fmtlib/fmt.git
