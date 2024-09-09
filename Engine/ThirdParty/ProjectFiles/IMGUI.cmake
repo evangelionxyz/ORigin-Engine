@@ -21,7 +21,7 @@
 
 target_include_directories(IMGUI PRIVATE
     ${THIRD_PARTY_DIR}/imgui
-    ${THIRD_PARTY_DIR}/origin-glfw/include
+    ${THIRD_PARTY_DIR}/GLFW/include
     ${THIRD_PARTY_DIR}/Vulkan/Include
 )
 

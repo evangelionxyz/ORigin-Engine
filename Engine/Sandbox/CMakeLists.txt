@@ -9,21 +9,22 @@ add_dependencies(Sandbox ORigin)
 target_include_directories(Sandbox PRIVATE
   sources
   ${ROOT_DIR}/Engine/ORigin/sources
-  ${THIRD_PARTY_DIR}/spdlog/include
   ${THIRD_PARTY_DIR}/Assimp/include
-  ${THIRD_PARTY_DIR}/origin-glfw/include
-  ${THIRD_PARTY_DIR}/glad/include
   ${THIRD_PARTY_DIR}/Box2D/include
-  ${THIRD_PARTY_DIR}/entt
+  ${THIRD_PARTY_DIR}/FMT/include
+  ${THIRD_PARTY_DIR}/stb
+  ${THIRD_PARTY_DIR}/GLFW/include
+  ${THIRD_PARTY_DIR}/IMGUI
+  ${THIRD_PARTY_DIR}/IMGUIZMO
+  ${THIRD_PARTY_DIR}/glad/include
+  ${THIRD_PARTY_DIR}/GLM
   ${THIRD_PARTY_DIR}/miniaudio
-  ${THIRD_PARTY_DIR}/imgui
-  ${THIRD_PARTY_DIR}/ImGuizmo
-  ${THIRD_PARTY_DIR}/glm
-  ${THIRD_PARTY_DIR}/yaml-cpp/include
-  ${THIRD_PARTY_DIR}/JoltPhysics
-  ${THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen
-  ${THIRD_PARTY_DIR}/msdf-atlas-gen/msdf-atlas-gen
-  ${VULKAN_INCLUDE_DIR}
+  ${THIRD_PARTY_DIR}/entt
+  ${THIRD_PARTY_DIR}/Filewatcher/include
+  ${THIRD_PARTY_DIR}/YAMLCPP/include
+  ${THIRD_PARTY_DIR}/JOLTPHYSICS
+  ${THIRD_PARTY_DIR}/MSDFATLASGEN/msdfgen
+  ${THIRD_PARTY_DIR}/MSDFATLASGEN/msdf-atlas-gen
 )
 
 add_dependencies(Sandbox ORigin)

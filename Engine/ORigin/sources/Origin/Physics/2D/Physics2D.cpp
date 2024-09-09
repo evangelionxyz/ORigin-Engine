@@ -7,11 +7,6 @@
 #include "Origin/Scene/Components/Components.h"
 
 #include "box2d/box2d.h"
-#include "box2d/b2_world.h"
-#include "box2d/b2_fixture.h"
-#include "box2d/b2_polygon_shape.h"
-#include "box2d/b2_circle_shape.h"
-#include "box2d/b2_joint.h"
 
 #include "Contact2DListener.h"
 

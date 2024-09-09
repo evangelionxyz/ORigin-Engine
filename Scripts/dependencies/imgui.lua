@@ -36,7 +36,7 @@ project "IMGUI"
 
   includedirs {
     "%{THIRD_PARTY_DIR}/imgui",
-    "%{THIRD_PARTY_DIR}/origin-glfw/include",
+    "%{THIRD_PARTY_DIR}/GLFW/include",
     "%{IncludeDir.VulkanSDK}"
   }
 
