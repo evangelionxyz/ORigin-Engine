@@ -736,6 +736,8 @@ namespace origin
             ImGui::EndDragDropTarget();
         }
 
+        m_ImGuizmoOperation = ImGuizmo::OPERATION::NONE;
+
         float snapValue = 0.5f;
         switch (m_Gizmos->GetType())
         {
