@@ -18,11 +18,8 @@
 
 #include <mono/metadata/object.h>
 #include <mono/metadata/reflection.h>
-#include <box2d/b2_body.h>
-#include <box2d/b2_body.h>
-#include <box2d/b2_fixture.h>
-#include <box2d/b2_polygon_shape.h>
-#include <box2d/b2_circle_shape.h>
+#include <box2d/box2d.h>
+#include <box2d/types.h>
 
 #ifdef __linux
 	#include <cxxabi.h>
@@ -140,7 +137,7 @@ namespace origin
 		{
 			Entity copyEntity = scene->DuplicateEntity(entity);
 			copyEntity.GetComponent<TransformComponent>().WorldTranslation = translation;
-			scene->GetPhysics2D()->OnInstantiateScriptEntity(copyEntity);
+			scene->GetPhysics2D()->OnInstantiateEntity(copyEntity);
 			PhysicsEngine::InstantiateEntity(copyEntity);
 			return copyEntity.GetUUID();
 		}
@@ -158,7 +155,7 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			scene->GetPhysics2D()->OnDestroyScriptEntity(entity);
+			scene->GetPhysics2D()->OnDestroyEntity(entity);
 			PhysicsEngine::DestroyEntity(entity);
 			scene->DestroyEntity(entity);
 		}
@@ -390,10 +387,8 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
-
-			body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+			b2Body_SetLinearVelocity(body.BodyId, b2Vec2(velocity.x, velocity.y));
 		}
 	}
 
@@ -406,10 +401,8 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
-			auto v = body->GetLinearVelocity();
-
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+			b2Vec2 v = b2Body_GetLinearVelocity(body.BodyId);
 			*velocity = glm::vec2(v.x, v.y);
 		}
 	}
@@ -423,9 +416,9 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
 			std::string contactName = Utils::MonoStringToString(contactWith);
-			return rb2d.ContactWith == contactName;
+			return body.ContactWith == contactName;
 		}
 
 		OGN_CORE_ERROR("[ScriptGlue] Invalid entity ID: {}", entityID);
@@ -441,8 +434,8 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			return ScriptEngine::CreateString(rb2d.ContactWith.c_str());
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+			return ScriptEngine::CreateString(body.ContactWith.c_str());
 		}
 
 		OGN_CORE_ERROR("[ScriptGlue] Invalid entity ID: {}", entityID);
@@ -458,9 +451,8 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
-			body->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), b2Vec2(point.x, point.y), wake);
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+			b2Body_ApplyLinearImpulse(body.BodyId, b2Vec2(impulse.x, impulse.y), b2Vec2(point.x, point.y), wake);
 		}
 	}
 
@@ -474,9 +466,8 @@ namespace origin
 
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
-			body->ApplyLinearImpulseToCenter(b2Vec2(impulse.x, impulse.y), wake);
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+			b2Body_ApplyLinearImpulseToCenter(body.BodyId, b2Vec2(impulse.x, impulse.y), wake);
 		}
 	}
 
@@ -489,9 +480,8 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
-			body->ApplyForce(b2Vec2(force.x, force.y), b2Vec2(point.x, point.y), wake);
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+			b2Body_ApplyForce(body.BodyId, b2Vec2(force.x, force.y), b2Vec2(point.x, point.y), wake);
 		}
 	}
 
@@ -504,9 +494,8 @@ namespace origin
 		Entity entity = scene->GetEntityWithUUID(entityID);
 		if (entity.IsValid())
 		{
-			auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
-			body->ApplyForceToCenter(b2Vec2(force.x, force.y), wake);
+			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+			b2Body_ApplyForceToCenter(body.BodyId, b2Vec2(force.x, force.y), wake);
 		}
 	}
 
@@ -1268,32 +1257,6 @@ namespace origin
 		}
 	}
 
-	static void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityID, float *outRestitutionThreshold)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			*outRestitutionThreshold = entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold;
-		}
-	}
-
-	static void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityID, float restitutionThreshold)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			entity.GetComponent<BoxCollider2DComponent>().RestitutionThreshold = restitutionThreshold;
-		}
-	}
-
 	static void CircleCollider2DComponent_GetOffset(UUID entityID, glm::vec2 *outOffset)
 	{
 		OGN_PROFILER_LOGIC();
@@ -1421,32 +1384,6 @@ namespace origin
 		if (entity.IsValid())
 		{
 			entity.GetComponent<CircleCollider2DComponent>().Restitution = restitution;
-		}
-	}
-
-	static void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityID, float *outRestitutionThreshold)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			*outRestitutionThreshold = entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold;
-		}
-	}
-
-	static void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityID, float restitutionThreshold)
-	{
-		OGN_PROFILER_LOGIC();
-
-		Scene *scene = ScriptEngine::GetSceneContext();
-		OGN_CORE_ASSERT(scene, "[ScriptGlue] Invalid Scene");
-		Entity entity = scene->GetEntityWithUUID(entityID);
-		if (entity.IsValid())
-		{
-			entity.GetComponent<CircleCollider2DComponent>().RestitutionThreshold = restitutionThreshold;
 		}
 	}
 
@@ -2115,8 +2052,6 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetFriction);
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetRestitution);
 		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetRestitution);
-		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_GetRestitutionThreshold);
-		OGN_ADD_INTERNAL_CALLS(BoxCollider2DComponent_SetRestitutionThreshold);
 
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetOffset);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetOffset);
@@ -2128,8 +2063,6 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetFriction);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitution);
 		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitution);
-		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_GetRestitutionThreshold);
-		OGN_ADD_INTERNAL_CALLS(CircleCollider2DComponent_SetRestitutionThreshold);
 
 		OGN_ADD_INTERNAL_CALLS(SpriteAnimationComponent_SetActiveState);
 		OGN_ADD_INTERNAL_CALLS(SpriteAnimationComponent_GetActiveState);

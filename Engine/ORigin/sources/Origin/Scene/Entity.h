@@ -61,6 +61,7 @@ namespace origin {
 		EntityType GetType() { return GetComponent<IDComponent>().Type; }
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 		Scene *GetScene() const { return m_Scene; }
+		entt::entity GetHandle() { return m_EntityHandle; }
 
 		bool IsValid() const
 		{

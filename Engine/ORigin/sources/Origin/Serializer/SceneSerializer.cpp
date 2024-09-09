@@ -515,12 +515,10 @@ namespace origin
 			out << YAML::Key << "RotationalInertia" << YAML::Value << rb2d.RotationalInertia;
 			out << YAML::Key << "GravityScale" << YAML::Value << rb2d.GravityScale;
 			out << YAML::Key << "MassCenter" << YAML::Value << rb2d.MassCenter;
-			out << YAML::Key << "FreezePositionX" << YAML::Value << rb2d.FreezePositionX;
-			out << YAML::Key << "FreezePositionY" << YAML::Value << rb2d.FreezePositionY;
-			out << YAML::Key << "AllowSleeping" << YAML::Value << rb2d.AllowSleeping;
-			out << YAML::Key << "Awake" << YAML::Value << rb2d.Awake;
-			out << YAML::Key << "Bullet" << YAML::Value << rb2d.Bullet;
-			out << YAML::Key << "Enabled" << YAML::Value << rb2d.Enabled;
+			out << YAML::Key << "EnableSleep" << YAML::Value << rb2d.EnableSleep;
+			out << YAML::Key << "IsAwake" << YAML::Value << rb2d.IsAwake;
+			out << YAML::Key << "IsBullet" << YAML::Value << rb2d.IsBullet;
+			out << YAML::Key << "IsEnabled" << YAML::Value << rb2d.IsEnabled;
 			out << YAML::Key << "FixedRotation" << YAML::Value << rb2d.FixedRotation;
 
 
@@ -540,7 +538,7 @@ namespace origin
 			out << YAML::Key << "Density" << YAML::Value << bc2d.Density;
 			out << YAML::Key << "Friction" << YAML::Value << bc2d.Friction;
 			out << YAML::Key << "Restitution" << YAML::Value << bc2d.Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << bc2d.RestitutionThreshold;
+			out << YAML::Key << "IsSensor" << YAML::Value << bc2d.IsSensor;
 
 			out << YAML::EndMap; // !BoxCollider2DComponent
 		}
@@ -558,7 +556,7 @@ namespace origin
 			out << YAML::Key << "Density" << YAML::Value << cc2d.Density;
 			out << YAML::Key << "Friction" << YAML::Value << cc2d.Friction;
 			out << YAML::Key << "Restitution" << YAML::Value << cc2d.Restitution;
-			out << YAML::Key << "RestitutionThreshold" << YAML::Value << cc2d.RestitutionThreshold;
+			out << YAML::Key << "IsSensor" << YAML::Value << cc2d.IsSensor;
 
 			out << YAML::EndMap; // !CircleCollider2DComponent
 		}
@@ -572,12 +570,12 @@ namespace origin
 			out << YAML::Key << "Connected Body ID" << rjc.ConnectedBodyID;
 			// Angles in degrees
 			out << YAML::Key << "Anchor"  << rjc.AnchorPoint;
+			out << YAML::Key << "AnchorB" << rjc.AnchorPointB;
 			out << YAML::Key << "EnableLimit" << rjc.EnableLimit;
-			out << YAML::Key << "LowerAngle" << rjc.LowerAngle;
-			out << YAML::Key << "UpperAngle" << rjc.UpperAngle;
 			out << YAML::Key << "MaxMotorTorque" << rjc.MaxMotorTorque;
 			out << YAML::Key << "EnableMotor" << rjc.EnableMotor;
 			out << YAML::Key << "MotorSpeed" << rjc.MotorSpeed;
+			out << YAML::Key << "DampingRatio" << rjc.DampingRatio;
 
 			out << YAML::EndMap; // !RevoluteJoint2DComponent;
 		}
@@ -922,12 +920,10 @@ namespace origin
 					rb2d.RotationalInertia = rigidbody2DComponent["RotationalInertia"].as<float>();
 					rb2d.GravityScale = rigidbody2DComponent["GravityScale"].as<float>();
 					rb2d.MassCenter = rigidbody2DComponent["MassCenter"].as<glm::vec2>();
-					rb2d.FreezePositionX = rigidbody2DComponent["FreezePositionX"].as<bool>();
-					rb2d.FreezePositionY = rigidbody2DComponent["FreezePositionY"].as<bool>();
-					rb2d.AllowSleeping = rigidbody2DComponent["AllowSleeping"].as<bool>();
-					rb2d.Awake = rigidbody2DComponent["Awake"].as<bool>();
-					rb2d.Bullet = rigidbody2DComponent["Bullet"].as<bool>();
-					rb2d.Enabled = rigidbody2DComponent["Enabled"].as<bool>();
+					rb2d.EnableSleep = rigidbody2DComponent["EnableSleep"].as<bool>();
+					rb2d.IsAwake = rigidbody2DComponent["IsAwake"].as<bool>();
+					rb2d.IsBullet = rigidbody2DComponent["IsBullet"].as<bool>();
+					rb2d.IsEnabled = rigidbody2DComponent["IsEnabled"].as<bool>();
 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
 				}
 
@@ -940,7 +936,7 @@ namespace origin
 					bc2d.Density = boxCollider2DComponent["Density"].as<float>();
 					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
 					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
-					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
+					bc2d.IsSensor = boxCollider2DComponent["IsSensor"].as<bool>();
 				}
 
 				if (YAML::Node circleCollider2DComponent = entity["CircleCollider2DComponent"])
@@ -952,7 +948,7 @@ namespace origin
 					cc2d.Density = circleCollider2DComponent["Density"].as<float>();
 					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
 					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
-					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
+					cc2d.IsSensor = circleCollider2DComponent["IsSensor"].as<bool>();
 				}
 
 				if (YAML::Node revoluteJoint2DComponent = entity["RevoluteJoint2DComponent"])
@@ -960,12 +956,13 @@ namespace origin
 					RevoluteJoint2DComponent &rjc = deserializedEntity.AddComponent<RevoluteJoint2DComponent>();
 					rjc.ConnectedBodyID = revoluteJoint2DComponent["Connected Body ID"].as<uint64_t>();
 					rjc.AnchorPoint = revoluteJoint2DComponent["Anchor"].as<glm::vec2>();
-					rjc.EnableLimit = revoluteJoint2DComponent["EnableLimit"].as<bool>();
-					rjc.LowerAngle = revoluteJoint2DComponent["LowerAngle"].as<float>();
-					rjc.UpperAngle = revoluteJoint2DComponent["UpperAngle"].as<float>();
-					rjc.MaxMotorTorque = revoluteJoint2DComponent["MaxMotorTorque"].as<float>();
+					rjc.AnchorPointB = revoluteJoint2DComponent["AnchorB"].as<glm::vec2>();
+
 					rjc.EnableMotor = revoluteJoint2DComponent["EnableMotor"].as<bool>();
+					rjc.EnableLimit = revoluteJoint2DComponent["EnableLimit"].as<bool>();
+					rjc.MaxMotorTorque = revoluteJoint2DComponent["MaxMotorTorque"].as<float>();
 					rjc.MotorSpeed = revoluteJoint2DComponent["MotorSpeed"].as<float>();
+					rjc.DampingRatio = revoluteJoint2DComponent["DampingRatio"].as<float>();
 				}
 
 				if (YAML::Node textComponent = entity["TextComponent"])
@@ -1119,3 +1116,4 @@ namespace origin
     }
 
 }
+

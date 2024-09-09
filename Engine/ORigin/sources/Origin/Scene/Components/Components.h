@@ -418,20 +418,20 @@ namespace origin
         enum class BodyType { Static = 0, Dynamic, Kinematic };
         BodyType Type = BodyType::Static;
 
-        float Mass = 1.0f;
-        float LinearDamping = 0.0f;
-        float AngularDamping = 0.01f;
-        float RotationalInertia = 0.0f;
+        glm::vec2 LinearVelocity = glm::vec2(0.0f);
+        float  AngularVelocity = 0.0f;
         glm::vec2 MassCenter = glm::vec2(0.0f);
-        float GravityScale = 1.0f;
 
-        bool FreezePositionX = false;
-        bool FreezePositionY = false;
-        bool FixedRotation = false;
-        bool AllowSleeping = true;
-        bool Awake = true;
-        bool Bullet = true;
-        bool Enabled = true;
+        float Mass              = 1.0f;
+        float LinearDamping     = 0.0f;
+        float AngularDamping    = 0.01f;
+        float RotationalInertia = 0.0f;
+        float GravityScale      = 1.0f;
+        bool FixedRotation      = false;
+        bool EnableSleep        = true;
+        bool IsAwake            = true;
+        bool IsBullet           = true;
+        bool IsEnabled          = true;
 
         b2BodyId BodyId;
 
@@ -447,17 +447,15 @@ namespace origin
         glm::vec2 Offset = {0.0f, 0.0f};
         glm::vec2 Size = {0.5f, 0.5f};
 
-        float Density = 1.0f;
-        float Friction = 0.5f;
+        float Density     = 1.0f;
+        float Friction    = 0.5f;
         float Restitution = 0.0f;
-        float RestitutionThreshold = 0.5f;
-
-        void* RuntimeFixture = nullptr;
-        void* RuntimeBoxShape = nullptr;
+        bool IsSensor     = false;
 
         // All fixtures with the same group index always collide (positive index)
         // or never collide(negative index)
         int Group = 1;
+        b2ShapeId ShapeId;
 
         BoxCollider2DComponent() = default;
         BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
@@ -468,19 +466,16 @@ namespace origin
     public:
 
         glm::vec2 Offset = {0.0f, 0.0f};
-        float Radius = 0.5f;
-
-        float Density = 1.0f;
-        float Friction = 0.5f;
+        float Radius     = 0.5f;
+        float Density     = 1.0f;
+        float Friction    = 0.5f;
         float Restitution = 0.0f;
-        float RestitutionThreshold = 0.5f;
-
-        void* RuntimeFixture = nullptr;
-        void* RuntimeCircleShape = nullptr;
+        bool IsSensor     = false;
 
         // All fixtures with the same group index always collide(positive index)
         // or never collide(negative index)
         int Group = 1;
+        b2ShapeId ShapeId;
 
         CircleCollider2DComponent() = default;
         CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
@@ -490,18 +485,18 @@ namespace origin
     {
     public:
         glm::vec2 AnchorPoint = glm::vec2(0.0f);
+        glm::vec2 AnchorPointB = glm::vec2(0.0f);
 
         // Angles in degrees 
         // (it is converted to radians when creating component)
-        bool EnableLimit = true;
-        float LowerAngle = 90.0f;
-        float UpperAngle = 45.0f;
+        bool EnableLimit     = true;
+        bool EnableMotor     = true;
         float MaxMotorTorque = 10.0f;
-        bool EnableMotor = true;
-        float MotorSpeed = 0.0f;
-        void* Joint = nullptr;
+        float MotorSpeed     = 0.0f;
+        float DampingRatio   = 1.0f;
 
         UUID ConnectedBodyID = 0;
+        b2JointId JointId;
 
         RevoluteJoint2DComponent() = default;
         RevoluteJoint2DComponent(const RevoluteJoint2DComponent&) = default;

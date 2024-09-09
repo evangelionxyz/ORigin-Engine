@@ -17,7 +17,6 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
-
 #ifdef OGN_PLATFORM_WINDOWS
 #include <backends/imgui_impl_dx11.h>
 #include "Platform/DX11/DX11Context.h"

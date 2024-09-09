@@ -17,8 +17,7 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Scene/Lighting.h"
 
-#include <box2d/b2_revolute_joint.h>
-#include <box2d/b2_fixture.h>
+#include <box2d/box2d.h>
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace origin {
@@ -948,7 +947,7 @@ namespace origin {
 
         DrawComponent<Rigidbody2DComponent>("Rigidbody 2D", entity, [](auto &component)
         {
-            UI::DrawCheckbox("Enabled", &component.Enabled);
+            UI::DrawCheckbox("Enabled", &component.IsEnabled);
             const char* bodyTypeString[] = { "Static", "Dynamic", "Kinematic" };
             const char* currentBodyTypeString = bodyTypeString[static_cast<int>(component.Type)];
 
@@ -973,11 +972,10 @@ namespace origin {
             UI::DrawFloatControl("Angular Damping", &component.AngularDamping, 0.025f, 0.0f, 1000.0f);
             UI::DrawFloatControl("Mass", &component.Mass, 0.01f);
             UI::DrawVec2Control("Mass Center", component.MassCenter, 0.01f);
-            UI::DrawCheckbox2("Freeze Translate", &component.FreezePositionX, &component.FreezePositionY);
             UI::DrawCheckbox("Fixed Rotation", &component.FixedRotation);
-            UI::DrawCheckbox("Awake", &component.Awake);
-            UI::DrawCheckbox("Allow Sleeping", &component.AllowSleeping);
-            UI::DrawCheckbox("Bullet", &component.Bullet);
+            UI::DrawCheckbox("Enable Sleep", &component.EnableSleep);
+            UI::DrawCheckbox("Is Awake", &component.IsAwake);
+            UI::DrawCheckbox("Is Bullet", &component.IsBullet);
         });
 
         DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto &component)
@@ -985,27 +983,18 @@ namespace origin {
                 ImGui::DragInt("Group Index", &component.Group, 1.0f, -1, 16, "Group Index %d");
 
                 UI::DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
-                glm::vec2 size = component.Size * glm::vec2(2.0f);
-                UI::DrawVec2Control("Size", size, 0.01f, 0.5f);
-                component.Size = size / glm::vec2(2.0f);
+                UI::DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
-                float width = 118.0f;
-                b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
-                if (UI::DrawFloatControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+                if (b2Shape_IsValid(component.ShapeId))
                 {
-                    if(fixture) fixture->SetDensity(component.Density);
-                }
-                if(UI::DrawFloatControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
-                {
-                    if(fixture) fixture->SetFriction(component.Friction);
-                }
-                if(UI::DrawFloatControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
-                {
-                    if(fixture) fixture->SetRestitution(component.Restitution);
-                }
-                if(UI::DrawFloatControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
-                {
-                    if(fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
+                    UI::DrawCheckbox("Is Sensor", &component.IsSensor);
+
+                    if (UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f))
+                        b2Shape_SetDensity(component.ShapeId, component.Density);
+                    if (UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f))
+                        b2Shape_SetFriction(component.ShapeId, component.Friction);
+                    if (UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f))
+                        b2Shape_SetRestitution(component.ShapeId, component.Restitution);
                 }
             });
 
@@ -1016,23 +1005,16 @@ namespace origin {
                 UI::DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
                 UI::DrawFloatControl("Radius", &component.Radius, 0.01f, 0.5f);
 
-                float width = 118.0f;
-                b2Fixture* fixture = static_cast<b2Fixture*>(component.RuntimeFixture);
-                if (UI::DrawFloatControl("Density", &component.Density, 0.01f, 0.0f, 100.0f, 1.0f, width))
+                if (b2Shape_IsValid(component.ShapeId))
                 {
-                    if (fixture) fixture->SetDensity(component.Density);
-                }
-                if (UI::DrawFloatControl("Friction", &component.Friction, 0.02f, 0.0f, 100.0f, 0.5f, width))
-                {
-                    if (fixture) fixture->SetFriction(component.Friction);
-                }
-                if (UI::DrawFloatControl("Restitution", &component.Restitution, 0.01f, 0.0f, 100.0f, 0.5f, width))
-                {
-                    if (fixture) fixture->SetRestitution(component.Restitution);
-                }
-                if (UI::DrawFloatControl("Threshold", &component.RestitutionThreshold, 0.01f, 0.0f, 100.0f, 0.0f, width))
-                {
-                    if (fixture) fixture->SetRestitutionThreshold(component.RestitutionThreshold);
+                    UI::DrawCheckbox("Is Sensor", &component.IsSensor);
+
+                    if (UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f))
+                        b2Shape_SetDensity(component.ShapeId, component.Density);
+                    if (UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f))
+                        b2Shape_SetFriction(component.ShapeId, component.Friction);
+                    if (UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f))
+                        b2Shape_SetRestitution(component.ShapeId, component.Restitution);
                 }
             });
 
@@ -1069,34 +1051,28 @@ namespace origin {
                         component.ConnectedBodyID = 0;
                     }
                 }
-
-                b2RevoluteJoint* joint = static_cast<b2RevoluteJoint*>(component.Joint);
-                if (joint)
+                
+                if (b2Joint_IsValid(component.JointId))
                 {
+                    UI::DrawVec2Control("Anchor A", component.AnchorPoint);
+                    UI::DrawVec2Control("Anchor B", component.AnchorPointB);
+
                     if (UI::DrawCheckbox("Limit", &component.EnableLimit))
                     {
-                        joint->EnableLimit(component.EnableLimit);
+                        b2RevoluteJoint_EnableLimit(component.JointId, component.EnableLimit);
                     }
-                    UI::DrawVec2Control("Anchor", component.AnchorPoint);
-                    if (UI::DrawFloatControl("Lower Angle", &component.LowerAngle, 0.0f))
-                    {
-                        joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
-                    }
-                    if (UI::DrawFloatControl("Upper Angle", &component.UpperAngle, 0.0f))
-                    {
-                        joint->SetLimits(glm::radians(component.LowerAngle), glm::radians(component.UpperAngle));
-                    }
+                    
                     if (UI::DrawFloatControl("Max Torque", &component.MaxMotorTorque, 0.0f))
                     {
-                        joint->SetMaxMotorTorque(component.MaxMotorTorque);
+                        b2RevoluteJoint_SetMaxMotorTorque(component.JointId, component.MaxMotorTorque);
                     }
                     if (UI::DrawCheckbox("Motor", &component.EnableMotor))
                     {
-                        joint->EnableMotor(component.EnableMotor);
+                        b2RevoluteJoint_EnableMotor(component.JointId, component.EnableMotor);
                     }
                     if (UI::DrawFloatControl("Motor Speed", &component.MotorSpeed, 0.0f))
                     {
-                        joint->SetMotorSpeed(component.MotorSpeed);
+                        b2RevoluteJoint_SetMotorSpeed(component.JointId, component.MotorSpeed);
                     }
                 }
                 
@@ -1600,7 +1576,7 @@ namespace origin {
 
             ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
             ImTextureID texId = (void *)(uintptr_t)(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
-            if (ImGui::ImageButton(texId, ImVec2(14.0f, 14.0f)))
+            if (ImGui::ImageButton("component_more_button", texId, ImVec2(14.0f, 14.0f)))
                 ImGui::OpenPopup("Component Settings");
 
             bool componentRemoved = false;

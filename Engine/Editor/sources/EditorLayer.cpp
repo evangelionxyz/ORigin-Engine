@@ -736,8 +736,6 @@ namespace origin
             ImGui::EndDragDropTarget();
         }
 
-        m_ImGuizmoOperation = ImGuizmo::OPERATION::NONE;
-
         float snapValue = 0.5f;
         switch (m_Gizmos->GetType())
         {
@@ -902,7 +900,7 @@ namespace origin
 
             // Play Button
             std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-            if (ImGui::ImageButton(reinterpret_cast<void*>(static_cast<uintptr_t>(icon->GetTextureID())), { 25.0f, 25.0f }))
+            if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), { 25.0f, 25.0f }))
             {
                 if (m_SceneHierarchy.GetContext())
                 {
@@ -921,7 +919,7 @@ namespace origin
             ImGui::SameLine();
             bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
             icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-            if (ImGui::ImageButton(reinterpret_cast<void*>(static_cast<uintptr_t>(icon->GetTextureID())), {25.0f, 25.0f}))
+            if (ImGui::ImageButton("simulate_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), { 25.0f, 25.0f }))
             {
                 if (m_SceneHierarchy.GetContext())
                 {
@@ -942,7 +940,7 @@ namespace origin
                 ImGui::SameLine();
                 bool isPaused = m_ActiveScene->IsPaused();
                 icon = m_UITextures.at("pause");
-                if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
+                if (ImGui::ImageButton("pause_button", (void *)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
                 {
                     m_ActiveScene->SetPaused(!isPaused);
                 }
@@ -951,7 +949,7 @@ namespace origin
                 {
                     icon = m_UITextures.at("stepping");
                     ImGui::SameLine();
-                    if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
+                    if (ImGui::ImageButton("stepping_button", (void *)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
                     {
                         m_ActiveScene->Step(1);
                     }
@@ -964,7 +962,7 @@ namespace origin
             ImGui::SetCursorPos({ btPos.x + 175.0f, btPos.y });
             const auto &mode = m_EditorCamera.GetProjectionType();
             icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
-            if (ImGui::ImageButton((void*)(uintptr_t)icon->GetTextureID(), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
+            if (ImGui::ImageButton("projection_button", (void *)(uintptr_t)icon->GetTextureID(), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
             {
                 if (mode == ProjectionType::Perspective)
                     m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
@@ -1354,8 +1352,7 @@ namespace origin
                     if (selectedEntity.HasComponent<Rigidbody2DComponent>() && m_SceneState != SceneState::Edit)
                     {
                         auto velocity = glm::vec3(0.0f);
-                        auto &rb2d = selectedEntity.GetComponent<Rigidbody2DComponent>();
-                        auto body = static_cast<b2Body *>(rb2d.RuntimeBody);
+                        Rigidbody2DComponent &body = selectedEntity.GetComponent<Rigidbody2DComponent>();
                         if (selectedEntity.HasParent())
                         {
                             Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
@@ -1367,7 +1364,7 @@ namespace origin
                             velocity += glm::vec3(delta.x * orthographic_scale * 0.5f, -delta.y * orthographic_scale * 0.5f, 0.0f);
                         }
 
-                        body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
+                        b2Body_SetLinearVelocity(body.BodyId, b2Vec2(velocity.x, velocity.y));
                     }
                     else
                     {

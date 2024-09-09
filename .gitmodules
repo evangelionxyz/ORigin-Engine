@@ -22,3 +22,6 @@
 [submodule "Engine/ThirdParty/IMGUI"]
 	path = Engine/ThirdParty/IMGUI
 	url = https://www.github.com/ocornut/imgui
+[submodule "Engine/ThirdParty/IMGUIZMO"]
+	path = Engine/ThirdParty/IMGUIZMO
+	url = https://github.com/evangelionmanuhutu/ImGuizmo.git

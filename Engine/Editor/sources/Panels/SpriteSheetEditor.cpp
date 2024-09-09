@@ -176,7 +176,7 @@ namespace origin
                 {
                     auto & [Position, Size, Min, Max, SelectedCorner] = m_Controls[i];
                     ImGui::PushID(i);
-                    ImGui::ImageButton(texture, { thumbnail_size, thumbnail_size }, { Min.x, Max.y }, { Max.x, Min.y });
+                    ImGui::ImageButton("control", texture, { thumbnail_size, thumbnail_size }, { Min.x, Max.y }, { Max.x, Min.y });
 
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {

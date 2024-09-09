@@ -64,6 +64,7 @@
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/DecoratedShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/HeightFieldShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/MeshShape.cpp
+    ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/PlaneShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/MutableCompoundShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/RotatedTranslatedShape.cpp
@@ -72,6 +73,7 @@
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/SphereShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/StaticCompoundShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/TaperedCapsuleShape.cpp
+    ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/TaperedCylinderShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/Shape/TriangleShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Collision/TransformedShape.cpp
     ${THIRD_PARTY_DIR}/JoltPhysics/Jolt/Physics/Constraints/ConeConstraint.cpp

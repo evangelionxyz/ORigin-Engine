@@ -48,7 +48,6 @@
 #include "Origin/Scene/Components/PhysicsComponents.h"
 #include "Origin/Physics/PhysicsEngine.h"
 #include "Origin/Physics/2D/Physics2D.h"
-#include "Origin/Physics/2D/Contact2DListener.h"
 #include "Origin/Scene/Lighting.h"
 #include "Origin/Scene/SpriteSheet.h"
 #include "Origin/Serializer/ProjectSerializer.h"

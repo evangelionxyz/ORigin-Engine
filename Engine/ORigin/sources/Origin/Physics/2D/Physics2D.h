@@ -5,34 +5,35 @@
 
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/Components/Components.h"
-#include "box2d/b2_body.h"
+
+#include <box2d/box2d.h>
+#include <box2d/types.h>
+#include <box2d/math_functions.h>
 
 class b2World;
 
 namespace origin {
 
 	class Scene;
-	class Contact2DListener;
 
 	class Physics2D
 	{
 	public:
 		Physics2D(Scene* scene);
 
-		void CreateRevoluteJoint(RevoluteJoint2DComponent rjc, b2Body* body, b2Vec2 anchorPoint);
-		void CreateBoxCollider(BoxCollider2DComponent bc2d, b2Body* body, b2Vec2 boxSize);
-		void CreateCircleCollider(CircleCollider2DComponent cc2d, b2Body* body, float radius);
+		void CreateRevoluteJoint(RevoluteJoint2DComponent *joint, b2BodyId body_id);
+		void CreateBoxCollider(BoxCollider2DComponent *bc2d, b2BodyId body_id, b2Vec2 size);
+		void CreateCircleCollider(CircleCollider2DComponent *cc2d, b2BodyId body_id, float radius);
 
 		void Simulate(float deltaTime);
 		void OnSimulationStart();
-		void OnInstantiateScriptEntity(Entity entity);
-		void OnDestroyScriptEntity(Entity entity);
+		void OnInstantiateEntity(Entity entity);
+		void OnDestroyEntity(Entity entity);
 		void OnSimulationStop();
 		
 	private:
 		Scene* m_Scene = nullptr;
-		b2World* m_World = nullptr;
-		Contact2DListener* m_ContactListener = nullptr;
+		b2WorldId m_WorldId;
 	};
 }
 

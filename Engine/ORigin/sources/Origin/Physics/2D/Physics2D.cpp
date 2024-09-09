@@ -2,353 +2,285 @@
 
 #include "pch.h"
 #include "Physics2D.h"
-
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/Components/Components.h"
-
-#include "box2d/box2d.h"
-
-#include "Contact2DListener.h"
 
 #include <glm/glm.hpp>
 
 namespace origin {
 
-	static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
-	{
-		switch (type)
-		{
-		case Rigidbody2DComponent::BodyType::Static: return b2_staticBody;
-		case Rigidbody2DComponent::BodyType::Dynamic: return b2_dynamicBody;
-		case Rigidbody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
-		}
+    static b2BodyType Box2DBodyType(Rigidbody2DComponent::BodyType type)
+    {
+        switch (type)
+        {
+        case Rigidbody2DComponent::BodyType::Static:    return b2_staticBody;
+        case Rigidbody2DComponent::BodyType::Dynamic:   return b2_dynamicBody;
+        case Rigidbody2DComponent::BodyType::Kinematic: return b2_kinematicBody;
+        }
 
-		OGN_CORE_ASSERT(false, "Unkown Body Type");
-		return b2_staticBody;
-	}
+        OGN_CORE_ASSERT(false, "Unkown Body Type");
+        return b2_staticBody;
+    }
 
-	Physics2D::Physics2D(Scene* scene)
-		: m_Scene(scene)
-	{
-		OGN_PROFILER_PHYSICS();
-	}
+    Physics2D::Physics2D(Scene* scene)
+        : m_Scene(scene)
+    {
+        OGN_PROFILER_PHYSICS();
+    }
 
-	void Physics2D::CreateRevoluteJoint(RevoluteJoint2DComponent rjc, b2Body* body, b2Vec2 anchorPoint)
-	{
-		OGN_PROFILER_PHYSICS();
+    void Physics2D::CreateRevoluteJoint(RevoluteJoint2DComponent *joint, b2BodyId body_id)
+    {
+        OGN_PROFILER_PHYSICS();
 
-		b2RevoluteJointDef jointDef;
+        Entity connected_entity              = m_Scene->GetEntityWithUUID(joint->ConnectedBodyID);
+        Rigidbody2DComponent &connected_body = connected_entity.GetComponent<Rigidbody2DComponent>();
 
-		Entity connectedEntity = m_Scene->GetEntityWithUUID(rjc.ConnectedBodyID);
-		auto& rb2d = connectedEntity.GetComponent<Rigidbody2DComponent>();
-		b2Body* connectedBody = static_cast<b2Body*>(rb2d.RuntimeBody);
+        b2RevoluteJointDef joint_def;
+        joint_def = b2DefaultRevoluteJointDef();
+        joint_def.dampingRatio   = joint->DampingRatio;
+        joint_def.enableLimit    = joint->EnableLimit;
+        joint_def.maxMotorTorque = joint->MaxMotorTorque;
+        joint_def.motorSpeed     = joint->MotorSpeed;
+        joint_def.enableMotor    = joint->EnableMotor;
+        joint_def.bodyIdA        = body_id;
+        joint_def.bodyIdB        = connected_body.BodyId;
+        joint_def.localAnchorA   = b2Vec2(joint->AnchorPoint.x, joint->AnchorPoint.y);
+        joint_def.localAnchorB   = b2Vec2(joint->AnchorPointB.x, joint->AnchorPointB.y);
 
-		OGN_CORE_ASSERT(connectedBody, "Connected Body is Invalid");
+        joint->JointId = b2CreateRevoluteJoint(m_WorldId, &joint_def);
+    }
 
-		jointDef.Initialize(body, connectedBody, anchorPoint);
+    void Physics2D::CreateBoxCollider(BoxCollider2DComponent *box_collider, b2BodyId body_id, b2Vec2 size)
+    {
+        OGN_PROFILER_PHYSICS();
 
-		jointDef.lowerAngle = glm::radians(rjc.LowerAngle);
-		jointDef.upperAngle = glm::radians(rjc.UpperAngle);
+        const b2Polygon box_shape = b2MakeBox(size.x, size.y);
+        b2ShapeDef shape_def = b2DefaultShapeDef();
+        shape_def.density = box_collider->Density;
+        shape_def.friction = box_collider->Friction;
+        shape_def.restitution = box_collider->Restitution;
+        shape_def.isSensor = box_collider->IsSensor;
 
-		jointDef.enableLimit = rjc.EnableLimit;
-		jointDef.maxMotorTorque = rjc.MaxMotorTorque;
-		jointDef.motorSpeed = rjc.MotorSpeed;
-		jointDef.enableMotor = rjc.EnableMotor;
+        box_collider->ShapeId = b2CreatePolygonShape(body_id, &shape_def, &box_shape);
+    }
 
-		rjc.Joint = (b2RevoluteJoint*)m_World->CreateJoint(&jointDef);
-	}
+    void Physics2D::CreateCircleCollider(CircleCollider2DComponent *circle, b2BodyId body_id, float radius)
+    {
+        OGN_PROFILER_PHYSICS();
+        b2Circle circle_shape;
+        circle_shape.center = { circle->Offset.x, circle->Offset.y };
+        circle_shape.radius = radius;
 
-	void Physics2D::CreateBoxCollider(BoxCollider2DComponent bc2d, b2Body* body, b2Vec2 boxSize)
-	{
-		OGN_PROFILER_PHYSICS();
+        b2ShapeDef shape_def = b2DefaultShapeDef();
+        shape_def.density = circle->Density;
+        shape_def.friction = circle->Friction;
+        shape_def.restitution = circle->Restitution;
+        shape_def.isSensor = circle->IsSensor;
 
-		b2PolygonShape boxShape;
-		boxShape.SetAsBox(boxSize.x, boxSize.y, b2Vec2(bc2d.Offset.x, bc2d.Offset.y), 0.0f);
-		bc2d.RuntimeBoxShape = &boxShape;
+        circle->ShapeId = b2CreateCircleShape(body_id, &shape_def, &circle_shape);
+    }
 
-		b2FixtureDef fixtureDef;
-		fixtureDef.filter.groupIndex = bc2d.Group;
-		fixtureDef.shape = &boxShape;
-		fixtureDef.density = bc2d.Density;
-		fixtureDef.friction = bc2d.Friction;
-		fixtureDef.restitution = bc2d.Restitution;
-		fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
-		bc2d.RuntimeFixture = &fixtureDef;
-		body->CreateFixture(&fixtureDef);
-	}
+    void Physics2D::Simulate(float deltaTime)
+    {
+        OGN_PROFILER_PHYSICS();
 
-	void Physics2D::CreateCircleCollider(CircleCollider2DComponent cc2d, b2Body* body, float radius)
-	{
-		OGN_PROFILER_PHYSICS();
+        const i32 step_count = 4;
+        b2World_Step(m_WorldId, deltaTime, step_count);
 
-		b2CircleShape circleShape;
-		circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-		circleShape.m_radius = radius;
-		cc2d.RuntimeCircleShape = &circleShape;
+        // Retrieve transform from Box2D
+        auto rb2dView = m_Scene->m_Registry.view<Rigidbody2DComponent>();
+        for (entt::entity e : rb2dView)
+        {
+            Entity entity{ e, m_Scene };
+            auto &transform = entity.GetComponent<TransformComponent>();
+            auto &body = entity.GetComponent<Rigidbody2DComponent>();
+            auto &idc = entity.GetComponent<IDComponent>();
 
-		b2FixtureDef fixtureDef;
-		fixtureDef.filter.groupIndex = cc2d.Group;
-		fixtureDef.shape = &circleShape;
-		fixtureDef.density = cc2d.Density;
-		fixtureDef.friction = cc2d.Friction;
-		fixtureDef.restitution = cc2d.Restitution;
-		fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
-		cc2d.RuntimeFixture = &fixtureDef;
+            b2Vec2 position = b2Body_GetPosition(body.BodyId);
+            b2Rot rotation = b2Body_GetRotation(body.BodyId);
 
-		body->CreateFixture(&fixtureDef);
-	}
+            transform.WorldTranslation.x = position.x;
+            transform.WorldTranslation.y = position.y;
+            transform.WorldRotation      = glm::quat({ 0.0f, 0.0f, b2Rot_GetAngle(rotation) });
+            transform.Translation        = transform.WorldTranslation;
+            transform.Rotation           = transform.WorldRotation;
 
-	void Physics2D::Simulate(float deltaTime)
-	{
-		OGN_PROFILER_PHYSICS();
-
-		constexpr int32_t velocityIterations = 6;
-		constexpr int32_t positionIterations = 2;
-
-		m_World->Step(deltaTime, velocityIterations, positionIterations);
-
-		// Retrieve transform from Box2D
-		auto rb2dView = m_Scene->m_Registry.view<Rigidbody2DComponent>();
-		for (entt::entity e : rb2dView)
-		{
-			Entity entity{ e, m_Scene };
-			auto &tc = entity.GetComponent<TransformComponent>();
-			auto &rb = entity.GetComponent<Rigidbody2DComponent>();
-			auto &idc = entity.GetComponent<IDComponent>();
-
-			auto body = static_cast<b2Body*>(rb.RuntimeBody);
-
-			if (body)
-			{
-				auto& position = body->GetPosition();
-				tc.WorldTranslation.x = position.x;
-				tc.WorldTranslation.y = position.y;
-				tc.WorldRotation = glm::quat({ 0.0f, 0.0f, body->GetAngle() });
-
-				tc.Translation = tc.WorldTranslation;
-				tc.Rotation = tc.WorldRotation;
-			}
-
-			if (idc.Parent)
-			{
+            if (idc.Parent)
+            {
                 auto &ptc = m_Scene->GetEntityWithUUID(idc.Parent).GetComponent<TransformComponent>();
 
-				// rotate local translation by parent rotation and add to parent translation
-                glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
-				tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+                // rotate local translation by parent rotation and add to parent translation
+                glm::vec3 rotatedLocalPos = ptc.WorldRotation * transform.Translation;
+                transform.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
 
-				// combine parent and local rotations
-				tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
+                // combine parent and local rotations
+                transform.WorldRotation = ptc.WorldRotation * transform.Rotation;
+                transform.WorldScale = transform.Scale * ptc.WorldScale;
+            }
+        }
+    }
 
-                tc.WorldScale = tc.Scale * ptc.WorldScale;
-			}
-		}
-	}
+    void Physics2D::OnSimulationStart()
+    {
+        OGN_PROFILER_PHYSICS();
 
-	void Physics2D::OnSimulationStart()
-	{
-		OGN_PROFILER_PHYSICS();
+        b2WorldDef world_def = b2DefaultWorldDef();
+        m_WorldId = b2CreateWorld(&world_def);
 
-		m_World = new b2World({ 0.0f, -9.81f });
+        auto view = m_Scene->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
+        for (entt::entity e : view)
+        {
+            Entity entity = { e, m_Scene };
+            auto [tc, body] = view.get<TransformComponent, Rigidbody2DComponent>(e);
 
-		m_ContactListener = new Contact2DListener(m_Scene);
-		m_World->SetContactListener(m_ContactListener);
+            b2BodyDef bodyDef       = b2DefaultBodyDef();
+            bodyDef.position        = { tc.WorldTranslation.x, tc.WorldTranslation.y };
+            bodyDef.rotation        = b2MakeRot(glm::eulerAngles(tc.WorldRotation).z);
+            bodyDef.gravityScale    = body.GravityScale;
+            bodyDef.userData        = static_cast<void *>(&e);
+            bodyDef.type            = Box2DBodyType(body.Type);
+            bodyDef.linearDamping   = body.LinearDamping;
+            bodyDef.angularDamping  = body.AngularDamping;
+            bodyDef.enableSleep     = body.EnableSleep;
+            bodyDef.isAwake         = body.IsAwake;
+            bodyDef.isBullet        = body.IsBullet;
+            bodyDef.isEnabled       = body.IsEnabled;
+            bodyDef.fixedRotation   = body.FixedRotation;
+            bodyDef.linearVelocity  = { body.LinearVelocity.x, body.LinearVelocity.y };
+            bodyDef.angularVelocity = body.AngularVelocity;
 
-		auto view = m_Scene->m_Registry.view<TransformComponent, Rigidbody2DComponent>();
-		for (entt::entity e : view)
-		{
-			Entity entity = { e, m_Scene };
-			auto [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
+            body.BodyId            = b2CreateBody(m_WorldId, &bodyDef);
 
-			b2BodyDef bodyDef;
-			bodyDef.userData.pointer = static_cast<uintptr_t>(e);
-			bodyDef.type = Box2DBodyType(rb2d.Type);
-			bodyDef.linearDamping = rb2d.LinearDamping;
-			bodyDef.angularDamping = rb2d.AngularDamping;
-			bodyDef.allowSleep = rb2d.AllowSleeping;
-			bodyDef.awake = rb2d.Awake;
-			bodyDef.bullet = rb2d.Bullet;
-			bodyDef.enabled = rb2d.Enabled;
-			bodyDef.linearVelocity.SetZero();
+            if (entity.HasComponent<BoxCollider2DComponent>())
+            {
+                auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+                CreateBoxCollider(&bc2d, body.BodyId, b2Vec2(bc2d.Size.x * tc.WorldScale.x, bc2d.Size.y * tc.WorldScale.y));
+                b2Shape_SetUserData(bc2d.ShapeId, (void *)&e);
+            }
 
-			float xPos = tc.WorldTranslation.x;
-			float yPos = tc.WorldTranslation.y;
+            if (entity.HasComponent<CircleCollider2DComponent>())
+            {
+                auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+                float radius = tc.WorldScale.x * cc2d.Radius;
+                CreateCircleCollider(&cc2d, body.BodyId, radius);
+                b2Shape_SetUserData(cc2d.ShapeId, (void *)&e);
+            }
+        }
 
-			if (rb2d.FreezePositionX)
-				xPos = bodyDef.position.x;
-			if (rb2d.FreezePositionY)
-				yPos = bodyDef.position.y;
+        // create after rigidbody attached
+        for (entt::entity e : view)
+        {
+            Entity entity = { e, m_Scene };
+            auto [tc, body] = view.get<TransformComponent, Rigidbody2DComponent>(e);
 
-			bodyDef.position.Set(xPos, yPos);
-			bodyDef.angle = glm::eulerAngles(tc.WorldRotation).z;
-			bodyDef.gravityScale = rb2d.GravityScale;
+            if(entity.HasComponent<RevoluteJoint2DComponent>())
+            {
+                RevoluteJoint2DComponent& joint = entity.GetComponent<RevoluteJoint2DComponent>();
+                b2Vec2 pos = b2Body_GetPosition(body.BodyId);
+                joint.AnchorPoint = { pos.x + joint.AnchorPoint.x, pos.y + joint.AnchorPoint.y };
+                if (joint.ConnectedBodyID != 0)
+                {
+                    CreateRevoluteJoint(&joint, body.BodyId);
+                    b2Joint_SetUserData(joint.JointId, static_cast<void *>(&e));
+                }
+            }
+        }
+    }
 
-			b2Body* body = m_World->CreateBody(&bodyDef);
+    void Physics2D::OnInstantiateEntity(Entity entity)
+    {
+        if (entity.HasComponent<Rigidbody2DComponent>())
+        {
+            TransformComponent &tc     = entity.GetComponent<TransformComponent>();
+            Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+            entt::entity handle        = entity.GetHandle();
 
-			rb2d.RuntimeBody = body;
+            b2BodyDef bodyDef      = b2DefaultBodyDef(); 
+            bodyDef.position       = { tc.WorldTranslation.x, tc.WorldTranslation.y };
+            bodyDef.rotation       = b2MakeRot(glm::eulerAngles(tc.WorldRotation).z);
+            bodyDef.gravityScale   = body.GravityScale;
+            bodyDef.userData       = static_cast<void *>(&handle);
+            bodyDef.type           = Box2DBodyType(body.Type);
+            bodyDef.linearDamping  = body.LinearDamping;
+            bodyDef.angularDamping = body.AngularDamping;
+            bodyDef.enableSleep    = body.EnableSleep;
+            bodyDef.isAwake        = body.IsAwake;
+            bodyDef.isBullet       = body.IsBullet;
+            bodyDef.isEnabled      = body.IsEnabled;
+            bodyDef.fixedRotation  = body.FixedRotation;
+            bodyDef.linearVelocity = { body.LinearVelocity.x, body.LinearVelocity.y };
+            bodyDef.angularVelocity = body.AngularVelocity;
 
-			body->SetFixedRotation(rb2d.FixedRotation);
+            body.BodyId = b2CreateBody(m_WorldId, &bodyDef);
 
-			b2MassData massData;
-			massData.center = b2Vec2(rb2d.MassCenter.x, rb2d.MassCenter.y);
-			massData.I = rb2d.RotationalInertia;
-			massData.mass = rb2d.Mass;
-			body->SetMassData(&massData);
+            if (entity.HasComponent<BoxCollider2DComponent>())
+            {
+                BoxCollider2DComponent &box_collider = entity.GetComponent<BoxCollider2DComponent>();
+                CreateBoxCollider(&box_collider, body.BodyId, b2Vec2(box_collider.Size.x * tc.WorldScale.x, box_collider.Size.y * tc.WorldScale.y));
+                b2Shape_SetUserData(box_collider.ShapeId, static_cast<void *>(&handle));
+            }
 
-			if (entity.HasComponent<BoxCollider2DComponent>())
-			{
-				auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
-				CreateBoxCollider(bc2d, body, b2Vec2(bc2d.Size.x * tc.WorldScale.x, bc2d.Size.y * tc.WorldScale.y));
-			}
+            if (entity.HasComponent<CircleCollider2DComponent>())
+            {
+                CircleCollider2DComponent &circle_collider = entity.GetComponent<CircleCollider2DComponent>();
+                float radius = tc.WorldScale.x * circle_collider.Radius;
+                CreateCircleCollider(&circle_collider, body.BodyId, radius);
+                b2Shape_SetUserData(circle_collider.ShapeId, static_cast<void *>(&handle));
+            }
 
-			if (entity.HasComponent<CircleCollider2DComponent>())
-			{
-				auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
-				float radius = tc.WorldScale.x * cc2d.Radius;
-				CreateCircleCollider(cc2d, body, radius);
-			}
-		}
+            if (entity.HasComponent<RevoluteJoint2DComponent>())
+            {
+                RevoluteJoint2DComponent  &joint = entity.GetComponent<RevoluteJoint2DComponent>();
+                b2Vec2 pos = b2Body_GetPosition(body.BodyId);
+                b2Vec2 anchorPoint = b2Vec2(pos.x + joint.AnchorPoint.x, pos.y + joint.AnchorPoint.y);
+                if (joint.ConnectedBodyID != 0)
+                {
+                    joint.AnchorPoint = { pos.x + joint.AnchorPoint.x, pos.y + joint.AnchorPoint.y };
+                    b2Joint_SetUserData(joint.JointId, static_cast<void *>(&handle));
+                }       
+            }
+        }
+    }
 
-		for (entt::entity e : view)
-		{
-			Entity entity = { e, m_Scene };
-			auto [tc, rb2d] = view.get<TransformComponent, Rigidbody2DComponent>(e);
-			b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
+    void Physics2D::OnDestroyEntity(Entity entity)
+    {
+        if (entity.HasComponent<Rigidbody2DComponent>())
+        {
+            if (entity.HasComponent<RevoluteJoint2DComponent>())
+            {
+                RevoluteJoint2DComponent &joint = entity.GetComponent<RevoluteJoint2DComponent>();
+                b2DestroyJoint(joint.JointId);
+            }
 
-			if(entity.HasComponent<RevoluteJoint2DComponent>())
-			{
-				auto& rjc = entity.GetComponent<RevoluteJoint2DComponent>();
-				b2Vec2 pos = body->GetPosition();
-				b2Vec2 anchorPoint = b2Vec2(pos.x + rjc.AnchorPoint.x, pos.y + rjc.AnchorPoint.y);
-				if (rjc.ConnectedBodyID != 0)
-				{
-					CreateRevoluteJoint(rjc, body, anchorPoint);
-				}
-			}
-		}
-	}
+            if (entity.HasComponent<BoxCollider2DComponent>())
+            {
+                BoxCollider2DComponent &box_collider = entity.GetComponent<BoxCollider2DComponent>();
+                b2DestroyShape(box_collider.ShapeId);
+            }
 
-	void Physics2D::OnInstantiateScriptEntity(Entity entity)
-	{
-		if (entity.HasComponent<Rigidbody2DComponent>())
-		{
-			TransformComponent &tc = entity.GetComponent<TransformComponent>();
-			Rigidbody2DComponent &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+            if (entity.HasComponent<CircleCollider2DComponent>())
+            {
+                CircleCollider2DComponent &circle_collider = entity.GetComponent<CircleCollider2DComponent>();
+                b2DestroyShape(circle_collider.ShapeId);
+            }
 
-			b2BodyDef bodyDef;
-			bodyDef.userData.pointer = static_cast<uintptr_t>(entity);
-			bodyDef.type = Box2DBodyType(rb2d.Type);
-			bodyDef.linearDamping = rb2d.LinearDamping;
-			bodyDef.angularDamping = rb2d.AngularDamping;
-			bodyDef.allowSleep = rb2d.AllowSleeping;
-			bodyDef.awake = rb2d.Awake;
-			bodyDef.bullet = rb2d.Bullet;
-			bodyDef.enabled = rb2d.Enabled;
-			bodyDef.linearVelocity.SetZero();
+            Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
+            b2DestroyBody(body.BodyId);
+        }
+    }
 
-			float xPos = tc.WorldTranslation.x;
-			float yPos = tc.WorldTranslation.y;
+    void Physics2D::OnSimulationStop()
+    {
+        OGN_PROFILER_PHYSICS();
 
-			if (rb2d.FreezePositionX)
-				xPos = bodyDef.position.x;
-			if (rb2d.FreezePositionY)
-				yPos = bodyDef.position.y;
+        auto view = m_Scene->m_Registry.view<Rigidbody2DComponent>();
+        for (entt::entity e : view)
+        {
+            Entity entity = { e, m_Scene };
+            Rigidbody2DComponent &body = view.get<Rigidbody2DComponent>(e);
+            OnDestroyEntity(entity);
+        }
 
-			bodyDef.position.Set(xPos, yPos);
-			bodyDef.angle = glm::eulerAngles(tc.WorldRotation).z;
-			bodyDef.gravityScale = rb2d.GravityScale;
-
-			b2Body *body = m_World->CreateBody(&bodyDef);
-
-			rb2d.RuntimeBody = body;
-
-			body->SetFixedRotation(rb2d.FixedRotation);
-
-			b2MassData massData;
-			massData.center = b2Vec2(rb2d.MassCenter.x, rb2d.MassCenter.y);
-			massData.I = rb2d.RotationalInertia;
-			massData.mass = rb2d.Mass;
-			body->SetMassData(&massData);
-
-			if (entity.HasComponent<BoxCollider2DComponent>())
-			{
-				auto &bc2d = entity.GetComponent<BoxCollider2DComponent>();
-				CreateBoxCollider(bc2d, body, b2Vec2(bc2d.Size.x * tc.WorldScale.x, bc2d.Size.y * tc.WorldScale.y));
-			}
-
-			if (entity.HasComponent<CircleCollider2DComponent>())
-			{
-				auto &cc2d = entity.GetComponent<CircleCollider2DComponent>();
-				float radius = tc.WorldScale.x * cc2d.Radius;
-				CreateCircleCollider(cc2d, body, radius);
-			}
-
-			if (entity.HasComponent<RevoluteJoint2DComponent>())
-			{
-				auto &rjc = entity.GetComponent<RevoluteJoint2DComponent>();
-				b2Vec2 pos = body->GetPosition();
-				b2Vec2 anchorPoint = b2Vec2(pos.x + rjc.AnchorPoint.x, pos.y + rjc.AnchorPoint.y);
-				if (rjc.ConnectedBodyID != 0)
-				{
-					CreateRevoluteJoint(rjc, body, anchorPoint);
-				}
-			}
-		}
-	}
-
-	void Physics2D::OnDestroyScriptEntity(Entity entity)
-	{
-		if (entity.HasComponent<Rigidbody2DComponent>())
-		{
-			Rigidbody2DComponent &rb2d = entity.GetComponent<Rigidbody2DComponent>();
-			b2Body *body = static_cast<b2Body *>(rb2d.RuntimeBody);
-			if (body)
-			{
-				m_World->DestroyBody(body);
-				body = nullptr;
-			}
-
-			if (entity.HasComponent<RevoluteJoint2DComponent>())
-			{
-				RevoluteJoint2DComponent &rjc = entity.GetComponent<RevoluteJoint2DComponent>();
-				if (rjc.Joint)
-				{
-					m_World->DestroyJoint((b2RevoluteJoint *)rjc.Joint);
-					rjc.Joint = nullptr;
-				}
-			}
-		}
-	}
-
-	void Physics2D::OnSimulationStop()
-	{
-		OGN_PROFILER_PHYSICS();
-
-		auto view = m_Scene->m_Registry.view<Rigidbody2DComponent, RevoluteJoint2DComponent>();
-		for (entt::entity e : view)
-		{
-			Rigidbody2DComponent & rb2d = view.get<Rigidbody2DComponent>(e);
-			b2Body *body = static_cast<b2Body *>(rb2d.RuntimeBody);
-			if (body)
-			{
-				m_World->DestroyBody(body);
-				body = nullptr;
-			}
-
-			RevoluteJoint2DComponent &rjc = view.get<RevoluteJoint2DComponent>(e);
-			if (rjc.Joint)
-			{
-				m_World->DestroyJoint((b2RevoluteJoint *)rjc.Joint);
-				rjc.Joint = nullptr;
-			}
-		}
-
-		m_World->SetContactListener(nullptr);
-
-		delete m_ContactListener;
-		delete m_World;
-		m_ContactListener = nullptr;
-		m_World = nullptr;
-	}
-
+        b2DestroyWorld(m_WorldId);
+    }
 }
