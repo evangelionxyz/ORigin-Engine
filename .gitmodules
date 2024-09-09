@@ -1,7 +1,3 @@
-[submodule "Engine/ThirdParty/IMGUI"]
-	path = Engine/ThirdParty/IMGUI
-	url = https://github.com/ocornut/imgui.git
-	branch = docking
 [submodule "Engine/ThirdParty/GLFW"]
 	path = Engine/ThirdParty/GLFW
 	url = https://github.com/glfw/glfw.git
