@@ -7,9 +7,6 @@
 [submodule "Engine/ThirdParty/FMT"]
 	path = Engine/ThirdParty/FMT
 	url = https://github.com/fmtlib/fmt.git
-[submodule "Engine/ThirdParty/IMGUIZMO"]
-	path = Engine/ThirdParty/IMGUIZMO
-	url = https://github.com/CedricGuillemet/ImGuizmo.git
 [submodule "Engine/ThirdParty/JOLTPHYSICS"]
 	path = Engine/ThirdParty/JOLTPHYSICS
 	url = https://github.com/jrouwe/JoltPhysics.git
