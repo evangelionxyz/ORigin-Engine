@@ -22,3 +22,6 @@
 [submodule "Engine/ThirdParty/BOX2D"]
 	path = Engine/ThirdParty/BOX2D
 	url = https://github.com/erincatto/box2d.git
+[submodule "Engine/ThirdParty/YAMLCPP"]
+	path = Engine/ThirdParty/YAMLCPP
+	url = https://github.com/evangelionmanuhutu/yaml-cpp.git
