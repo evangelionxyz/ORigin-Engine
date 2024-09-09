@@ -22,3 +22,6 @@
 [submodule "Engine/ThirdParty/YAMLCPP"]
 	path = Engine/ThirdParty/YAMLCPP
 	url = https://github.com/evangelionmanuhutu/yaml-cpp.git
+[submodule "Engine/ThirdParty/IMGUI"]
+	path = Engine/ThirdParty/IMGUI
+	url = https://www.github.com/ocornut/imgui
