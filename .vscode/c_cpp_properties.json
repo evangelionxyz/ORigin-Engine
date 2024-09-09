@@ -4,16 +4,17 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/ORigin/vendor/origin-glfw/include",
-                "${workspaceFolder}/ORigin/sources",
-                "${workspaceFolder}/ORigin/sources/Origin",
-                "${workspaceFolder}/ORigin-Editor/sources/",
-                "${workspaceFolder}/ORigin-Runtime/sources/",
-                "${workspaceFolder}/Sandbox/sources/",
+                "${workspaceFolder}/Engine/ThirdParty/origin-glfw/include",
+                "${workspaceFolder}/Engine/ORigin/sources",
+                "${workspaceFolder}/Engine/ORigin/sources/Origin",
+                "${workspaceFolder}/Engine/Editor/sources/",
+                "${workspaceFolder}/Engine/Runtime/sources/",
+                "${workspaceFolder}/Engine/Sandbox/sources/",
                 "/usr/include/"
             ],
             "defines": [
                 "OGN_PLATFORM_LINUX",
+                "GLFW_INLCUDE_NONE",
                 "_GLFW_X11",
                 "VK_VERSION_1_0"
             ],
@@ -21,22 +22,26 @@
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "linux-gcc-x64",
-            "mergeConfigurations": false
+            "mergeConfigurations": false,
+            "configurationProvider": "ms-vscode.cmake-tools"
         },
         {
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/ORigin/vendor/origin-glfw/include/",
-                "${workspaceFolder}/ORigin/sources/",
-                "${workspaceFolder}/ORigin/sources/Origin/",
-                "${workspaceFolder}/ORigin-Editor/sources/",
-                "${workspaceFolder}/ORigin-Runtime/sources/",
-                "${workspaceFolder}/Sandbox/sources/",
-                "${VULKAN_SDK}/Include/"
+                "${workspaceFolder}/Engine/ThirdParty/origin-glfw/include",
+                "${workspaceFolder}/Engine/ThirdParty/Vulkan/Include",
+                "${workspaceFolder}/Engine/ORigin/sources",
+                "${workspaceFolder}/Engine/ORigin/sources/Origin",
+                "${workspaceFolder}/Engine/Editor/sources/",
+                "${workspaceFolder}/Engine/Runtime/sources/",
+                "${workspaceFolder}/Engine/Sandbox/sources/",
             ],
             "defines": [
-                "OGN_PLATFORM_WINDOWS"
+                "NOMINMAX",
+                "GLFW_INLCUDE_NONE",
+                "OGN_PLATFORM_WINDOWS",
+                "VK_VERSION_1_0"
             ],
             "cStandard": "c17",
             "cppStandard": "gnu++20",

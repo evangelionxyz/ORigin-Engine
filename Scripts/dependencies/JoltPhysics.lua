@@ -1,21 +1,21 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "JOLT"
-    location (vendorProjectFiles)
+    location (ThirdPartyProjectFiles)
     kind "StaticLib"
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
 
-    targetdir (vendorOutputdir)
-    objdir (vendorIntOutputdir)
+    targetdir (ThirdPartyOutputdir)
+    objdir (ThirdPartyIntOutputdir)
 
     files{
-        "%{wks.location}/ORigin/vendor/JoltPhysics/Jolt/**.cpp",
+        "%{THIRD_PARTY_DIR}/JoltPhysics/Jolt/**.cpp",
     }
 
     includedirs{
-        "%{wks.location}/ORigin/vendor/JoltPhysics/"
+        "%{THIRD_PARTY_DIR}/JoltPhysics/"
     }
 
     filter "system:windows"

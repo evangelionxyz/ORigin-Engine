@@ -1,28 +1,21 @@
-[submodule "Origin/vendor/glm"]
-	path = ORigin/vendor/glm
-	url = https://github.com/kaks-ev/glm.git
-[submodule "Origin/vendor/ImGuizmo"]
-	path = ORigin/vendor/ImGuizmo
-	url = https://github.com/kaks-ev/ImGuizmo.git
-[submodule "Origin/vendor/Box2D"]
-	path = ORigin/vendor/Box2D
-	url = https://github.com/erincatto/box2d.git
-[submodule "Origin/vendor/yaml-cpp"]
-	path = ORigin/vendor/yaml-cpp
-	url = https://github.com/kaks-ev/yaml-cpp.git
-[submodule "Origin/vendor/mono"]
-	path = ORigin/vendor/mono
-	url = https://github.com/kaks-ev/mono.git
-[submodule "Origin/vendor/msdf-atlas-gen"]
-	path = ORigin/vendor/msdf-atlas-gen
-	url = https://github.com/kaks-ev/msdf-atlas-gen.git
-[submodule "Origin/vendor/JoltPhysics"]
-	path = ORigin/vendor/JoltPhysics
+[submodule "Engine/ThirdParty/GLFW"]
+	path = Engine/ThirdParty/GLFW
+	url = https://github.com/glfw/glfw.git
+[submodule "Engine/ThirdParty/GLM"]
+	path = Engine/ThirdParty/GLM
+	url = https://github.com/g-truc/glm.git
+[submodule "Engine/ThirdParty/FMT"]
+	path = Engine/ThirdParty/FMT
+	url = https://github.com/fmtlib/fmt.git
+[submodule "Engine/ThirdParty/JOLTPHYSICS"]
+	path = Engine/ThirdParty/JOLTPHYSICS
 	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "Origin/vendor/origin-glfw"]
-	path = ORigin/vendor/origin-glfw
-	url = https://github.com/evangelionmanuhutu/origin-glfw.git
-[submodule "Origin/vendor/imgui"]
-	path = ORigin/vendor/imgui
-	url = https://github.com/ocornut/imgui.git
-	branch = docking
+[submodule "Engine/ThirdParty/MSDFATLASGEN"]
+	path = Engine/ThirdParty/MSDFATLASGEN
+	url = https://github.com/evangelionmanuhutu/msdf-atlas-gen.git
+[submodule "Engine/ThirdParty/BOX2D"]
+	path = Engine/ThirdParty/BOX2D
+	url = https://github.com/erincatto/box2d.git
+[submodule "Engine/ThirdParty/YAMLCPP"]
+	path = Engine/ThirdParty/YAMLCPP
+	url = https://github.com/evangelionmanuhutu/yaml-cpp.git

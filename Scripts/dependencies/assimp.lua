@@ -1,64 +1,64 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "ASSIMP"
-  location (vendorProjectFiles)
+  location (ThirdPartyProjectFiles)
   kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"
 	staticruntime "off"
 
-	targetdir (vendorOutputdir)
-	objdir (vendorIntOutputdir)
+	targetdir (ThirdPartyOutputdir)
+	objdir (ThirdPartyIntOutputdir)
 
   files {
-    "%{wks.location}/ORigin/vendor/Assimp/include/**",
-    "%{wks.location}/ORigin/vendor/Assimp/code/Common/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/M3D/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/IQM/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/CApi/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/PostProcessing/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/Material/MaterialSystem.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/Geometry/GeometryUtils.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/include/**",
+    "%{THIRD_PARTY_DIR}/Assimp/code/Common/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/CApi/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/PostProcessing/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/Material/MaterialSystem.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/Geometry/GeometryUtils.cpp",
 
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/Collada/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/Ply/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/Obj/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/FBX/**.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/glTF/glTFImporter.cpp",
-    "%{wks.location}/ORigin/vendor/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp",
+    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
 
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/adler32.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/compress.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/crc32.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/deflate.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/gzclose.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/gzlib.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/gzread.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/gzwrite.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/infback.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/inffast.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/inflate.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/inftrees.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/trees.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/uncompr.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/zlib/zutil.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/adler32.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/compress.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/crc32.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/deflate.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzclose.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzlib.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzread.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzwrite.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/infback.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inffast.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inflate.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inftrees.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/trees.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/uncompr.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/zutil.c",
 
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/unzip/ioapi.c",
-    "%{wks.location}/ORigin/vendor/Assimp/contrib/unzip/unzip.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/ioapi.c",
+    "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/unzip.c",
 	}
 	
 	includedirs {
-		"%{wks.location}/ORigin/vendor/assimp",
-		"%{wks.location}/ORigin/vendor/Assimp/code",
-		"%{wks.location}/ORigin/vendor/Assimp/include",
-		"%{wks.location}/ORigin/vendor/Assimp/contrib",
-		"%{wks.location}/ORigin/vendor/Assimp/contrib/zip",
-		"%{wks.location}/ORigin/vendor/Assimp/contrib/zlib",
-		"%{wks.location}/ORigin/vendor/Assimp/contrib/unzip",
-		"%{wks.location}/ORigin/vendor/Assimp/contrib/pugixml/src",
-		"%{wks.location}/ORigin/vendor/Assimp/contrib/utf8cpp/source",
-		"%{wks.location}/ORigin/vendor/Assimp/contrib/rapidjson/include",
-    "%{wks.location}/ORigin/vendor/assimpcontrib/openddlparser/include",
+		"%{THIRD_PARTY_DIR}/assimp",
+		"%{THIRD_PARTY_DIR}/Assimp/code",
+		"%{THIRD_PARTY_DIR}/Assimp/include",
+		"%{THIRD_PARTY_DIR}/Assimp/contrib",
+		"%{THIRD_PARTY_DIR}/Assimp/contrib/zip",
+		"%{THIRD_PARTY_DIR}/Assimp/contrib/zlib",
+		"%{THIRD_PARTY_DIR}/Assimp/contrib/unzip",
+		"%{THIRD_PARTY_DIR}/Assimp/contrib/pugixml/src",
+		"%{THIRD_PARTY_DIR}/Assimp/contrib/utf8cpp/source",
+		"%{THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include",
+    "%{THIRD_PARTY_DIR}/assimpcontrib/openddlparser/include",
 	}
 
 	defines {

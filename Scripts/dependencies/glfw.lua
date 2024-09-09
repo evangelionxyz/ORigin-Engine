@@ -1,45 +1,45 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "GLFW"
-    location (vendorProjectFiles)
+    location (ThirdPartyProjectFiles)
     kind "StaticLib"
     language "C"
     staticruntime "off"
 
-    targetdir (vendorOutputdir)
-    objdir (vendorIntOutputdir)
+    targetdir (ThirdPartyOutputdir)
+    objdir (ThirdPartyIntOutputdir)
 
     files {
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/context.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/init.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/input.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/monitor.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/null_init.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/null_joystick.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/null_monitor.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/null_window.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/platform.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/vulkan.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/window.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/osmesa_context.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/wgl_context.c",
-        "%{wks.location}/ORigin/vendor/origin-glfw/src/egl_context.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/context.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/init.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/input.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/monitor.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/null_init.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/null_joystick.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/null_monitor.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/null_window.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/platform.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/vulkan.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/window.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/osmesa_context.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/wgl_context.c",
+        "%{THIRD_PARTY_DIR}/GLFW/src/egl_context.c",
     }
 
     -- Linux
     filter "system:linux"
         pic "On"
         files {
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/posix_time.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/posix_thread.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/posix_poll.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/posix_module.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/linux_joystick.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/x11_init.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/x11_monitor.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/x11_window.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/xkb_unicode.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/glx_context.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/posix_time.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/posix_thread.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/posix_poll.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/posix_module.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/linux_joystick.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/x11_init.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/x11_monitor.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/x11_window.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/xkb_unicode.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/glx_context.c",
         }
         defines {
             "_GLFW_X11"
@@ -49,13 +49,13 @@ project "GLFW"
     filter "system:windows"
         systemversion "latest"
         files {
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/win32_init.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/win32_joystick.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/win32_module.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/win32_monitor.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/win32_time.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/win32_thread.c",
-            "%{wks.location}/ORigin/vendor/origin-glfw/src/win32_window.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/win32_init.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/win32_joystick.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/win32_module.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/win32_monitor.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/win32_time.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/win32_thread.c",
+            "%{THIRD_PARTY_DIR}/GLFW/src/win32_window.c",
         }
 
         defines {

@@ -1,19 +1,19 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "YAMLCPP"
-	location (vendorProjectFiles)
+	location (ThirdPartyProjectFiles)
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"
 	staticruntime "off"
 
-	targetdir (vendorOutputdir)
-	objdir (vendorIntOutputdir)
+	targetdir (ThirdPartyOutputdir)
+	objdir (ThirdPartyIntOutputdir)
 
 	files {
-        "%{wks.location}/ORigin/vendor/yaml-cpp/src/**.cpp",
-        "%{wks.location}/ORigin/vendor/yaml-cpp/src/**.h",
-        "%{wks.location}/ORigin/vendor/yaml-cpp/include/yaml-cpp/**.h",
+        "%{THIRD_PARTY_DIR}/yaml-cpp/src/**.cpp",
+        "%{THIRD_PARTY_DIR}/yaml-cpp/src/**.h",
+        "%{THIRD_PARTY_DIR}/yaml-cpp/include/yaml-cpp/**.h",
     }
 
 	defines {
@@ -21,7 +21,7 @@ project "YAMLCPP"
     }
 
     includedirs {
-        "%{wks.location}/ORigin/vendor/yaml-cpp/include/"
+        "%{THIRD_PARTY_DIR}/yaml-cpp/include/"
     }
 
 	filter "system:linux"

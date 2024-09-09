@@ -1,7 +1,7 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "MSDFATLASGEN"
-	location (vendorProjectFiles)
+	location (ThirdPartyProjectFiles)
 	kind "StaticLib"
 	language "C++"
 	cppdialect "c++17"
@@ -9,15 +9,15 @@ project "MSDFATLASGEN"
 
 	links "msdfgen"
 
-	targetdir (vendorOutputdir)
-	objdir (vendorIntOutputdir)
+	targetdir (ThirdPartyOutputdir)
+	objdir (ThirdPartyIntOutputdir)
 
-	files { "%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen/**.cpp" }
+	files { "%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdf-atlas-gen/**.cpp" }
 
 	includedirs {
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdf-atlas-gen",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen",
-		"%{wks.location}/ORigin/vendor/msdf-atlas-gen/msdfgen/include"
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdf-atlas-gen",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen",
+		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/include"
 	}
 
 	filter "configurations:Debug"
