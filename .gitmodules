@@ -1,3 +1,24 @@
 [submodule "Engine/ThirdParty/IMGUI"]
 	path = Engine/ThirdParty/IMGUI
 	url = https://github.com/ocornut/imgui.git
+[submodule "Engine/ThirdParty/GLFW"]
+	path = Engine/ThirdParty/GLFW
+	url = https://github.com/glfw/glfw.git
+[submodule "Engine/ThirdParty/GLM"]
+	path = Engine/ThirdParty/GLM
+	url = https://github.com/g-truc/glm.git
+[submodule "Engine/ThirdParty/FMT"]
+	path = Engine/ThirdParty/FMT
+	url = https://github.com/fmtlib/fmt.git
+[submodule "Engine/ThirdParty/IMGUIZMO"]
+	path = Engine/ThirdParty/IMGUIZMO
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "Engine/ThirdParty/JOLTPHYSICS"]
+	path = Engine/ThirdParty/JOLTPHYSICS
+	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "Engine/ThirdParty/MSDFATLASGEN"]
+	path = Engine/ThirdParty/MSDFATLASGEN
+	url = https://github.com/evangelionmanuhutu/msdf-atlas-gen.git
+[submodule "Engine/ThirdParty/BOX2D"]
+	path = Engine/ThirdParty/BOX2D
+	url = https://github.com/erincatto/box2d.git
