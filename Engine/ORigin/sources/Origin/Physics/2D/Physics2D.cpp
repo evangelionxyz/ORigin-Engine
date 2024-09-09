@@ -34,10 +34,12 @@ namespace origin {
 
         Entity connected_entity              = m_Scene->GetEntityWithUUID(joint->ConnectedBodyID);
         Rigidbody2DComponent &connected_body = connected_entity.GetComponent<Rigidbody2DComponent>();
+        OGN_CORE_ASSERT(b2Body_IsValid(connected_body.BodyId), "[Physics 2D] Invalid connected body id");
 
-        b2RevoluteJointDef joint_def;
-        joint_def = b2DefaultRevoluteJointDef();
-        joint_def.dampingRatio   = joint->DampingRatio;
+        b2RevoluteJointDef joint_def = b2DefaultRevoluteJointDef();
+        joint_def.enableSpring   = joint->EnableSpring;
+        joint_def.collideConnected = joint->CollideConnected;
+        joint_def.dampingRatio   = joint->SpringDampingRatio;
         joint_def.enableLimit    = joint->EnableLimit;
         joint_def.maxMotorTorque = joint->MaxMotorTorque;
         joint_def.motorSpeed     = joint->MotorSpeed;
@@ -46,6 +48,8 @@ namespace origin {
         joint_def.bodyIdB        = connected_body.BodyId;
         joint_def.localAnchorA   = b2Vec2(joint->AnchorPoint.x, joint->AnchorPoint.y);
         joint_def.localAnchorB   = b2Vec2(joint->AnchorPointB.x, joint->AnchorPointB.y);
+        joint_def.lowerAngle     = joint->LowerAngle;
+        joint_def.upperAngle     = joint->UpperAngle;
 
         joint->JointId = b2CreateRevoluteJoint(m_WorldId, &joint_def);
     }
@@ -53,13 +57,13 @@ namespace origin {
     void Physics2D::CreateBoxCollider(BoxCollider2DComponent *box_collider, b2BodyId body_id, b2Vec2 size)
     {
         OGN_PROFILER_PHYSICS();
-
+        box_collider->CurrentSize = { size.x, size.y };
         const b2Polygon box_shape = b2MakeBox(size.x, size.y);
-        b2ShapeDef shape_def = b2DefaultShapeDef();
-        shape_def.density = box_collider->Density;
-        shape_def.friction = box_collider->Friction;
-        shape_def.restitution = box_collider->Restitution;
-        shape_def.isSensor = box_collider->IsSensor;
+        b2ShapeDef shape_def      = b2DefaultShapeDef();
+        shape_def.density         = box_collider->Density;
+        shape_def.friction        = box_collider->Friction;
+        shape_def.restitution     = box_collider->Restitution;
+        shape_def.isSensor        = box_collider->IsSensor;
 
         box_collider->ShapeId = b2CreatePolygonShape(body_id, &shape_def, &box_shape);
     }
@@ -72,10 +76,10 @@ namespace origin {
         circle_shape.radius = radius;
 
         b2ShapeDef shape_def = b2DefaultShapeDef();
-        shape_def.density = circle->Density;
-        shape_def.friction = circle->Friction;
+        shape_def.density     = circle->Density;
+        shape_def.friction    = circle->Friction;
         shape_def.restitution = circle->Restitution;
-        shape_def.isSensor = circle->IsSensor;
+        shape_def.isSensor    = circle->IsSensor;
 
         circle->ShapeId = b2CreateCircleShape(body_id, &shape_def, &circle_shape);
     }
@@ -92,9 +96,52 @@ namespace origin {
         for (entt::entity e : rb2dView)
         {
             Entity entity{ e, m_Scene };
+
             auto &transform = entity.GetComponent<TransformComponent>();
             auto &body = entity.GetComponent<Rigidbody2DComponent>();
             auto &idc = entity.GetComponent<IDComponent>();
+
+            if (entity.HasComponent<RevoluteJoint2DComponent>())
+            {
+                RevoluteJoint2DComponent &joint = entity.GetComponent<RevoluteJoint2DComponent>();
+                b2RevoluteJoint_EnableLimit(joint.JointId, joint.EnableLimit);
+                b2RevoluteJoint_SetMaxMotorTorque(joint.JointId, joint.MaxMotorTorque);
+                b2RevoluteJoint_EnableMotor(joint.JointId, joint.EnableMotor);
+                b2RevoluteJoint_SetMotorSpeed(joint.JointId, joint.MotorSpeed);
+                b2RevoluteJoint_EnableSpring(joint.JointId, joint.EnableSpring);
+                b2RevoluteJoint_SetSpringDampingRatio(joint.JointId, joint.SpringDampingRatio);
+            }
+
+            if (entity.HasComponent<BoxCollider2DComponent>())
+            {
+                BoxCollider2DComponent &box_collider = entity.GetComponent<BoxCollider2DComponent>();
+                b2Shape_SetDensity(box_collider.ShapeId, box_collider.Density);
+                b2Shape_SetFriction(box_collider.ShapeId, box_collider.Friction);
+                b2Shape_SetRestitution(box_collider.ShapeId, box_collider.Restitution);
+                b2Vec2 size = { box_collider.Size.x * transform.WorldScale.x, box_collider.Size.y * transform.WorldScale.y };
+                if (box_collider.CurrentSize.x != size.x || box_collider.CurrentSize.y != size.y)
+                {
+                    box_collider.CurrentSize = { size.x, size.y };
+                    const b2Polygon box_shape = b2MakeBox(size.x, size.y);
+                    b2Shape_SetPolygon(box_collider.ShapeId, &box_shape);
+                }
+            }
+
+            if (entity.HasComponent<CircleCollider2DComponent>())
+            {
+                CircleCollider2DComponent &circle_collider = entity.GetComponent<CircleCollider2DComponent>();
+                b2Shape_SetDensity(circle_collider.ShapeId, circle_collider.Density);
+                b2Shape_SetFriction(circle_collider.ShapeId, circle_collider.Friction);
+                b2Shape_SetRestitution(circle_collider.ShapeId, circle_collider.Restitution);
+                b2Circle circle_shape = b2Shape_GetCircle(circle_collider.ShapeId);
+
+                if (circle_collider.Radius != circle_shape.radius || circle_collider.Offset.x != circle_shape.center.x || circle_collider.Offset.y != circle_shape.center.y)
+                {
+                    circle_shape.radius = circle_collider.Radius;
+                    circle_shape.center = { circle_collider.Offset.x, circle_collider.Offset.y };
+                    b2Shape_SetCircle(circle_collider.ShapeId, &circle_shape);
+                }
+            }
 
             b2Vec2 position = b2Body_GetPosition(body.BodyId);
             b2Rot rotation = b2Body_GetRotation(body.BodyId);
@@ -149,7 +196,7 @@ namespace origin {
             bodyDef.linearVelocity  = { body.LinearVelocity.x, body.LinearVelocity.y };
             bodyDef.angularVelocity = body.AngularVelocity;
 
-            body.BodyId            = b2CreateBody(m_WorldId, &bodyDef);
+            body.BodyId             = b2CreateBody(m_WorldId, &bodyDef);
 
             if (entity.HasComponent<BoxCollider2DComponent>())
             {
@@ -167,7 +214,8 @@ namespace origin {
             }
         }
 
-        // create after rigidbody attached
+        // create joint after rigidbody attached
+        // we need second body id
         for (entt::entity e : view)
         {
             Entity entity = { e, m_Scene };
@@ -176,8 +224,6 @@ namespace origin {
             if(entity.HasComponent<RevoluteJoint2DComponent>())
             {
                 RevoluteJoint2DComponent& joint = entity.GetComponent<RevoluteJoint2DComponent>();
-                b2Vec2 pos = b2Body_GetPosition(body.BodyId);
-                joint.AnchorPoint = { pos.x + joint.AnchorPoint.x, pos.y + joint.AnchorPoint.y };
                 if (joint.ConnectedBodyID != 0)
                 {
                     CreateRevoluteJoint(&joint, body.BodyId);
@@ -249,7 +295,7 @@ namespace origin {
             if (entity.HasComponent<RevoluteJoint2DComponent>())
             {
                 RevoluteJoint2DComponent &joint = entity.GetComponent<RevoluteJoint2DComponent>();
-                b2DestroyJoint(joint.JointId);
+                //b2DestroyJoint(joint.JointId);
             }
 
             if (entity.HasComponent<BoxCollider2DComponent>())

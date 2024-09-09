@@ -446,6 +446,7 @@ namespace origin
     public:
         glm::vec2 Offset = {0.0f, 0.0f};
         glm::vec2 Size = {0.5f, 0.5f};
+        glm::vec2 CurrentSize = { 0.0f, 0.0f };
 
         float Density     = 1.0f;
         float Friction    = 0.5f;
@@ -489,11 +490,15 @@ namespace origin
 
         // Angles in degrees 
         // (it is converted to radians when creating component)
-        bool EnableLimit     = true;
+        bool EnableLimit     = false;
         bool EnableMotor     = true;
-        float MaxMotorTorque = 10.0f;
+        bool EnableSpring    = false;
+        bool CollideConnected = false;
+        float MaxMotorTorque = 100.0f;
         float MotorSpeed     = 0.0f;
-        float DampingRatio   = 1.0f;
+        float SpringDampingRatio  = 1.0f;
+        float LowerAngle     = 0.0f;
+        float UpperAngle     = 0.0f;
 
         UUID ConnectedBodyID = 0;
         b2JointId JointId;
@@ -689,6 +694,5 @@ namespace origin
         SphereColliderComponent,
         CapsuleColliderComponent>;
 }
-
 
 #endif

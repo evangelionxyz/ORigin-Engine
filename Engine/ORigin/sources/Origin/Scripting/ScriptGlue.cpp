@@ -388,7 +388,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
-			b2Body_SetLinearVelocity(body.BodyId, b2Vec2(velocity.x, velocity.y));
+			body.LinearVelocity = velocity;
 		}
 	}
 
@@ -402,8 +402,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			Rigidbody2DComponent &body = entity.GetComponent<Rigidbody2DComponent>();
-			b2Vec2 v = b2Body_GetLinearVelocity(body.BodyId);
-			*velocity = glm::vec2(v.x, v.y);
+			*velocity = body.LinearVelocity;
 		}
 	}
 

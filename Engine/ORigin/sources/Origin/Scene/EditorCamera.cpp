@@ -177,8 +177,11 @@ namespace origin {
         const glm::vec2 delta = (mouse - m_LastMousePos) * 0.003f;
         m_LastMousePos = mouse;
 
+        glm::vec2 mouse_move = glm::vec2(0.0f);
+
         glm::vec3 input(0.0f);
         static glm::vec3 lastPosition = glm::vec3(0.0f);
+        
 
         if (m_AllowedMove)
         {
@@ -191,12 +194,6 @@ namespace origin {
 
             m_IsInViewport = absMousePos.x < screenMax.x && absMousePos.x > screenMin.x
                 && absMousePos.y < screenMax.y && absMousePos.y > screenMin.y;
-
-            if (panOrRotate && m_IsInViewport)
-            {
-                glm::vec2 viewportCenter = (screenMin + screenMax) / 2.0f;
-                Input::Get().SetMousePosition(viewportCenter.x - windowPosX, viewportCenter.y - windowPosY);
-            }
 
             Input::Get().SetMouseHide(panOrRotate && m_IsInViewport);
             if (m_IsInViewport)

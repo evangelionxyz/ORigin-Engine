@@ -985,17 +985,10 @@ namespace origin {
                 UI::DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
                 UI::DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
-                if (b2Shape_IsValid(component.ShapeId))
-                {
-                    UI::DrawCheckbox("Is Sensor", &component.IsSensor);
-
-                    if (UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f))
-                        b2Shape_SetDensity(component.ShapeId, component.Density);
-                    if (UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f))
-                        b2Shape_SetFriction(component.ShapeId, component.Friction);
-                    if (UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f))
-                        b2Shape_SetRestitution(component.ShapeId, component.Restitution);
-                }
+                UI::DrawCheckbox("Is Sensor", &component.IsSensor);
+                UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f);
             });
 
         DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto &component)
@@ -1005,17 +998,10 @@ namespace origin {
                 UI::DrawVec2Control("Offset", component.Offset, 0.01f, 0.0f);
                 UI::DrawFloatControl("Radius", &component.Radius, 0.01f, 0.5f);
 
-                if (b2Shape_IsValid(component.ShapeId))
-                {
-                    UI::DrawCheckbox("Is Sensor", &component.IsSensor);
-
-                    if (UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f))
-                        b2Shape_SetDensity(component.ShapeId, component.Density);
-                    if (UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f))
-                        b2Shape_SetFriction(component.ShapeId, component.Friction);
-                    if (UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f))
-                        b2Shape_SetRestitution(component.ShapeId, component.Restitution);
-                }
+                UI::DrawCheckbox("Is Sensor", &component.IsSensor);
+                UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f);
             });
 
         DrawComponent<RevoluteJoint2DComponent>("Revolute Joint 2D", entity, [&](auto &component)
@@ -1052,27 +1038,25 @@ namespace origin {
                     }
                 }
                 
-                if (b2Joint_IsValid(component.JointId))
+                if (component.ConnectedBodyID != 0)
                 {
                     UI::DrawVec2Control("Anchor A", component.AnchorPoint);
                     UI::DrawVec2Control("Anchor B", component.AnchorPointB);
+                    UI::DrawFloatControl("Upper", &component.UpperAngle, 0.5f, -10000.0f, 10000.0f);
+                    UI::DrawFloatControl("Lower", &component.LowerAngle, 0.5f, -10000.0f, 10000.0f);
 
-                    if (UI::DrawCheckbox("Limit", &component.EnableLimit))
+                    UI::DrawCheckbox("Collide Connected", &component.CollideConnected);
+
+                    UI::DrawCheckbox("Enable Limit", &component.EnableLimit);
+                    if (component.EnableLimit)
+                        UI::DrawFloatControl("Max Torque", &component.MaxMotorTorque, 1.0f, 0.0f, 100000.0f);
+                    UI::DrawCheckbox("Enable Motor", &component.EnableMotor);
+                    if (component.EnableMotor)
+                        UI::DrawFloatControl("Motor Speed", &component.MotorSpeed, 1.0f, 0.0f, 100000.0f);
+                    UI::DrawCheckbox("Enable Spring", &component.EnableSpring);
+                    if (component.EnableSpring)
                     {
-                        b2RevoluteJoint_EnableLimit(component.JointId, component.EnableLimit);
-                    }
-                    
-                    if (UI::DrawFloatControl("Max Torque", &component.MaxMotorTorque, 0.0f))
-                    {
-                        b2RevoluteJoint_SetMaxMotorTorque(component.JointId, component.MaxMotorTorque);
-                    }
-                    if (UI::DrawCheckbox("Motor", &component.EnableMotor))
-                    {
-                        b2RevoluteJoint_EnableMotor(component.JointId, component.EnableMotor);
-                    }
-                    if (UI::DrawFloatControl("Motor Speed", &component.MotorSpeed, 0.0f))
-                    {
-                        b2RevoluteJoint_SetMotorSpeed(component.JointId, component.MotorSpeed);
+                        UI::DrawFloatControl("Damping Ratio", &component.SpringDampingRatio);
                     }
                 }
                 

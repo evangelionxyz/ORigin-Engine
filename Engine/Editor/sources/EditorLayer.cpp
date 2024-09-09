@@ -303,7 +303,7 @@ namespace origin
         m_ActiveScene = Scene::Copy(m_EditorScene);
         m_ActiveScene->OnRuntimeStart();
         m_SceneHierarchy.SetActiveScene(m_ActiveScene);
-        m_ActiveScene->LockMouse();
+        //m_ActiveScene->LockMouse();
     }
 
     void EditorLayer::OnScenePause() const
@@ -316,7 +316,7 @@ namespace origin
         }
 
         m_ActiveScene->SetPaused(true);
-        m_ActiveScene->UnlockMouse();
+        //m_ActiveScene->UnlockMouse();
     }
 
     void EditorLayer::OnSceneSimulate()
@@ -349,7 +349,7 @@ namespace origin
         m_SceneHierarchy.SetActiveScene(m_EditorScene);
         m_ActiveScene = m_EditorScene;
         m_SceneState = SceneState::Edit;
-        m_ActiveScene->UnlockMouse();
+        //m_ActiveScene->UnlockMouse();
     }
 
     bool EditorLayer::NewProject()

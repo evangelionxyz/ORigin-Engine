@@ -575,7 +575,7 @@ namespace origin
 			out << YAML::Key << "MaxMotorTorque" << rjc.MaxMotorTorque;
 			out << YAML::Key << "EnableMotor" << rjc.EnableMotor;
 			out << YAML::Key << "MotorSpeed" << rjc.MotorSpeed;
-			out << YAML::Key << "DampingRatio" << rjc.DampingRatio;
+			out << YAML::Key << "DampingRatio" << rjc.SpringDampingRatio;
 
 			out << YAML::EndMap; // !RevoluteJoint2DComponent;
 		}
@@ -962,7 +962,7 @@ namespace origin
 					rjc.EnableLimit = revoluteJoint2DComponent["EnableLimit"].as<bool>();
 					rjc.MaxMotorTorque = revoluteJoint2DComponent["MaxMotorTorque"].as<float>();
 					rjc.MotorSpeed = revoluteJoint2DComponent["MotorSpeed"].as<float>();
-					rjc.DampingRatio = revoluteJoint2DComponent["DampingRatio"].as<float>();
+					rjc.SpringDampingRatio = revoluteJoint2DComponent["DampingRatio"].as<float>();
 				}
 
 				if (YAML::Node textComponent = entity["TextComponent"])
