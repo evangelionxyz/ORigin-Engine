@@ -22,6 +22,12 @@
 	#define OGN_DX11_API
 #endif
 
+#ifdef OGN_DLL_EXPORT
+#define OGN_API __declspec(dllexport)
+#else
+#define OGN_API __declspec(dllimport)
+#endif
+
 #ifdef OGN_DEBUG
 	#define OGN_ENABLE_ASSERTS
 	#ifdef _WIN32
