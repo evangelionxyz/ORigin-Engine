@@ -3,20 +3,27 @@
 project "BOX2D"
   location (ThirdPartyProjectFiles)
   kind "StaticLib"
-    language "C++"
-    cppdialect "C++11"
+    language "C"
+    cdialect "C17"
     staticruntime "off"
 
     targetdir (ThirdPartyOutputdir)
     objdir (ThirdPartyIntOutputdir)
 
    files {
-        "%{THIRD_PARTY_DIR}/Box2D/src/**.cpp",
+        "%{THIRD_PARTY_DIR}/BOX2D/src/**.c",
     }
 
     includedirs {
-        "%{THIRD_PARTY_DIR}/Box2D/include",
-        "%{THIRD_PARTY_DIR}/Box2D/src"
+        "%{THIRD_PARTY_DIR}/BOX2D/include",
+    }
+
+    defines {
+        "BOX2D_ENABLE_SIMD",
+    }
+
+    buildoptions {
+        "/experimental:c11atomics"
     }
 
     filter "system:linux"

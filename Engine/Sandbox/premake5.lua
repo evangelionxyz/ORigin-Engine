@@ -68,7 +68,7 @@ project "Sandbox"
             "NOMINMAX"
         }
 
-   -- //////////////////////////////
+    -- //////////////////////////////
     -- Default
     filter "configurations:Debug"
         runtime "Debug"
@@ -90,3 +90,4 @@ project "Sandbox"
         defines {
             "OGN_DISTRIBUTION", "NDEBUG"
         }
+        debugdir (outputDir)

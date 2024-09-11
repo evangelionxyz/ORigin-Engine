@@ -10,41 +10,41 @@ project "ASSIMP"
 	targetdir (ThirdPartyOutputdir)
 	objdir (ThirdPartyIntOutputdir)
 
-  files {
-    "%{THIRD_PARTY_DIR}/Assimp/include/**",
-    "%{THIRD_PARTY_DIR}/Assimp/code/Common/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/CApi/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/PostProcessing/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/Material/MaterialSystem.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/Geometry/GeometryUtils.cpp",
+    files {
+        "%{THIRD_PARTY_DIR}/Assimp/include/**",
+        "%{THIRD_PARTY_DIR}/Assimp/code/Common/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/CApi/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/PostProcessing/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/Material/MaterialSystem.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/Geometry/GeometryUtils.cpp",
 
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp",
-    "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
 
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/adler32.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/compress.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/crc32.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/deflate.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzclose.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzlib.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzread.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzwrite.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/infback.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inffast.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inflate.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inftrees.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/trees.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/uncompr.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/zutil.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/adler32.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/compress.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/crc32.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/deflate.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzclose.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzlib.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzread.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/gzwrite.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/infback.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inffast.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inflate.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/inftrees.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/trees.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/uncompr.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib/zutil.c",
 
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/ioapi.c",
-    "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/unzip.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/ioapi.c",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/unzip.c",
 	}
 	
 	includedirs {
@@ -58,7 +58,7 @@ project "ASSIMP"
 		"%{THIRD_PARTY_DIR}/Assimp/contrib/pugixml/src",
 		"%{THIRD_PARTY_DIR}/Assimp/contrib/utf8cpp/source",
 		"%{THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include",
-    "%{THIRD_PARTY_DIR}/assimpcontrib/openddlparser/include",
+        "%{THIRD_PARTY_DIR}/assimpcontrib/openddlparser/include",
 	}
 
 	defines {

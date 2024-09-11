@@ -11,9 +11,9 @@ project "YAMLCPP"
 	objdir (ThirdPartyIntOutputdir)
 
 	files {
-        "%{THIRD_PARTY_DIR}/yaml-cpp/src/**.cpp",
-        "%{THIRD_PARTY_DIR}/yaml-cpp/src/**.h",
-        "%{THIRD_PARTY_DIR}/yaml-cpp/include/yaml-cpp/**.h",
+        "%{THIRD_PARTY_DIR}/YAMLCPP/src/**.cpp",
+        "%{THIRD_PARTY_DIR}/YAMLCPP/src/**.h",
+        "%{THIRD_PARTY_DIR}/YAMLCPP/include/yaml-cpp/**.h",
     }
 
 	defines {
@@ -21,7 +21,7 @@ project "YAMLCPP"
     }
 
     includedirs {
-        "%{THIRD_PARTY_DIR}/yaml-cpp/include/"
+        "%{THIRD_PARTY_DIR}/YAMLCPP/include/"
     }
 
 	filter "system:linux"

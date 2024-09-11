@@ -6,7 +6,6 @@ project "Editor"
     staticruntime "off"
     location "%{wks.location}/Engine/Editor"
 
-    debugdir (outputDir)
     targetdir (outputDir)
     objdir (intOutputDir)
 
@@ -108,3 +107,4 @@ project "Editor"
             "GLFW_INCLUDE_NONE",
             "OGN_DISTRIBUTION", "NDEBUG"
         }
+        debugdir (outputDir)

@@ -11,11 +11,11 @@ project "JOLT"
     objdir (ThirdPartyIntOutputdir)
 
     files{
-        "%{THIRD_PARTY_DIR}/JoltPhysics/Jolt/**.cpp",
+        "%{THIRD_PARTY_DIR}/JOLTPHYSICS/Jolt/**.cpp",
     }
 
     includedirs{
-        "%{THIRD_PARTY_DIR}/JoltPhysics/"
+        "%{THIRD_PARTY_DIR}/JOLTPHYSICS/"
     }
 
     filter "system:windows"

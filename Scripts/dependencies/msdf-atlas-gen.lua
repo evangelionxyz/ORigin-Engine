@@ -12,12 +12,12 @@ project "MSDFATLASGEN"
 	targetdir (ThirdPartyOutputdir)
 	objdir (ThirdPartyIntOutputdir)
 
-	files { "%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdf-atlas-gen/**.cpp" }
+	files { "%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdf-atlas-gen/**.cpp" }
 
 	includedirs {
-		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdf-atlas-gen",
-		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen",
-		"%{THIRD_PARTY_DIR}/msdf-atlas-gen/msdfgen/include"
+		"%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdf-atlas-gen",
+		"%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdfgen",
+		"%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdfgen/include"
 	}
 
 	filter "configurations:Debug"

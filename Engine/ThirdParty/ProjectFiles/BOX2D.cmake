@@ -79,43 +79,20 @@ set_target_properties(BOX2D PROPERTIES
 
 target_compile_definitions(BOX2D PRIVATE BOX2D_ENABLE_SIMD)
 
-if (BOX2D_PROFILE)
-    target_compile_definitions(box2d PRIVATE BOX2D_PROFILE)
-
-    FetchContent_Declare(
-        tracy
-        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-        GIT_TAG master
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-    )
-    FetchContent_MakeAvailable(tracy)
-
-    target_link_libraries(box2d PUBLIC TracyClient)
-endif()
-
 if (BOX2D_VALIDATE)
     target_compile_definitions(box2d PRIVATE BOX2D_VALIDATE)
-endif()
-
-if (BOX2D_ENABLE_SIMD)
-    target_compile_definitions(box2d PRIVATE BOX2D_ENABLE_SIMD)
 endif()
 
 if (MSVC)
     message(STATUS "Box2D on MSVC")	
     if (BUILD_SHARED_LIBS)
-        # this is needed by DLL users to import Box2D symbols
         target_compile_definitions(BOX2D INTERFACE BOX2D_DLL)
     endif()
 
-    # Visual Studio won't load the natvis unless it is in the project
     target_sources(BOX2D PRIVATE ${THIRD_PARTY_DIR}/BOX2D/src/box2d.natvis)
 
-    # Enable asserts in release with debug info
     target_compile_definitions(BOX2D PUBLIC "$<$<CONFIG:RELWITHDEBINFO>:B2_ENABLE_ASSERT>")
 
-    # Atomics are still considered experimental in Visual Studio 17.8
     target_compile_options(BOX2D PRIVATE /experimental:c11atomics)
 
     if (BOX2D_AVX2)

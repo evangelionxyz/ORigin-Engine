@@ -7,7 +7,6 @@ project "Runtime"
     kind "ConsoleApp"
     location "%{wks.location}/Engine/Runtime"
 
-    debugdir (outputDir)
     targetdir (outputDir)
     objdir (intOutputDir)
 
@@ -89,3 +88,4 @@ project "Runtime"
             "GLFW_INCLUDE_NONE",
             "OGN_DISTRIBUTION", "NDEBUG"
         }
+        debugdir (outputDir)

@@ -9,7 +9,7 @@ project "GLAD"
     targetdir (ThirdPartyOutputdir)
     objdir (ThirdPartyIntOutputdir)
 
-    files { "%{THIRD_PARTY_DIR}/glad/src/glad.c"}
+    files { "%{THIRD_PARTY_DIR}/GLAD/src/glad.c"}
     includedirs { "%{IncludeDir.GLAD}" }
     flags { 'NoPCH' }
 
