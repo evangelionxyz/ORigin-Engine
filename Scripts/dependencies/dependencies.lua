@@ -44,7 +44,7 @@ Library["WinVersion"]                  = "Version.lib"
 Library["BCrypt"]                      = "Bcrypt.lib"
 
 -- Dependencies Lua File
-group "Dependecies"
+group "Dependencies"
     include "assimp.lua"
     include "glfw.lua"
     include "glad.lua"

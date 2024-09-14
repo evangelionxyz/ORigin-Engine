@@ -19,3 +19,5 @@ Scripts/premake
 Engine/ThirdParty/VulkanSDK
 Engine/Editor/Resources/Cache
 Engine/Editor/Resources/ScriptCore
+Engine/Test/bin
+Engine/Test/bin-int

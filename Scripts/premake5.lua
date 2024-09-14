@@ -32,3 +32,7 @@ group "Engine"
     include "../Engine/ScriptCore/premake5.lua"
     include "../Engine/Sandbox/premake5.lua"
 group ""
+
+group "Test"
+    include "../Engine/Test/premake5.lua"
+group ""

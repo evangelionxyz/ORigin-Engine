@@ -13,17 +13,17 @@ project "ASSIMP"
     files {
         "%{THIRD_PARTY_DIR}/Assimp/include/**",
         "%{THIRD_PARTY_DIR}/Assimp/code/Common/**.cpp",
-        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/**.cpp",
-        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/CApi/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/PostProcessing/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/Material/MaterialSystem.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/Geometry/GeometryUtils.cpp",
 
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
+        --"%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/**.cpp",
-        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
 
@@ -45,6 +45,8 @@ project "ASSIMP"
 
         "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/ioapi.c",
         "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/unzip.c",
+
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include/**.h",
 	}
 	
 	includedirs {
@@ -63,10 +65,11 @@ project "ASSIMP"
 
 	defines {
       -- "SWIG",
-      --"ASSIMP_BUILD_NO_OWN_ZLIB",
-      --"ASSIMP_BUILD_NO_COLLADA_IMPORTER",
-      --"ASSIMP_BUILD_NO_FBX_IMPORTER",
+      -- "ASSIMP_BUILD_NO_OWN_ZLIB",
+      -- "ASSIMP_BUILD_NO_COLLADA_IMPORTER",
       -- "ASSIMP_BUILD_NO_OBJ_IMPORTER",
+      -- "ASSIMP_BUILD_NO_GLTF_IMPORTER",
+      "ASSIMP_BUILD_NO_FBX_IMPORTER",
       "ASSIMP_BUILD_NO_X_IMPORTER",
       "ASSIMP_BUILD_NO_3DS_IMPORTER",
       "ASSIMP_BUILD_NO_MD3_IMPORTER",
@@ -105,7 +108,6 @@ project "ASSIMP"
       "ASSIMP_BUILD_NO_IFC_IMPORTER",
       "ASSIMP_BUILD_NO_XGL_IMPORTER",
       "ASSIMP_BUILD_NO_ASSBIN_IMPORTER",
-      "ASSIMP_BUILD_NO_GLTF_IMPORTER",
       "ASSIMP_BUILD_NO_C4D_IMPORTER",
       "ASSIMP_BUILD_NO_3MF_IMPORTER",
       "ASSIMP_BUILD_NO_X3D_IMPORTER",

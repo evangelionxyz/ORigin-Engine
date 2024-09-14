@@ -3,12 +3,14 @@
 #ifndef ORIGIN_H
 #define ORIGIN_H
 
-#include "Origin/Core/Application.h"
+
 #include "Origin/Animation/Animation.h"
 #include "Origin/Animation/AnimationState.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Audio/AudioListener.h"
 #include "Origin/Profiler/Profiler.h"
+#include "Origin/Core/Application.h"
+#include "Origin/Core/Log.h"
 #include "Origin/Core/ConsoleManager.h"
 #include "Origin/Core/Input.h"
 #include "Origin/Core/KeyCodes.h"
