@@ -18,11 +18,11 @@ project "ASSIMP"
         "%{THIRD_PARTY_DIR}/Assimp/code/Material/MaterialSystem.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/Geometry/GeometryUtils.cpp",
 
+        --"%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
+        --"%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
-        --"%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/**.cpp",
-        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
@@ -50,7 +50,7 @@ project "ASSIMP"
 	}
 	
 	includedirs {
-		"%{THIRD_PARTY_DIR}/assimp",
+		"%{THIRD_PARTY_DIR}/Assimp",
 		"%{THIRD_PARTY_DIR}/Assimp/code",
 		"%{THIRD_PARTY_DIR}/Assimp/include",
 		"%{THIRD_PARTY_DIR}/Assimp/contrib",
@@ -60,7 +60,7 @@ project "ASSIMP"
 		"%{THIRD_PARTY_DIR}/Assimp/contrib/pugixml/src",
 		"%{THIRD_PARTY_DIR}/Assimp/contrib/utf8cpp/source",
 		"%{THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include",
-        "%{THIRD_PARTY_DIR}/assimpcontrib/openddlparser/include",
+        "%{THIRD_PARTY_DIR}/Assimp/contrib/openddlparser/include",
 	}
 
 	defines {
@@ -116,34 +116,6 @@ project "ASSIMP"
       "ASSIMP_BUILD_NO_SIB_IMPORTER",     
       "ASSIMP_BUILD_NO_USD_IMPORTER",
       "ASSIMP_BUILD_NO_PBRT_IMPORTER",
-      -- "ASSIMP_BUILD_NO_MAKELEFTHANDED_PROCESS",
-      -- "ASSIMP_BUILD_NO_FLIPUVS_PROCESS",
-      -- "ASSIMP_BUILD_NO_FLIPWINDINGORDER_PROCESS",
-      -- "ASSIMP_BUILD_NO_CALCTANGENTS_PROCESS",
-      -- "ASSIMP_BUILD_NO_JOINVERTICES_PROCESS",
-      -- "ASSIMP_BUILD_NO_TRIANGULATE_PROCESS",
-      -- "ASSIMP_BUILD_NO_GENFACENORMALS_PROCESS",
-      -- "ASSIMP_BUILD_NO_GENVERTEXNORMALS_PROCESS",
-      -- "ASSIMP_BUILD_NO_REMOVEVC_PROCESS",
-      -- "ASSIMP_BUILD_NO_SPLITLARGEMESHES_PROCESS",
-      -- "ASSIMP_BUILD_NO_PRETRANSFORMVERTICES_PROCESS",
-      -- "ASSIMP_BUILD_NO_LIMITBONEWEIGHTS_PROCESS",
-      -- "ASSIMP_BUILD_NO_VALIDATEDS_PROCESS",
-      -- "ASSIMP_BUILD_NO_IMPROVECACHELOCALITY_PROCESS",
-      -- "ASSIMP_BUILD_NO_FIXINFACINGNORMALS_PROCESS",
-      -- "ASSIMP_BUILD_NO_REMOVE_REDUNDANTMATERIALS_PROCESS",
-      -- "ASSIMP_BUILD_NO_FINDINVALIDDATA_PROCESS",
-      -- "ASSIMP_BUILD_NO_FINDDEGENERATES_PROCESS",
-      -- "ASSIMP_BUILD_NO_SORTBYPTYPE_PROCESS",
-      -- "ASSIMP_BUILD_NO_GENUVCOORDS_PROCESS",
-      -- "ASSIMP_BUILD_NO_TRANSFORMTEXCOORDS_PROCESS",
-      -- "ASSIMP_BUILD_NO_FINDINSTANCES_PROCESS",
-      -- "ASSIMP_BUILD_NO_OPTIMIZEMESHES_PROCESS",
-      -- "ASSIMP_BUILD_NO_OPTIMIZEGRAPH_PROCESS",
-      -- "ASSIMP_BUILD_NO_SPLITBYBONECOUNT_PROCESS",
-      -- "ASSIMP_BUILD_NO_DEBONE_PROCESS",
-      -- "ASSIMP_BUILD_NO_EMBEDTEXTURES_PROCESS",
-      -- "ASSIMP_BUILD_NO_GLOBALSCALE_PROCESS"
   }
 
     filter "system:linux"

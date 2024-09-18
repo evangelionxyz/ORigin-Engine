@@ -226,7 +226,7 @@ target_include_directories(ASSIMP PRIVATE
   ${THIRD_PARTY_DIR}/Assimp/contrib/pugixml/src
   ${THIRD_PARTY_DIR}/Assimp/contrib/utf8cpp/source
   ${THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include
-  ${THIRD_PARTY_DIR}/assimpcontrib/openddlparser/include
+  ${THIRD_PARTY_DIR}/Assimp/contrib/openddlparser/include
 )
 
 target_compile_definitions(ASSIMP PRIVATE
