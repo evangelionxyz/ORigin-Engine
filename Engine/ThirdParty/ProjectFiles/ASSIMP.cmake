@@ -32,6 +32,7 @@
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/PlyExporter.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/PlyLoader.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/PlyParser.cpp
+    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFCommon.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/CApi/AssimpCExport.cpp

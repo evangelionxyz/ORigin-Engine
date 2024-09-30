@@ -14,6 +14,8 @@ project "ASSIMP"
         "%{THIRD_PARTY_DIR}/Assimp/include/**",
         "%{THIRD_PARTY_DIR}/Assimp/code/Common/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/CApi/**.cpp",
+
+        "%{THIRD_PARTY_DIR}/Assimp/code/Pbrt/PbrtExporter.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/PostProcessing/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/Material/MaterialSystem.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/Geometry/GeometryUtils.cpp",
@@ -24,6 +26,7 @@ project "ASSIMP"
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFCommon.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp",
 
@@ -45,25 +48,24 @@ project "ASSIMP"
 
         "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/ioapi.c",
         "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip/unzip.c",
-
-        "%{THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include/**.h",
 	}
 	
 	includedirs {
-		"%{THIRD_PARTY_DIR}/Assimp",
-		"%{THIRD_PARTY_DIR}/Assimp/code",
-		"%{THIRD_PARTY_DIR}/Assimp/include",
-		"%{THIRD_PARTY_DIR}/Assimp/contrib",
-		"%{THIRD_PARTY_DIR}/Assimp/contrib/zip",
-		"%{THIRD_PARTY_DIR}/Assimp/contrib/zlib",
-		"%{THIRD_PARTY_DIR}/Assimp/contrib/unzip",
-		"%{THIRD_PARTY_DIR}/Assimp/contrib/pugixml/src",
-		"%{THIRD_PARTY_DIR}/Assimp/contrib/utf8cpp/source",
-		"%{THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include",
-        "%{THIRD_PARTY_DIR}/Assimp/contrib/openddlparser/include",
+		  "%{THIRD_PARTY_DIR}/Assimp",
+		  "%{THIRD_PARTY_DIR}/Assimp/code",
+		  "%{THIRD_PARTY_DIR}/Assimp/include",
+		  "%{THIRD_PARTY_DIR}/Assimp/contrib",
+		  "%{THIRD_PARTY_DIR}/Assimp/contrib/zip",
+		  "%{THIRD_PARTY_DIR}/Assimp/contrib/zlib",
+		  "%{THIRD_PARTY_DIR}/Assimp/contrib/unzip",
+		  "%{THIRD_PARTY_DIR}/Assimp/contrib/pugixml/src",
+		  "%{THIRD_PARTY_DIR}/Assimp/contrib/utf8cpp/source",
+		  "%{THIRD_PARTY_DIR}/Assimp/contrib/rapidjson/include",
+      "%{THIRD_PARTY_DIR}/Assimp/contrib/openddlparser/include",
 	}
 
 	defines {
+      "RAPIDJSON_HAS_STDSTRING=1",
       -- "SWIG",
       -- "ASSIMP_BUILD_NO_OWN_ZLIB",
       -- "ASSIMP_BUILD_NO_COLLADA_IMPORTER",
