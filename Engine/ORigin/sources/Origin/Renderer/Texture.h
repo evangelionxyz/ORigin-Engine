@@ -74,8 +74,8 @@ namespace origin {
 	class Texture2D : public Texture
 	{
 	public:
-		static std::shared_ptr<Texture2D> Create(const TextureSpecification& specification, Buffer data = Buffer());
-		static std::shared_ptr<Texture2D> Create(const std::filesystem::path& filepath,
+		static Ref<Texture2D> Create(const TextureSpecification& specification, Buffer data = Buffer());
+		static Ref<Texture2D> Create(const std::filesystem::path& filepath,
 			const TextureSpecification& specification = TextureSpecification());
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
@@ -92,8 +92,8 @@ namespace origin {
 			BACK, FRONT
 		};
 
-		static std::shared_ptr<TextureCube> Create(u32 width, u32 height);
-		static std::shared_ptr<TextureCube> Create(const std::string& filepath);
+		static Ref<TextureCube> Create(u32 width, u32 height);
+		static Ref<TextureCube> Create(const std::string& filepath);
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
 		[[nodiscard]] AssetType GetType() const override { return GetStaticType(); }

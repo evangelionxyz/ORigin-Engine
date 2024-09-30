@@ -3,20 +3,21 @@
 #include "pch.h"
 #include "ModelLoader.h"
 #include "Origin/Math/Math.h"
-
 #include "Renderer.h"
 #include "Texture.h"
+
+#include <stb_image.h>
 
 namespace origin
 {
 	static void ProcessStaticMeshNode(aiNode *node, const aiScene *scene, StaticMeshData *data)
 	{
-		for (uint32_t meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
+		for (u32 meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
 		{
 			aiMesh *mesh = scene->mMeshes[node->mMeshes[meshIndex]];
 
 			// Vertices
-			for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
+			for (u32 i = 0; i < mesh->mNumVertices; ++i)
 			{
 				StaticMeshVertexData vertex;
 				vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
@@ -34,20 +35,45 @@ namespace origin
 			}
 
             // Faces
-            for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
+            for (u32 i = 0; i < mesh->mNumFaces; ++i)
             {
                 aiFace face = mesh->mFaces[i];
-                for (uint32_t in = 0; in < face.mNumIndices; in++)
+                for (u32 in = 0; in < face.mNumIndices; in++)
                 {
                     data->indices.push_back(face.mIndices[in]);
                 }
             }
 		}
 
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
+        for (u32 i = 0; i < node->mNumChildren; ++i)
         {
 			ProcessStaticMeshNode(node->mChildren[i], scene, data);
         }
+	}
+
+	Ref<Texture2D> LoadEmbeddedTexture(aiTexture *texture)
+	{
+		// uncompressed texture
+		if (texture->mHeight == 0)
+		{
+			int width, height, channels;
+			stbi_load_from_memory(
+				reinterpret_cast<unsigned char*>(texture->pcData),
+				texture->mWidth,
+				&width, &height, &channels, 0);
+
+			Buffer buffer(reinterpret_cast<void*>(texture->pcData), width * height * channels);
+
+			TextureSpecification spec;
+			spec.Width = width;
+			spec.Height = height;
+			spec.Format = ImageFormat::RGB8;
+
+			return Texture2D::Create(spec, buffer);
+		}
+
+		OGN_CORE_ASSERT(false, "[Model Loader] Could not process uncompressed texture!");
+		return nullptr;
 	}
 
 	std::shared_ptr<StaticMeshData> ModelLoader::LoadStaticModel(const std::filesystem::path &filepath)
@@ -62,6 +88,17 @@ namespace origin
 		std::shared_ptr<StaticMeshData> data = std::make_shared<StaticMeshData>();
 		ProcessStaticMeshNode(node, scene, data.get());
 		ProcessStaticMesh(data);
+
+		if (scene->HasTextures())
+		{
+			for (u32 i = 0; i < scene->mNumTextures; ++i)
+			{
+				aiTexture* aiTex = scene->mTextures[i];
+				Ref<Texture2D> texture = LoadEmbeddedTexture(aiTex);
+				data->textures.push_back(texture);
+			}
+		}
+
 		return data;
 	}
 
@@ -87,7 +124,7 @@ namespace origin
 
 
 	// ======================================
-	// Dynamic Mesh
+	// Skinned Mesh
 
     std::shared_ptr<MeshData> ModelLoader::LoadModel(const std::filesystem::path &filepath)
     {
@@ -108,12 +145,12 @@ namespace origin
 		data->DiffuseTexture = Renderer::WhiteTexture;
 
         // load position, normal, uv
-        for (uint32_t i = 0; i < mesh->mNumVertices; i++)
+        for (u32 i = 0; i < mesh->mNumVertices; i++)
         {
             MeshVertexData vertex;
 
 			// set default bones value
-			for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+			for (i32 i = 0; i < MAX_BONE_INFLUENCE; ++i)
 			{
 				vertex.IDs[i] = -1;
 				vertex.Weights[i] = 0.0f;
@@ -137,22 +174,31 @@ namespace origin
 		ExtractBoneWeightForVertices(data.get(), mesh, scene);
 
         // load faces
-        for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; faceIndex++)
+        for (u32 faceIndex = 0; faceIndex < mesh->mNumFaces; faceIndex++)
         {
             aiFace &face = mesh->mFaces[faceIndex];
-			for (uint32_t indicesIndex = 0; indicesIndex < face.mNumIndices; indicesIndex++)
+			for (u32 indicesIndex = 0; indicesIndex < face.mNumIndices; indicesIndex++)
 			{
                 data->indices.push_back(face.mIndices[indicesIndex]);
 			}
         }
 
-		// load animations
 		if (scene->HasAnimations())
 		{
-			for (uint32_t animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
+			for (u32 animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
 			{
 				ModelAnimation anim = ModelAnimation(data.get(), scene->mAnimations[animIndex], scene);
 				data->animations.push_back(anim);
+			}
+		}
+
+		if (scene->HasTextures())
+		{
+			for (u32 i = 0; i < scene->mNumTextures; ++i)
+			{
+				aiTexture* aiTex = scene->mTextures[i];
+				Ref<Texture2D> texture = LoadEmbeddedTexture(aiTex);
+				data->textures.push_back(texture);
 			}
 		}
 
@@ -182,9 +228,9 @@ namespace origin
 	void ModelLoader::ExtractBoneWeightForVertices(MeshData *data, aiMesh *mesh, const aiScene *scene)
 	{
 		// load bones weight and apply it to vertices
-		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+		for (u32 boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
 		{
-			int boneId = -1;
+			i32 boneId = -1;
 			aiBone *bone = mesh->mBones[boneIndex];
 			std::string boneName = bone->mName.data;
 
@@ -204,17 +250,17 @@ namespace origin
 			}
 
 			auto weights = bone->mWeights;
-			for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
+			for (u32 weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
 			{
-				int vertexId = weights[weightIndex].mVertexId;
+				i32 vertexId = weights[weightIndex].mVertexId;
 				float weight = weights[weightIndex].mWeight;
 
 				OGN_CORE_ASSERT(vertexId < data->vertices.size(), "Invalid vertex id");
 				MeshVertexData &vertex = data->vertices[vertexId];
 
 				// Find the first available slot for bone influence
-				int availableSlot = -1;
-				for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+				i32 availableSlot = -1;
+				for (i32 i = 0; i < MAX_BONE_INFLUENCE; ++i)
 				{
 					if (vertex.IDs[i] < 0)
 					{
@@ -232,8 +278,8 @@ namespace origin
 				else
 				{
 					// If no available slot, find the smallest weight and replace it if the current weight is larger
-					int smallestWeightIndex = 0;
-					for (int i = 1; i < MAX_BONE_INFLUENCE; ++i)
+					i32 smallestWeightIndex = 0;
+					for (i32 i = 1; i < MAX_BONE_INFLUENCE; ++i)
 					{
 						if (vertex.Weights[i] < vertex.Weights[smallestWeightIndex])
 						{
@@ -255,14 +301,14 @@ namespace origin
 		for (auto &vertex : data->vertices)
 		{
 			float totalWeight = 0.0f;
-			for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+			for (i32 i = 0; i < MAX_BONE_INFLUENCE; ++i)
 			{
 				totalWeight += vertex.Weights[i];
 			}
 
 			if (totalWeight > 0.0f)
 			{
-				for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+				for (i32 i = 0; i < MAX_BONE_INFLUENCE; ++i)
 				{
 					vertex.Weights[i] /= totalWeight;
 				}

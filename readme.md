@@ -22,3 +22,10 @@ Run [gen.bat](gen.bat) to generate Visual Studio .sln file or Makefile.
     sudo apt install libvulkan1 mesa-vulkan-drivers vulkan-utils
 ```
 Then run `bash gen.sh` to generate Makefile.
+
+## Preview
+<p align="center">
+  <img src="Res/img1.png" alt="Alt text" width="auto" height="fit" >
+  <img src="Res/img2.png" alt="Alt text" width="auto" height="fit" >
+  <img src="Res/img3.png" alt="Alt text" width="auto" height="fit" >
+</p>

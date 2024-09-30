@@ -36,13 +36,14 @@ namespace origin
         std::vector<uint32_t> indices;
         std::shared_ptr<VertexArray> vertexArray;
         std::shared_ptr<VertexBuffer> vertexBuffer;
+        std::vector<Ref<Texture2D>> textures;
 
         static AssetType GetStaticType() { return AssetType::StaticMesh; }
         virtual AssetType GetType() const { return GetStaticType(); }
     };
 
     // ================================
-    // Dynamic Mesh
+    // Skinned Mesh
 
 #define MAX_BONE_INFLUENCE 4
     struct MeshVertexData
@@ -67,6 +68,7 @@ namespace origin
         std::vector<uint32_t> indices;
         std::shared_ptr<VertexArray> vertexArray;
         std::shared_ptr<VertexBuffer> vertexBuffer;
+        std::vector<Ref<Texture2D>> textures;
 
         std::vector<ModelAnimation> animations;
         std::map<std::string, BoneInfo> boneInfoMap;

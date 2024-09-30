@@ -3,40 +3,20 @@
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/ColladaHelper.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/ColladaLoader.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Collada/ColladaParser.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXAnimation.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXBinaryTokenizer.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXConverter.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXDeformer.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXDocument.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXDocumentUtil.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXExportNode.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXExportProperty.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXExporter.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXImporter.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXMaterial.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXMeshGeometry.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXModel.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXNodeAttribute.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXParser.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXProperties.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXTokenizer.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/FBXUtil.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/IQMImporter.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/M3DExporter.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/M3DImporter.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/M3DWrapper.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/ObjExporter.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/ObjFileImporter.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/ObjFileMtlImporter.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Obj/ObjFileParser.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/PlyExporter.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/PlyLoader.cpp
-    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/PlyParser.cpp
+    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/M3DExporter.cpp
+    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/M3DImporter.cpp
+    ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/M3DWrapper.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFCommon.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF/glTFImporter.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/AssetLib/glTF2/glTF2Importer.cpp
+
     ${THIRD_PARTY_DIR}/Assimp/code/CApi/AssimpCExport.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/CApi/CInterfaceIOWrapper.cpp
+
     ${THIRD_PARTY_DIR}/Assimp/code/Common/AssertHandler.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/Common/Assimp.cpp
     ${THIRD_PARTY_DIR}/Assimp/code/Common/Base64.cpp
@@ -120,100 +100,6 @@
     ${THIRD_PARTY_DIR}/Assimp/contrib/zlib/uncompr.c
     ${THIRD_PARTY_DIR}/Assimp/contrib/zlib/zutil.c
     ${THIRD_PARTY_DIR}/Assimp/include/assimp/.editorconfig
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/AssertHandler.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Base64.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/BaseImporter.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Bitmap.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/BlobIOSystem.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/ByteSwapper.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/ColladaMetaData.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Compiler/poppack1.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Compiler/pstdint.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Compiler/pushpack1.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/CreateAnimMesh.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/DefaultIOStream.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/DefaultIOSystem.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/DefaultLogger.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Exceptional.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Exporter.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/GenericProperty.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/GltfMaterial.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Hash.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/IOStream.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/IOStreamBuffer.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/IOSystem.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Importer.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/LineSplitter.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/LogAux.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/LogStream.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Logger.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/MathFunctions.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/MemoryIOWrapper.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/NullLogger.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/ObjMaterial.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/ParsingUtils.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Profiler.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/ProgressHandler.hpp
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/RemoveComments.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/SGSpatialSort.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/SceneCombiner.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/SkeletonMeshBuilder.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/SmallVector.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/SmoothingGroups.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/SmoothingGroups.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/SpatialSort.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/StandardShapes.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/StreamReader.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/StreamWriter.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/StringComparison.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/StringUtils.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Subdivision.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/TinyFormatter.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/Vertex.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/XMLTools.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/XmlParser.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/ZipArchiveIOSystem.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/aabb.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/ai_assert.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/anim.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/camera.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/cexport.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/cfileio.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/cimport.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/color4.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/color4.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/commonMetaData.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/config.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/config.h.in
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/defs.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/fast_atof.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/importerdesc.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/light.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/material.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/material.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/matrix3x3.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/matrix3x3.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/matrix4x4.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/matrix4x4.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/mesh.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/metadata.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/pbrmaterial.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/port/AndroidJNI/AndroidJNIIOSystem.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/port/AndroidJNI/BundledAssetIOSystem.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/postprocess.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/qnan.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/quaternion.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/quaternion.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/revision.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/revision.h.in
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/scene.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/texture.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/types.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/vector2.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/vector2.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/vector3.h
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/vector3.inl
-    ${THIRD_PARTY_DIR}/Assimp/include/assimp/version.h
 )
 
 target_include_directories(ASSIMP PRIVATE
@@ -231,9 +117,12 @@ target_include_directories(ASSIMP PRIVATE
 )
 
 target_compile_definitions(ASSIMP PRIVATE
+  RAPIDJSON_HAS_STDSTRING=1
+  # ASSIMP_BUILD_NO_GLTF_IMPORTER
   ASSIMP_BUILD_NO_X_IMPORTER
+  ASSIMP_BUILD_NO_FBX_IMPORTER
   ASSIMP_BUILD_NO_3DS_IMPORTER
-  ASSIMP_BUILD_NO_MD3_IMPORTER
+  #ASSIMP_BUILD_NO_MD3_IMPORTER
   ASSIMP_BUILD_NO_MDL_IMPORTER
   ASSIMP_BUILD_NO_MD2_IMPORTER
   ASSIMP_BUILD_NO_PLY_IMPORTER
@@ -269,7 +158,6 @@ target_compile_definitions(ASSIMP PRIVATE
   ASSIMP_BUILD_NO_IFC_IMPORTER
   ASSIMP_BUILD_NO_XGL_IMPORTER
   ASSIMP_BUILD_NO_ASSBIN_IMPORTER
-  ASSIMP_BUILD_NO_GLTF_IMPORTER
   ASSIMP_BUILD_NO_C4D_IMPORTER
   ASSIMP_BUILD_NO_3MF_IMPORTER
   ASSIMP_BUILD_NO_X3D_IMPORTER

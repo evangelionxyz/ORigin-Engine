@@ -12,7 +12,7 @@ workspace "TestGame"
         targetdir ( "%{prj.location}/bin"                  )
         objdir    ( "%{prj.location}/bin-int"              )
         files     { "%{prj.location}/Assets/Scripts/**.cs" }
-        links    { "ORigin-ScriptCore"                     }
+        links    { "ScriptCore"                     }
         filter "system:linux"
             pic "On"
             
@@ -32,7 +32,7 @@ workspace "TestGame"
             symbols "Off"
 
 	engine_path = os.getenv("ORiginEngine")
-	ScriptCoreLib = path.join(engine_path, "Scripts/projects/ORigin-ScriptCore.lua")
+	ScriptCoreLib = path.join(engine_path, "Engine/ScriptCore/premake5.lua")
 group "ORiginEngine"
     include(ScriptCoreLib)
 group ""

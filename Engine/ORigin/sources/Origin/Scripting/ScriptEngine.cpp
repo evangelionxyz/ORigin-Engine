@@ -303,6 +303,7 @@ namespace origin
 		{
 			const auto build_path = Project::GetActive()->GetProjectDirectory() / "build.bat";
 			Utils::ExecuteScript(build_path.generic_string());
+			OGN_CORE_ASSERT(exists(filepath), "[Script Engine] Failed to generate project file");
 		}
 
 		s_ScriptEngineData->AppAssemblyFilepath = filepath;

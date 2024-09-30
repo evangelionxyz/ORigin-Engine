@@ -1190,75 +1190,78 @@ namespace origin {
                 if (isRunning && !detached)
                 {
                     std::shared_ptr<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
-                    auto fields = scriptInstance->GetScriptClass()->GetFields();
-
-                    for (const auto &[name, field] : fields)
+                    if (scriptInstance)
                     {
-                        switch (field.Type)
+                        auto fields = scriptInstance->GetScriptClass()->GetFields();
+                        for (const auto &[name, field] : fields)
                         {
-                        case ScriptFieldType::Float:
-                        {
-                            float data = scriptInstance->GetFieldValue<float>(name);
-                            if (UI::DrawFloatControl(name.c_str(), &data, 0.1f))
+                            switch (field.Type)
                             {
-                                scriptInstance->SetFieldValue<float>(name, data);
-                            }
-                            break;
-                        }
-                        case ScriptFieldType::Int:
-                        {
-                            int data = scriptInstance->GetFieldValue<int>(name);
-                            if (UI::DrawIntControl(name.c_str(), &data, 1))
+                            case ScriptFieldType::Float:
                             {
-                                scriptInstance->SetFieldValue<int>(name, data);
-                            }
-                            break;
-                        }
-                        case ScriptFieldType::Vector2:
-                        {
-                            glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
-                            if (UI::DrawVec2Control(name.c_str(), data, 0.1f))
-                            {
-                                scriptInstance->SetFieldValue<glm::vec2>(name, data);
-                            }
-                            break;
-                        }
-                        case ScriptFieldType::Vector3:
-                        {
-                            glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
-                            if (UI::DrawVec3Control(name.c_str(), data, 0.1f))
-                            {
-                                scriptInstance->SetFieldValue<glm::vec3>(name, data);
-                            }
-                            break;
-                        }
-                        case ScriptFieldType::Vector4:
-                        {
-                            glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
-                            if (UI::DrawVec4Control(name.c_str(), data, 0.1f))
-                            {
-                                scriptInstance->SetFieldValue<glm::vec4>(name, data);
-                            }
-                            break;
-                        }
-                        case ScriptFieldType::Entity:
-                            uint64_t uuid = scriptInstance->GetFieldValue<uint64_t>(name);
-                            Entity e = scene->GetEntityWithUUID(uuid);
-                            if (e)
-                            {
-                                UI::DrawButtonWithColumn(name.c_str(), e.GetTag().c_str(), nullptr, [&]()
+                                float data = scriptInstance->GetFieldValue<float>(name);
+                                if (UI::DrawFloatControl(name.c_str(), &data, 0.1f))
                                 {
-                                    if (ImGui::IsItemHovered())
-                                    {
-                                        ImGui::BeginTooltip();
-                                        ImGui::Text("%llu", uuid);
-                                        ImGui::EndTooltip();
-                                    }
-                                });
+                                    scriptInstance->SetFieldValue<float>(name, data);
+                                }
+                                break;
                             }
+                            case ScriptFieldType::Int:
+                            {
+                                int data = scriptInstance->GetFieldValue<int>(name);
+                                if (UI::DrawIntControl(name.c_str(), &data, 1))
+                                {
+                                    scriptInstance->SetFieldValue<int>(name, data);
+                                }
+                                break;
+                            }
+                            case ScriptFieldType::Vector2:
+                            {
+                                glm::vec2 data = scriptInstance->GetFieldValue<glm::vec2>(name);
+                                if (UI::DrawVec2Control(name.c_str(), data, 0.1f))
+                                {
+                                    scriptInstance->SetFieldValue<glm::vec2>(name, data);
+                                }
+                                break;
+                            }
+                            case ScriptFieldType::Vector3:
+                            {
+                                glm::vec3 data = scriptInstance->GetFieldValue<glm::vec3>(name);
+                                if (UI::DrawVec3Control(name.c_str(), data, 0.1f))
+                                {
+                                    scriptInstance->SetFieldValue<glm::vec3>(name, data);
+                                }
+                                break;
+                            }
+                            case ScriptFieldType::Vector4:
+                            {
+                                glm::vec4 data = scriptInstance->GetFieldValue<glm::vec4>(name);
+                                if (UI::DrawVec4Control(name.c_str(), data, 0.1f))
+                                {
+                                    scriptInstance->SetFieldValue<glm::vec4>(name, data);
+                                }
+                                break;
+                            }
+                            case ScriptFieldType::Entity:
+                                uint64_t uuid = scriptInstance->GetFieldValue<uint64_t>(name);
+                                Entity e = scene->GetEntityWithUUID(uuid);
+                                if (e)
+                                {
+                                    UI::DrawButtonWithColumn(name.c_str(), e.GetTag().c_str(), nullptr, [&]()
+                                    {
+                                        if (ImGui::IsItemHovered())
+                                        {
+                                            ImGui::BeginTooltip();
+                                            ImGui::Text("%llu", uuid);
+                                            ImGui::EndTooltip();
+                                        }
+                                    });
+                                }
                             
-                            break;
+                                break;
+                            }
                         }
+
                     }
                 }
                 else if (!isRunning && scriptClassExist && !detached)
