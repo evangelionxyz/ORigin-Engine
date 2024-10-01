@@ -22,10 +22,18 @@ namespace origin
 
         m_Duration = (float)anim->mDuration;
 
+        m_Bones.clear();
         ReadHierarchy(m_RootNode, scene->mRootNode);
+        
+        aiNodeAnim *rootChannel = anim->mChannels[0];
+        ReadLocalTransform(rootChannel);
 
         // find bones if it is not found in data at first load
-        ReadMissingBones(data, anim);
+        if (data->boneCount)
+        {
+            ReadMissingBones(data, anim);
+        }
+            
     }
 
     void ModelAnimation::ReadMissingBones(MeshData *data, const aiAnimation *anim)
@@ -33,11 +41,12 @@ namespace origin
         auto &boneInfoMap = data->boneInfoMap;
         int &boneCount = data->boneCount;
 
-        for (uint32_t i = 0; i < anim->mNumChannels; ++i)
+        for (u32 i = 0; i < anim->mNumChannels; ++i)
         {
             // find animation bone data
-            auto channel = anim->mChannels[i];
-            std::string boneName = channel->mNodeName.data;
+            aiNodeAnim *channel = anim->mChannels[i];
+
+            const std::string &boneName = channel->mNodeName.data;
 
             // if it is not found in mesh data, then add it
             if (boneInfoMap.find(boneName) == boneInfoMap.end())
@@ -46,7 +55,7 @@ namespace origin
                 boneCount++;
             }
 
-            m_Bones.push_back(Bone(channel->mNodeName.data, boneInfoMap[channel->mNodeName.data].ID, channel));
+            m_Bones.insert({ boneName, Bone(boneName, boneInfoMap[boneName].ID, channel) });
         }
 
         // set current bone info map
@@ -54,14 +63,38 @@ namespace origin
         m_BoneInfoMap = boneInfoMap;
     }
 
+    void ModelAnimation::ReadLocalTransform(aiNodeAnim *channel)
+    {
+        for (u32 positionIndex = 0; positionIndex < channel->mNumPositionKeys; ++positionIndex)
+        {
+            aiVector3D aiPos = channel->mPositionKeys[positionIndex].mValue;
+            float timestamp = (float)channel->mPositionKeys[positionIndex].mTime;
+            m_TranslationKeys.AddFrame({ Math::AssimpToGlmVec3(aiPos), timestamp });
+        }
+
+        for (u32 rotationIndex = 0; rotationIndex < channel->mNumRotationKeys; ++rotationIndex)
+        {
+            aiQuaternion aiQuat = channel->mRotationKeys[rotationIndex].mValue;
+            float timestamp = (float)channel->mRotationKeys[rotationIndex].mTime;
+            m_RotationKeys.AddFrame({ Math::AssimpToGlmQuat(aiQuat), timestamp });
+        }
+
+        for (u32 scaleIndex = 0; scaleIndex < channel->mNumScalingKeys; ++scaleIndex)
+        {
+            aiVector3D aiScale = channel->mScalingKeys[scaleIndex].mValue;
+            float timestamp = (float)channel->mScalingKeys[scaleIndex].mTime;
+            m_ScaleKeys.AddFrame({ Math::AssimpToGlmVec3(aiScale), timestamp });
+        }
+    }
+
     void ModelAnimation::ReadHierarchy(AssimpNodeData &dest, const aiNode *src)
     {
-        dest.Name = src->mName.data;
+        dest.Name = src->mName.C_Str();
         dest.Transformation = Math::AssimpToGlmMatrix(src->mTransformation);
 
-        dest.ChildrendCount = src->mNumChildren;
+        dest.ChildrenCount = src->mNumChildren;
 
-        for (uint32_t i = 0; i < src->mNumChildren; ++i)
+        for (u32 i = 0; i < src->mNumChildren; ++i)
         {
             AssimpNodeData newData;
             ReadHierarchy(newData, src->mChildren[i]);
@@ -70,17 +103,9 @@ namespace origin
     }
     Bone *ModelAnimation::FindBone(const std::string &name)
     {
-        std::vector<Bone>::iterator it = std::find_if(m_Bones.begin(), m_Bones.end(),
-        [&](const Bone &bone)
-        {
-            return bone.Name == name;
-        });
+        if (m_Bones.contains(name))
+            return &m_Bones.at(name);
 
-        if (it == m_Bones.end())
-        {
-            return nullptr;
-        }
-
-        return &(*it);
+        return nullptr;
     }
 }

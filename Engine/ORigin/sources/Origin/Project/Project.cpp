@@ -100,8 +100,8 @@ namespace origin {
 #endif
 		if (projectFilepath == "")
 			return nullptr;
-
-		OGN_CORE_INFO("[Project New] {0}", projectFilepath.string());
+		
+		OGN_CORE_INFO("[Project New] {0}", projectFilepath.generic_string());
 		std::string projectName = projectFilepath.stem().string();
 		std::filesystem::path filepath = projectFilepath.parent_path();
 		

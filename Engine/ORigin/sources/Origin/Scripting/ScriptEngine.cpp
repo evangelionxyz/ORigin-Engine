@@ -371,7 +371,7 @@ namespace origin
 		OGN_PROFILER_LOGIC();
 		if(s_ScriptEngineData)
 			return s_ScriptEngineData->EntityClasses.contains(fullClassName);
-		return false;		
+		return false;
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)

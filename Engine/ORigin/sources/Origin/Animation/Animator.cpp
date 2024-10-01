@@ -15,7 +15,7 @@ namespace origin
         m_FinalBoneMatrices.resize(100, glm::mat4(1.0f));
     }
 
-    void Animator::UpdateAnimation(float deltaTime, float speed)
+    void Animator::UpdateAnimation(f32 deltaTime, f32 speed)
     {
         m_DeltaTime = deltaTime;
         if (m_CurrentAnimation)
@@ -23,6 +23,7 @@ namespace origin
             m_CurrentTime += deltaTime * speed;
             m_TimeInTicks = m_CurrentTime * m_CurrentAnimation->GetTicksPersecond();
             m_TimeInTicks = fmod(m_TimeInTicks, m_CurrentAnimation->m_Duration);
+            //const glm::mat4 &parentTransform = CalculateLocalTransform();
             CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
         }
     }
@@ -34,12 +35,19 @@ namespace origin
         m_CurrentTime = 0.0f;
     }
 
-    void Animator::CalculateBoneTransform(const AssimpNodeData *node, glm::mat4 parentTransform)
+    glm::mat4 Animator::CalculateLocalTransform()
     {
-        std::string nodeName = node->Name;
+        glm::mat4 translation = m_CurrentAnimation->m_TranslationKeys.InterpolateTranslation(m_TimeInTicks);
+        glm::mat4 rotation = m_CurrentAnimation->m_RotationKeys.Interpolate(m_TimeInTicks);
+        glm::mat4 scale = m_CurrentAnimation->m_ScaleKeys.InterpolateScaling(m_TimeInTicks);
+        return translation * rotation * scale;
+    }
+
+    void Animator::CalculateBoneTransform(const AssimpNodeData *node, const glm::mat4 &parentTransform)
+    {
         glm::mat4 nodeTransform = node->Transformation;
 
-        Bone *bone = m_CurrentAnimation->FindBone(nodeName);
+        Bone *bone = m_CurrentAnimation->FindBone(node->Name);
         if (bone)
         {
             bone->Update(m_TimeInTicks);
@@ -48,15 +56,14 @@ namespace origin
 
         glm::mat4 globalTransform = parentTransform * nodeTransform;
 
-        auto boneInfoMap = m_CurrentAnimation->m_BoneInfoMap;
-        if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+        std::map<std::string, BoneInfo> &boneInfoMap = m_CurrentAnimation->m_BoneInfoMap;
+        if (boneInfoMap.contains(node->Name))
         {
-            int index = boneInfoMap[nodeName].ID;
-            glm::mat4 offset = boneInfoMap[nodeName].OffsetMatrix;
-            m_FinalBoneMatrices[index] = globalTransform * offset;
+            i32 index = boneInfoMap[node->Name].ID;
+            m_FinalBoneMatrices[index] = globalTransform * boneInfoMap[node->Name].OffsetMatrix;
         }
 
-        for (int i = 0; i < node->ChildrendCount; i++)
+        for (i32 i = 0; i < node->ChildrenCount; i++)
         {
             CalculateBoneTransform(&node->Children[i], globalTransform);
         }

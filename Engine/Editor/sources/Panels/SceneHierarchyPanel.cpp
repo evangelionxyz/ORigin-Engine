@@ -529,16 +529,19 @@ namespace origin {
                 ImGui::EndDragDropTarget();
             }
 
-            UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f);
-
-            ImGui::Text("Elapsed Time: %.2f", component.AAnimator.m_CurrentTime);
-            ImGui::Text("Ticks Per Second: %.2f", component.AAnimator.m_CurrentAnimation->GetTicksPersecond());
-            ImGui::Text("Animation Duration: %.2f", component.AAnimator.m_CurrentAnimation->GetDuration());
-            for (size_t i = 0; i < component.AAnimator.m_FinalBoneMatrices.size(); ++i)
+            if (component.AAnimator.HasAnimation())
             {
-                auto mat = component.AAnimator.m_FinalBoneMatrices[i];
-                ImGui::Text("Bone %zu Transform", i);
-                ImGui::InputFloat4("Transform", glm::value_ptr(mat), "%.2f");
+                UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f, 1.0f);
+
+                ImGui::Text("Elapsed Time: %.2f", component.AAnimator.m_CurrentTime);
+                ImGui::Text("Ticks Per Second: %.2f", component.AAnimator.m_CurrentAnimation->GetTicksPersecond());
+                ImGui::Text("Animation Duration: %.2f", component.AAnimator.m_CurrentAnimation->GetDuration());
+                for (size_t i = 0; i < component.AAnimator.m_FinalBoneMatrices.size(); ++i)
+                {
+                    auto mat = component.AAnimator.m_FinalBoneMatrices[i];
+                    ImGui::Text("Bone %zu Transform", i);
+                    ImGui::InputFloat4("Transform", glm::value_ptr(mat), "%.2f");
+                }
             }
         });
 

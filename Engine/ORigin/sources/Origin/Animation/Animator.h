@@ -13,17 +13,20 @@ namespace origin
         Animator() = default;
         Animator(ModelAnimation *animation);
 
-        void UpdateAnimation(float deltaTime, float speed);
+        void UpdateAnimation(f32 deltaTime, f32 speed);
         void PlayAnimation(ModelAnimation *animation);
-        void CalculateBoneTransform(const AssimpNodeData *node, glm::mat4 parentTransform);
+        glm::mat4 CalculateLocalTransform();
+        void CalculateBoneTransform(const AssimpNodeData *node, const glm::mat4 &parentTransform);
+
+        bool HasAnimation() { return m_CurrentAnimation != nullptr; }
 
         std::vector<glm::mat4> GetFinalBoneMatrices();
 
         std::vector<glm::mat4> m_FinalBoneMatrices;
-        ModelAnimation *m_CurrentAnimation;
-        float m_TimeInTicks;
-        float m_CurrentTime;
-        float m_DeltaTime;
+        ModelAnimation *m_CurrentAnimation = nullptr;
+        f32 m_TimeInTicks;
+        f32 m_CurrentTime;
+        f32 m_DeltaTime;
     };
 }
 

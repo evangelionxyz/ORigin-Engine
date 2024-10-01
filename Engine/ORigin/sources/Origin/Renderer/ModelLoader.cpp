@@ -57,17 +57,17 @@ namespace origin
 		if (texture->mHeight == 0)
 		{
 			int width, height, channels;
-			stbi_load_from_memory(
+			unsigned char *image_data = stbi_load_from_memory(
 				reinterpret_cast<unsigned char*>(texture->pcData),
 				texture->mWidth,
 				&width, &height, &channels, 0);
 
-			Buffer buffer(reinterpret_cast<void*>(texture->pcData), width * height * channels);
+			Buffer buffer(image_data, width * height * channels);
 
 			TextureSpecification spec;
 			spec.Width = width;
 			spec.Height = height;
-			spec.Format = ImageFormat::RGB8;
+			spec.Format = channels == 4 ? ImageFormat::RGBA8 : ImageFormat::RGB8;
 
 			return Texture2D::Create(spec, buffer);
 		}
@@ -159,13 +159,8 @@ namespace origin
 			vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 			vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 			if (mesh->mTextureCoords[0])
-			{
 				vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-			}
-			else
-			{
-				vertex.UV = { 1.0f, 1.0f };
-			}
+			else vertex.UV = { 1.0f, 1.0f };
 
 			data->vertices.push_back(vertex);
         }
@@ -197,8 +192,9 @@ namespace origin
 			for (u32 i = 0; i < scene->mNumTextures; ++i)
 			{
 				aiTexture* aiTex = scene->mTextures[i];
-				Ref<Texture2D> texture = LoadEmbeddedTexture(aiTex);
-				data->textures.push_back(texture);
+				//data->DiffuseTexture = LoadEmbeddedTexture(aiTex);
+				//Ref<Texture2D> texture = LoadEmbeddedTexture(aiTex);
+				//data->textures.push_back(texture);
 			}
 		}
 
