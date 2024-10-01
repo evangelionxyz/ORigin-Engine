@@ -207,7 +207,11 @@ namespace origin
         AssetHandle HMaterial = UUID(0);
         AssetHandle HMesh = UUID(0);
         float PlaybackSpeed = 1.0f;
+
         Animator AAnimator;
+
+        i32 AnimationIndex = 0;
+        i32 AnimationCount = 0;
 
         MeshComponent() = default;
         MeshComponent(const MeshComponent &) = default;

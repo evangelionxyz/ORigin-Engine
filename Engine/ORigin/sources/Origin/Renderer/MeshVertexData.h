@@ -68,7 +68,6 @@ namespace origin
         std::vector<uint32_t> indices;
         std::shared_ptr<VertexArray> vertexArray;
         std::shared_ptr<VertexBuffer> vertexBuffer;
-        //std::vector<Ref<Texture2D>> textures;
 
         std::vector<ModelAnimation> animations;
         std::map<std::string, BoneInfo> boneInfoMap;

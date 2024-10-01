@@ -127,38 +127,9 @@ namespace origin
         int ID;
 
         Bone() = default;
-        Bone(const std::string &name, int id, const aiNodeAnim *channel)
-            : Name(name), ID(id), LocalTransform(1.0f)
-        {
-            for (u32 positionIndex = 0; positionIndex < channel->mNumPositionKeys; ++positionIndex)
-            {
-                aiVector3D aiPos = channel->mPositionKeys[positionIndex].mValue;
-                float timestamp = (float)channel->mPositionKeys[positionIndex].mTime;
-                TranslationKeys.AddFrame({ Math::AssimpToGlmVec3(aiPos), timestamp });
-            }
+        Bone(const std::string &name, int id, const aiNodeAnim *channel);
 
-            for (u32 rotationIndex = 0; rotationIndex < channel->mNumRotationKeys; ++rotationIndex)
-            {
-                aiQuaternion aiQuat = channel->mRotationKeys[rotationIndex].mValue;
-                float timestamp = (float)channel->mRotationKeys[rotationIndex].mTime;
-                RotationKeys.AddFrame({ Math::AssimpToGlmQuat(aiQuat), timestamp });
-            }
-
-            for (u32 scaleIndex = 0; scaleIndex < channel->mNumScalingKeys; ++scaleIndex)
-            {
-                aiVector3D aiScale = channel->mScalingKeys[scaleIndex].mValue;
-                float timestamp = (float)channel->mScalingKeys[scaleIndex].mTime;
-                ScaleKeys.AddFrame({ Math::AssimpToGlmVec3(aiScale), timestamp });
-            }
-        }
-
-        void Update(float animTime)
-        {
-            glm::mat4 translation = TranslationKeys.InterpolateTranslation(animTime);
-            glm::mat4 rotation = RotationKeys.Interpolate(animTime);
-            glm::mat4 scale = ScaleKeys.InterpolateScaling(animTime);
-            LocalTransform = translation * rotation * scale;
-        }
+        void Update(float animTime);
     };
 
     struct AssimpNodeData
@@ -178,8 +149,6 @@ namespace origin
         void ReadHierarchy(AssimpNodeData &dest, const aiNode *src);
         void ReadMissingBones(MeshData *data, const aiAnimation *anim);
 
-        void ReadLocalTransform(aiNodeAnim *channel);
-
         Bone *FindBone(const std::string &name);
 
         float GetTicksPersecond() const { return m_TicksPerSecond; }
@@ -198,11 +167,6 @@ namespace origin
         std::unordered_map<std::string, Bone> m_Bones;
         std::map<std::string, BoneInfo> m_BoneInfoMap;
         AssimpNodeData m_RootNode;
-
-        Vec3Key m_TranslationKeys;
-        QuatKey m_RotationKeys;
-        Vec3Key m_ScaleKeys;
-
         friend class Animator;
     };
 }

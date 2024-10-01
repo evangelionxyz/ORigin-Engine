@@ -15,7 +15,6 @@ namespace origin
 
         void UpdateAnimation(f32 deltaTime, f32 speed);
         void PlayAnimation(ModelAnimation *animation);
-        glm::mat4 CalculateLocalTransform();
         void CalculateBoneTransform(const AssimpNodeData *node, const glm::mat4 &parentTransform);
 
         bool HasAnimation() { return m_CurrentAnimation != nullptr; }

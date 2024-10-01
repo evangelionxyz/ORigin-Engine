@@ -23,7 +23,6 @@ namespace origin
             m_CurrentTime += deltaTime * speed;
             m_TimeInTicks = m_CurrentTime * m_CurrentAnimation->GetTicksPersecond();
             m_TimeInTicks = fmod(m_TimeInTicks, m_CurrentAnimation->m_Duration);
-            //const glm::mat4 &parentTransform = CalculateLocalTransform();
             CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
         }
     }
@@ -33,14 +32,6 @@ namespace origin
         m_FinalBoneMatrices.resize(100, glm::mat4(1.0f));
         m_CurrentAnimation = animation;
         m_CurrentTime = 0.0f;
-    }
-
-    glm::mat4 Animator::CalculateLocalTransform()
-    {
-        glm::mat4 translation = m_CurrentAnimation->m_TranslationKeys.InterpolateTranslation(m_TimeInTicks);
-        glm::mat4 rotation = m_CurrentAnimation->m_RotationKeys.Interpolate(m_TimeInTicks);
-        glm::mat4 scale = m_CurrentAnimation->m_ScaleKeys.InterpolateScaling(m_TimeInTicks);
-        return translation * rotation * scale;
     }
 
     void Animator::CalculateBoneTransform(const AssimpNodeData *node, const glm::mat4 &parentTransform)
