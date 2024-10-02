@@ -17,5 +17,8 @@ namespace origin
         void OnEvent(Event &event) override;
         bool OnWindowResize(FramebufferResizeEvent &e);
         bool OnKeyPressedEvent(KeyPressedEvent &e);
+
+        EditorCamera camera;
+        Ref<Shader> shader;
     };
 }

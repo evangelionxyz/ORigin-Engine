@@ -12,7 +12,7 @@ namespace origin
 	* Add an existing shaders and providing
 	* the shader name into the map
 	*/
-	void ShaderLibrary::Add(const std::string &name, const std::shared_ptr<Shader> &shader)
+	void ShaderLibrary::Add(const std::string &name, const Ref<Shader> &shader)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -23,18 +23,18 @@ namespace origin
 	/*
 	* Add an existing shaders and auto detect the shader name
 	*/
-	void ShaderLibrary::Add(const std::shared_ptr<Shader> &shader)
+	void ShaderLibrary::Add(const Ref<Shader> &shader)
 	{
 		OGN_PROFILER_FUNCTION();
 		std::string name = shader->GetFilepath().stem().string();
 		Add(name, shader);
 	}
 
-	std::shared_ptr<Shader> ShaderLibrary::Load(const std::filesystem::path &filepath)
+	Ref<Shader> ShaderLibrary::Load(const std::filesystem::path &filepath)
 	{
 		OGN_PROFILER_FUNCTION();
 
-		std::shared_ptr<Shader> shader = Shader::Create(filepath);
+		Ref<Shader> shader = Shader::Create(filepath);
 		Add(shader);
 		return shader;
 	}
@@ -47,10 +47,10 @@ namespace origin
 	*
 	* name, filepath, enable spirv, recompile
 	*/
-	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string &name, const std::filesystem::path &filepath, bool enableSpirv, bool recompileSpirv)
+	Ref<Shader> ShaderLibrary::Load(const std::string &name, const std::filesystem::path &filepath, bool enableSpirv, bool recompileSpirv)
 	{
 		OGN_PROFILER_FUNCTION();
-		std::shared_ptr<Shader> shader = Shader::Create(filepath, enableSpirv, recompileSpirv);
+		Ref<Shader> shader = Shader::Create(filepath, enableSpirv, recompileSpirv);
 		Add(name, shader);
 		return shader;
 	}
@@ -58,7 +58,7 @@ namespace origin
 	/*
 	* Get all shaders from the map using string name
 	*/
-	std::shared_ptr<Shader> ShaderLibrary::Get(const std::string &name)
+	Ref<Shader> ShaderLibrary::Get(const std::string &name)
 	{
 		OGN_PROFILER_FUNCTION();
 		OGN_CORE_ASSERT(Exist(name), "Shader not found at");

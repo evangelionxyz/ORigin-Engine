@@ -506,10 +506,13 @@ namespace origin {
                     {
                         component.HMesh = handle;
                         component.Data = AssetManager::GetAsset<MeshData>(handle);
+
                         if (component.Data)
                         {
                             if (!component.Data->animations.empty())
+                            {
                                 component.AAnimator = Animator(&component.Data->animations[0]);
+                            }
                         }
                         else
                         {
@@ -526,21 +529,16 @@ namespace origin {
                         OGN_CORE_WARN("Wrong asset type!");
                     }
                 }
+
                 ImGui::EndDragDropTarget();
             }
 
             if (component.AAnimator.HasAnimation())
             {
                 UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f, 1.0f);
-
-                ImGui::Text("Elapsed Time: %.2f", component.AAnimator.m_CurrentTime);
-                ImGui::Text("Ticks Per Second: %.2f", component.AAnimator.m_CurrentAnimation->GetTicksPersecond());
-                ImGui::Text("Animation Duration: %.2f", component.AAnimator.m_CurrentAnimation->GetDuration());
-                for (size_t i = 0; i < component.AAnimator.m_FinalBoneMatrices.size(); ++i)
+                if (UI::DrawIntControl("Index", &component.AnimationIndex, 1.0f, 0, static_cast<i32>(component.Data->animations.size()) - 1))
                 {
-                    auto mat = component.AAnimator.m_FinalBoneMatrices[i];
-                    ImGui::Text("Bone %zu Transform", i);
-                    ImGui::InputFloat4("Transform", glm::value_ptr(mat), "%.2f");
+                    component.AAnimator.PlayAnimation(&component.Data->animations[component.AnimationIndex]);
                 }
             }
         });

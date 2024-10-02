@@ -157,13 +157,13 @@ namespace origin
             switch (type)
             {
             case GL_VERTEX_SHADER:
-                shaderType = "VERTEX TYPE";
+                shaderType = "VERTEX Shader";
                 break;
             case GL_FRAGMENT_SHADER:
-                shaderType = "FRAGMENT TYPE";
+                shaderType = "FRAGMENT Shader";
                 break;
             case GL_GEOMETRY_SHADER:
-                shaderType = "GEOMETRY TYPE";
+                shaderType = "GEOMETRY Shader";
                 break;
             }
 
