@@ -1,7 +1,7 @@
 Material:
   AlbedoMap: 0
   MetallicMap: 0
-  Color: [0, 1, 0.196428537, 1]
+  Color: [0, 0.451063871, 1, 1]
   Tiling: [1, 1]
   Emission: 0
   Metallic: 0

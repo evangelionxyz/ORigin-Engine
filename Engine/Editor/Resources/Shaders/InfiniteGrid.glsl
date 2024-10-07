@@ -43,8 +43,8 @@ layout(location = 2) in float vGridSize;
 
 float gridMinPixelsBetweenCells = 2.0;
 float gridCellSize = 0.025;
-vec4 gridColorThin = vec4(0.5, 0.5, 0.5, 0.8);
-vec4 gridColorThick = vec4(0.0, 0.0, 0.0, 0.8);
+uniform vec4 thinColor = vec4(0.5, 0.5, 0.5, 1.0);
+uniform vec4 thickColor = vec4(0.1, 0.1, 0.1, 1.0);
 
 float log10(float x) {return log(x) / log(10.0);}
 float satf(float x) { return clamp(x, 0.0, 1.0);}
@@ -66,7 +66,7 @@ void main()
   float gridCellSizeLod1 = gridCellSizeLod0 * 10.0;
   float gridCellSizeLod2 = gridCellSizeLod1 * 10.0;
 
-  dudv *= 4.0;
+  dudv *= 2.0;
 
   vec2 mod_div_dudv = mod(vPosition.xz, gridCellSizeLod0) / dudv;
   float lod0a = max2(vec2(1.0) - abs( satv(mod_div_dudv) * 2.0 - vec2(1.0)) );
@@ -83,19 +83,19 @@ void main()
 
   if (lod2a > 0.0)
   {
-    color = gridColorThick;
+    color = thickColor;
     color.a *= lod2a;
   } else {
     if (lod1a > 0.0) {
-      color = mix(gridColorThick, gridColorThin, LOD_Fade);
+      color = mix(thickColor, thinColor, LOD_Fade);
       color.a *= lod1a;
     } else {
-      color = gridColorThin;
+      color = thinColor;
       color.a *= lod0a * (1.0 - LOD_Fade);
     }
   }
 
-  float falloff = (1.0 - satf(length(vPosition.xz - vCamPos.xz) / (vGridSize * 0.7)));
+  float falloff = (1.0 - satf(length(vPosition.xz - vCamPos.xz) / (vGridSize * 0.8)));
   color.a *= falloff;
 
   oColor = color;

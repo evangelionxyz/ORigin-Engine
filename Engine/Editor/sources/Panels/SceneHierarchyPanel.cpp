@@ -536,9 +536,10 @@ namespace origin {
             if (component.AAnimator.HasAnimation())
             {
                 UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f, 1.0f);
-                if (UI::DrawIntControl("Index", &component.AnimationIndex, 1.0f, 0, static_cast<i32>(component.Data->animations.size()) - 1))
+                if (ImGui::SliderInt("Index", &component.AnimationIndex, 0, static_cast<i32>(component.Data->animations.size()) - 1))
                 {
-                    component.AAnimator.PlayAnimation(&component.Data->animations[component.AnimationIndex]);
+                    if (component.AnimationIndex >= 0 && component.AnimationIndex < component.Data->animations.size())
+                        component.AAnimator.PlayAnimation(&component.Data->animations[component.AnimationIndex]);
                 }
             }
         });

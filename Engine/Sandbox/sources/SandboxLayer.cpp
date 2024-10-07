@@ -14,19 +14,11 @@
 using namespace origin;
 
 static glm::vec4 clear_color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
-u32 vao, vbo;
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 1500.0f);
     camera.SetAllowedMove(true);
-
-    shader = Shader::Create("Resources/Shaders/InfiniteGrid.glsl", false, false);
-    
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 }
 
 void SandboxLayer::OnAttach()
@@ -48,16 +40,6 @@ void SandboxLayer::OnUpdate(Timestep ts)
             {1.0f, 0.0f, 0.2f, 1.0f });
     }
     Renderer2D::End();
-
-    shader->Enable();
-    shader->SetMatrix("viewProjection", camera.GetViewProjection());
-    shader->SetVector("cameraPosition", camera.GetPosition());
-
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6); // 6 vertices since it's a quad composed of 2 triangles
-    glBindVertexArray(0);
-
-    shader->Disable();
 }
 
 void SandboxLayer::OnEvent(Event &e)
@@ -88,8 +70,5 @@ bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)
 
 bool SandboxLayer::OnKeyPressedEvent(KeyPressedEvent &e)
 {
-    if (e.GetKeyCode() == Key::P)
-        shader->Reload();
-
     return false;
 }

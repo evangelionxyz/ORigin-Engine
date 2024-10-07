@@ -15,6 +15,8 @@
 
 #include <filesystem>
 
+#include <glad/glad.h>
+
 namespace origin
 {
     static EditorLayer *s_Instance = nullptr;
@@ -77,6 +79,8 @@ namespace origin
         {
             m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
         }
+
+        InitGrid();
     }
 
     void EditorLayer::OnDetach() 
@@ -208,6 +212,7 @@ namespace origin
             if (m_VisualizeCollider) m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
             if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
             if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+            ShowGrid();
 
             // update scene
             m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
@@ -227,10 +232,12 @@ namespace origin
             if (m_VisualizeCollider)m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
             if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
             if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+            ShowGrid();
 
             // update scene
             m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
             m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+
             break;
         }
         }
@@ -1255,6 +1262,32 @@ namespace origin
 
             ImGui::End();
         }
+    }
+
+    void EditorLayer::InitGrid()
+    {
+        glGenVertexArrays(1, &m_GridVAO);
+        glGenBuffers(1, &m_GridVBO);
+        glBindVertexArray(m_GridVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_GridVBO);
+    }
+
+    void EditorLayer::ShowGrid()
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        Renderer::GetShader("GridShader")->Enable();
+        Renderer::GetShader("GridShader")->SetMatrix("viewProjection", m_EditorCamera.GetViewProjection());
+        Renderer::GetShader("GridShader")->SetVector("cameraPosition", m_EditorCamera.GetPosition());
+        Renderer::GetShader("GridShader")->SetVector("thinColor", m_GridThinColor);
+        Renderer::GetShader("GridShader")->SetVector("thickColor", m_GridThickColor);
+
+        glBindVertexArray(m_GridVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+        Renderer::GetShader("GridShader")->Disable();
     }
 
     bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)

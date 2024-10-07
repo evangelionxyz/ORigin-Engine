@@ -1,0 +1,125 @@
+Scene: Scene.org
+Entities:
+  - Entity: 14608040461872735776
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [0.579976082, 2.92749262, 0]
+      Rotation: [0, 0, -0.322185189, 0.946676672]
+      Scale: [0.379999995, 0.379999995, 0.379999995]
+      Visible: true
+    SpriteRenderer2DComponent:
+      Color: [0, 1, 0.834042549, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      EnableSleep: true
+      IsAwake: true
+      IsBullet: true
+      IsEnabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      IsSensor: false
+  - Entity: 887330314728097904
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 8]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        AspectRatioType: 2
+        FOV: 45
+        PerspectiveNear: 2.5
+        PerspectiveFar: 50
+        OrthoScale: 10
+        OrthoNear: 1
+        OrthoFar: 50
+        ViewportSize: [794.666687, 447]
+      Primary: true
+    AudioListenerComponent:
+      Enable: true
+  - Entity: 6015736690839823567
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Platform
+    TransformComponent:
+      Translation: [0, -3, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [11, 1, 1]
+      Visible: true
+    SpriteRenderer2DComponent:
+      Color: [0.876595736, 1, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Static
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      EnableSleep: true
+      IsAwake: true
+      IsBullet: true
+      IsEnabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      IsSensor: false
+  - Entity: 8093501938879960033
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, -0.322185159, 0.946676672]
+      Scale: [1, 1, 1]
+      Visible: true
+    SpriteRenderer2DComponent:
+      Color: [1, 0, 0, 1]
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      Mass: 1
+      LinearDamping: 0
+      AngularDamping: 0.00999999978
+      RotationalInertia: 0
+      GravityScale: 1
+      MassCenter: [0, 0]
+      EnableSleep: true
+      IsAwake: true
+      IsBullet: true
+      IsEnabled: true
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Group: 1
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      IsSensor: false

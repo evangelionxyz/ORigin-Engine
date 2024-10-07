@@ -51,7 +51,7 @@ namespace origin
         void SaveSceneAs();
         void OpenScene();
         void OpenScene(AssetHandle handle);
-        void SerializeScene(const std::shared_ptr<Scene> &scene, const std::filesystem::path &filepath);
+        void SerializeScene(const Ref<Scene> &scene, const std::filesystem::path &filepath);
         void OnDuplicateEntity();
         void OnDestroyEntity();
         void OnEvent(Event& e) override;
@@ -65,6 +65,9 @@ namespace origin
         void InputProcedure(Timestep time);
         void GUIRender();
         void ConsoleWindow();
+
+        void InitGrid();
+        void ShowGrid();
 
         enum class SceneState
         {
@@ -80,15 +83,18 @@ namespace origin
         Dockspace m_Dockspace;
         EditorCamera m_EditorCamera;
         MaterialEditor m_MaterialEditor;
-        std::unique_ptr<SpriteSheetEditor> m_SpriteSheetEditor;
-        std::unique_ptr<UIEditor> m_UIEditor;
-        std::unique_ptr<Gizmos> m_Gizmos;
+        Scope<SpriteSheetEditor> m_SpriteSheetEditor;
+        Scope<UIEditor> m_UIEditor;
+        Scope<Gizmos> m_Gizmos;
+        u32 m_GridVAO, m_GridVBO;
+        glm::vec4 m_GridThinColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+        glm::vec4 m_GridThickColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 
-        std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_UITextures;
-        std::shared_ptr<Texture2D> m_OriginEngineTex;
-        std::shared_ptr<Framebuffer> m_Framebuffer, m_GameFramebuffer;
-        std::unique_ptr<ContentBrowserPanel> m_ContentBrowser;
-        std::shared_ptr<Scene> m_ActiveScene, m_EditorScene;
+        std::unordered_map<std::string, Ref<Texture2D>> m_UITextures;
+        Ref<Texture2D> m_OriginEngineTex;
+        Ref<Framebuffer> m_Framebuffer, m_GameFramebuffer;
+        Scope<ContentBrowserPanel> m_ContentBrowser;
+        Ref<Scene> m_ActiveScene, m_EditorScene;
         std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
 
         glm::vec4 m_ClearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);

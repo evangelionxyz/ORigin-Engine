@@ -19,6 +19,5 @@ namespace origin
         bool OnKeyPressedEvent(KeyPressedEvent &e);
 
         EditorCamera camera;
-        Ref<Shader> shader;
     };
 }
