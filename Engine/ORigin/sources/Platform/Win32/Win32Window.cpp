@@ -9,10 +9,16 @@
 #include "Origin/Core/Application.h"
 
 #include "stb_image.h"
+#include "Platform/DX11/DX11Context.h"
 
-#ifdef OGN_PLATFORM_WINDOWS
-    #include "Platform/DX11/DX11Context.h"
-#endif
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>  // For glfwGetWin32Window
+
+#include <Windows.h>
+#include <dwmapi.h>
+
+#pragma comment(lib, "Dwmapi.lib")  // Link to DWM API
 
 namespace origin {
 
@@ -38,6 +44,10 @@ namespace origin {
             glfwTerminate();
             exit(EXIT_FAILURE);
         }
+
+        HWND hwnd = glfwGetWin32Window(m_MainWindow);
+        BOOL useDarkMode = TRUE;
+        DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode));
 
         m_Data.Width = width;
         m_Data.Height = height;
