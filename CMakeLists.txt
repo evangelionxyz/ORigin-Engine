@@ -9,7 +9,7 @@ set(BUILD_DIR ${ROOT_DIR}/Engine/Build/CMake)
 set(THIRD_BUILD_PARTY_DIR ${ROOT_DIR}/Engine/Build/CMake/ThirdParty)
 
 if (WIN32)
-    message("[ORigin] Platform: Win32")
+    message("[ORigin] Platform: Windows")
     # Enable Hot Reload for MSVC compilers if supported.
     if (POLICY CMP0141)
     cmake_policy(SET CMP0141 NEW)

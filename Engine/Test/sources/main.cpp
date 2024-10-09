@@ -18,22 +18,36 @@ void PrintNodeHierarchy(const aiNode* node, int indentLevel, Log& logger)
     }
 }
 
-int main()
+void test_one(Log &logger)
 {
-    auto logger = Log();
-    logger.PrintMessage(Info, "Hello World");
-
     Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile("data/untitled.glb", flags);
+    const aiScene* scene = importer.ReadFile("data/untitled.glb", flags);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         OGN_CORE_ASSERT(false, importer.GetErrorString());
-        return 1;
+        return;
     }
 
     // Print the hierarchy of the model starting from the root node
     logger.PrintMessage(Info, "Model Hierarchy:");
     PrintNodeHierarchy(scene->mRootNode, 0, logger);
+}
+
+void test_two(Log &logger)
+{
+    Ref<StaticModel> model = CreateRef<StaticModel>("data/barbarian.glb");
+    for (auto& m : model->GetMeshes())
+    {
+        logger.PrintMessage(Info, m->Name);
+    }
+}
+
+int main()
+{
+    auto logger = Log();
+    logger.PrintMessage(Info, "Hello World");
+
+    test_two(logger);
 
     return 0;
 }
