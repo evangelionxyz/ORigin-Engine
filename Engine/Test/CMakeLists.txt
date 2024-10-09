@@ -6,7 +6,7 @@ target_include_directories("Test" PRIVATE
   sources
   ${ROOT_DIR}/Engine/ORigin/sources
   ${THIRD_PARTY_DIR}/Assimp/include
-  ${THIRD_PARTY_DIR}/Box2D/include
+  ${THIRD_PARTY_DIR}/BOX2D/include
   ${THIRD_PARTY_DIR}/FMT/include
   ${THIRD_PARTY_DIR}/stb
   ${THIRD_PARTY_DIR}/GLFW/include

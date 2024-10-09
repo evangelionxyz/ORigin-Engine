@@ -41,15 +41,14 @@ def register_msbuild():
     if Utils.AddNewWindowsSystemPathEnvironment(variable_path):
         print(f">> MSBuild path is registered to {variable_path}")
 
-if premakeInstalled:
-    register_variables()
-    if platform.system() == "Windows":
+if platform.system() == "Windows":
+    if premakeInstalled:
+        register_variables()
         print("\n>> Generating OR1.sln...")
         premake_path = os.path.abspath("./Scripts/premake5.bat")
         subprocess.call([premake_path, "nopause"])
         register_msbuild()
-    else:
-        print(">> Unsupported platform.")
-    print(">> Setup Completed!")
 else:
     print(">> ORigin requires Premake to generate project file.")
+    
+print(">> Setup Completed!")
