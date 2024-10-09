@@ -1,38 +1,42 @@
 import os
 import platform
-
 from pathlib import Path
-
 import Utils
 
 class PremakeConfiguration:
-    premakeVersion = "5.0.0-beta2"
-    premakeLicenseUrl = "https://raw.githubusercontent.com/premake/premake-core/master/LICENSE.txt"
-    premakeDirectory = "Scripts/premake"
-    userPlatform = platform.system()
+    premake_version = "5.0.0-beta2"
+    premake_license_url = "https://raw.githubusercontent.com/premake/premake-core/master/LICENSE.txt"
+    premake_directory = os.path.abspath("Scripts/premake")
+    user_platform = platform.system()
 
-    if(userPlatform == "Windows"):
-        premakeArchiveUrls = f"https://github.com/premake/premake-core/releases/download/v{premakeVersion}/premake-{premakeVersion}-windows.zip"
+    if(user_platform == "Windows"):
+        premakeArchiveUrls = f"https://github.com/premake/premake-core/releases/download/v{premake_version}/premake-{premake_version}-windows.zip"
         
     elif(platform.system() == "Linux"):
-        premakeArchiveUrls = f"https://github.com/premake/premake-core/releases/download/v{premakeVersion}/premake-{premakeVersion}-linux.tar.gz"
+        premakeArchiveUrls = f"https://github.com/premake/premake-core/releases/download/v{premake_version}/premake-{premake_version}-linux.tar.gz"
 
     @classmethod
     def Validate(cls):
-        if (not cls.CheckIfPremakeInstalled()):
+        if (not cls.is_premake_installed()):
             print(">> Premake is not installed.")
             return False
-        print(f">> Correct Premake located at {os.path.abspath(cls.premakeDirectory)}")
+
+        print(f">> Correct Premake located at {cls.premake_directory}")
+        if cls.user_platform == "Windows":
+            print(f">> Registering Premake to Windows Environment Path {cls.premake_directory}")
+            Utils.AddNewWindowsSystemPathEnvironment(cls.premake_directory)
+
         return True
 
     @classmethod
-    def CheckIfPremakeInstalled(cls):
-        if (cls.userPlatform == "Windows"):
-            premakeExe = Path(f"{cls.premakeDirectory}/premake5.exe")
-        elif (cls.userPlatform == "Linux"):
-            premakeExe = Path(f"{cls.premakeDirectory}/premake5")
+    def is_premake_installed(cls):
+        if (cls.user_platform == "Windows"):
+            premake_exe = Path(f"{cls.premake_directory}/premake5.exe")
+            print(premake_exe)
+        elif (cls.user_platform == "Linux"):
+            premake_exe = Path(f"{cls.premake_directory}/premake5")
         
-        if not premakeExe.exists():
+        if not premake_exe.exists():
             return cls.InstallPremake()
 
         return True
@@ -41,24 +45,24 @@ class PremakeConfiguration:
     def InstallPremake(cls):
         permissionGranted = False
         while not permissionGranted:
-            reply = str(input(">> Premake not found.\nWould you like to download Premake {0:s}? [Y/N]: ".format(cls.premakeVersion))).lower().strip()[:1]
+            reply = str(input(">> Premake not found.\nWould you like to download Premake {0:s}? [Y/N]: ".format(cls.premake_version))).lower().strip()[:1]
             if reply == 'n':
                 return False
             permissionGranted = (reply == 'y')
 
-        if(cls.userPlatform == "Windows"):
-            premakePath = f"{cls.premakeDirectory}/premake-{cls.premakeVersion}-windows.zip"
-        elif (cls.userPlatform == "Linux"):
-            premakePath = f"{cls.premakeDirectory}/premake-{cls.premakeVersion}-linux.tar.gz"
+        if(cls.user_platform == "Windows"):
+            premakePath = f"{cls.premake_directory}/premake-{cls.premake_version}-windows.zip"
+        elif (cls.user_platform == "Linux"):
+            premakePath = f"{cls.premake_directory}/premake-{cls.premake_version}-linux.tar.gz"
             
         print("Downloading {0:s} to {1:s}".format(cls.premakeArchiveUrls, premakePath))
         Utils.DownloadFile(cls.premakeArchiveUrls, premakePath)
         print("Extracting", premakePath)
         Utils.ExtractArchiveFile(premakePath, deleteArchiveFile=True)
-        print(f">> Premake {cls.premakeVersion} has been downloaded to '{cls.premakeDirectory}'")
+        print(f">> Premake {cls.premake_version} has been downloaded to '{cls.premake_directory}'")
 
-        premakeLicensePath = f"{cls.premakeDirectory}/LICENSE.txt"
-        print("Downloading {0:s} to {1:s}".format(cls.premakeLicenseUrl, premakeLicensePath))
-        Utils.DownloadFile(cls.premakeLicenseUrl, premakeLicensePath)
-        print(f">> Premake License file has been downloaded to '{cls.premakeDirectory}'")
+        premakeLicensePath = f"{cls.premake_directory}/LICENSE.txt"
+        print("Downloading {0:s} to {1:s}".format(cls.premake_license_url, premakeLicensePath))
+        Utils.DownloadFile(cls.premake_license_url, premakeLicensePath)
+        print(f">> Premake License file has been downloaded to '{cls.premake_directory}'")
         return True

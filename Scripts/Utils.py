@@ -87,27 +87,36 @@ def DownloadFile(url, filepath):
         headers = {'User-Agent': "Mozilla/5.0 (Macintosh Intel Mac Os X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"}
         response = requests.get(url, headers = headers, stream = True)
         total = response.headers.get('content-length')
-
+        
         if total is None:
             f.write(response.content)
         else:
             downloaded = 0
             total = int(total)
             startTime = time.time()
-            for data in response.iter_content(chunk_size = max(int(total/1000), 1024*1024)):
+
+            # Download filechunk
+            for data in response.iter_content(chunk_size = max(int(total / 1000), 1024 * 1024)): # 1MB Chunk
                 downloaded += len(data)
                 f.write(data)
-                done = int(50*downloaded / total)
+
+                # Progress bar
+                done = int(50 * downloaded / total)
                 percentage = (downloaded / total) * 100
-                elapsedTime = time.time() - startTime
-                avgKBPerSecond = (downloaded / 1024) / elapsedTime
-                avgSpeedString = '{:.2f} KB/s'.format(avgKBPerSecond)
-            if(avgKBPerSecond > 1024):
-                avgMGPerSecond = avgKBPerSecond / 1024
-                avgSpeedString = '{:.2f} MB/s'.format(avgMGPerSecond)
-            sys.stdout.write('\r[{}{}] {:.2f}% ({})     '.format('█' * done, '.' * (50-done), percentage, avgSpeedString))
-            sys.stdout.flush()
-    sys.stdout.write('\n')
+                elapsed_time = time.time() - startTime
+                avg_kb_per_second = (downloaded / 1024) / elapsed_time
+
+                if avg_kb_per_second > 1024:
+                    avg_speed_string = '{:.2f} MB/s'.format(avg_kb_per_second / 1024)
+                else:
+                    avg_speed_string = '{:.2f} MB/s'.format(avg_kb_per_second)
+
+                # print progress bar
+                sys.stdout.write('\r[{}{}] {:.2f}% ({})     '.format(
+                    '█' * done, '.' * (50 - done), percentage, avg_speed_string))
+                sys.stdout.flush()
+
+            sys.stdout.write('\n')
 
 def ExtractArchiveFile(filepath, deleteArchiveFile=True):
     archFilepath = os.path.abspath(filepath)
@@ -136,16 +145,16 @@ def ExtractArchiveFile(filepath, deleteArchiveFile=True):
                 except ZeroDivisionError:
                     done = 50
                     percentage = 100
-                elapsedTime = time.time() - startTime
+                elapsed_time = time.time() - startTime
                 try:
-                    avgKBPerSecond = (extractedContentSize / 1024) / elapsedTime
+                    avg_kb_per_second = (extractedContentSize / 1024) / elapsed_time
                 except ZeroDivisionError:
-                    avgKBPerSecond = 0.0
-                avgSpeedString = '{:.2f} KB/s'.format(avgKBPerSecond)
-                if (avgKBPerSecond > 1024):
-                    avgMBPerSecond = avgKBPerSecond / 1024
-                    avgSpeedString = '{:.2f} MB/s'.format(avgMBPerSecond)
-                sys.stdout.write('\r[{}{}] {:.2f}% ({})     '.format('█' * done, '.' * (50-done), percentage, avgSpeedString))
+                    avg_kb_per_second = 0.0
+                avg_speed_string = '{:.2f} KB/s'.format(avg_kb_per_second)
+                if (avg_kb_per_second > 1024):
+                    avgMBPerSecond = avg_kb_per_second / 1024
+                    avg_speed_string = '{:.2f} MB/s'.format(avgMBPerSecond)
+                sys.stdout.write('\r[{}{}] {:.2f}% ({})     '.format('█' * done, '.' * (50-done), percentage, avg_speed_string))
                 sys.stdout.flush()
         sys.stdout.write('\n')
     elif (platform.system() == "Linux"):
