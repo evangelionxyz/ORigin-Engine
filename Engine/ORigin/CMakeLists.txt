@@ -287,7 +287,7 @@ elseif (UNIX AND NOT APPLE)
         )
 
         target_include_directories(ORigin PRIVATE
-            ${THIRD_PARTY_DIR}/mono/include
+            ${THIRD_PARTY_DIR}/Mono/include
             /usr/include
         )
         target_link_libraries(ORigin

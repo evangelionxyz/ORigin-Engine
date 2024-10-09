@@ -9,8 +9,6 @@
 
 #include <iostream>
 
-#include <glad/glad.h>
-
 using namespace origin;
 
 static glm::vec4 clear_color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);

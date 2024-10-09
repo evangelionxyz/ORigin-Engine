@@ -16,6 +16,7 @@ Run [gen.bat](gen.bat) to generate Visual Studio .sln file or Makefile.
 #### Install Mono from [Mono Project](https://www.mono-project.com/download/stable/#download-lin) and execute
 ```bash
     sudo apt install build-essential mono-complete mono-devel mono-dbg libicu-dev
+    sudo snap install dotnet-sdk --classic
 ```
 #### Install [Vulkan](https://vulkan.lunarg.com/doc/view/latest/linux/getting_started_ubuntu.html)
 ```bash
