@@ -33,7 +33,7 @@ class VulkanConfiguration:
                     print(f">> You don't have the correct Vulkan SDK version! (Engine requires {cls.vulkan_major_minor_version})")
                     cls.InstallVulkanSDK()
                     return False
-        print(f">> Correct Vulkan SDK located at {vulkanSDK}")
+        print(f">> Correct Vulkan SDK located at {vulkan_sdk_env}")
         return True
 
     @classmethod
