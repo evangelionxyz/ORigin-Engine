@@ -458,8 +458,8 @@ namespace origin
                 shader->Enable();
 
                 glActiveTexture(0);
-                mesh.Data->DiffuseTexture->Bind(0);
-                shader->SetInt("uTexture", mesh.Data->DiffuseTexture->GetTextureID());
+                //mesh.Data->DiffuseTexture->Bind(0);
+                //shader->SetInt("uTexture", mesh.Data->DiffuseTexture->GetTextureID());
 
                 shader->SetMatrix("viewProjection", camera.GetViewProjection());
                 shader->SetMatrix("model", tc.GetTransform());

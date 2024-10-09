@@ -144,10 +144,10 @@ namespace origin
     {
     public:
         ModelAnimation() = default;
-        ModelAnimation(MeshData *data, aiAnimation *anim, const aiScene *scene);
+        ModelAnimation(const std::vector<Ref<MeshData>> &meshes, aiAnimation *anim, const aiScene *scene);
 
         void ReadHierarchy(AssimpNodeData &dest, const aiNode *src);
-        void ReadMissingBones(MeshData *data, const aiAnimation *anim);
+        void ReadMissingBones(MeshData *mesh, const aiAnimation *anim);
 
         Bone *FindBone(const std::string &name);
 
@@ -165,7 +165,6 @@ namespace origin
         float m_TicksPerSecond;
 
         std::unordered_map<std::string, Bone> m_Bones;
-        std::map<std::string, BoneInfo> m_BoneInfoMap;
         AssimpNodeData m_RootNode;
         friend class Animator;
     };

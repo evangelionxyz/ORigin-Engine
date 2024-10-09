@@ -831,9 +831,9 @@ namespace origin
 					if (mc.HMesh)
 					{
 						mc.Data = AssetManager::GetAsset<MeshData>(mc.HMesh);
-						if (!mc.Data->animations.empty())
+						//if (!mc.Data->animations.empty())
 						{
-							mc.AAnimator = Animator(&mc.Data->animations[0]);
+							//mc.AAnimator = Animator(&mc.Data->animations[0]);
 						}
 					}
 				}

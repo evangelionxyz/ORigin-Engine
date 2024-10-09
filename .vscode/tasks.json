@@ -7,7 +7,7 @@
             "command": "make",
             "args": [
                 "-j",
-                "4",
+                "3",
                 "Sandbox"
             ],
             "options": {

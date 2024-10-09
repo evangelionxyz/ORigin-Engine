@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{43DDC966-2F95-0BB4-989C-E40F8473A6A4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ScriptCore</RootNamespace>
+    <AssemblyName>ScriptCore</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <BaseIntermediateOutputPath>obj\Debug\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants></DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <BaseIntermediateOutputPath>obj\Release\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants></DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Dist\</OutputPath>
+    <BaseIntermediateOutputPath>obj\Dist\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants></DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Core\Debug.cs">
+      <Link>ScriptCore\sources\ORigin\Core\Debug.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Core\Input.cs">
+      <Link>ScriptCore\sources\ORigin\Core\Input.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Core\InternalCalls.cs">
+      <Link>ScriptCore\sources\ORigin\Core\InternalCalls.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Core\KeyCode.cs">
+      <Link>ScriptCore\sources\ORigin\Core\KeyCode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Core\MouseCode.cs">
+      <Link>ScriptCore\sources\ORigin\Core\MouseCode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Math\Mathf.cs">
+      <Link>ScriptCore\sources\ORigin\Math\Mathf.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Math\Quaternion.cs">
+      <Link>ScriptCore\sources\ORigin\Math\Quaternion.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Math\Vector2.cs">
+      <Link>ScriptCore\sources\ORigin\Math\Vector2.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Math\Vector3.cs">
+      <Link>ScriptCore\sources\ORigin\Math\Vector3.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Math\Vector4.cs">
+      <Link>ScriptCore\sources\ORigin\Math\Vector4.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Scene\Components.cs">
+      <Link>ScriptCore\sources\ORigin\Scene\Components.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Scene\Entity.cs">
+      <Link>ScriptCore\sources\ORigin\Scene\Entity.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\ScriptCore\sources\ORigin\Scene\Scene.cs">
+      <Link>ScriptCore\sources\ORigin\Scene\Scene.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

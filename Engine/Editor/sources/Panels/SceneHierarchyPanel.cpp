@@ -509,10 +509,10 @@ namespace origin {
 
                         if (component.Data)
                         {
-                            if (!component.Data->animations.empty())
+                            /*if (!component.Data->animations.empty())
                             {
                                 component.AAnimator = Animator(&component.Data->animations[0]);
-                            }
+                            }*/
                         }
                         else
                         {
@@ -522,7 +522,7 @@ namespace origin {
                     }
                     if (AssetManager::GetAssetType(handle) == AssetType::Texture)
                     {
-                        component.Data->DiffuseTexture = AssetManager::GetAsset<Texture2D>(handle);
+                       // component.Data->diffuseTexture = AssetManager::GetAsset<Texture2D>(handle);
                     }
                     else
                     {
@@ -533,7 +533,7 @@ namespace origin {
                 ImGui::EndDragDropTarget();
             }
 
-            if (component.AAnimator.HasAnimation())
+            /*if (component.AAnimator.HasAnimation())
             {
                 UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f, 1.0f);
                 if (ImGui::SliderInt("Index", &component.AnimationIndex, 0, static_cast<i32>(component.Data->animations.size()) - 1))
@@ -541,7 +541,7 @@ namespace origin {
                     if (component.AnimationIndex >= 0 && component.AnimationIndex < component.Data->animations.size())
                         component.AAnimator.PlayAnimation(&component.Data->animations[component.AnimationIndex]);
                 }
-            }
+            }*/
         });
 
         DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)

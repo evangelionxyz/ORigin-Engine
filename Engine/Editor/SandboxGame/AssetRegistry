@@ -38,6 +38,9 @@ AssetRegistry:
   - Handle: 7850902027858852768
     Filepath: Materials/M_Red.mat
     Type: AssetType::Material
+  - Handle: 7957334468141048618
+    Filepath: Models/test.dae
+    Type: AssetType::Mesh
   - Handle: 8181227750157294016
     Filepath: Textures/Overworld.png
     Type: AssetType::Texture
@@ -47,8 +50,14 @@ AssetRegistry:
   - Handle: 8266440228153610938
     Filepath: Scenes/Scene.org
     Type: AssetType::Scene
-  - Handle: 8967047327140205176
-    Filepath: KayKit_Medieval_Hexagon/Assets/obj/buildings/neutral/fence_wood_straight_gate.obj
+  - Handle: 8497780193067527288
+    Filepath: Models/cube_anim.glb
+    Type: AssetType::Mesh
+  - Handle: 9735033038213120059
+    Filepath: Scenes/AnotherScene.org
+    Type: AssetType::Scene
+  - Handle: 10026107689400485726
+    Filepath: Models/barbarian.glb
     Type: AssetType::Mesh
   - Handle: 11658048532699140974
     Filepath: Materials/M_LightBlue.mat
@@ -80,3 +89,6 @@ AssetRegistry:
   - Handle: 17020817634269725245
     Filepath: Audio/retro-egyptian-theme-187380.mp3
     Type: AssetType::Audio
+  - Handle: 17044459866786433359
+    Filepath: Models/untitled.glb
+    Type: AssetType::Mesh

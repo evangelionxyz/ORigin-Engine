@@ -3,7 +3,6 @@
 #ifndef ORIGIN_H
 #define ORIGIN_H
 
-
 #include "Origin/Animation/Animation.h"
 #include "Origin/Animation/AnimationState.h"
 #include "Origin/Audio/AudioSource.h"
@@ -37,6 +36,7 @@
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Renderer/MeshRenderer.h"
 #include "Origin/Renderer/ModelLoader.h"
+#include "Origin/Renderer/Model.h"
 #include "Origin/Renderer/Frustum.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/SceneCommand.h"
@@ -60,5 +60,14 @@
 #include "Origin/GUI/GuiLayer.h"
 #include "Origin/Core/Time.h"
 #include "Origin/Core/Assert.h"
+
+#include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/OpenGL/OpenGLContext.h"
+#include "Platform/OpenGL/OpenGLFramebuffer.h"
+#include "Platform/OpenGL/OpenGLRendererAPI.h"
+#include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Platform/OpenGL/OpenGLUniformBuffer.h"
+#include "Platform/OpenGL/OpenGLVertexArray.h"
 
 #endif

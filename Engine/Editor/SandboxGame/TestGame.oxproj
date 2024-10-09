@@ -1,6 +1,6 @@
 Project:
   Name: TestGame
-  StartScene: 5113001379154652904
+  StartScene: 9735033038213120059
   AssetDirectory: Assets
   AssetRegistry: AssetRegistry
   ScriptModulePath: bin/TestGame.dll

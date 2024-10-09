@@ -35,7 +35,7 @@
                 "${workspaceFolder}/Engine/ORigin/sources/Origin",
                 "${workspaceFolder}/Engine/Editor/sources/",
                 "${workspaceFolder}/Engine/Runtime/sources/",
-                "${workspaceFolder}/Engine/Sandbox/sources/",
+                "${workspaceFolder}/Engine/Sandbox/sources/"
             ],
             "defines": [
                 "NOMINMAX",
