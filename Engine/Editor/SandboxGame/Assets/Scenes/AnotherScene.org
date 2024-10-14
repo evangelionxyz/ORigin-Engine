@@ -1,5 +1,29 @@
 Scene: AnotherScene.org
 Entities:
+  - Entity: 1319385528244304785
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [5.75184822e-05, 5.77196503, 11.3265743]
+      Rotation: [-0.159756973, 0, 0, 0.987156391]
+      Scale: [1, 0.999999583, 0.999999583]
+      Visible: true
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        AspectRatioType: 0
+        FOV: 45
+        PerspectiveNear: 2.5
+        PerspectiveFar: 50
+        OrthoScale: 10
+        OrthoNear: 1
+        OrthoFar: 50
+        ViewportSize: [1280, 720]
+      Primary: true
+    AudioListenerComponent:
+      Enable: true
   - Entity: 11702998377839789425
     Type: Entity
     Parent: 0
@@ -119,7 +143,7 @@ Entities:
       Restitution: 0.600000024
       Friction: 0.600000024
     TransformComponent:
-      Translation: [-1, 0.978656292, -1]
+      Translation: [0, 0.978656292, -1]
       Rotation: [0, 0, 0, 1]
       Scale: [12.0059099, 1, 15.7647572]
       Visible: true

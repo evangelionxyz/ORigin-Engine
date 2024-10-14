@@ -610,9 +610,9 @@ Entities:
       Restitution: 0
       Friction: 1
     TransformComponent:
-      Translation: [-9.53674316e-07, -25, 0]
-      Rotation: [0, 0.258818984, 0, 0.965925813]
-      Scale: [200, 50, 200]
+      Translation: [-9.53674316e-07, -23.7515965, 0]
+      Rotation: [0, 0.258818924, 0, 0.965925872]
+      Scale: [200.000015, 50, 200.000015]
       Visible: true
     StaticMeshComponent:
       Name: ""

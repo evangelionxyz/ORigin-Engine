@@ -17,45 +17,25 @@ namespace origin {
     {
         OGN_PROFILER_FUNCTION();
 
-        glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
-        switch (Renderer::GetAPI())
-        {
-        case RendererAPI::API::OpenGL:
-        {
-            m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
-                title, nullptr, nullptr);
-            if (!m_MainWindow)
-            {
-                glfwTerminate();
-                OGN_CORE_ASSERT(false, "[Linux Window] Failed to create window");
-                exit(EXIT_FAILURE);
-            }
-
-            glfwMakeContextCurrent(m_MainWindow);
-            
-            m_GraphicsContext = GraphicsContext::Create();
-            m_GraphicsContext->Init(this);
-            
-            return;
-        }
-        case RendererAPI::API::Vulkan:
-        {
+        if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
-                title, nullptr, nullptr);
 
-            if (!m_MainWindow)
-            {
-                glfwTerminate();
-                OGN_CORE_ASSERT(false, "[Linux Window] Failed to create window");
-                exit(EXIT_FAILURE);
-            }
+        glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
+        m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), title, nullptr, nullptr);
+        if (!m_MainWindow)
+        {
+            glfwTerminate();
+            OGN_CORE_ASSERT(false, "[Linux Window] Failed to create window");
+            exit(EXIT_FAILURE);
+        }
 
-            m_GraphicsContext = GraphicsContext::Create();
-            m_GraphicsContext->Init(this);
-            return;
-        }
-        }
+        if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+            glfwMakeContextCurrent(m_MainWindow);
+
+        m_GraphicsContext = GraphicsContext::Create();
+        m_GraphicsContext->Init(this);
+
+        glfwSwapInterval((int)m_Data.VSync);
     }
 
     void LinuxWindow::DestroyWindow()
@@ -93,6 +73,12 @@ namespace origin {
 
         m_Data.VSync = !m_Data.VSync;
         glfwSwapInterval(m_Data.VSync ? 1 : 0);
+    }
+
+    void LinuxWindow::SetVSync(bool enable)
+    {
+        m_Data.VSync = enable;
+        glfwSwapInterval(enable ? 1 : 0);
     }
 
     void LinuxWindow::CloseWindow()

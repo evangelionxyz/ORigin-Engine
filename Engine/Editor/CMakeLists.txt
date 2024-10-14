@@ -2,6 +2,8 @@
     resource.h
     sources/EditorApp.cpp
     sources/EditorLayer.cpp
+    sources/Themes.cpp
+    sources/Themes.h
     sources/EditorLayer.h
     sources/Gizmos/Gizmos.cpp
     sources/Gizmos/Gizmos.h

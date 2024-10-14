@@ -21,15 +21,30 @@ namespace origin
     }
 }
 
-#ifdef OGN_DISTRIBUTION
-    #ifdef OGN_PLATFORM_WINDOWS
-        #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-    #endif
+#ifdef OGN_PLATFORM_WINDOWS
+    #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
 int main(const int argc, char **argv)
 {
-    return origin::Main(argc, argv);
+#ifdef OGN_PLATFORM_WINDOWS
+    #ifndef OGN_DISTRIBUTION
+        AllocConsole();
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+        freopen("CONIN$", "r", stdin);
+    #endif
+#endif
+
+    origin::Main(argc, argv);
+
+#ifdef OGN_PLATFORM_WINDOWS
+    #ifndef OGN_DISTRIBUTION
+        FreeConsole();
+    #endif
+#endif
+
+    return 0;
 }
 
 #endif

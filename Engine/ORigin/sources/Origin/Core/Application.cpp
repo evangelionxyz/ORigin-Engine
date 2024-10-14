@@ -66,6 +66,8 @@ namespace origin {
         PhysicsEngine::Init();
         AudioEngine::Init();
         Renderer::Init();
+
+        m_Window->Show();
     }
 
     Application::~Application()

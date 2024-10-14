@@ -110,9 +110,7 @@ namespace origin {
             ImGui::End();
             return;
         }
-
         IsSceneHierarchyFocused = ImGui::IsWindowFocused();
-
         static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
         ImGui::BeginChild("scene_hierarchy", ImVec2(ImGui::GetContentRegionAvail().x, 20.0f), 0, windowFlags);
         ImGui::Button(m_Scene->GetName().c_str(), ImGui::GetContentRegionAvail());

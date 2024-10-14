@@ -62,10 +62,25 @@ namespace origin {
         glfwSetWindowPos(m_MainWindow, m_Data.xPos, m_Data.yPos);
 
         //glfwGetWindowPos(m_MainWindow, &m_Data.xPos, &m_Data.yPos);
+
+        glfwHideWindow(m_MainWindow);
+
         glfwMakeContextCurrent(m_MainWindow);
 
         m_GraphicsContext = GraphicsContext::Create();
         m_GraphicsContext->Init(this);
+    }
+
+    void Win32Window::Show()
+    {
+        glfwSwapInterval(m_Data.VSync ? 1 : 0);
+
+        glfwShowWindow(m_MainWindow);
+    }
+
+    void Win32Window::Hide()
+    {
+        glfwHideWindow(m_MainWindow);
     }
 
     void Win32Window::DestroyWindow()
@@ -112,6 +127,12 @@ namespace origin {
 
         m_Data.VSync = !m_Data.VSync;
         glfwSwapInterval(m_Data.VSync ? 1 : 0);
+    }
+
+    void Win32Window::SetVSync(bool enable)
+    {
+        m_Data.VSync = enable;
+        glfwSwapInterval(enable ? 1 : 0);
     }
 
     void Win32Window::CloseWindow()

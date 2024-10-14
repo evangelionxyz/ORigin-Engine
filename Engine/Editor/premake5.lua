@@ -1,6 +1,7 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "Editor"
+    kind "WindowedApp"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
@@ -79,7 +80,6 @@ project "Editor"
     -- //////////////////////////////
     -- Default
     filter "configurations:Debug"
-        kind "ConsoleApp"
         runtime "Debug"
         optimize "off"
         symbols "on"
@@ -89,7 +89,6 @@ project "Editor"
         }
 
     filter "configurations:Release"
-        kind "ConsoleApp"
         runtime "Release"
         optimize "on"
         symbols "off"
@@ -99,7 +98,6 @@ project "Editor"
         }
 
     filter "configurations:Dist"
-        kind "WindowedApp"
         runtime "Release"
         optimize "on"
         symbols "off"
