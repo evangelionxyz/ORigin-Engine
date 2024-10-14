@@ -10,8 +10,7 @@ namespace origin
 	class Timestep
 	{
 	public:
-		Timestep(float time = 0.0)
-			: m_Time(time)
+		Timestep(float time = 0.0) : m_Time(time)
 		{
 			s_Instance = this;
 		}

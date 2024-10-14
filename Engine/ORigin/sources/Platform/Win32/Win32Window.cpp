@@ -11,9 +11,8 @@
 #include "stb_image.h"
 #include "Platform/DX11/DX11Context.h"
 
-#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>  // For glfwGetWin32Window
+#include <GLFW/glfw3native.h>
 
 #include <Windows.h>
 #include <dwmapi.h>
@@ -48,6 +47,9 @@ namespace origin {
         HWND hwnd = glfwGetWin32Window(m_MainWindow);
         BOOL useDarkMode = TRUE;
         DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode));
+        // 7160E8 visual studio purple
+        COLORREF rgbRed = 0x00E86071;
+        DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &rgbRed, sizeof(rgbRed));
 
         m_Data.Width = width;
         m_Data.Height = height;

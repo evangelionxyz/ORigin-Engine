@@ -464,9 +464,9 @@ namespace origin
                 shader->SetMatrix("viewProjection", camera.GetViewProjection());
                 shader->SetMatrix("model", tc.GetTransform());
 
-                shader->SetMatrix("boneTransforms", 
+                /*shader->SetMatrix("boneTransforms", 
                     mesh.AAnimator.m_FinalBoneMatrices[0], 
-                    mesh.AAnimator.m_FinalBoneMatrices.size());
+                    mesh.AAnimator.m_FinalBoneMatrices.size());*/
 
                 mesh.Data->vertexArray->Bind();
                 glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);

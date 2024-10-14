@@ -60,7 +60,7 @@ namespace origin
         m_Bones.clear();
         ReadHierarchy(m_RootNode, scene->mRootNode);
         
-        for (auto m : meshes)
+        for (auto &m : meshes)
         {
             ReadMissingBones(m.get(), anim);
         }
@@ -79,7 +79,7 @@ namespace origin
             const std::string &boneName = channel->mNodeName.data;
 
             // if it is not found in mesh data, then add it
-            if (boneInfoMap.contains(boneName))
+            if (!boneInfoMap.contains(boneName))
             {
                 boneInfoMap[boneName].ID = boneCount;
                 boneCount++;

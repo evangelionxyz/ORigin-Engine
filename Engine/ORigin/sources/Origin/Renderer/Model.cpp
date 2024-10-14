@@ -75,8 +75,17 @@ namespace origin
 
 	StaticModel::StaticModel(const std::filesystem::path& filepath)
 	{
-		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(filepath.generic_string().c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+        OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Static Model] File does not exist '{}'", filepath.generic_string());
+
+        Assimp::Importer importer;
+        const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+        {
+            std::string err = importer.GetErrorString();
+            OGN_CORE_ERROR("[Static Model] {}", err);
+            return;
+        }
 
 		aiNode* node = scene->mRootNode;
 		m_Meshes = ProcessStaticMeshNode(node, scene);
@@ -258,8 +267,18 @@ namespace origin
 
 	SkeletalModel::SkeletalModel(const std::filesystem::path& filepath)
 	{
+		OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Skeletal Model] File does not exists '{}'", filepath.generic_string());
+
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(filepath.generic_string().c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		{
+			std::string err = importer.GetErrorString();
+			OGN_CORE_ERROR("[Skeletal Model] {}", err);
+			return;
+		}
+
 		aiNode* node = scene->mRootNode;
 		m_Meshes = ProcessMeshNode(node, scene);
 

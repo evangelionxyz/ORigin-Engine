@@ -155,6 +155,7 @@ namespace origin
         float GetDuration() const { return m_Duration; }
         const std::string &GetName() const { return m_Name; }
         const AssimpNodeData &GetRootNode() const { return m_RootNode; }
+        const std::unordered_map<std::string, BoneInfo> &GetBoneInfo() { return m_BoneInfo; }
 
         static AnimationType GetStaticType() { return AnimationType::Skeletal; }
         AnimationType GetType() const override { return GetStaticType(); }
@@ -165,6 +166,8 @@ namespace origin
         float m_TicksPerSecond;
 
         std::unordered_map<std::string, Bone> m_Bones;
+        std::unordered_map<std::string, BoneInfo> m_BoneInfo;
+
         AssimpNodeData m_RootNode;
         friend class Animator;
     };

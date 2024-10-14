@@ -47,7 +47,7 @@ namespace origin
 
         glm::mat4 globalTransform = parentTransform * nodeTransform;
 
-        std::map<std::string, BoneInfo> &boneInfoMap = m_CurrentAnimation->m_BoneInfoMap;
+        std::unordered_map<std::string, BoneInfo> boneInfoMap = m_CurrentAnimation->GetBoneInfo();
         if (boneInfoMap.contains(node->Name))
         {
             i32 index = boneInfoMap[node->Name].ID;
