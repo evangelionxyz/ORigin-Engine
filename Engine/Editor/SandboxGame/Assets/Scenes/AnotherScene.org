@@ -20,7 +20,7 @@ Entities:
         OrthoScale: 10
         OrthoNear: 1
         OrthoFar: 50
-        ViewportSize: [1280, 720]
+        ViewportSize: [929, 593]
       Primary: true
     AudioListenerComponent:
       Enable: true

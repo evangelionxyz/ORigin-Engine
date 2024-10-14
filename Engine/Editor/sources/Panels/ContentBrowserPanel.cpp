@@ -53,6 +53,36 @@ namespace origin
         DrawContentBrowser();
     }
 
+    void ContentBrowserPanel::ShowFileTree(const std::filesystem::path &directory)
+    {
+        for (const auto &entry : std::filesystem::directory_iterator(directory))
+        {
+            const std::filesystem::path &path = entry.path();
+            std::string filename = path.filename().string();
+
+            ImGuiTreeNodeFlags flags = (m_SelectedFileTree == entry.path() ? ImGuiTreeNodeFlags_Selected : 0) 
+                | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
+                | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
+
+            if (!entry.is_directory())
+                flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+            bool opened = ImGui::TreeNodeEx(filename.c_str(), flags, filename.c_str());
+
+            if (ImGui::IsItemHovered(ImGuiMouseButton_Left))
+            {
+                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                    m_SelectedFileTree = entry.path();
+            }
+
+            if (opened && entry.is_directory())
+            {
+                ShowFileTree(path);
+                ImGui::TreePop();
+            }
+        }
+    }
+
     void ContentBrowserPanel::DrawNavButton()
     {
         ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
@@ -109,11 +139,15 @@ namespace origin
 
         DrawNavButton();
 
-        const auto canvasPos = ImGui::GetCursorScreenPos();
-        const auto canvasSize = ImGui::GetContentRegionAvail();
+        ImGui::BeginChild("left_item_browser", {300.0f, 0.0f}, ImGuiChildFlags_ResizeX);
+        {
+            ShowFileTree(Project::GetActiveAssetDirectory());
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
 
-        ImGui::BeginChild("item_browser", canvasSize, false);
 
+        ImGui::BeginChild("item_browser", {0.0f, 0.0f}, false);
         static float padding = 10.0f;
         const float cellSize = m_ThumbnailSize + padding;
         const float panelWidth = ImGui::GetContentRegionAvail().x;

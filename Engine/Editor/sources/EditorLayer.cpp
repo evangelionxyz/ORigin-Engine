@@ -982,7 +982,7 @@ namespace origin
             ImGui::Begin("Preferences", &GuiPreferencesWindow);
 
             // Define a child window for the left menu
-            ImGui::BeginChild("LeftMenu", ImVec2(200, 0), ImGuiChildFlags_ResizeX); // 150 width for menu
+            ImGui::BeginChild("LeftMenu", {200.0f, 0.0f}, ImGuiChildFlags_ResizeX); // 150 width for menu
             {
                 // List of menu items
                 if (ImGui::Selectable("Project", selected_option == 0)) { selected_option = 0; }
@@ -996,7 +996,7 @@ namespace origin
             ImGui::SameLine(); // Move to the right for content
 
             // Define a child window for the right content area
-            ImGui::BeginChild("RightContent", ImVec2(0, 0)); // Fill remaining space
+            ImGui::BeginChild("RightContent", {0.0f, 0.0f}); // Fill remaining space
             {
                 if (selected_option == 0) // Project
                 {

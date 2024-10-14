@@ -18,6 +18,8 @@ namespace origin
         void OnImGuiRender();
         
     private:
+        void ShowFileTree(const std::filesystem::path &directory);
+
         void DrawNavButton();	
         void DrawContentBrowser();
         void RefreshAssetTree();
@@ -28,6 +30,7 @@ namespace origin
 
         std::filesystem::path m_BaseDirectory;
         std::filesystem::path m_CurrentDirectory;
+        std::filesystem::path m_SelectedFileTree;
         
         std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_IconMap;
 
