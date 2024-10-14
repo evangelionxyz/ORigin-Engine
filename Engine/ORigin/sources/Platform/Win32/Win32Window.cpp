@@ -47,12 +47,18 @@ namespace origin {
         HWND hwnd = glfwGetWin32Window(m_MainWindow);
         BOOL useDarkMode = TRUE;
         DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode));
+
         // 7160E8 visual studio purple
         COLORREF rgbRed = 0x00E86071;
         DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &rgbRed, sizeof(rgbRed));
 
+        DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_DONOTROUND;
+        DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
+
         m_Data.Width = width;
         m_Data.Height = height;
+
+        glfwHideWindow(m_MainWindow);
 
         int monitorWidth, monitorHeight;
         glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &monitorWidth, &monitorHeight);
@@ -60,11 +66,6 @@ namespace origin {
         m_Data.xPos = (monitorWidth / 2) - (width / 2);
         m_Data.yPos = (monitorHeight / 2) - (height / 2);
         glfwSetWindowPos(m_MainWindow, m_Data.xPos, m_Data.yPos);
-
-        //glfwGetWindowPos(m_MainWindow, &m_Data.xPos, &m_Data.yPos);
-
-        glfwHideWindow(m_MainWindow);
-
         glfwMakeContextCurrent(m_MainWindow);
 
         m_GraphicsContext = GraphicsContext::Create();
@@ -73,8 +74,6 @@ namespace origin {
 
     void Win32Window::Show()
     {
-        glfwSwapInterval(m_Data.VSync ? 1 : 0);
-
         glfwShowWindow(m_MainWindow);
     }
 
@@ -114,9 +113,7 @@ namespace origin {
         }
 
         case RendererAPI::API::OpenGL:
-        {
             glfwSwapBuffers(m_MainWindow);
-        }
             break;
         }
     }
@@ -166,11 +163,12 @@ namespace origin {
         int width, height, bpp;
         unsigned char* data = stbi_load(filepath, &width, &height, &bpp, 0);
 
-        GLFWimage icon[1];
-        icon[0].width = width;
-        icon[0].height = height;
-        icon[0].pixels = data;
-        glfwSetWindowIcon(m_MainWindow, 1, icon);
+        GLFWimage icon;
+        icon.width = width;
+        icon.height = height;
+        icon.pixels = data;
+        glfwSetWindowIcon(m_MainWindow, 1, &icon);
+
         stbi_image_free(data);
     }
 

@@ -35,7 +35,7 @@ namespace origin
         bool GuiRenderSettingsWindow = true;
         bool GuiImGuiDemoWindow = false;
         bool GuiConsoleWindow = true;
-        bool GuiOptionsWindow = false;
+        bool GuiPreferencesWindow = false;
 
         bool IsViewportHovered = false;
         bool IsViewportFocused = false;

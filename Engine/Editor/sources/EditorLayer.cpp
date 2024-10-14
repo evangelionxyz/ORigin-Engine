@@ -1,5 +1,4 @@
-﻿
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.h"
 #include "Origin/EntryPoint.h"
@@ -638,7 +637,7 @@ namespace origin
 
             if (ImGui::BeginMenu("Tools"))
             {
-                ImGui::MenuItem("Options", nullptr, &GuiOptionsWindow);
+                ImGui::MenuItem("Preferences", nullptr, &GuiPreferencesWindow);
 
                 ImGui::EndMenu();
             }
@@ -976,20 +975,80 @@ namespace origin
             }
         }
 
-        if (GuiOptionsWindow)
+        if (GuiPreferencesWindow)
         {
-            ImGui::Begin("Options", &GuiOptionsWindow);
-            if (ImGui::BeginCombo("Themes", m_Themes.GetCurrentTheme().c_str()))
+            static int selected_option = 0;
+
+            ImGui::Begin("Preferences", &GuiPreferencesWindow);
+
+            // Define a child window for the left menu
+            ImGui::BeginChild("LeftMenu", ImVec2(200, 0), ImGuiChildFlags_ResizeX); // 150 width for menu
             {
-                for (const auto &[key, value] : m_Themes.GetThemes())
-                {
-                    const bool isSelected = m_Themes.GetCurrentTheme() == key;
-                    if (ImGui::Selectable(key.c_str(), isSelected))
-                        m_Themes.ApplyTheme(key);
-                    if (isSelected)
-                        ImGui::SetItemDefaultFocus();
-                } ImGui::EndCombo();
+                // List of menu items
+                if (ImGui::Selectable("Project", selected_option == 0)) { selected_option = 0; }
+                if (ImGui::Selectable("Appearance", selected_option == 1)) { selected_option = 1; }
+                if (ImGui::Selectable("Physics", selected_option == 2)) { selected_option = 2; }
+                if (ImGui::Selectable("Physics 2D", selected_option == 3)) { selected_option = 3; }
+                if (ImGui::Selectable("Debugging", selected_option == 4)) { selected_option = 4; }
             }
+            ImGui::EndChild();
+
+            ImGui::SameLine(); // Move to the right for content
+
+            // Define a child window for the right content area
+            ImGui::BeginChild("RightContent", ImVec2(0, 0)); // Fill remaining space
+            {
+                if (selected_option == 0) // Project
+                {
+                    ImGui::Text("Project");
+                    ImGui::Separator();
+
+                    if (Project::GetActive())
+                    {
+                        const std::string &project_path = Project::GetActiveProjectPath().generic_string();
+                        const std::string &relative_path = std::filesystem::relative(project_path).generic_string();
+                        const UUID start_scene = Project::GetActive()->GetConfig().StartScene;
+                        ImGui::Text("Project Path %s", project_path.c_str());
+                        ImGui::Text("Project Relative Path %s", relative_path.c_str());
+                        ImGui::Text("Start Scene %llu", start_scene);
+                    }
+                }
+                else if (selected_option == 1) // Appearance
+                {
+                    ImGui::Text("Appearance");
+                    ImGui::Separator();
+
+                    if (ImGui::BeginCombo("Themes", m_Themes.GetCurrentTheme().c_str()))
+                    {
+                        for (const auto &[key, value] : m_Themes.GetThemes())
+                        {
+                            const bool isSelected = m_Themes.GetCurrentTheme() == key;
+                            if (ImGui::Selectable(key.c_str(), isSelected))
+                                m_Themes.ApplyTheme(key);
+                            if (isSelected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+                else if (selected_option == 2) // Physics
+                {
+                    ImGui::Text("Physics");
+                    ImGui::Separator();
+                }
+                else if (selected_option == 3) // Physics 2D
+                {
+                    ImGui::Text("Physics 2D");
+                    ImGui::Separator();
+                }
+                else if (selected_option == 4) // Debugging
+                {
+                    ImGui::Text("Debugging");
+                    ImGui::Separator();
+                }
+            }
+            ImGui::EndChild();
+
             ImGui::End();
         }
 
