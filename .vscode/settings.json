@@ -103,5 +103,6 @@
     "cSpell.words": [
         "Manuhutu"
     ],
-    "dotnet.defaultSolution": "build/OR1.sln"
+    "dotnet.defaultSolution": "build/OR1.sln",
+    "FSharp.suggestGitignore": false
 }

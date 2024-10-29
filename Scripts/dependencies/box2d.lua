@@ -23,7 +23,7 @@ project "BOX2D"
     }
 
     buildoptions {
-        "/experimental:c11atomics"
+        --"/experimental:c11atomics"
     }
 
     filter "system:linux"

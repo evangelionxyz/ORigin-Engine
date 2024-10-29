@@ -7,7 +7,7 @@ Library = {}
 VULKAN_SDK_PATH = os.getenv("VULKAN_SDK")
 
 IncludeDir["GLFW"]                     = "%{THIRD_PARTY_DIR}/GLFW/include"
-IncludeDir["GLAD"]                     = "%{THIRD_PARTY_DIR}/GLAD/include"
+IncludeDir["GLAD"]                     = "%{THIRD_PARTY_DIR}/glad/include"
 IncludeDir["ASSIMP"]                   = "%{THIRD_PARTY_DIR}/Assimp/include"
 IncludeDir["IMGUI"]                    = "%{THIRD_PARTY_DIR}/IMGUI"
 IncludeDir["IMGUIZMO"]                 = "%{THIRD_PARTY_DIR}/IMGUIZMO"

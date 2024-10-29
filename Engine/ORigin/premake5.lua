@@ -8,7 +8,7 @@ project "ORigin"
     location "%{wks.location}/Engine/ORigin"
 
     pchheader "pch.h"
-    pchsource "sources/pch.cpp"
+    pchsource "pch.cpp"
 
     targetdir (outputDir)
     objdir (intOutputDir)
