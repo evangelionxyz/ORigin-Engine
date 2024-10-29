@@ -21,6 +21,7 @@ namespace origin {
 		void InitPerspective(float fovy, float aspectRatio, float nearClip, float farClip) override;
 		void InitOrthographic(float size, float nearClip, float farClip) override;
         void SetProjectionType(ProjectionType type) override;
+		void OnUpdate(Timestep ts) override;
 		void OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax) override;
 		void OnEvent(Event& e) override;
         void SetOrthoScale(float value) override;
@@ -40,7 +41,7 @@ namespace origin {
         void MouseZoom(const float dela);
 		void SetDistance(float distance);
         void SetViewMatrix(const glm::mat4 &viewMatrix) override;
-        float RotationSpeed() const;
+        static float RotationSpeed();
 
         std::pair<float, float> PanSpeed() const;
         void UpdateAudioListener(Timestep ts);

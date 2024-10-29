@@ -170,7 +170,7 @@ Entities:
           Name: CubeCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 681 Total Cubes
+          TextString: 94 Total Cubes
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -252,6 +252,12 @@ Entities:
         - Name: uiEntity
           Type: Entity
           Data: 16653817252219590406
+        - Name: count
+          Type: Int
+          Data: 10
+        - Name: total
+          Type: Int
+          Data: 0
     TransformComponent:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0, 1]
@@ -291,7 +297,7 @@ Entities:
     TransformComponent:
       Translation: [-8, 3.5, 4.47034836e-08]
       Rotation: [0, 0, 0, 1]
-      Scale: [4.92000008, 4.92000008, 4.92000008]
+      Scale: [2.06640005, 2.06640005, 2.06640005]
       Visible: true
     StaticMeshComponent:
       Name: ""

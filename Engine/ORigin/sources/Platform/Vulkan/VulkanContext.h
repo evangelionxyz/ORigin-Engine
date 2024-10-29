@@ -4,34 +4,14 @@
 #define VULKAN_CONTEXT_H
 
 #include "Origin/Renderer/GraphicsContext.h"
+#include "VulkanSwapchain.h"
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 namespace origin
 {
-    static void VkErrorCheck(VkResult err)
-    {
-        if (err == 0)
-            return;
-        
-        OGN_CORE_ERROR("[Vulkan] Error: VkResult {}", err);
-        if (err < 0)
-        {
-            abort();
-        }
-    }
-    struct Swapchain
-    {
-        VkSwapchainKHR Handle;
-        std::vector<VkImage> Images;
-        std::vector<VkImageView> Views;
-
-        VkFormat ImageFormat;
-        VkExtent2D Extent;
-    };
-
-    class VulkanContext final : public GraphicsContext
+    class VulkanContext : public GraphicsContext
     {
     public:
         VulkanContext();
@@ -72,13 +52,13 @@ namespace origin
         VkDevice               m_Device         = VK_NULL_HANDLE;
         VkDescriptorPool       m_DescriptorPool = VK_NULL_HANDLE;
         VkQueue                m_Queue          = VK_NULL_HANDLE;
-        u32                    m_QueueFamily    = (u32)-1;
+        u32                    m_QueueFamily    = static_cast<u32>(-1);
         VkPipelineCache        m_PipelineCache  = VK_NULL_HANDLE;
         VkComponentMapping     m_SwapchainComponentsMapping{};
         u32                    m_SwapchainBuffering = 0;
         VkClearValue           m_ClearValue{};
-        GLFWwindow            *m_WindowHandle  = nullptr;
-        Swapchain              m_Swapchain;
+        GLFWwindow            *m_WindowHandle     = nullptr;
+        VulkanSwapchain        m_Swapchain;
         bool                   m_RebuildSwapchain = false;
         int                    m_MinImageCount = 2;
         static inline u32 s_CurrentFrameIndex = 0;

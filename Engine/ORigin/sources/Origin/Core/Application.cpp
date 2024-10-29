@@ -16,7 +16,7 @@
     #include "Platform/DX11/DX11Context.h"
 #endif
 
-#define OGN_OPENGL_API
+// #define OGN_OPENGL_API
 
 namespace origin {
 
@@ -32,13 +32,9 @@ namespace origin {
 
         if (!m_Spec.WorkingDirectory.empty())
             std::filesystem::current_path(m_Spec.WorkingDirectory);
-#ifdef OGN_OPENGL_API
+
         RendererAPI::SetAPI(RendererAPI::API::OpenGL);
-#elif OGN_VULKAN_API
-        RendererAPI::SetAPI(RendererAPI::API::Vulkan);
-#elif OGN_DX11_API
-        RendererAPI::SetAPI(RendererAPI::API::DX11);
-#endif
+
         Window::GLFWInit();
         m_ConsoleManager = std::make_unique<ConsoleManager>();
 

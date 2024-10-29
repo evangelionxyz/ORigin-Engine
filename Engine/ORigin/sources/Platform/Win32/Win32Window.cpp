@@ -34,6 +34,7 @@ namespace origin {
             break;
         }
         
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
         m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
             title, nullptr, nullptr);
@@ -52,8 +53,8 @@ namespace origin {
         COLORREF rgbRed = 0x00E86071;
         DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &rgbRed, sizeof(rgbRed));
 
-        DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_DONOTROUND;
-        DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
+        // DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_DONOTROUND;
+        // DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
 
         m_Data.Width = width;
         m_Data.Height = height;
@@ -70,6 +71,8 @@ namespace origin {
 
         m_GraphicsContext = GraphicsContext::Create();
         m_GraphicsContext->Init(this);
+
+        glfwSwapInterval(m_Data.VSync ? 1 : 0);
     }
 
     void Win32Window::Show()

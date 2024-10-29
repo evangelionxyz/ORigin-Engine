@@ -203,8 +203,9 @@ namespace origin
         {
             // update camera
             m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-            m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-
+            // m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+            m_EditorCamera.OnUpdate(ts);
+                
             // draw gizmo
             m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
             if(m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
@@ -223,7 +224,9 @@ namespace origin
         {
             // update camera
             m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-            m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+            //m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+            m_EditorCamera.OnUpdate(ts);
+
 
             // draw gizmo
             m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());

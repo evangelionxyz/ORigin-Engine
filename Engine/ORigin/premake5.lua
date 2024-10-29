@@ -70,6 +70,7 @@ project "ORigin"
         systemversion "latest"
         links {
             "opengl32.lib",
+            "%{Library.Vulkan1Lib}",
             "%{Library.MONO}",
             "%{Library.WinSock}",
             "%{Library.WinMM}",

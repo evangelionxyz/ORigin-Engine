@@ -13,16 +13,8 @@ using namespace origin;
 
 static glm::vec4 clear_color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
-Ref<SkeletalModel> model;
-
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
-    camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 1500.0f);
-    camera.SetAllowedMove(true);
-
-    model = CreateRef<SkeletalModel>("Resources/Models/barbarian.glb");
-    for (auto &m : model->GetMeshes())
-        OGN_CORE_INFO(m->Name);
 }
 
 void SandboxLayer::OnAttach()
@@ -36,21 +28,6 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
     RenderCommand::Clear();
     RenderCommand::ClearColor(clear_color);
-
-    Renderer2D::Begin(camera);
-    for (i32 i = -10; i < 10; i++)
-    {
-        Renderer2D::DrawQuad(glm::translate(glm::mat4(1.0f), { i + i * 2.0f, 1.0f, -10.0f }),
-            { 1.0f, 0.0f, 0.2f, 1.0f });
-    }
-    Renderer2D::End();
-
-    MeshRenderer::Begin(camera);
-    for (auto& m : model->GetMeshes())
-    {
-        MeshRenderer::DrawMesh(camera.GetViewProjection(), glm::mat4(1.0f), m->vertexArray);
-    }
-    MeshRenderer::End();
 }
 
 void SandboxLayer::OnEvent(Event &e)

@@ -13,15 +13,6 @@
 	#endif
 #endif
 
-#ifdef OGN_OPENGL_API
-	#define OGN_OPENGL_API
-#elif OGN_VULKAN_API
-#pragma comment(lib, "vulkan-1.lib")
-	#define OGN_VULKAN_API
-#elif OGN_DX11_API
-	#define OGN_DX11_API
-#endif
-
 #ifdef OGN_DLL_EXPORT
 #define OGN_API __declspec(dllexport)
 #else

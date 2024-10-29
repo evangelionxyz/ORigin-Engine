@@ -20,6 +20,7 @@ namespace origin {
         if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
         m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), title, nullptr, nullptr);
         if (!m_MainWindow)
@@ -35,7 +36,7 @@ namespace origin {
         m_GraphicsContext = GraphicsContext::Create();
         m_GraphicsContext->Init(this);
 
-        glfwSwapInterval((int)m_Data.VSync);
+        glfwSwapInterval(m_Data.VSync ? 1 : 0);
     }
 
     void LinuxWindow::DestroyWindow()
