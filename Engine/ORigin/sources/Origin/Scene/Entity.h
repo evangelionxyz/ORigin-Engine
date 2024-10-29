@@ -54,8 +54,9 @@ namespace origin {
 			OGN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
-
+		IDComponent GetIDC() { return GetComponent<IDComponent>(); }
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+
 		UUID GetParentUUID() { return GetComponent<IDComponent>().Parent; }
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
 		EntityType GetType() { return GetComponent<IDComponent>().Type; }

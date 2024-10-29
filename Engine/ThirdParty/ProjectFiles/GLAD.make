@@ -20,7 +20,7 @@ endif
 
 RESCOMP = windres
 DEFINES +=
-INCLUDES += -I../GLAD/include
+INCLUDES += -I../glad/include
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
@@ -36,26 +36,26 @@ endef
 
 ifeq ($(config),debug)
 TARGETDIR = ../../Build/VS2022/Debug/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/GLAD.lib
+TARGET = $(TARGETDIR)/libGLAD.a
 OBJDIR = ../../Build/VS2022/Debug/Objs/ThirdParty/GLAD
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),release)
 TARGETDIR = ../../Build/VS2022/Release/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/GLAD.lib
+TARGET = $(TARGETDIR)/libGLAD.a
 OBJDIR = ../../Build/VS2022/Release/Objs/ThirdParty/GLAD
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 else ifeq ($(config),dist)
 TARGETDIR = ../../Build/VS2022/Dist/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/GLAD.lib
+TARGET = $(TARGETDIR)/libGLAD.a
 OBJDIR = ../../Build/VS2022/Dist/Objs/ThirdParty/GLAD
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 endif
@@ -135,7 +135,7 @@ endif
 # File Rules
 # #############################################
 
-$(OBJDIR)/glad.o: ../GLAD/src/glad.c
+$(OBJDIR)/glad.o: ../glad/src/glad.c
 	@echo "$(notdir $<)"
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

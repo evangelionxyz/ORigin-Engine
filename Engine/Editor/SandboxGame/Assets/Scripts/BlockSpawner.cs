@@ -16,8 +16,8 @@ namespace TestGame
         List<Entity> blockList;
         Vector3[] positions; 
         int size = 15;
-        int count = 0;
-        private int total = 0;
+        public int count = 0;
+        public int total = 10;
         private float spawnTimer = 0.0f;
         private float spawnInterval = 0.05f; // 0.5 seconds
         private bool done = false;

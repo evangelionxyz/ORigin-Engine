@@ -13,12 +13,16 @@ namespace origin
     public:
         Win32Window(const char* title, uint32_t width, uint32_t height, bool maximized);
 
+        void Show() override;
+        void Hide() override;
+
         void DestroyWindow() override;
         void UpdateEvents() override;
         void OnUpdate() override;
         bool IsLooping() override { return glfwWindowShouldClose(m_MainWindow) == 0; }
         void CloseWindow() override;
         void ToggleVSync() override;
+        void SetVSync(bool enable) override;
         void ToggleFullScreen() override;
         void SetIcon(const char* filepath) override;
         void WindowCallbacks();

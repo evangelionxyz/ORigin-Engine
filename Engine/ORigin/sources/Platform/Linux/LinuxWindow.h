@@ -17,6 +17,7 @@ namespace origin
 		void OnUpdate() override;
 		bool IsLooping() override { return glfwWindowShouldClose(m_MainWindow) == 0; }
 		void ToggleVSync() override;
+		void SetVSync(bool enable) override;
 		void ToggleFullScreen() override;
 		void CloseWindow() override;
 		void SetIcon(const char* filepath) override;

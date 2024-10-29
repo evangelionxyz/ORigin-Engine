@@ -39,6 +39,7 @@ namespace origin
         out << YAML::Key << "RenderSettingsWindow" << YAML::Value << editor->GuiRenderSettingsWindow;
         out << YAML::Key << "ImGuiDemoWindow" << YAML::Value << editor->GuiImGuiDemoWindow;
         out << YAML::Key << "ConsoleWindow" << YAML::Value << editor->GuiConsoleWindow;
+        out << YAML::Key << "Theme" << YAML::Value << editor->m_Themes.GetCurrentTheme();
         out << YAML::EndMap;
 
         // Settings
@@ -104,6 +105,7 @@ namespace origin
             editor->GuiRenderSettingsWindow = windowsNode["RenderSettingsWindow"].as<bool>();
             editor->GuiImGuiDemoWindow = windowsNode["ImGuiDemoWindow"].as<bool>();
             editor->GuiConsoleWindow = windowsNode["ConsoleWindow"].as<bool>();
+            editor->m_Themes.ApplyTheme(windowsNode["Theme"].as<std::string>());
         }
 
         // Deserialize settings

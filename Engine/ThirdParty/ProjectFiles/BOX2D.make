@@ -36,26 +36,26 @@ endef
 
 ifeq ($(config),debug)
 TARGETDIR = ../../Build/VS2022/Debug/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/BOX2D.lib
+TARGET = $(TARGETDIR)/libBOX2D.a
 OBJDIR = ../../Build/VS2022/Debug/Objs/ThirdParty/BOX2D
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c17 /experimental:c11atomics
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g /experimental:c11atomics
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -std=c17
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),release)
 TARGETDIR = ../../Build/VS2022/Release/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/BOX2D.lib
+TARGET = $(TARGETDIR)/libBOX2D.a
 OBJDIR = ../../Build/VS2022/Release/Objs/ThirdParty/BOX2D
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c17 /experimental:c11atomics
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 /experimental:c11atomics
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -std=c17
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 else ifeq ($(config),dist)
 TARGETDIR = ../../Build/VS2022/Dist/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/BOX2D.lib
+TARGET = $(TARGETDIR)/libBOX2D.a
 OBJDIR = ../../Build/VS2022/Dist/Objs/ThirdParty/BOX2D
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c17 /experimental:c11atomics
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 /experimental:c11atomics
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -std=c17
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 endif

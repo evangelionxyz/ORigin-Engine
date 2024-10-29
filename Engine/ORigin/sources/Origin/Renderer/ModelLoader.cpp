@@ -126,7 +126,7 @@ namespace origin
 	// ======================================
 	// Skinned Mesh
 
-    std::shared_ptr<MeshData> ModelLoader::LoadModel(const std::filesystem::path &filepath)
+    Ref<MeshData> ModelLoader::LoadModel(const std::filesystem::path &filepath)
     {
 		Assimp::Importer importer;
 		const aiScene *scene = importer.ReadFile(filepath.generic_string().c_str(),
@@ -141,8 +141,8 @@ namespace origin
 		}
 
 		aiMesh *mesh = scene->mMeshes[0];
-		std::shared_ptr<MeshData> data = std::make_shared<MeshData>();
-		data->DiffuseTexture = Renderer::WhiteTexture;
+		Ref<MeshData> data = std::make_shared<MeshData>();
+		data->diffuseTexture = Renderer::WhiteTexture;
 
         // load position, normal, uv
         for (u32 i = 0; i < mesh->mNumVertices; i++)
@@ -177,15 +177,6 @@ namespace origin
                 data->indices.push_back(face.mIndices[indicesIndex]);
 			}
         }
-
-		if (scene->HasAnimations())
-		{
-			for (u32 animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
-			{
-				ModelAnimation anim = ModelAnimation(data.get(), scene->mAnimations[animIndex], scene);
-				data->animations.push_back(anim);
-			}
-		}
 
 		if (scene->HasTextures())
 		{

@@ -19,8 +19,8 @@ endif
 # #############################################
 
 RESCOMP = windres
-DEFINES += -DASSIMP_BUILD_NO_X_IMPORTER -DASSIMP_BUILD_NO_3DS_IMPORTER -DASSIMP_BUILD_NO_MD3_IMPORTER -DASSIMP_BUILD_NO_MDL_IMPORTER -DASSIMP_BUILD_NO_MD2_IMPORTER -DASSIMP_BUILD_NO_PLY_IMPORTER -DASSIMP_BUILD_NO_ASE_IMPORTER -DASSIMP_BUILD_NO_AMF_IMPORTER -DASSIMP_BUILD_NO_HMP_IMPORTER -DASSIMP_BUILD_NO_SMD_IMPORTER -DASSIMP_BUILD_NO_MDC_IMPORTER -DASSIMP_BUILD_NO_MD5_IMPORTER -DASSIMP_BUILD_NO_STL_IMPORTER -DASSIMP_BUILD_NO_LWO_IMPORTER -DASSIMP_BUILD_NO_DXF_IMPORTER -DASSIMP_BUILD_NO_NFF_IMPORTER -DASSIMP_BUILD_NO_RAW_IMPORTER -DASSIMP_BUILD_NO_OFF_IMPORTER -DASSIMP_BUILD_NO_AC_IMPORTER -DASSIMP_BUILD_NO_BVH_IMPORTER -DASSIMP_BUILD_NO_IRRMESH_IMPORTER -DASSIMP_BUILD_NO_IRR_IMPORTER -DASSIMP_BUILD_NO_Q3D_IMPORTER -DASSIMP_BUILD_NO_B3D_IMPORTER -DASSIMP_BUILD_NO_TERRAGEN_IMPORTER -DASSIMP_BUILD_NO_CSM_IMPORTER -DASSIMP_BUILD_NO_3D_IMPORTER -DASSIMP_BUILD_NO_LWS_IMPORTER -DASSIMP_BUILD_NO_OGRE_IMPORTER -DASSIMP_BUILD_NO_OPENGEX_IMPORTER -DASSIMP_BUILD_NO_MS3D_IMPORTER -DASSIMP_BUILD_NO_COB_IMPORTER -DASSIMP_BUILD_NO_BLEND_IMPORTER -DASSIMP_BUILD_NO_Q3BSP_IMPORTER -DASSIMP_BUILD_NO_NDO_IMPORTER -DASSIMP_BUILD_NO_IFC_IMPORTER -DASSIMP_BUILD_NO_XGL_IMPORTER -DASSIMP_BUILD_NO_ASSBIN_IMPORTER -DASSIMP_BUILD_NO_GLTF_IMPORTER -DASSIMP_BUILD_NO_C4D_IMPORTER -DASSIMP_BUILD_NO_3MF_IMPORTER -DASSIMP_BUILD_NO_X3D_IMPORTER -DASSIMP_BUILD_NO_MMD_IMPORTER -DASSIMP_BUILD_NO_STEP_EXPORTER -DASSIMP_BUILD_NO_SIB_IMPORTER -DASSIMP_BUILD_NO_USD_IMPORTER -DASSIMP_BUILD_NO_PBRT_IMPORTER -D_CRT_SECURE_NO_WARNINGS
-INCLUDES += -I../assimp -I../Assimp/code -I../Assimp/include -I../Assimp/contrib -I../Assimp/contrib/zip -I../Assimp/contrib/zlib -I../Assimp/contrib/unzip -I../Assimp/contrib/pugixml/src -I../Assimp/contrib/utf8cpp/source -I../Assimp/contrib/rapidjson/include -I../assimpcontrib/openddlparser/include
+DEFINES += -DRAPIDJSON_HAS_STDSTRING=1 -DASSIMP_BUILD_NO_FBX_IMPORTER -DASSIMP_BUILD_NO_X_IMPORTER -DASSIMP_BUILD_NO_3DS_IMPORTER -DASSIMP_BUILD_NO_MD3_IMPORTER -DASSIMP_BUILD_NO_MDL_IMPORTER -DASSIMP_BUILD_NO_MD2_IMPORTER -DASSIMP_BUILD_NO_PLY_IMPORTER -DASSIMP_BUILD_NO_ASE_IMPORTER -DASSIMP_BUILD_NO_AMF_IMPORTER -DASSIMP_BUILD_NO_HMP_IMPORTER -DASSIMP_BUILD_NO_SMD_IMPORTER -DASSIMP_BUILD_NO_MDC_IMPORTER -DASSIMP_BUILD_NO_MD5_IMPORTER -DASSIMP_BUILD_NO_STL_IMPORTER -DASSIMP_BUILD_NO_LWO_IMPORTER -DASSIMP_BUILD_NO_DXF_IMPORTER -DASSIMP_BUILD_NO_NFF_IMPORTER -DASSIMP_BUILD_NO_RAW_IMPORTER -DASSIMP_BUILD_NO_OFF_IMPORTER -DASSIMP_BUILD_NO_AC_IMPORTER -DASSIMP_BUILD_NO_BVH_IMPORTER -DASSIMP_BUILD_NO_IRRMESH_IMPORTER -DASSIMP_BUILD_NO_IRR_IMPORTER -DASSIMP_BUILD_NO_Q3D_IMPORTER -DASSIMP_BUILD_NO_B3D_IMPORTER -DASSIMP_BUILD_NO_TERRAGEN_IMPORTER -DASSIMP_BUILD_NO_CSM_IMPORTER -DASSIMP_BUILD_NO_3D_IMPORTER -DASSIMP_BUILD_NO_LWS_IMPORTER -DASSIMP_BUILD_NO_OGRE_IMPORTER -DASSIMP_BUILD_NO_OPENGEX_IMPORTER -DASSIMP_BUILD_NO_MS3D_IMPORTER -DASSIMP_BUILD_NO_COB_IMPORTER -DASSIMP_BUILD_NO_BLEND_IMPORTER -DASSIMP_BUILD_NO_Q3BSP_IMPORTER -DASSIMP_BUILD_NO_NDO_IMPORTER -DASSIMP_BUILD_NO_IFC_IMPORTER -DASSIMP_BUILD_NO_XGL_IMPORTER -DASSIMP_BUILD_NO_ASSBIN_IMPORTER -DASSIMP_BUILD_NO_C4D_IMPORTER -DASSIMP_BUILD_NO_3MF_IMPORTER -DASSIMP_BUILD_NO_X3D_IMPORTER -DASSIMP_BUILD_NO_MMD_IMPORTER -DASSIMP_BUILD_NO_STEP_EXPORTER -DASSIMP_BUILD_NO_SIB_IMPORTER -DASSIMP_BUILD_NO_USD_IMPORTER -DASSIMP_BUILD_NO_PBRT_IMPORTER
+INCLUDES += -I../Assimp -I../Assimp/code -I../Assimp/include -I../Assimp/contrib -I../Assimp/contrib/zip -I../Assimp/contrib/zlib -I../Assimp/contrib/unzip -I../Assimp/contrib/pugixml/src -I../Assimp/contrib/utf8cpp/source -I../Assimp/contrib/rapidjson/include -I../Assimp/contrib/openddlparser/include
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
@@ -36,26 +36,26 @@ endef
 
 ifeq ($(config),debug)
 TARGETDIR = ../../Build/VS2022/Debug/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/ASSIMP.lib
+TARGET = $(TARGETDIR)/libASSIMP.a
 OBJDIR = ../../Build/VS2022/Debug/Objs/ThirdParty/ASSIMP
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++17
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -std=c++17
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),release)
 TARGETDIR = ../../Build/VS2022/Release/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/ASSIMP.lib
+TARGET = $(TARGETDIR)/libASSIMP.a
 OBJDIR = ../../Build/VS2022/Release/Objs/ThirdParty/ASSIMP
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++17
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -std=c++17
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 else ifeq ($(config),dist)
 TARGETDIR = ../../Build/VS2022/Dist/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/ASSIMP.lib
+TARGET = $(TARGETDIR)/libASSIMP.a
 OBJDIR = ../../Build/VS2022/Dist/Objs/ThirdParty/ASSIMP
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++17
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -std=c++17
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 endif
@@ -96,24 +96,6 @@ GENERATED += $(OBJDIR)/DropFaceNormalsProcess.o
 GENERATED += $(OBJDIR)/EmbedTexturesProcess.o
 GENERATED += $(OBJDIR)/Exceptional.o
 GENERATED += $(OBJDIR)/Exporter.o
-GENERATED += $(OBJDIR)/FBXAnimation.o
-GENERATED += $(OBJDIR)/FBXBinaryTokenizer.o
-GENERATED += $(OBJDIR)/FBXConverter.o
-GENERATED += $(OBJDIR)/FBXDeformer.o
-GENERATED += $(OBJDIR)/FBXDocument.o
-GENERATED += $(OBJDIR)/FBXDocumentUtil.o
-GENERATED += $(OBJDIR)/FBXExportNode.o
-GENERATED += $(OBJDIR)/FBXExportProperty.o
-GENERATED += $(OBJDIR)/FBXExporter.o
-GENERATED += $(OBJDIR)/FBXImporter.o
-GENERATED += $(OBJDIR)/FBXMaterial.o
-GENERATED += $(OBJDIR)/FBXMeshGeometry.o
-GENERATED += $(OBJDIR)/FBXModel.o
-GENERATED += $(OBJDIR)/FBXNodeAttribute.o
-GENERATED += $(OBJDIR)/FBXParser.o
-GENERATED += $(OBJDIR)/FBXProperties.o
-GENERATED += $(OBJDIR)/FBXTokenizer.o
-GENERATED += $(OBJDIR)/FBXUtil.o
 GENERATED += $(OBJDIR)/FindDegenerates.o
 GENERATED += $(OBJDIR)/FindInstancesProcess.o
 GENERATED += $(OBJDIR)/FindInvalidDataProcess.o
@@ -140,9 +122,7 @@ GENERATED += $(OBJDIR)/ObjFileMtlImporter.o
 GENERATED += $(OBJDIR)/ObjFileParser.o
 GENERATED += $(OBJDIR)/OptimizeGraph.o
 GENERATED += $(OBJDIR)/OptimizeMeshes.o
-GENERATED += $(OBJDIR)/PlyExporter.o
-GENERATED += $(OBJDIR)/PlyLoader.o
-GENERATED += $(OBJDIR)/PlyParser.o
+GENERATED += $(OBJDIR)/PbrtExporter.o
 GENERATED += $(OBJDIR)/PostStepRegistry.o
 GENERATED += $(OBJDIR)/PretransformVertices.o
 GENERATED += $(OBJDIR)/ProcessHelper.o
@@ -172,6 +152,7 @@ GENERATED += $(OBJDIR)/compress.o
 GENERATED += $(OBJDIR)/crc32.o
 GENERATED += $(OBJDIR)/deflate.o
 GENERATED += $(OBJDIR)/glTF2Importer.o
+GENERATED += $(OBJDIR)/glTFCommon.o
 GENERATED += $(OBJDIR)/glTFImporter.o
 GENERATED += $(OBJDIR)/gzclose.o
 GENERATED += $(OBJDIR)/gzlib.o
@@ -215,24 +196,6 @@ OBJECTS += $(OBJDIR)/DropFaceNormalsProcess.o
 OBJECTS += $(OBJDIR)/EmbedTexturesProcess.o
 OBJECTS += $(OBJDIR)/Exceptional.o
 OBJECTS += $(OBJDIR)/Exporter.o
-OBJECTS += $(OBJDIR)/FBXAnimation.o
-OBJECTS += $(OBJDIR)/FBXBinaryTokenizer.o
-OBJECTS += $(OBJDIR)/FBXConverter.o
-OBJECTS += $(OBJDIR)/FBXDeformer.o
-OBJECTS += $(OBJDIR)/FBXDocument.o
-OBJECTS += $(OBJDIR)/FBXDocumentUtil.o
-OBJECTS += $(OBJDIR)/FBXExportNode.o
-OBJECTS += $(OBJDIR)/FBXExportProperty.o
-OBJECTS += $(OBJDIR)/FBXExporter.o
-OBJECTS += $(OBJDIR)/FBXImporter.o
-OBJECTS += $(OBJDIR)/FBXMaterial.o
-OBJECTS += $(OBJDIR)/FBXMeshGeometry.o
-OBJECTS += $(OBJDIR)/FBXModel.o
-OBJECTS += $(OBJDIR)/FBXNodeAttribute.o
-OBJECTS += $(OBJDIR)/FBXParser.o
-OBJECTS += $(OBJDIR)/FBXProperties.o
-OBJECTS += $(OBJDIR)/FBXTokenizer.o
-OBJECTS += $(OBJDIR)/FBXUtil.o
 OBJECTS += $(OBJDIR)/FindDegenerates.o
 OBJECTS += $(OBJDIR)/FindInstancesProcess.o
 OBJECTS += $(OBJDIR)/FindInvalidDataProcess.o
@@ -259,9 +222,7 @@ OBJECTS += $(OBJDIR)/ObjFileMtlImporter.o
 OBJECTS += $(OBJDIR)/ObjFileParser.o
 OBJECTS += $(OBJDIR)/OptimizeGraph.o
 OBJECTS += $(OBJDIR)/OptimizeMeshes.o
-OBJECTS += $(OBJDIR)/PlyExporter.o
-OBJECTS += $(OBJDIR)/PlyLoader.o
-OBJECTS += $(OBJDIR)/PlyParser.o
+OBJECTS += $(OBJDIR)/PbrtExporter.o
 OBJECTS += $(OBJDIR)/PostStepRegistry.o
 OBJECTS += $(OBJDIR)/PretransformVertices.o
 OBJECTS += $(OBJDIR)/ProcessHelper.o
@@ -291,6 +252,7 @@ OBJECTS += $(OBJDIR)/compress.o
 OBJECTS += $(OBJDIR)/crc32.o
 OBJECTS += $(OBJDIR)/deflate.o
 OBJECTS += $(OBJDIR)/glTF2Importer.o
+OBJECTS += $(OBJDIR)/glTFCommon.o
 OBJECTS += $(OBJDIR)/glTFImporter.o
 OBJECTS += $(OBJDIR)/gzclose.o
 OBJECTS += $(OBJDIR)/gzlib.o
@@ -383,60 +345,6 @@ $(OBJDIR)/ColladaLoader.o: ../Assimp/code/AssetLib/Collada/ColladaLoader.cpp
 $(OBJDIR)/ColladaParser.o: ../Assimp/code/AssetLib/Collada/ColladaParser.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXAnimation.o: ../Assimp/code/AssetLib/FBX/FBXAnimation.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXBinaryTokenizer.o: ../Assimp/code/AssetLib/FBX/FBXBinaryTokenizer.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXConverter.o: ../Assimp/code/AssetLib/FBX/FBXConverter.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXDeformer.o: ../Assimp/code/AssetLib/FBX/FBXDeformer.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXDocument.o: ../Assimp/code/AssetLib/FBX/FBXDocument.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXDocumentUtil.o: ../Assimp/code/AssetLib/FBX/FBXDocumentUtil.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXExportNode.o: ../Assimp/code/AssetLib/FBX/FBXExportNode.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXExportProperty.o: ../Assimp/code/AssetLib/FBX/FBXExportProperty.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXExporter.o: ../Assimp/code/AssetLib/FBX/FBXExporter.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXImporter.o: ../Assimp/code/AssetLib/FBX/FBXImporter.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXMaterial.o: ../Assimp/code/AssetLib/FBX/FBXMaterial.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXMeshGeometry.o: ../Assimp/code/AssetLib/FBX/FBXMeshGeometry.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXModel.o: ../Assimp/code/AssetLib/FBX/FBXModel.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXNodeAttribute.o: ../Assimp/code/AssetLib/FBX/FBXNodeAttribute.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXParser.o: ../Assimp/code/AssetLib/FBX/FBXParser.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXProperties.o: ../Assimp/code/AssetLib/FBX/FBXProperties.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXTokenizer.o: ../Assimp/code/AssetLib/FBX/FBXTokenizer.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/FBXUtil.o: ../Assimp/code/AssetLib/FBX/FBXUtil.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/IQMImporter.o: ../Assimp/code/AssetLib/IQM/IQMImporter.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -461,13 +369,7 @@ $(OBJDIR)/ObjFileMtlImporter.o: ../Assimp/code/AssetLib/Obj/ObjFileMtlImporter.c
 $(OBJDIR)/ObjFileParser.o: ../Assimp/code/AssetLib/Obj/ObjFileParser.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/PlyExporter.o: ../Assimp/code/AssetLib/Ply/PlyExporter.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/PlyLoader.o: ../Assimp/code/AssetLib/Ply/PlyLoader.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/PlyParser.o: ../Assimp/code/AssetLib/Ply/PlyParser.cpp
+$(OBJDIR)/glTFCommon.o: ../Assimp/code/AssetLib/glTF/glTFCommon.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/glTFImporter.o: ../Assimp/code/AssetLib/glTF/glTFImporter.cpp
@@ -582,6 +484,9 @@ $(OBJDIR)/GeometryUtils.o: ../Assimp/code/Geometry/GeometryUtils.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/MaterialSystem.o: ../Assimp/code/Material/MaterialSystem.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/PbrtExporter.o: ../Assimp/code/Pbrt/PbrtExporter.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ArmaturePopulate.o: ../Assimp/code/PostProcessing/ArmaturePopulate.cpp

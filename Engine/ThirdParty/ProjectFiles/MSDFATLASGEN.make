@@ -34,32 +34,32 @@ endef
 
 ifeq ($(config),debug)
 TARGETDIR = ../../Build/VS2022/Debug/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/MSDFATLASGEN.lib
+TARGET = $(TARGETDIR)/libMSDFATLASGEN.a
 OBJDIR = ../../Build/VS2022/Debug/Objs/ThirdParty/MSDFATLASGEN
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++17
-LIBS += ../../Build/VS2022/Debug/Binaries/ThirdParty/MSDFGEN.lib
-LDDEPS += ../../Build/VS2022/Debug/Binaries/ThirdParty/MSDFGEN.lib
+LIBS += ../../Build/VS2022/Debug/Binaries/ThirdParty/libMSDFGEN.a
+LDDEPS += ../../Build/VS2022/Debug/Binaries/ThirdParty/libMSDFGEN.a
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),release)
 TARGETDIR = ../../Build/VS2022/Release/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/MSDFATLASGEN.lib
+TARGET = $(TARGETDIR)/libMSDFATLASGEN.a
 OBJDIR = ../../Build/VS2022/Release/Objs/ThirdParty/MSDFATLASGEN
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++17
-LIBS += ../../Build/VS2022/Release/Binaries/ThirdParty/MSDFGEN.lib
-LDDEPS += ../../Build/VS2022/Release/Binaries/ThirdParty/MSDFGEN.lib
+LIBS += ../../Build/VS2022/Release/Binaries/ThirdParty/libMSDFGEN.a
+LDDEPS += ../../Build/VS2022/Release/Binaries/ThirdParty/libMSDFGEN.a
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 else ifeq ($(config),dist)
 TARGETDIR = ../../Build/VS2022/Dist/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/MSDFATLASGEN.lib
+TARGET = $(TARGETDIR)/libMSDFATLASGEN.a
 OBJDIR = ../../Build/VS2022/Dist/Objs/ThirdParty/MSDFATLASGEN
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
-LIBS += ../../Build/VS2022/Dist/Binaries/ThirdParty/MSDFGEN.lib
-LDDEPS += ../../Build/VS2022/Dist/Binaries/ThirdParty/MSDFGEN.lib
+LIBS += ../../Build/VS2022/Dist/Binaries/ThirdParty/libMSDFGEN.a
+LDDEPS += ../../Build/VS2022/Dist/Binaries/ThirdParty/libMSDFGEN.a
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 endif

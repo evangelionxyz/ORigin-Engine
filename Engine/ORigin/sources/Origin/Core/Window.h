@@ -25,7 +25,7 @@ namespace origin {
         int yPos;
         bool Maximized = false;
         bool FullScreen = false;
-        bool VSync = false;
+        bool VSync = true;
         std::function<void(Event &)> EventCallback;
     };
     
@@ -34,12 +34,17 @@ namespace origin {
     public:
         static void GLFWInit();
         static void GLFWShutdown();
+        static void Show(GLFWwindow *window);
+        static void Hide(GLFWwindow *window);
 
+        virtual void Show() = 0;
+        virtual void Hide() = 0;
         virtual void DestroyWindow() = 0;
         virtual void UpdateEvents() = 0;
         virtual void OnUpdate() = 0;
         virtual bool IsLooping() = 0;
         virtual void ToggleVSync() = 0;
+        virtual void SetVSync(bool enable) = 0;
         virtual void ToggleFullScreen() = 0;
         virtual void CloseWindow() = 0;
         virtual void SetIcon(const char* filepath) = 0;

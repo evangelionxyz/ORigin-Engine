@@ -14,7 +14,7 @@ namespace origin
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::None:   return nullptr;
-			case RendererAPI::API::OpenGL: return std::make_shared<OpenGLVertexArray>();
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexArray>();
 		}
 		OGN_CORE_ASSERT(false, "Unkonwn VertexArray API");
 		return nullptr;

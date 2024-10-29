@@ -45,21 +45,25 @@ namespace origin
         LocalTransform = translation * rotation * scale;
     }
 
-    ModelAnimation::ModelAnimation(MeshData *data, aiAnimation *anim, const aiScene *scene)
+    ModelAnimation::ModelAnimation(const std::vector<Ref<MeshData>> &meshes, aiAnimation* anim, const aiScene* scene)
     {
         m_Name = anim->mName.C_Str();
 
         m_TicksPerSecond = (float)anim->mTicksPerSecond;
         if (anim->mTicksPerSecond == 0.0)
+        {
             m_TicksPerSecond = 1.0f;
+        }
 
         m_Duration = (float)anim->mDuration;
 
         m_Bones.clear();
         ReadHierarchy(m_RootNode, scene->mRootNode);
         
-        ReadMissingBones(data, anim);
-            
+        for (auto &m : meshes)
+        {
+            ReadMissingBones(m.get(), anim);
+        }
     }
 
     void ModelAnimation::ReadMissingBones(MeshData *data, const aiAnimation *anim)
@@ -75,7 +79,7 @@ namespace origin
             const std::string &boneName = channel->mNodeName.data;
 
             // if it is not found in mesh data, then add it
-            if (boneInfoMap.find(boneName) == boneInfoMap.end())
+            if (!boneInfoMap.contains(boneName))
             {
                 boneInfoMap[boneName].ID = boneCount;
                 boneCount++;
@@ -83,10 +87,6 @@ namespace origin
 
             m_Bones.insert({ boneName, Bone(boneName, boneInfoMap[boneName].ID, channel) });
         }
-
-        // set current bone info map
-        // to access in Animator
-        m_BoneInfoMap = boneInfoMap;
     }
 
     void ModelAnimation::ReadHierarchy(AssimpNodeData &dest, const aiNode *src)
@@ -103,6 +103,7 @@ namespace origin
             dest.Children.push_back(newData);
         }
     }
+
     Bone *ModelAnimation::FindBone(const std::string &name)
     {
         if (m_Bones.contains(name))

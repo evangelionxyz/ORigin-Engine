@@ -11,6 +11,8 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 
+#include "Themes.h"
+
 #include <ImGuizmo.h>
 
 namespace origin
@@ -33,6 +35,7 @@ namespace origin
         bool GuiRenderSettingsWindow = true;
         bool GuiImGuiDemoWindow = false;
         bool GuiConsoleWindow = true;
+        bool GuiPreferencesWindow = false;
 
         bool IsViewportHovered = false;
         bool IsViewportFocused = false;
@@ -83,6 +86,7 @@ namespace origin
         Dockspace m_Dockspace;
         EditorCamera m_EditorCamera;
         MaterialEditor m_MaterialEditor;
+        Themes m_Themes;
         Scope<SpriteSheetEditor> m_SpriteSheetEditor;
         Scope<UIEditor> m_UIEditor;
         Scope<Gizmos> m_Gizmos;

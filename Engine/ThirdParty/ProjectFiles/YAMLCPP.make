@@ -36,26 +36,26 @@ endef
 
 ifeq ($(config),debug)
 TARGETDIR = ../../Build/VS2022/Debug/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/YAMLCPP.lib
+TARGET = $(TARGETDIR)/libYAMLCPP.a
 OBJDIR = ../../Build/VS2022/Debug/Objs/ThirdParty/YAMLCPP
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++17
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -g -std=c++17
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
 
 else ifeq ($(config),release)
 TARGETDIR = ../../Build/VS2022/Release/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/YAMLCPP.lib
+TARGET = $(TARGETDIR)/libYAMLCPP.a
 OBJDIR = ../../Build/VS2022/Release/Objs/ThirdParty/YAMLCPP
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++17
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -fPIC -std=c++17
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 else ifeq ($(config),dist)
 TARGETDIR = ../../Build/VS2022/Dist/Binaries/ThirdParty
-TARGET = $(TARGETDIR)/YAMLCPP.lib
+TARGET = $(TARGETDIR)/libYAMLCPP.a
 OBJDIR = ../../Build/VS2022/Dist/Objs/ThirdParty/YAMLCPP
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -std=c++17
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -fPIC -std=c++17
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
 
 endif

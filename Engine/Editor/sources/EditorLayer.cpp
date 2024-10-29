@@ -1,5 +1,4 @@
-﻿
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.h"
 #include "Origin/EntryPoint.h"
@@ -204,8 +203,9 @@ namespace origin
         {
             // update camera
             m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-            m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-
+            // m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+            m_EditorCamera.OnUpdate(ts);
+                
             // draw gizmo
             m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
             if(m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
@@ -224,7 +224,9 @@ namespace origin
         {
             // update camera
             m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-            m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+            //m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
+            m_EditorCamera.OnUpdate(ts);
+
 
             // draw gizmo
             m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
@@ -570,7 +572,7 @@ namespace origin
         m_UIEditor->SetContext(m_ActiveScene.get());
     }
 
-    void EditorLayer::SerializeScene(const std::shared_ptr<Scene> &scene, const std::filesystem::path &filepath)
+    void EditorLayer::SerializeScene(const Ref<Scene> &scene, const std::filesystem::path &filepath)
     {
         scene->SetName(filepath.stem().string());
         SceneImporter::SaveScene(scene, filepath);
@@ -632,7 +634,14 @@ namespace origin
             if (ImGui::BeginMenu("View"))
             {
                 if (ImGui::MenuItem("Full Screen", "F11", &GuiMenuFullscreen)) application.GetWindow().ToggleFullScreen();
-                if (ImGui::MenuItem("VSync", nullptr, &GuiVSync)) application.GetWindow().ToggleVSync();
+                if (ImGui::MenuItem("VSync", nullptr, &GuiVSync)) application.GetWindow().SetVSync(GuiVSync);
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Tools"))
+            {
+                ImGui::MenuItem("Preferences", nullptr, &GuiPreferencesWindow);
+
                 ImGui::EndMenu();
             }
 
@@ -865,51 +874,22 @@ namespace origin
 
         if (ImGui::Begin("Toolbar", nullptr, window_flags))
         {
-            const auto canvasPos = ImGui::GetCursorScreenPos();
-            const auto canvasSize = ImVec2(ImGui::GetContentRegionAvail().x, 36.0f);
+            const ImVec2 bt_size = {16.0f, 16.0f};
 
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-            const ImVec2 pos_min_a = ImVec2(canvasPos);
-            const ImVec2 pos_max_a = ImVec2(canvasPos.x + 600.0f, canvasPos.y + canvasSize.y);
-
-            static float hue = 0.0f;
-            hue += ImGui::GetIO().DeltaTime * 0.1f;
-            if (hue >= 360.0f)
-                hue -= 360.0f;
-            u32 rectColor = (ImU32)ImColor::HSV(hue, 0.5f, 1.0f);
-
-            //u32 rectColor = ImColor(0.2231f, 0.44321f, 0.1f);
-            if (m_SceneState != SceneState::Play)
-                rectColor = ImColor(0.7213f, 0.2321f, 0.1f);
-
-            const u32 rect_transparent_color = ImColor(0.0f, 0.0f, 0.0f, 0.0f);
-            drawList->AddRectFilledMultiColor(pos_min_a, pos_max_a, rectColor, rect_transparent_color, rect_transparent_color, rectColor);
-
-            const auto posMinB = ImVec2(canvasPos.x + canvasSize.x - 600.0f, canvasPos.y);
-            const auto posMaxB = ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y);
-
-            drawList->AddRectFilledMultiColor(posMinB, posMaxB, rect_transparent_color, rectColor, rectColor, rect_transparent_color);
-
-            ImTextureID texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_OriginEngineTex->GetTextureID()));
-            const float texture_aspect_ratio = static_cast<float>(m_OriginEngineTex->GetWidth()) / static_cast<float>(m_OriginEngineTex->GetHeight());
-
-            const auto image_pos_min = ImVec2(canvasPos.x, canvasPos.y);
-            const auto image_pos_max = ImVec2(canvasPos.x + (canvasSize.y * texture_aspect_ratio), canvasPos.y + canvasSize.y);
-
-            drawList->AddImage(texture, image_pos_min, image_pos_max,
-                { 0.0f, 1.0f }, { 1.0f, 0.0f });
-            
-            ImVec2 btPos = { (canvasSize.x / 2.0f) - 175.0f, (canvasSize.y - 30.0f) / 2.0f };
-            ImGui::SetCursorPos(btPos);
+            // canvas position from the top left relative to monitor
+            const ImVec2 &canvas_top_left = ImGui::GetCursorScreenPos();
+            const ImVec2 &canvas_size = ImVec2(ImGui::GetContentRegionAvail().x, bt_size.y);
 
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 
+            // margin left: 16px
+            // margin top: 4px
+            ImGui::SetCursorPos({8.0f, 0.0f});
             // Play Button
             std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-            if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), { 25.0f, 25.0f }))
+            if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
             {
                 if (m_SceneHierarchy.GetContext())
                 {
@@ -923,12 +903,11 @@ namespace origin
                     }
                 }
             }
-
             // Simulate Button
             ImGui::SameLine();
             bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
             icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-            if (ImGui::ImageButton("simulate_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), { 25.0f, 25.0f }))
+            if (ImGui::ImageButton("simulate_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
             {
                 if (m_SceneHierarchy.GetContext())
                 {
@@ -942,14 +921,13 @@ namespace origin
                     }
                 }
             }
-
             // Pause Button
             if (m_SceneState != SceneState::Edit)
             {
                 ImGui::SameLine();
                 bool isPaused = m_ActiveScene->IsPaused();
                 icon = m_UITextures.at("pause");
-                if (ImGui::ImageButton("pause_button", (void *)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
+                if (ImGui::ImageButton("pause_button", (void *)(uintptr_t)icon->GetTextureID(), bt_size))
                 {
                     m_ActiveScene->SetPaused(!isPaused);
                 }
@@ -958,7 +936,7 @@ namespace origin
                 {
                     icon = m_UITextures.at("stepping");
                     ImGui::SameLine();
-                    if (ImGui::ImageButton("stepping_button", (void *)(uintptr_t)icon->GetTextureID(), { 25.0f, 25.0f }))
+                    if (ImGui::ImageButton("stepping_button", (void *)(uintptr_t)icon->GetTextureID(), bt_size))
                     {
                         m_ActiveScene->Step(1);
                     }
@@ -968,10 +946,9 @@ namespace origin
             ImGui::SameLine();
 
             // Projection mode
-            ImGui::SetCursorPos({ btPos.x + 175.0f, btPos.y });
             const auto &mode = m_EditorCamera.GetProjectionType();
             icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
-            if (ImGui::ImageButton("projection_button", (void *)(uintptr_t)icon->GetTextureID(), ImVec2(25.0f, 25.0f), ImVec2(0, 1), ImVec2(1, 0)))
+            if (ImGui::ImageButton("projection_button", (void *)(uintptr_t)icon->GetTextureID(), bt_size, ImVec2(0, 1), ImVec2(1, 0)))
             {
                 if (mode == ProjectionType::Perspective)
                     m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
@@ -980,7 +957,10 @@ namespace origin
             }
             ImGui::PopStyleColor(3);
 
-            ImGui::SetCursorPos({ canvasSize.x - 200.0f, btPos.y + 10.0f});
+            // margin left: 200px
+            // font size: 16px
+            // margin top: 4px (16.0f / 4.0f)
+            ImGui::SetCursorPos({canvas_size.x - 200.0f, 4.0f});
             ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End(); // !Toolbar
         }
@@ -996,6 +976,83 @@ namespace origin
                 auto &ac = entity.GetComponent<SpriteAnimationComponent>();
                 AnimationTimeline::DrawSpriteAnimTimeline(ac);
             }
+        }
+
+        if (GuiPreferencesWindow)
+        {
+            static int selected_option = 0;
+
+            ImGui::Begin("Preferences", &GuiPreferencesWindow);
+
+            // Define a child window for the left menu
+            ImGui::BeginChild("LeftMenu", {200.0f, 0.0f}, ImGuiChildFlags_ResizeX); // 150 width for menu
+            {
+                // List of menu items
+                if (ImGui::Selectable("Project", selected_option == 0)) { selected_option = 0; }
+                if (ImGui::Selectable("Appearance", selected_option == 1)) { selected_option = 1; }
+                if (ImGui::Selectable("Physics", selected_option == 2)) { selected_option = 2; }
+                if (ImGui::Selectable("Physics 2D", selected_option == 3)) { selected_option = 3; }
+                if (ImGui::Selectable("Debugging", selected_option == 4)) { selected_option = 4; }
+            }
+            ImGui::EndChild();
+
+            ImGui::SameLine(); // Move to the right for content
+
+            // Define a child window for the right content area
+            ImGui::BeginChild("RightContent", {0.0f, 0.0f}); // Fill remaining space
+            {
+                if (selected_option == 0) // Project
+                {
+                    ImGui::Text("Project");
+                    ImGui::Separator();
+
+                    if (Project::GetActive())
+                    {
+                        const std::string &project_path = Project::GetActiveProjectPath().generic_string();
+                        const std::string &relative_path = std::filesystem::relative(project_path).generic_string();
+                        const UUID start_scene = Project::GetActive()->GetConfig().StartScene;
+                        ImGui::Text("Project Path %s", project_path.c_str());
+                        ImGui::Text("Project Relative Path %s", relative_path.c_str());
+                        ImGui::Text("Start Scene %llu", start_scene);
+                    }
+                }
+                else if (selected_option == 1) // Appearance
+                {
+                    ImGui::Text("Appearance");
+                    ImGui::Separator();
+
+                    if (ImGui::BeginCombo("Themes", m_Themes.GetCurrentTheme().c_str()))
+                    {
+                        for (const auto &[key, value] : m_Themes.GetThemes())
+                        {
+                            const bool isSelected = m_Themes.GetCurrentTheme() == key;
+                            if (ImGui::Selectable(key.c_str(), isSelected))
+                                m_Themes.ApplyTheme(key);
+                            if (isSelected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+                else if (selected_option == 2) // Physics
+                {
+                    ImGui::Text("Physics");
+                    ImGui::Separator();
+                }
+                else if (selected_option == 3) // Physics 2D
+                {
+                    ImGui::Text("Physics 2D");
+                    ImGui::Separator();
+                }
+                else if (selected_option == 4) // Debugging
+                {
+                    ImGui::Text("Debugging");
+                    ImGui::Separator();
+                }
+            }
+            ImGui::EndChild();
+
+            ImGui::End();
         }
 
         if (GuiRenderSettingsWindow)
@@ -1046,15 +1103,15 @@ namespace origin
 
                         // Projection Type Settings
                         const char *CMPTypeString[] = { "Perspective", "Orthographic" };
-                        const char *currnentCMPTypeString = CMPTypeString[static_cast<int>(m_EditorCamera.GetProjectionType())];
-                        if (ImGui::BeginCombo("Projection", currnentCMPTypeString))
+                        const char *currentCMPType = CMPTypeString[static_cast<int>(m_EditorCamera.GetProjectionType())];
+                        if (ImGui::BeginCombo("Projection", currentCMPType))
                         {
                             for (int i = 0; i < 2; i++)
                             {
-                                const bool isSelected = currnentCMPTypeString == CMPTypeString[i];
+                                const bool isSelected = currentCMPType == CMPTypeString[i];
                                 if (ImGui::Selectable(CMPTypeString[i], isSelected))
                                 {
-                                    currnentCMPTypeString = CMPTypeString[i];
+                                    currentCMPType = CMPTypeString[i];
                                     m_EditorCamera.SetProjectionType(static_cast<ProjectionType>(i));
 
                                 } if (isSelected) ImGui::SetItemDefaultFocus();
@@ -1589,7 +1646,6 @@ namespace origin
                 {
                     CommandManager::Instance().Redo();
                 }
-                
             }
             break;
         }

@@ -1,5 +1,19 @@
 Scene: TestScene.org
 Entities:
+  - Entity: 10081453302717008082
+    Type: Entity
+    Parent: 0
+    TagComponent:
+      Tag: Test
+    TransformComponent:
+      Translation: [-7.36710596, 3.09875679, 3.15544915]
+      Rotation: [-9.96283376e-08, -0.641488969, -5.64414222e-08, 0.767132282]
+      Scale: [1.66919398, 1.6692009, 1.66918969]
+      Visible: true
+    MeshComponent:
+      Name: ""
+      HMesh: 17044459866786433359
+      HMaterial: 0
   - Entity: 4355993424349242155
     Type: Entity
     Parent: 2723873067466865669
@@ -55,12 +69,12 @@ Entities:
     ScriptComponent:
       ClassName: TestGame.Player
       ScriptFields:
-        - Name: Speed
-          Type: Float
-          Data: 10
         - Name: camera
           Type: Entity
           Data: 7916222134218068362
+        - Name: Speed
+          Type: Float
+          Data: 10
     TransformComponent:
       Translation: [6.5170126, 6, 8.15002251]
       Rotation: [0, 0, 0, 1]
@@ -99,9 +113,9 @@ Entities:
     TagComponent:
       Tag: Test
     TransformComponent:
-      Translation: [-3.57180429, 3.98558235, 3.1554451]
-      Rotation: [0, 0, 0, 1]
-      Scale: [0.610000014, 0.609999061, 0.609999061]
+      Translation: [1.87154675, 3.88306379, 5.21390057]
+      Rotation: [1.46420014e-08, 0.384652495, 2.5633998e-08, 0.92306143]
+      Scale: [0.610000074, 0.609998941, 0.609998643]
       Visible: true
     MeshComponent:
       Name: ""
@@ -127,7 +141,7 @@ Entities:
         OrthoScale: 30.7000008
         OrthoNear: -1
         OrthoFar: 85.4000015
-        ViewportSize: [965.999939, 414]
+        ViewportSize: [758.333313, 325]
       Primary: true
     AudioListenerComponent:
       Enable: true
@@ -245,7 +259,7 @@ Entities:
       Friction: 0.600000024
     TransformComponent:
       Translation: [0.00488954689, -9.99999809, 0]
-      Rotation: [0, 0, 0.000244477356, 0.99999994]
+      Rotation: [0, 0, 0.000244477153, 0.99999994]
       Scale: [30.0000019, 26.4736443, 30]
       Visible: true
     StaticMeshComponent:

@@ -8,45 +8,45 @@
 namespace origin
 {
 
-	std::shared_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size)
+	std::shared_ptr<VertexBuffer> VertexBuffer::Create(u32 size)
 	{
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::None:   return nullptr;
-			case RendererAPI::API::OpenGL: return std::make_shared<OpenGLVertexBuffer>(size);
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(size);
 		}
 
 		return nullptr;
 	}
 
-	std::shared_ptr<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
+	std::shared_ptr<VertexBuffer> VertexBuffer::Create(void* vertices, u32 size)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:   return nullptr;
-		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLVertexBuffer>(vertices, size);
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(vertices, size);
 		}
 
 		return nullptr;
 	}
 
-	std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t size)
+	std::shared_ptr<IndexBuffer> IndexBuffer::Create(u32 size)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:   return nullptr;
-		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLIndexBuffer>(size);
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLIndexBuffer>(size);
 		}
 
 		return nullptr;
 	}
 
-	std::shared_ptr<IndexBuffer> IndexBuffer::Create(void* indices, uint32_t count)
+	std::shared_ptr<IndexBuffer> IndexBuffer::Create(void* indices, u32 count)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:   return nullptr;
-		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLIndexBuffer>(indices, count);
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLIndexBuffer>(indices, count);
 		}
 
 		return nullptr;

@@ -144,10 +144,10 @@ namespace origin
     {
     public:
         ModelAnimation() = default;
-        ModelAnimation(MeshData *data, aiAnimation *anim, const aiScene *scene);
+        ModelAnimation(const std::vector<Ref<MeshData>> &meshes, aiAnimation *anim, const aiScene *scene);
 
         void ReadHierarchy(AssimpNodeData &dest, const aiNode *src);
-        void ReadMissingBones(MeshData *data, const aiAnimation *anim);
+        void ReadMissingBones(MeshData *mesh, const aiAnimation *anim);
 
         Bone *FindBone(const std::string &name);
 
@@ -155,6 +155,7 @@ namespace origin
         float GetDuration() const { return m_Duration; }
         const std::string &GetName() const { return m_Name; }
         const AssimpNodeData &GetRootNode() const { return m_RootNode; }
+        const std::unordered_map<std::string, BoneInfo> &GetBoneInfo() { return m_BoneInfo; }
 
         static AnimationType GetStaticType() { return AnimationType::Skeletal; }
         AnimationType GetType() const override { return GetStaticType(); }
@@ -165,7 +166,8 @@ namespace origin
         float m_TicksPerSecond;
 
         std::unordered_map<std::string, Bone> m_Bones;
-        std::map<std::string, BoneInfo> m_BoneInfoMap;
+        std::unordered_map<std::string, BoneInfo> m_BoneInfo;
+
         AssimpNodeData m_RootNode;
         friend class Animator;
     };

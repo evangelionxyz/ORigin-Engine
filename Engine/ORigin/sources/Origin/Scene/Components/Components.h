@@ -84,7 +84,7 @@ namespace origin
             else if ("Bone")     return EntityType::Bone;
             else if ("Camera")   return EntityType::Camera;
             else if ("Lighting") return EntityType::Lighting;
-            return (EntityType)-1;
+            return static_cast<EntityType>(-1);
         }
     }
 
@@ -98,6 +98,27 @@ namespace origin
         IDComponent() = default;
         IDComponent(const IDComponent &) = default;
         IDComponent(UUID id, UUID parent = UUID(0)) : ID(id), Parent(parent) { }
+
+        void AddChild(UUID childId)
+        {
+            m_Children.push_back(childId);
+        }
+
+        void RemoveChild(UUID childId)
+        {
+            auto it = std::remove_if(m_Children.begin(), m_Children.end(), [&](UUID id)
+            {
+                return id == childId;
+            });
+        }
+
+        bool HasChild(UUID childId)
+        {
+            auto it = std::find(m_Children.begin(), m_Children.end(), childId);
+            return it != m_Children.end();
+        }
+
+        std::vector<UUID> m_Children;
     };
 
     class TagComponent
@@ -140,16 +161,16 @@ namespace origin
     public:
         AssetHandle Audio = UUID(0);
         std::string Name;
-        float Volume = 1.0f;
-        float Panning = 0.0f;
-        float Pitch = 1.0f;
+        float Volume      = 1.0f;
+        float Panning     = 0.0f;
+        float Pitch       = 1.0f;
         float MinDistance = 10.0f;
         float MaxDistance = 20.0f;
         bool Spatializing = false;
-        bool Looping = false;
-        bool PlayAtStart = false;
-        bool Overlapping = false;
-        int OverlapCount = 10;
+        bool Looping      = false;
+        bool PlayAtStart  = false;
+        bool Overlapping  = false;
+        int OverlapCount  = 10;
 
         AudioComponent() = default;
         AudioComponent(const AudioComponent &) = default;
@@ -168,11 +189,11 @@ namespace origin
         glm::vec4 ColorEnd = {254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f};
         uint32_t PoolIndex = 1000;
 
-        float SizeBegin = 0.5f;
-        float SizeEnd = 0.0f;
+        float SizeBegin     = 0.5f;
+        float SizeEnd       = 0.0f;
         float SizeVariation = 0.3f;
-        float ZAxis = 0.0f;
-        float LifeTime = 1.0f;
+        float ZAxis         = 0.0f;
+        float LifeTime      = 1.0f;
 
         ParticleComponent() = default;
         ParticleComponent(const ParticleComponent &) = default;
@@ -448,8 +469,8 @@ namespace origin
     class BoxCollider2DComponent
     {
     public:
-        glm::vec2 Offset = {0.0f, 0.0f};
-        glm::vec2 Size = {0.5f, 0.5f};
+        glm::vec2 Offset      = {0.0f, 0.0f};
+        glm::vec2 Size        = {0.5f, 0.5f};
         glm::vec2 CurrentSize = { 0.0f, 0.0f };
 
         float Density     = 1.0f;
@@ -470,8 +491,8 @@ namespace origin
     {
     public:
 
-        glm::vec2 Offset = {0.0f, 0.0f};
-        float Radius     = 0.5f;
+        glm::vec2 Offset  = {0.0f, 0.0f};
+        float Radius      = 0.5f;
         float Density     = 1.0f;
         float Friction    = 0.5f;
         float Restitution = 0.0f;

@@ -43,4 +43,14 @@ namespace origin
         glfwTerminate();
     }
 
+    void Window::Show(GLFWwindow *window)
+    {
+        glfwShowWindow(window);
+    }
+
+    void Window::Hide(GLFWwindow *window)
+    {
+        glfwHideWindow(window);
+    }
+
 }
