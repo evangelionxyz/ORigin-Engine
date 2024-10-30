@@ -73,7 +73,17 @@ namespace origin
             {
                 if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
                     m_SelectedFileTree = entry.path();
+
+                
+                if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+                {
+                    if (std::filesystem::directory_entry(m_SelectedFileTree).is_directory())
+                    {
+                        m_CurrentDirectory /= path.filename();
+                    }
+                }
             }
+
 
             if (opened && entry.is_directory())
             {
