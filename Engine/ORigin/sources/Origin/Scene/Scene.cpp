@@ -62,6 +62,7 @@ namespace origin
 
 			auto &eIDC = newEntity.GetComponent<IDComponent>();
 			eIDC.Parent = idc.Parent;
+            eIDC.Children = std::move(idc.Children);
 
 			enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
 		}
@@ -806,27 +807,27 @@ namespace origin
             shader->SetMatrix("viewProjection", lc.Light->GetShadow().ViewProjection);
 
 			const auto &view = m_Registry.view<TransformComponent, StaticMeshComponent>();
-			for (auto &e : view)
-			{
-				const auto &[tc, mc] = view.get<TransformComponent, StaticMeshComponent>(e);
-				if (!tc.Visible)
-				{
+            for (auto &e : view)
+            {
+                const auto &[tc, mc] = view.get<TransformComponent, StaticMeshComponent>(e);
+                if (!tc.Visible)
+                {
                     continue;
-				}
+                }
 
                 switch (mc.mType)
                 {
                 case StaticMeshComponent::Type::Cube:
-					MeshRenderer::DrawCube(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    MeshRenderer::DrawCube(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
                     break;
                 case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    MeshRenderer::DrawSphere(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
                     break;
                 case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    MeshRenderer::DrawCapsule(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
                     break;
                 }
-			}
+            }
 			
 			MeshRenderer::End();
 			lc.Light->GetShadow().UnbindFBO();
@@ -836,19 +837,21 @@ namespace origin
 
     void Scene::DestroyEntityRecursive(UUID entityId)
     {
-        std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
-        for (const auto &childId : childrenIds)
-        {
-            DestroyEntityRecursive(childId);
-        }
-
         Entity entity = GetEntityWithUUID(entityId);
+
         if (entity)
         {
-            m_Registry.destroy((entt::entity)entity);
+            std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
+            for (const auto &childId : childrenIds)
+            {
+                entity.GetComponent<IDComponent>().RemoveChild(childId);
+                DestroyEntityRecursive(childId);
+            }
+
+            m_Registry.destroy(static_cast<entt::entity>(entity));
             m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
                 [entityId](const auto &pair) { return pair.first == entityId; }),
-           m_EntityStorage.end());
+                m_EntityStorage.end());
         }
     }
 

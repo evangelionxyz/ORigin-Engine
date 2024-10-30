@@ -122,6 +122,8 @@ namespace origin {
                 Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
                 if (src.HasParent())
                 {
+                    Entity parent = m_Scene->GetEntityWithUUID(src.GetComponent<IDComponent>().Parent);
+                    parent.GetComponent<IDComponent>().RemoveChild(src.GetUUID());
                     src.GetComponent<IDComponent>().Parent = 0;
                 }
             }
@@ -207,17 +209,20 @@ namespace origin {
     void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
     {
         if (!entity || (entity.HasParent() && index == 0))
-        {
             return;
-        }
 
         ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-            | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow 
+            | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
             | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
+
+
+        bool has_children = entity.GetComponent<IDComponent>().HasChild();
+        if (!has_children)
+            flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
-        bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+        bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
         {
@@ -229,7 +234,7 @@ namespace origin {
             }
         }
 
-        bool isDeleting = false;
+        bool is_deleting = false;
         if (!m_Scene->IsRunning())
         {
             ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
@@ -244,43 +249,44 @@ namespace origin {
                 if (ImGui::MenuItem("Delete"))
                 {
                     DestroyEntity(entity);
-                    isDeleting = true;
+                    is_deleting = true;
                 }
                 ImGui::EndPopup();
             }
 
-            if (ImGui::BeginDragDropSource())
+            if (!is_deleting)
             {
-                ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
-                ImGui::BeginTooltip();
-                ImGui::Text("%s %llu", entity.GetTag().c_str(), entity.GetUUID());
-                ImGui::EndTooltip();
-                ImGui::EndDragDropSource();
-            }
-
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+                if (ImGui::BeginDragDropSource())
                 {
-                    OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-                    Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
-                    // the current 'entity' is the target (new parent for src)
-                    EntityManager::AddChild(entity, src, m_Scene.get());
+                    ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
+                    ImGui::BeginTooltip();
+                    ImGui::Text("%s %llu", entity.GetTag().c_str(), entity.GetUUID());
+                    ImGui::EndTooltip();
+                    ImGui::EndDragDropSource();
                 }
-                ImGui::EndDragDropTarget();
+
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+                    {
+                        OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+                        Entity src{ *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
+                        // the current 'entity' is the target (new parent for src)
+                        EntityManager::AddChild(entity, src, m_Scene.get());
+                    }
+                    ImGui::EndDragDropTarget();
+                }
             }
+            
             ImGui::PopID();
         }
 
-        if (ImGui::IsItemHovered(ImGuiMouseButton_Left))
+        if (!is_deleting && ImGui::IsItemHovered(ImGuiMouseButton_Left) && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
         {
-            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                SetSelectedEntity(entity);
-            }
+            SetSelectedEntity(entity);
         }
 
-        if (!isDeleting)
+        if (!is_deleting)
         {
             ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
             ImGui::TableNextColumn();
@@ -291,18 +297,12 @@ namespace origin {
             ImGui::PopID();
         }
 
-        if (node_open)
+        if (opened && has_children)
         {
-            if (!isDeleting)
+            for (const UUID uuid : entity.GetComponent<IDComponent>().Children)
             {
-                for (auto e : m_Scene->m_Registry.view<TransformComponent>())
-                {
-                    Entity ent = { e, m_Scene.get() };
-                    if (ent.GetParentUUID() == entity.GetUUID())
-                    {
-                        DrawEntityNode(ent, index + 1);
-                    }
-                }
+                Entity child_entity = m_Scene->GetEntityWithUUID(uuid);
+                DrawEntityNode(child_entity, index + 1);
             }
             ImGui::TreePop();
         }

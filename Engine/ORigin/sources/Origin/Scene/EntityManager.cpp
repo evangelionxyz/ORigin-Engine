@@ -111,10 +111,10 @@ namespace origin
 
 		if (!IsParent(destIDC.ID, srcIDC.ID, scene))
 		{
-			srcIDC.Parent = destIDC.ID;
+			destIDC.AddChild(srcIDC.ID);
+			srcIDC.SetParent(destIDC.ID);
 		}
 	}
-
 
 	bool EntityManager::ChildExists(Entity destination, Entity source, Scene *scene)
 	{
@@ -122,16 +122,12 @@ namespace origin
 		auto &srcIDC = source.GetComponent<IDComponent>();
 
 		if (srcIDC.Parent == destIDC.ID)
-		{
 			return true;
-		}
 		else
 		{
 			auto nextParent = scene->GetEntityWithUUID(srcIDC.Parent);
 			if (ChildExists(nextParent, source, scene))
-			{
 				return true;
-			}
 		}
 
 		return false;
@@ -156,10 +152,7 @@ namespace origin
 	Entity EntityManager::FindChild(Entity parent, UUID uuid, Scene *scene)
 	{
 		if (IsParent(parent.GetUUID(), uuid, scene))
-		{
 			return scene->GetEntityWithUUID(uuid);
-		}
-
 		return {entt::null, nullptr};
 	}
 

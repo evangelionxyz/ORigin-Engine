@@ -497,8 +497,8 @@ namespace origin
             OnSceneStop();
         }
 
-        const auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
-        std::shared_ptr<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
+        const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
+        Ref<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
 
         if (!read_only_scene)
         {
@@ -546,7 +546,7 @@ namespace origin
         if (handle == 0 || filepath.empty())
             return;
 
-        std::shared_ptr<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
+        Ref<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
         std::string name = filepath.stem().string();
         read_only_scene->SetName(name);
 
@@ -888,7 +888,7 @@ namespace origin
             // margin top: 4px
             ImGui::SetCursorPos({8.0f, 0.0f});
             // Play Button
-            std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
+            Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
             if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
             {
                 if (m_SceneHierarchy.GetContext())

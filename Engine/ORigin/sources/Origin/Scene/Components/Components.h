@@ -99,26 +99,36 @@ namespace origin
         IDComponent(const IDComponent &) = default;
         IDComponent(UUID id, UUID parent = UUID(0)) : ID(id), Parent(parent) { }
 
+        void SetParent(UUID uuid)
+        {
+            Parent = uuid;
+        }
+
         void AddChild(UUID childId)
         {
-            m_Children.push_back(childId);
+            Children.push_back(childId);
         }
 
         void RemoveChild(UUID childId)
         {
-            auto it = std::remove_if(m_Children.begin(), m_Children.end(), [&](UUID id)
+            Children.erase(std::remove_if(Children.begin(), Children.end(), [childId](const UUID id)
             {
                 return id == childId;
-            });
+            }), Children.end());
         }
 
         bool HasChild(UUID childId)
         {
-            auto it = std::find(m_Children.begin(), m_Children.end(), childId);
-            return it != m_Children.end();
+            auto it = std::find(Children.begin(), Children.end(), childId);
+            return it != Children.end();
         }
 
-        std::vector<UUID> m_Children;
+        bool HasChild()
+        {
+            return Children.size() > 0;
+        }
+
+        std::vector<UUID> Children;
     };
 
     class TagComponent
