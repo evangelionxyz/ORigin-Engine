@@ -871,10 +871,14 @@ namespace origin
         if (newParent)
         {
             newEntityIDC.Parent = newParent.GetUUID();
+            newParent.GetComponent<IDComponent>().AddChild(newEntity.GetUUID());
         }
         else if (entity.HasParent())
         {
-            newEntityIDC.Parent = entity.GetParentUUID();
+            Entity parent = GetEntityWithUUID(entity.GetParentUUID());
+            newEntityIDC.Parent = parent.GetUUID();
+            parent.GetComponent<IDComponent>().AddChild(newEntity.GetUUID());
+
         }
         else
         {

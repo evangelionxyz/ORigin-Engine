@@ -111,6 +111,12 @@ namespace origin
 
 		if (!IsParent(destIDC.ID, srcIDC.ID, scene))
 		{
+			if (srcIDC.Parent != 0)
+			{
+				Entity current_parent = scene->GetEntityWithUUID(srcIDC.Parent);
+				current_parent.GetComponent<IDComponent>().RemoveChild(srcIDC.ID);
+			}
+
 			destIDC.AddChild(srcIDC.ID);
 			srcIDC.SetParent(destIDC.ID);
 		}
