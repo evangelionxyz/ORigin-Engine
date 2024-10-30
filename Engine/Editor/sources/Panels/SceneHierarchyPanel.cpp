@@ -217,8 +217,7 @@ namespace origin {
 
 
         bool has_children = entity.GetComponent<IDComponent>().HasChild();
-        if (!has_children)
-            flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        if (!has_children) flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -299,11 +298,24 @@ namespace origin {
 
         if (opened && has_children)
         {
-            for (const UUID uuid : entity.GetComponent<IDComponent>().Children)
+            if (!is_deleting)
             {
-                Entity child_entity = m_Scene->GetEntityWithUUID(uuid);
-                DrawEntityNode(child_entity, index + 1);
+                for (const UUID uuid : entity.GetComponent<IDComponent>().Children)
+                {
+                    Entity child_entity = m_Scene->GetEntityWithUUID(uuid);
+                    DrawEntityNode(child_entity, index + 1);
+                }
+
+                /*for (auto e : m_Scene->m_Registry.view<TransformComponent>())
+                {
+                    Entity ent = { e, m_Scene.get() };
+                    if (ent.GetParentUUID() == entity.GetUUID())
+                    {
+                        DrawEntityNode(ent, index + 1);
+                    }
+                }*/
             }
+            
             ImGui::TreePop();
         }
     }

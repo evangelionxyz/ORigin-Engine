@@ -18,7 +18,7 @@ Entities:
     Type: Entity
     Parent: 0
     Children:
-      []
+      - ID: 2282079449024848139
     TagComponent:
       Tag: Empty
     TransformComponent:
@@ -66,7 +66,8 @@ Entities:
     Type: Entity
     Parent: 7803758535346603628
     Children:
-      []
+      - ID: 16552497849877828178
+      - ID: 13560460485282793082
     TagComponent:
       Tag: GFX
     TransformComponent:
@@ -112,7 +113,9 @@ Entities:
     Type: Entity
     Parent: 0
     Children:
-      []
+      - ID: 2845050506220376242
+      - ID: 13664910795690200565
+      - ID: 13791893405854133414
     TagComponent:
       Tag: Soundbank
     TransformComponent:
@@ -285,7 +288,8 @@ Entities:
     Type: Entity
     Parent: 0
     Children:
-      []
+      - ID: 6592829467429759275
+      - ID: 5124889645444281284
     TagComponent:
       Tag: BlockSpawner
     ScriptComponent:
@@ -315,7 +319,7 @@ Entities:
     Type: Entity
     Parent: 0
     Children:
-      []
+      - ID: 10618910331477539919
     TagComponent:
       Tag: BulletsSpawn
     TransformComponent:
@@ -575,7 +579,7 @@ Entities:
     Type: Entity
     Parent: 0
     Children:
-      []
+      - ID: 15456435356412699844
     TagComponent:
       Tag: Player
     RigidbodyComponent:
@@ -639,7 +643,8 @@ Entities:
     Type: Entity
     Parent: 0
     Children:
-      []
+      - ID: 6227614169662641285
+      - ID: 3037680522606877236
     TagComponent:
       Tag: Wall
     TransformComponent:
