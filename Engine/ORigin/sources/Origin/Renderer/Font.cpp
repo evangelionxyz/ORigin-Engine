@@ -124,7 +124,7 @@ namespace origin {
 				glyphs[i].edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
 				return true;
 			},
-				data->Glyphs.size()).finish(THREAD_COUNT);
+			static_cast<int>(data->Glyphs.size())).finish(THREAD_COUNT);
 		}
 		else
 		{

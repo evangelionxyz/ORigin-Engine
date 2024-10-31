@@ -63,7 +63,7 @@ namespace origin
 			return s_ActiveProject->GetAssetRegistryPath();
 		}
 
-		static std::shared_ptr<Scene> GetActiveScene() 
+		static Ref<Scene> GetActiveScene() 
 		{
 			return s_ActiveProject->m_ActiveScene;
 		}
@@ -93,9 +93,9 @@ namespace origin
 	private:
 		ProjectConfig m_Config;
 		std::filesystem::path m_ProjectDirectory;
-		std::shared_ptr<AssetManagerBase> m_AssetManager;
-		std::shared_ptr<Scene> m_ActiveScene ;
-		inline static std::shared_ptr<Project> s_ActiveProject;
+		Ref<AssetManagerBase> m_AssetManager;
+		Ref<Scene> m_ActiveScene;
+		inline static Ref<Project> s_ActiveProject;
 	};
 
 }

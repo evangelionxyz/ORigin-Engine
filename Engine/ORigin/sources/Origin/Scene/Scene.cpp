@@ -470,7 +470,7 @@ namespace origin
                     mesh.AAnimator.m_FinalBoneMatrices.size());*/
 
                 mesh.Data->vertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
+                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.Data->indices.size()), GL_UNSIGNED_INT, nullptr);
 
                 shader->Disable();
             }
@@ -963,7 +963,7 @@ namespace origin
 			auto &cc = view.get<CameraComponent>(e);
 			if (cc.Primary)
 			{
-				cc.Camera.SetViewportSize(width, height);
+				cc.Camera.SetViewportSize(static_cast<float>(width), static_cast<float>(height));
 				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
 				const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
 				m_UIRenderer->SetViewportSize(vp.x, vp.y, ortho.x, ortho.y);
@@ -1026,7 +1026,7 @@ namespace origin
 	{
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 		{
-			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+            component.Camera.SetViewportSize(static_cast<float>(m_ViewportWidth), static_cast<float>(m_ViewportHeight));
 		}
 	}
 

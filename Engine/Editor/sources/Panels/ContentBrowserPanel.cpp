@@ -17,7 +17,7 @@
 
 namespace origin
 {
-    static uint32_t itemRenderCount = 0;
+    static u32 itemRenderCount = 0;
 
     static void OpenFile(const std::filesystem::path &filepath)
     {
@@ -158,9 +158,9 @@ namespace origin
 
 
         ImGui::BeginChild("item_browser", {0.0f, 0.0f}, false);
-        static float padding = 10.0f;
-        const float cellSize = m_ThumbnailSize + padding;
-        const float panelWidth = ImGui::GetContentRegionAvail().x;
+        static f32 padding = 10.0f;
+        const f32 cellSize = m_ThumbnailSize + padding;
+        const f32 panelWidth = ImGui::GetContentRegionAvail().x;
         int columnCount = static_cast<int>(panelWidth / cellSize);
         if (columnCount < 1)
             columnCount = 1;
@@ -193,11 +193,11 @@ namespace origin
                 const std::shared_ptr<Texture2D> thumbnail = DirectoryIcons(std::filesystem::directory_entry(m_CurrentDirectory / item));
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
-                float thumbnailHeight = m_ThumbnailSize * ((float)thumbnail->GetHeight() / (float)thumbnail->GetWidth());
-                float diff = (float)(m_ThumbnailSize - thumbnailHeight);
+                f32 thumbnailHeight = m_ThumbnailSize * ((f32)thumbnail->GetHeight() / (f32)thumbnail->GetWidth());
+                f32 diff = (f32)(m_ThumbnailSize - thumbnailHeight);
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
 
-                ImGui::ImageButton(filenameStr.c_str(), (void *)(uintptr_t)(thumbnail->GetTextureID()), { (float)m_ThumbnailSize, (float)thumbnailHeight }, { 0, 1 }, { 1, 0 });
+                ImGui::ImageButton(filenameStr.c_str(), (void *)(uintptr_t)(thumbnail->GetTextureID()), { (f32)m_ThumbnailSize, (f32)thumbnailHeight }, { 0, 1 }, { 1, 0 });
 
                 if (ImGui::BeginDragDropSource())
                 {
@@ -261,12 +261,12 @@ namespace origin
                         AssetHandle handle = m_TreeNodes[treeNodeIndex].Handle;
                         Project::GetActive()->GetEditorAssetManager()->RemoveAsset(handle);
 
-                        uint32_t index = treeNodeIndex;
+                        u32 index = treeNodeIndex;
 
                         node->Children.erase(item);
                         m_TreeNodes.erase(m_TreeNodes.begin() + index);
                         // reset the node
-                        uint32_t count = 0;
+                        u32 count = 0;
                         for (auto n : m_TreeNodes)
                         {
                             if (node->Children.find(n.Path) != node->Children.end())
@@ -298,7 +298,7 @@ namespace origin
                             std::filesystem::path renamingItem = item;
                             std::filesystem::rename(m_CurrentDirectory / renamingItem, newPath);
 
-                            uint32_t index = treeNodeIndex;
+                            u32 index = treeNodeIndex;
                             node->Children.erase(renamingItem);
                             node->Children[m_RenameBuffer] = index;
                             m_TreeNodes[index].Path = newPath.filename();
@@ -352,14 +352,14 @@ namespace origin
         }
         else if(m_Mode == Mode::FileSystem)
         {
-            uint32_t count = 0;
+            u32 count = 0;
             for (auto &directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
             {
                 count++;
             }
 
             ImGuiListClipper clipper;
-            clipper.Begin(glm::ceil((float)count / (float)columnCount));
+            clipper.Begin(static_cast<int>(glm::ceil(count / static_cast<f32>(columnCount))));
 
             bool first = true;
             while (clipper.Step())
@@ -391,11 +391,11 @@ namespace origin
                         const auto &relativePath = std::filesystem::relative(path, Project::GetActiveAssetDirectory());
                         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                         auto thumbnail = DirectoryIcons(directoryEntry);
-                        float thumbnailHeight = m_ThumbnailSize * ((float)thumbnail->GetHeight() / (float)thumbnail->GetWidth());
-                        float diff = (float)(m_ThumbnailSize - thumbnailHeight);
+                        f32 thumbnailHeight = m_ThumbnailSize * ((f32)thumbnail->GetHeight() / (f32)thumbnail->GetWidth());
+                        f32 diff = (f32)(m_ThumbnailSize - thumbnailHeight);
                         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
 
-                        ImGui::ImageButton(filenameStr.c_str(), (void *)(uintptr_t)(thumbnail->GetTextureID()), { (float)m_ThumbnailSize, (float)thumbnailHeight }, { 0, 1 }, { 1, 0 });
+                        ImGui::ImageButton(filenameStr.c_str(), (void *)(uintptr_t)(thumbnail->GetTextureID()), { (f32)m_ThumbnailSize, (f32)thumbnailHeight }, { 0, 1 }, { 1, 0 });
                         ImGui::PopStyleColor();
 
                         if (ImGui::IsItemHovered())
@@ -526,7 +526,7 @@ namespace origin
         const auto &assetRegistry = Project::GetActive()->GetEditorAssetManager()->GetAssetRegistry();
         for (const auto &[handle, metadata] : assetRegistry)
         {
-            uint32_t currentNodeIndex = 0;
+            u32 currentNodeIndex = 0;
             for (auto p : metadata.Filepath)
             {
                 auto it = m_TreeNodes[currentNodeIndex].Children.find(p.generic_string());
@@ -540,9 +540,9 @@ namespace origin
                     newNode.Parent = currentNodeIndex;
 
                     m_TreeNodes.push_back(newNode);
-                    m_TreeNodes[currentNodeIndex].Children[p] = m_TreeNodes.size() - 1;
+                    m_TreeNodes[currentNodeIndex].Children[p] = static_cast<int>(m_TreeNodes.size()) - 1;
 
-                    currentNodeIndex = m_TreeNodes.size() - 1;
+                    currentNodeIndex = static_cast<int>(m_TreeNodes.size()) - 1;
                 }
             }
         }

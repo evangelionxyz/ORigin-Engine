@@ -77,7 +77,7 @@ namespace origin
         component.Component.TextString = "This is text component";
         std::string defaultName = "Text";
         m_UICompHandler->AddComponent<TextComponent>(defaultName, component);
-        m_SelectedIndex = m_UICompHandler->Components.size() - 1;
+        m_SelectedIndex = static_cast<int>(m_UICompHandler->Components.size()) - 1;
     }
 
     void UIEditor::CreateNewTexture()
@@ -87,7 +87,7 @@ namespace origin
 
         UIData<SpriteRenderer2DComponent> component;
         m_UICompHandler->AddComponent<SpriteRenderer2DComponent>("Sprite", component);
-        m_SelectedIndex = m_UICompHandler->Components.size() - 1;
+        m_SelectedIndex = static_cast<int>(m_UICompHandler->Components.size()) - 1;
     }
 
     bool UIEditor::RenameComponent(int index, const std::string &newName)

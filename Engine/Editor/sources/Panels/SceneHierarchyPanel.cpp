@@ -1004,9 +1004,9 @@ namespace origin {
                 UI::DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
                 UI::DrawCheckbox("Is Sensor", &component.IsSensor);
-                UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Density", &component.Density, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 1.0f);
             });
 
         DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto &component)
@@ -1017,9 +1017,9 @@ namespace origin {
                 UI::DrawFloatControl("Radius", &component.Radius, 0.01f, 0.5f);
 
                 UI::DrawCheckbox("Is Sensor", &component.IsSensor);
-                UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Density", &component.Density, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 1.0f);
             });
 
         DrawComponent<RevoluteJoint2DComponent>("Revolute Joint 2D", entity, [&](auto &component)

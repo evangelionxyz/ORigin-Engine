@@ -8,7 +8,7 @@ project "ORigin"
     location "%{wks.location}/Engine/ORigin"
 
     pchheader "pch.h"
-    pchsource "pch.cpp"
+    pchsource "sources/pch.cpp"
 
     targetdir (outputDir)
     objdir (intOutputDir)
@@ -37,7 +37,6 @@ project "ORigin"
         "%{IncludeDir.GLM}",
         "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.FMT}",
         "%{IncludeDir.FILEWATCHER}",
         "%{IncludeDir.YAMLCPP}",
         "%{IncludeDir.ASSIMP}",
@@ -58,7 +57,6 @@ project "ORigin"
         "FreeType",
         "YAMLCPP",
         "JOLT",
-        "FMT",
     }
     
     defines { "_CRT_SECURE_NO_WARNINGS" }

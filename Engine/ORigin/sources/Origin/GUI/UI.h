@@ -94,7 +94,7 @@ namespace origin::UI
 		}
 		~PushScopedColorStyle()
 		{
-			ImGui::PopStyleColor(m_Styles.size());
+			ImGui::PopStyleColor(static_cast<int>(m_Styles.size()));
 		}
 
 	private:

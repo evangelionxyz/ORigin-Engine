@@ -1920,7 +1920,7 @@ namespace origin
 			pos = structName.find("Component");
 			structName = structName.substr(0, pos);
 
-			std::string managedTypename = fmt::format("ORiginEngine.{}", structName);
+			std::string managedTypename = Utils::FormatString("ORiginEngine.{}", structName);
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{

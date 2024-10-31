@@ -14,6 +14,8 @@
 #include "Origin/Renderer/GraphicsContext.h"
 #include "ConsoleManager.h"
 
+#include "ProcessMonitor.h"
+
 #include <mutex>
 
 namespace origin {
@@ -60,10 +62,13 @@ namespace origin {
         GuiLayer *GetGuiLayer() { return m_GuiLayer; }
         bool SetVSync = false;
 
+        ProcessMonitor &GetProcessMonitor() { return m_ProcessMonitor; }
+
     private:
         std::unique_ptr<ConsoleManager> m_ConsoleManager;
         ApplicationSpecification m_Spec;
         LayerStack m_LayerStack;
+        ProcessMonitor m_ProcessMonitor;
         GuiLayer *m_GuiLayer;
         Input m_InputHandle;
         std::shared_ptr<Window> m_Window;

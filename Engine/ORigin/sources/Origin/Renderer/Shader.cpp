@@ -382,7 +382,7 @@ namespace origin
             for (const auto & [id, type_id, base_type_id, name] : uniform_buffers)
             {
                 const auto &bufferType = compiler.get_type(base_type_id);
-                u32 bufferSize         = compiler.get_declared_struct_size(bufferType);
+                u32 bufferSize         = static_cast<u32>(compiler.get_declared_struct_size(bufferType));
                 u32 binding            = compiler.get_decoration(id, spv::DecorationBinding);
                 size_t memberCount     = bufferType.member_types.size();
 

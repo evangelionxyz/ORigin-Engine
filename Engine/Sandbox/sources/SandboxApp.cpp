@@ -23,7 +23,7 @@ namespace origin
         spec.WorkingDirectory = "../Editor";
         spec.CommandLineArgs = args;
 
-        OGN_CORE_INFO(spec.Name);
+        OGN_CORE_INFO(spec.Name.c_str());
         return new SandboxApp(spec);
     };
 }

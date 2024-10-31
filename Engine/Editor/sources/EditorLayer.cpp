@@ -15,6 +15,11 @@
 #include <filesystem>
 
 #include <glad/glad.h>
+#include <vector>
+
+#include <algorithm>
+#include <numeric>
+#include <chrono>
 
 namespace origin
 {
@@ -291,6 +296,14 @@ namespace origin
         m_SpriteSheetEditor->OnImGuiRender();
         m_MaterialEditor.OnImGuiRender();
         m_SceneHierarchy.OnImGuiRender();
+
+        ImGui::Begin("Abizar");
+
+        DisplayCPUUsageGraph();
+        DisplayMemoryGraphUsage();
+
+        ImGui::End();
+
         ConsoleWindow();
         MenuBar();
         SceneViewportToolbar();
@@ -1269,7 +1282,7 @@ namespace origin
 
                 ImGuiListClipper clipper;
                 const auto &messages = ConsoleManager::GetMessages();
-                clipper.Begin(messages.size());
+                clipper.Begin(static_cast<int>(messages.size()));
 
                 // Check if there are new messages
                 if (messages.size() > lastMessageCount && autoScroll)
@@ -1319,6 +1332,56 @@ namespace origin
 
             ImGui::End();
         }
+    }
+
+    void EditorLayer::DisplayMemoryGraphUsage()
+    {
+        static std::vector<float> memory_usage_history(HISTORY_SIZE, 0.0f);
+        static int current_index = 0;
+
+        size_t memory_usage = Application::Instance().GetProcessMonitor().GetMemoryUsage();
+        float memory_uage_mb = static_cast<float>(memory_usage) / (1024 * 1024);
+
+        memory_usage_history[current_index] = memory_uage_mb;
+        current_index = (current_index + 1) % HISTORY_SIZE;
+
+        float average = std::accumulate(memory_usage_history.begin(), memory_usage_history.end(), 0.0f) / HISTORY_SIZE;
+
+        ImGui::Text("Memory Usage: %.2f MB", memory_uage_mb);
+        ImGui::Text("Average Usage: %.2f MB", average);
+        ImGui::PlotLines("Memory Usage (MB)", memory_usage_history.data(), HISTORY_SIZE,
+            current_index, nullptr, 0.0f,
+            *std::max_element(memory_usage_history.begin(), memory_usage_history.end()),
+            ImVec2(0, 80));
+    }
+
+    void EditorLayer::DisplayCPUUsageGraph()
+    {
+        static std::vector<float> cpu_usage_history(HISTORY_SIZE, 0.0f);
+        static int current_index = 0;
+
+        static float cpu_usage = Application::Instance().GetProcessMonitor().GetCpuUsage();
+        float cpu_usage_graph = Application::Instance().GetProcessMonitor().GetCpuUsage();
+        static auto last_update = std::chrono::steady_clock::now();
+
+        auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_update).count() >= 200)
+        {
+            cpu_usage = cpu_usage_graph;
+            last_update = now;
+        }
+
+        cpu_usage_history[current_index] = cpu_usage_graph;
+        current_index = (current_index + 1) % HISTORY_SIZE;
+
+        float average = std::accumulate(cpu_usage_history.begin(), cpu_usage_history.end(), 0.0f) / HISTORY_SIZE;
+
+        ImGui::Text("CPU Usage: %.2f %%", cpu_usage);
+        ImGui::Text("Average Usage: %.2f %%", average);
+        ImGui::PlotLines("CPU Usage (%)", cpu_usage_history.data(), HISTORY_SIZE,
+            current_index, nullptr, 0.0f,
+            *std::max_element(cpu_usage_history.begin(), cpu_usage_history.end()),
+            ImVec2(0, 80));
     }
 
     void EditorLayer::InitGrid()

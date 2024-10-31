@@ -10,6 +10,7 @@
 #include "Origin/Project/Project.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Utils/Utils.h"
+#include "Origin/Utils/StringUtils.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -56,7 +57,7 @@ namespace origin
 			const size_t end = stream.tellg();
 			stream.seekg(0, std::ios::beg);
 
-			const u32 size = end - stream.tellg();
+			const u32 size = static_cast<u32>(end - stream.tellg());
 
 			// file is empty
 			if (!size)
@@ -612,7 +613,7 @@ namespace origin
 
 			if (strlen(nameSpace) != 0)
 			{
-				full_name = fmt::format("{}.{}", nameSpace, className);
+				full_name = Utils::FormatString("{}.{}", nameSpace, className);
 			}
 
 			MonoClass *mono_class = mono_class_from_name(s_ScriptEngineData->AppAssemblyImage, nameSpace, className);

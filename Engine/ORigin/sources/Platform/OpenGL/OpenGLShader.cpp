@@ -91,7 +91,7 @@ namespace origin
             u32 shader_id = shader_ids.emplace_back(glCreateShader(stage));
 
             glShaderBinary(1, &shader_id, GL_SHADER_BINARY_FORMAT_SPIR_V,
-                spirv.data(), spirv.size() * sizeof(u32));
+                spirv.data(), static_cast<GLsizei>(spirv.size() * sizeof(u32)));
 
             glSpecializeShader(shader_id, "main", 0, nullptr, nullptr);
             glAttachShader(program, shader_id);

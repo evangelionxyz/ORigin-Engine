@@ -9,7 +9,6 @@ namespace origin
     VulkanShader::VulkanShader(const std::filesystem::path &filepath, const bool recompile)
         : m_Filepath(filepath), m_IsRecompile(recompile)
     {
-#ifdef OGN_VULKAN_API
         OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Vulkan Shader] Filepath does not exists {}",
             filepath.generic_string());
 
@@ -31,7 +30,6 @@ namespace origin
             m_Stages.push_back(create_info);
             vkDestroyShaderModule(context->m_Device, shader_module, nullptr);
         }
-#endif
     }
 
     VulkanShader::~VulkanShader()
@@ -41,7 +39,6 @@ namespace origin
     VkShaderModule VulkanShader::CreateModule(const std::vector<u32> &spirv)
     {
         VkShaderModule module;
-#ifdef OGN_VULKAN_API
         VkShaderModuleCreateInfo create_info{};
         create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         create_info.codeSize = spirv.size() * sizeof(u32);
@@ -50,7 +47,6 @@ namespace origin
         const VulkanContext *vk_context = VulkanContext::GetInstance();
         
         vkCreateShaderModule(vk_context->m_Device, &create_info, vk_context->m_Allocator, &module);
-#endif
         return module;
     }
 

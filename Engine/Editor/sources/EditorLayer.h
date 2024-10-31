@@ -68,6 +68,8 @@ namespace origin
         void InputProcedure(Timestep time);
         void GUIRender();
         void ConsoleWindow();
+        void DisplayMemoryGraphUsage();
+        void DisplayCPUUsageGraph();
 
         void InitGrid();
         void ShowGrid();

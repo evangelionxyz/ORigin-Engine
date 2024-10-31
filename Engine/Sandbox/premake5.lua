@@ -26,7 +26,7 @@ project "Sandbox"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.BOX2D}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.FMT}",
+        --"%{IncludeDir.FMT}",
         "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.IMGUI}",
         "%{IncludeDir.IMGUIZMO}",

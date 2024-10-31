@@ -23,7 +23,7 @@ namespace origin
 		spec.CommandLineArgs = args;
 		spec.Width = 1280;
 		spec.Height = 640;
-		OGN_CORE_INFO(spec.Name);
+		OGN_CORE_INFO(spec.Name.c_str());
 		return new RuntimeApp(spec);
 	};
 }

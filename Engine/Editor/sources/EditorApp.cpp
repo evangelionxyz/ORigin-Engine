@@ -24,7 +24,7 @@ namespace origin
         spec.CommandLineArgs = args;
         spec.Maximize = false;
 
-        OGN_CORE_INFO(spec.Name);
+        OGN_CORE_INFO(spec.Name.c_str());
         return new EditorApp(spec);
     };
 }

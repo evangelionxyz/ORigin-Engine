@@ -25,17 +25,6 @@ namespace TestGame
         void OnCreate()
         {
             blockList = new List<Entity>();
-            positions = new Vector3[(size * 2) * (size * 2)];
-
-            for (int x = -size; x < size; x++)
-            {
-                for (int z = -size; z < size; z++)
-                {
-                    // Correct the logic for setting positions
-                    positions[count] = new Vector3(Mathf.Sin(x) * 2.0f, size + x + size * 4.0f, Mathf.Cos(z) * 2.0f);
-                    count++;
-                }
-            }
         }
 
         void OnUpdate(float dt)
