@@ -289,10 +289,10 @@ namespace origin
             {
                 shaderc::Compiler compiler;
                 shaderc::SpvCompilationResult module   = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)GLShaderStageToShaderC(stage), filepath.c_str());
-                bool                          success = module.GetCompilationStatus() == shaderc_compilation_status_success;
+                bool                          success  = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
                 PUSH_CONSOLE_ERROR("[Shader] Failed to compile Vulkan {0}", module.GetErrorMessage().c_str());
-                OGN_CORE_ASSERT(success, module.GetErrorMessage());
+                OGN_CORE_ASSERT(success, module.GetErrorMessage().c_str());
 
                 shaderData[stage] = std::vector<u32>(module.cbegin(), module.cend());
                 if (std::ofstream out(cachedPath, std::ios::out | std::ios::binary); out.is_open())

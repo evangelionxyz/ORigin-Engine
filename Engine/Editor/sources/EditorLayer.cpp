@@ -69,7 +69,7 @@ namespace origin
 
         m_ActiveScene = std::make_shared<Scene>();
 
-        if (const auto &cmdline_args = Application::Instance().GetSpecification().CommandLineArgs;
+        if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs;
             cmdline_args.Count > 1)
         {
             m_ProjectDirectoryPath = cmdline_args[1];
@@ -593,7 +593,7 @@ namespace origin
 
     void EditorLayer::MenuBar()
     {
-        auto &application = Application::Instance();
+        auto &application = Application::GetInstance();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
 
@@ -1339,7 +1339,7 @@ namespace origin
         static std::vector<float> memory_usage_history(HISTORY_SIZE, 0.0f);
         static int current_index = 0;
 
-        size_t memory_usage = Application::Instance().GetProcessMonitor().GetMemoryUsage();
+        size_t memory_usage = Application::GetInstance().GetProcessMonitor().GetMemoryUsage();
         float memory_uage_mb = static_cast<float>(memory_usage) / (1024 * 1024);
 
         memory_usage_history[current_index] = memory_uage_mb;
@@ -1360,8 +1360,8 @@ namespace origin
         static std::vector<float> cpu_usage_history(HISTORY_SIZE, 0.0f);
         static int current_index = 0;
 
-        static float cpu_usage = Application::Instance().GetProcessMonitor().GetCpuUsage();
-        float cpu_usage_graph = Application::Instance().GetProcessMonitor().GetCpuUsage();
+        static float cpu_usage = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
+        float cpu_usage_graph = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
         static auto last_update = std::chrono::steady_clock::now();
 
         auto now = std::chrono::steady_clock::now();
@@ -1570,7 +1570,7 @@ namespace origin
     {
         OGN_PROFILER_INPUT();
 
-        auto &app = Application::Instance();
+        auto &app = Application::GetInstance();
         const bool control = Input::Get().IsKeyPressed(Key::LeftControl) || Input::Get().IsKeyPressed(Key::RightControl);
         const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
 
