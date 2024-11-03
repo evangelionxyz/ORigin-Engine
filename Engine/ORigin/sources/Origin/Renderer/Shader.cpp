@@ -262,9 +262,9 @@ namespace origin
 
     ShaderData Shader::CompileOrGetVulkanBinaries(const ShaderSource &shaderSources, const std::string &filepath)
     {
-        ShaderData              shaderData;
+        ShaderData shaderData;
         shaderc::CompileOptions options;
-        std::filesystem::path   cacheDirectory = ShaderUtils::GetCacheDirectory();
+        std::filesystem::path cacheDirectory = ShaderUtils::GetCacheDirectory();
 
         options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
         options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -272,7 +272,7 @@ namespace origin
         for (auto &&[stage, source] : shaderSources)
         {
             std::filesystem::path shaderFilepath = filepath;
-            std::filesystem::path cachedPath     = cacheDirectory / (shaderFilepath.filename().string() + GLShaderStageCachedVulkanFileExtension(stage));
+            std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + GLShaderStageCachedVulkanFileExtension(stage));
             if (std::ifstream infile(cachedPath, std::ios::in | std::ios::binary); infile.is_open())
             {
                 infile.seekg(0, std::ios::end);
@@ -288,11 +288,11 @@ namespace origin
             else
             {
                 shaderc::Compiler compiler;
-                shaderc::SpvCompilationResult module   = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)GLShaderStageToShaderC(stage), filepath.c_str());
-                bool                          success = module.GetCompilationStatus() == shaderc_compilation_status_success;
+                shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)GLShaderStageToShaderC(stage), filepath.c_str());
+                bool  success = module.GetCompilationStatus() == shaderc_compilation_status_success;
 
                 PUSH_CONSOLE_ERROR("[Shader] Failed to compile Vulkan {0}", module.GetErrorMessage().c_str());
-                OGN_CORE_ASSERT(success, module.GetErrorMessage());
+                OGN_CORE_ASSERT(success, module.GetErrorMessage().c_str());
 
                 shaderData[stage] = std::vector<u32>(module.cbegin(), module.cend());
                 if (std::ofstream out(cachedPath, std::ios::out | std::ios::binary); out.is_open())

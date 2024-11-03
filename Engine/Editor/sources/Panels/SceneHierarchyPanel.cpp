@@ -112,7 +112,7 @@ namespace origin {
         }
         IsSceneHierarchyFocused = ImGui::IsWindowFocused();
         static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
-        ImGui::BeginChild("scene_hierarchy", ImVec2(ImGui::GetContentRegionAvail().x, 20.0f), 0, windowFlags);
+        ImGui::BeginChild("scene_hierarchy", { ImGui::GetContentRegionAvail().x, 20.0f }, 0, windowFlags);
         ImGui::Button(m_Scene->GetName().c_str(), ImGui::GetContentRegionAvail());
         if (ImGui::BeginDragDropTarget())
         {
@@ -142,7 +142,7 @@ namespace origin {
             ImGui::TableSetupColumn("Active", ImGuiTableColumnFlags_WidthFixed, 40.0f);
             ImGui::TableHeadersRow();
 
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 0.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 2.0f, 0.0f });
             m_Scene->m_Registry.view<TransformComponent>().each([&](auto entity, auto &nsc)
             {
                 DrawEntityNode({ entity, m_Scene.get() });
@@ -345,7 +345,7 @@ namespace origin {
         }
 
         ImGui::SameLine();
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8.0f, 8.0f });
         ImGui::PushItemWidth(-1);
 
         if (ImGui::Button("Add"))
@@ -422,7 +422,7 @@ namespace origin {
 
         DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
         {
-            ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+            ImVec2 buttonSize = { 100.0f, 25.0f };
 
             std::string modelButtonLabel = "Drop Model";
 
@@ -503,7 +503,7 @@ namespace origin {
 
         DrawComponent<MeshComponent>("Mesh", entity, [&](auto &component)
         {
-            ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+            ImVec2 buttonSize = { 100.0f, 25.0f };
 
             // Model Button
             ImGui::Button("Drop Here", buttonSize);
@@ -708,7 +708,7 @@ namespace origin {
                 buttonLabelSize.x += 20.0f;
                 const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
 
-                ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
+                ImGui::Button(label.c_str(), { buttonLabelWidth, 0.0f });
                 if (ImGui::BeginDragDropTarget())
                 {
                     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -778,7 +778,7 @@ namespace origin {
 
         DrawComponent<TextComponent>("Text", entity, [](auto &component) 
             {
-                ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
+            ImGui::Button("DROP FONT", { 80.0f, 30.0f });
                 if (ImGui::BeginDragDropTarget())
                 {
                     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -1050,7 +1050,7 @@ namespace origin {
                     ImGui::SameLine();
                     const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
                     const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-                    if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+                    if (ImGui::Button("X", { buttonSize, buttonSize }))
                     {
                         component.ConnectedBodyID = 0;
                     }
@@ -1582,7 +1582,7 @@ namespace origin {
 
             ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
             ImTextureID texId = (void *)(uintptr_t)(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
-            if (ImGui::ImageButton("component_more_button", texId, ImVec2(14.0f, 14.0f)))
+            if (ImGui::ImageButton("component_more_button", texId, { 14.0f, 14.0f }))
                 ImGui::OpenPopup("Component Settings");
 
             bool componentRemoved = false;

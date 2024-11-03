@@ -18,6 +18,8 @@
 #include "Origin/Core/Event.h"
 #include "Origin/Core/KeyEvent.h"
 #include "Origin/Core/MouseEvent.h"
+#include "Origin/Core/Time.h"
+#include "Origin/Core/Assert.h"
 #include "Origin/Math/Math.h"
 #include "Origin/Math/AABB.h"
 #include "Origin/Math/OBB.h"
@@ -58,8 +60,7 @@
 #include "Origin/Serializer/SpriteSheetSerializer.h"
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/GUI/GuiLayer.h"
-#include "Origin/Core/Time.h"
-#include "Origin/Core/Assert.h"
+#include "Origin/GUI/GuiWindow.h"
 
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/OpenGL/OpenGLContext.h"
