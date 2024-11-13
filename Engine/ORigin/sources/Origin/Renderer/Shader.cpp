@@ -288,6 +288,7 @@ namespace origin
             else
             {
                 shaderc::Compiler compiler;
+              
                 shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)GLShaderStageToShaderC(stage), filepath.c_str());
                 bool  success = module.GetCompilationStatus() == shaderc_compilation_status_success;
 

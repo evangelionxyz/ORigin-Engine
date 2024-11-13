@@ -16,6 +16,8 @@ namespace origin
         void OnEvent(Event &event) override;
         bool OnWindowResize(FramebufferResizeEvent &e);
         bool OnKeyPressedEvent(KeyPressedEvent &e);
+        u32 LoadTexture(const unsigned char *data, int width, int height);
+        std::vector<u32> m_Textures;
         EditorCamera camera;
     };
 }

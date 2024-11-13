@@ -7,14 +7,32 @@
 
 #include "SandboxLayer.h"
 
+#include "EmbededResources.h"
+
 #include <iostream>
 
 using namespace origin;
 
 static glm::vec4 clear_color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
+u32 SandboxLayer::LoadTexture(const unsigned char *data, int width, int height)
+{
+    u32 texture_id;
+    glCreateTextures(GL_TEXTURE_2D, 1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTextureParameteri(texture_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texture_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(texture_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    const u32 level = 0, x_offset = 0, y_offset = 0;
+    glTextureSubImage2D(texture_id, level, x_offset, y_offset, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    return texture_id;
+}
+
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
+    m_Textures.push_back(LoadTexture(ic_csharp_script_data, ic_csharp_script_width, ic_csharp_script_height));
 }
 
 void SandboxLayer::OnAttach()
@@ -23,8 +41,8 @@ void SandboxLayer::OnAttach()
 
 void SandboxLayer::OnUpdate(Timestep ts)
 {
-    Application& app = Application::Instance();
-    camera.OnUpdate(ts, { 0.0f, 0.0f }, { app.GetWindow().GetWidth(), app.GetWindow().GetHeight() });
+    Application& app = Application::GetInstance();
+    camera.OnUpdate(ts);
 
     RenderCommand::Clear();
     RenderCommand::ClearColor(clear_color);
@@ -45,6 +63,12 @@ void SandboxLayer::OnGuiRender()
 
     ImGui::Begin("Test Window");
     ImGui::ColorEdit4("clear color", glm::value_ptr(clear_color));
+
+    for (u32 tex : m_Textures)
+    {
+        ImGui::Image(reinterpret_cast<ImTextureID>(tex), { 50.0f, 50.0f });
+    }
+    
     ImGui::End();
 }
 
