@@ -85,6 +85,9 @@ namespace origin
         }
 
         InitGrid();
+
+
+        m_GuiWindowSceneStats = GuiWindow("Scene Stats", UI::EWindowFlags::NoBackground);
     }
 
     void EditorLayer::OnDetach() 
@@ -297,15 +300,8 @@ namespace origin
         m_MaterialEditor.OnImGuiRender();
         m_SceneHierarchy.OnImGuiRender();
 
-        ImGui::Begin("Abizar");
-
-        DisplayCPUUsageGraph();
-        DisplayMemoryGraphUsage();
-
-        ImGui::End();
-
-        ConsoleWindow();
         MenuBar();
+        ConsoleWindow();
         SceneViewportToolbar();
         GUIRender();
         if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
@@ -759,7 +755,13 @@ namespace origin
                 if (m_SceneState == SceneState::Edit)
                 {
                     AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
-                    OpenScene(handle);
+                    AssetType type = AssetManager::GetAssetType(handle);
+
+                    if (type == AssetType::Scene)
+                    {
+                        OpenScene(handle);
+                    }
+
                 }
             }
             ImGui::EndDragDropTarget();
@@ -879,6 +881,20 @@ namespace origin
 
         ImGui::End();
         ImGui::PopStyleVar();
+
+        // Scene Statistics
+        m_GuiWindowSceneStats.AddStyle({ 
+            { UI::EStyle::WindowPadding, glm::vec2(10.0f, 10.0f)},
+        });
+        m_GuiWindowSceneStats.Begin();
+        const auto renderStats = Renderer::GetStatistics();
+        ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
+        ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
+        ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
+        DisplayCPUUsageGraph();
+        DisplayMemoryGraphUsage();
+        m_GuiWindowSceneStats.End();
+
     }
 
     void EditorLayer::SceneViewportToolbar()
@@ -1176,20 +1192,6 @@ namespace origin
                         ImGui::TreePop();
                     }
 
-                    if (ImGui::TreeNodeEx("Statistics", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
-                    {
-                        const auto renderStats = Renderer::GetStatistics();
-                        ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
-                        ImGui::Text("Quads: %d", renderStats.QuadCount);
-                        ImGui::Text("Circles: %d", renderStats.CircleCount);
-                        ImGui::Text("Lines: %d", renderStats.LineCount);
-                        ImGui::Text("Cubes: %d", renderStats.CubeCount);
-                        ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
-                        ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
-                        ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
-                        ImGui::TreePop();
-                    }
-
                     ImGui::EndTabItem();
                 }
 
@@ -1345,14 +1347,11 @@ namespace origin
         memory_usage_history[current_index] = memory_uage_mb;
         current_index = (current_index + 1) % HISTORY_SIZE;
 
-        float average = std::accumulate(memory_usage_history.begin(), memory_usage_history.end(), 0.0f) / HISTORY_SIZE;
-
         ImGui::Text("Memory Usage: %.2f MB", memory_uage_mb);
-        ImGui::Text("Average Usage: %.2f MB", average);
-        ImGui::PlotLines("Memory Usage (MB)", memory_usage_history.data(), HISTORY_SIZE,
-            current_index, nullptr, 0.0f,
+        /*ImGui::PlotLines("Memory Usage", memory_usage_history.data(), HISTORY_SIZE,
+            current_index + (HISTORY_SIZE / 2), "Memory Usage", 0.0f,
             *std::max_element(memory_usage_history.begin(), memory_usage_history.end()),
-            ImVec2(0, 80));
+            { 0, 50.0f });*/
     }
 
     void EditorLayer::DisplayCPUUsageGraph()
@@ -1374,14 +1373,11 @@ namespace origin
         cpu_usage_history[current_index] = cpu_usage_graph;
         current_index = (current_index + 1) % HISTORY_SIZE;
 
-        float average = std::accumulate(cpu_usage_history.begin(), cpu_usage_history.end(), 0.0f) / HISTORY_SIZE;
-
         ImGui::Text("CPU Usage: %.2f %%", cpu_usage);
-        ImGui::Text("Average Usage: %.2f %%", average);
-        ImGui::PlotLines("CPU Usage (%)", cpu_usage_history.data(), HISTORY_SIZE,
-            current_index, nullptr, 0.0f,
+        ImGui::PlotLines("CPU Usage", cpu_usage_history.data(), HISTORY_SIZE,
+            current_index, "CPU Usage", 0.0f,
             *std::max_element(cpu_usage_history.begin(), cpu_usage_history.end()),
-            ImVec2(0, 80));
+            {0, 50.0f});
     }
 
     void EditorLayer::InitGrid()

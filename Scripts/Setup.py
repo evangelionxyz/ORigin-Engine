@@ -38,11 +38,11 @@ def register_msbuild():
     if not os.path.exists(vswherePath):
         print(">> Downloading VSWhere")
         vswhereLink = "https://github.com/microsoft/vswhere/releases/download/3.1.7/vswhere.exe"
-        Utils.DownloadFile(vswhereLink, vswherePath)
+        Utils.download_file(vswhereLink, vswherePath)
 
-    visual_studio_path = Utils.FindVisualStudioPath(vswherePath)
+    visual_studio_path = Utils.find_visual_studio(vswherePath)
     variable_path = f"{visual_studio_path}\\MSBuild\\Current\\Bin"
-    if Utils.AddNewWindowsSystemPathEnvironment(variable_path):
+    if Utils.set_system_path_variable(variable_path):
         print(f">> MSBuild path is registered to {variable_path}")
 
 if premake_installed:

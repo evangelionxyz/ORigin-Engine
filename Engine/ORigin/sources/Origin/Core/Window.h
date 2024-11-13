@@ -49,6 +49,10 @@ namespace origin {
         virtual void CloseWindow() = 0;
         virtual void SetIcon(const char* filepath) = 0;
         virtual void SetEventCallback(const std::function<void(Event&)>& callback) = 0;
+        virtual void SetPosition(int x, int y) = 0;
+        virtual glm::ivec2 GetPosition() = 0;
+        virtual void Maximize() = 0;
+        virtual void Minimize() = 0;
 
         virtual uint32_t GetWidth() const = 0;
         virtual uint32_t GetHeight() const = 0;

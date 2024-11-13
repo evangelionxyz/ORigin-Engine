@@ -50,7 +50,7 @@ class VulkanConfiguration:
             
             print("Downloading {0:s} to {1:s}".format("Vulkan SDK", vulkan_download_path))
             print("Please Wait...")
-            Utils.DownloadFile(vulkan_download_url, vulkan_download_path)
+            Utils.download_file(vulkan_download_url, vulkan_download_path)
         else:
             print(">> Vulkan already downloaded.")
 
