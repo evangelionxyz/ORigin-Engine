@@ -27,6 +27,10 @@ namespace origin
         void SetIcon(const char* filepath) override;
         void WindowCallbacks();
         void SetEventCallback(const std::function<void(Event&)>& callback) override;
+        void SetPosition(int x, int y) override;
+        glm::ivec2 GetPosition() override;
+        void Maximize() override;
+        void Minimize() override;
 
         const char* GetTitle() const override { return m_Data.Title.c_str(); }
         uint32_t GetWidth() const override { return m_Data.Width; }

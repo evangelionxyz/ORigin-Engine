@@ -5,57 +5,62 @@
 namespace origin {
 
 GuiWindow::GuiWindow(const std::string &title)
-    : m_Title(title)
+    : m_Title(title), m_WindowFlags(UI::EWindowFlags::None), m_Open(true), m_Closing(false)
 {
 }
 
 GuiWindow::GuiWindow(const std::string &title, UI::EWindowFlags flags)
-    : m_Title(title), m_WindowFlags(flags)
+    : m_Title(title), m_WindowFlags(flags), m_Open(true), m_Closing(false)
 {
 }
 
 GuiWindow::~GuiWindow()
 {
-    OGN_CORE_ASSERT(m_Showing, "[Gui Window] You forget to call Show()");
-    if (m_Showing)
+}
+
+void GuiWindow::Open()
+{
+    m_Open = true;
+}
+
+void GuiWindow::Begin()
+{
+    if (m_Open)
+    {
+        m_Closing = false;
+        ImGui::Begin(m_Title.c_str(), &m_Open, static_cast<ImGuiWindowFlags>(m_WindowFlags));
+
+        if (!m_Open)
+        {
+            m_Closing = true;
+        }
+    }
+}
+
+void GuiWindow::End()
+{
+    if (m_Open || (!m_Open && m_Closing))
     {
         ImGui::End();
-        m_Showing = false;
     }
-
     ImGui::PopStyleVar(static_cast<int>(m_StyleCount));
     ImGui::PopStyleColor(static_cast<int>(m_ColorStyleCount));
 }
 
-void GuiWindow::Show()
-{
-    if (m_Showing) return;
-
-    ImGui::Begin(m_Title.c_str(), &m_Showing, static_cast<ImGuiWindowFlags>(m_WindowFlags));
-    m_Showing = true;
-}
-
-void GuiWindow::Hide()
-{
-}
-
 void GuiWindow::AddColorStyle(std::initializer_list<std::pair<UI::EColorStyle, glm::vec4>> colorStyles)
 {
-    OGN_CORE_ASSERT(!m_Showing, "[Gui Window] Call Show() after add styles");
-    m_ColorStyleCount = colorStyles.size();
+    m_ColorStyleCount = static_cast<u8>(colorStyles.size());
 
-    for (int i = 0; i < static_cast<int>(colorStyles.size()); ++i)
+    for (u8 i = 0; i < m_ColorStyleCount; ++i)
     {
         auto it = colorStyles.begin() + i;
-        ImGui::PushStyleColor(static_cast<ImGuiStyleVar>(it->first), {it->second.x, it->second.y, it->second.z, it->second.w });
+        ImGui::PushStyleColor(static_cast<ImGuiStyleVar>(it->first), { it->second.x, it->second.y, it->second.z, it->second.w });
     }
 }
 
 void GuiWindow::AddStyle(std::initializer_list<std::pair<UI::EStyle, StyleVariant>> styles)
 {
-    OGN_CORE_ASSERT(!m_Showing, "[Gui Window] Call Show() after add styles");
-
-    m_StyleCount = styles.size();
+    m_StyleCount = static_cast<u8>(styles.size());
 
     for (const auto &style : styles)
     {

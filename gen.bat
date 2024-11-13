@@ -7,6 +7,9 @@ if %errorlevel% NEQ 0 (
     exit /b
 )
 
+python -m pip install requests
+python -m pip install --upgrade pip
+
 rem
 pushd %~dp0\Scripts
 python Setup.py

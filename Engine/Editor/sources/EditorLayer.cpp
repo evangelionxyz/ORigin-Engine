@@ -85,6 +85,9 @@ namespace origin
         }
 
         InitGrid();
+
+
+        m_GuiWindowSceneStats = GuiWindow("Scene Stats", UI::EWindowFlags::NoBackground);
     }
 
     void EditorLayer::OnDetach() 
@@ -297,8 +300,8 @@ namespace origin
         m_MaterialEditor.OnImGuiRender();
         m_SceneHierarchy.OnImGuiRender();
 
-        ConsoleWindow();
         MenuBar();
+        ConsoleWindow();
         SceneViewportToolbar();
         GUIRender();
         if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
@@ -752,7 +755,13 @@ namespace origin
                 if (m_SceneState == SceneState::Edit)
                 {
                     AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
-                    OpenScene(handle);
+                    AssetType type = AssetManager::GetAssetType(handle);
+
+                    if (type == AssetType::Scene)
+                    {
+                        OpenScene(handle);
+                    }
+
                 }
             }
             ImGui::EndDragDropTarget();
@@ -874,18 +883,17 @@ namespace origin
         ImGui::PopStyleVar();
 
         // Scene Statistics
-
-        GuiWindow sceneStatWindow("Scene Statistics", UI::EWindowFlags::AlwaysAutoResize);
-        sceneStatWindow.AddStyle({ 
+        m_GuiWindowSceneStats.AddStyle({ 
             { UI::EStyle::WindowPadding, glm::vec2(10.0f, 10.0f)},
         });
-        sceneStatWindow.Show();
+        m_GuiWindowSceneStats.Begin();
         const auto renderStats = Renderer::GetStatistics();
         ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
         ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
         ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
         DisplayCPUUsageGraph();
         DisplayMemoryGraphUsage();
+        m_GuiWindowSceneStats.End();
 
     }
 
@@ -1340,10 +1348,10 @@ namespace origin
         current_index = (current_index + 1) % HISTORY_SIZE;
 
         ImGui::Text("Memory Usage: %.2f MB", memory_uage_mb);
-        ImGui::PlotLines("Memory Usage", memory_usage_history.data(), HISTORY_SIZE,
+        /*ImGui::PlotLines("Memory Usage", memory_usage_history.data(), HISTORY_SIZE,
             current_index + (HISTORY_SIZE / 2), "Memory Usage", 0.0f,
             *std::max_element(memory_usage_history.begin(), memory_usage_history.end()),
-            { 0, 50.0f });
+            { 0, 50.0f });*/
     }
 
     void EditorLayer::DisplayCPUUsageGraph()

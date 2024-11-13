@@ -70,7 +70,7 @@ def get_user_env_variable(name):
         return os.environ.get(name)
     return None
     
-def add_new_system_path_variable(new_path):
+def set_system_path_variable(new_path):
     if platform.system() == "Windows":
         current_path = current_path = os.environ.get('PATH', '')
         if new_path not in current_path:
@@ -87,7 +87,7 @@ def add_new_system_path_variable(new_path):
             return True
     return False
     
-def DownloadFile(url, filepath):
+def download_file(url, filepath):
     path = filepath
     filepath = os.path.abspath(filepath)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -95,7 +95,7 @@ def DownloadFile(url, filepath):
         for url_option in url:
             print("Downloading", url_option)
             try:
-                DownloadFile(url_option, filepath)
+                download_file(url_option, filepath)
                 return
             except urllib.error.URLError as e:
                 print(f"URL Error encountered: {e.reason}. Proceeding with backup...\n\n")

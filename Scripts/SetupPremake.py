@@ -20,12 +20,6 @@ class PremakeConfiguration:
         if (not cls.is_premake_installed()):
             print(">> Premake is not installed.")
             return False
-
-        print(f">> Correct Premake located at {cls.premake_directory}")
-        if cls.user_platform == "Windows":
-            print(f">> Registering Premake to Windows Environment Path {cls.premake_directory}")
-            Utils.AddNewWindowsSystemPathEnvironment(cls.premake_directory)
-
         return True
 
     @classmethod
@@ -37,12 +31,12 @@ class PremakeConfiguration:
             premake_exe = Path(f"{cls.premake_directory}/premake5")
         
         if not premake_exe.exists():
-            return cls.InstallPremake()
+            return cls.install_premake()
 
         return True
 
     @classmethod
-    def InstallPremake(cls):
+    def install_premake(cls):
         permissionGranted = False
         while not permissionGranted:
             reply = str(input(">> Premake not found.\nWould you like to download Premake {0:s}? [Y/N]: ".format(cls.premake_version))).lower().strip()[:1]
@@ -56,13 +50,13 @@ class PremakeConfiguration:
             premakePath = f"{cls.premake_directory}/premake-{cls.premake_version}-linux.tar.gz"
             
         print("Downloading {0:s} to {1:s}".format(cls.premakeArchiveUrls, premakePath))
-        Utils.DownloadFile(cls.premakeArchiveUrls, premakePath)
+        Utils.download_file(cls.premakeArchiveUrls, premakePath)
         print("Extracting", premakePath)
         Utils.ExtractArchiveFile(premakePath, deleteArchiveFile=True)
         print(f">> Premake {cls.premake_version} has been downloaded to '{cls.premake_directory}'")
 
         premakeLicensePath = f"{cls.premake_directory}/LICENSE.txt"
         print("Downloading {0:s} to {1:s}".format(cls.premake_license_url, premakeLicensePath))
-        Utils.DownloadFile(cls.premake_license_url, premakeLicensePath)
+        Utils.download_file(cls.premake_license_url, premakeLicensePath)
         print(f">> Premake License file has been downloaded to '{cls.premake_directory}'")
         return True

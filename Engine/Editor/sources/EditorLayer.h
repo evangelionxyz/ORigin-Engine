@@ -101,6 +101,9 @@ namespace origin
         Ref<Framebuffer> m_Framebuffer, m_GameFramebuffer;
         Scope<ContentBrowserPanel> m_ContentBrowser;
         Ref<Scene> m_ActiveScene, m_EditorScene;
+
+        GuiWindow m_GuiWindowSceneStats;
+
         std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
 
         glm::vec4 m_ClearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
