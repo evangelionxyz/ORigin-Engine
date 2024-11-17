@@ -3,6 +3,8 @@ Entities:
   - Entity: 10081453302717008082
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Test
     TransformComponent:
@@ -17,6 +19,8 @@ Entities:
   - Entity: 4355993424349242155
     Type: Entity
     Parent: 2723873067466865669
+    Children:
+      []
     TagComponent:
       Tag: Plane
     RigidbodyComponent:
@@ -48,6 +52,8 @@ Entities:
   - Entity: 14361135943477425419
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Player
     RigidbodyComponent:
@@ -88,6 +94,8 @@ Entities:
   - Entity: 8883320873860328031
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Audio
     AudioComponent:
@@ -110,6 +118,8 @@ Entities:
   - Entity: 11653903401686833792
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Test
     TransformComponent:
@@ -124,6 +134,8 @@ Entities:
   - Entity: 7916222134218068362
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Camera
     TransformComponent:
@@ -148,6 +160,8 @@ Entities:
   - Entity: 11688243430321544824
     Type: Entity
     Parent: 2723873067466865669
+    Children:
+      []
     TagComponent:
       Tag: Plane
     RigidbodyComponent:
@@ -179,6 +193,8 @@ Entities:
   - Entity: 2723873067466865669
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Planes
     TransformComponent:
@@ -189,6 +205,8 @@ Entities:
   - Entity: 4719421986865497824
     Type: Entity
     Parent: 2723873067466865669
+    Children:
+      []
     TagComponent:
       Tag: Plane
     RigidbodyComponent:
@@ -220,6 +238,8 @@ Entities:
   - Entity: 4053462338176422244
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Lighting
     TransformComponent:
@@ -239,6 +259,8 @@ Entities:
   - Entity: 4200692951670387674
     Type: Entity
     Parent: 2723873067466865669
+    Children:
+      []
     TagComponent:
       Tag: Plane
     RigidbodyComponent:

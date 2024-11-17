@@ -112,7 +112,7 @@ namespace origin {
         }
         IsSceneHierarchyFocused = ImGui::IsWindowFocused();
         static ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
-        ImGui::BeginChild("scene_hierarchy", ImVec2(ImGui::GetContentRegionAvail().x, 20.0f), 0, windowFlags);
+        ImGui::BeginChild("scene_hierarchy", { ImGui::GetContentRegionAvail().x, 20.0f }, 0, windowFlags);
         ImGui::Button(m_Scene->GetName().c_str(), ImGui::GetContentRegionAvail());
         if (ImGui::BeginDragDropTarget())
         {
@@ -122,6 +122,8 @@ namespace origin {
                 Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
                 if (src.HasParent())
                 {
+                    Entity parent = m_Scene->GetEntityWithUUID(src.GetComponent<IDComponent>().Parent);
+                    parent.GetComponent<IDComponent>().RemoveChild(src.GetUUID());
                     src.GetComponent<IDComponent>().Parent = 0;
                 }
             }
@@ -140,7 +142,7 @@ namespace origin {
             ImGui::TableSetupColumn("Active", ImGuiTableColumnFlags_WidthFixed, 40.0f);
             ImGui::TableHeadersRow();
 
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.0f, 0.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 2.0f, 0.0f });
             m_Scene->m_Registry.view<TransformComponent>().each([&](auto entity, auto &nsc)
             {
                 DrawEntityNode({ entity, m_Scene.get() });
@@ -207,17 +209,19 @@ namespace origin {
     void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
     {
         if (!entity || (entity.HasParent() && index == 0))
-        {
             return;
-        }
 
         ImGuiTreeNodeFlags flags = (m_SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-            | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow 
+            | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
             | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
+
+
+        bool has_children = entity.GetComponent<IDComponent>().HasChild();
+        if (!has_children) flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
-        bool node_open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+        bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
         {
@@ -229,7 +233,7 @@ namespace origin {
             }
         }
 
-        bool isDeleting = false;
+        bool is_deleting = false;
         if (!m_Scene->IsRunning())
         {
             ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
@@ -244,43 +248,44 @@ namespace origin {
                 if (ImGui::MenuItem("Delete"))
                 {
                     DestroyEntity(entity);
-                    isDeleting = true;
+                    is_deleting = true;
                 }
                 ImGui::EndPopup();
             }
 
-            if (ImGui::BeginDragDropSource())
+            if (!is_deleting)
             {
-                ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
-                ImGui::BeginTooltip();
-                ImGui::Text("%s %llu", entity.GetTag().c_str(), entity.GetUUID());
-                ImGui::EndTooltip();
-                ImGui::EndDragDropSource();
-            }
-
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+                if (ImGui::BeginDragDropSource())
                 {
-                    OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
-                    Entity src { *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
-                    // the current 'entity' is the target (new parent for src)
-                    EntityManager::AddChild(entity, src, m_Scene.get());
+                    ImGui::SetDragDropPayload("ENTITY_SOURCE_ITEM", &entity, sizeof(Entity));
+                    ImGui::BeginTooltip();
+                    ImGui::Text("%s %llu", entity.GetTag().c_str(), entity.GetUUID());
+                    ImGui::EndTooltip();
+                    ImGui::EndDragDropSource();
                 }
-                ImGui::EndDragDropTarget();
+
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ENTITY_SOURCE_ITEM"))
+                    {
+                        OGN_CORE_ASSERT(payload->DataSize == sizeof(Entity), "WRONG ENTITY ITEM");
+                        Entity src{ *static_cast<entt::entity *>(payload->Data), m_Scene.get() };
+                        // the current 'entity' is the target (new parent for src)
+                        EntityManager::AddChild(entity, src, m_Scene.get());
+                    }
+                    ImGui::EndDragDropTarget();
+                }
             }
+            
             ImGui::PopID();
         }
 
-        if (ImGui::IsItemHovered(ImGuiMouseButton_Left))
+        if (!is_deleting && ImGui::IsItemHovered(ImGuiMouseButton_Left) && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
         {
-            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                SetSelectedEntity(entity);
-            }
+            SetSelectedEntity(entity);
         }
 
-        if (!isDeleting)
+        if (!is_deleting)
         {
             ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
             ImGui::TableNextColumn();
@@ -291,19 +296,26 @@ namespace origin {
             ImGui::PopID();
         }
 
-        if (node_open)
+        if (opened && has_children)
         {
-            if (!isDeleting)
+            if (!is_deleting)
             {
-                for (auto e : m_Scene->m_Registry.view<TransformComponent>())
+                for (const UUID uuid : entity.GetComponent<IDComponent>().Children)
+                {
+                    Entity child_entity = m_Scene->GetEntityWithUUID(uuid);
+                    DrawEntityNode(child_entity, index + 1);
+                }
+
+                /*for (auto e : m_Scene->m_Registry.view<TransformComponent>())
                 {
                     Entity ent = { e, m_Scene.get() };
                     if (ent.GetParentUUID() == entity.GetUUID())
                     {
                         DrawEntityNode(ent, index + 1);
                     }
-                }
+                }*/
             }
+            
             ImGui::TreePop();
         }
     }
@@ -333,7 +345,7 @@ namespace origin {
         }
 
         ImGui::SameLine();
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8.0f, 8.0f });
         ImGui::PushItemWidth(-1);
 
         if (ImGui::Button("Add"))
@@ -410,7 +422,7 @@ namespace origin {
 
         DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
         {
-            ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+            ImVec2 buttonSize = { 100.0f, 25.0f };
 
             std::string modelButtonLabel = "Drop Model";
 
@@ -491,7 +503,7 @@ namespace origin {
 
         DrawComponent<MeshComponent>("Mesh", entity, [&](auto &component)
         {
-            ImVec2 buttonSize = ImVec2(100.0f, 25.0f);
+            ImVec2 buttonSize = { 100.0f, 25.0f };
 
             // Model Button
             ImGui::Button("Drop Here", buttonSize);
@@ -696,7 +708,7 @@ namespace origin {
                 buttonLabelSize.x += 20.0f;
                 const auto buttonLabelWidth = glm::max<float>(100.0f, buttonLabelSize.x);
 
-                ImGui::Button(label.c_str(), ImVec2(buttonLabelWidth, 0.0f));
+                ImGui::Button(label.c_str(), { buttonLabelWidth, 0.0f });
                 if (ImGui::BeginDragDropTarget())
                 {
                     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -766,7 +778,7 @@ namespace origin {
 
         DrawComponent<TextComponent>("Text", entity, [](auto &component) 
             {
-                ImGui::Button("DROP FONT", ImVec2(80.0f, 30.0f));
+            ImGui::Button("DROP FONT", { 80.0f, 30.0f });
                 if (ImGui::BeginDragDropTarget())
                 {
                     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -992,9 +1004,9 @@ namespace origin {
                 UI::DrawVec2Control("Size", component.Size, 0.01f, 0.5f);
 
                 UI::DrawCheckbox("Is Sensor", &component.IsSensor);
-                UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Density", &component.Density, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 1.0f);
             });
 
         DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto &component)
@@ -1005,9 +1017,9 @@ namespace origin {
                 UI::DrawFloatControl("Radius", &component.Radius, 0.01f, 0.5f);
 
                 UI::DrawCheckbox("Is Sensor", &component.IsSensor);
-                UI::DrawFloatControl("Density", &component.Density, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Friction", &component.Friction, 0.025, 0.0f, 1000.0f, 1.0f);
-                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Density", &component.Density, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 1.0f);
+                UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 1.0f);
             });
 
         DrawComponent<RevoluteJoint2DComponent>("Revolute Joint 2D", entity, [&](auto &component)
@@ -1038,7 +1050,7 @@ namespace origin {
                     ImGui::SameLine();
                     const ImVec2 xLabelSize = ImGui::CalcTextSize("X");
                     const float buttonSize = xLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f;
-                    if (ImGui::Button("X", ImVec2(buttonSize, buttonSize)))
+                    if (ImGui::Button("X", { buttonSize, buttonSize }))
                     {
                         component.ConnectedBodyID = 0;
                     }
@@ -1570,7 +1582,7 @@ namespace origin {
 
             ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
             ImTextureID texId = (void *)(uintptr_t)(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
-            if (ImGui::ImageButton("component_more_button", texId, ImVec2(14.0f, 14.0f)))
+            if (ImGui::ImageButton("component_more_button", texId, { 14.0f, 14.0f }))
                 ImGui::OpenPopup("Component Settings");
 
             bool componentRemoved = false;

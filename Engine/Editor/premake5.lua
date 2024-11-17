@@ -27,7 +27,7 @@ project "Editor"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.BOX2D}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.FMT}",
+        --"%{IncludeDir.FMT}",
         "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.IMGUI}",
         "%{IncludeDir.IMGUIZMO}",
@@ -36,6 +36,7 @@ project "Editor"
         "%{IncludeDir.JOLT}",
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
+        "%{IncludeDir.FMOD}",
     }
 
     defines {

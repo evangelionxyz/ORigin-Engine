@@ -54,11 +54,12 @@ namespace origin {
 			OGN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
-		IDComponent GetIDC() { return GetComponent<IDComponent>(); }
+
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
 		UUID GetParentUUID() { return GetComponent<IDComponent>().Parent; }
 		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
+
 		EntityType GetType() { return GetComponent<IDComponent>().Type; }
 		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
 		Scene *GetScene() const { return m_Scene; }
@@ -82,12 +83,6 @@ namespace origin {
 			{
 				isValid = m_Scene != nullptr && m_EntityHandle != entt::null;
 			}
-
-            if (!isValid)
-            {
-                //OGN_CORE_ERROR("[Entity] Accessing invalid entity!");
-                //PUSH_CONSOLE_ERROR("[Entity] Accessing invalid entity!");
-            }
 
 			return isValid;
 		}

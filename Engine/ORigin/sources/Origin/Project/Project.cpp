@@ -89,7 +89,7 @@ namespace origin {
 		return GetAssetDirectory() / path;	
 	}
 
-	std::shared_ptr<Project> Project::New()
+	Ref<Project> Project::New()
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -136,7 +136,7 @@ namespace origin {
 #endif
 		Utils::ExecuteScript(projectBuildScriptPath);
 
-		std::shared_ptr<Project> newProject = std::make_shared<Project>();
+		Ref<Project> newProject = CreateRef<Project>();
 		newProject->GetConfig().Name = projectName;
 		// No start scene in new project
 		newProject->GetConfig().StartScene = 0;
@@ -148,7 +148,7 @@ namespace origin {
 			s_ActiveProject = newProject;
 			s_ActiveProject->m_ProjectDirectory = filepath;
 
-			std::shared_ptr<EditorAssetManager> editorAssetManager = std::make_shared<EditorAssetManager>();
+			Ref<EditorAssetManager> editorAssetManager = CreateRef<EditorAssetManager>();
 			s_ActiveProject->m_AssetManager = editorAssetManager;
 
 			// Create empty Asset Registry file
@@ -159,7 +159,7 @@ namespace origin {
 		return nullptr;
 	}
 
-	std::shared_ptr<Project> Project::Open()
+	Ref<Project> Project::Open()
 	{
 		OGN_PROFILER_FUNCTION();
 #ifdef _WIN32
@@ -175,11 +175,11 @@ namespace origin {
 		return Load(filepath);
 	}
 
-	std::shared_ptr<Project> Project::Load(const std::filesystem::path& path)
+	Ref<Project> Project::Load(const std::filesystem::path& path)
 	{
 		OGN_PROFILER_FUNCTION();
 
-		std::shared_ptr<Project> project = std::make_shared<Project>();
+		Ref<Project> project = CreateRef<Project>();
 
 		ProjectSerializer serializer(project);
 		if (serializer.Deserialize(path))
@@ -187,7 +187,7 @@ namespace origin {
 			project->m_ProjectDirectory = path.parent_path();
 			s_ActiveProject = project;
 
-			std::shared_ptr<EditorAssetManager> editorAssetManager = std::make_shared<EditorAssetManager>();
+			Ref<EditorAssetManager> editorAssetManager = CreateRef<EditorAssetManager>();
 			editorAssetManager->DeserializeAssetRegistry();
 			s_ActiveProject->m_AssetManager = editorAssetManager;
 			

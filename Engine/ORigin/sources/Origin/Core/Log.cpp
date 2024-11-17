@@ -3,26 +3,18 @@
 #include "pch.h"
 #include "Origin/Core/Log.h"
 
-namespace origin
+namespace origin {
+static Log *s_Instance = nullptr;
+Log::Log()
 {
-	static Log *s_Instance = nullptr;
-	Log::Log()
-	{
-		s_Instance = this;
-	}
+    s_Instance = this;
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+}
 
-	Log* Log::GetInstance()
-	{
-		return s_Instance;
-	}
+Log *Log::GetInstance()
+{
+    return s_Instance;
+}
 
-	void Log::PrintFormattedMessage(const LogLevel level, const std::string& message)
-	{
-		PrintMessage(level, message);
-	}
-
-	void Log::PrintMessage(LogLevel level, const std::string& message)
-	{
-		printf("%s\n", message.c_str());
-	}
 }

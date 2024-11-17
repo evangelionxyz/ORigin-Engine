@@ -8,7 +8,7 @@ project "ORigin"
     location "%{wks.location}/Engine/ORigin"
 
     pchheader "pch.h"
-    pchsource "pch.cpp"
+    pchsource "sources/pch.cpp"
 
     targetdir (outputDir)
     objdir (intOutputDir)
@@ -37,14 +37,14 @@ project "ORigin"
         "%{IncludeDir.GLM}",
         "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.ENTT}",
-        "%{IncludeDir.FMT}",
         "%{IncludeDir.FILEWATCHER}",
         "%{IncludeDir.YAMLCPP}",
         "%{IncludeDir.ASSIMP}",
         "%{IncludeDir.JOLT}",
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
-        "%{IncludeDir.MONO}"
+        "%{IncludeDir.MONO}",
+        "%{IncludeDir.FMOD}",
     }
 
     links {
@@ -58,7 +58,6 @@ project "ORigin"
         "FreeType",
         "YAMLCPP",
         "JOLT",
-        "FMT",
     }
     
     defines { "_CRT_SECURE_NO_WARNINGS" }
@@ -71,6 +70,7 @@ project "ORigin"
         links {
             "opengl32.lib",
             "%{Library.Vulkan1Lib}",
+            "%{Library.FMOD}",
             "%{Library.MONO}",
             "%{Library.WinSock}",
             "%{Library.WinMM}",

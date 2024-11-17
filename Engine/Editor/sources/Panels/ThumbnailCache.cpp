@@ -52,7 +52,7 @@ namespace origin {
             }
 
             float thumbnailHeight = m_ThumbnailSize * ((float)texture->GetHeight() / (float)texture->GetWidth());
-            texture->ChangeSize(m_ThumbnailSize, thumbnailHeight);
+            texture->ChangeSize(m_ThumbnailSize, static_cast<u64>(thumbnailHeight));
 
             auto &cachedImage = m_CachedImages[thumbnailInfo.AssetPath];
             cachedImage.Timestamp = thumbnailInfo.Timestamp;

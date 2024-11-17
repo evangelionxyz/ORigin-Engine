@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <filesystem>
+#include <stack>
 
 namespace origin
 {
@@ -23,6 +24,7 @@ namespace origin
         void DrawNavButton();	
         void DrawContentBrowser();
         void RefreshAssetTree();
+
         std::shared_ptr<Texture2D> DirectoryIcons(const std::filesystem::directory_entry& dirExtension);
     
         std::shared_ptr<Project> m_Project;
@@ -50,6 +52,9 @@ namespace origin
         char m_RenameBuffer[256] = { 0 };
         std::map<std::filesystem::path, std::vector<std::filesystem::path>> m_AssetTree;
         int m_ThumbnailSize = 64;
+
+        std::stack<std::filesystem::path> m_BackwardPathStack;
+        std::stack<std::filesystem::path> m_ForwardPathStack;
 
         enum class Mode
         {

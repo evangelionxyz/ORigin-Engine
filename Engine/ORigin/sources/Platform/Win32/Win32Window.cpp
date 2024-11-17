@@ -36,6 +36,8 @@ namespace origin {
         
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
+        // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
         m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
             title, nullptr, nullptr);
 
@@ -97,6 +99,27 @@ namespace origin {
 
         m_Data.EventCallback = callback;
         WindowCallbacks();
+    }
+
+    void Win32Window::SetPosition(int x, int y)
+    {
+        glfwSetWindowPos(m_MainWindow, x, y);
+    }
+
+    glm::ivec2 Win32Window::GetPosition()
+    {
+        int width, height;
+        glfwGetWindowPos(m_MainWindow, &width, &height);
+        return { width, height };
+    }
+
+    void Win32Window::Maximize()
+    {
+        glfwMaximizeWindow(m_MainWindow);
+    }
+
+    void Win32Window::Minimize()
+    {
     }
 
     void Win32Window::UpdateEvents()

@@ -76,14 +76,23 @@ namespace origin
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 		out << YAML::Key << "Type" << YAML::Value << Utils::EntityTypeToString(idc.Type);
 		out << YAML::Key << "Parent" << YAML::Value << idc.Parent;
+
+        out << YAML::Key << "Children";
+        out << YAML::BeginSeq;
+        for (const UUID child_uuid : idc.Children)
+        {
+            out << YAML::BeginMap;
+            out << YAML::Key << "ID" << YAML::Value << child_uuid;
+            out << YAML::EndMap;
+        }
+        out << YAML::EndSeq;
+
 		if (entity.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap; // TagComponent
-
 			auto tag = entity.GetComponent<TagComponent>().Tag;
 			out << YAML::Key << "Tag" << YAML::Value << tag;
-
 			out << YAML::EndMap; // TagComponent
 		}
 
@@ -646,6 +655,7 @@ namespace origin
 		auto sceneName = data["Scene"].as<std::string>();
 		OGN_CORE_TRACE("[SceneSerializer] Deserializing scene '{0}'", sceneName);
 		PUSH_CONSOLE_INFO("[SceneSerializer] Deserializing scene '{0}'", sceneName);
+
 		if (YAML::Node entities = data["Entities"])
 		{
 			for (YAML::iterator::value_type entity : entities)
@@ -653,29 +663,39 @@ namespace origin
 				uint64_t uuid = entity["Entity"].as<uint64_t>();
 				std::string name = entity["TagComponent"]["Tag"].as<std::string>();
 				EntityType type = Utils::EntityTypeStringToType(entity["Type"].as<std::string>());
-				Entity deserializedEntity = EntityManager::CreateEntityWithUUID(uuid, name, EntityType::Entity, m_Scene.get());
+				Entity deserialized_entity = EntityManager::CreateEntityWithUUID(uuid, name, EntityType::Entity, m_Scene.get());
 
-				deserializedEntity.GetComponent<IDComponent>().Parent = entity["Parent"].as<uint64_t>();
+				IDComponent &idc = deserialized_entity.GetComponent<IDComponent>();
+				idc.Parent = entity["Parent"].as<uint64_t>();
 
-				if (YAML::Node transformComponent = entity["TransformComponent"])
+				if (YAML::Node children = entity["Children"])
 				{
-					TransformComponent &tc = deserializedEntity.GetComponent<TransformComponent>();
-					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
-					tc.Rotation = transformComponent["Rotation"].as<glm::quat>();
-					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
-					tc.Visible = transformComponent["Visible"].as<bool>();
+					for (YAML::detail::iterator_value child : children)
+					{
+						u64 child_uuid = child["ID"].as<u64>();
+						idc.AddChild(child_uuid);
+					}
 				}
 
-				if (YAML::Node audioListnerComponent = entity["AudioListenerComponent"])
+				if (YAML::Node transform_component = entity["TransformComponent"])
 				{
-					AudioListenerComponent &al = deserializedEntity.AddComponent<AudioListenerComponent>();
-					al.Enable = audioListnerComponent["Enable"].as<bool>();
+					TransformComponent &tc = deserialized_entity.GetComponent<TransformComponent>();
+					tc.Translation = transform_component["Translation"].as<glm::vec3>();
+					tc.Rotation = transform_component["Rotation"].as<glm::quat>();
+					tc.Scale = transform_component["Scale"].as<glm::vec3>();
+					tc.Visible = transform_component["Visible"].as<bool>();
 				}
 
-				if (YAML::Node spriteAnimationComponent = entity["SpriteAnimationComponent"])
+				if (YAML::Node audio_listener_component = entity["AudioListenerComponent"])
 				{
-					SpriteAnimationComponent &ac = deserializedEntity.AddComponent<SpriteAnimationComponent>();
-					if (auto states = spriteAnimationComponent["States"])
+					AudioListenerComponent &al = deserialized_entity.AddComponent<AudioListenerComponent>();
+					al.Enable = audio_listener_component["Enable"].as<bool>();
+				}
+
+				if (YAML::Node sprite_animation_component = entity["SpriteAnimationComponent"])
+				{
+					SpriteAnimationComponent &ac = deserialized_entity.AddComponent<SpriteAnimationComponent>();
+					if (auto states = sprite_animation_component["States"])
 					{
 						for (auto state : states)
 						{
@@ -702,11 +722,11 @@ namespace origin
 					}
 				}
 
-				if (YAML::Node uiComponent = entity["UIComponent"])
+				if (YAML::Node ui_component = entity["UIComponent"])
 				{
-					UIComponent &ui = deserializedEntity.AddComponent<UIComponent>();
+					UIComponent &ui = deserialized_entity.AddComponent<UIComponent>();
 
-					for (auto comp : uiComponent["Components"])
+					for (auto comp : ui_component["Components"])
 					{
 						std::string types = comp["Type"].as<std::string>();
 						if (types == "TextComponent")
@@ -752,23 +772,23 @@ namespace origin
 					}
 				}
 
-				if (YAML::Node audioComponent = entity["AudioComponent"])
+				if (YAML::Node audio_component = entity["AudioComponent"])
 				{
-					AudioComponent &ac = deserializedEntity.AddComponent<AudioComponent>();
+					AudioComponent &ac = deserialized_entity.AddComponent<AudioComponent>();
 
-					if (audioComponent["AudioHandle"])
+					if (audio_component["AudioHandle"])
 					{
-						ac.Audio = audioComponent["AudioHandle"].as<uint64_t>();
-						ac.Name = audioComponent["Name"].as<std::string>();
-						ac.Volume = audioComponent["Volume"].as<float>();
-						ac.Pitch = audioComponent["Pitch"].as<float>();
-						ac.Panning = audioComponent["Panning"].as<float>();
-						ac.MinDistance = audioComponent["MinDistance"].as<float>();
-						ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
-						ac.Looping = audioComponent["Looping"].as<bool>();
-						ac.Spatializing = audioComponent["Spatial"].as<bool>();
-						ac.PlayAtStart = audioComponent["PlayAtStart"].as<bool>();
-						ac.Overlapping = audioComponent["Overlapping"].as<bool>();
+						ac.Audio = audio_component["AudioHandle"].as<uint64_t>();
+						ac.Name = audio_component["Name"].as<std::string>();
+						ac.Volume = audio_component["Volume"].as<float>();
+						ac.Pitch = audio_component["Pitch"].as<float>();
+						ac.Panning = audio_component["Panning"].as<float>();
+						ac.MinDistance = audio_component["MinDistance"].as<float>();
+						ac.MaxDistance = audio_component["MaxDistance"].as<float>();
+						ac.Looping = audio_component["Looping"].as<bool>();
+						ac.Spatializing = audio_component["Spatial"].as<bool>();
+						ac.PlayAtStart = audio_component["PlayAtStart"].as<bool>();
+						ac.Overlapping = audio_component["Overlapping"].as<bool>();
 						std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
 						if (ac.Overlapping)
 						{
@@ -782,10 +802,10 @@ namespace origin
 					}
 				}
 
-				if (YAML::Node cameraComponent = entity["CameraComponent"])
+				if (YAML::Node camera_component = entity["CameraComponent"])
 				{
-					CameraComponent &cc = deserializedEntity.AddComponent<CameraComponent>();
-					const auto& cameraProps = cameraComponent["Camera"];
+					CameraComponent &cc = deserialized_entity.AddComponent<CameraComponent>();
+					const auto& cameraProps = camera_component["Camera"];
 					glm::vec2 viewportSize = cameraProps["ViewportSize"].as<glm::vec2>();
 					float fov = cameraProps["FOV"].as<float>();
 					float nearClip = cameraProps["PerspectiveNear"].as<float>();
@@ -799,15 +819,15 @@ namespace origin
                     cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
                     cc.Camera.SetAspectRatioType(static_cast<AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
 					cc.Camera.SetViewportSize(viewportSize.x, viewportSize.y);
-					cc.Primary = cameraComponent["Primary"].as<bool>();
+					cc.Primary = camera_component["Primary"].as<bool>();
 				}
 
-				if (YAML::Node staticMeshComponent = entity["StaticMeshComponent"])
+				if (YAML::Node static_mesh_component = entity["StaticMeshComponent"])
 				{
-					StaticMeshComponent &mc = deserializedEntity.AddComponent<StaticMeshComponent>();
-					mc.Name = staticMeshComponent["Name"].as<std::string>();
-					mc.HMaterial = staticMeshComponent["HMaterial"].as<uint64_t>();
-					mc.HMesh = staticMeshComponent["HMesh"].as<uint64_t>();
+					StaticMeshComponent &mc = deserialized_entity.AddComponent<StaticMeshComponent>();
+					mc.Name = static_mesh_component["Name"].as<std::string>();
+					mc.HMaterial = static_mesh_component["HMaterial"].as<uint64_t>();
+					mc.HMesh = static_mesh_component["HMesh"].as<uint64_t>();
 
 					if (mc.HMaterial)
 					{
@@ -818,15 +838,15 @@ namespace origin
 						mc.Data = AssetManager::GetAsset<StaticMeshData>(mc.HMesh);
 					}
 
-					mc.mType = static_cast<StaticMeshComponent::Type>(staticMeshComponent["Type"].as<int>());
+					mc.mType = static_cast<StaticMeshComponent::Type>(static_mesh_component["Type"].as<int>());
 				}
 
-				if (YAML::Node meshComponent = entity["MeshComponent"])
+				if (YAML::Node mesh_component = entity["MeshComponent"])
 				{
-					MeshComponent &mc = deserializedEntity.AddComponent<MeshComponent>();
-					mc.Name = meshComponent["Name"].as<std::string>();
-					mc.HMaterial = meshComponent["HMaterial"].as<uint64_t>();
-					mc.HMesh = meshComponent["HMesh"].as<uint64_t>();
+					MeshComponent &mc = deserialized_entity.AddComponent<MeshComponent>();
+					mc.Name = mesh_component["Name"].as<std::string>();
+					mc.HMaterial = mesh_component["HMaterial"].as<uint64_t>();
+					mc.HMesh = mesh_component["HMesh"].as<uint64_t>();
 
 					if (mc.HMesh)
 					{
@@ -838,37 +858,37 @@ namespace origin
 					}
 				}
 
-				if (YAML::Node particleComponent = entity["ParticleComponent"])
+				if (YAML::Node particle_component = entity["ParticleComponent"])
 				{
-					ParticleComponent &pc = deserializedEntity.AddComponent<ParticleComponent>();
-					pc.Velocity = particleComponent["Velocity"].as<glm::vec3>();
-					pc.VelocityVariation = particleComponent["VelocityVariation"].as<glm::vec3>();
-					pc.Rotation = particleComponent["Rotation"].as<glm::vec3>();
-					pc.ColorBegin = particleComponent["ColorBegin"].as<glm::vec4>();
-					pc.ColorEnd = particleComponent["ColorEnd"].as<glm::vec4>();
-					pc.SizeBegin = particleComponent["SizeBegin"].as<float>();
-					pc.SizeEnd = particleComponent["SizeEnd"].as<float>();
-					pc.SizeVariation = particleComponent["SizeVariation"].as<float>();
-					pc.ZAxis = particleComponent["ZAxis"].as<float>();
-					pc.LifeTime = particleComponent["LifeTime"].as<float>();
+					ParticleComponent &pc = deserialized_entity.AddComponent<ParticleComponent>();
+					pc.Velocity = particle_component["Velocity"].as<glm::vec3>();
+					pc.VelocityVariation = particle_component["VelocityVariation"].as<glm::vec3>();
+					pc.Rotation = particle_component["Rotation"].as<glm::vec3>();
+					pc.ColorBegin = particle_component["ColorBegin"].as<glm::vec4>();
+					pc.ColorEnd = particle_component["ColorEnd"].as<glm::vec4>();
+					pc.SizeBegin = particle_component["SizeBegin"].as<float>();
+					pc.SizeEnd = particle_component["SizeEnd"].as<float>();
+					pc.SizeVariation = particle_component["SizeVariation"].as<float>();
+					pc.ZAxis = particle_component["ZAxis"].as<float>();
+					pc.LifeTime = particle_component["LifeTime"].as<float>();
 				}
 
-				if (YAML::Node spriteRenderer2DComponent = entity["SpriteRenderer2DComponent"])
+				if (YAML::Node sprite_renderer_2d_component = entity["SpriteRenderer2DComponent"])
 				{
-					SpriteRenderer2DComponent &src = deserializedEntity.AddComponent<SpriteRenderer2DComponent>();
-					src.Color = spriteRenderer2DComponent["Color"].as<glm::vec4>();
-					if(spriteRenderer2DComponent["Handle"])
+					SpriteRenderer2DComponent &src = deserialized_entity.AddComponent<SpriteRenderer2DComponent>();
+					src.Color = sprite_renderer_2d_component["Color"].as<glm::vec4>();
+					if(sprite_renderer_2d_component["Handle"])
 					{
-						src.Texture = spriteRenderer2DComponent["Handle"].as<uint64_t>();
-						src.Min = spriteRenderer2DComponent["Min"].as<glm::vec2>();
-						src.Max = spriteRenderer2DComponent["Max"].as<glm::vec2>();
-						src.TillingFactor = spriteRenderer2DComponent["TillingFactor"].as<glm::vec2>();
+						src.Texture = sprite_renderer_2d_component["Handle"].as<uint64_t>();
+						src.Min = sprite_renderer_2d_component["Min"].as<glm::vec2>();
+						src.Max = sprite_renderer_2d_component["Max"].as<glm::vec2>();
+						src.TillingFactor = sprite_renderer_2d_component["TillingFactor"].as<glm::vec2>();
 					}
 				}
 
-				if (YAML::Node lightComponent = entity["LightComponent"])
+				if (YAML::Node light_component = entity["LightComponent"])
 				{
-					auto& light = deserializedEntity.AddComponent<LightComponent>().Light;
+					auto& light = deserialized_entity.AddComponent<LightComponent>().Light;
 					//light = Lighting::Create(Utils::LightTypeStringToType(lightComponent["Type"].as<std::string>()));
 					
 					switch (light->Type)
@@ -890,149 +910,149 @@ namespace origin
 #endif
 					case LightingType::Directional:
 					{
-						light->DirLightData.Color = lightComponent["Color"].as<glm::vec4>();
-						light->DirLightData.Ambient = lightComponent["Ambient"].as<glm::vec4>();
-						light->DirLightData.Diffuse = lightComponent["Diffuse"].as<float>();
-						light->DirLightData.Specular = lightComponent["Specular"].as<float>();
-						light->NearPlane = lightComponent["Near"].as<float>();
-						light->FarPlane = lightComponent["Far"].as<float>();
-						light->OrthoSize = lightComponent["OrthoSize"].as<float>();
+						light->DirLightData.Color = light_component["Color"].as<glm::vec4>();
+						light->DirLightData.Ambient = light_component["Ambient"].as<glm::vec4>();
+						light->DirLightData.Diffuse = light_component["Diffuse"].as<float>();
+						light->DirLightData.Specular = light_component["Specular"].as<float>();
+						light->NearPlane = light_component["Near"].as<float>();
+						light->FarPlane = light_component["Far"].as<float>();
+						light->OrthoSize = light_component["OrthoSize"].as<float>();
 						break;
 					}
 					}
 				}
 
-				if (YAML::Node circleRendererComponent = entity["CircleRendererComponent"])
+				if (YAML::Node circle_renderer_component = entity["CircleRendererComponent"])
 				{
-					CircleRendererComponent &src = deserializedEntity.AddComponent<CircleRendererComponent>();
-					src.Color = circleRendererComponent["Color"].as<glm::vec4>();
-					src.Fade = circleRendererComponent["Fade"].as<float>();
-					src.Thickness = circleRendererComponent["Thickness"].as<float>();
+					CircleRendererComponent &src = deserialized_entity.AddComponent<CircleRendererComponent>();
+					src.Color = circle_renderer_component["Color"].as<glm::vec4>();
+					src.Fade = circle_renderer_component["Fade"].as<float>();
+					src.Thickness = circle_renderer_component["Thickness"].as<float>();
 				}
 
-				if (YAML::Node rigidbody2DComponent = entity["Rigidbody2DComponent"])
+				if (YAML::Node rigid_body_component = entity["Rigidbody2DComponent"])
 				{
-					Rigidbody2DComponent &rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
-					rb2d.Type = Rigidbody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
-					rb2d.Mass = rigidbody2DComponent["Mass"].as<float>();
-					rb2d.LinearDamping = rigidbody2DComponent["LinearDamping"].as<float>();
-					rb2d.AngularDamping = rigidbody2DComponent["AngularDamping"].as<float>();
-					rb2d.RotationalInertia = rigidbody2DComponent["RotationalInertia"].as<float>();
-					rb2d.GravityScale = rigidbody2DComponent["GravityScale"].as<float>();
-					rb2d.MassCenter = rigidbody2DComponent["MassCenter"].as<glm::vec2>();
-					rb2d.EnableSleep = rigidbody2DComponent["EnableSleep"].as<bool>();
-					rb2d.IsAwake = rigidbody2DComponent["IsAwake"].as<bool>();
-					rb2d.IsBullet = rigidbody2DComponent["IsBullet"].as<bool>();
-					rb2d.IsEnabled = rigidbody2DComponent["IsEnabled"].as<bool>();
-					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
+					Rigidbody2DComponent &rb2d = deserialized_entity.AddComponent<Rigidbody2DComponent>();
+					rb2d.Type = Rigidbody2DBodyTypeFromString(rigid_body_component["BodyType"].as<std::string>());
+					rb2d.Mass = rigid_body_component["Mass"].as<float>();
+					rb2d.LinearDamping = rigid_body_component["LinearDamping"].as<float>();
+					rb2d.AngularDamping = rigid_body_component["AngularDamping"].as<float>();
+					rb2d.RotationalInertia = rigid_body_component["RotationalInertia"].as<float>();
+					rb2d.GravityScale = rigid_body_component["GravityScale"].as<float>();
+					rb2d.MassCenter = rigid_body_component["MassCenter"].as<glm::vec2>();
+					rb2d.EnableSleep = rigid_body_component["EnableSleep"].as<bool>();
+					rb2d.IsAwake = rigid_body_component["IsAwake"].as<bool>();
+					rb2d.IsBullet = rigid_body_component["IsBullet"].as<bool>();
+					rb2d.IsEnabled = rigid_body_component["IsEnabled"].as<bool>();
+					rb2d.FixedRotation = rigid_body_component["FixedRotation"].as<bool>();
 				}
 
-				if (YAML::Node boxCollider2DComponent = entity["BoxCollider2DComponent"])
+				if (YAML::Node box_collider_2d_component = entity["BoxCollider2DComponent"])
 				{
-					BoxCollider2DComponent &bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
-					bc2d.Group = boxCollider2DComponent["Group"].as<int>();
-					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
-					bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
-					bc2d.Density = boxCollider2DComponent["Density"].as<float>();
-					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
-					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
-					bc2d.IsSensor = boxCollider2DComponent["IsSensor"].as<bool>();
+					BoxCollider2DComponent &bc2d = deserialized_entity.AddComponent<BoxCollider2DComponent>();
+					bc2d.Group = box_collider_2d_component["Group"].as<int>();
+					bc2d.Offset = box_collider_2d_component["Offset"].as<glm::vec2>();
+					bc2d.Size = box_collider_2d_component["Size"].as<glm::vec2>();
+					bc2d.Density = box_collider_2d_component["Density"].as<float>();
+					bc2d.Friction = box_collider_2d_component["Friction"].as<float>();
+					bc2d.Restitution = box_collider_2d_component["Restitution"].as<float>();
+					bc2d.IsSensor = box_collider_2d_component["IsSensor"].as<bool>();
 				}
 
-				if (YAML::Node circleCollider2DComponent = entity["CircleCollider2DComponent"])
+				if (YAML::Node circle_collider_2d_component = entity["CircleCollider2DComponent"])
 				{
-					CircleCollider2DComponent &cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
-					cc2d.Group = circleCollider2DComponent["Group"].as<int>();
-					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
-					cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
-					cc2d.Density = circleCollider2DComponent["Density"].as<float>();
-					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
-					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
-					cc2d.IsSensor = circleCollider2DComponent["IsSensor"].as<bool>();
+					CircleCollider2DComponent &cc2d = deserialized_entity.AddComponent<CircleCollider2DComponent>();
+					cc2d.Group = circle_collider_2d_component["Group"].as<int>();
+					cc2d.Offset = circle_collider_2d_component["Offset"].as<glm::vec2>();
+					cc2d.Radius = circle_collider_2d_component["Radius"].as<float>();
+					cc2d.Density = circle_collider_2d_component["Density"].as<float>();
+					cc2d.Friction = circle_collider_2d_component["Friction"].as<float>();
+					cc2d.Restitution = circle_collider_2d_component["Restitution"].as<float>();
+					cc2d.IsSensor = circle_collider_2d_component["IsSensor"].as<bool>();
 				}
 
-				if (YAML::Node revoluteJoint2DComponent = entity["RevoluteJoint2DComponent"])
+				if (YAML::Node revolute_joint_2d_component = entity["RevoluteJoint2DComponent"])
 				{
-					RevoluteJoint2DComponent &rjc = deserializedEntity.AddComponent<RevoluteJoint2DComponent>();
-					rjc.ConnectedBodyID = revoluteJoint2DComponent["Connected Body ID"].as<uint64_t>();
-					rjc.AnchorPoint = revoluteJoint2DComponent["Anchor"].as<glm::vec2>();
-					rjc.AnchorPointB = revoluteJoint2DComponent["AnchorB"].as<glm::vec2>();
+					RevoluteJoint2DComponent &rjc = deserialized_entity.AddComponent<RevoluteJoint2DComponent>();
+					rjc.ConnectedBodyID = revolute_joint_2d_component["Connected Body ID"].as<uint64_t>();
+					rjc.AnchorPoint = revolute_joint_2d_component["Anchor"].as<glm::vec2>();
+					rjc.AnchorPointB = revolute_joint_2d_component["AnchorB"].as<glm::vec2>();
 
-					rjc.EnableMotor = revoluteJoint2DComponent["EnableMotor"].as<bool>();
-					rjc.EnableLimit = revoluteJoint2DComponent["EnableLimit"].as<bool>();
-					rjc.MaxMotorTorque = revoluteJoint2DComponent["MaxMotorTorque"].as<float>();
-					rjc.MotorSpeed = revoluteJoint2DComponent["MotorSpeed"].as<float>();
-					rjc.SpringDampingRatio = revoluteJoint2DComponent["DampingRatio"].as<float>();
+					rjc.EnableMotor = revolute_joint_2d_component["EnableMotor"].as<bool>();
+					rjc.EnableLimit = revolute_joint_2d_component["EnableLimit"].as<bool>();
+					rjc.MaxMotorTorque = revolute_joint_2d_component["MaxMotorTorque"].as<float>();
+					rjc.MotorSpeed = revolute_joint_2d_component["MotorSpeed"].as<float>();
+					rjc.SpringDampingRatio = revolute_joint_2d_component["DampingRatio"].as<float>();
 				}
 
-				if (YAML::Node textComponent = entity["TextComponent"])
+				if (YAML::Node text_component = entity["TextComponent"])
 				{
-					AssetHandle handle = textComponent["Handle"].as<uint64_t>();
+					AssetHandle handle = text_component["Handle"].as<uint64_t>();
 					if (AssetManager::IsAssetHandleValid(handle))
 					{
-						TextComponent &tc = deserializedEntity.AddComponent<TextComponent>();
+						TextComponent &tc = deserialized_entity.AddComponent<TextComponent>();
 						tc.FontHandle = handle;
 						if (handle)
 						{
 							AssetManager::GetAsset<Font>(handle);
 						}
-						tc.TextString = textComponent["Text"].as<std::string>();
-						tc.Color = textComponent["Color"].as<glm::vec4>();
-						tc.Kerning = textComponent["Kerning"].as<float>();
-						tc.LineSpacing = textComponent["LineSpacing"].as<float>();
-						tc.ScreenSpace = textComponent["ScreenSpace"].as<bool>();
+						tc.TextString = text_component["Text"].as<std::string>();
+						tc.Color = text_component["Color"].as<glm::vec4>();
+						tc.Kerning = text_component["Kerning"].as<float>();
+						tc.LineSpacing = text_component["LineSpacing"].as<float>();
+						tc.ScreenSpace = text_component["ScreenSpace"].as<bool>();
 					}
 				}
 
-                if (YAML::Node rigidbodyComponent = entity["RigidbodyComponent"])
+                if (YAML::Node rigid_body_component = entity["RigidbodyComponent"])
                 {
-                    auto &rigidbody = deserializedEntity.AddComponent<RigidbodyComponent>();
-                    rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
-                    rigidbody.CenterMass = rigidbodyComponent["CenterMass"].as<glm::vec3>();
-					rigidbody.Offset = rigidbodyComponent["Offset"].as<glm::vec3>();
-                    rigidbody.UseGravity = rigidbodyComponent["UseGravity"].as<bool>();
-                    rigidbody.RotateX = rigidbodyComponent["RotateX"].as<bool>();
-                    rigidbody.RotateY = rigidbodyComponent["RotateY"].as<bool>();
-                    rigidbody.RotateZ = rigidbodyComponent["RotateZ"].as<bool>();
-                    rigidbody.MoveX = rigidbodyComponent["MoveX"].as<bool>();
-                    rigidbody.MoveY = rigidbodyComponent["MoveY"].as<bool>();
-                    rigidbody.MoveZ = rigidbodyComponent["MoveZ"].as<bool>();
-                    rigidbody.IsStatic = rigidbodyComponent["IsStatic"].as<bool>();
+                    auto &rigidbody = deserialized_entity.AddComponent<RigidbodyComponent>();
+                    rigidbody.Mass = rigid_body_component["Mass"].as<float>();
+                    rigidbody.CenterMass = rigid_body_component["CenterMass"].as<glm::vec3>();
+					rigidbody.Offset = rigid_body_component["Offset"].as<glm::vec3>();
+                    rigidbody.UseGravity = rigid_body_component["UseGravity"].as<bool>();
+                    rigidbody.RotateX = rigid_body_component["RotateX"].as<bool>();
+                    rigidbody.RotateY = rigid_body_component["RotateY"].as<bool>();
+                    rigidbody.RotateZ = rigid_body_component["RotateZ"].as<bool>();
+                    rigidbody.MoveX = rigid_body_component["MoveX"].as<bool>();
+                    rigidbody.MoveY = rigid_body_component["MoveY"].as<bool>();
+                    rigidbody.MoveZ = rigid_body_component["MoveZ"].as<bool>();
+                    rigidbody.IsStatic = rigid_body_component["IsStatic"].as<bool>();
                 }
 
-                if (YAML::Node boxColliderComponent = entity["BoxColliderComponent"])
+                if (YAML::Node box_collider_component = entity["BoxColliderComponent"])
                 {
-                    auto &boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
-                    boxCollider.Scale = boxColliderComponent["Size"].as<glm::vec3>();
-                    boxCollider.Restitution = boxColliderComponent["Restitution"].as<float>();
-                    boxCollider.Friction = boxColliderComponent["Friction"].as<float>();
+                    auto &boxCollider = deserialized_entity.AddComponent<BoxColliderComponent>();
+                    boxCollider.Scale = box_collider_component["Size"].as<glm::vec3>();
+                    boxCollider.Restitution = box_collider_component["Restitution"].as<float>();
+                    boxCollider.Friction = box_collider_component["Friction"].as<float>();
                 }
 
-                if (YAML::Node sphereColliderComponent = entity["SphereColliderComponent"])
+                if (YAML::Node sphere_collider_component = entity["SphereColliderComponent"])
                 {
-                    auto &sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
-                    sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
-                    sphereCollider.Restitution = sphereColliderComponent["Restitution"].as<float>();
-                    sphereCollider.Friction = sphereColliderComponent["Friction"].as<float>();
+                    auto &sphereCollider = deserialized_entity.AddComponent<SphereColliderComponent>();
+                    sphereCollider.Radius = sphere_collider_component["Radius"].as<float>();
+                    sphereCollider.Restitution = sphere_collider_component["Restitution"].as<float>();
+                    sphereCollider.Friction = sphere_collider_component["Friction"].as<float>();
                 }
 
-                if (YAML::Node capsuleColliderComponent = entity["CapsuleColliderComponent"])
+                if (YAML::Node capsule_collider_component = entity["CapsuleColliderComponent"])
                 {
-                    auto &capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
-					capsuleCollider.Radius = capsuleColliderComponent["Radius"].as<float>();
-					capsuleCollider.HalfHeight = capsuleColliderComponent["HalfHeight"].as<float>();
-                    capsuleCollider.Restitution = capsuleColliderComponent["Restitution"].as<float>();
-                    capsuleCollider.Friction = capsuleColliderComponent["Friction"].as<float>();
+                    auto &capsuleCollider = deserialized_entity.AddComponent<CapsuleColliderComponent>();
+					capsuleCollider.Radius = capsule_collider_component["Radius"].as<float>();
+					capsuleCollider.HalfHeight = capsule_collider_component["HalfHeight"].as<float>();
+                    capsuleCollider.Restitution = capsule_collider_component["Restitution"].as<float>();
+                    capsuleCollider.Friction = capsule_collider_component["Friction"].as<float>();
                 }
                 
-				if (YAML::Node scriptComponent = entity["ScriptComponent"])
+				if (YAML::Node script_component = entity["ScriptComponent"])
 				{
-					ScriptComponent & sc = deserializedEntity.AddComponent<ScriptComponent>();
-					OGN_CORE_ASSERT(deserializedEntity.IsValid(), "SceneSerializer:  Entity is invalid");
+					ScriptComponent & sc = deserialized_entity.AddComponent<ScriptComponent>();
+					OGN_CORE_ASSERT(deserialized_entity.IsValid(), "SceneSerializer:  Entity is invalid");
 
-					sc.ClassName = scriptComponent["ClassName"].as<std::string>();
+					sc.ClassName = script_component["ClassName"].as<std::string>();
 
-					if (YAML::Node scriptFields = scriptComponent["ScriptFields"])
+					if (YAML::Node scriptFields = script_component["ScriptFields"])
 					{
 						std::shared_ptr<ScriptClass> entityClass = ScriptEngine::GetEntityClassesByName(sc.ClassName);
 						OGN_CORE_ASSERT(entityClass, "SceneSerializer: Entity Class is Invalid");
@@ -1040,7 +1060,7 @@ namespace origin
 						if (entityClass)
 						{
 							const auto& fields = entityClass->GetFields();
-							ScriptFieldMap& entityFields = ScriptEngine::GetScriptFieldMap(deserializedEntity);
+							ScriptFieldMap& entityFields = ScriptEngine::GetScriptFieldMap(deserialized_entity);
 
 							for (auto scriptField : scriptFields)
 							{

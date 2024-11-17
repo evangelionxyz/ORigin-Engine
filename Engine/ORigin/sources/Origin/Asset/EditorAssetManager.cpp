@@ -139,8 +139,10 @@ namespace origin
             SerializeAssetRegistry();
             return handle;
         }
+       
 
         asset = AssetImporter::ImportAsset(handle, metadata);
+
         if (asset)
         {
             asset->Handle = handle;

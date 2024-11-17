@@ -161,7 +161,7 @@ namespace origin
     {
         ImGuiIO &io = ImGui::GetIO();
 
-        Application &app = Application::Instance();
+        Application &app = Application::GetInstance();
         int width, height;
         glfwGetFramebufferSize((GLFWwindow *)m_WindowContext->GetNativeWindow(), &width, &height);
         io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height));

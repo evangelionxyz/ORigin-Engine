@@ -14,6 +14,8 @@
 #include "Origin/Renderer/GraphicsContext.h"
 #include "ConsoleManager.h"
 
+#include "ProcessMonitor.h"
+
 #include <mutex>
 
 namespace origin {
@@ -53,14 +55,17 @@ namespace origin {
         float GetTime();
 
         void SubmitToMainThread(const std::function<void()>& function);
-        static Application& Instance() { return *s_Instance; }
+        static Application& GetInstance() { return *s_Instance; }
         bool GetMinimized() const { return m_Minimized; }
         Window &GetWindow() const { return *m_Window.get(); }
         const ApplicationSpecification& GetSpecification() const { return m_Spec; }
         GuiLayer *GetGuiLayer() { return m_GuiLayer; }
         bool SetVSync = false;
 
+        ProcessMonitor &GetProcessMonitor() { return m_ProcessMonitor; }
+
     private:
+        ProcessMonitor m_ProcessMonitor;
         std::unique_ptr<ConsoleManager> m_ConsoleManager;
         ApplicationSpecification m_Spec;
         LayerStack m_LayerStack;

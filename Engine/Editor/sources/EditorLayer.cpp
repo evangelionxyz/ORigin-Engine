@@ -15,6 +15,11 @@
 #include <filesystem>
 
 #include <glad/glad.h>
+#include <vector>
+
+#include <algorithm>
+#include <numeric>
+#include <chrono>
 
 namespace origin
 {
@@ -36,13 +41,13 @@ namespace origin
         m_UITextures["eyes_closed"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_eyes_closed.png");
 
         // Gizmo icons
-        m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
-        m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
-        m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png");
+        m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_audio.png");
+        m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera.png");
+        m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_lighting.png");
 
-        m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
-        m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
-        m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/origin_engine.png");
+        m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera_projection_2d.png");
+        m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera_projection_3d.png");
+        m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/bw_logo.png");
 
         FramebufferSpecification fbSpec;
         fbSpec.Attachments =
@@ -64,7 +69,7 @@ namespace origin
 
         m_ActiveScene = std::make_shared<Scene>();
 
-        if (const auto &cmdline_args = Application::Instance().GetSpecification().CommandLineArgs;
+        if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs;
             cmdline_args.Count > 1)
         {
             m_ProjectDirectoryPath = cmdline_args[1];
@@ -80,6 +85,9 @@ namespace origin
         }
 
         InitGrid();
+
+
+        m_GuiWindowSceneStats = GuiWindow("Scene Stats", UI::EWindowFlags::NoBackground);
     }
 
     void EditorLayer::OnDetach() 
@@ -291,8 +299,9 @@ namespace origin
         m_SpriteSheetEditor->OnImGuiRender();
         m_MaterialEditor.OnImGuiRender();
         m_SceneHierarchy.OnImGuiRender();
-        ConsoleWindow();
+
         MenuBar();
+        ConsoleWindow();
         SceneViewportToolbar();
         GUIRender();
         if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
@@ -497,8 +506,8 @@ namespace origin
             OnSceneStop();
         }
 
-        const auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
-        std::shared_ptr<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
+        const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
+        Ref<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
 
         if (!read_only_scene)
         {
@@ -546,7 +555,7 @@ namespace origin
         if (handle == 0 || filepath.empty())
             return;
 
-        std::shared_ptr<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
+        Ref<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
         std::string name = filepath.stem().string();
         read_only_scene->SetName(name);
 
@@ -580,7 +589,7 @@ namespace origin
 
     void EditorLayer::MenuBar()
     {
-        auto &application = Application::Instance();
+        auto &application = Application::GetInstance();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
 
@@ -746,7 +755,13 @@ namespace origin
                 if (m_SceneState == SceneState::Edit)
                 {
                     AssetHandle handle = *static_cast<AssetHandle*>(payload->Data);
-                    OpenScene(handle);
+                    AssetType type = AssetManager::GetAssetType(handle);
+
+                    if (type == AssetType::Scene)
+                    {
+                        OpenScene(handle);
+                    }
+
                 }
             }
             ImGui::EndDragDropTarget();
@@ -866,6 +881,21 @@ namespace origin
 
         ImGui::End();
         ImGui::PopStyleVar();
+
+        // Scene Statistics
+        m_GuiWindowSceneStats.AddStyle({ 
+            { UI::EStyle::WindowPadding, glm::vec2(10.0f, 10.0f)},
+        });
+        m_GuiWindowSceneStats.Begin();
+        const auto renderStats = Renderer::GetStatistics();
+        ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
+        ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
+        ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
+
+        DisplayCPUUsageGraph();
+        DisplayMemoryGraphUsage();
+        m_GuiWindowSceneStats.End();
+
     }
 
     void EditorLayer::SceneViewportToolbar()
@@ -888,7 +918,7 @@ namespace origin
             // margin top: 4px
             ImGui::SetCursorPos({8.0f, 0.0f});
             // Play Button
-            std::shared_ptr<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
+            Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
             if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
             {
                 if (m_SceneHierarchy.GetContext())
@@ -1163,20 +1193,6 @@ namespace origin
                         ImGui::TreePop();
                     }
 
-                    if (ImGui::TreeNodeEx("Statistics", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
-                    {
-                        const auto renderStats = Renderer::GetStatistics();
-                        ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
-                        ImGui::Text("Quads: %d", renderStats.QuadCount);
-                        ImGui::Text("Circles: %d", renderStats.CircleCount);
-                        ImGui::Text("Lines: %d", renderStats.LineCount);
-                        ImGui::Text("Cubes: %d", renderStats.CubeCount);
-                        ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
-                        ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
-                        ImGui::Text("Viewport Hovered (%d)", IsViewportHovered);
-                        ImGui::TreePop();
-                    }
-
                     ImGui::EndTabItem();
                 }
 
@@ -1269,7 +1285,7 @@ namespace origin
 
                 ImGuiListClipper clipper;
                 const auto &messages = ConsoleManager::GetMessages();
-                clipper.Begin(messages.size());
+                clipper.Begin(static_cast<int>(messages.size()));
 
                 // Check if there are new messages
                 if (messages.size() > lastMessageCount && autoScroll)
@@ -1319,6 +1335,50 @@ namespace origin
 
             ImGui::End();
         }
+    }
+
+    void EditorLayer::DisplayMemoryGraphUsage()
+    {
+        static std::vector<float> memory_usage_history(HISTORY_SIZE, 0.0f);
+        static int current_index = 0;
+
+        size_t memory_usage = Application::GetInstance().GetProcessMonitor().GetMemoryUsage();
+        float memory_uage_mb = static_cast<float>(memory_usage) / (1024 * 1024);
+
+        memory_usage_history[current_index] = memory_uage_mb;
+        current_index = (current_index + 1) % HISTORY_SIZE;
+
+        ImGui::Text("Memory Usage: %.2f MB", memory_uage_mb);
+        /*ImGui::PlotLines("Memory Usage", memory_usage_history.data(), HISTORY_SIZE,
+            current_index + (HISTORY_SIZE / 2), "Memory Usage", 0.0f,
+            *std::max_element(memory_usage_history.begin(), memory_usage_history.end()),
+            { 0, 50.0f });*/
+    }
+
+    void EditorLayer::DisplayCPUUsageGraph()
+    {
+        static std::vector<float> cpu_usage_history(HISTORY_SIZE, 0.0f);
+        static int current_index = 0;
+
+        static float cpu_usage = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
+        float cpu_usage_graph = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
+        static auto last_update = std::chrono::steady_clock::now();
+
+        auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_update).count() >= 200)
+        {
+            cpu_usage = cpu_usage_graph;
+            last_update = now;
+        }
+
+        cpu_usage_history[current_index] = cpu_usage_graph;
+        current_index = (current_index + 1) % HISTORY_SIZE;
+
+        ImGui::Text("CPU Usage: %.2f %%", cpu_usage);
+        ImGui::PlotLines("CPU Usage", cpu_usage_history.data(), HISTORY_SIZE,
+            current_index, "CPU Usage", 0.0f,
+            *std::max_element(cpu_usage_history.begin(), cpu_usage_history.end()),
+            {0, 50.0f});
     }
 
     void EditorLayer::InitGrid()
@@ -1507,7 +1567,7 @@ namespace origin
     {
         OGN_PROFILER_INPUT();
 
-        auto &app = Application::Instance();
+        auto &app = Application::GetInstance();
         const bool control = Input::Get().IsKeyPressed(Key::LeftControl) || Input::Get().IsKeyPressed(Key::RightControl);
         const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
 

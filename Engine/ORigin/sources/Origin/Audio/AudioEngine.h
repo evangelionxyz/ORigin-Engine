@@ -3,21 +3,28 @@
 #ifndef AUDIO_ENGINE_H
 #define AUDIO_ENGINE_H
 
-#include <string>
 #include "miniaudio.h"
 #include "Origin/Scene/Components/Components.h"
+#include <string>
 
-namespace origin
+namespace origin {
+
+enum AudioAPI
 {
-    class AudioEngine
-    {
-    public:
-        static void Init();
-        static void Shutdown();
-        static ma_engine *GetEngine();
-        static void CreateSound(const char *name, const char *filepath, ma_sound *sound);
-        static void CreateStreaming(const char *name, const char *filepath, ma_sound* sound);
-    };
+    Miniaudio = 0,
+    FMOD = 1
+};
+
+class AudioEngine
+{
+public:
+    static void Init();
+    static void Shutdown();
+    static ma_engine *GetEngine();
+    static void CreateSound(const char *name, const char *filepath, ma_sound *sound);
+    static void CreateStreaming(const char *name, const char *filepath, ma_sound *sound);
+};
+
 }
 
 #endif

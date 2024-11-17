@@ -69,7 +69,7 @@ namespace origin
         m_MagFilter = Utils::ORiginImageFilterToGLImageFilter(m_Spec.MagFilter);
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
-        glTextureStorage2D(m_TextureID, 1, m_InternalFormat, m_Width, m_Height);
+        glTextureStorage2D(GL_TEXTURE_2D, 1, m_InternalFormat, m_Width, m_Height);
         glTexParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
         glTexParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
         glTexParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -127,8 +127,7 @@ namespace origin
         OGN_CORE_ASSERT(m_InternalFormat & m_DataFormat, "[Texture2D] Format not supported!");
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
-        glTextureStorage2D(m_TextureID, 1, m_InternalFormat, m_Width, m_Height);
-
+        glTextureStorage2D(GL_TEXTURE_2D, 1, m_InternalFormat, m_Width, m_Height);
         glTexParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, m_MinFilter);
         glTexParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, m_MagFilter);
         glTexParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

@@ -32,7 +32,7 @@ namespace origin {
     
     // It is automatically match Functions by checking the metadata
     // AssetHandle handle = desiredAssetHandle
-    std::shared_ptr<Asset> AssetImporter::ImportAsset(AssetHandle handle, const AssetMetadata& metadata)
+    Ref<Asset> AssetImporter::ImportAsset(AssetHandle handle, const AssetMetadata& metadata)
     {
         if (s_AssetImportFunctions.find(metadata.Type) == s_AssetImportFunctions.end())
         {
@@ -72,60 +72,60 @@ namespace origin {
             this->Timer -= ts;
     }
 
-    std::shared_ptr<Font> FontImporter::Import(AssetHandle handle, AssetMetadata metadata)
+    Ref<Font> FontImporter::Import(AssetHandle handle, AssetMetadata metadata)
     {
         auto filepath =/* Project::GetActiveAssetDirectory() /*/ metadata.Filepath;
 
-        std::shared_ptr<Font> font;
+        Ref<Font> font;
         //FontImporter::LoadAsync(&font, filepath);
 
         return font;
     }
 
-    void FontImporter::LoadAsync(std::shared_ptr<Asset> *font, const std::filesystem::path &filepath)
+    void FontImporter::LoadAsync(Ref<Asset> *font, const std::filesystem::path &filepath)
     {
         // Create the AssetTask
         AssetTask<FontData *> task(font, [](const std::filesystem::path &file)
         {
-            return Font::LoadGlyphs(file); // Assuming Font::Create takes a path and returns std::shared_ptr<Font>
+            return Font::LoadGlyphs(file); // Assuming Font::Create takes a path and returns Ref<Font>
         }, filepath);
 
         s_AssetTaskWorker.AddTask(task); // Move task into the worker queue
     }
     
-    std::shared_ptr<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
+    Ref<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
     {
         return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    std::shared_ptr<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
+    Ref<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        std::shared_ptr<AudioSource> source = AudioSource::Create();
+        Ref<AudioSource> source = AudioSource::Create();
         source->LoadSource("Audio", filepath, false, false);
         return source;
     }
 
-    std::shared_ptr<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
+    Ref<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        std::shared_ptr<AudioSource> source = AudioSource::Create();
+        Ref<AudioSource> source = AudioSource::Create();
         source->LoadStreamingSource("Streaming Audio", filepath, false, false);
         return source;
     }
 
-    std::shared_ptr<Scene> SceneImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
+    Ref<Scene> SceneImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
     {
         return LoadScene(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    std::shared_ptr<Scene> SceneImporter::LoadScene(const std::filesystem::path& filepath)
+    Ref<Scene> SceneImporter::LoadScene(const std::filesystem::path& filepath)
     {
-        std::shared_ptr<Scene> scene = std::make_shared<Scene>();
+        Ref<Scene> scene = CreateRef<Scene>();
         SceneSerializer serializer(scene);
         serializer.Deserialize(filepath);
         return scene;
@@ -150,11 +150,11 @@ namespace origin {
         }
 
         // You can continue the program
-        OGN_CORE_ASSERT(false, "[SceneImporter] Scene shoule be imported first via Content Browser");
+        OGN_CORE_ASSERT(false, "[SceneImporter] Scene should be imported first via Content Browser");
         return 0;
     }
 
-    void SceneImporter::SaveScene(std::shared_ptr<Scene> scene, const std::filesystem::path& path)
+    void SceneImporter::SaveScene(Ref<Scene> scene, const std::filesystem::path& path)
     {
         SceneSerializer serializer(scene);
         auto filepath = Project::GetActiveAssetDirectory() / path;
@@ -162,15 +162,18 @@ namespace origin {
         PUSH_CONSOLE_INFO("Scene saved! {0}", filepath.generic_string());
     }
 
-    std::shared_ptr<Texture2D> TextureImporter::ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)
+    Ref<Texture2D> TextureImporter::ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)
     {
         return LoadTexture2D(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    std::shared_ptr<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path &filepath)
+    Ref<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
+        {
+            OGN_CORE_ASSERT(false, "[Texture Importer] File '{}' does not exist", filepath.string().c_str());
             return nullptr;
+        }
 
         int width, height, channels;
 
@@ -206,30 +209,30 @@ namespace origin {
             break;
         }
 
-        std::shared_ptr<Texture2D> texture = Texture2D::Create(spec, data);
+        Ref<Texture2D> texture = Texture2D::Create(spec, data);
         data.Release();
 
         return texture;
     }
 
-    std::shared_ptr<StaticMeshData> ModelImporter::ImportStaticMesh(AssetHandle handle, const AssetMetadata& metadata)
+    Ref<StaticMeshData> ModelImporter::ImportStaticMesh(AssetHandle handle, const AssetMetadata& metadata)
     {
         return LoadStaticMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    std::shared_ptr<StaticMeshData> ModelImporter::LoadStaticMesh(const std::filesystem::path &filepath)
+    Ref<StaticMeshData> ModelImporter::LoadStaticMesh(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
         return ModelLoader::LoadStaticModel(filepath);
     }
 
-    std::shared_ptr<MeshData> ModelImporter::ImportMesh(AssetHandle handle, const AssetMetadata &metadata)
+    Ref<MeshData> ModelImporter::ImportMesh(AssetHandle handle, const AssetMetadata &metadata)
     {
         return LoadMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    std::shared_ptr<MeshData> ModelImporter::LoadMesh(const std::filesystem::path& filepath)
+    Ref<MeshData> ModelImporter::LoadMesh(const std::filesystem::path& filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
@@ -237,12 +240,12 @@ namespace origin {
         return ModelLoader::LoadModel(filepath);
     }
 
-    std::shared_ptr<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
+    Ref<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
         return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    std::shared_ptr<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
+    Ref<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
@@ -250,17 +253,17 @@ namespace origin {
         return SpriteSheet::Create(filepath);
     }
 
-    std::shared_ptr<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
+    Ref<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
         return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    std::shared_ptr<Material> MaterialImporter::Load(const std::filesystem::path &filepath)
+    Ref<Material> MaterialImporter::Load(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        std::shared_ptr<Material> material = Material::Create(filepath.stem().string());
+        Ref<Material> material = Material::Create(filepath.stem().string());
         MaterialSerializer::Deserialize(filepath, material);
         return material;
     }

@@ -3,43 +3,42 @@
 #ifndef CONSOLE_MANAGER_H
 #define CONSOLE_MANAGER_H
 
+#include "ORigin/Utils/StringUtils.h"
 #include <vector>
-#include <fmt/format.h>
 
-namespace origin
+namespace origin {
+struct ConsoleMessage
 {
-    struct ConsoleMessage
+    std::string Message;
+    std::string Timestamp;
+    LogLevel Level = LogLevel::Info;
+};
+
+class ConsoleManager
+{
+public:
+    ConsoleManager();
+    ~ConsoleManager();
+
+    std::string GetCurrentTime();
+    void PushMessage(LogLevel level, const std::string &message);
+    void Clear();
+
+    static ConsoleManager &Get();
+
+    template<typename... Args>
+    void PushFormattedMessage(const LogLevel level, const char *format, Args&&... args)
     {
-        std::string Message;
-        std::string Timestamp;
-        LogLevel Level = LogLevel::Info;
-    };
+        const std::string message = Utils::FormatString(format, std::forward<Args>(args)...);
+        PushMessage(level, message);
+    }
 
-    class ConsoleManager
-    {
-    public:
-        ConsoleManager();
-        ~ConsoleManager();
+    void PushFormattedMessage(LogLevel level, const std::string &message);
 
-        std::string GetCurrentTime();
-        void PushMessage(LogLevel level, const std::string &message);
-        void Clear();
-
-        static ConsoleManager &Get();
-
-        template<typename... Args>
-        void PushFormattedMessage(const LogLevel level, fmt::format_string<Args...> format, Args&&... args)
-        {
-            const std::string message = fmt::format(format, std::forward<Args>(args)...);
-            PushMessage(level, message);
-        }
-
-        void PushFormattedMessage(LogLevel level, const std::string &message);
-
-        static std::vector<ConsoleMessage> &GetMessages();
-    private:
-        std::vector<ConsoleMessage> m_Messages;
-    };
+    static std::vector<ConsoleMessage> &GetMessages();
+private:
+    std::vector<ConsoleMessage> m_Messages;
+};
 }
 
 #define PUSH_CONSOLE_WARNING(...) origin::ConsoleManager::Get().PushFormattedMessage(origin::LogLevel::Warning, __VA_ARGS__)

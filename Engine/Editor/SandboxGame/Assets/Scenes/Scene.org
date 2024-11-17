@@ -1,8 +1,36 @@
 Scene: Scene.org
 Entities:
+  - Entity: 2282079449024848139
+    Type: Entity
+    Parent: 3233898658391792263
+    Children:
+      []
+    TagComponent:
+      Tag: Sprite
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
+    SpriteRenderer2DComponent:
+      Color: [1, 1, 1, 1]
+  - Entity: 3233898658391792263
+    Type: Entity
+    Parent: 0
+    Children:
+      - ID: 2282079449024848139
+    TagComponent:
+      Tag: Empty
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0, 1]
+      Scale: [1, 1, 1]
+      Visible: true
   - Entity: 12113411850747970251
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Text
     TransformComponent:
@@ -20,6 +48,8 @@ Entities:
   - Entity: 16552497849877828178
     Type: Entity
     Parent: 8340299619255721845
+    Children:
+      []
     TagComponent:
       Tag: Cube
     TransformComponent:
@@ -35,6 +65,9 @@ Entities:
   - Entity: 8340299619255721845
     Type: Entity
     Parent: 7803758535346603628
+    Children:
+      - ID: 16552497849877828178
+      - ID: 13560460485282793082
     TagComponent:
       Tag: GFX
     TransformComponent:
@@ -45,6 +78,8 @@ Entities:
   - Entity: 3382856880760836719
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Capsule
     RigidbodyComponent:
@@ -77,6 +112,10 @@ Entities:
   - Entity: 9264348611751175748
     Type: Entity
     Parent: 0
+    Children:
+      - ID: 2845050506220376242
+      - ID: 13664910795690200565
+      - ID: 13791893405854133414
     TagComponent:
       Tag: Soundbank
     TransformComponent:
@@ -87,6 +126,8 @@ Entities:
   - Entity: 2845050506220376242
     Type: Entity
     Parent: 9264348611751175748
+    Children:
+      []
     TagComponent:
       Tag: RizzSound
     AudioComponent:
@@ -109,6 +150,8 @@ Entities:
   - Entity: 2648858829637918886
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -140,6 +183,8 @@ Entities:
   - Entity: 16653817252219590406
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: GameUI
     UIComponent:
@@ -170,7 +215,7 @@ Entities:
           Name: CubeCount
           Anchor: 0
           FontHandle: 7705012376485170699
-          TextString: 94 Total Cubes
+          TextString: 51 Total Cubes
           LineSpacing: 0
           Kerning: 0
           Color: [1, 1, 1, 1]
@@ -185,6 +230,8 @@ Entities:
   - Entity: 6592829467429759275
     Type: Entity
     Parent: 6368783044103585330
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -216,6 +263,8 @@ Entities:
   - Entity: 13664910795690200565
     Type: Entity
     Parent: 9264348611751175748
+    Children:
+      []
     TagComponent:
       Tag: AThemeMusic
     AudioComponent:
@@ -238,6 +287,9 @@ Entities:
   - Entity: 6368783044103585330
     Type: Entity
     Parent: 0
+    Children:
+      - ID: 6592829467429759275
+      - ID: 5124889645444281284
     TagComponent:
       Tag: BlockSpawner
     ScriptComponent:
@@ -254,7 +306,7 @@ Entities:
           Data: 16653817252219590406
         - Name: count
           Type: Int
-          Data: 10
+          Data: 900
         - Name: total
           Type: Int
           Data: 0
@@ -266,6 +318,8 @@ Entities:
   - Entity: 12535513872244998844
     Type: Entity
     Parent: 0
+    Children:
+      - ID: 10618910331477539919
     TagComponent:
       Tag: BulletsSpawn
     TransformComponent:
@@ -276,6 +330,8 @@ Entities:
   - Entity: 5124889645444281284
     Type: Entity
     Parent: 6368783044103585330
+    Children:
+      []
     TagComponent:
       Tag: BlockB
     RigidbodyComponent:
@@ -307,6 +363,8 @@ Entities:
   - Entity: 7693460187067557423
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -338,6 +396,8 @@ Entities:
   - Entity: 10618910331477539919
     Type: Entity
     Parent: 12535513872244998844
+    Children:
+      []
     TagComponent:
       Tag: bullet
     RigidbodyComponent:
@@ -369,6 +429,8 @@ Entities:
   - Entity: 15456435356412699844
     Type: Entity
     Parent: 7803758535346603628
+    Children:
+      []
     TagComponent:
       Tag: Camera
     TransformComponent:
@@ -393,6 +455,8 @@ Entities:
   - Entity: 12342238078570024266
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -424,6 +488,8 @@ Entities:
   - Entity: 13791893405854133414
     Type: Entity
     Parent: 9264348611751175748
+    Children:
+      []
     TagComponent:
       Tag: AShot
     AudioComponent:
@@ -446,6 +512,8 @@ Entities:
   - Entity: 6227614169662641285
     Type: Entity
     Parent: 12260146946348928677
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -477,6 +545,8 @@ Entities:
   - Entity: 3037680522606877236
     Type: Entity
     Parent: 12260146946348928677
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -508,6 +578,8 @@ Entities:
   - Entity: 7803758535346603628
     Type: Entity
     Parent: 0
+    Children:
+      - ID: 15456435356412699844
     TagComponent:
       Tag: Player
     RigidbodyComponent:
@@ -553,6 +625,8 @@ Entities:
   - Entity: 13560460485282793082
     Type: Entity
     Parent: 8340299619255721845
+    Children:
+      []
     TagComponent:
       Tag: Capsule
     TransformComponent:
@@ -568,6 +642,9 @@ Entities:
   - Entity: 12260146946348928677
     Type: Entity
     Parent: 0
+    Children:
+      - ID: 6227614169662641285
+      - ID: 3037680522606877236
     TagComponent:
       Tag: Wall
     TransformComponent:
@@ -578,6 +655,8 @@ Entities:
   - Entity: 14152289845777682632
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Lighting
     TransformComponent:
@@ -597,6 +676,8 @@ Entities:
   - Entity: 17647203071355584766
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Plane
     RigidbodyComponent:
@@ -618,7 +699,7 @@ Entities:
     TransformComponent:
       Translation: [-9.53674316e-07, -23.7515965, 0]
       Rotation: [0, 0.258818924, 0, 0.965925872]
-      Scale: [200.000015, 50, 200.000015]
+      Scale: [100, 50, 100]
       Visible: true
     StaticMeshComponent:
       Name: ""

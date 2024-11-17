@@ -62,6 +62,7 @@ namespace origin
 
 			auto &eIDC = newEntity.GetComponent<IDComponent>();
 			eIDC.Parent = idc.Parent;
+            eIDC.Children = std::move(idc.Children);
 
 			enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
 		}
@@ -469,7 +470,7 @@ namespace origin
                     mesh.AAnimator.m_FinalBoneMatrices.size());*/
 
                 mesh.Data->vertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
+                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.Data->indices.size()), GL_UNSIGNED_INT, nullptr);
 
                 shader->Disable();
             }
@@ -806,27 +807,27 @@ namespace origin
             shader->SetMatrix("viewProjection", lc.Light->GetShadow().ViewProjection);
 
 			const auto &view = m_Registry.view<TransformComponent, StaticMeshComponent>();
-			for (auto &e : view)
-			{
-				const auto &[tc, mc] = view.get<TransformComponent, StaticMeshComponent>(e);
-				if (!tc.Visible)
-				{
+            for (auto &e : view)
+            {
+                const auto &[tc, mc] = view.get<TransformComponent, StaticMeshComponent>(e);
+                if (!tc.Visible)
+                {
                     continue;
-				}
+                }
 
                 switch (mc.mType)
                 {
                 case StaticMeshComponent::Type::Cube:
-					MeshRenderer::DrawCube(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    MeshRenderer::DrawCube(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
                     break;
                 case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    MeshRenderer::DrawSphere(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
                     break;
                 case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), {1.0f, 1.0f, 1.0f, 1.0f});
+                    MeshRenderer::DrawCapsule(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
                     break;
                 }
-			}
+            }
 			
 			MeshRenderer::End();
 			lc.Light->GetShadow().UnbindFBO();
@@ -836,19 +837,21 @@ namespace origin
 
     void Scene::DestroyEntityRecursive(UUID entityId)
     {
-        std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
-        for (const auto &childId : childrenIds)
-        {
-            DestroyEntityRecursive(childId);
-        }
-
         Entity entity = GetEntityWithUUID(entityId);
+
         if (entity)
         {
-            m_Registry.destroy((entt::entity)entity);
+            std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
+            for (const auto &childId : childrenIds)
+            {
+                entity.GetComponent<IDComponent>().RemoveChild(childId);
+                DestroyEntityRecursive(childId);
+            }
+
+            m_Registry.destroy(static_cast<entt::entity>(entity));
             m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
                 [entityId](const auto &pair) { return pair.first == entityId; }),
-           m_EntityStorage.end());
+                m_EntityStorage.end());
         }
     }
 
@@ -868,10 +871,14 @@ namespace origin
         if (newParent)
         {
             newEntityIDC.Parent = newParent.GetUUID();
+            newParent.GetComponent<IDComponent>().AddChild(newEntity.GetUUID());
         }
         else if (entity.HasParent())
         {
-            newEntityIDC.Parent = entity.GetParentUUID();
+            Entity parent = GetEntityWithUUID(entity.GetParentUUID());
+            newEntityIDC.Parent = parent.GetUUID();
+            parent.GetComponent<IDComponent>().AddChild(newEntity.GetUUID());
+
         }
         else
         {
@@ -956,7 +963,7 @@ namespace origin
 			auto &cc = view.get<CameraComponent>(e);
 			if (cc.Primary)
 			{
-				cc.Camera.SetViewportSize(width, height);
+				cc.Camera.SetViewportSize(static_cast<float>(width), static_cast<float>(height));
 				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
 				const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
 				m_UIRenderer->SetViewportSize(vp.x, vp.y, ortho.x, ortho.y);
@@ -1019,7 +1026,7 @@ namespace origin
 	{
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 		{
-			component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+            component.Camera.SetViewportSize(static_cast<float>(m_ViewportWidth), static_cast<float>(m_ViewportHeight));
 		}
 	}
 

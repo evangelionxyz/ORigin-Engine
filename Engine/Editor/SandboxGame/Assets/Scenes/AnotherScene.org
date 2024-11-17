@@ -3,6 +3,8 @@ Entities:
   - Entity: 1319385528244304785
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Camera
     TransformComponent:
@@ -20,13 +22,15 @@ Entities:
         OrthoScale: 10
         OrthoNear: 1
         OrthoFar: 50
-        ViewportSize: [929, 593]
+        ViewportSize: [918, 247]
       Primary: true
     AudioListenerComponent:
       Enable: true
   - Entity: 11702998377839789425
     Type: Entity
-    Parent: 0
+    Parent: 15265755464139739975
+    Children:
+      []
     TagComponent:
       Tag: Empty
     TransformComponent:
@@ -41,6 +45,8 @@ Entities:
   - Entity: 15265755464139739975
     Type: Entity
     Parent: 0
+    Children:
+      - ID: 11702998377839789425
     TagComponent:
       Tag: Empty
     AudioComponent:
@@ -63,6 +69,8 @@ Entities:
   - Entity: 18423171455957926426
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: StormTropper
     RigidbodyComponent:
@@ -93,6 +101,8 @@ Entities:
   - Entity: 10235609785720037744
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -124,6 +134,8 @@ Entities:
   - Entity: 8339331325305602554
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
@@ -155,6 +167,8 @@ Entities:
   - Entity: 10374693287741476262
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Lighting
     TransformComponent:
@@ -174,6 +188,8 @@ Entities:
   - Entity: 10249643277109537156
     Type: Entity
     Parent: 0
+    Children:
+      []
     TagComponent:
       Tag: Cube
     RigidbodyComponent:
