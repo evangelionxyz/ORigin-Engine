@@ -7,6 +7,7 @@
 #include "Origin/Animation/AnimationState.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Audio/AudioListener.h"
+#include "Origin/Audio/FMODAudio.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Core/Log.h"

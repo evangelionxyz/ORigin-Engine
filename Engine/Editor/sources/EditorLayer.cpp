@@ -41,13 +41,13 @@ namespace origin
         m_UITextures["eyes_closed"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_eyes_closed.png");
 
         // Gizmo icons
-        m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/audio.png");
-        m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera.png");
-        m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/lighting.png");
+        m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_audio.png");
+        m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera.png");
+        m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_lighting.png");
 
-        m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_2d_icon.png");
-        m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/camera_projection_3d_icon.png");
-        m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/origin_engine.png");
+        m_UITextures["camera_2d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera_projection_2d.png");
+        m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera_projection_3d.png");
+        m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/bw_logo.png");
 
         FramebufferSpecification fbSpec;
         fbSpec.Attachments =
@@ -891,6 +891,7 @@ namespace origin
         ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
         ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
         ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
+
         DisplayCPUUsageGraph();
         DisplayMemoryGraphUsage();
         m_GuiWindowSceneStats.End();

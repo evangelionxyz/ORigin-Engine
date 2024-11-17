@@ -34,6 +34,8 @@ project "Test"
         "%{IncludeDir.JOLT}",
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
+        "%{IncludeDir.FMOD}",
+
     }
 
     defines {

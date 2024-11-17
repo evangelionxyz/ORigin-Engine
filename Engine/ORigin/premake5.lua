@@ -43,7 +43,8 @@ project "ORigin"
         "%{IncludeDir.JOLT}",
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
-        "%{IncludeDir.MONO}"
+        "%{IncludeDir.MONO}",
+        "%{IncludeDir.FMOD}",
     }
 
     links {
@@ -69,6 +70,7 @@ project "ORigin"
         links {
             "opengl32.lib",
             "%{Library.Vulkan1Lib}",
+            "%{Library.FMOD}",
             "%{Library.MONO}",
             "%{Library.WinSock}",
             "%{Library.WinMM}",

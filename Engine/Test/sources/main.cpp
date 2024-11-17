@@ -42,12 +42,27 @@ void test_two(Log &logger)
     }
 }
 
+void test_audio_engine()
+{
+    FMODAudio audio_engine;
+
+    FMODSound *sound_a = audio_engine.CreateSound("bullet", "data/loading_screen.wav", FMOD_DEFAULT);
+
+    audio_engine.Play(sound_a);
+
+    while (true)
+    {
+
+        audio_engine.Update(1.0f / 60.0f);
+    }
+}
+
 int main()
 {
     auto logger = Log();
     logger.PrintMessage("Hello World");
 
-    test_two(logger);
+    test_audio_engine();
 
     return 0;
 }

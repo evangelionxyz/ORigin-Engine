@@ -170,7 +170,10 @@ namespace origin {
     Ref<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
+        {
+            OGN_CORE_ASSERT(false, "[Texture Importer] File '{}' does not exist", filepath.string().c_str());
             return nullptr;
+        }
 
         int width, height, channels;
 
