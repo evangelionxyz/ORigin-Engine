@@ -62,6 +62,7 @@ public:
     void CreateReverb(const std::string &name);
     void CreateLowPass(const std::string &name);
     void CreateHighPass(const std::string &name);
+    void SetEffectParameter(const std::string &effect_name, int parameter, float value);
     void AddEffectToChannel(const std::string &effect_name, const std::string &channel_name);
     void RemoveEffectFromChannel(const std::string &effect_name, const std::string &channel_name);
 
@@ -81,7 +82,7 @@ private:
 
     std::unordered_map<std::string, FMODSound *> m_SoundMap;
     std::unordered_map<std::string, FMOD::Channel *> m_ChannelMap;
-    std::unordered_map<std::string, FMOD::DSP *> m_Effectes;
+    std::unordered_map<std::string, FMOD::DSP *> m_Effects;
 
     FMOD_VECTOR listenerPos;
     FMOD_VECTOR listenerVel;
