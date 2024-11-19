@@ -1,8 +1,8 @@
-﻿add_executable("Test"
+﻿add_executable("MeshTest"
     sources/main.cpp
 )
 
-target_include_directories("Test" PRIVATE
+target_include_directories("MeshTest" PRIVATE
   sources
   ${ROOT_DIR}/Engine/ORigin/sources
   ${THIRD_PARTY_DIR}/Assimp/include
@@ -23,15 +23,15 @@ target_include_directories("Test" PRIVATE
   ${THIRD_PARTY_DIR}/MSDFATLASGEN/msdf-atlas-gen
 )
 
-add_dependencies("Test" ORigin)
-target_link_libraries("Test" ORigin)
+add_dependencies("MeshTest" ORigin)
+target_link_libraries("MeshTest" ORigin)
 
 if (WIN32)
-    target_include_directories("Test" PRIVATE
+    target_include_directories("MeshTest" PRIVATE
         ${THIRD_PARTY_DIR}/mono/include
         ${THIRD_PARTY_DIR}/Vulkan/Include
     )
-    target_compile_definitions("Test" PRIVATE
+    target_compile_definitions("MeshTest" PRIVATE
         NOMINMAX
         _CRT_SECURE_NO_WARNINGS
         OGN_PLATFORM_WINDOWS
@@ -40,40 +40,40 @@ if (WIN32)
         _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
     )
 elseif (UNIX AND NOT APPLE)
-        target_include_directories("Test" PRIVATE
+        target_include_directories("MeshTest" PRIVATE
             /usr/include
             ${THIRD_PARTY_DIR}/mono/include
         )
-        target_compile_definitions("Test" PRIVATE OGN_PLATFORM_LINUX)
+        target_compile_definitions("MeshTest" PRIVATE OGN_PLATFORM_LINUX)
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    set_target_properties("Test" PROPERTIES
+    set_target_properties("MeshTest" PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/Debug/Binaries
         LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/Debug/Binaries
         RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/Debug/Binaries
     )
-    target_compile_definitions("Test" PRIVATE
+    target_compile_definitions("MeshTest" PRIVATE
         OGN_DEBUG
         _DEBUG
     )
 elseif (CMAKE_BUILD_TYPE STREQUAL Release)
-    set_target_properties("Test" PROPERTIES
+    set_target_properties("MeshTest" PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/Release/Binaries
         LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/Release/Binaries
         RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/Release/Binaries
     )
-    target_compile_definitions("Test" PRIVATE
+    target_compile_definitions("MeshTest" PRIVATE
         OGN_RELEASE
         _NDEBUG
     )
 elseif (CMAKE_BUILD_TYPE STREQUAL Dist)
-    set_target_properties("Test" PROPERTIES
+    set_target_properties("MeshTest" PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/Dist/Binaries
         LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/Dist/Binaries
         RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/Dist/Binaries
     )
-    target_compile_definitions("Test" PRIVATE
+    target_compile_definitions("MeshTest" PRIVATE
         OGN_RELEASE
         OGN_DIST
         _NDEBUG

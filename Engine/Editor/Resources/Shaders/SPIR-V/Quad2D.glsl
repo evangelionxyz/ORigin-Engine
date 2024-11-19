@@ -28,7 +28,6 @@ void main()
 	Output.TexCoord = aTexCoord;
 	Output.TilingFactor = aTilingFactor;
 	v_TexIndex = aTexIndex;
-
 	gl_Position = CameraBuffer.ViewProjection * vec4(aPosition, 1.0);
 }
 

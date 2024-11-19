@@ -1,15 +1,10 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "Origin/EntryPoint.h"
-#include "Origin/Core/KeyCodes.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/GUI/UI.h"
 
 #include "SandboxLayer.h"
-
-#include "EmbededResources.h"
-
-#include <iostream>
 
 using namespace origin;
 
@@ -25,14 +20,14 @@ u32 SandboxLayer::LoadTexture(const unsigned char *data, int width, int height)
     glTextureParameteri(texture_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameteri(texture_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    const u32 level = 0, x_offset = 0, y_offset = 0;
+    constexpr u32 level = 0, x_offset = 0, y_offset = 0;
     glTextureSubImage2D(texture_id, level, x_offset, y_offset, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
     return texture_id;
 }
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
-    m_Textures.push_back(LoadTexture(ic_csharp_script_data, ic_csharp_script_width, ic_csharp_script_height));
+    m_Textures.push_back(LoadTexture(logo_black_data, logo_black_width, logo_black_height));
 }
 
 void SandboxLayer::OnAttach()
@@ -64,7 +59,7 @@ void SandboxLayer::OnGuiRender()
     ImGui::Begin("Test Window");
     ImGui::ColorEdit4("clear color", glm::value_ptr(clear_color));
 
-    for (u32 tex : m_Textures)
+    for (const u32 tex : m_Textures)
     {
         ImGui::Image(reinterpret_cast<ImTextureID>(tex), { 50.0f, 50.0f });
     }

@@ -1,6 +1,8 @@
 // Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 #include <Origin.h>
+
+#include "Origin/Audio/FmodSound.h"
 using namespace origin;
 
 const i32 flags = aiProcess_Triangulate | aiProcess_GenSmoothNormals 
@@ -33,36 +35,13 @@ void test_one(Log &logger)
     PrintNodeHierarchy(scene->mRootNode, 0, logger);
 }
 
-void test_two(Log &logger)
+int main()
 {
+    auto logger = Log();
+    logger.PrintMessage("Hello World");
     Ref<StaticModel> model = CreateRef<StaticModel>("data/barbarian.glb");
     for (auto& m : model->GetMeshes())
     {
         logger.PrintMessage(m->Name);
     }
-}
-
-void test_audio_engine()
-{
-    FMODAudio audio_engine;
-
-    FMODSound *sound_a = audio_engine.CreateSound("bullet", "data/loading_screen.wav", FMOD_DEFAULT);
-
-    audio_engine.Play(sound_a);
-
-    while (true)
-    {
-
-        audio_engine.Update(1.0f / 60.0f);
-    }
-}
-
-int main()
-{
-    auto logger = Log();
-    logger.PrintMessage("Hello World");
-
-    test_audio_engine();
-
-    return 0;
 }

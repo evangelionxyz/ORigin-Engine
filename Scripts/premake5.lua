@@ -34,5 +34,6 @@ group "Engine"
 group ""
 
 group "Test"
-    include "../Engine/Test/premake5.lua"
+    include "../Engine/Test/AudioTest/premake5.lua"
+    include "../Engine/Test/MeshTest/premake5.lua"
 group ""

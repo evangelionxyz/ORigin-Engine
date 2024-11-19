@@ -166,22 +166,22 @@ namespace origin
 	static void Debug_LogWarning(MonoString *string, int parameter)
 	{
 		std::string str = Utils::MonoStringToString(string);
-		OGN_CORE_WARN("{0}", str);
-		PUSH_CONSOLE_WARNING("{0}", str.c_str());
+		OGN_CORE_WARN("{}", str);
+		PUSH_CONSOLE_WARNING("{}", str.c_str());
 	}
 
     static void Debug_LogError(MonoString *string, int parameter)
     {
         std::string str = Utils::MonoStringToString(string);
-        OGN_CORE_ERROR("{0}", str);
-        PUSH_CONSOLE_ERROR("{0}", str.c_str());
+        OGN_CORE_ERROR("{}", str);
+        PUSH_CONSOLE_ERROR("{}", str.c_str());
     }
 
     static void Debug_LogInfo(MonoString *string, int parameter)
     {
         std::string str = Utils::MonoStringToString(string);
-        OGN_CORE_TRACE("{0}", str);
-        PUSH_CONSOLE_INFO("{0}", str.c_str());
+        OGN_CORE_TRACE("{}", str);
+        PUSH_CONSOLE_INFO("{}", str.c_str());
     }
 
 	// ==============================================
@@ -1908,8 +1908,8 @@ namespace origin
 			}
 			else
 			{
-				OGN_CORE_ERROR("Could not demangle type name: {0}", typeName);
-				PUSH_CONSOLE_ERROR("Could not demangle type name: {0}", typeName);
+				OGN_CORE_ERROR("Could not demangle type name: {}", typeName);
+				PUSH_CONSOLE_ERROR("Could not demangle type name: {}", typeName);
 				return;
 			}
 #endif
@@ -1924,8 +1924,8 @@ namespace origin
 			MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
 			if (!managedType)
 			{
-				OGN_CORE_ERROR("[Script Glue] Could not find component type {0}", managedTypename);
-				PUSH_CONSOLE_ERROR("[Scrip tGlue] Could not find component type {0}", managedTypename);
+				OGN_CORE_ERROR("[Script Glue] Could not find component type {}", managedTypename);
+				PUSH_CONSOLE_ERROR("[Scrip tGlue] Could not find component type {}", managedTypename);
 				return;
 			}
 			s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };

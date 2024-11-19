@@ -197,6 +197,14 @@ namespace origin {
 
         stbi_image_free(data);
     }
+    void Win32Window::SetIcon(unsigned char* data, u32 width, u32 height)
+    {
+        GLFWimage icon;
+        icon.width = static_cast<int>(width);
+        icon.height = static_cast<int>(height);
+        icon.pixels = data;
+        glfwSetWindowIcon(m_MainWindow, 1, &icon);
+    }
 
     void Win32Window::WindowCallbacks()
     {

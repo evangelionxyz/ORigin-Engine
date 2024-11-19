@@ -48,6 +48,7 @@ namespace origin {
         virtual void ToggleFullScreen() = 0;
         virtual void CloseWindow() = 0;
         virtual void SetIcon(const char* filepath) = 0;
+        virtual void SetIcon(unsigned char* data, u32 width, u32 height) = 0;
         virtual void SetEventCallback(const std::function<void(Event&)>& callback) = 0;
         virtual void SetPosition(int x, int y) = 0;
         virtual glm::ivec2 GetPosition() = 0;

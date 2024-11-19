@@ -632,8 +632,8 @@ namespace origin
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 		fout.close();
-		OGN_CORE_INFO("[SceneSerializer] Scene Serialized in {0}", filepath);
-		PUSH_CONSOLE_INFO("[SceneSerializer] Scene Serialized in {0}", filepath);
+		OGN_CORE_INFO("[SceneSerializer] Scene Serialized in {}", filepath);
+		PUSH_CONSOLE_INFO("[SceneSerializer] Scene Serialized in {}", filepath);
 	}
 
 	void SceneSerializer::SerializeRuntime(const std::filesystem::path& filepath)
@@ -653,8 +653,8 @@ namespace origin
 			return false;
 
 		auto sceneName = data["Scene"].as<std::string>();
-		OGN_CORE_TRACE("[SceneSerializer] Deserializing scene '{0}'", sceneName);
-		PUSH_CONSOLE_INFO("[SceneSerializer] Deserializing scene '{0}'", sceneName);
+		OGN_CORE_TRACE("[SceneSerializer] Deserializing scene '{}'", sceneName);
+		PUSH_CONSOLE_INFO("[SceneSerializer] Deserializing scene '{}'", sceneName);
 
 		if (YAML::Node entities = data["Entities"])
 		{
