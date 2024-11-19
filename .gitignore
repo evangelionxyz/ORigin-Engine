@@ -21,3 +21,7 @@ Engine/Editor/Resources/Cache
 Engine/Editor/Resources/ScriptCore
 Engine/Test/bin
 Engine/Test/bin-int
+Engine/Test/AudioTest/bin
+Engine/Test/AudioTest/bin-int
+Engine/Test/MeshTest/bin
+Engine/Test/MeshTest/bin-int

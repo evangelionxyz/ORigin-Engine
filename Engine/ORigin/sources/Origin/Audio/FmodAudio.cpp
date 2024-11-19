@@ -42,24 +42,6 @@ FmodAudio::~FmodAudio()
     FMOD_CHECK(fmod_result)
 }
 
-Ref<FmodSound> FmodAudio::CreateSound(const std::string &name, const std::string &filepath, FMOD_MODE mode)
-{
-    FMOD::Sound *sound = nullptr;
-    m_System->createSound(filepath.c_str(), mode, nullptr, &sound);
-    Ref<FmodSound> fmod_sound = CreateRef<FmodSound>(sound, name);
-    m_SoundMap[name] = fmod_sound;
-    return fmod_sound;
-}
-
-Ref<FmodSound> FmodAudio::CreateStream(const std::string &name, const std::string &filepath, FMOD_MODE mode)
-{
-    FMOD::Sound *stream = nullptr;
-    m_System->createStream(filepath.c_str(), mode, nullptr, &stream);
-    Ref<FmodSound> fmod_sound = CreateRef<FmodSound>(stream, name);
-    m_SoundMap[name] = fmod_sound;
-    return fmod_sound;
-}
-
 void FmodAudio::SetMasterVolume(float volume) const
 {
     FMOD_CHECK(m_MasterGroup->setVolume(volume))
@@ -70,9 +52,13 @@ void FmodAudio::MuteMaster(bool mute) const
     FMOD_CHECK(m_MasterGroup->setMute(mute))
 }
 
-void FmodAudio::Update() const
+void FmodAudio::Update(float deltaTime) const
 {
     m_System->update();
+    for (const auto& val : m_SoundMap | std::views::values)
+    {
+        val->Update(deltaTime);
+    }
 }
 
 FmodAudio &FmodAudio::GetInstance()
@@ -84,5 +70,13 @@ FMOD::System* FmodAudio::GetFmodSystem()
 {
     return s_FMODAudio->m_System;
 }
-    
+FMOD::ChannelGroup* FmodAudio::GetFmodChannelGroup()
+{
+    return s_FMODAudio->m_MasterGroup;
+}
+void FmodAudio::InsertFmodSound(const std::string& name, Ref<FmodSound> sound)
+{
+    s_FMODAudio->m_SoundMap[name] = sound;
+}
+
 }

@@ -15,7 +15,6 @@ namespace origin
 {
     namespace Utils
     {
-
         static GLenum ORiginImageFormatToGLDataFormat(const ImageFormat format)
         {
             switch (format)

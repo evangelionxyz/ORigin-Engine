@@ -10,23 +10,53 @@ struct FmodDsp;
 
 struct FmodSound
 {
-    FmodSound(FMOD::Sound *sound, std::string name);
+    FmodSound() = default;
     ~FmodSound();
 
     void Play();
-    void Stop();
+    void Stop() const;
     void Pause();
     void Resume();
-    
-    void AddDsp(Scope<FmodDsp> dsp);
+
+    void SetPan(float pan) const;
+    void SetVolume(float volume) const;
+    void SetPitch(float pitch) const;
+
+    void SetFadeIn(u32 fade_in_start_ms, u32 fade_in_end_ms);
+    void SetFadeOut(u32 fade_out_start_ms, u32 fade_out_end_ms);
+
+    [[nodiscard]] float GetPitch() const;
+    [[nodiscard]] float GetVolume() const;
+
+    void Update(float delta_time) const;
+    void AddDsp(const Ref<FmodDsp>& dsp);
+
+    [[no_discard]] FMOD::Sound* GetSound() const;
+    [[no_discard]] FMOD::Channel* GetChannel() const;
+    [[no_discard]] const std::string &GetName() const;
+    [[no_discard]] bool IsPlaying() const;
+    [[no_discard]] u32 GetLengthMs() const;
+    [[no_discard]] u32 GetPositionMs() const;
+
+    static Ref<FmodSound> Create(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT);
+    static Ref<FmodSound> CreateStream(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT);
     
 private:
+
+    void UpdateFading() const;
+    
     FMOD::Sound *m_Sound;
     FMOD::Channel *m_Channel;
     std::string m_Name;
     bool m_Paused;
+
+    u32 m_FadeInStartMs;
+    u32 m_FadeInEndMs;
+
+    u32 m_FadeOutStartMs;
+    u32 m_FadeOutEndMs;
     
-    std::vector<Scope<FmodDsp>> m_Dsps;
+    std::vector<Ref<FmodDsp>> m_Dsps;
 };
 
 }

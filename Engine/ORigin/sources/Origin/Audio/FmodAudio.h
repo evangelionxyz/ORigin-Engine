@@ -21,15 +21,14 @@ public:
     FmodAudio();
     ~FmodAudio();
 
-    Ref<FmodSound> CreateSound(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT);
-    Ref<FmodSound> CreateStream(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT);
-
     void SetMasterVolume(float volume) const;
     void MuteMaster(bool mute) const;
 
-    void Update() const;
+    void Update(float deltaTime) const;
     static FmodAudio &GetInstance();
     static FMOD::System *GetFmodSystem();
+    static FMOD::ChannelGroup *GetFmodChannelGroup();
+    static void InsertFmodSound(const std::string &name, Ref<FmodSound> sound);
 
 private:
     FMOD::System *m_System;

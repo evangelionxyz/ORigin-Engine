@@ -35,34 +35,13 @@ void test_one(Log &logger)
     PrintNodeHierarchy(scene->mRootNode, 0, logger);
 }
 
-void test_two(Log &logger)
+int main()
 {
+    auto logger = Log();
+    logger.PrintMessage("Hello World");
     Ref<StaticModel> model = CreateRef<StaticModel>("data/barbarian.glb");
     for (auto& m : model->GetMeshes())
     {
         logger.PrintMessage(m->Name);
     }
-}
-
-void test_audio_engine()
-{
-    FmodAudio audio_engine;
-
-    const Ref<FmodSound> sound_a = audio_engine.CreateSound("bullet", "data/loading_screen.wav", FMOD_DEFAULT);
-    sound_a->Play();
-
-    while (true)
-    {
-        audio_engine.Update();
-    }
-}
-
-int main()
-{
-    auto logger = Log();
-    logger.PrintMessage("Hello World");
-
-    test_audio_engine();
-
-    return 0;
 }

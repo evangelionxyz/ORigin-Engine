@@ -1,10 +1,11 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-project "Test"
+project "AudioTest"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
-    location "%{wks.location}/Engine/Test"
+    
+    location "%{wks.location}/Engine/Test/AudioTest"
 
     targetdir "%{prj.location}/bin/%{cfg.buildcfg}"
     objdir "%{prj.location}/bin-int/%{cfg.buildcfg}"
