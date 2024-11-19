@@ -3,13 +3,15 @@
 
 #include <Origin.h>
 #include "Gizmos/Gizmos.h"
-#include "Panels/UIEditor.h"
+
+#include "Panels/UIEditorPanel.h"
 #include "Panels/Dockspace.h"
-#include "Panels/MaterialEditor.h"
+#include "Panels/MaterialEditorPanel.h"
 #include "Panels/AnimationTimeline.h"
-#include "Panels/SpriteSheetEditor.h"
+#include "Panels/SpriteSheetEditorPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Panels/AudioSystemPanel.h"
 
 #include "Themes.h"
 
@@ -26,7 +28,7 @@ namespace origin
         void OnDetach() override;
         
         void OnUpdate(Timestep ts) override;
-        SceneHierarchyPanel& GetSceneHierarchy() { return m_SceneHierarchy; }
+
         static EditorLayer &Get();
 
         bool GuiVSync = true;
@@ -40,7 +42,14 @@ namespace origin
         bool IsViewportHovered = false;
         bool IsViewportFocused = false;
 
+        SceneHierarchyPanel *GetSceneHierarchy() const;
+        SpriteSheetEditorPanel *GetSpriteEditor() const;
+
     private:
+        void CreatePanels();
+        void DestroyPanels();
+        void AddPanel(PanelBase *panel);
+
         void SystemUpdate(Timestep ts);
         void Render(Timestep ts);
         void SceneViewport();
@@ -84,14 +93,18 @@ namespace origin
         std::vector<ProfilerResult> m_ProfilerResults;
 
         SceneState m_SceneState = SceneState::Edit;
-        SceneHierarchyPanel m_SceneHierarchy;
         Dockspace m_Dockspace;
+
         EditorCamera m_EditorCamera;
-        MaterialEditor m_MaterialEditor;
-        Themes m_Themes;
-        Scope<SpriteSheetEditor> m_SpriteSheetEditor;
-        Scope<UIEditor> m_UIEditor;
+
+        // Panels
+        SceneHierarchyPanel     *m_SceneHierarchyPanel    = nullptr;
+        SpriteSheetEditorPanel  *m_SpriteSheetEditorPanel = nullptr;
+        UIEditorPanel           *m_UIEditorPanel          = nullptr;
+        std::vector<PanelBase *> m_Panels;
         Scope<Gizmos> m_Gizmos;
+        Themes m_Themes;
+
         u32 m_GridVAO, m_GridVBO;
         glm::vec4 m_GridThinColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
         glm::vec4 m_GridThickColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -125,7 +138,7 @@ namespace origin
         Entity m_HoveredEntity = {};
 
         friend class Gizmos;
-        friend class UIEditor;
+        friend class UIEditorPanel;
         friend class ContentBrowserPanel;
         friend class SceneHierarchyPanel;
         friend class EditorSerializer;

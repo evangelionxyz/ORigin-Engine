@@ -67,7 +67,7 @@ namespace origin
             m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
         }
 
-        m_ActiveScene = std::make_shared<Scene>();
+        m_ActiveScene = CreateRef<Scene>();
 
         if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs;
             cmdline_args.Count > 1)
@@ -76,12 +76,14 @@ namespace origin
             OpenProject(m_ProjectDirectoryPath);
         }
 
-        m_SpriteSheetEditor = std::make_unique<SpriteSheetEditor>();
-        m_Gizmos = std::make_unique<Gizmos>();
+        CreatePanels();
 
-        if (!m_UIEditor)
+        m_Gizmos = CreateScope<Gizmos>();
+
+        if (!m_UIEditorPanel)
         {
-            m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+            m_UIEditorPanel = new UIEditorPanel(m_ActiveScene.get());
+            AddPanel(m_UIEditorPanel);
         }
 
         InitGrid();
@@ -92,6 +94,8 @@ namespace origin
 
     void EditorLayer::OnDetach() 
     {
+        DestroyPanels();
+
         std::filesystem::path filepath = std::filesystem::current_path() / "Editor.cfg";
         EditorSerializer::Serialize(this, filepath);
         ScriptEngine::Shutdown(); 
@@ -105,10 +109,13 @@ namespace origin
         dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
         dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
 
+        for (auto p : m_Panels)
+        {
+            p->OnEvent(e);
+        }
+
         m_Gizmos->OnEvent(e);
         m_EditorCamera.OnEvent(e);
-        m_SpriteSheetEditor->OnEvent(e);
-        m_UIEditor->OnEvent(e);
     }
 
     void EditorLayer::OnUpdate(const Timestep ts)
@@ -173,6 +180,11 @@ namespace origin
         InputProcedure(ts);
     }
 
+    SceneHierarchyPanel *EditorLayer::GetSceneHierarchy() const
+    {
+        return m_SceneHierarchyPanel;
+    }
+
     EditorLayer &EditorLayer::Get()
     {
         return *s_Instance;
@@ -223,7 +235,7 @@ namespace origin
             ShowGrid();
 
             // update scene
-            m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
+            m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
             m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
             break;
         }
@@ -245,12 +257,35 @@ namespace origin
             ShowGrid();
 
             // update scene
-            m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchy.GetSelectedEntity());
+            m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
             m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 
             break;
         }
         }
+    }
+
+    void EditorLayer::CreatePanels()
+    {
+        AddPanel(new AudioSystemPanel());
+        AddPanel(new MaterialEditorPanel());
+
+        m_SceneHierarchyPanel = new SceneHierarchyPanel(nullptr);
+        AddPanel(m_SceneHierarchyPanel);
+
+        m_SpriteSheetEditorPanel = new SpriteSheetEditorPanel();
+        AddPanel(m_SpriteSheetEditorPanel);
+    }
+
+    void EditorLayer::DestroyPanels()
+    {
+        for (auto p : m_Panels)
+            delete p;
+    }
+
+    void EditorLayer::AddPanel(PanelBase *panel)
+    {
+        m_Panels.push_back(panel);
     }
 
     void EditorLayer::SystemUpdate(const Timestep ts)
@@ -263,8 +298,10 @@ namespace origin
             m_EditorCamera.UpdateAudioListener(ts);
         }
 
-        m_SpriteSheetEditor->OnUpdate(ts);
-        m_UIEditor->OnUpdate(ts);
+        m_SpriteSheetEditorPanel->OnUpdate(ts);
+
+        if (m_UIEditorPanel)
+            m_UIEditorPanel->OnUpdate(ts);
     }
 
     void EditorLayer::OnDuplicateEntity()
@@ -272,10 +309,10 @@ namespace origin
         if (m_SceneState != SceneState::Edit)
             return;
 
-        if (const Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+        if (const Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity())
         {
             const Entity entity = m_ActiveScene->DuplicateEntity(selectedEntity);
-            m_SceneHierarchy.SetSelectedEntity(entity);
+            m_SceneHierarchyPanel->SetSelectedEntity(entity);
         }
     }
 
@@ -284,10 +321,10 @@ namespace origin
         if (m_SceneState != SceneState::Edit)
             return;
 
-        if (Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity())
+        if (Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity())
         {
             m_ActiveScene->DestroyEntity(selectedEntity);
-            //CommandManager::Instance().ExecuteCommand(std::make_unique<DestoryEntityCommand>(m_ActiveScene, selectedEntity));
+            //CommandManager::Instance().ExecuteCommand(CreateScope<DestoryEntityCommand>(m_ActiveScene, selectedEntity));
         }
     }
 
@@ -295,15 +332,17 @@ namespace origin
     {
         m_Dockspace.Begin();
         SceneViewport();
-        m_UIEditor->OnImGuiRender();
-        m_SpriteSheetEditor->OnImGuiRender();
-        m_MaterialEditor.OnImGuiRender();
-        m_SceneHierarchy.OnImGuiRender();
+
+        for (PanelBase *p : m_Panels)
+        {
+            p->Render();
+        }
 
         MenuBar();
         ConsoleWindow();
         SceneViewportToolbar();
         GUIRender();
+
         if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
         m_Dockspace.End();
     }
@@ -320,7 +359,7 @@ namespace origin
         m_SceneState = SceneState::Play;
         m_ActiveScene = Scene::Copy(m_EditorScene);
         m_ActiveScene->OnRuntimeStart();
-        m_SceneHierarchy.SetActiveScene(m_ActiveScene);
+        m_SceneHierarchyPanel->SetActiveScene(m_ActiveScene);
         //m_ActiveScene->LockMouse();
     }
 
@@ -350,7 +389,7 @@ namespace origin
 
         m_ActiveScene = Scene::Copy(m_EditorScene);
         m_ActiveScene->OnRuntimeStart();
-        m_SceneHierarchy.SetActiveScene(m_ActiveScene);
+        m_SceneHierarchyPanel->SetActiveScene(m_ActiveScene);
     }
 
     void EditorLayer::OnSceneStop()
@@ -364,7 +403,7 @@ namespace origin
             m_ActiveScene->OnRuntimeStop();
         }
 
-        m_SceneHierarchy.SetActiveScene(m_EditorScene);
+        m_SceneHierarchyPanel->SetActiveScene(m_EditorScene);
         m_ActiveScene = m_EditorScene;
         m_SceneState = SceneState::Edit;
         //m_ActiveScene->UnlockMouse();
@@ -380,7 +419,7 @@ namespace origin
 
             m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
-            m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
+            m_ContentBrowser = CreateScope<ContentBrowserPanel>(Project::GetActive());
             if (!m_ContentBrowser)
             {
                 OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
@@ -404,7 +443,7 @@ namespace origin
 
             m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
-            m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
+            m_ContentBrowser = CreateScope<ContentBrowserPanel>(Project::GetActive());
             if (!m_ContentBrowser)
             {
                 OGN_CORE_ERROR("[EditorLayer] ContentBrowserPanel Failed to initialized");
@@ -432,7 +471,7 @@ namespace origin
 
             m_ProjectDirectoryPath = Project::GetActiveProjectDirectory();
 
-            m_ContentBrowser = std::make_unique<ContentBrowserPanel>(Project::GetActive());
+            m_ContentBrowser = CreateScope<ContentBrowserPanel>(Project::GetActive());
             if (!m_ContentBrowser)
             {
                 OGN_CORE_ERROR("[EditorLayer] ContentBrowserPanel Failed to initialized");
@@ -451,8 +490,10 @@ namespace origin
         if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
             OnSceneStop();
 
-        m_EditorScene = std::make_shared<Scene>();
-        m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
+        m_EditorScene = CreateRef<Scene>();
+
+        m_SceneHierarchyPanel->SetActiveScene(m_EditorScene, true);
+
         m_ActiveScene = m_EditorScene;
         Project::SetActiveScene(m_ActiveScene);
         m_ScenePath = std::filesystem::path();
@@ -519,7 +560,7 @@ namespace origin
         m_EditorScene = Scene::Copy(read_only_scene);
         m_HoveredEntity = {};
 
-        m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
+        m_SceneHierarchyPanel->SetActiveScene(m_EditorScene, true);
         m_ActiveScene = m_EditorScene;
         m_ScenePath = metadata.Filepath;
         std::string name = metadata.Filepath.stem().string();
@@ -527,12 +568,13 @@ namespace origin
 
         Project::SetActiveScene(m_ActiveScene);
 
-        if (!m_UIEditor)
+        if (!m_UIEditorPanel)
         {
-            m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+            m_UIEditorPanel = new UIEditorPanel(m_ActiveScene.get());
+            AddPanel(m_UIEditorPanel);
         }
 
-        m_UIEditor->SetContext(m_ActiveScene.get());
+        m_UIEditorPanel->SetContext(m_ActiveScene.get());
     }
 
     void EditorLayer::OpenScene()
@@ -568,17 +610,20 @@ namespace origin
 
         m_HoveredEntity = {};
         m_EditorScene = Scene::Copy(read_only_scene);
-        m_SceneHierarchy.SetActiveScene(m_EditorScene, true);
+        m_SceneHierarchyPanel->SetActiveScene(m_EditorScene, true);
         m_ActiveScene = m_EditorScene;
 
         Project::SetActiveScene(m_ActiveScene);
 
         m_ScenePath = filepath;
 
-        if (!m_UIEditor)
-            m_UIEditor = std::make_unique<UIEditor>(m_ActiveScene.get());
+        if (!m_UIEditorPanel)
+        {
+            m_UIEditorPanel = new UIEditorPanel(m_ActiveScene.get());
+            AddPanel(m_UIEditorPanel);
+        }
 
-        m_UIEditor->SetContext(m_ActiveScene.get());
+        m_UIEditorPanel->SetContext(m_ActiveScene.get());
     }
 
     void EditorLayer::SerializeScene(const Ref<Scene> &scene, const std::filesystem::path &filepath)
@@ -800,7 +845,7 @@ namespace origin
         const glm::mat4 &cameraProjection = m_EditorCamera.GetProjectionMatrix();
         const glm::mat4 &cameraView = m_EditorCamera.GetViewMatrix();
 
-        Entity entity = m_SceneHierarchy.GetSelectedEntity();
+        Entity entity = m_SceneHierarchyPanel->GetSelectedEntity();
         if (entity && m_Gizmos->GetType() != GizmoType::NONE)
         {
             auto &tc = entity.GetComponent<TransformComponent>();
@@ -867,7 +912,7 @@ namespace origin
                 if (tc != ComponentsCommand<TransformComponent>::GetTempComponent())
                 {
                     CommandManager::Instance().ExecuteCommand(
-                    std::make_unique<ComponentsCommand<TransformComponent>>(tc, 
+                    CreateScope<ComponentsCommand<TransformComponent>>(tc, 
                         ComponentsCommand<TransformComponent>::GetTempComponent()));
                     changed = false;
                 }
@@ -921,7 +966,7 @@ namespace origin
             Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
             if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
             {
-                if (m_SceneHierarchy.GetContext())
+                if (m_SceneHierarchyPanel->GetContext())
                 {
                     if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
                     {
@@ -939,7 +984,7 @@ namespace origin
             icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
             if (ImGui::ImageButton("simulate_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
             {
-                if (m_SceneHierarchy.GetContext())
+                if (m_SceneHierarchyPanel->GetContext())
                 {
                     if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
                     {
@@ -998,7 +1043,7 @@ namespace origin
 
     void EditorLayer::GUIRender()
     {
-        Entity entity = m_SceneHierarchy.GetSelectedEntity();
+        Entity entity = m_SceneHierarchyPanel->GetSelectedEntity();
         if (entity)
         {
             if (entity.HasComponent<SpriteAnimationComponent>())
@@ -1419,7 +1464,7 @@ namespace origin
             }
         }
 
-        if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && !ImGuizmo::IsOver() && m_SceneHierarchy.GetContext())
+        if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && !ImGuizmo::IsOver() && m_SceneHierarchyPanel->GetContext())
         {
             const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
             const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };
@@ -1459,7 +1504,7 @@ namespace origin
                 }
             }
 
-            m_SceneHierarchy.SetSelectedEntity(closestEntity);
+            m_SceneHierarchyPanel->SetSelectedEntity(closestEntity);
             if (!closestEntity)
             {
                 m_Gizmos->SetType(GizmoType::NONE);
@@ -1471,7 +1516,7 @@ namespace origin
 
     void EditorLayer::InputProcedure(Timestep time)
     {
-        if (m_SceneState == SceneState::Play || !(IsViewportHovered && IsViewportFocused)  || !m_SceneHierarchy.GetContext())
+        if (m_SceneState == SceneState::Play || !(IsViewportHovered && IsViewportFocused)  || !m_SceneHierarchyPanel->GetContext())
         {
             return;
         }
@@ -1481,7 +1526,7 @@ namespace origin
 
         if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft))
         {
-            Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+            Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
 
             if (selectedEntity && IsViewportFocused && IsViewportHovered)
             {
@@ -1572,7 +1617,7 @@ namespace origin
         const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
 
         ImGuiIO& io = ImGui::GetIO();
-        Entity selectedEntity = m_SceneHierarchy.GetSelectedEntity();
+        Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
 
         switch (e.GetKeyCode())
         {
@@ -1643,7 +1688,7 @@ namespace origin
         }
         case Key::F5:
         {
-            if (m_SceneHierarchy.GetContext())
+            if (m_SceneHierarchyPanel->GetContext())
             {
                 if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
                 {
@@ -1659,7 +1704,7 @@ namespace origin
 
         case Key::F6:
         {
-            if (m_SceneHierarchy.GetContext())
+            if (m_SceneHierarchyPanel->GetContext())
             {
                 if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
                 {

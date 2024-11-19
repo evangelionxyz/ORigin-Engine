@@ -5,6 +5,15 @@
 
 namespace origin {
 
+void FmodDsp::Release()
+{
+    if (m_Dsp)
+    {
+        m_Dsp->release();
+        m_Dsp = nullptr;
+    }
+}
+
 void FmodDsp::SetActive(const bool active) const
 {
     m_Dsp->setActive(active);    
@@ -284,7 +293,8 @@ float FmodCompressor::GetGainMakeup() const
 
 void FmodCompressor::SetUseSidechain(bool use) const 
 {
-    FMOD_CHECK(m_Dsp->setParameterBool(FMOD_DSP_COMPRESSOR_USESIDECHAIN, use))
+    // FMOD_RESULT result = m_Dsp->setParameterBool(FMOD_DSP_COMPRESSOR_USESIDECHAIN, use);
+    // FMOD_CHECK(result)
 }
 
 bool FmodCompressor::IsSidechainLinked() const 
@@ -299,5 +309,16 @@ Ref<FmodCompressor> FmodCompressor::Create()
     return CreateRef<FmodCompressor>();
 }
 
+// ====================================
+// Delay
+// ====================================
+FmodDelay::FmodDelay()
+{
+}
+
+Ref<FmodDelay> FmodDelay::Create()
+{
+    return CreateRef<FmodDelay>();
+}
 
 }

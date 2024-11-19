@@ -2,7 +2,7 @@
 
 #include "../EditorLayer.h"
 
-#include "UIEditor.h"
+#include "UIEditorPanel.h"
 #include "SceneHierarchyPanel.h"
 #include "entt/entt.hpp"
 
@@ -95,7 +95,24 @@ namespace origin {
         }
     }
 
-    void SceneHierarchyPanel::OnImGuiRender()
+    void SceneHierarchyPanel::OnEvent(Event &e)
+    {
+        EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SceneHierarchyPanel::OnMouseButtonPressed));
+        dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SceneHierarchyPanel::OnKeyPressed));
+    }
+
+    bool SceneHierarchyPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+    {
+        return false;
+    }
+
+    bool SceneHierarchyPanel::OnKeyPressed(KeyPressedEvent &e)
+    {
+        return false;
+    }
+
+    void SceneHierarchyPanel::Render()
     {
         EntityHierarchyPanel();
         EntityPropertiesPanel();
@@ -228,8 +245,8 @@ namespace origin {
             if (entity.HasComponent<UIComponent>())
             {
                 auto &ui = entity.GetComponent<UIComponent>();
-                UIEditor::Get()->SetContext(m_Scene.get());
-                UIEditor::Get()->SetActive(&ui);
+                UIEditorPanel::GetInstance()->SetContext(m_Scene.get());
+                UIEditorPanel::GetInstance()->SetActive(&ui);
             }
         }
 
@@ -558,7 +575,7 @@ namespace origin {
         {
             if(ImGui::Button("Edit"))
             {
-                UIEditor::Get()->SetActive(&component);
+                UIEditorPanel::GetInstance()->SetActive(&component);
             }
         });
 

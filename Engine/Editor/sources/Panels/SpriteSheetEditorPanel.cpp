@@ -2,7 +2,7 @@
 
 #include "Origin/Scene/SpriteSheet.h"
 
-#include "SpriteSheetEditor.h"
+#include "SpriteSheetEditorPanel.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Serializer/SpriteSheetSerializer.h"
@@ -16,9 +16,9 @@
 
 namespace origin
 {
-    static SpriteSheetEditor *s_Instance = nullptr;
+    static SpriteSheetEditorPanel *s_Instance = nullptr;
 
-    SpriteSheetEditor::SpriteSheetEditor()
+    SpriteSheetEditorPanel::SpriteSheetEditorPanel()
         : m_ViewportSize(0.0f)
     {
         s_Instance = this;
@@ -36,14 +36,16 @@ namespace origin
         spec.Height = 720;
 
         m_Framebuffer = Framebuffer::Create(spec);
+
+        Close();
     }
 
-    void SpriteSheetEditor::CreateNewSpriteSheet()
+    void SpriteSheetEditorPanel::CreateNewSpriteSheet()
     {
         m_SpriteSheet = SpriteSheet::Create();
     }
 
-    void SpriteSheetEditor::SetSelectedSpriteSheet(const AssetHandle handle)
+    void SpriteSheetEditorPanel::SetSelectedSpriteSheet(const AssetHandle handle)
     {
         if (!m_CurrentFilepath.empty())
         {
@@ -55,23 +57,23 @@ namespace origin
         m_SpriteSheet = AssetManager::GetAsset<SpriteSheet>(handle);
         m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
-        if (Deserialize() && !m_IsOpened)
+        if (Deserialize() && !m_Open)
         {
             m_Camera.SetOrthoScale(static_cast<f32>(m_Texture->GetHeight()) * 1.5f);
             m_Camera.SetOrthoScaleMax(static_cast<f32>(m_Texture->GetHeight()) * 3.0f);
             m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
-            m_IsOpened = true;
             ImGui::SetWindowFocus("Sprite Sheet Editor");
+            Open();
         }
     }
 
-    void SpriteSheetEditor::SetMainTexture(const AssetHandle handle) const
+    void SpriteSheetEditorPanel::SetMainTexture(const AssetHandle handle) const
     {
         if (m_SpriteSheet)
             m_SpriteSheet->SetMainTexture(handle);
     }
 
-    void SpriteSheetEditor::AddSprite(const glm::vec2 position, const glm::vec2 size,
+    void SpriteSheetEditorPanel::AddSprite(const glm::vec2 position, const glm::vec2 size,
         const glm::vec2 min, const glm::vec2 max) const
     {
         SpriteSheetData sprite {};
@@ -80,7 +82,7 @@ namespace origin
         m_SpriteSheet->Sprites.push_back(sprite);
     }
 
-    void SpriteSheetEditor::RemoveSprite(const i32 index)
+    void SpriteSheetEditorPanel::RemoveSprite(const i32 index)
     {
         m_Controls.erase(m_Controls.begin() + index);
         if (!m_Controls.empty())
@@ -89,17 +91,17 @@ namespace origin
             m_SelectedIndex = -1;
     }
 
-    void SpriteSheetEditor::Duplicate(i32 index)
+    void SpriteSheetEditorPanel::Duplicate(i32 index)
     {
         m_Controls.insert(m_Controls.end(), m_Controls[index]);
         m_SelectedIndex = 0;
     }
 
-    void SpriteSheetEditor::OnImGuiRender()
+    void SpriteSheetEditorPanel::Render()
     {
-        if (m_IsOpened)
+        if (m_Open)
         {
-            ImGui::Begin("Sprite Sheet Editor", &m_IsOpened, ImGuiWindowFlags_NoScrollbar
+            ImGui::Begin("Sprite Sheet Editor", &m_Open, ImGuiWindowFlags_NoScrollbar
                 | ImGuiWindowFlags_NoScrollWithMouse);
 
             IsViewportFocused = ImGui::IsWindowFocused();
@@ -224,9 +226,9 @@ namespace origin
         }
     }
 
-    void SpriteSheetEditor::OnUpdate(Timestep ts)
+    void SpriteSheetEditorPanel::OnUpdate(Timestep ts)
     {
-        if (!m_IsOpened)
+        if (!m_Open)
         {
             return;
         }
@@ -312,7 +314,7 @@ namespace origin
         m_Framebuffer->Unbind();
     }
 
-    bool SpriteSheetEditor::Serialize(const std::filesystem::path &filepath)
+    bool SpriteSheetEditorPanel::Serialize(const std::filesystem::path &filepath)
     {
         m_CurrentFilepath = filepath;
         m_SpriteSheet->Sprites.clear();
@@ -327,7 +329,7 @@ namespace origin
         return SpriteSheetSerializer::Serialize(filepath, m_SpriteSheet);
     }
 
-    bool SpriteSheetEditor::Deserialize()
+    bool SpriteSheetEditorPanel::Deserialize()
     {
         const bool ret = SpriteSheetSerializer::Deserialize(m_CurrentFilepath, m_SpriteSheet);
 
@@ -351,15 +353,15 @@ namespace origin
         return ret;
     }
 
-    void SpriteSheetEditor::OnEvent(Event &e)
+    void SpriteSheetEditorPanel::OnEvent(Event &e)
     {
         m_Camera.OnEvent(e);
         EventDispatcher dispatcher(e);
-        dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditor::OnMouseButtonPressed));
-        dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditor::OnKeyPressed));
+        dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditorPanel::OnMouseButtonPressed));
+        dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditorPanel::OnKeyPressed));
     }
 
-    bool SpriteSheetEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e) const
+    bool SpriteSheetEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
     {
         if (IsViewportHovered && !IsViewportFocused)
         {
@@ -400,7 +402,7 @@ namespace origin
         return false;
     }
 
-    bool SpriteSheetEditor::OnKeyPressed(const KeyPressedEvent &e)
+    bool SpriteSheetEditorPanel::OnKeyPressed(const KeyPressedEvent &e)
     {
         OGN_PROFILER_INPUT();
 
@@ -429,7 +431,7 @@ namespace origin
         return false;
     }
 
-    void SpriteSheetEditor::OnMouse(f32 ts)
+    void SpriteSheetEditorPanel::OnMouse(f32 ts)
     {
         OGN_PROFILER_INPUT();
 
@@ -514,12 +516,12 @@ namespace origin
         }
     }
 
-    SpriteSheetEditor *SpriteSheetEditor::Get()
+    SpriteSheetEditorPanel *SpriteSheetEditorPanel::GetInstance()
     {
         return s_Instance;
     }
 
-    void SpriteSheetEditor::Reset()
+    void SpriteSheetEditorPanel::Reset()
     {
         if (m_SpriteSheet)
         {

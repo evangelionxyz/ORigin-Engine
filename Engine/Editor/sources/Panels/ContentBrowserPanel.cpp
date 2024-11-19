@@ -224,11 +224,11 @@ namespace origin
 
                 if (item.extension() == ".sprite")
                 {
-                    EditorLayer::Get().m_SpriteSheetEditor->SetSelectedSpriteSheet(m_TreeNodes[treeNodeIndex].Handle);
+                    SpriteSheetEditorPanel::GetInstance()->SetSelectedSpriteSheet(m_TreeNodes[treeNodeIndex].Handle);
                 }
                 else if (item.extension() == ".mat")
                 {
-                    EditorLayer::Get().m_MaterialEditor.SetSelectedMaterial(m_TreeNodes[treeNodeIndex].Handle);
+                    MaterialEditorPanel::GetInstance()->SetSelectedMaterial(m_TreeNodes[treeNodeIndex].Handle);
                 }
             }
 
@@ -241,9 +241,9 @@ namespace origin
                 {
                     if (ImGui::MenuItem("Create Sprite Sheet"))
                     {
-                        SpriteSheetEditor::Get()->CreateNewSpriteSheet();
-                        SpriteSheetEditor::Get()->SetMainTexture(m_TreeNodes[treeNodeIndex].Handle);
-                        SpriteSheetEditor::Get()->Serialize(m_CurrentDirectory / (item.stem().string() + ".sprite"));
+                        SpriteSheetEditorPanel::GetInstance()->CreateNewSpriteSheet();
+                        SpriteSheetEditorPanel::GetInstance()->SetMainTexture(m_TreeNodes[treeNodeIndex].Handle);
+                        SpriteSheetEditorPanel::GetInstance()->Serialize(m_CurrentDirectory / (item.stem().string() + ".sprite"));
 
                         RefreshAssetTree();
                     }

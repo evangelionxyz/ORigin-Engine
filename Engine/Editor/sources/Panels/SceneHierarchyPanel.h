@@ -4,9 +4,11 @@
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
 
+#include "PanelBase.h"
+
 namespace origin {
 
-    class SceneHierarchyPanel
+    class SceneHierarchyPanel : public PanelBase
     {
     public:
         SceneHierarchyPanel() = default;
@@ -19,7 +21,7 @@ namespace origin {
         Entity SetSelectedEntity(Entity entity);
         Entity GetSelectedEntity();
 
-        void OnImGuiRender();
+        void Render() override;
 
         void EntityHierarchyPanel();
         void EntityPropertiesPanel();
@@ -30,7 +32,12 @@ namespace origin {
         bool IsSceneHierarchyFocused = false;
         bool IsScenePropertiesFocused = false;
 
+        void OnEvent(Event &e) override;
+
     private:
+        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+        bool OnKeyPressed(KeyPressedEvent &e);
+
         template<typename T>
         bool DisplayAddComponentEntry(const std::string& entryName);
         template<typename T, typename UIFunction>

@@ -276,7 +276,9 @@ namespace origin {
 
         glEnable(GL_DEPTH_TEST);
         Renderer2D::Begin(camera);
-        Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
+
+        Entity selectedEntity = EditorLayer::Get().GetSceneHierarchy()->GetSelectedEntity();
+
         const auto view = scene->GetAllEntitiesWith<TransformComponent>();
         for (auto [e, tc] : view.each())
         {
@@ -447,7 +449,8 @@ namespace origin {
         float orthoScale = camera.GetOrthoScale() / viewportHeight;
         glm::vec3 translation = glm::vec3(delta, 0.0f);
 
-        Entity selectedEntity = EditorLayer::Get().m_SceneHierarchy.GetSelectedEntity();
+        Entity selectedEntity = EditorLayer::Get().GetSceneHierarchy()->GetSelectedEntity();
+
         if (selectedEntity.IsValid())
         {
             if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft) && EditorLayer::Get().IsViewportHovered)

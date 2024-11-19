@@ -11,81 +11,111 @@
 namespace origin {
 
 static FMOD_RESULT fmod_result;
-static FmodAudio *s_FMODAudio = nullptr;
+static FmodAudio *s_fmod_audio = nullptr;
 
-FmodAudio::FmodAudio()
+void FmodAudio::SetMasterVolume(const float volume)
 {
-    s_FMODAudio = this;
-
-    fmod_result = FMOD::System_Create(&m_System);
-    FMOD_CHECK(fmod_result)
-
-    fmod_result = m_System->init(32, FMOD_INIT_NORMAL, nullptr);
-    FMOD_CHECK(fmod_result)
-
-    fmod_result = m_System->createChannelGroup("master", &m_MasterGroup);
-    FMOD_CHECK(fmod_result)
-
-    // Initialize listener position
-    listenerPos = {0.0f, 0.0f, 0.0f};
-    listenerVel = {0.0f, 0.0f, 0.0f};
-    listenerForward = {0.0f, 0.0f, 1.0f};
-    listenerUp = {0.0f, 1.0f, 0.0f};
-}
-
-FmodAudio::~FmodAudio()
-{
-    m_SoundMap.clear();
-    fmod_result = m_System->close();
-    FMOD_CHECK(fmod_result)
-    fmod_result = m_System->release();
+    fmod_result = s_fmod_audio->m_MasterGroup->setVolume(volume); 
     FMOD_CHECK(fmod_result)
 }
 
-void FmodAudio::SetMasterVolume(const float volume) const
+void FmodAudio::MuteMaster(const bool mute)
 {
-    FMOD_CHECK(m_MasterGroup->setVolume(volume))
+    fmod_result = s_fmod_audio->m_MasterGroup->setMute(mute);
+    FMOD_CHECK(fmod_result)
 }
 
-void FmodAudio::MuteMaster(const bool mute) const
+void FmodAudio::Update(const float delta_time)
 {
-    FMOD_CHECK(m_MasterGroup->setMute(mute))
-}
-
-void FmodAudio::Update(const float delta_time) const
-{
-    m_System->update();
-    for (const auto& val : m_SoundMap | std::views::values)
+    s_fmod_audio->m_System->update();
+    for (const auto& val : s_fmod_audio->m_SoundMap | std::views::values)
     {
         val->Update(delta_time);
     }
 }
 
+void FmodAudio::Init()
+{
+    s_fmod_audio = new FmodAudio();
+
+    fmod_result = FMOD::System_Create(&s_fmod_audio->m_System);
+    FMOD_CHECK(fmod_result)
+
+    fmod_result = s_fmod_audio->m_System->init(32, FMOD_INIT_NORMAL, nullptr);
+    FMOD_CHECK(fmod_result)
+
+    s_fmod_audio->m_MasterGroup = FmodAudio::CreateChannelGroup("Master");
+
+    // Initialize listener position
+    s_fmod_audio->listenerPos = { 0.0f,0.0f,0.0f };
+    s_fmod_audio->listenerVel = { 0.0f,0.0f,0.0f };
+    s_fmod_audio->listenerForward = { 0.0f,0.0f,1.0f };
+    s_fmod_audio->listenerUp = { 0.0f,1.0f,0.0f };
+}
+
+void FmodAudio::Shutdown()
+{
+    for (auto &s : s_fmod_audio->m_SoundMap | std::views::values)
+    {
+        s->Release();
+    }
+
+    s_fmod_audio->m_SoundMap.clear();
+
+    fmod_result = s_fmod_audio->m_System->close();
+    FMOD_CHECK(fmod_result)
+    fmod_result = s_fmod_audio->m_System->release();
+    FMOD_CHECK(fmod_result)
+    
+    delete s_fmod_audio;
+}
+
+FMOD::ChannelGroup* FmodAudio::CreateChannelGroup(const std::string &name)
+{
+    FMOD::ChannelGroup* group = nullptr;
+    s_fmod_audio->m_System->createChannelGroup(name.c_str(), &group);
+    group->setMode(FMOD_LOOP_NORMAL);
+    s_fmod_audio->m_ChannelGroups[name] = group;
+    return group;
+}
+
+std::unordered_map<std::string, FMOD::ChannelGroup*> FmodAudio::GetChannelGroupMap()
+{
+    return s_fmod_audio->m_ChannelGroups;    
+}
+
+FMOD::ChannelGroup* FmodAudio::GetChannelGroup(const std::string& name)
+{
+    if (s_fmod_audio->m_ChannelGroups.contains(name))
+        return s_fmod_audio->m_ChannelGroups[name];
+    return nullptr;
+}
+
 FmodAudio &FmodAudio::GetInstance()
 {
-    return *s_FMODAudio;
+    return *s_fmod_audio;
 }
 
 FMOD::System* FmodAudio::GetFmodSystem()
 {
-    return s_FMODAudio->m_System;
+    return s_fmod_audio->m_System;
 }
 
 FMOD::ChannelGroup* FmodAudio::GetFmodChannelGroup()
 {
-    return s_FMODAudio->m_MasterGroup;
+    return s_fmod_audio->m_MasterGroup;
 }
 
 void FmodAudio::InsertFmodSound(const std::string &name, const Ref<FmodSound>& sound)
 {
-    s_FMODAudio->m_SoundMap[name] = sound;
+    s_fmod_audio->m_SoundMap[name] = sound;
 }
 
 void FmodAudio::RemoveFmodSound(const std::string &name)
 {
-    if (const auto it = s_FMODAudio->m_SoundMap.find(name); it != s_FMODAudio->m_SoundMap.end())
+    if (const auto it = s_fmod_audio->m_SoundMap.find(name); it != s_fmod_audio->m_SoundMap.end())
     {
-        s_FMODAudio->m_SoundMap.erase(it);
+        s_fmod_audio->m_SoundMap.erase(it);
     }
 }
 

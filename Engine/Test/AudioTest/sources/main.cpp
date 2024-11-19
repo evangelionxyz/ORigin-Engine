@@ -10,38 +10,61 @@ int main()
 {
     auto logger = Log();
     logger.PrintMessage("Start");
-    const FmodAudio audio_engine;
 
+    FmodAudio::Init();
+    
     Ref<FmodReverb> reverb = FmodReverb::Create();
     reverb->SetDiffusion(100.0f);
     reverb->SetWetLevel(20.0f);
-    reverb->SetDecayTime(10000.0f);
+    reverb->SetDecayTime(5000.0f);
 
     Ref<FmodDistortion> distortion = FmodDistortion::Create();
-    distortion->SetDistortionLevel(0.2f);
+    distortion->SetDistortionLevel(1.0f);
     
-    const Ref<FmodSound> sound = FmodSound::Create("loading_screen", "data/loading_screen.wav", FMOD_DEFAULT);
-    sound->Play();
-    sound->SetMode(FMOD_CHANNELCONTROL_DSP_TAIL);
+    FMOD::ChannelGroup *reverb_group = FmodAudio::CreateChannelGroup("ReverbGroup");
+    reverb_group->setMode(FMOD_CHANNELCONTROL_DSP_TAIL);
 
-    sound->AddDsp(reverb->GetFmodDsp());
-    sound->AddDsp(reverb->GetFmodDsp());
+    reverb_group->addDSP(0, reverb->GetFmodDsp());
     
-    //sound_a->SetFadeIn(0, 1500);
-    //sound_a->SetFadeOut(6000, sound_a->GetLengthMs());
+    const Ref<FmodSound> loading_screen_sound = FmodSound::Create("loading_screen", "data/loading_screen.wav");
 
-    OGN_CORE_INFO("Sound Length MS: {}", sound->GetLengthMs());
+    loading_screen_sound->SetVolume(0.1f);
+    loading_screen_sound->AddToChannelGroup(reverb_group);        
+    
+    loading_screen_sound->Play();
+    
+    const Ref<FmodSound> shot = FmodSound::Create("shot", "data/shot.mp3");
+    shot->SetVolume(0.5f);
+    
+    OGN_CORE_INFO("Sound Length MS: {}", loading_screen_sound->GetLengthMs());
 
+    constexpr float fire_rate = 0.5f; 
+    float shot_time = fire_rate;
+    bool is_playing = true;
+    
     auto previous_time = std::chrono::high_resolution_clock::now();
     while (true)
     {
         auto current_time = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> delta_time = current_time - previous_time;
-        audio_engine.Update(delta_time.count());
+
+        shot_time -= delta_time.count();
+        if (shot_time <= 0.0f)
+        {
+            shot->Play();
+            shot_time = fire_rate;
+        }
+        
+        FmodAudio::Update(delta_time.count());
+        
         previous_time = current_time;
         
-        OGN_CORE_INFO("Sound position MS: {}", sound->GetPositionMs());
+        OGN_CORE_INFO("Sound position MS: {}", loading_screen_sound->GetPositionMs());
+
+        reverb_group->isPlaying(&is_playing);
     }
+
+    FmodAudio::Shutdown();
     
     logger.PrintMessage("Finished");
 }

@@ -7,13 +7,15 @@
 #include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/Scene.h"
 
+#include "PanelBase.h"
+
 namespace origin
 {
     class UIComponent;
-    class UIEditor
+    class UIEditorPanel : public PanelBase
     {
     public:
-        UIEditor(Scene *scene);
+        UIEditorPanel(Scene *scene, bool open = false);
         void SetContext(Scene *scene);
         void SetActive(UIComponent *component);
         void CreateNewText();
@@ -21,20 +23,20 @@ namespace origin
         bool RenameComponent(int index, const std::string &newName);
 
         void OnUpdate(Timestep ts);
-        void OnImGuiRender();
+        void Render() override;
 
-        void OnEvent(Event &e);
+        void OnEvent(Event &e) override;
         bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
         bool OnKeyPressed(KeyPressedEvent &e);
+
         void OnMouse(float ts);
 
         void Open();
 
-        static UIEditor *Get();
+        static UIEditorPanel *GetInstance();
 
         bool IsViewportFocused = false;
         bool IsViewportHovered = false;
-        bool IsOpened = false;
 
     private:
         void DrawInspector();

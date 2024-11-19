@@ -10,6 +10,7 @@
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Scene/EditorCamera.h"
+#include "PanelBase.h"
 
 #include <glm/glm.hpp>
 
@@ -36,10 +37,10 @@ namespace origin
         ControllerCorner SelectedCorner = ControllerCorner::NONE;
     };
 
-    class SpriteSheetEditor
+    class SpriteSheetEditorPanel : public PanelBase
     {
     public:
-        SpriteSheetEditor();
+        SpriteSheetEditorPanel();
 
         void CreateNewSpriteSheet();
         void SetSelectedSpriteSheet(AssetHandle handle);
@@ -49,18 +50,18 @@ namespace origin
         void RemoveSprite(i32 index);
         void Duplicate(i32 index);
 
-        void OnImGuiRender();
+        void Render() override;
         void OnUpdate(Timestep ts);
 
         bool Serialize(const std::filesystem::path &filepath);
         bool Deserialize();
 
-        void OnEvent(Event &e);
-        bool OnMouseButtonPressed(MouseButtonPressedEvent &e) const;
+        void OnEvent(Event &e) override;
+        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
         bool OnKeyPressed(const KeyPressedEvent &e);
         void OnMouse(f32 ts);
 
-        static SpriteSheetEditor *Get();
+        static SpriteSheetEditorPanel *GetInstance();
 
         bool IsViewportFocused = false;
         bool IsViewportHovered = false;
@@ -79,7 +80,6 @@ namespace origin
         glm::ivec2 m_Mouse = { 0, 0 };
         glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
         std::filesystem::path m_CurrentFilepath;
-        bool m_IsOpened = false;
         i32 m_SelectedIndex = 0;
     };
 

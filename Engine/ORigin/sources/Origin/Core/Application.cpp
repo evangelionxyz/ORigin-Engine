@@ -4,6 +4,7 @@
 #include "Application.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Audio/AudioEngine.h"
+#include "Origin/Audio/FmodAudio.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Physics/PhysicsEngine.h"
 #include "ConsoleManager.h"
@@ -63,6 +64,7 @@ namespace origin {
 
         PhysicsEngine::Init();
         AudioEngine::Init();
+        FmodAudio::Init();
         Renderer::Init();
 
         m_Window->Show();
@@ -74,6 +76,7 @@ namespace origin {
         m_LayerStack.Shutdown();
 
         Renderer::Shutdown();
+        FmodAudio::Shutdown();
         AudioEngine::Shutdown();
         PhysicsEngine::Shutdown();
 

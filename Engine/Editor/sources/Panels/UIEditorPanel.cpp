@@ -1,4 +1,4 @@
-#include "UIEditor.h"
+#include "UIEditorPanel.h"
 #include "../EditorLayer.h"
 #include "Origin/GUI/UI.h"
 #include "Origin/Renderer/Renderer2D.h"
@@ -11,12 +11,14 @@
 
 namespace origin
 {
-    static UIEditor *s_Instance = nullptr;
+    static UIEditorPanel *s_Instance = nullptr;
 
-    UIEditor::UIEditor(Scene *scene)
+    UIEditorPanel::UIEditorPanel(Scene *scene, bool open)
         : m_Scene(scene)
     {
         s_Instance = this;
+
+        m_Open = open;
 
         m_Camera.InitOrthographic(10.0f, 0.1f, 10.0f);
         m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
@@ -33,25 +35,25 @@ namespace origin
         m_Framebuffer = Framebuffer::Create(spec);
     }
 
-    void UIEditor::SetContext(Scene *scene)
+    void UIEditorPanel::SetContext(Scene *scene)
     {
         if (m_UICompHandler)
         {
             m_UICompHandler = nullptr;
         }
 
-        if (IsOpened)
-            IsOpened = false;
+        if (m_Open)
+            m_Open = false;
 
         m_Scene = scene;
     }
 
-    void UIEditor::SetActive(UIComponent *component)
+    void UIEditorPanel::SetActive(UIComponent *component)
     {
         if (!m_Scene)
             return;
 
-        if (!IsOpened)
+        if (!m_Open)
         {
             Entity cam = m_Scene->GetPrimaryCameraEntity();
             if (cam.IsValid())
@@ -62,13 +64,13 @@ namespace origin
                 m_Camera.SetOrthoScaleMax(orthoSizeY * 4.0f);
             }
             m_UICompHandler = component;
-            IsOpened = true;
+            m_Open = true;
 
             ImGui::SetWindowFocus("UI Editor");
         }
     }
 
-    void UIEditor::CreateNewText()
+    void UIEditorPanel::CreateNewText()
     {
         if (!m_UICompHandler)
             return;
@@ -80,7 +82,7 @@ namespace origin
         m_SelectedIndex = static_cast<int>(m_UICompHandler->Components.size()) - 1;
     }
 
-    void UIEditor::CreateNewTexture()
+    void UIEditorPanel::CreateNewTexture()
     {
         if (!m_UICompHandler)
             return;
@@ -90,18 +92,18 @@ namespace origin
         m_SelectedIndex = static_cast<int>(m_UICompHandler->Components.size()) - 1;
     }
 
-    bool UIEditor::RenameComponent(int index, const std::string &newName)
+    bool UIEditorPanel::RenameComponent(int index, const std::string &newName)
     {
         if (m_UICompHandler)
             return m_UICompHandler->RenameComponent(index, newName);
         return false;
     }
 
-    void UIEditor::OnImGuiRender()
+    void UIEditorPanel::Render()
     {
-        if (IsOpened)
+        if (m_Open)
         {
-            ImGui::Begin("UI Editor", &IsOpened,
+            ImGui::Begin("UI Editor", &m_Open,
                 ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
             IsViewportFocused = ImGui::IsWindowFocused();
@@ -125,7 +127,7 @@ namespace origin
         }
     }
 
-    void UIEditor::DrawInspector()
+    void UIEditorPanel::DrawInspector()
     {
         ImGui::Begin("UI Inspector");
 
@@ -289,7 +291,7 @@ namespace origin
         ImGui::End();
     }
 
-    void UIEditor::DrawHierarchy()
+    void UIEditorPanel::DrawHierarchy()
     {
         ImGui::Begin("UI Hierarchy");
 
@@ -297,9 +299,9 @@ namespace origin
             ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
         {
             if (ImGui::MenuItem("Text"))
-                UIEditor::CreateNewText();
+                UIEditorPanel::CreateNewText();
             if (ImGui::MenuItem("Sprite"))
-                UIEditor::CreateNewTexture();
+                UIEditorPanel::CreateNewTexture();
             ImGui::EndPopup();
         }
 
@@ -397,9 +399,9 @@ namespace origin
         ImGui::End();
     }
 
-    void UIEditor::OnUpdate(Timestep ts)
+    void UIEditorPanel::OnUpdate(Timestep ts)
     {
-        if (!IsOpened)
+        if (!m_Open)
         {
             if (m_UICompHandler)
             {
@@ -470,18 +472,18 @@ namespace origin
         m_Framebuffer->Unbind();
     }
 
-    void UIEditor::OnEvent(Event &e)
+    void UIEditorPanel::OnEvent(Event &e)
     {
         OGN_PROFILER_INPUT();
 
         m_Camera.OnEvent(e);
         EventDispatcher dispatcher(e);
 
-        dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(UIEditor::OnMouseButtonPressed));
-        dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(UIEditor::OnKeyPressed));
+        dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseButtonPressed));
+        dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnKeyPressed));
     }
 
-    bool UIEditor::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+    bool UIEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
     {
 
         if (IsViewportHovered && !IsViewportFocused)
@@ -508,12 +510,12 @@ namespace origin
         return false;
     }
 
-    bool UIEditor::OnKeyPressed(KeyPressedEvent &e)
+    bool UIEditorPanel::OnKeyPressed(KeyPressedEvent &e)
     {
         return false;
     }
 
-    void UIEditor::OnMouse(float ts)
+    void UIEditorPanel::OnMouse(float ts)
     {
         const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
         const glm::vec2 delta = Input::Get().GetMouseDelta();
@@ -554,13 +556,13 @@ namespace origin
         }
     }
 
-    void UIEditor::Open()
+    void UIEditorPanel::Open()
     {
-        IsOpened = true;
+        m_Open = true;
         ImGui::SetWindowFocus("UI Editor");
     }
 
-    UIEditor *UIEditor::Get()
+    UIEditorPanel *UIEditorPanel::GetInstance()
     {
         return s_Instance;
     }

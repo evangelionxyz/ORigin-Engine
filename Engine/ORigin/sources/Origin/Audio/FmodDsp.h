@@ -16,21 +16,15 @@ namespace origin
 struct FmodDsp
 {
     FmodDsp(): m_Dsp(nullptr) {}
-    ~FmodDsp()
-    {
-        if (m_Dsp)
-        {
-            m_Dsp->release();
-            m_Dsp = nullptr;
-        }
-    }
+
+    void Release();
 
     void SetActive(bool active) const;
     bool IsActive() const;
 
     [[nodiscard]] FMOD::DSP *GetFmodDsp() const { return m_Dsp; }
 protected:
-    FMOD::DSP* m_Dsp; 
+    FMOD::DSP* m_Dsp;
 };
 
 struct FmodDelay : public FmodDsp
