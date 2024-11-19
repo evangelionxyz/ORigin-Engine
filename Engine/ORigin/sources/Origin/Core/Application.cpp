@@ -7,6 +7,7 @@
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Physics/PhysicsEngine.h"
 #include "ConsoleManager.h"
+#include "EmbeddedImages.h"
 
 #include <imgui.h>
 #include <stb_image.h>
@@ -52,7 +53,8 @@ namespace origin {
         }
 
         m_Window = Window::Create(spec.Name.c_str(), spec.Width, spec.Height, spec.Maximize);
-        m_Window->SetIcon(spec.IconPath.c_str());
+        m_Window->SetIcon(logo_black_data, logo_black_width, logo_black_height);
+        
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
         m_InputHandle.Init(m_Window->GetNativeWindow());
 

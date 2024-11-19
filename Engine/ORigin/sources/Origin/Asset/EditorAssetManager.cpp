@@ -35,8 +35,8 @@ namespace origin
     {
         if (s_AssetExtensionMap.find(extension) == s_AssetExtensionMap.end())
         {
-            OGN_CORE_WARN("[Editor Asset Manager] Could not find AssetType for {0}", extension);
-            PUSH_CONSOLE_WARNING("Invalid asset type{0}", extension);
+            OGN_CORE_WARN("[Editor Asset Manager] Could not find AssetType for {}", extension);
+            PUSH_CONSOLE_WARNING("Invalid asset type{}", extension);
             return AssetType::None;
         }
 
@@ -79,8 +79,8 @@ namespace origin
 
         if (!asset)
         {
-            OGN_CORE_ERROR("[Editor Asset Manager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
-            PUSH_CONSOLE_ERROR("Failed to import asset! {0}", metadata.Filepath.generic_string());
+            OGN_CORE_ERROR("[Editor Asset Manager] Asset Import Failed! {}", metadata.Filepath.generic_string());
+            PUSH_CONSOLE_ERROR("Failed to import asset! {}", metadata.Filepath.generic_string());
             return nullptr;
         }
         else
@@ -211,7 +211,7 @@ namespace origin
     {
         auto path = Project::GetActiveAssetRegistryPath();
 
-        OGN_CORE_INFO("[Editor Asset Manager] Serialize Registry {0}", path.string());
+        OGN_CORE_INFO("[Editor Asset Manager] Serialize Registry {}", path.string());
         PUSH_CONSOLE_INFO("Assets Saved!");
 
         for (const auto &[handle, metadata] : m_AssetRegistry)
@@ -255,7 +255,7 @@ namespace origin
 
         if (!std::filesystem::exists(path))
         {
-            PUSH_CONSOLE_ERROR("[Editor Asset Manager] Failed to deserialize AssetRegistry {0}", path.generic_string());
+            PUSH_CONSOLE_ERROR("[Editor Asset Manager] Failed to deserialize AssetRegistry {}", path.generic_string());
             OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to deserialize AssetRegistry");
             return false;
         }

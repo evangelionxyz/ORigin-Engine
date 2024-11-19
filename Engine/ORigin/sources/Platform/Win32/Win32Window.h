@@ -24,7 +24,8 @@ namespace origin
         void ToggleVSync() override;
         void SetVSync(bool enable) override;
         void ToggleFullScreen() override;
-        void SetIcon(const char* filepath) override;
+        void SetIcon(const char *filepath) override;
+        void SetIcon(unsigned char *data, u32 width, u32 height) override;
         void WindowCallbacks();
         void SetEventCallback(const std::function<void(Event&)>& callback) override;
         void SetPosition(int x, int y) override;

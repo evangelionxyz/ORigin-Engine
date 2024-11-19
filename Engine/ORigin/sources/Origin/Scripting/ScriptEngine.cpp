@@ -115,7 +115,7 @@ namespace origin
 				const char* name_space = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 
-				OGN_CORE_TRACE("{0}.{1}", name_space, name);
+				OGN_CORE_TRACE("{}.{1}", name_space, name);
 			}
 		}
 
@@ -180,7 +180,7 @@ namespace origin
 		OGN_CORE_TRACE("[Script Engine] MONO Initialized");
 
 		const char *mono_version = mono_get_runtime_build_info();
-		OGN_CORE_TRACE("[Script Engine] MONO Version: {0}", mono_version);
+		OGN_CORE_TRACE("[Script Engine] MONO Version: {}", mono_version);
 	}
 
 	void ScriptEngine::ShutdownMono()
@@ -418,8 +418,8 @@ namespace origin
 					{
 						const ScriptFieldType type = instance->GetScriptClass()->GetFields()[name].Type;
 						fieldInstance.Field.Type = type;
-						OGN_CORE_WARN("[Script Engine] Checking invalid type {0}", name);
-						PUSH_CONSOLE_WARNING("[Script Engine] Checking invalid type {0}", name);
+						OGN_CORE_WARN("[Script Engine] Checking invalid type {}", name);
+						PUSH_CONSOLE_WARNING("[Script Engine] Checking invalid type {}", name);
 					}
 
 					switch (fieldInstance.Field.Type)
@@ -460,8 +460,8 @@ namespace origin
 						break;
 					}
 					case ScriptFieldType::Invalid:
-						PUSH_CONSOLE_ERROR("[Script Engine] Null Object Field {0}", name);
-						OGN_CORE_ASSERT(false, "[Script Engine] Null Object Field {0}", name);
+						PUSH_CONSOLE_ERROR("[Script Engine] Null Object Field {}", name);
+						OGN_CORE_ASSERT(false, "[Script Engine] Null Object Field {}", name);
 						return;
                     default:
                         instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
