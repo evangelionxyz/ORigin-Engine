@@ -42,22 +42,22 @@ FmodAudio::~FmodAudio()
     FMOD_CHECK(fmod_result)
 }
 
-void FmodAudio::SetMasterVolume(float volume) const
+void FmodAudio::SetMasterVolume(const float volume) const
 {
     FMOD_CHECK(m_MasterGroup->setVolume(volume))
 }
 
-void FmodAudio::MuteMaster(bool mute) const
+void FmodAudio::MuteMaster(const bool mute) const
 {
     FMOD_CHECK(m_MasterGroup->setMute(mute))
 }
 
-void FmodAudio::Update(float deltaTime) const
+void FmodAudio::Update(const float delta_time) const
 {
     m_System->update();
     for (const auto& val : m_SoundMap | std::views::values)
     {
-        val->Update(deltaTime);
+        val->Update(delta_time);
     }
 }
 
@@ -70,13 +70,23 @@ FMOD::System* FmodAudio::GetFmodSystem()
 {
     return s_FMODAudio->m_System;
 }
+
 FMOD::ChannelGroup* FmodAudio::GetFmodChannelGroup()
 {
     return s_FMODAudio->m_MasterGroup;
 }
-void FmodAudio::InsertFmodSound(const std::string& name, Ref<FmodSound> sound)
+
+void FmodAudio::InsertFmodSound(const std::string &name, const Ref<FmodSound>& sound)
 {
     s_FMODAudio->m_SoundMap[name] = sound;
+}
+
+void FmodAudio::RemoveFmodSound(const std::string &name)
+{
+    if (const auto it = s_FMODAudio->m_SoundMap.find(name); it != s_FMODAudio->m_SoundMap.end())
+    {
+        s_FMODAudio->m_SoundMap.erase(it);
+    }
 }
 
 }

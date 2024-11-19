@@ -6,8 +6,14 @@
 
 namespace origin {
 
-FmodSound::~FmodSound()
+FmodSound::FmodSound(std::string name) : m_Sound(nullptr), m_Channel(nullptr),
+                                         m_Name(std::move(name)), m_Paused(false), m_FadeInStartMs(0), m_FadeInEndMs(0),
+                                         m_FadeOutStartMs(0), m_FadeOutEndMs(0)
 {
+}
+
+FmodSound::~FmodSound()
+{    
     if (m_Sound)
     {
         m_Sound->release();
@@ -53,13 +59,18 @@ void FmodSound::SetPitch(const float pitch) const
     m_Channel->setPitch(pitch);
 }
 
-void FmodSound::SetFadeIn(u32 fade_in_start_ms, u32 fade_in_end_ms)
+void FmodSound::SetMode(const FMOD_MODE mode) const
+{
+    m_Channel->setMode(mode);    
+}
+
+void FmodSound::SetFadeIn(const u32 fade_in_start_ms, const u32 fade_in_end_ms)
 {
     m_FadeInStartMs = fade_in_start_ms;
     m_FadeInEndMs = fade_in_end_ms;
 }
 
-void FmodSound::SetFadeOut(u32 fade_out_start_ms, u32 fade_out_end_ms)
+void FmodSound::SetFadeOut(const u32 fade_out_start_ms, const u32 fade_out_end_ms)
 {
     m_FadeOutStartMs = fade_out_start_ms;
     m_FadeOutEndMs = fade_out_end_ms;
@@ -84,17 +95,19 @@ void FmodSound::Update([[maybe_unused]] float delta_time) const
     UpdateFading();
 }
 
-void FmodSound::AddDsp(const Ref<FmodDsp>& dsp)
+void FmodSound::AddDsp(FMOD::DSP* dsp)
 {
+    FMOD_RESULT result = m_Channel->addDSP(static_cast<int>(m_Dsps.size()), dsp);
+    FMOD_CHECK(result)
     m_Dsps.push_back(dsp);
 }
 
-FMOD::Sound* FmodSound::GetSound() const
+FMOD::Sound* FmodSound::GetFmodSound() const
 {
     return m_Sound;
 }
 
-FMOD::Channel* FmodSound::GetChannel() const
+FMOD::Channel* FmodSound::GetFmodChannel() const
 {
     return m_Channel;
 }
@@ -125,17 +138,17 @@ u32 FmodSound::GetPositionMs() const
     return position;
 }
 
-Ref<FmodSound> FmodSound::Create(const std::string &name, const std::string &filepath, FMOD_MODE mode)
+Ref<FmodSound> FmodSound::Create(const std::string &name, const std::string &filepath, const FMOD_MODE mode)
 {
-    Ref<FmodSound> fmod_sound = CreateRef<FmodSound>();
+    Ref<FmodSound> fmod_sound = CreateRef<FmodSound>(name);
     FmodAudio::GetFmodSystem()->createSound(filepath.c_str(), mode, nullptr, &fmod_sound->m_Sound);
     FmodAudio::InsertFmodSound(name, fmod_sound);
     return fmod_sound;
 }
 
-Ref<FmodSound> FmodSound::CreateStream(const std::string& name, const std::string& filepath, FMOD_MODE mode)
+Ref<FmodSound> FmodSound::CreateStream(const std::string& name, const std::string& filepath, const FMOD_MODE mode)
 {
-    Ref<FmodSound> fmod_sound = CreateRef<FmodSound>();
+    Ref<FmodSound> fmod_sound = CreateRef<FmodSound>(name);
     FmodAudio::GetFmodSystem()->createStream(filepath.c_str(), mode, nullptr, &fmod_sound->m_Sound);
     FmodAudio::InsertFmodSound(name, fmod_sound);
     return fmod_sound;

@@ -24,11 +24,12 @@ public:
     void SetMasterVolume(float volume) const;
     void MuteMaster(bool mute) const;
 
-    void Update(float deltaTime) const;
+    void Update(float delta_time) const;
     static FmodAudio &GetInstance();
     static FMOD::System *GetFmodSystem();
     static FMOD::ChannelGroup *GetFmodChannelGroup();
-    static void InsertFmodSound(const std::string &name, Ref<FmodSound> sound);
+    static void InsertFmodSound(const std::string &name, const Ref<FmodSound>& sound);
+    static void RemoveFmodSound(const std::string &name);
 
 private:
     FMOD::System *m_System;
