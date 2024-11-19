@@ -16,6 +16,7 @@ bool FmodDsp::IsActive() const
     m_Dsp->getActive(&active);
     return active;
 }
+
 // ====================================
 // Reverb
 // ====================================
@@ -173,5 +174,130 @@ Ref<FmodDistortion> FmodDistortion::Create()
 {
     return CreateRef<FmodDistortion>();
 }
+
+// ====================================
+// Chorus
+// ====================================
+FmodChorus::FmodChorus()
+{
+    FMOD_RESULT result = FmodAudio::GetFmodSystem()->createDSPByType(FMOD_DSP_TYPE_CHORUS, &m_Dsp);
+    FMOD_CHECK(result)
+}
+
+void FmodChorus::SetMix(const float mix) const
+{
+    FMOD_CHECK(m_Dsp->setParameterFloat(FMOD_DSP_CHORUS_MIX, mix))
+}
+
+float FmodChorus::GetMix() const
+{
+    float v = 0.0f;
+    FMOD_CHECK(m_Dsp->getParameterFloat(FMOD_DSP_CHORUS_MIX, &v, nullptr, 0))
+    return v;
+}
+
+void FmodChorus::SetRate(const float hertz) const
+{
+    FMOD_CHECK(m_Dsp->setParameterFloat(FMOD_DSP_CHORUS_RATE, hertz))
+}
+
+float FmodChorus::GetRate() const
+{
+    float v = 0.0f;
+    FMOD_CHECK(m_Dsp->getParameterFloat(FMOD_DSP_CHORUS_RATE, &v, nullptr, 0))
+    return v;
+}
+
+void FmodChorus::SetDepth(const float millis) const
+{
+    FMOD_CHECK(m_Dsp->setParameterFloat(FMOD_DSP_CHORUS_DEPTH, millis))
+}
+
+float FmodChorus::GetDepth() const
+{
+    float v = 0.0f;
+    FMOD_CHECK(m_Dsp->getParameterFloat(FMOD_DSP_CHORUS_DEPTH, &v, nullptr, 0))
+    return v;
+}
+
+Ref<FmodChorus> FmodChorus::Create()
+{
+    return CreateRef<FmodChorus>();
+}
+
+// ====================================
+// Compressor
+// ====================================
+FmodCompressor::FmodCompressor()
+{
+    FMOD_RESULT result = FmodAudio::GetFmodSystem()->createDSPByType(FMOD_DSP_TYPE_COMPRESSOR, &m_Dsp);
+    FMOD_CHECK(result)
+}
+
+void FmodCompressor::SetThreshold(float decibels) const 
+{
+    FMOD_CHECK(m_Dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_THRESHOLD, decibels))
+}
+
+float FmodCompressor::GetThreshold() const 
+{
+    float v = 0.0f;
+    FMOD_CHECK(m_Dsp->getParameterFloat(FMOD_DSP_COMPRESSOR_THRESHOLD, &v, nullptr, 0))
+    return v;
+}
+
+void FmodCompressor::SetRatio(float ratio) const 
+{
+    FMOD_CHECK(m_Dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_RATIO, ratio))
+}
+
+float FmodCompressor::GetRatio() const 
+{
+    float v = 0.0f;
+    FMOD_CHECK(m_Dsp->getParameterFloat(FMOD_DSP_COMPRESSOR_RATIO, &v, nullptr, 0))
+    return v;
+}
+
+void FmodCompressor::SetRelease(float millis) const 
+{
+    FMOD_CHECK(m_Dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_RELEASE, millis))
+}
+
+float FmodCompressor::GetRelease() const 
+{
+    float v = 0.0f;
+    FMOD_CHECK(m_Dsp->getParameterFloat(FMOD_DSP_COMPRESSOR_RELEASE, &v, nullptr, 0))
+    return v;
+}
+
+void FmodCompressor::SetGainMakeup(float decibels) const 
+{
+    FMOD_CHECK(m_Dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_GAINMAKEUP, decibels))
+}
+
+float FmodCompressor::GetGainMakeup() const 
+{
+    float v = 0.0f;
+    FMOD_CHECK(m_Dsp->getParameterFloat(FMOD_DSP_COMPRESSOR_GAINMAKEUP, &v, nullptr, 0))
+    return v;
+}
+
+void FmodCompressor::SetUseSidechain(bool use) const 
+{
+    FMOD_CHECK(m_Dsp->setParameterBool(FMOD_DSP_COMPRESSOR_USESIDECHAIN, use))
+}
+
+bool FmodCompressor::IsSidechainLinked() const 
+{
+    bool v = false;
+    FMOD_CHECK(m_Dsp->getParameterBool(FMOD_DSP_COMPRESSOR_LINKED, &v, nullptr, 0))
+    return v;
+}
+
+Ref<FmodCompressor> FmodCompressor::Create() 
+{
+    return CreateRef<FmodCompressor>();
+}
+
 
 }
