@@ -19,6 +19,7 @@ public:
 
     void SetSelectedMaterial(AssetHandle handle);
     void Render() override;
+    void OnUpdate(float delta_time) override;
 
     void OnEvent(Event &e) override;
 

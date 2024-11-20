@@ -12,6 +12,10 @@
 #include <imgui.h>
 #include <string>
 
+#include <glm/glm.hpp>
+
+#include "Origin/Math/Math.h"
+
 namespace origin {
 
 class PanelBase
@@ -21,12 +25,19 @@ public:
     ~PanelBase() {}
 
     virtual void Render() = 0;
+    virtual void OnUpdate(float delta_time) = 0;
+
     virtual void OnEvent(Event &e) = 0;
 
     void Close() { m_Open = false; }
     void Open() { m_Open = true; }
 
 protected:
+    virtual Rect CalculateCanvas() { return Rect(); }
+
+    ImVec2 m_CanvasPosMin;
+    ImVec2 m_CanvasPosMax;
+
     std::string m_Title;
     bool m_Open = true;
 };

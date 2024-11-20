@@ -118,6 +118,10 @@ namespace origin {
         EntityPropertiesPanel();
     }
 
+    void SceneHierarchyPanel::OnUpdate(float delta_time)
+    {
+    }
+
     void SceneHierarchyPanel::EntityHierarchyPanel()
     {
         ImGui::Begin("Hierarchy");

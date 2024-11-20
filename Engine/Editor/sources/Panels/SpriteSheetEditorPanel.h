@@ -51,7 +51,7 @@ namespace origin
         void Duplicate(i32 index);
 
         void Render() override;
-        void OnUpdate(Timestep ts);
+        void OnUpdate(float delta_time) override;
 
         bool Serialize(const std::filesystem::path &filepath);
         bool Deserialize();

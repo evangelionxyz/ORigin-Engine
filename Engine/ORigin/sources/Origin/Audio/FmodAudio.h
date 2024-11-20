@@ -34,7 +34,8 @@ public:
     static FMOD::ChannelGroup *GetChannelGroup(const std::string &name);
     static FmodAudio &GetInstance();
     static FMOD::System *GetFmodSystem();
-    static FMOD::ChannelGroup *GetFmodChannelGroup();
+    static FMOD::ChannelGroup *GetMasterChannel();
+    static float GetMasterVolume();
     static void InsertFmodSound(const std::string &name, const Ref<FmodSound>& sound);
     static void RemoveFmodSound(const std::string &name);
 

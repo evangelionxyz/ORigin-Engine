@@ -101,6 +101,11 @@ void MaterialEditorPanel::Render()
     }
 }
 
+void MaterialEditorPanel::OnUpdate(float delta_time)
+{
+
+}
+
 void MaterialEditorPanel::OnEvent(Event &e)
 {
     EventDispatcher dispatcher(e);

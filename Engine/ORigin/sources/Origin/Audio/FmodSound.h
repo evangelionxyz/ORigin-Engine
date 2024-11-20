@@ -29,19 +29,19 @@ struct FmodSound
 
     void Release();
 
-    [[nodiscard]] float GetPitch() const;
-    [[nodiscard]] float GetVolume() const;
+    float GetPitch() const;
+    float GetVolume() const;
 
     void Update(float delta_time) const;
     void AddDsp(FMOD::DSP* dsp);
 
-    [[no_discard]] FMOD::Sound* GetFmodSound() const;
-    [[no_discard]] FMOD::Channel* GetFmodChannel() const;
-    [[no_discard]] const std::string &GetName() const;
-    [[no_discard]] bool IsPlaying() const;
-    [[no_discard]] u32 GetLengthMs() const;
-    [[no_discard]] u32 GetPositionMs() const;
-    [[no_discard]] FMOD::ChannelGroup *GetChannelGroup() const;
+    FMOD::Sound* GetFmodSound() const;
+    FMOD::Channel* GetFmodChannel() const;
+    const std::string &GetName() const;
+    bool IsPlaying() const;
+    u32 GetLengthMs() const;
+    u32 GetPositionMs() const;
+    FMOD::ChannelGroup *GetChannelGroup() const;
 
     static Ref<FmodSound> Create(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT | FMOD_LOOP_OFF);
     static Ref<FmodSound> CreateStream(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT | FMOD_LOOP_OFF);

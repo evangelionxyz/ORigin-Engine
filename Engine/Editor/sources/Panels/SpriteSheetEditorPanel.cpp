@@ -226,7 +226,7 @@ namespace origin
         }
     }
 
-    void SpriteSheetEditorPanel::OnUpdate(Timestep ts)
+    void SpriteSheetEditorPanel::OnUpdate(float delta_time)
     {
         if (!m_Open)
         {
@@ -234,8 +234,8 @@ namespace origin
         }
 
         m_Camera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-        m_Camera.OnUpdate(ts, m_ViewportBounds[0], m_ViewportBounds[1]);
-        OnMouse(ts);
+        m_Camera.OnUpdate(delta_time, m_ViewportBounds[0], m_ViewportBounds[1]);
+        OnMouse(delta_time);
 
         RenderCommand::ClearColor(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
         m_Framebuffer->Bind();

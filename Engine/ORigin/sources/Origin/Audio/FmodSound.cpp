@@ -15,7 +15,7 @@ void FmodSound::Play()
 {
     const FMOD_RESULT result = FmodAudio::GetFmodSystem()->playSound(
         m_Sound,
-        m_ChannelGroup ? m_ChannelGroup : FmodAudio::GetFmodChannelGroup(),
+        m_ChannelGroup ? m_ChannelGroup : FmodAudio::GetMasterChannel(),
         false, // start paused
         &m_Channel
     );
@@ -178,7 +178,7 @@ Ref<FmodSound> FmodSound::Create(const std::string &name, const std::string &fil
     
     const FMOD_RESULT result = FmodAudio::GetFmodSystem()->playSound(
             fmod_sound->m_Sound,
-            fmod_sound->m_ChannelGroup ? fmod_sound->m_ChannelGroup : FmodAudio::GetFmodChannelGroup(),
+            fmod_sound->m_ChannelGroup ? fmod_sound->m_ChannelGroup : FmodAudio::GetMasterChannel(),
             true, // start paused
             &fmod_sound->m_Channel
         );
@@ -196,7 +196,7 @@ Ref<FmodSound> FmodSound::CreateStream(const std::string& name, const std::strin
     
     const FMOD_RESULT result = FmodAudio::GetFmodSystem()->playSound(
         fmod_sound->m_Sound,
-        fmod_sound->m_ChannelGroup ? fmod_sound->m_ChannelGroup : FmodAudio::GetFmodChannelGroup(),
+        fmod_sound->m_ChannelGroup ? fmod_sound->m_ChannelGroup : FmodAudio::GetMasterChannel(),
         true, // start paused
         &fmod_sound->m_Channel
     );

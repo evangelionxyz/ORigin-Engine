@@ -101,9 +101,16 @@ FMOD::System* FmodAudio::GetFmodSystem()
     return s_fmod_audio->m_System;
 }
 
-FMOD::ChannelGroup* FmodAudio::GetFmodChannelGroup()
+FMOD::ChannelGroup* FmodAudio::GetMasterChannel()
 {
     return s_fmod_audio->m_MasterGroup;
+}
+
+float FmodAudio::GetMasterVolume()
+{
+    float volume = 0.0f;
+    s_fmod_audio->m_MasterGroup->getVolume(&volume);
+    return volume;
 }
 
 void FmodAudio::InsertFmodSound(const std::string &name, const Ref<FmodSound>& sound)

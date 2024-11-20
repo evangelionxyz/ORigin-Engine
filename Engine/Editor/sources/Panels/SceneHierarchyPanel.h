@@ -22,6 +22,7 @@ namespace origin {
         Entity GetSelectedEntity();
 
         void Render() override;
+        void OnUpdate(float delta_time) override;
 
         void EntityHierarchyPanel();
         void EntityPropertiesPanel();

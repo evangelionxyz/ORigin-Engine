@@ -399,7 +399,7 @@ namespace origin
         ImGui::End();
     }
 
-    void UIEditorPanel::OnUpdate(Timestep ts)
+    void UIEditorPanel::OnUpdate(float delta_time)
     {
         if (!m_Open)
         {
@@ -416,8 +416,8 @@ namespace origin
         }
 
         m_Camera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-        m_Camera.OnUpdate(ts, m_ViewportBounds[0], m_ViewportBounds[1]);
-        OnMouse(ts);
+        m_Camera.OnUpdate(delta_time, m_ViewportBounds[0], m_ViewportBounds[1]);
+        OnMouse(delta_time);
 
         m_Framebuffer->Bind();
         RenderCommand::Clear();
