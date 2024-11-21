@@ -38,12 +38,16 @@ void Physics::Init(PhysicsAPI api)
 
 void Physics::Shutdown()
 {
-    s_PhysicsAPIContext->Shutdown();
+    if (s_PhysicsAPIContext)
+        s_PhysicsAPIContext->Shutdown();
 }
 
 void Physics::SetAPI(PhysicsAPI api)
 {
     Physics::s_PhysicsAPI = api;
+    Physics::Shutdown();
+
+    Physics::Init(api);
 }
 
 PhysicsAPI Physics::GetAPI()

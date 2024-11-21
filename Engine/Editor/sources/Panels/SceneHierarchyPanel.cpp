@@ -22,8 +22,6 @@
 
 namespace origin {
 
-    static bool IsDragging = false;
-
     SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene> &scene)
     {
         SetActiveScene(scene);
@@ -414,33 +412,15 @@ namespace origin {
 
         DrawComponent<TransformComponent>("Transform", entity, [&](auto &transform)
         {
-            bool changed = false;
-
-            if (!IsDragging && !ImGuizmo::IsUsing())
-            {
-                auto &temp = ComponentsCommand<TransformComponent>::GetTempComponent();
-                temp = transform;
-            }
-
-            changed |= UI::DrawVec3Control("Translation", transform.Translation);
+            UI::DrawVec3Control("Translation", transform.Translation);
             glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(transform.Rotation));
-            bool rotationChanged = UI::DrawVec3Control("Rotation", eulerRotation, 1.0f);
-            if (rotationChanged)
+            if (UI::DrawVec3Control("Rotation", eulerRotation, 1.0f))
             {
                 glm::vec3 rotationRadians = glm::radians(eulerRotation);
                 transform.Rotation = glm::quat(rotationRadians);
-                changed = true;
             }
-            changed |= UI::DrawVec3Control("Scale", transform.Scale, 0.01f, 1.0f);
+            UI::DrawVec3Control("Scale", transform.Scale, 0.01f, 1.0f);
 
-            if (changed && !IsDragging)
-            {
-                CommandManager::Instance().ExecuteCommand(
-                    std::make_unique<ComponentsCommand<TransformComponent>>(transform, 
-                    ComponentsCommand<TransformComponent>::GetTempComponent()));
-            }
-
-            IsDragging = changed;
         });
 
         DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
@@ -587,33 +567,25 @@ namespace origin {
 
         DrawComponent<CameraComponent>("Camera", entity, [](auto &component)
         {
-            bool changed = false;
-            if (!IsDragging)
-            {
-                auto &temp = ComponentsCommand<CameraComponent>::GetTempComponent();
-                temp = component;
-            }
-
             auto &camera = component.Camera;
             UI::DrawCheckbox("Primary", &component.Primary);
 
             const char* projectionType[2] = { "Perspective", "Orthographic" };
             const char* currentProjectionType = projectionType[static_cast<int>(camera.GetProjectionType())];
 
-            bool isSelected = false;
+            bool is_selected = false;
             if (ImGui::BeginCombo("Projection", currentProjectionType))
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    isSelected = currentProjectionType == projectionType[i];
-                    if (ImGui::Selectable(projectionType[i], isSelected))
+                    is_selected = currentProjectionType == projectionType[i];
+                    if (ImGui::Selectable(projectionType[i], is_selected))
                     {
                         currentProjectionType = projectionType[i];
                         component.Camera.SetProjectionType(static_cast<ProjectionType>(i));
-                        changed = true;
                     }
 
-                    if (isSelected)
+                    if (is_selected)
                         ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
@@ -626,15 +598,14 @@ namespace origin {
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    isSelected = currentAspectRatioType == aspectRatioType[i];
-                    if (ImGui::Selectable(aspectRatioType[i], isSelected))
+                    is_selected = currentAspectRatioType == aspectRatioType[i];
+                    if (ImGui::Selectable(aspectRatioType[i], is_selected))
                     {
                         currentAspectRatioType = aspectRatioType[i];
                         camera.SetAspectRatioType(static_cast<AspectRatioType>(i));
-                        changed = true;
                     }
 
-                    if (isSelected)
+                    if (is_selected)
                         ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
@@ -646,21 +617,18 @@ namespace origin {
                 if (ImGui::DragFloat("FOV", &perspectiveFov, 0.1f, 0.01f, 10000.0f))
                 {
                     camera.SetFov(glm::radians(perspectiveFov));
-                    changed = true;
                 }
 
                 float perspectiveNearClip = camera.GetNear();
                 if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f))
                 {
                     camera.SetNear(perspectiveNearClip);
-                    changed = true;
                 }
 
                 float perspectiveFarClip = camera.GetFar();
                 if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f))
                 {
                     camera.SetFar(perspectiveFarClip);
-                    changed = true;
                 }
             }
 
@@ -670,32 +638,20 @@ namespace origin {
                 if (ImGui::DragFloat("Ortho Scale", &orthoScale, 0.1f, 1.0f, 100.0f))
                 {
                     camera.SetOrthoScale(orthoScale);
-                    changed = true;
                 }
 
                 float orthoNearClip = camera.GetOrthoNear();
                 if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
                 {
                     camera.SetOrthoNear(orthoNearClip);
-                    changed = true;
                 }
 
                 float orthoFarClip = camera.GetOrthoFar();
                 if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
                 {
-                    changed = true;
                     camera.SetOrthoFar(orthoFarClip);
                 }
             }
-
-            if (changed && !IsDragging)
-            {
-                CommandManager::Instance().ExecuteCommand(
-                    std::make_unique<ComponentsCommand<CameraComponent>>(component,
-                    ComponentsCommand<CameraComponent>::GetTempComponent()));
-            }
-
-            IsDragging = changed;
         });
 
         DrawComponent<SpriteAnimationComponent>("Sprite Animation", entity, [](auto &component)
@@ -710,7 +666,7 @@ namespace origin {
             {
                 std::string label = "None";
 
-                bool isAudioValid = false;
+                bool is_audio_valid = false;
                 ImGui::Text("Audio Source");
                 ImGui::SameLine();
                 if (component.Audio != 0)
@@ -719,7 +675,7 @@ namespace origin {
                     {
                         const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Audio);
                         label = metadata.Filepath.filename().string();
-                        isAudioValid = true;
+                        is_audio_valid = true;
                     }
                     else
                     {
@@ -751,7 +707,7 @@ namespace origin {
                     ImGui::EndDragDropTarget();
                 }
 
-                if (isAudioValid == false)
+                if (is_audio_valid == false)
                     return;
 
                 Ref<FmodSound> fmod_sound = AssetManager::GetAsset<FmodSound>(component.Audio);
@@ -907,14 +863,14 @@ namespace origin {
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        bool isSelected = currentLightTypeString == lightTypeString[i];
-                        if (ImGui::Selectable(lightTypeString[i], isSelected))
+                        bool is_selected = currentLightTypeString == lightTypeString[i];
+                        if (ImGui::Selectable(lightTypeString[i], is_selected))
                         {
                             currentLightTypeString = lightTypeString[i];
                             component.Light->Type = static_cast<LightingType>(i);
                         }
 
-                        if (isSelected)
+                        if (is_selected)
                             ImGui::SetItemDefaultFocus();
                     }
                     ImGui::EndCombo();
@@ -981,13 +937,13 @@ namespace origin {
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    bool isSelected = currentBodyTypeString == bodyTypeString[i];
-                    if (ImGui::Selectable(bodyTypeString[i], isSelected))
+                    bool is_selected = currentBodyTypeString == bodyTypeString[i];
+                    if (ImGui::Selectable(bodyTypeString[i], is_selected))
                     {
                         currentBodyTypeString = bodyTypeString[i];
                         component.Type = static_cast<Rigidbody2DComponent::BodyType>(i);
                     }
-                    if (isSelected) ImGui::SetItemDefaultFocus();
+                    if (is_selected) ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
             }
@@ -1092,19 +1048,19 @@ namespace origin {
             const char *motionQuality[2] = { "Discrete", "LinearCast" };
             const char *currentMotionQuality = motionQuality[static_cast<int>(component.MotionQuality)];
 
-            bool isSelected = false;
+            bool is_selected = false;
             if (ImGui::BeginCombo("Motion Quality", currentMotionQuality))
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    isSelected = currentMotionQuality == motionQuality[i];
-                    if (ImGui::Selectable(motionQuality[i], isSelected))
+                    is_selected = currentMotionQuality == motionQuality[i];
+                    if (ImGui::Selectable(motionQuality[i], is_selected))
                     {
                         currentMotionQuality = motionQuality[i];
                         component.MotionQuality = static_cast<RigidbodyComponent::EMotionQuality>(i);
                     }
 
-                    if (isSelected)
+                    if (is_selected)
                     {
                         ImGui::SetItemDefaultFocus();
                     }
@@ -1176,7 +1132,7 @@ namespace origin {
         DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_Scene](auto &component) mutable
             {
                 bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
-                bool isSelected = false;
+                bool is_selected = false;
 
                 if (!scriptClassExist)
                 {
@@ -1191,13 +1147,13 @@ namespace origin {
                 {
                     for (int i = 0; i < scriptStorage.size(); i++)
                     {
-                        isSelected = currentScriptClasses == scriptStorage[i];
-                        if (ImGui::Selectable(scriptStorage[i].c_str(), isSelected))
+                        is_selected = currentScriptClasses == scriptStorage[i];
+                        if (ImGui::Selectable(scriptStorage[i].c_str(), is_selected))
                         {
                             currentScriptClasses = scriptStorage[i];
                             component.ClassName = scriptStorage[i];
                         }
-                        if (isSelected) ImGui::SetItemDefaultFocus();
+                        if (is_selected) ImGui::SetItemDefaultFocus();
                     }
                     ImGui::EndCombo();
                 }
@@ -1205,7 +1161,7 @@ namespace origin {
                 if (ImGui::Button("Detach"))
                 {
                     component.ClassName = "Detached";
-                    isSelected = false;
+                    is_selected = false;
                 }
 
                 bool detached = component.ClassName == "Detached";

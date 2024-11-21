@@ -4,3 +4,4 @@ Project:
   AssetDirectory: Assets
   AssetRegistry: AssetRegistry
   ScriptModulePath: bin/TestGame.dll
+  PhysicsAPI: Jolt

@@ -107,16 +107,16 @@ public:
     static JoltApi *GetInstance();
 
 private:
-    Scope<JPH::PhysicsSystem> m_Physics;
     Scope<JPH::TempAllocator> m_TempAllocator;
     Scope<JPH::JobSystem> m_JobSystem;
     Scope<JPH::BodyActivationListener> m_BodyActivationListener;
     Scope<JPH::ContactListener> m_ContactListener;
 
-    JPH::BodyInterface *m_BodyInterface{};
     JoltBroadPhaseLayerInterfaceImpl m_BroadPhaseLayer;
     JoltObjectVsBroadPhaseLayerFilterImpl m_ObjectVsBroadPhaseLayerFilter;
     JoltObjectLayerPairFilterImpl m_ObjectLayerPairFilter;
+
+    friend class JoltScene;
 };
 
 }

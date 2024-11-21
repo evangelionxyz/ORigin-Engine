@@ -7,11 +7,6 @@ namespace origin {
 
 static JoltApi *s_Instance = nullptr;
 
-
-static constexpr unsigned int cNumBodies = 20480;
-static constexpr unsigned int cNumBodyMutexes = 0;
-static constexpr unsigned int cMaxBodyPairs = 64000;
-static constexpr unsigned int cMaxContactConstraints = 20480;
 static constexpr int cMaxPhysicsJobs = 2048;
 
 JoltApi::JoltApi()

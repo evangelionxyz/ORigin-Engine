@@ -7,6 +7,8 @@
 #include "Origin/Asset/Asset.h"
 #include "Origin/Asset/EditorAssetManager.h"
 
+#include "Origin/Physics/Physics.hpp"
+
 #include <string>
 #include <filesystem>
 
@@ -19,6 +21,8 @@ namespace origin
 		std::filesystem::path AssetDirectory = "Assets";
 		std::filesystem::path AssetRegistry = "AssetRegistry";
 		std::filesystem::path ScriptModulePath;
+
+		PhysicsAPI PhysicsApi = PhysicsAPI::Jolt;
 	};
 
 	class Scene;
@@ -31,7 +35,6 @@ namespace origin
 		std::filesystem::path GetAssetRegistryPath() { return GetProjectDirectory() / m_Config.AssetRegistry; }
 		std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path) { return GetAssetDirectory() / path; }
 		std::filesystem::path GetAssetAbsolutePath(const std::filesystem::path& path);
-		
 
 		static const std::filesystem::path GetActiveProjectPath()
 		{

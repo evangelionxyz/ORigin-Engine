@@ -12,6 +12,24 @@ enum class PhysicsAPI
     None = -1, Jolt = 0, PhysX
 };
 
+static std::string PhysicsApiTostring(PhysicsAPI api)
+{
+    switch (api)
+    {
+    case origin::PhysicsAPI::None: return "None";
+    case origin::PhysicsAPI::Jolt: return "Jolt";
+    case origin::PhysicsAPI::PhysX: return "PhysX";
+    }
+    return "Invalid";
+}
+
+static PhysicsAPI PhysicsApiFromString(const std::string &api_str)
+{
+    if (api_str == "Jolt") return PhysicsAPI::Jolt;
+    else if (api_str == "PhysX") return PhysicsAPI::PhysX;
+    return PhysicsAPI::None;
+}
+
 class Physics
 {
 public:

@@ -77,7 +77,6 @@ namespace origin
         }
 
         CreatePanels();
-
         m_Gizmos = CreateScope<Gizmos>();
 
         if (!m_UIEditorPanel)
@@ -87,8 +86,6 @@ namespace origin
         }
 
         InitGrid();
-
-
         m_GuiWindowSceneStats = GuiWindow("Scene Stats", UI::EWindowFlags::NoBackground);
     }
 
@@ -98,6 +95,7 @@ namespace origin
 
         std::filesystem::path filepath = std::filesystem::current_path() / "Editor.cfg";
         EditorSerializer::Serialize(this, filepath);
+        Physics::Shutdown();
         ScriptEngine::Shutdown(); 
     }
 
@@ -398,10 +396,7 @@ namespace origin
 
         ScriptEngine::ClearSceneContext();
 
-        if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
-        {
-            m_ActiveScene->OnRuntimeStop();
-        }
+        m_ActiveScene->OnRuntimeStop();
 
         m_SceneHierarchyPanel->SetActiveScene(m_EditorScene);
         m_ActiveScene = m_EditorScene;
@@ -438,6 +433,9 @@ namespace origin
         {
             ScriptEngine::Init();
 
+            PhysicsAPI api = Project::GetActive()->GetConfig().PhysicsApi;
+            Physics::Init(api);
+
             AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
             OpenScene(handle);
 
@@ -465,6 +463,9 @@ namespace origin
         if (Project::Open())
         {
             ScriptEngine::Init();
+
+            PhysicsAPI api = Project::GetActive()->GetConfig().PhysicsApi;
+            Physics::Init(api);
 
             AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
             OpenScene(handle);
@@ -542,10 +543,7 @@ namespace origin
             return;
         }
 
-        if (m_SceneState != SceneState::Edit)
-        {
-            OnSceneStop();
-        }
+        OnSceneStop();
 
         const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
         Ref<Scene> read_only_scene = AssetManager::GetAsset<Scene>(handle);
@@ -1057,6 +1055,8 @@ namespace origin
         {
             static int selected_option = 0;
 
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 5.0f));
+
             ImGui::Begin("Preferences", &GuiPreferencesWindow);
 
             // Define a child window for the left menu
@@ -1100,10 +1100,10 @@ namespace origin
                     {
                         for (const auto &[key, value] : m_Themes.GetThemes())
                         {
-                            const bool isSelected = m_Themes.GetCurrentTheme() == key;
-                            if (ImGui::Selectable(key.c_str(), isSelected))
+                            const bool is_selected = m_Themes.GetCurrentTheme() == key;
+                            if (ImGui::Selectable(key.c_str(), is_selected))
                                 m_Themes.ApplyTheme(key);
-                            if (isSelected)
+                            if (is_selected)
                                 ImGui::SetItemDefaultFocus();
                         }
                         ImGui::EndCombo();
@@ -1113,6 +1113,29 @@ namespace origin
                 {
                     ImGui::Text("Physics");
                     ImGui::Separator();
+                    
+
+                    std::string current_api = PhysicsApiTostring(Physics::GetAPI());
+                    const char *apis[2] = { "Jolt", "PhysX" };
+
+                    if (ImGui::BeginCombo("Physics API", current_api.c_str()))
+                    {
+                        for (i32 i = 0; i < 2; ++i)
+                        {
+                            const bool is_selected = strcmp(current_api.c_str(), apis[0]) == 0;
+                            if (ImGui::Selectable(apis[i], is_selected))
+                            {
+                                OnSceneStop();
+
+                                Physics::SetAPI(PhysicsApiFromString(apis[i]));
+                                Project::GetActive()->GetConfig().PhysicsApi = PhysicsApiFromString(apis[i]);
+                                Project::SaveActive();
+                            }
+                            if (is_selected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
                 }
                 else if (selected_option == 3) // Physics 2D
                 {
@@ -1128,6 +1151,8 @@ namespace origin
             ImGui::EndChild();
 
             ImGui::End();
+
+            ImGui::PopStyleVar();
         }
 
         if (GuiRenderSettingsWindow)

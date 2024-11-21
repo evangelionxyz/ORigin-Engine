@@ -25,6 +25,8 @@ public:
 
 private:
     void CreateBoxCollider(Entity entity);
+    void CreateSphereCollider(Entity entity);
+    void CreateCapsueCollider(Entity entity);
 
     physx::PxScene *m_PhysXScene;
     physx::PxMaterial *m_Material;

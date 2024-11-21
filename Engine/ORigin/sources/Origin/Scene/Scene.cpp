@@ -39,18 +39,21 @@ namespace origin
 	{
 		OGN_PROFILER_SCENE();
 
-        switch (Physics::GetAPI())
+        if (Physics::GetPhysicsContext())
         {
-        case PhysicsAPI::Jolt:
-        {
-            m_Physics = CreateRef<JoltScene>(this);
-            break;
-        }
-        case PhysicsAPI::PhysX:
-        {
-            m_Physics = CreateRef<PhysXScene>(this);
-            break;
-        }
+            switch (Physics::GetAPI())
+            {
+            case PhysicsAPI::Jolt:
+            {
+                m_Physics = CreateRef<JoltScene>(this);
+                break;
+            }
+            case PhysicsAPI::PhysX:
+            {
+                m_Physics = CreateRef<PhysXScene>(this);
+                break;
+            }
+            }
         }
 
 		m_Physics2D = CreateRef<Physics2D>(this);
@@ -59,7 +62,6 @@ namespace origin
 
     Scene::~Scene()
     {
-        OnRuntimeStop();
     }
 
     Ref<Scene> Scene::Copy(const Ref<Scene> &other)
@@ -329,7 +331,7 @@ namespace origin
 			}
 		}
 
-        m_Physics->StopSimulation();
+        if (m_Physics) m_Physics->StopSimulation();
 
 		m_Physics2D->OnSimulationStop();
 		m_UIRenderer->Unload();

@@ -64,7 +64,7 @@ namespace origin {
         m_GuiLayer = new GuiLayer(m_Window);
         PushOverlay(m_GuiLayer);
 
-        Physics::Init(PhysicsAPI::PhysX);
+        //Physics::Init(PhysicsAPI::Jolt);
 
         AudioEngine::Init();
         FmodAudio::Init();
@@ -81,7 +81,7 @@ namespace origin {
         Renderer::Shutdown();
         FmodAudio::Shutdown();
         AudioEngine::Shutdown();
-        Physics::Shutdown();
+        //Physics::Shutdown();
 
         Window::GLFWShutdown();
     }
