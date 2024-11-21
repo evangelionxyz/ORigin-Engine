@@ -24,6 +24,7 @@ IncludeDir["MSDFATLASGEN"]             = "%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdf-a
 IncludeDir["MSDFGEN"]                  = "%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdfgen"
 IncludeDir["JOLT"]                     = "%{THIRD_PARTY_DIR}/JOLTPHYSICS"
 IncludeDir["FMOD"]                     = "%{THIRD_PARTY_DIR}/FMOD/include"
+IncludeDir["PhysX"]                    = "%{THIRD_PARTY_DIR}/nvphysx/physx/include"
 
 -- Windows
 EDITOR_LIB_DIR                         = "%{wks.location}Engine/Editor/Lib/"
@@ -48,7 +49,6 @@ Library["ShaderC_Release"]             = "%{LibraryDir.VulkanSDK}/shaderc_shared
 Library["SPIRV_Cross_Release"]         = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_Cross_GLSL_Release"]    = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
 
-
 -- Dependencies Lua File
 group "Dependencies"
     include "assimp.lua"
@@ -62,4 +62,22 @@ group "Dependencies"
     include "freetype.lua"
     include "JoltPhysics.lua"
     --include "fmt.lua"
+group ""
+
+group "NVIDIA"
+    include "physx/fast-xml.lua"
+    include "physx/low-level-aabb.lua"
+    include "physx/low-level-dynamics.lua"
+    include "physx/low-level.lua"
+    include "physx/physx-character-kinematic.lua"
+    include "physx/physx-common.lua"
+    include "physx/physx-extensions.lua"
+    include "physx/physx-foundation.lua"
+    include "physx/physx-pvd.lua"
+    include "physx/physx-task.lua"
+    include "physx/physx-vehicle.lua"
+    include "physx/physx-vehicle2.lua"
+    include "physx/physx.lua"
+    include "physx/scene-query.lua"
+    include "physx/simulation-controller.lua"
 group ""

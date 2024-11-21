@@ -377,10 +377,12 @@ namespace origin {
             std::string search = "Search Component";
             char searchBuffer[256];
             strncpy(searchBuffer, search.c_str(), sizeof(searchBuffer) - 1);
+
             if (ImGui::InputText("##SearchComponent", searchBuffer, sizeof(searchBuffer)))
             {
                 search = std::string(searchBuffer);
             }
+
             DisplayAddComponentEntry<ScriptComponent>("C# Script");
             DisplayAddComponentEntry<CameraComponent>("Camera");
             DisplayAddComponentEntry<UIComponent>("UI");
