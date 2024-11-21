@@ -31,7 +31,7 @@ objdir (ThirdPartyIntOutputdir)
 		"%{PhysXDir}/physx/source/foundation/include",
 	}
 	files { 
-		"%{PhysXDir}/physx/source/physxcooking/**.cpp",
+		"%{PhysXDir}/physx/source/physxcooking/src/**.cpp",
 	} 
 	
 	defines {

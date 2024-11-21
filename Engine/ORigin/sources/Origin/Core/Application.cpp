@@ -6,7 +6,9 @@
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/FmodAudio.h"
 #include "Origin/Scripting/ScriptEngine.h"
-#include "Origin/Physics/PhysicsEngine.h"
+
+#include "Origin/Physics/Physics.hpp"
+
 #include "ConsoleManager.h"
 #include "EmbeddedImages.h"
 
@@ -62,7 +64,8 @@ namespace origin {
         m_GuiLayer = new GuiLayer(m_Window);
         PushOverlay(m_GuiLayer);
 
-        PhysicsEngine::Init();
+        Physics::Init(PhysicsAPI::PhysX);
+
         AudioEngine::Init();
         FmodAudio::Init();
         Renderer::Init();
@@ -78,7 +81,7 @@ namespace origin {
         Renderer::Shutdown();
         FmodAudio::Shutdown();
         AudioEngine::Shutdown();
-        PhysicsEngine::Shutdown();
+        Physics::Shutdown();
 
         Window::GLFWShutdown();
     }

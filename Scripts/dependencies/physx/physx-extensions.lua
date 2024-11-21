@@ -56,7 +56,6 @@ defines {
 }
 
 links {
-	"NvFastXML",
 	"NvPhysX",
 	"NvPhysXCommon",
 	"NvPhysXFoundation",

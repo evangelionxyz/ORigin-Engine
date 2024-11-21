@@ -19,6 +19,7 @@ project "ORigin"
         "sources/Origin.h",
         "sources/Origin/**.cpp",
         "sources/Origin/**.h",
+        "sources/Origin/**.hpp",
         "sources/Platform/OpenGL/**.cpp",
         "sources/Platform/OpenGL/**.h",
         "sources/Platform/Vulkan/**.cpp",
@@ -45,6 +46,7 @@ project "ORigin"
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.MONO}",
         "%{IncludeDir.FMOD}",
+        "%{IncludeDir.PhysX}",
     }
 
     links {
@@ -58,6 +60,10 @@ project "ORigin"
         "FreeType",
         "YAMLCPP",
         "JOLT",
+        "NvPhysX",
+        "NvPhysXCooking",
+        "NvPhysXCommon",
+        "NvPhysXExtensions",
     }
     
     defines { "_CRT_SECURE_NO_WARNINGS" }

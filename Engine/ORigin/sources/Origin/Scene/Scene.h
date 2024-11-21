@@ -17,6 +17,7 @@ namespace origin
 {
     class Entity;
     class Physics2D;
+    class PhysicsSceneBase;
 
     class Scene : public Asset
     {
@@ -59,6 +60,8 @@ namespace origin
         const std::string &GetName() const { return m_Name; }
         void SetName(const std::string &name) { m_Name = name; }
         Ref<UIRenderer> GetUIRenderer() { return m_UIRenderer; }
+
+        const Ref<PhysicsSceneBase> &GetPhysics() const { return m_Physics; }
         const Ref<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
         
         u32 GetWidth() { return m_ViewportWidth; }
@@ -87,6 +90,9 @@ namespace origin
         std::string m_Name = "untitled";
         Ref<UIRenderer> m_UIRenderer;
         Ref<Physics2D> m_Physics2D;
+
+        Ref<PhysicsSceneBase> m_Physics;
+
         glm::vec4 m_GridColor = glm::vec4(1.0f);
         std::vector<std::pair<UUID, entt::entity>> m_EntityStorage;
         u32 m_ViewportWidth = 0, m_ViewportHeight = 0;
@@ -103,8 +109,11 @@ namespace origin
         friend class Gizmos;
         friend class SceneSerializer;
         friend class SceneHierarchyPanel;
+
         friend class Physics2D;
-        friend class PhysicsEngine;
+
+        friend class PhysXScene;
+        friend class JoltScene;
     };
 }
 

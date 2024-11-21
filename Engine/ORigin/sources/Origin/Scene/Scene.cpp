@@ -21,7 +21,10 @@
 #include "Lighting.h"
 #include "Entity.h"
 #include "ScriptableEntity.h"
-#include "Origin/Physics/PhysicsEngine.h"
+
+#include "Origin/Physics/Physics.hpp"
+#include "Origin/Physics/Jolt/JoltScene.hpp"
+#include "Origin/Physics/PhysX/PhysXScene.hpp"
 
 #include <glad/glad.h>
 
@@ -35,6 +38,21 @@ namespace origin
 	Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
+
+        switch (Physics::GetAPI())
+        {
+        case PhysicsAPI::Jolt:
+        {
+            m_Physics = CreateRef<JoltScene>(this);
+            break;
+        }
+        case PhysicsAPI::PhysX:
+        {
+            m_Physics = CreateRef<PhysXScene>(this);
+            break;
+        }
+        }
+
 		m_Physics2D = CreateRef<Physics2D>(this);
 		m_UIRenderer = CreateRef<UIRenderer>();
 	}
@@ -211,7 +229,8 @@ namespace origin
 
     void Scene::UpdatePhysics(Timestep ts)
     {
-        PhysicsEngine::Simulate(ts, this);
+        m_Physics->Simulate(ts);
+
         m_Physics2D->Simulate(ts);
     }
 
@@ -284,7 +303,7 @@ namespace origin
         });
 #endif
 
-        PhysicsEngine::OnSimulateStart(this);
+        m_Physics->StartSimulation();
         m_Physics2D->OnSimulationStart();
 	}
 
@@ -310,7 +329,8 @@ namespace origin
 			}
 		}
 
-		PhysicsEngine::OnSimulateStop(this);
+        m_Physics->StopSimulation();
+
 		m_Physics2D->OnSimulationStop();
 		m_UIRenderer->Unload();
 	}

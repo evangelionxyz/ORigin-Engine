@@ -47,6 +47,7 @@ namespace origin
         bool IsStatic = false;
         float Mass = 1.0f;
         bool AllowSleeping = true;
+        bool RetainAcceleration = false;
         float GravityFactor = 1.0f;
         glm::vec3 CenterMass = { 0.0f, 0.0f, 0.0f };
         glm::vec3 Offset = { 0.0f, 0.0f, 0.0f };
@@ -94,6 +95,7 @@ namespace origin
     {
     public:
         float Friction = 0.6f;
+        float StaticFriction = 0.6f;
         float Restitution = 0.6f;
         float Density = 1.0f;
 

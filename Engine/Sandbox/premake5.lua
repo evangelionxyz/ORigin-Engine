@@ -36,6 +36,7 @@ project "Sandbox"
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
+        "%{IncludeDir.PhysX}",
     }
 
     defines {

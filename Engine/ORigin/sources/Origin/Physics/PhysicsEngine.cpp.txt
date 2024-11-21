@@ -3,16 +3,6 @@
 #include "pch.h"
 #include "PhysicsEngine.h"
 
-#include <Jolt/RegisterTypes.h>
-#include <Jolt/Core/TempAllocator.h>
-#include <Jolt/Core/JobSystemThreadPool.h>
-#include <Jolt/Core/JobSystemSingleThreaded.h>
-#include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
-
 #include "Origin/Scene/Scene.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Scene/Components/PhysicsComponents.h"
@@ -21,44 +11,6 @@
 
 namespace origin
 {
-    struct PhysicsEngineData
-    {
-        std::unique_ptr<JPH::PhysicsSystem> PhysicsSystem;
-        std::unique_ptr<JPH::TempAllocator> TempAllocator;
-        std::unique_ptr<JPH::JobSystem> JobSystem;
-        std::unique_ptr<JPH::BodyActivationListener> BodyActivationListener;
-        std::unique_ptr<JPH::ContactListener> ContactListener;
-        JPH::BodyInterface *BodyInterface{};
-        JoltBroadPhaseLayerInterfaceImpl BroadPhaseLayerInterface;
-        JoltObjectVsBroadPhaseLayerFilterImpl ObjectVsBroadPhaseLayerFilter;
-        JoltObjectLayerPairFilterImpl ObjectLayerPairFilter;
-    };
-
-    static PhysicsEngineData s_Data;
-
-    static constexpr unsigned int cNumBodies = 20480;
-    static constexpr unsigned int cNumBodyMutexes = 0; // Autodetect
-    static constexpr unsigned int cMaxBodyPairs = 64000;
-    static constexpr unsigned int cMaxContactConstraints = 20480;
-    static constexpr int cMaxPhysicsJobs = 2048;
-
-    void PhysicsEngine::Init()
-    {
-        JPH::RegisterDefaultAllocator();
-        JPH::Factory::sInstance = new JPH::Factory();
-        JPH::RegisterTypes();
-        s_Data.TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(32 * 1024 * 1024);
-        s_Data.JobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, 8,
-            std::thread::hardware_concurrency() - 1);
-    }
-
-    void PhysicsEngine::Shutdown()
-    {
-        JPH::UnregisterTypes();
-        delete JPH::Factory::sInstance;
-        JPH::Factory::sInstance = nullptr;
-    }
-
     void *PhysicsEngine::CreateBoxCollider(Entity entity, const glm::vec3 &scale, RigidbodyComponent &rb)
     {
         auto &tc = entity.GetComponent<TransformComponent>();
@@ -289,47 +241,12 @@ namespace origin
 
     void PhysicsEngine::InstantiateEntity(Entity entity)
     {
-        if (entity.HasComponent<RigidbodyComponent>())
-        {
-            auto &rb = entity.GetComponent<RigidbodyComponent>();
-
-            if (entity.HasComponent<BoxColliderComponent>())
-            {
-                auto &cc = entity.GetComponent<BoxColliderComponent>();
-                cc.Shape = CreateBoxCollider(entity, cc.Scale, rb);
-                rb.SetFriction(cc.Friction);
-                rb.SetRestitution(cc.Restitution);
-            }
-            else if (entity.HasComponent<CapsuleColliderComponent>())
-            {
-                auto &cc = entity.GetComponent<CapsuleColliderComponent>();
-                cc.Shape = CreateCapsuleCollider(entity, cc.HalfHeight, cc.Radius, rb);
-                rb.SetFriction(cc.Friction);
-                rb.SetRestitution(cc.Restitution);
-            }
-            else if (entity.HasComponent<SphereColliderComponent>())
-            {
-                auto &cc = entity.GetComponent<SphereColliderComponent>();
-                cc.Shape = CreateSphereCollider(entity, cc.Radius, rb);
-                rb.SetFriction(cc.Friction);
-                rb.SetRestitution(cc.Restitution);
-            }
-        }
+       
     }
 
     void PhysicsEngine::DestroyEntity(Entity entity)
     {
-        if (entity.HasComponent<RigidbodyComponent>())
-        {
-            const auto &rb = entity.GetComponent<RigidbodyComponent>();
-
-            const auto body = reinterpret_cast<JPH::Body *>(rb.Body);
-            if (body)
-            {
-                s_Data.BodyInterface->RemoveBody(body->GetID());
-                s_Data.BodyInterface->DestroyBody(body->GetID());
-            }
-        }
+        
     }
 
     JPH::BodyInterface *PhysicsEngine::GetBodyInterface()

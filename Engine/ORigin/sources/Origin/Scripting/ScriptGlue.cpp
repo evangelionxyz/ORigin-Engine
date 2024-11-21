@@ -5,7 +5,9 @@
 #include "ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Physics/2D/Physics2D.h"
-#include "Origin/Physics/PhysicsEngine.h"
+
+#include "Origin/Physics/PhysicsSceneBase.hpp"
+
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
@@ -138,7 +140,7 @@ namespace origin
 			Entity copyEntity = scene->DuplicateEntity(entity);
 			copyEntity.GetComponent<TransformComponent>().WorldTranslation = translation;
 			scene->GetPhysics2D()->OnInstantiateEntity(copyEntity);
-			PhysicsEngine::InstantiateEntity(copyEntity);
+			scene->GetPhysics()->InstantiateEntity(copyEntity);
 			return copyEntity.GetUUID();
 		}
 		
@@ -156,7 +158,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			scene->GetPhysics2D()->OnDestroyEntity(entity);
-			PhysicsEngine::DestroyEntity(entity);
+			scene->GetPhysics()->DestroyEntity(entity);
 			scene->DestroyEntity(entity);
 		}
 	}
