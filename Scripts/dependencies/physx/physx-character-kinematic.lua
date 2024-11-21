@@ -40,7 +40,7 @@ objdir (ThirdPartyIntOutputdir)
 	}
 
 	links {
-		"PhysXFoundation",
+		"NvPhysXFoundation",
 	}
 
 	filter "system:linux"
