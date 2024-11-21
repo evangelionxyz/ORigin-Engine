@@ -5,6 +5,8 @@
 
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
+#include "Origin/Audio/FmodSound.h"
+#include "Origin/Audio/FmodAudio.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Animation/Animation.h"
 #include "Origin/Physics/2D/Physics2D.h"
@@ -33,58 +35,63 @@ namespace origin
 	Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
-		m_Physics2D = std::make_shared<Physics2D>(this);
-		m_UIRenderer = std::make_shared<UIRenderer>();
+		m_Physics2D = CreateRef<Physics2D>(this);
+		m_UIRenderer = CreateRef<UIRenderer>();
 	}
 
-	std::shared_ptr<Scene> Scene::Copy(const std::shared_ptr<Scene> &other)
-	{
-		OGN_PROFILER_SCENE();
+    Scene::~Scene()
+    {
+        OnRuntimeStop();
+    }
 
-		auto newScene = std::make_shared<Scene>();
-		newScene->m_Name = other->m_Name;
+    Ref<Scene> Scene::Copy(const Ref<Scene> &other)
+    {
+        OGN_PROFILER_SCENE();
 
-		newScene->m_ViewportWidth = other->m_ViewportWidth;
-		newScene->m_ViewportHeight = other->m_ViewportHeight;
+        auto newScene = CreateRef<Scene>();
+        newScene->m_Name = other->m_Name;
 
-		entt::registry &srcSceneRegistry = other->m_Registry;
-		entt::registry &dstSceneRegistry = newScene->m_Registry;
-		std::vector<std::pair<UUID, entt::entity>> enttStorage;
-		auto newEntity = Entity();
+        newScene->m_ViewportWidth = other->m_ViewportWidth;
+        newScene->m_ViewportHeight = other->m_ViewportHeight;
 
-		// create entities in new scene
-		const auto &idView = srcSceneRegistry.view<IDComponent>();
-		for (auto e : idView)
-		{
-			const auto &idc = srcSceneRegistry.get<IDComponent>(e);
-			const auto &name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, idc.Type, newScene.get());
+        entt::registry &srcSceneRegistry = other->m_Registry;
+        entt::registry &dstSceneRegistry = newScene->m_Registry;
+        std::vector<std::pair<UUID, entt::entity>> enttStorage;
+        auto newEntity = Entity();
 
-			auto &eIDC = newEntity.GetComponent<IDComponent>();
-			eIDC.Parent = idc.Parent;
+        // create entities in new scene
+        const auto &idView = srcSceneRegistry.view<IDComponent>();
+        for (auto e : idView)
+        {
+            const auto &idc = srcSceneRegistry.get<IDComponent>(e);
+            const auto &name = srcSceneRegistry.get<TagComponent>(e).Tag;
+            newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, idc.Type, newScene.get());
+
+            auto &eIDC = newEntity.GetComponent<IDComponent>();
+            eIDC.Parent = idc.Parent;
             eIDC.Children = std::move(idc.Children);
 
-			enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
-		}
+            enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
+        }
 
-		EntityManager::CopyComponent(AllComponents {}, dstSceneRegistry, srcSceneRegistry, enttStorage);
-		return newScene;
-	}
+        EntityManager::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttStorage);
+        return newScene;
+    }
 
     Entity Scene::GetEntityWithUUID(UUID uuid)
-	{
-		OGN_PROFILER_SCENE();
+    {
+        OGN_PROFILER_SCENE();
 
-		for (auto e : m_EntityStorage)
-		{
-			if (e.first == uuid)
-			{
-				return { e.second, this };
-			}
-		}
+        for (auto e : m_EntityStorage)
+        {
+            if (e.first == uuid)
+            {
+                return { e.second, this };
+            }
+        }
 
-		return Entity { entt::null, nullptr };
-	}
+        return Entity{ entt::null, nullptr };
+    }
 
 	Entity Scene::FindEntityByName(std::string_view name)
 	{
@@ -170,18 +177,11 @@ namespace origin
             if (entity.HasComponent<AudioComponent>())
             {
                 auto &ac = entity.GetComponent<AudioComponent>();
-                if (std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+                if (Ref<FmodSound> fmod_sound = AssetManager::GetAsset<FmodSound>(ac.Audio))
                 {
-                    audio->SetVolume(ac.Volume);
-                    audio->SetPitch(ac.Pitch);
-                    audio->SetPanning(ac.Panning);
-                    audio->SetLoop(ac.Looping);
-                    audio->SetSpatial(ac.Spatializing);
-                    if (ac.Spatializing)
-                    {
-                        audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
-                        audio->SetPosition(tc.Translation);
-                    }
+                    fmod_sound->SetVolume(ac.Volume);
+                    fmod_sound->SetPitch(ac.Pitch);
+                    fmod_sound->SetPan(ac.Panning);
                 }
             }
 
@@ -261,7 +261,7 @@ namespace origin
 
 		for (auto [e, ac] : m_Registry.view<AudioComponent>().each())
 		{
-			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+			const Ref<FmodSound> &audio = AssetManager::GetAsset<FmodSound>(ac.Audio);
 			if (ac.PlayAtStart)
 			{
 				audio->Play();
@@ -304,9 +304,9 @@ namespace origin
 		for (auto &e : audioView)
 		{
 			auto &ac = audioView.get<AudioComponent>(e);
-			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+			if (const Ref<FmodSound> &fmod_sound = AssetManager::GetAsset<FmodSound>(ac.Audio))
 			{
-				audio->Stop();
+				fmod_sound->Stop();
 			}
 		}
 
@@ -498,7 +498,7 @@ namespace origin
                 if (!tc.Visible)
                     continue;
 
-                std::shared_ptr<Material> material;
+                Ref<Material> material;
                 if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
                 else material = Renderer::GetMaterial("Mesh");
                 switch (mc.mType)
@@ -560,7 +560,7 @@ namespace origin
                     {
                         if (ac.State->GetAnimation()->HasFrame())
                         {
-                            std::shared_ptr<SpriteAnimation> &anim = ac.State->GetAnimation();
+                            Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
                             sc.Texture = anim->GetCurrentFrame().Handle;
                             sc.Min = anim->GetCurrentFrame().Min;
                             sc.Max = anim->GetCurrentFrame().Max;
@@ -623,7 +623,7 @@ namespace origin
             if (entity.HasComponent<StaticMeshComponent>())
             {
                 StaticMeshComponent &mc = entity.GetComponent<StaticMeshComponent>();
-                std::shared_ptr<Material> material;
+                Ref<Material> material;
                 if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
                 else material = Renderer::GetMaterial("Mesh");
 
@@ -692,7 +692,7 @@ namespace origin
                     {
                         if (ac.State->GetAnimation()->HasFrame())
                         {
-                            std::shared_ptr<SpriteAnimation> &anim = ac.State->GetAnimation();
+                            Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
                             sc.Texture = anim->GetCurrentFrame().Handle;
                             sc.Min = anim->GetCurrentFrame().Min;
                             sc.Max = anim->GetCurrentFrame().Max;
@@ -798,7 +798,7 @@ namespace origin
             glm::mat4 lightViewProjection = lightProjection * lightView;
 			lc.Light->GetShadow().ViewProjection = lightProjection * lightView;
 
-            std::shared_ptr<Shader> &shader = lc.Light->GetShadow().GetDepthShader();
+            Ref<Shader> &shader = lc.Light->GetShadow().GetDepthShader();
             shader->Enable();
 
             lc.Light->GetShadow().BindFBO();

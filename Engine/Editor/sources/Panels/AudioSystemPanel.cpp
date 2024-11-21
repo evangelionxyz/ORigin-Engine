@@ -8,11 +8,6 @@ namespace origin {
 
 AudioSystemPanel::AudioSystemPanel()
 {
-    Ref<FmodSound> sound = FmodSound::Create("TestSound", "Resources/Sounds/loading_screen.wav", FMOD_LOOP_NORMAL);
-    Ref<FmodSound> sound2 = FmodSound::Create("TestSound", "Resources/Sounds/loading_screen.wav", FMOD_LOOP_NORMAL);
-    m_Sounds.emplace_back(sound);
-    m_Sounds.emplace_back(sound2);
-    //sound->Play();
 }
 
 AudioSystemPanel::~AudioSystemPanel()
@@ -41,36 +36,35 @@ void AudioSystemPanel::Render()
 
         // master channel
         Rect master_channel_canvas = canvas_rect - Rect({ horizontal_scroll, 0.0f }, { 0.0f, 0.0f });
-        const float master_width = 120.0f;
         float master_volume = FmodAudio::GetMasterVolume();
-        RenderAudioChannel(master_volume, dl, master_channel_canvas, 0, master_width,
-            channel_margin, gain_margin, label_margin, "Master", "Master Channel");
+        RenderAudioChannel(master_volume, dl, master_channel_canvas, 0, channel_width,
+            channel_margin, gain_margin, label_margin, "Master", "Master\nChannel");
         FmodAudio::SetMasterVolume(master_volume);
 
-
         // other audio channel
-        Rect audio_channel_canvas = canvas_rect + Rect({ 20.0f - horizontal_scroll, 0.0f }, {0.0f, 0.0f});
-        for (i32 x = 0; x < 20; ++x)
+        Rect audio_channel_canvas = canvas_rect + Rect({ horizontal_scroll, 0.0f }, {0.0f, 0.0f});
+        for (i32 x = 0; x < m_Sounds.size(); ++x)
         {
-            float volume = m_Sounds[0]->GetVolume();
+            float volume = m_Sounds[x]->GetVolume();
             std::string bottom_label = "Channel " + std::to_string(x + 1);
             RenderAudioChannel(volume, dl, audio_channel_canvas, x+1, channel_width,
                 channel_margin, gain_margin, label_margin, m_Sounds[0]->GetName(), bottom_label);
-                m_Sounds[0]->SetVolume(volume);
+            m_Sounds[0]->SetVolume(volume);
         }
 
         // horizontal slider
-        float total_channel_width = (20 * channel_width + (channel_margin.right * 2.0f)) + master_width;
-        float visible_width = canvas_rect.max.x - canvas_rect.min.x;
-        float scrollbar_height = 15.0f;
+                                    // + 1 (master channel)
+        const float total_channel_width = (m_Sounds.size() + 1) * channel_width + (channel_margin.right * 2.0f);
+        const float visible_width = canvas_rect.max.x - canvas_rect.min.x;
+        const float scrollbar_height = 15.0f;
 
         if (total_channel_width > visible_width)
         {
-            float scrollbar_x = canvas_rect.min.x + channel_margin.left;
-            float scrollbar_y = canvas_rect.max.y - scrollbar_height - 5.0f;
-            float scrollbar_width = visible_width - (channel_margin.right * 2.0f);
-            float scrollbar_thumb_width = (visible_width / total_channel_width) * scrollbar_width;
-            float scrollbar_thumb_x = scrollbar_x + (horizontal_scroll / (total_channel_width - visible_width)) * (scrollbar_width - scrollbar_thumb_width);
+            const float scrollbar_x = canvas_rect.min.x + channel_margin.left;
+            const float scrollbar_y = canvas_rect.max.y - scrollbar_height - 5.0f;
+            const float scrollbar_width = visible_width - (channel_margin.right * 2.0f);
+            const float scrollbar_thumb_width = (visible_width / total_channel_width) * scrollbar_width;
+            const float scrollbar_thumb_x = scrollbar_x + (horizontal_scroll / (total_channel_width - visible_width)) * (scrollbar_width - scrollbar_thumb_width);
 
             Rect scrollbar_rect = Rect(
                 { scrollbar_thumb_x, scrollbar_y },
@@ -105,7 +99,6 @@ void AudioSystemPanel::Render()
                     horizontal_scroll = std::clamp(horizontal_scroll, 0.0f, total_channel_width - visible_width);
                 }
             }
-
         }
 
         ImGui::End();

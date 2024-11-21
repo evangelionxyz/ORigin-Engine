@@ -327,6 +327,7 @@ namespace origin {
             OnDestroyEntity(entity);
         }
 
-        b2DestroyWorld(m_WorldId);
+        if (b2World_IsValid(m_WorldId))
+            b2DestroyWorld(m_WorldId);
     }
 }

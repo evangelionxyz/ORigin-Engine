@@ -324,8 +324,11 @@ namespace origin
             const auto &rb = entity.GetComponent<RigidbodyComponent>();
 
             const auto body = reinterpret_cast<JPH::Body *>(rb.Body);
-            s_Data.BodyInterface->RemoveBody(body->GetID());
-            s_Data.BodyInterface->DestroyBody(body->GetID());
+            if (body)
+            {
+                s_Data.BodyInterface->RemoveBody(body->GetID());
+                s_Data.BodyInterface->DestroyBody(body->GetID());
+            }
         }
     }
 

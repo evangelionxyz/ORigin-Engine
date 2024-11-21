@@ -54,6 +54,11 @@ void FmodSound::Resume() const
     m_Channel->setPaused(false);
 }
 
+void FmodSound::SetName(const std::string &name)
+{
+    m_Name = name;
+}
+
 void FmodSound::SetPan(const float pan) const
 {
     m_Channel->setPan(pan);

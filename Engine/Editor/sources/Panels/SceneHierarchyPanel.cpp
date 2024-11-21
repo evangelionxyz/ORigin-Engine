@@ -752,9 +752,9 @@ namespace origin {
                 if (isAudioValid == false)
                     return;
 
-                std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(component.Audio);
+                Ref<FmodSound> fmod_sound = AssetManager::GetAsset<FmodSound>(component.Audio);
 
-                if (audio->IsLoaded)
+                if (fmod_sound)
                 {
                     auto &name = component.Name;
                     char buffer[256];
@@ -764,36 +764,21 @@ namespace origin {
                     if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
                     {
                         name = std::string(buffer);
-                        audio->SetName(name.c_str());
+                        fmod_sound->SetName(name.c_str());
                     }
-                    if (UI::DrawCheckbox("Allow Overlap", &component.Overlapping))
-                    {
-                        if (component.Overlapping)
-                        {
-                            audio->ActivateOverlapping();
-                        }
-                        else
-                        {
-                            audio->DeactivateOverlapping();
-                        }
-                    }
+                    
                     UI::DrawCheckbox("Play At Start", &component.PlayAtStart);
                     UI::DrawCheckbox("Looping", &component.Looping);
                     UI::DrawFloatControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
                     UI::DrawFloatControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
                     UI::DrawFloatControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
-                    float sizeX = ImGui::GetContentRegionAvail().x;
-                    if (ImGui::Button("Play", { sizeX, 0.0f })) audio->Play();
-                    if (ImGui::Button("Pause", { sizeX, 0.0f })) audio->Pause();
-                    if (ImGui::Button("Stop", { sizeX, 0.0f })) audio->Stop();
-                    ImGui::Separator();
-                    UI::DrawCheckbox("Spatialize", &component.Spatializing);
 
-                    if (component.Spatializing)
-                    {
-                        UI::DrawFloatControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
-                        UI::DrawFloatControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
-                    }
+                    float sizeX = ImGui::GetContentRegionAvail().x;
+                    if (ImGui::Button("Play", { sizeX, 0.0f })) fmod_sound->Play();
+                    if (ImGui::Button("Pause", { sizeX, 0.0f })) fmod_sound->Pause();
+                    if (ImGui::Button("Resume", { sizeX, 0.0f })) fmod_sound->Resume();
+                    if (ImGui::Button("Stop", { sizeX, 0.0f })) fmod_sound->Stop();
+                    ImGui::Separator();
                 }
             });
 

@@ -93,29 +93,27 @@ namespace origin {
         s_AssetTaskWorker.AddTask(task); // Move task into the worker queue
     }
     
-    Ref<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
+    Ref<FmodSound> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
     {
         return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    Ref<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
+    Ref<FmodSound> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        Ref<AudioSource> source = AudioSource::Create();
-        source->LoadSource("Audio", filepath, false, false);
-        return source;
+        Ref<FmodSound> fmod_sound = FmodSound::Create("Audio", filepath.generic_string());
+        return fmod_sound;
     }
 
-    Ref<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
+    Ref<FmodSound> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        Ref<AudioSource> source = AudioSource::Create();
-        source->LoadStreamingSource("Streaming Audio", filepath, false, false);
-        return source;
+        Ref<FmodSound> fmod_sound = FmodSound::CreateStream("Audio", filepath.generic_string());
+        return fmod_sound;
     }
 
     Ref<Scene> SceneImporter::Import(AssetHandle handle, const AssetMetadata& metadata)

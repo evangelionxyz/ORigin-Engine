@@ -6,10 +6,12 @@
 #include <fmod.hpp>
 #include <fmod_dsp.h>
 
+#include "Origin/Asset/Asset.h"
+
 namespace origin {
 struct FmodDsp;
 
-struct FmodSound
+struct FmodSound : public Asset
 {
     FmodSound() = default;
     FmodSound(std::string name);
@@ -19,6 +21,7 @@ struct FmodSound
     void Pause() const;
     void Resume() const;
 
+    void SetName(const std::string &name);
     void SetPan(float pan) const;
     void SetVolume(float volume) const;
     void SetPitch(float pitch) const;
@@ -46,6 +49,9 @@ struct FmodSound
     static Ref<FmodSound> Create(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT | FMOD_LOOP_OFF);
     static Ref<FmodSound> CreateStream(const std::string &name, const std::string &filepath, FMOD_MODE mode = FMOD_DEFAULT | FMOD_LOOP_OFF);
     
+    static AssetType GetStaticType() { return AssetType::Audio; }
+    [[nodiscard]] AssetType GetType() const override { return GetStaticType(); }
+
 private:
     void UpdateFading() const;
     

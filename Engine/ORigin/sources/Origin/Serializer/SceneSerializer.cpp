@@ -775,7 +775,6 @@ namespace origin
 				if (YAML::Node audio_component = entity["AudioComponent"])
 				{
 					AudioComponent &ac = deserialized_entity.AddComponent<AudioComponent>();
-
 					if (audio_component["AudioHandle"])
 					{
 						ac.Audio = audio_component["AudioHandle"].as<uint64_t>();
@@ -789,16 +788,11 @@ namespace origin
 						ac.Spatializing = audio_component["Spatial"].as<bool>();
 						ac.PlayAtStart = audio_component["PlayAtStart"].as<bool>();
 						ac.Overlapping = audio_component["Overlapping"].as<bool>();
-						std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
-						if (ac.Overlapping)
-						{
-							audio->ActivateOverlapping();
-						}
-						audio->SetVolume(ac.Volume);
-						audio->SetLoop(ac.Looping);
-						audio->SetPitch(ac.Pitch);
-						audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
-						audio->SetSpatial(ac.Spatializing);
+						Ref<FmodSound> fmod_sound = AssetManager::GetAsset<FmodSound>(ac.Audio);
+						fmod_sound->SetVolume(ac.Volume);
+						if (ac.Looping)
+							fmod_sound->SetMode(FMOD_LOOP_NORMAL);
+						fmod_sound->SetPitch(ac.Pitch);
 					}
 				}
 
