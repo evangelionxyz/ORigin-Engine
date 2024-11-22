@@ -61,8 +61,8 @@ namespace origin {
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
         m_InputHandle.Init(m_Window->GetNativeWindow());
 
-        m_GuiLayer = new GuiLayer(m_Window);
-        PushOverlay(m_GuiLayer);
+        //m_GuiLayer = new GuiLayer(m_Window);
+        //PushOverlay(m_GuiLayer);
 
         //Physics::Init(PhysicsAPI::Jolt);
 
@@ -105,23 +105,16 @@ namespace origin {
             if (!m_Minimized)
             {
                 for (Layer *layer : m_LayerStack)
-                {
                     layer->OnUpdate(ts);
-                }
             }
 
-#if 0
             if (m_GuiLayer)
             {
                 m_GuiLayer->Begin();
                 for (Layer *layer : m_LayerStack)
-                {
                     layer->OnGuiRender();
-                }
-
                 m_GuiLayer->End();
             }
-#endif
 
             m_Window->OnUpdate();
         }

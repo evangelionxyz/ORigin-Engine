@@ -13,12 +13,13 @@
 #include "Platform/Vulkan/VulkanContext.hpp"
 
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 
-#include <Windows.h>
-#include <dwmapi.h>
-
-#pragma comment(lib, "Dwmapi.lib")  // Link to DWM API
+#ifdef OGN_PLATFORM_WINDOWS
+    #include <GLFW/glfw3native.h>
+    #include <Windows.h>
+    #include <dwmapi.h>
+    #pragma comment(lib, "Dwmapi.lib")  // Link to DWM API
+#endif
 
 namespace origin {
 
@@ -40,11 +41,13 @@ namespace origin {
         }
         
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_MAXIMIZED, (int)maximized);
-        // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+        glfwWindowHint(GLFW_MAXIMIZED, static_cast<i32>(maximized));
 
-        m_MainWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height),
-            title, nullptr, nullptr);
+        m_MainWindow = glfwCreateWindow(
+            static_cast<i32>(width), 
+            static_cast<i32>(height),
+            title, nullptr, nullptr
+        );
 
         if (!m_MainWindow)
         {
@@ -52,6 +55,7 @@ namespace origin {
             exit(EXIT_FAILURE);
         }
 
+#ifdef OGN_PLATFORM_WINDOWS
         HWND hwnd = glfwGetWin32Window(m_MainWindow);
         BOOL useDarkMode = TRUE;
         DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode));
@@ -62,6 +66,7 @@ namespace origin {
 
         // DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_DONOTROUND;
         // DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
+#endif
 
         m_Data.Width = width;
         m_Data.Height = height;
@@ -75,7 +80,7 @@ namespace origin {
         m_Data.yPos = (monitor_height / 2) - (height / 2);
         glfwSetWindowPos(m_MainWindow, m_Data.xPos, m_Data.yPos);
 
-        int fb_width, fb_height;
+        i32 fb_width, fb_height;
         glfwGetFramebufferSize(m_MainWindow, &fb_width, &fb_height);
         m_Data.Width = static_cast<u32>(fb_width);
         m_Data.FbHeight = static_cast<u32>(fb_height);
@@ -114,14 +119,14 @@ namespace origin {
         WindowCallbacks();
     }
 
-    void Win32Window::SetPosition(int x, int y)
+    void Win32Window::SetPosition(i32 x, i32 y)
     {
         glfwSetWindowPos(m_MainWindow, x, y);
     }
 
     glm::ivec2 Win32Window::GetPosition()
     {
-        int width, height;
+        i32 width, height;
         glfwGetWindowPos(m_MainWindow, &width, &height);
         return { width, height };
     }
@@ -209,7 +214,7 @@ namespace origin {
         m_Data.FullScreen = !m_Data.FullScreen;
         if (m_Data.FullScreen)
         {
-            int width, height;
+            i32 width, height;
             glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &width, &height);
             glfwSetWindowMonitor(m_MainWindow, glfwGetPrimaryMonitor(), 0, 0, width, height, GLFW_DONT_CARE);
         }
@@ -225,7 +230,7 @@ namespace origin {
         OGN_PROFILER_FUNCTION();
 
         stbi_set_flip_vertically_on_load(0);
-        int width, height, bpp;
+        i32 width, height, bpp;
         unsigned char* data = stbi_load(filepath, &width, &height, &bpp, 0);
 
         GLFWimage icon;
@@ -239,8 +244,8 @@ namespace origin {
     void Win32Window::SetIcon(unsigned char* data, u32 width, u32 height)
     {
         GLFWimage icon;
-        icon.width = static_cast<int>(width);
-        icon.height = static_cast<int>(height);
+        icon.width = static_cast<i32>(width);
+        icon.height = static_cast<i32>(height);
         icon.pixels = data;
         glfwSetWindowIcon(m_MainWindow, 1, &icon);
     }

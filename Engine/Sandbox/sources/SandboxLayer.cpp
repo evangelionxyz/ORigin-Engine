@@ -34,7 +34,6 @@ void SandboxLayer::OnEvent(Event &e)
 void SandboxLayer::OnGuiRender()
 {
     ImGui::ShowDemoWindow(nullptr);
-    ImGui::End();
 }
 
 bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)

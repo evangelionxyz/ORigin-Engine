@@ -10,6 +10,8 @@
 #   include <GLFW/glfw3native.h>
 #endif
 
+#include <backends/imgui_impl_vulkan.h>
+
 #include "Origin/Core/Window.h"
 
 namespace origin {
@@ -28,6 +30,10 @@ VulkanContext *VulkanContext::GetInstance()
 
 void VulkanContext::Shutdown()
 {
+    FreeCommandBuffers();
+
+    DestroyFramebuffers();
+
     // reset command pool
     ResetCommandPool();
 
@@ -47,7 +53,7 @@ void VulkanContext::Shutdown()
     m_Queue.Destroy();
 
     // destroy swapchain
-    m_Swapchain.Destroy(m_LogicalDevice, m_Allocator);
+    m_Swapchain.Destroy();
 
     // destroy surface
     vkDestroySurfaceKHR(m_Instance, m_Surface, m_Allocator);
@@ -69,8 +75,7 @@ void VulkanContext::Shutdown()
 
 void VulkanContext::Init(Window *window)
 {
-    m_WindowHandle = static_cast<GLFWwindow *>(window->GetNativeWindow());
-
+    m_WindowHandle = window->GetNativeWindow();
     m_ClearValue.color.float32[0] = 0.1f;
     m_ClearValue.color.float32[1] = 0.1f;
     m_ClearValue.color.float32[2] = 0.1f;
@@ -90,7 +95,7 @@ void VulkanContext::Init(Window *window)
     CreateRenderPass();
     CreateCommandPool();
 
-    m_Queue = VulkanQueue(m_LogicalDevice, *m_Swapchain.GetVkSwapchain(), m_Allocator, m_QueueFamily, 0);
+    m_Queue = VulkanQueue(m_LogicalDevice, m_Allocator, m_QueueFamily, 0);
     CreateDescriptorPool();
 
     // Print info
@@ -240,16 +245,36 @@ void VulkanContext::CreateSwapcahin()
 {
     i32 width, height;
     glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-    VkSurfaceCapabilitiesKHR capabilities = m_PhysicalDevice.GetSelectedDevice().SurfaceCapabilities;
-    const VkExtent2D swapchain_extent = { static_cast<u32>(width), static_cast<u32>(height) };
-    capabilities.currentExtent.width = std::clamp(swapchain_extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-    capabilities.currentExtent.height = std::clamp(swapchain_extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+    VkSurfaceCapabilitiesKHR capabilities;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_PhysicalDevice.GetSelectedDevice().Device, m_Surface, &capabilities);
+
+    const VkExtent2D swapchain_extent = { 
+        static_cast<u32>(width), 
+        static_cast<u32>(height) 
+    };
+
+    capabilities.currentExtent.width = std::clamp(
+        swapchain_extent.width,
+        capabilities.minImageExtent.width, 
+        capabilities.maxImageExtent.width
+    );
+
+    capabilities.currentExtent.height = std::clamp(
+        swapchain_extent.height, 
+        capabilities.minImageExtent.height,
+        capabilities.maxImageExtent.height
+    );
+
     const std::vector<VkPresentModeKHR> &present_modes = m_PhysicalDevice.GetSelectedDevice().PresentModes;
     const VkPresentModeKHR present_mode = VkChoosePresentMode(present_modes);
 
     VkSurfaceFormatKHR format = VkChooseSurfaceFormat(m_PhysicalDevice.GetSelectedDevice().SurfaceFormats);
     VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    m_Swapchain = VulkanSwapchain(m_LogicalDevice, m_Allocator, m_Surface, format, capabilities, present_mode, image_usage, m_QueueFamily);
+
+    m_Swapchain = VulkanSwapchain(m_LogicalDevice, m_Allocator, m_Surface,
+        format, capabilities, present_mode, 
+        image_usage, m_QueueFamily);
 }
 
 void VulkanContext::CreateCommandPool()
@@ -293,24 +318,7 @@ void VulkanContext::CreateDescriptorPool()
 
 void VulkanContext::CreateGraphicsPipeline()
 {
-    i32 width, height;
-    glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-
     Ref<VulkanShader> shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", false);
-
-    m_Viewport =
-    {
-            0.0f, 0.0f,
-            static_cast<float>(width),
-            static_cast<float>(height),
-            0.0f, 1.0f
-    };
-
-    m_Scissor =
-    {
-        {0, 0},
-        { static_cast<u32>(width), static_cast<u32>(height) }
-    };
 
     VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -358,8 +366,15 @@ void VulkanContext::CreateGraphicsPipeline()
     pipeline_layout_info.setLayoutCount = 0;
     pipeline_layout_info.pushConstantRangeCount = 0;
 
+    VkViewport viewport = { 0.0f, 0.0f,
+        static_cast<float>(m_Swapchain.GetVkExtent2D().width),
+        static_cast<float>(m_Swapchain.GetVkExtent2D().height),
+        0.0f, 1.0f
+    };
+    VkRect2D scissor = { {0, 0}, m_Swapchain.GetVkExtent2D() };
+
     m_GraphicsPipeline.Create(shader->GetShaderStages(),
-        vertex_input_info, input_assembly_info, m_Viewport, m_Scissor,
+        vertex_input_info, input_assembly_info, viewport, scissor,
         rasterization_info, multisample_info, color_blend_info,
         pipeline_layout_info);
 }
@@ -452,33 +467,71 @@ void VulkanContext::CreateCommandBuffers()
     VK_ERROR_CHECK(res, "[Vulkan] Failed to create command buffers");
 }
 
+void VulkanContext::FreeCommandBuffers()
+{
+    vkDeviceWaitIdle(m_LogicalDevice);
+
+    const u32 count = static_cast<u32>(m_CommandBuffers.size());
+    vkFreeCommandBuffers(m_LogicalDevice, m_CommandPool, count, m_CommandBuffers.data());
+}
+
+void VulkanContext::DestroyFramebuffers()
+{
+    for (const auto fb : m_Framebuffers)
+        vkDestroyFramebuffer(m_LogicalDevice, fb, m_Allocator);
+}
+
+void VulkanContext::RecreateSwapchin()
+{
+    vkDeviceWaitIdle(m_LogicalDevice);
+
+    DestroyFramebuffers();
+
+    m_Swapchain.Destroy();
+
+    CreateSwapcahin();
+
+    CreateFramebuffers();
+}
+
 void VulkanContext::Present()
 {
     m_Queue.WaitIdle();
 
-    const u32 image_index = m_Queue.AcquiredNextImage();
+    u32 image_index = 0;
+    VkResult result = vkAcquireNextImageKHR(m_LogicalDevice, m_Swapchain.GetVkSwapchain(),
+        UINT64_MAX, m_Queue.GetSemaphore(), VK_NULL_HANDLE, &image_index);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        RecreateSwapchin();
+        return;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("Failed to acquire swap chain image");
+    }
 
     m_Queue.WaitAndResetFences();
-
     vkResetCommandBuffer(m_CommandBuffers[image_index], 0);
-
-    // record command buffer
     RecordCommandBuffer(m_CommandBuffers[image_index], image_index);
 
     m_Queue.SubmitAsync(m_CommandBuffers[image_index]);
-    m_Queue.Present(image_index);
+
+    result = m_Queue.Present(image_index, m_Swapchain.GetVkSwapchain());
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    {
+        RecreateSwapchin();
+        return;
+    }
+
+    VK_ERROR_CHECK(result, "Failed to present swap chain image");
 }
 
 void VulkanContext::RecordCommandBuffer(VkCommandBuffer command_buffer, u32 image_index)
 {
     i32 width, height;
     glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-
-    VkCommandBufferBeginInfo begin_info = {};
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    begin_info.pNext = VK_NULL_HANDLE;
-    begin_info.pInheritanceInfo = VK_NULL_HANDLE;
 
     const VkClearValue cc = {
         m_ClearValue.color.float32[0],
@@ -497,14 +550,28 @@ void VulkanContext::RecordCommandBuffer(VkCommandBuffer command_buffer, u32 imag
     render_pass_begin_info.clearValueCount = 1;
     render_pass_begin_info.pClearValues = &cc;
 
-    vkBeginCommandBuffer(command_buffer, &begin_info); // command buffer
+    VkCommandBufferBeginInfo begin_info = {};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    begin_info.pNext = VK_NULL_HANDLE;
+    begin_info.pInheritanceInfo = VK_NULL_HANDLE;
+    vkBeginCommandBuffer(command_buffer, &begin_info);
 
     vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE); // render pass
 
-    // create viewport
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline.GetPipeline());
-    vkCmdSetViewport(command_buffer, 0, 1, &m_Viewport);
-    vkCmdSetScissor(command_buffer, 0, 1, &m_Scissor);
+
+    // create viewport
+    VkViewport viewport = { 0.0f, 0.0f,
+        static_cast<float>(m_Swapchain.GetVkExtent2D().width),
+        static_cast<float>(m_Swapchain.GetVkExtent2D().height),
+        0.0f, 1.0f
+    };
+    VkRect2D scissor = { {0, 0}, m_Swapchain.GetVkExtent2D() };
+
+    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
     vkCmdDraw(command_buffer, 3, 1, 0, 0);
 
     // record dear imgui primitives into command buffer

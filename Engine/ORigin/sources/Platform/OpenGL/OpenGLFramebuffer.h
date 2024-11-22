@@ -15,34 +15,34 @@ namespace origin {
 
 		void Invalidate();
 
-		void Resize(uint32_t width, uint32_t height) override;
-		int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
-		void ClearAttachment(uint32_t attachmentIndex, int value) override;
+		void Resize(u32 width, u32 height) override;
+        int ReadPixel(u32 attachmentIndex, int x, int y) override;
+		void ClearAttachment(u32 attachmentIndex, int value) override;
 
-		uint32_t GetWidth() const override { return m_Spec.Width; }
-		uint32_t GetHeight() const override { return m_Spec.Height; }
+		u32 GetWidth() const override { return m_Spec.Width; }
+		u32 GetHeight() const override { return m_Spec.Height; }
 
 		void Bind() override;
 		void Unbind() override;
 
-		uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { return m_ColorAttachments[index]; };
-		uint32_t GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
-		uint32_t GetDepthCubeAttachmentRendererID() const override { return m_DepthCubeAttachment; }
+		u32 GetColorAttachmentRendererID(u32 index = 0) const override { return m_ColorAttachments[index]; };
+		u32 GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
+		u32 GetDepthCubeAttachmentRendererID() const override { return m_DepthCubeAttachment; }
 
 		const FramebufferSpecification& GetSpecification() const override { return m_Spec; }
 
-		virtual uint32_t GetBufferID() const override { return m_BufferID; }
+		virtual u32 GetBufferID() const override { return m_BufferID; }
 
 	private:
-		uint32_t m_BufferID = 0, m_Renderbuffer = 0;
+		u32 m_BufferID = 0, m_Renderbuffer = 0;
 		FramebufferSpecification m_Spec;
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
 		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;
 
 		// Texture ID
-		std::vector<uint32_t> m_ColorAttachments;
-		uint32_t m_DepthAttachment = 0;
-		uint32_t m_DepthCubeAttachment = 0;
+		std::vector<u32> m_ColorAttachments;
+		u32 m_DepthAttachment = 0;
+		u32 m_DepthCubeAttachment = 0;
 	};
 }
 

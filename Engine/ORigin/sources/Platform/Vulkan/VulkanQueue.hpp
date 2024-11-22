@@ -10,16 +10,17 @@ class VulkanQueue
 {
 public:
     VulkanQueue() = default;
-    explicit VulkanQueue(VkDevice device, VkSwapchainKHR swapchain, VkAllocationCallbacks *allocator, u32 queueFamilyIndex, u32 queueIndex);
-
-    [[nodiscard]] u32 AcquiredNextImage() const;
+    explicit VulkanQueue(VkDevice device, VkAllocationCallbacks *allocator, 
+        u32 queueFamilyIndex, u32 queueIndex);
 
     void SubmitSync(VkCommandBuffer cmd) const;
     void SubmitAsync(VkCommandBuffer cmd) const;
-    void Present(u32 imageIndex) const;
+    VkResult Present(u32 imageIndex, VkSwapchainKHR swapchain) const;
     void WaitIdle() const;
     void Destroy() const;
     void WaitAndResetFences() const;
+
+    VkSemaphore GetSemaphore() const;
 
     [[nodiscard]] VkQueue GetVkQueue() const;
 private:
@@ -28,7 +29,6 @@ private:
 
     VkDevice m_Device = VK_NULL_HANDLE;
     VkQueue m_Queue = VK_NULL_HANDLE;
-    VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
     VkSemaphore m_ImageAvailableSemaphore = VK_NULL_HANDLE;
     VkSemaphore m_RenderFinishedSemaphore = VK_NULL_HANDLE;
     VkFence m_InFlightFence = VK_NULL_HANDLE;

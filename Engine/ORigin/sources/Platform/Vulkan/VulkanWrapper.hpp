@@ -13,31 +13,35 @@
     }\
 }
 
-namespace origin
-{
+namespace origin {
 
 static VkBool32 VkDebugMessengerCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT             messageTypes,
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-    void*                                       pUserData
+    void *pUserData
 )
 {
     OGN_CORE_INFO("[Vulkan Message]: ");
-    if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+    if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    {
         OGN_CORE_ERROR("\tVulkan: {}", pCallbackData->pMessage);
     }
-    else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
         OGN_CORE_WARN("\tVulkan: {}", pCallbackData->pMessage);
     }
 
-    if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) {
+    if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
+    {
         OGN_CORE_INFO("\tGeneral: {}", pCallbackData->pMessageIdName);
     }
-    if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
+    if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+    {
         OGN_CORE_INFO("\tValidation: {}", pCallbackData->pMessageIdName);
     }
-    if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
+    if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+    {
         OGN_CORE_INFO("\tPerformance: {}", pCallbackData->pMessageIdName);
     }
 
@@ -46,14 +50,14 @@ static VkBool32 VkDebugMessengerCallback(
     return VK_FALSE;
 }
 
-static VkPresentModeKHR VkChoosePresentMode(const std::vector<VkPresentModeKHR>& presentMode)
+static VkPresentModeKHR VkChoosePresentMode(const std::vector<VkPresentModeKHR> &presentMode)
 {
     for (const auto mode : presentMode)
         if (mode == VK_PRESENT_MODE_MAILBOX_KHR) return mode;
     return presentMode[0];
 }
 
-static u32 VkChooseImagesCount(const VkSurfaceCapabilitiesKHR& capabilities)
+static u32 VkChooseImagesCount(const VkSurfaceCapabilitiesKHR &capabilities)
 {
     const u32 requested_image_count = capabilities.minImageCount + 1;
     u32 final_image_count = 0;
@@ -64,7 +68,7 @@ static u32 VkChooseImagesCount(const VkSurfaceCapabilitiesKHR& capabilities)
     return final_image_count;
 }
 
-static VkSurfaceFormatKHR VkChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats)
+static VkSurfaceFormatKHR VkChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &formats)
 {
     for (const auto format : formats)
         if (format.format == VK_FORMAT_B8G8R8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -84,7 +88,7 @@ static void VkBeginCommandBuffer(VkCommandBuffer cmd, VkCommandBufferUsageFlags 
     VK_ERROR_CHECK(result, "[Vulkan] Failed to begin command buffer");
 }
 
-static VkSemaphore VkCreateSemaphore(VkDevice device, VkAllocationCallbacks* allocator)
+static VkSemaphore VkCreateSemaphore(VkDevice device, VkAllocationCallbacks *allocator)
 {
     VkSemaphoreCreateInfo semaphore_info = {};
     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -97,7 +101,7 @@ static VkSemaphore VkCreateSemaphore(VkDevice device, VkAllocationCallbacks* all
     return semaphore;
 }
 
-static VkImageView VkCreateImageView(const VkDevice device, const VkImage image, VkAllocationCallbacks* allocator,
+static VkImageView VkCreateImageView(const VkDevice device, const VkImage image, VkAllocationCallbacks *allocator,
     VkFormat format, VkImageAspectFlags aspectFlags, VkImageViewType viewType, u32 layerCount, u32 mipLevels)
 {
     VkImageViewCreateInfo view_info = {};
