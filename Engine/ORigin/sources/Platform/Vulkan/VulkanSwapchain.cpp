@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "VulkanSwapchain.h"
-#include "VulkanWrapper.h"
+#include "VulkanSwapchain.hpp"
+#include "VulkanWrapper.hpp"
 
 namespace origin {
 

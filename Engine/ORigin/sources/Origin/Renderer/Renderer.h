@@ -52,16 +52,16 @@ namespace origin {
 		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
-		static void SetCurrentShader(const std::shared_ptr<Shader> &shader);
+		static void SetCurrentShader(const Ref<Shader> &shader);
 
-		const static std::shared_ptr<Shader>& GetCurrentShader() { return s_GlobalShader; }
-		static std::shared_ptr<Shader> GetShader(const std::string &name);
+		const static Ref<Shader>& GetCurrentShader() { return s_GlobalShader; }
+		static Ref<Shader> GetShader(const std::string &name);
 		static ShaderLibrary &GetShaderLibrary();
 
-		static std::shared_ptr<Material> GetMaterial(const std::string &name);
+		static Ref<Material> GetMaterial(const std::string &name);
 
-		static std::shared_ptr<Texture2D> WhiteTexture;
-		static std::shared_ptr<Texture2D> BlackTexture;
+		static Ref<Texture2D> WhiteTexture;
+		static Ref<Texture2D> BlackTexture;
 
 		static Statistics &GetStatistics();
 		static RenderData s_RenderData;
@@ -70,7 +70,7 @@ namespace origin {
 		static void LoadShaders();
 		static void LoadMaterials();
 
-		static std::shared_ptr<Shader> s_GlobalShader;
+        static Ref<Shader> s_GlobalShader;
 	};
 }
 

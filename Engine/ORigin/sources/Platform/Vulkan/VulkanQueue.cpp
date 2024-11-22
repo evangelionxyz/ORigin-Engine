@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "VulkanQueue.h"
-#include "VulkanWrapper.h"
+#include "VulkanQueue.hpp"
+#include "VulkanWrapper.hpp"
 
 namespace origin {
 
@@ -14,10 +14,10 @@ VulkanQueue::VulkanQueue(VkDevice device, VkSwapchainKHR swapchain, VkAllocation
 
 u32 VulkanQueue::AcquiredNextImage() const
 {
-    u32 imageIndex = 0;
-    VK_ERROR_CHECK(vkAcquireNextImageKHR(m_Device, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex),
-        "[Vulkan] Failed to acquired image at index {}", imageIndex);
-    return imageIndex;
+    u32 image_index = 0;
+    VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &image_index);
+    VK_ERROR_CHECK(result, "[Vulkan] Failed to acquired image at index {}", image_index);
+    return image_index;
 }
 
 void VulkanQueue::SubmitSync(VkCommandBuffer cmd) const
@@ -33,8 +33,7 @@ void VulkanQueue::SubmitSync(VkCommandBuffer cmd) const
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = VK_NULL_HANDLE;
 
-    VK_ERROR_CHECK(vkQueueSubmit(m_Queue, 1, &submitInfo, m_InFlightFence),
-        "[Vulkan] Failed to submit");
+    VK_ERROR_CHECK(vkQueueSubmit(m_Queue, 1, &submitInfo, m_InFlightFence), "[Vulkan] Failed to submit");
 }
 
 void VulkanQueue::SubmitAsync(VkCommandBuffer cmd) const

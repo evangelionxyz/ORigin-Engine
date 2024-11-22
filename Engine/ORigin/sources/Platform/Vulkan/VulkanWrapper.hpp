@@ -8,7 +8,7 @@
 {\
     if (result != VK_SUCCESS){\
         OGN_CORE_ERROR("[Vulkan] Assertion failed at {}: line {}", __FILE__, __LINE__);\
-        OGN_CORE_ERROR(__VA_ARGS__);\
+        OGN_CORE_ERROR("{}", __VA_ARGS__);\
         OGN_DEBUGBREAK();\
     }\
 }
@@ -17,28 +17,28 @@ namespace origin
 {
 
 static VkBool32 VkDebugMessengerCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT  messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT         messageTypes,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT             messageTypes,
+    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
     void*                                       pUserData
 )
 {
     OGN_CORE_INFO("[Vulkan Message]: ");
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-        OGN_CORE_ERROR("\tVulkan: {0}", pCallbackData->pMessage);
+        OGN_CORE_ERROR("\tVulkan: {}", pCallbackData->pMessage);
     }
     else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-        OGN_CORE_WARN("\tVulkan: {0}", pCallbackData->pMessage);
+        OGN_CORE_WARN("\tVulkan: {}", pCallbackData->pMessage);
     }
 
     if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) {
-        OGN_CORE_INFO("\tGeneral: {0}", pCallbackData->pMessageIdName);
+        OGN_CORE_INFO("\tGeneral: {}", pCallbackData->pMessageIdName);
     }
     if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
-        OGN_CORE_INFO("\tValidation: {0}", pCallbackData->pMessageIdName);
+        OGN_CORE_INFO("\tValidation: {}", pCallbackData->pMessageIdName);
     }
     if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
-        OGN_CORE_INFO("\tPerformance: {0}", pCallbackData->pMessageIdName);
+        OGN_CORE_INFO("\tPerformance: {}", pCallbackData->pMessageIdName);
     }
 
     // Return VK_FALSE to indicate that the application should not be terminated

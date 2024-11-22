@@ -87,8 +87,8 @@ namespace origin
 
         virtual void Reload() = 0;
 
-        static std::shared_ptr<Shader> Create(const std::filesystem::path &filepath, bool isSpirv, bool recompile = false);
-        static std::shared_ptr<Shader> Create(const std::filesystem::path &filepath, bool recompile = false);
+        static Ref<Shader> Create(const std::filesystem::path &filepath, bool isSpirv, bool recompile = false);
+        static Ref<Shader> Create(const std::filesystem::path &filepath, bool recompile = false);
 
         static ShaderProgramSources ParseShader(const std::string &filepath);
         static std::string ReadFile(const std::string &filepath);

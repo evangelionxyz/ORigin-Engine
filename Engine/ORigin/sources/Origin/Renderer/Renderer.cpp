@@ -8,11 +8,10 @@
 #include "Renderer2D.h"
 #include "MaterialLibrary.h"
 #include "Origin/Asset/AssetImporter.h"
+#include "Platform/Vulkan/VulkanRendererAPI.hpp"
 
 #ifdef OGN_PLATFORM_WINDOWS
 #	include "Platform/DX11/DX11RendererAPI.h"
-#elif OGN_PLATFORM_LINUX
-#	include "Platform/Vulkan/VulkanRendererAPI.h"
 #endif
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
@@ -26,9 +25,9 @@ namespace origin {
 	static MaterialLibrary s_MaterialLibrary;
 
 	RenderData Renderer::s_RenderData;
-	std::shared_ptr<Shader> Renderer::s_GlobalShader;
-	std::shared_ptr<Texture2D> Renderer::WhiteTexture;
-	std::shared_ptr<Texture2D> Renderer::BlackTexture;
+	Ref<Shader> Renderer::s_GlobalShader;
+	Ref<Texture2D> Renderer::WhiteTexture;
+	Ref<Texture2D> Renderer::BlackTexture;
 
 	Statistics &Renderer::GetStatistics()
 	{
@@ -44,7 +43,6 @@ namespace origin {
 
 		switch (RendererAPI::GetAPI())
 		{
-		default:
 		case RendererAPI::API::OpenGL:
 		{
 			RenderCommand::s_RendererAPI = new OpenGLRendererAPI;
@@ -59,13 +57,11 @@ namespace origin {
 
 			break;
 		}
-#ifdef OGN_PLATFORM_LINUX
 		case RendererAPI::API::Vulkan:
 		{
 			RenderCommand::s_RendererAPI = new VulkanRendererAPI;
 			break;
 		}
-#endif
 #ifdef OGN_PLATFORM_WINDOWS
 		case RendererAPI::API::DX11:
 		{
@@ -99,13 +95,13 @@ namespace origin {
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer::SetCurrentShader(const std::shared_ptr<Shader> &shader)
+	void Renderer::SetCurrentShader(const Ref<Shader> &shader)
 	{
 		s_GlobalShader = shader;
 		s_GlobalShader->Enable();
 	}
 
-	std::shared_ptr<Shader> Renderer::GetShader(const std::string &name)
+	Ref<Shader> Renderer::GetShader(const std::string &name)
 	{
 		return s_ShaderLibrary.Get(name);
 	}
@@ -115,7 +111,7 @@ namespace origin {
 		return s_ShaderLibrary;
 	}
 
-	std::shared_ptr<Material> Renderer::GetMaterial(const std::string &name)
+	Ref<Material> Renderer::GetMaterial(const std::string &name)
 	{
 		return s_MaterialLibrary.Get(name);
 	}
@@ -141,7 +137,7 @@ namespace origin {
 
 	void Renderer::LoadMaterials()
 	{
-		std::shared_ptr<Material>material = Material::Create(Renderer::GetShader("BatchMesh"));
+		Ref<Material>material = Material::Create(Renderer::GetShader("BatchMesh"));
 		material->SetName("Default Material");
 		s_MaterialLibrary.Add("Mesh", material);
 	}

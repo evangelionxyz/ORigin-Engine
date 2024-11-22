@@ -25,12 +25,13 @@ public:
     VulkanPhysicalDevice() = default;
     VulkanPhysicalDevice(VkInstance instance, const VkSurfaceKHR &surface);
     u32 SelectDevice(VkQueueFlags requiredQueueFlags, bool supportPresent);
-    const PhysicalDevice &GetSelectedPhysicalDevice() const;
+    const PhysicalDevice &GetSelectedDevice() const;
 private:
     static VkSurfaceFormats GetSurfaceFormat(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     static VkPresentModes GetSurfacePresentModes(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 
     std::vector<PhysicalDevice> m_Devices;
-}; i32 m_DeviceIndex = -1;
+    i32 m_DeviceIndex = -1;
+}; 
 }
 

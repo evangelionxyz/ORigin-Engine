@@ -10,6 +10,7 @@
 
 #include "stb_image.h"
 #include "Platform/DX11/DX11Context.h"
+#include "Platform/Vulkan/VulkanContext.hpp"
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -31,6 +32,10 @@ namespace origin {
 #if defined(OGN_DEBUG)
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
+            break;
+        case RendererAPI::API::Vulkan:
+            m_IsVulkanAPI = true;
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             break;
         }
         
@@ -63,18 +68,26 @@ namespace origin {
 
         glfwHideWindow(m_MainWindow);
 
-        int monitorWidth, monitorHeight;
-        glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &monitorWidth, &monitorHeight);
+        int monitor_width, monitor_height;
+        glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &monitor_width, &monitor_height);
 
-        m_Data.xPos = (monitorWidth / 2) - (width / 2);
-        m_Data.yPos = (monitorHeight / 2) - (height / 2);
+        m_Data.xPos = (monitor_width / 2) - (width / 2);
+        m_Data.yPos = (monitor_height / 2) - (height / 2);
         glfwSetWindowPos(m_MainWindow, m_Data.xPos, m_Data.yPos);
-        glfwMakeContextCurrent(m_MainWindow);
+
+        int fb_width, fb_height;
+        glfwGetFramebufferSize(m_MainWindow, &fb_width, &fb_height);
+        m_Data.Width = static_cast<u32>(fb_width);
+        m_Data.FbHeight = static_cast<u32>(fb_height);
+
+        if (!m_IsVulkanAPI)
+        {
+            glfwMakeContextCurrent(m_MainWindow);
+            glfwSwapInterval(m_Data.VSync ? 1 : 0);
+        }
 
         m_GraphicsContext = GraphicsContext::Create();
         m_GraphicsContext->Init(this);
-
-        glfwSwapInterval(m_Data.VSync ? 1 : 0);
     }
 
     void Win32Window::Show()
@@ -122,6 +135,16 @@ namespace origin {
     {
     }
 
+    u32 Win32Window::GetFramebufferWidth() const
+    {
+        return m_Data.FbWidth;
+    }
+
+    u32 Win32Window::GetFramebufferHeight() const
+    {
+        return m_Data.FbHeight;
+    }
+
     void Win32Window::UpdateEvents()
     {
         glfwPollEvents();
@@ -133,29 +156,45 @@ namespace origin {
         {
         case RendererAPI::API::DX11:
         {
-            DX11Context *dx11_context = DX11Context::GetInstance();
-            dx11_context->SwapChain->Present(1u, 0u);
+            GraphicsContext::GetContext<DX11Context>()->SwapChain->Present(1u, 0u);
             break;
         }
-
         case RendererAPI::API::OpenGL:
+        {
             glfwSwapBuffers(m_MainWindow);
             break;
         }
+        case RendererAPI::API::Vulkan:
+        {
+            GraphicsContext::GetContext<VulkanContext>()->Present();
+            break;
+        }
+        }
+    }
+
+    bool Win32Window::IsLooping()
+    {
+        return glfwWindowShouldClose(m_MainWindow) == 0;
     }
 
     void Win32Window::ToggleVSync()
     {
         OGN_PROFILER_FUNCTION();
 
-        m_Data.VSync = !m_Data.VSync;
-        glfwSwapInterval(m_Data.VSync ? 1 : 0);
+        if (!m_IsVulkanAPI)
+        {
+            m_Data.VSync = !m_Data.VSync;
+            glfwSwapInterval(m_Data.VSync ? 1 : 0);
+        }
     }
 
     void Win32Window::SetVSync(bool enable)
     {
-        m_Data.VSync = enable;
-        glfwSwapInterval(enable ? 1 : 0);
+        if (!m_IsVulkanAPI)
+        {
+            m_Data.VSync = enable;
+            glfwSwapInterval(enable ? 1 : 0);
+        }
     }
 
     void Win32Window::CloseWindow()
@@ -228,6 +267,10 @@ namespace origin {
         glfwSetFramebufferSizeCallback(m_MainWindow, [](GLFWwindow* window, int width, int height)
             {
                 WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+                data.FbWidth = static_cast<u32>(width);
+                data.FbHeight = static_cast<u32>(height);
+
                 FramebufferResizeEvent event(width, height);
                 data.EventCallback(event);
             });

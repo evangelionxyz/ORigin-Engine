@@ -37,7 +37,7 @@ namespace origin {
         if (!m_Spec.WorkingDirectory.empty())
             std::filesystem::current_path(m_Spec.WorkingDirectory);
 
-        RendererAPI::SetAPI(RendererAPI::API::OpenGL);
+        RendererAPI::SetAPI(RendererAPI::API::Vulkan);
 
         Window::GLFWInit();
         m_ConsoleManager = std::make_unique<ConsoleManager>();
@@ -75,8 +75,8 @@ namespace origin {
 
     Application::~Application()
     {
-        m_Window->DestroyWindow();
         m_LayerStack.Shutdown();
+        m_Window->DestroyWindow();
 
         Renderer::Shutdown();
         FmodAudio::Shutdown();
@@ -110,6 +110,7 @@ namespace origin {
                 }
             }
 
+#if 0
             if (m_GuiLayer)
             {
                 m_GuiLayer->Begin();
@@ -120,6 +121,7 @@ namespace origin {
 
                 m_GuiLayer->End();
             }
+#endif
 
             m_Window->OnUpdate();
         }

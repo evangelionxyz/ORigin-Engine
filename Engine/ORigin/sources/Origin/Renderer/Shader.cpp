@@ -5,7 +5,7 @@
 #include "RendererAPI.h"
 
 #include "Platform/OpenGL/OpenGLShader.h"
-#include "Platform/Vulkan/VulkanShader.h"
+#include "Platform/Vulkan/VulkanShader.hpp"
 
 #include "Origin/Core/ConsoleManager.h"
 
@@ -115,31 +115,31 @@ namespace origin
         return 0;
     }
 
-    std::shared_ptr<Shader> Shader::Create(const std::filesystem::path &filepath, bool recompile)
+    Ref<Shader> Shader::Create(const std::filesystem::path &filepath, bool recompile)
     {
         switch (RendererAPI::GetAPI())
         {
         case RendererAPI::API::None:
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLShader>(filepath, recompile);
+            return CreateRef<OpenGLShader>(filepath, recompile);
         case RendererAPI::API::Vulkan:
-            return std::make_shared<VulkanShader>(filepath, recompile);
+            return CreateRef<VulkanShader>(filepath, recompile);
         default: OGN_CORE_ASSERT(false, "Unknown RendererAPI");
                  return nullptr;
         }
     }
 
-    std::shared_ptr<Shader> Shader::Create(const std::filesystem::path &filepath, bool isSpirv, bool recompile)
+    Ref<Shader> Shader::Create(const std::filesystem::path &filepath, bool isSpirv, bool recompile)
     {
         switch (RendererAPI::GetAPI())
         {
         case RendererAPI::API::None:
             return nullptr;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLShader>(filepath, isSpirv, recompile);
+            return CreateRef<OpenGLShader>(filepath, isSpirv, recompile);
         case RendererAPI::API::Vulkan:
-            return std::make_shared<VulkanShader>(filepath, recompile);
+            return CreateRef<VulkanShader>(filepath, recompile);
         default: OGN_CORE_ASSERT(false, "Unknown RendererAPI");
                  return nullptr;
         }

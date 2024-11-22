@@ -22,7 +22,7 @@
 #include "Platform/DX11/DX11Context.h"
 #endif
 
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanContext.hpp"
 
 namespace origin
 {
@@ -70,7 +70,7 @@ namespace origin
         io.ConfigViewportsNoDecoration = false;
 
         float fontSize = 16.0f;
-        io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
+        //io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 #pragma endregion
 
         switch (RendererAPI::GetAPI())
@@ -79,19 +79,41 @@ namespace origin
         case RendererAPI::API::DX11:
         {
             DX11Context *dx_context = DX11Context::GetInstance();
-            ImGui_ImplGlfw_InitForOther((GLFWwindow *)m_WindowContext->GetNativeWindow(), true);
+            ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow *>(m_WindowContext->GetNativeWindow()), true);
             ImGui_ImplDX11_Init(dx_context->Device, dx_context->DeviceContext);
             break;
         }
 #endif
         case RendererAPI::API::OpenGL:
         {
-            ImGui_ImplGlfw_InitForOpenGL((GLFWwindow *)m_WindowContext->GetNativeWindow(), true);
+            ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow *>(m_WindowContext->GetNativeWindow()), true);
             ImGui_ImplOpenGL3_Init("#version 450");
             break;
         }
         case RendererAPI::API::Vulkan:
         {
+            constexpr bool install_callbacks = true;
+            ImGui_ImplGlfw_InitForVulkan(static_cast<GLFWwindow *>(m_WindowContext->GetNativeWindow()), install_callbacks);
+
+            auto vk_context = GraphicsContext::GetContext<VulkanContext>();
+            ImGui_ImplVulkan_InitInfo init_info = {};
+
+            init_info.Instance = vk_context->GetVkInstance();
+            init_info.PhysicalDevice = vk_context->GetVkPhysicalDevice();
+            init_info.Device = vk_context->GetVkDevice();
+            init_info.QueueFamily = vk_context->GetVkQueueFamily();
+            init_info.Queue = vk_context->GetVkQueue();
+            init_info.PipelineCache = vk_context->GetVkPipelineCache();
+            init_info.DescriptorPool = vk_context->GetVkDescriptorPool();
+            init_info.RenderPass = vk_context->GetVkRenderPass();
+            init_info.Subpass = 0;
+            init_info.MinImageCount = vk_context->GetVkMinImageCount();
+            init_info.ImageCount = vk_context->GetSwapchain()->GetVkImageCount();
+            init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+            init_info.Allocator = vk_context->GetVkAllocator();
+            init_info.CheckVkResultFn = VK_NULL_HANDLE;
+
+            ImGui_ImplVulkan_Init(&init_info);
             break;
         }
         }
@@ -99,6 +121,8 @@ namespace origin
 
     void GuiLayer::OnDetach()
     {
+        ImGui_ImplGlfw_Shutdown();
+
         switch (RendererAPI::GetAPI())
         {
 #ifdef OGN_PLATFORM_WINDOWS
@@ -115,11 +139,11 @@ namespace origin
         }
         case RendererAPI::API::Vulkan:
         {
+            ImGui_ImplVulkan_Shutdown();
             break;
         }
         }
         
-        ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
 
@@ -130,7 +154,6 @@ namespace origin
 
     void GuiLayer::Begin()
     {
-        ImGui_ImplGlfw_NewFrame();
 
         switch (RendererAPI::GetAPI())
         {
@@ -148,11 +171,12 @@ namespace origin
         }
         case RendererAPI::API::Vulkan:
         {
-            glfwPollEvents();
+            ImGui_ImplVulkan_NewFrame();
             break;
         }
         }
 
+        ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
     }
@@ -163,7 +187,7 @@ namespace origin
 
         Application &app = Application::GetInstance();
         int width, height;
-        glfwGetFramebufferSize((GLFWwindow *)m_WindowContext->GetNativeWindow(), &width, &height);
+        glfwGetFramebufferSize(static_cast<GLFWwindow *>(m_WindowContext->GetNativeWindow()), &width, &height);
         io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height));
 
         // ====================
@@ -179,7 +203,7 @@ namespace origin
             {
                 ImGui::UpdatePlatformWindows();
                 ImGui::RenderPlatformWindowsDefault();
-                glfwMakeContextCurrent((GLFWwindow *)m_WindowContext->GetNativeWindow());
+                glfwMakeContextCurrent(static_cast<GLFWwindow *>(m_WindowContext->GetNativeWindow()));
             }
 
             break;
@@ -192,12 +216,17 @@ namespace origin
             {
                 ImGui::UpdatePlatformWindows();
                 ImGui::RenderPlatformWindowsDefault();
-                glfwMakeContextCurrent((GLFWwindow *)m_WindowContext->GetNativeWindow());
+                glfwMakeContextCurrent(static_cast<GLFWwindow *>(m_WindowContext->GetNativeWindow()));
             }
             break;
         }
         case RendererAPI::API::Vulkan:
         {
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+            }
             break;
         }
         }

@@ -1,7 +1,7 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "Editor"
-    kind "WindowedApp"
+    kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
@@ -110,6 +110,7 @@ project "Editor"
         runtime "Release"
         optimize "on"
         symbols "off"
+        kind "WindowedApp"
         defines {
             "GLFW_INCLUDE_NONE",
             "OGN_DISTRIBUTION", "NDEBUG"

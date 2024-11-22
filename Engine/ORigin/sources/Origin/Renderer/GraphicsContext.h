@@ -13,13 +13,13 @@ namespace origin
 		virtual ~GraphicsContext() = default;
 		virtual void Init(Window *window) = 0;
 		virtual void Shutdown() = 0;
-		static std::shared_ptr<GraphicsContext> Create();
+		static Ref<GraphicsContext> Create();
 
 		template<typename T>
-		static std::shared_ptr<T> GetContext() { return std::static_pointer_cast<T>(s_Instance); }
+        static Ref<T> GetContext() { return std::static_pointer_cast<T>(s_Instance); }
 
 	private:
-		static std::shared_ptr<GraphicsContext> s_Instance;
+		static Ref<GraphicsContext> s_Instance;
 	};
 }
 
