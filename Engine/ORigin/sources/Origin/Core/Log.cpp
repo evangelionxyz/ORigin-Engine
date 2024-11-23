@@ -12,6 +12,38 @@ Log::Log()
     std::cin.tie(nullptr);
 }
 
+void Log::PrintColoredMessage(const std::string &message, const LogLevel level)
+{
+    const char *color_code;
+    const char *level_str;
+    switch (level)
+    {
+    case LogLevel::Critical:
+    case LogLevel::Error:
+        color_code = "\033[1;31m";
+        level_str = "[Error]\t";
+        break;
+    case LogLevel::Warning:
+        color_code = "\033[1;33m";
+        level_str = "[Warn]\t";
+        break;
+    default:
+        color_code = "\033[1;37m";
+        level_str = "[Info]\t";
+        break;
+    }
+    if (m_Buffer.tellp() > 1024)
+    {
+        m_Buffer.str("");
+        m_Buffer.clear();
+    }
+    m_Buffer << color_code << /*level_str <<*/  message << "\033[0m\n";
+    //m_Buffer << message << "\n";
+    std::cout << m_Buffer.rdbuf();
+    m_Buffer.str("");
+    m_Buffer.clear();
+}
+
 Log *Log::GetInstance()
 {
     return s_Instance;

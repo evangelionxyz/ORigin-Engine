@@ -79,7 +79,7 @@ void GuiLayer::Init()
     {
         DX11Context *dx_context = DX11Context::GetInstance();
         ImGui_ImplGlfw_InitForOther(m_WindowContext->GetNativeWindow(), true);
-        ImGui_ImplDX11_Init(dx_context->Device, dx_context->DeviceContext);
+        ImGui_ImplDX11_Init(dx_context->GetDevice(), dx_context->GetDeviceContext());
         break;
     }
 #endif
@@ -93,7 +93,7 @@ void GuiLayer::Init()
     {
         constexpr bool install_callbacks = true;
         ImGui_ImplGlfw_InitForVulkan(m_WindowContext->GetNativeWindow(), install_callbacks);
-        auto vk_context = GraphicsContext::GetContext<VulkanContext>();
+        Ref<VulkanContext> vk_context = GraphicsContext::GetContext<VulkanContext>();
 
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = vk_context->GetVkInstance();
@@ -129,7 +129,7 @@ void GuiLayer::OnDetach()
         break;
     case RendererAPI::API::Vulkan:
     {
-        auto vk_context = GraphicsContext::GetContext<VulkanContext>();
+        Ref<VulkanContext> vk_context = GraphicsContext::GetContext<VulkanContext>();
         vk_context->GetQueue()->WaitIdle();
 
         ImGui_ImplVulkan_Shutdown();

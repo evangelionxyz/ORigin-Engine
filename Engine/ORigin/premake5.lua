@@ -16,14 +16,12 @@ project "ORigin"
     files {
         "sources/pch.cpp",
         "sources/pch.h",
-        "sources/Origin.h",
         "sources/Origin/**.cpp",
-        "sources/Origin/**.h",
         "sources/Origin/**.hpp",
-        "sources/Platform/OpenGL/**.cpp",
-        "sources/Platform/OpenGL/**.h",
-        "sources/Platform/Vulkan/**.cpp",
-        "sources/Platform/Vulkan/**.h",
+        "sources/Origin/**.h",
+        "sources/Platform/**.cpp",
+        "sources/Platform/**.hpp",
+        "sources/Platform/**.h",
     }
 
     includedirs {
@@ -89,6 +87,11 @@ project "ORigin"
             "sources/Platform/Win32/**.cpp",
             "sources/Platform/Win32/**.h",
         }
+
+        postbuildcommands {
+		      '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
+	      }
+
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
         defines {

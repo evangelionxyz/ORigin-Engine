@@ -19,7 +19,7 @@ namespace origin
 
 	void DX11RendererAPI::ClearColor(const glm::vec4 &color)
 	{
-		DX11Context::GetInstance()->DeviceContext->ClearRenderTargetView(DX11Context::GetInstance()->RenderTargetView, glm::value_ptr(color));
+		DX11Context::GetInstance()->m_DeviceContext->ClearRenderTargetView(DX11Context::GetInstance()->m_RenderTargetView, glm::value_ptr(color));
 	}
 
 	void DX11RendererAPI::ClearColor(float r, float g, float b, float a)
@@ -29,7 +29,7 @@ namespace origin
 
 	void DX11RendererAPI::Clear()
 	{
-		DX11Context::GetInstance()->DeviceContext->OMSetRenderTargets(1, &DX11Context::GetInstance()->RenderTargetView, nullptr);
+		DX11Context::GetInstance()->m_DeviceContext->OMSetRenderTargets(1, &DX11Context::GetInstance()->m_RenderTargetView, nullptr);
 	}
 
 	void DX11RendererAPI::DrawIndexed(const std::shared_ptr<VertexArray> &vertexArray, uint32_t IndexCount)

@@ -12,9 +12,9 @@
 
 namespace origin
 {
-    std::shared_ptr<GraphicsContext> GraphicsContext::s_Instance = nullptr;
+    Ref<GraphicsContext> GraphicsContext::s_Instance = nullptr;
 
-    std::shared_ptr<GraphicsContext> GraphicsContext::Create()
+    Ref<GraphicsContext> GraphicsContext::Create()
     {
         switch (Renderer::GetAPI())
         {
@@ -33,7 +33,7 @@ namespace origin
             case RendererAPI::API::DX11: 
             {
                 s_Instance = CreateRef<DX11Context>();
-                return std::make_unique<DX11Context>();
+                return s_Instance;
             }
 #endif
         }

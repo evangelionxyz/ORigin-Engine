@@ -20,6 +20,7 @@ void SandboxLayer::OnAttach()
 
 void SandboxLayer::OnUpdate(Timestep ts)
 {
+    RenderCommand::Clear();
 }
 
 void SandboxLayer::OnEvent(Event &e)

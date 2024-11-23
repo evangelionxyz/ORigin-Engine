@@ -161,7 +161,8 @@ namespace origin {
         {
         case RendererAPI::API::DX11:
         {
-            GraphicsContext::GetContext<DX11Context>()->SwapChain->Present(1u, 0u);
+            Ref<DX11Context> dx_context = GraphicsContext::GetContext<DX11Context>();
+            dx_context->GetSwapchain()->Present(1u, 0u);
             break;
         }
         case RendererAPI::API::OpenGL:

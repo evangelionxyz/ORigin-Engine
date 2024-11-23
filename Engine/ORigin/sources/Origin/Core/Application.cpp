@@ -35,9 +35,11 @@ namespace origin {
         s_Instance = this;
 
         if (!m_Spec.WorkingDirectory.empty())
+        {
             std::filesystem::current_path(m_Spec.WorkingDirectory);
+        }
 
-        RendererAPI::SetAPI(RendererAPI::API::Vulkan);
+        RendererAPI::SetAPI(RendererAPI::API::OpenGL);
 
         Window::GLFWInit();
         m_ConsoleManager = std::make_unique<ConsoleManager>();
@@ -45,13 +47,13 @@ namespace origin {
         switch (RendererAPI::GetAPI())
         {
         case RendererAPI::API::DX11:
-            spec.Name.insert(spec.Name.size(), " <DX11>");
+            spec.Name.insert(spec.Name.size(), " - DX11");
             break;
         case RendererAPI::API::OpenGL:
-            spec.Name.insert(spec.Name.size(), " <OpenGL>");
+            spec.Name.insert(spec.Name.size(), " - OpenGL");
             break;
         case RendererAPI::API::Vulkan:
-            spec.Name.insert(spec.Name.size(), " <Vulkan>");
+            spec.Name.insert(spec.Name.size(), " - Vulkan");
             break;
         }
 

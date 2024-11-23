@@ -25,15 +25,20 @@ namespace origin
 
 		static DX11Context *GetInstance();
 
-		ID3D11Device *Device = nullptr;
-		IDXGISwapChain *SwapChain = nullptr;
-		ID3D11DeviceContext *DeviceContext = nullptr;
-		ID3D11RenderTargetView *RenderTargetView = nullptr;
-		ID3D11DepthStencilView *DepthStencilView = nullptr;
+		ID3D11Device *GetDevice() const { return m_Device; }
+		IDXGISwapChain *GetSwapchain() const { return m_Swapchain;  }
+		ID3D11DeviceContext *GetDeviceContext() const { return m_DeviceContext; }
 
-		D3D11_VIEWPORT Viewport {};
 		
 	private:
+        ID3D11Device *m_Device = nullptr;
+        IDXGISwapChain *m_Swapchain = nullptr;
+        ID3D11DeviceContext *m_DeviceContext = nullptr;
+        ID3D11RenderTargetView *m_RenderTargetView = nullptr;
+        ID3D11DepthStencilView *m_DepthStencilView = nullptr;
+
+        D3D11_VIEWPORT m_viewport{};
+
 		static DX11Context *s_Instance;
 
 		friend class DX11RendererAPI;

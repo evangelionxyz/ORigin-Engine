@@ -53,6 +53,9 @@ project "Editor"
     }
 
     buildoptions { "/utf-8" }
+    
+	 
+
 
     -- ///////////////////////////////////////////
     -- Windows
@@ -66,6 +69,7 @@ project "Editor"
             "NV_USE_STATIC_WINCRT",
             "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
         }
+
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
     -- ///////////////////////////////////////////
