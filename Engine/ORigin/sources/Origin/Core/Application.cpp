@@ -61,8 +61,8 @@ namespace origin {
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
         m_InputHandle.Init(m_Window->GetNativeWindow());
 
-        //m_GuiLayer = new GuiLayer(m_Window);
-        //PushOverlay(m_GuiLayer);
+        m_GuiLayer = new GuiLayer(m_Window);
+        m_GuiLayer->OnAttach();
 
         //Physics::Init(PhysicsAPI::Jolt);
 
@@ -76,6 +76,7 @@ namespace origin {
     Application::~Application()
     {
         m_LayerStack.Shutdown();
+
         m_Window->DestroyWindow();
 
         Renderer::Shutdown();
@@ -117,6 +118,13 @@ namespace origin {
             }
 
             m_Window->OnUpdate();
+        }
+
+        if (m_GuiLayer)
+        {
+            m_GuiLayer->OnDetach();
+
+            delete m_GuiLayer;
         }
     }
 

@@ -32,6 +32,9 @@ void VulkanGraphicsPipeline::Create(
     const VkPipelineColorBlendStateCreateInfo &color_blend_info, 
     const VkPipelineLayoutCreateInfo &layout_info)
 {
+    m_Viewport = viewport;
+    m_Scissor = scissor;
+
     // create pipeline layout
     VkResult result = vkCreatePipelineLayout(m_Device, &layout_info, nullptr, &m_PipelineLayout);
     VK_ERROR_CHECK(result, "[Vulkan] Failed to create pipeline layout");
@@ -89,6 +92,35 @@ void VulkanGraphicsPipeline::Cleanup()
     {
         vkDestroyPipelineLayout(m_Device, m_PipelineLayout, m_Allocator);
     }
+}
+
+void VulkanGraphicsPipeline::Resize(u32 width, u32 height)
+{
+    m_Viewport.width = width;
+    m_Viewport.height = height;
+    m_Scissor.extent.width = width;
+    m_Scissor.extent.height = height;
+}
+
+void VulkanGraphicsPipeline::BeginRenderPass(VkCommandBuffer command_buffer, VkFramebuffer framebuffer, VkClearValue clear_value, u32 width, u32 height)
+{
+    const VkRect2D render_area = { { 0, 0 },{ width, height } };
+
+    VkRenderPassBeginInfo render_pass_begin_info = {};
+    render_pass_begin_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_begin_info.pNext           = VK_NULL_HANDLE;
+    render_pass_begin_info.renderPass      = m_RenderPass;
+    render_pass_begin_info.renderArea      = render_area;
+    render_pass_begin_info.framebuffer     = framebuffer;
+    render_pass_begin_info.clearValueCount = 1;
+    render_pass_begin_info.pClearValues    = &clear_value;
+
+    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void VulkanGraphicsPipeline::EndRenderPass(VkCommandBuffer command_buffer)
+{
+    vkCmdEndRenderPass(command_buffer);
 }
 
 }

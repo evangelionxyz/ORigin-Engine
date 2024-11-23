@@ -128,8 +128,13 @@ void GuiLayer::OnDetach()
         ImGui_ImplOpenGL3_Shutdown();
         break;
     case RendererAPI::API::Vulkan:
+    {
+        auto vk_context = GraphicsContext::GetContext<VulkanContext>();
+        vk_context->GetQueue()->WaitIdle();
+
         ImGui_ImplVulkan_Shutdown();
         break;
+    }
     }
 
     ImGui_ImplGlfw_Shutdown();

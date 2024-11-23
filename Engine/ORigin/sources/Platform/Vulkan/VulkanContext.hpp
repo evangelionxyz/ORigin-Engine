@@ -47,7 +47,7 @@ public:
     void CreateDebugCallback();
     void CreateWindowSurface();
     void CreateDevice();
-    void CreateSwapcahin();
+    void CreateSwapchain();
     void CreateCommandPool();
     void CreateDescriptorPool();
     void CreateGraphicsPipeline();
@@ -58,7 +58,7 @@ public:
     void FreeCommandBuffers();
     void DestroyFramebuffers();
 
-    void RecreateSwapchin();
+    void RecreateSwapchain();
 
     void Present();
     void RecordCommandBuffer(VkCommandBuffer command_buffer, u32 image_index);

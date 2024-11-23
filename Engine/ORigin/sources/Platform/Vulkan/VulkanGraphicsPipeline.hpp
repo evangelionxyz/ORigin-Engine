@@ -30,8 +30,15 @@ public:
 
     void Cleanup();
 
+    void Resize(u32 width, u32 height);
+
+    void BeginRenderPass(VkCommandBuffer command_buffer, VkFramebuffer framebuffer, VkClearValue clear_value, u32 width, u32 height);
+    void EndRenderPass(VkCommandBuffer command_buffer);
+
     VkPipeline GetPipeline() const { return m_GraphicsPipeline; }
     VkPipelineLayout GetPipelineLayout() const { return m_PipelineLayout; }
+    VkRect2D GetScissor() const { return m_Scissor; }
+    VkViewport GetViewport() const { return m_Viewport; }
 
 private:
     VkDevice m_Device;
@@ -39,7 +46,12 @@ private:
     VkPipelineLayout m_PipelineLayout;
     VkPipeline m_GraphicsPipeline;
     VkAllocationCallbacks *m_Allocator;
+
+    VkViewport m_Viewport;
+    VkRect2D m_Scissor;
 };
+
+
 
 }
 

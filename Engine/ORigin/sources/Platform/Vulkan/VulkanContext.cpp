@@ -91,7 +91,7 @@ void VulkanContext::Init(Window *window)
     m_QueueFamily = m_PhysicalDevice.SelectDevice(VK_QUEUE_GRAPHICS_BIT, true);
 
     CreateDevice();
-    CreateSwapcahin();
+    CreateSwapchain();
     CreateRenderPass();
     CreateCommandPool();
 
@@ -241,7 +241,7 @@ void VulkanContext::CreateDevice()
     OGN_CORE_INFO("[Vulkan Context] Physical device created successfully");
 }
 
-void VulkanContext::CreateSwapcahin()
+void VulkanContext::CreateSwapchain()
 {
     i32 width, height;
     glfwGetFramebufferSize(m_WindowHandle, &width, &height);
@@ -273,8 +273,7 @@ void VulkanContext::CreateSwapcahin()
     VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
     m_Swapchain = VulkanSwapchain(m_LogicalDevice, m_Allocator, m_Surface,
-        format, capabilities, present_mode, 
-        image_usage, m_QueueFamily);
+        format, capabilities, present_mode, image_usage, m_QueueFamily);
 }
 
 void VulkanContext::CreateCommandPool()
@@ -318,7 +317,7 @@ void VulkanContext::CreateDescriptorPool()
 
 void VulkanContext::CreateGraphicsPipeline()
 {
-    Ref<VulkanShader> shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", false);
+    Ref<VulkanShader> shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", true);
 
     VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -329,7 +328,6 @@ void VulkanContext::CreateGraphicsPipeline()
     input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     input_assembly_info.primitiveRestartEnable = VK_FALSE;
-
 
     VkPipelineRasterizationStateCreateInfo rasterization_info = {};
     rasterization_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -429,8 +427,8 @@ void VulkanContext::CreateRenderPass()
 
 void VulkanContext::CreateFramebuffers()
 {
-    i32 width, height;
-    glfwGetFramebufferSize(m_WindowHandle, &width, &height);
+    const u32 width = m_Swapchain.GetVkExtent2D().width;
+    const u32 height = m_Swapchain.GetVkExtent2D().height;
 
     const u32 image_count = static_cast<u32>(m_Swapchain.GetVkImageCount());
     m_Framebuffers.resize(image_count);
@@ -439,12 +437,12 @@ void VulkanContext::CreateFramebuffers()
     {
         VkImageView attachments[] = { m_Swapchain.GetVkImageView(i) };
         VkFramebufferCreateInfo framebuffer_create_info = {};
-        framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass = m_RenderPass;
-        framebuffer_create_info.width = static_cast<u32>(width);
-        framebuffer_create_info.height = static_cast<u32>(height);
-        framebuffer_create_info.layers = 1;
-        framebuffer_create_info.pAttachments = attachments;
+        framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_create_info.renderPass      = m_RenderPass;
+        framebuffer_create_info.width           = width;
+        framebuffer_create_info.height          = height;
+        framebuffer_create_info.layers          = 1;
+        framebuffer_create_info.pAttachments    = attachments;
         framebuffer_create_info.attachmentCount = std::size(attachments);
 
         VkResult res = vkCreateFramebuffer(m_LogicalDevice, &framebuffer_create_info, m_Allocator, &m_Framebuffers[i]);
@@ -458,10 +456,10 @@ void VulkanContext::CreateCommandBuffers()
     m_CommandBuffers.resize(image_count);
 
     VkCommandBufferAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     alloc_info.commandBufferCount = image_count;
-    alloc_info.commandPool = m_CommandPool;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandPool        = m_CommandPool;
+    alloc_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
     VkResult res = vkAllocateCommandBuffers(m_LogicalDevice, &alloc_info, m_CommandBuffers.data());
     VK_ERROR_CHECK(res, "[Vulkan] Failed to create command buffers");
@@ -481,7 +479,7 @@ void VulkanContext::DestroyFramebuffers()
         vkDestroyFramebuffer(m_LogicalDevice, fb, m_Allocator);
 }
 
-void VulkanContext::RecreateSwapchin()
+void VulkanContext::RecreateSwapchain()
 {
     vkDeviceWaitIdle(m_LogicalDevice);
 
@@ -489,7 +487,11 @@ void VulkanContext::RecreateSwapchin()
 
     m_Swapchain.Destroy();
 
-    CreateSwapcahin();
+    CreateSwapchain();
+
+    const u32 width = m_Swapchain.GetVkExtent2D().width;
+    const u32 height = m_Swapchain.GetVkExtent2D().height;
+    m_GraphicsPipeline.Resize(width, height);
 
     CreateFramebuffers();
 }
@@ -501,10 +503,9 @@ void VulkanContext::Present()
     u32 image_index = 0;
     VkResult result = vkAcquireNextImageKHR(m_LogicalDevice, m_Swapchain.GetVkSwapchain(),
         UINT64_MAX, m_Queue.GetSemaphore(), VK_NULL_HANDLE, &image_index);
-
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        RecreateSwapchin();
+        RecreateSwapchain();
         return;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -513,6 +514,7 @@ void VulkanContext::Present()
     }
 
     m_Queue.WaitAndResetFences();
+
     vkResetCommandBuffer(m_CommandBuffers[image_index], 0);
     RecordCommandBuffer(m_CommandBuffers[image_index], image_index);
 
@@ -521,63 +523,39 @@ void VulkanContext::Present()
     result = m_Queue.Present(image_index, m_Swapchain.GetVkSwapchain());
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
-        RecreateSwapchin();
-        return;
+        RecreateSwapchain();
     }
-
-    VK_ERROR_CHECK(result, "Failed to present swap chain image");
 }
 
 void VulkanContext::RecordCommandBuffer(VkCommandBuffer command_buffer, u32 image_index)
 {
-    i32 width, height;
-    glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-
-    const VkClearValue cc = {
-        m_ClearValue.color.float32[0],
-        m_ClearValue.color.float32[1],
-        m_ClearValue.color.float32[2],
-        1.0f
-    };
-
-    const VkRect2D render_area = { { 0, 0 },{ width, height } };
-    VkRenderPassBeginInfo render_pass_begin_info = {};
-    render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_begin_info.pNext = VK_NULL_HANDLE;
-    render_pass_begin_info.renderPass = m_RenderPass;
-    render_pass_begin_info.renderArea = render_area;
-    render_pass_begin_info.framebuffer = m_Framebuffers[image_index];
-    render_pass_begin_info.clearValueCount = 1;
-    render_pass_begin_info.pClearValues = &cc;
+    const u32 width = m_Swapchain.GetVkExtent2D().width;
+    const u32 height = m_Swapchain.GetVkExtent2D().height;
 
     VkCommandBufferBeginInfo begin_info = {};
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    begin_info.pNext = VK_NULL_HANDLE;
+    begin_info.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags            = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    begin_info.pNext            = VK_NULL_HANDLE;
     begin_info.pInheritanceInfo = VK_NULL_HANDLE;
     vkBeginCommandBuffer(command_buffer, &begin_info);
 
-    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE); // render pass
+    m_GraphicsPipeline.BeginRenderPass(command_buffer, m_Framebuffers[image_index], m_ClearValue, width, height);
 
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline.GetPipeline());
 
-    // create viewport
-    VkViewport viewport = { 0.0f, 0.0f,
-        static_cast<float>(m_Swapchain.GetVkExtent2D().width),
-        static_cast<float>(m_Swapchain.GetVkExtent2D().height),
-        0.0f, 1.0f
-    };
-    VkRect2D scissor = { {0, 0}, m_Swapchain.GetVkExtent2D() };
+    VkViewport vp = m_GraphicsPipeline.GetViewport();
+    VkRect2D scissor = m_GraphicsPipeline.GetScissor();
 
-    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+    vkCmdSetViewport(command_buffer, 0, 1, &vp);
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
     vkCmdDraw(command_buffer, 3, 1, 0, 0);
 
     // record dear imgui primitives into command buffer
-    //ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
 
-    vkCmdEndRenderPass(command_buffer); // !render pass
+    m_GraphicsPipeline.EndRenderPass(command_buffer);
+
     vkEndCommandBuffer(command_buffer); // !command buffer
 }
 
