@@ -3,6 +3,8 @@
 #include "pch.h"
 #include "Origin/Core/Log.h"
 
+#include "ConsoleManager.h"
+
 namespace origin {
 static Log *s_Instance = nullptr;
 Log::Log()
@@ -16,6 +18,9 @@ void Log::PrintColoredMessage(const std::string &message, const LogLevel level)
 {
     const char *color_code;
     const char *level_str;
+
+    const std::string &time_string = ConsoleManager::GetCurrentTime();
+
     switch (level)
     {
     case LogLevel::Critical:
@@ -37,7 +42,8 @@ void Log::PrintColoredMessage(const std::string &message, const LogLevel level)
         m_Buffer.str("");
         m_Buffer.clear();
     }
-    m_Buffer << color_code << /*level_str <<*/  message << "\033[0m\n";
+
+    m_Buffer << color_code << time_string << /* level_str << */ " " << message << "\033[0m\n";
     //m_Buffer << message << "\n";
     std::cout << m_Buffer.rdbuf();
     m_Buffer.str("");

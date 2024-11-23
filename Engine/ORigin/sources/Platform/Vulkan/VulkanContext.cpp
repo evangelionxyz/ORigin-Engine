@@ -501,8 +501,8 @@ void VulkanContext::Present()
     m_Queue.WaitIdle();
 
     u32 image_index = 0;
-    VkResult result = vkAcquireNextImageKHR(m_LogicalDevice, m_Swapchain.GetVkSwapchain(),
-        UINT64_MAX, m_Queue.GetSemaphore(), VK_NULL_HANDLE, &image_index);
+    VkResult result = vkAcquireNextImageKHR(m_LogicalDevice, m_Swapchain.GetVkSwapchain(), UINT64_MAX, m_Queue.GetSemaphore(), VK_NULL_HANDLE, &image_index);
+
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         RecreateSwapchain();
