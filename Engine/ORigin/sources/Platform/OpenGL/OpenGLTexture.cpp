@@ -141,6 +141,62 @@ namespace origin
         m_IsLoaded = true;
     }
 
+    OpenGLTexture2D::OpenGLTexture2D(const aiTexture *embedded_texture)
+    {
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+        glBindTexture(GL_TEXTURE_2D, m_TextureID);
+
+        if (embedded_texture->mHeight == 0)
+        {
+            // compressed texture (e.g., PNG, JPG)
+            i32 width, height, channels;
+
+            stbi_uc *data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(embedded_texture->pcData),
+                embedded_texture->mWidth, &width, &height, &channels, 0);
+
+            OGN_CORE_ASSERT(data, "[Texture2D] Failed to load texture");
+
+            m_Width = static_cast<u32>(width);
+            m_Height = static_cast<u32>(height);
+
+            GLenum format = GL_RGB;
+            GLint internal_format = GL_RGB8;
+            switch (channels)
+            {
+            case 1:
+                format = GL_RED;
+                internal_format = GL_R8;
+                break;
+            case 2:
+                format = GL_RG;
+                internal_format = GL_RG8;
+                break;
+            case 3:
+                format = GL_RGB;
+                internal_format = GL_RGB8;
+                break;
+            case 4:
+                format = GL_RGBA;
+                internal_format = GL_RGBA8;
+                break;
+            }
+
+            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        }
+        else
+        {
+            // Uncompressed texture
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, embedded_texture->mWidth, embedded_texture->mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, embedded_texture->pcData);
+        }
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+
     OpenGLTexture2D::~OpenGLTexture2D()
     {
         Unbind();
@@ -189,7 +245,7 @@ namespace origin
         OGN_CORE_WARN("[Texture2D] \"{}\" at index {} has been deleted", m_Filepath, m_Index);
     }
 
-    void OpenGLTexture2D::ChangeSize(const u64 width, const u64 height)
+    void OpenGLTexture2D::ChangeSize(const i32 width, const i32 height)
     {
         OGN_PROFILER_RENDERING();
 
@@ -230,7 +286,7 @@ namespace origin
     }
 
     OpenGLTextureCube::OpenGLTextureCube(const std::string &path)
-        : m_TextureID(0), m_Filepath(path)
+        : m_Filepath(path)
     {
         OGN_PROFILER_RENDERING();
 
@@ -300,7 +356,7 @@ namespace origin
         glBindTexture(m_Index, 0);
     }
 
-    void OpenGLTextureCube::ChangeSize(u64 width, u64 height)
+    void OpenGLTextureCube::ChangeSize(const i32 width, const i32 height)
     {
     }
 

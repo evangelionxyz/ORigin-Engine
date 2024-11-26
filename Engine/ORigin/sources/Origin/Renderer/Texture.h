@@ -5,10 +5,13 @@
 
 #include <string>
 #include <memory>
+#include <assimp/texture.h>
 
 #include "Origin/Asset/Asset.h"
 #include "Origin/Core/Buffer.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui.h>
 #include <filesystem>
 
 namespace origin {
@@ -45,14 +48,15 @@ namespace origin {
 	class Texture : public Asset
 	{
 	public:
-		~Texture() override = default;
+		Texture() = default;
+		~Texture() {};
+
 		virtual void SetData(Buffer data) = 0;
 		[[nodiscard]] virtual const TextureSpecification& GetSpecification() const = 0;
 
 		[[nodiscard]] virtual u32 GetWidth() const = 0;
 		[[nodiscard]] virtual u32 GetHeight() const = 0;
 		[[nodiscard]] virtual u32 GetIndex() const = 0;
-		[[nodiscard]] virtual u32 GetTextureID() const = 0;
 
 		virtual std::string GetFilepath() = 0;
 		[[nodiscard]] virtual std::string GetName() const = 0;
@@ -63,20 +67,26 @@ namespace origin {
 		[[nodiscard]] virtual bool IsLoaded() const = 0;
 
 		[[nodiscard]] virtual u64 GetEstimatedSize() const = 0;
-		virtual void ChangeSize(u64 width, u64 height) = 0;
-
-		virtual void SetMaterialTypeName(const std::string& typeName) = 0;
-		[[nodiscard]] virtual const std::string& GetMaterialTypeName() const = 0;
+		virtual void ChangeSize(const i32 width, const i32 height) = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
+
+        operator ImTextureID() { return reinterpret_cast<ImTextureID>((uintptr_t)m_TextureID); }
+        [[nodiscard]] u32 GetID() const { return m_TextureID; }
+
+	protected:
+		u32 m_TextureID = 0;
 	};
 
 	class Texture2D : public Texture
 	{
 	public:
+		Texture2D() = default;
+
 		static Ref<Texture2D> Create(const TextureSpecification& specification, Buffer data = Buffer());
 		static Ref<Texture2D> Create(const std::filesystem::path& filepath,
 			const TextureSpecification& specification = TextureSpecification());
+		static Ref<Texture2D> Create(const aiTexture *embedded_texture);
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
 		[[nodiscard]] AssetType GetType() const override { return GetStaticType(); }

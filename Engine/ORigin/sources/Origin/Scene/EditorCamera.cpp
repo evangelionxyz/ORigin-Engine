@@ -170,7 +170,7 @@ namespace origin {
 
     void EditorCamera::UpdateProjection()
     {
-        m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
+        m_AspectRatio = static_cast<float>(m_ViewportWidth) / static_cast<float>(m_ViewportHeight);
 
         switch (m_ProjectionType)
         {
@@ -206,7 +206,7 @@ namespace origin {
         return speed;
     }
 
-    void EditorCamera::SetViewportSize(float width, float height)
+    void EditorCamera::SetViewportSize(u32 width, u32 height)
     {
         m_ViewportWidth = width;
         m_ViewportHeight = height;

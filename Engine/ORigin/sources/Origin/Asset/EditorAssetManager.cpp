@@ -49,7 +49,7 @@ namespace origin
         return out;
     }
 
-    std::shared_ptr<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
+    Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
     {
         if (!IsAssetHandleValid(handle))
             return nullptr;
@@ -59,7 +59,7 @@ namespace origin
             return m_LoadedAssets.at(handle);
         }
 
-        std::shared_ptr<Asset> asset;
+        Ref<Asset> asset;
         const AssetMetadata &metadata = GetMetadata(handle);
 
         switch (metadata.Type)
@@ -127,7 +127,7 @@ namespace origin
             return 0;
         }
 
-        std::shared_ptr<Asset> asset;
+        Ref<Asset> asset;
         if (metadata.Type == AssetType::Font)
         {
             OGN_CORE_TRACE("{}", handle);
@@ -155,9 +155,9 @@ namespace origin
         return 0;
     }
 
-    void EditorAssetManager::InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<std::shared_ptr<Asset>()> loader)
+    void EditorAssetManager::InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<Ref<Asset>()> loader)
     {
-        std::shared_ptr<Asset> asset;
+        Ref<Asset> asset;
         if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
         {
             asset = m_LoadedAssets.at(handle);
@@ -219,7 +219,7 @@ namespace origin
             if (metadata.Type == AssetType::Material)
             {
                 std::filesystem::path filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
-                std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
+                Ref<Material> mat = AssetManager::GetAsset<Material>(handle);
                 MaterialSerializer::Serialize(filepath, mat);
             }
         }

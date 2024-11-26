@@ -117,8 +117,7 @@ namespace origin
 	{
 		OGN_PROFILER_SCENE();
 
-		auto view = m_Registry.view<TagComponent>();
-		for (auto entity : view)
+        for (const auto view = m_Registry.view<TagComponent>(); auto entity : view)
 		{
 			const TagComponent &tc = view.get<TagComponent>(entity);
 			if (tc.Tag == name)
@@ -137,12 +136,11 @@ namespace origin
         {
             if (idc.Parent)
             {
-                auto parent = GetEntityWithUUID(idc.Parent);
-                if (parent)
+                if (auto parent = GetEntityWithUUID(idc.Parent))
                 {
                     auto &ptc = parent.GetComponent<TransformComponent>();
-                    glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
-                    tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+                    glm::vec3 rotated_local_pos = ptc.WorldRotation * tc.Translation;
+                    tc.WorldTranslation = rotated_local_pos + ptc.WorldTranslation;
                     tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
                     tc.WorldScale = tc.Scale;
                 }
@@ -174,15 +172,13 @@ namespace origin
 
     void Scene::Update(Timestep ts)
 	{
-        const auto &view = m_Registry.view<TransformComponent>();
-        for (auto e : view)
+        for (const auto &view = m_Registry.view<TransformComponent>(); auto e : view)
         {
             Entity entity = { e, this };
             auto &tc = entity.GetComponent<TransformComponent>();
             if (entity.HasComponent<SpriteAnimationComponent>())
             {
-                auto &ac = entity.GetComponent<SpriteAnimationComponent>();
-                if (ac.State->IsCurrentAnimationExists())
+                if (const auto &ac = entity.GetComponent<SpriteAnimationComponent>(); ac.State->IsCurrentAnimationExists())
                 {
                     ac.State->OnUpdateRuntime(ts);
                 }
@@ -219,7 +215,7 @@ namespace origin
 		// Update Scripts
         m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto &sc)
         {
-            Entity entity { entityID, this };
+            const Entity entity { entityID, this };
             ScriptEngine::OnUpdateEntity(entity, time);
         });
 
@@ -229,14 +225,14 @@ namespace origin
         });
     }
 
-    void Scene::UpdatePhysics(Timestep ts)
+    void Scene::UpdatePhysics(Timestep ts) const
     {
         m_Physics->Simulate(ts);
 
         m_Physics2D->Simulate(ts);
     }
 
-	void Scene::OnUpdateRuntime(Timestep ts)
+	void Scene::OnUpdateRuntime(const Timestep ts)
 	{
 		OGN_PROFILER_SCENE();
 
@@ -426,11 +422,10 @@ namespace origin
                 {
                     if (camera.IsPerspective())
                     {
-                        Entity primaryCam = GetPrimaryCameraEntity();
-                        if (primaryCam)
+                        if (Entity primary_cam = GetPrimaryCameraEntity())
                         {
-                            const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
-                            const auto &ccTC = primaryCam.GetComponent<TransformComponent>();
+                            const auto &cc = primary_cam.GetComponent<CameraComponent>().Camera;
+                            const auto &ccTC = primary_cam.GetComponent<TransformComponent>();
                             const float ratio = cc.GetAspectRatio();
                             glm::vec2 scale = glm::vec2(tc.WorldScale.x, tc.WorldScale.y * ratio);
                             transform = glm::translate(glm::mat4(1.0f), { tc.WorldTranslation.x, tc.WorldTranslation.y, 0.0f })
@@ -451,11 +446,11 @@ namespace origin
                 }
                 else
                 {
-                    glm::vec3 centerOffset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
-                    glm::vec3 scaledOffset = tc.WorldScale * centerOffset;
-                    glm::vec3 rotatedOffset = glm::toMat3(tc.WorldRotation) * scaledOffset;
+                    glm::vec3 center_offset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
+                    glm::vec3 scaled_offset = tc.WorldScale * center_offset;
+                    glm::vec3 rotated_offset = glm::toMat3(tc.WorldRotation) * scaled_offset;
 
-                    text.Position = tc.WorldTranslation - rotatedOffset;
+                    text.Position = tc.WorldTranslation - rotated_offset;
 
                     transform = glm::translate(glm::mat4(1.0f), text.Position)
                         * glm::toMat4(tc.WorldRotation)
@@ -471,8 +466,8 @@ namespace origin
 
         Renderer2D::End();
 
-        const auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
-        for (auto [e, tc, mesh] : meshView.each())
+        const auto mesh_view = m_Registry.view<TransformComponent, MeshComponent>();
+        for (const auto &[e, tc, mesh] : mesh_view.each())
         {
             // Render
             if (mesh.Data && tc.Visible)
@@ -491,7 +486,7 @@ namespace origin
                     mesh.AAnimator.m_FinalBoneMatrices[0], 
                     mesh.AAnimator.m_FinalBoneMatrices.size());*/
 
-                mesh.Data->vertexArray->Bind();
+                mesh.Data->vertex_array->Bind();
                 glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.Data->indices.size()), GL_UNSIGNED_INT, nullptr);
 
                 shader->Disable();
@@ -537,7 +532,7 @@ namespace origin
                 case StaticMeshComponent::Type::Default:
                     if (mc.Data)
                     {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray);
+                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertex_array);
                     }
                     break;
                 }
@@ -664,7 +659,7 @@ namespace origin
                 case StaticMeshComponent::Type::Default:
                     if (mc.Data)
                     {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray);
+                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertex_array);
                     }
                     break;
                 }
@@ -781,7 +776,7 @@ namespace origin
                 case StaticMeshComponent::Type::Default:
                     if (mc.Data)
                     {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), scaledTransform, mc.Data->vertexArray, outlineShader);
+                        MeshRenderer::DrawMesh(camera.GetViewProjection(), scaledTransform, mc.Data->vertex_array, outlineShader);
                     }
                     break;
                 }
@@ -985,7 +980,7 @@ namespace origin
 			auto &cc = view.get<CameraComponent>(e);
 			if (cc.Primary)
 			{
-				cc.Camera.SetViewportSize(static_cast<float>(width), static_cast<float>(height));
+				cc.Camera.SetViewportSize(width, height);
 				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
 				const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
 				m_UIRenderer->SetViewportSize(vp.x, vp.y, ortho.x, ortho.y);
@@ -1048,7 +1043,7 @@ namespace origin
 	{
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 		{
-            component.Camera.SetViewportSize(static_cast<float>(m_ViewportWidth), static_cast<float>(m_ViewportHeight));
+            component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 	}
 

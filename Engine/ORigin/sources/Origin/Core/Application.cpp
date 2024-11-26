@@ -7,25 +7,17 @@
 #include "Origin/Audio/FmodAudio.h"
 #include "Origin/Scripting/ScriptEngine.h"
 
-#include "Origin/Physics/Physics.hpp"
-
 #include "ConsoleManager.h"
 #include "EmbeddedImages.h"
-
-#include <imgui.h>
 #include <stb_image.h>
 
 #ifdef OGN_PLATFORM_WINDOWS
     #include "Platform/Win32/Win32Window.h"
-    #include "Platform/DX11/DX11Context.h"
 #endif
-
-// #define OGN_OPENGL_API
 
 namespace origin {
 
     Application* Application::s_Instance = nullptr;
-
     Application::Application(ApplicationSpecification& spec)
         : m_Spec(spec)
     {
@@ -39,7 +31,7 @@ namespace origin {
             std::filesystem::current_path(m_Spec.WorkingDirectory);
         }
 
-        RendererAPI::SetAPI(RendererAPI::API::Vulkan);
+        RendererAPI::SetAPI(RendererAPI::API::OpenGL);
 
         Window::GLFWInit();
         m_ConsoleManager = std::make_unique<ConsoleManager>();

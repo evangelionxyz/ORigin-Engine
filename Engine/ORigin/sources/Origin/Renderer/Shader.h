@@ -52,6 +52,7 @@ namespace origin
     class Shader
     {
     public:
+        Shader() = default;
         virtual ~Shader() = default;
 
         virtual void Enable() const {}

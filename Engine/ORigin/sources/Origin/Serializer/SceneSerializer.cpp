@@ -11,7 +11,6 @@
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Renderer/Shader.h"
-#include "Origin/Renderer/ModelLoader.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Asset/AssetManager.h"
@@ -829,7 +828,7 @@ namespace origin
 					}
 					if (mc.HMesh)
 					{
-						mc.Data = AssetManager::GetAsset<StaticMeshData>(mc.HMesh);
+						// mc.Data = AssetManager::GetAsset<Model>(mc.HMesh);
 					}
 
 					mc.mType = static_cast<StaticMeshComponent::Type>(static_mesh_component["Type"].as<int>());
@@ -844,7 +843,7 @@ namespace origin
 
 					if (mc.HMesh)
 					{
-						mc.Data = AssetManager::GetAsset<MeshData>(mc.HMesh);
+						// mc.Data = AssetManager::GetAsset<Mesh>(mc.HMesh);
 						//if (!mc.Data->animations.empty())
 						{
 							//mc.AAnimator = Animator(&mc.Data->animations[0]);

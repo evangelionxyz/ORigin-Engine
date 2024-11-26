@@ -19,7 +19,7 @@
 namespace origin
 {
     struct BoneInfo;
-    class MeshData;
+    class Mesh;
 
     template<typename T>
     struct KeyFrame
@@ -43,7 +43,7 @@ namespace origin
         }
     };
 
-    struct Vec3Key : public TransformKeyFrameBase
+    struct Vec3Key : TransformKeyFrameBase
     {
         KeyFrames<glm::vec3> Frames;
 
@@ -144,31 +144,27 @@ namespace origin
     {
     public:
         ModelAnimation() = default;
-        ModelAnimation(const std::vector<Ref<MeshData>> &meshes, aiAnimation *anim, const aiScene *scene);
+        ModelAnimation(std::vector<Ref<Mesh>> meshes, aiAnimation *anim, const aiScene *scene);
 
         void ReadHierarchy(AssimpNodeData &dest, const aiNode *src);
-        void ReadMissingBones(MeshData *mesh, const aiAnimation *anim);
+        void ReadMissingBones(Ref<Mesh> mesh, const aiAnimation *anim);
 
         Bone *FindBone(const std::string &name);
-
-        float GetTicksPersecond() const { return m_TicksPerSecond; }
-        float GetDuration() const { return m_Duration; }
-        const std::string &GetName() const { return m_Name; }
-        const AssimpNodeData &GetRootNode() const { return m_RootNode; }
-        const std::unordered_map<std::string, BoneInfo> &GetBoneInfo() { return m_BoneInfo; }
+        const AssimpNodeData &GetRootNode() const { return root_node; }
 
         static AnimationType GetStaticType() { return AnimationType::Skeletal; }
         AnimationType GetType() const override { return GetStaticType(); }
 
+        std::vector<Ref<Mesh>> meshes;
+
+        std::string name;
+        float duration;
+        float ticks_per_second;
+        AssimpNodeData root_node;
+
     private:
-        std::string m_Name;
-        float m_Duration;
-        float m_TicksPerSecond;
-
         std::unordered_map<std::string, Bone> m_Bones;
-        std::unordered_map<std::string, BoneInfo> m_BoneInfo;
 
-        AssimpNodeData m_RootNode;
         friend class Animator;
     };
 }

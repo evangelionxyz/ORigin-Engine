@@ -255,11 +255,10 @@ namespace origin {
         bool is_deleting = false;
         if (!m_Scene->IsRunning())
         {
-            ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
+            ImGui::PushID(reinterpret_cast<void*>(static_cast<uint64_t>(static_cast<uint32_t>(entity))));
             if (ImGui::BeginPopupContextItem(entity.GetTag().c_str()))
             {
-                Entity e = EntityContextMenu();
-                if (e.GetScene())
+                if (const Entity e = EntityContextMenu(); e.GetScene())
                 {
                     EntityManager::AddChild(entity, e, m_Scene.get());
                     SetSelectedEntity(e);
@@ -306,7 +305,7 @@ namespace origin {
 
         if (!is_deleting)
         {
-            ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
+            ImGui::PushID(reinterpret_cast<void*>(static_cast<uint64_t>(static_cast<uint32_t>(entity))));
             ImGui::TableNextColumn();
             ImGui::TextWrapped(Utils::EntityTypeToString(entity.GetType()).c_str());
             ImGui::TableNextColumn();
@@ -445,7 +444,7 @@ namespace origin {
                     if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
                     {
                         component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<StaticMeshData>(handle);
+                        component.Data = AssetManager::GetAsset<Mesh>(handle);
                         component.mType = StaticMeshComponent::Type::Default;
                     }
                     else
@@ -518,7 +517,7 @@ namespace origin {
                     if (AssetManager::GetAssetType(handle) == AssetType::Mesh)
                     {
                         component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<MeshData>(handle);
+                        component.Data = AssetManager::GetAsset<Mesh>(handle);
 
                         if (component.Data)
                         {
@@ -1530,32 +1529,30 @@ namespace origin {
     template<typename T, typename UIFunction>
     void SceneHierarchyPanel::DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
     {
-        constexpr ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
+        constexpr ImGuiTreeNodeFlags tree_node_flags = ImGuiTreeNodeFlags_DefaultOpen
             | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth
             | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
         if (entity.HasComponent<T>())
         {
             auto &component = entity.GetComponent<T>();
-            ImVec2 contentRegionAvailabel = ImGui::GetContentRegionAvail();
+            const ImVec2 content_region_available = ImGui::GetContentRegionAvail();
 
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
             ImGui::Separator();
-            bool open = ImGui::TreeNodeEx((void *)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+            const bool open = ImGui::TreeNodeEx(reinterpret_cast<void*>(typeid(T).hash_code()), tree_node_flags, name.c_str());
             ImGui::PopStyleVar();
 
-            ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
-            ImTextureID texId = (void *)(uintptr_t)(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
-            if (ImGui::ImageButton("component_more_button", texId, { 14.0f, 14.0f }))
+            ImGui::SameLine(content_region_available.x - 24.0f);
+            const ImTextureID tex_id = reinterpret_cast<void*>(static_cast<uintptr_t>(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID()));
+            if (ImGui::ImageButton("component_more_button", tex_id, { 14.0f, 14.0f }))
                 ImGui::OpenPopup("Component Settings");
 
-            bool componentRemoved = false;
+            bool component_removed = false;
             if (ImGui::BeginPopup("Component Settings"))
             {
                 if (ImGui::MenuItem("Remove component"))
-                {
-                    componentRemoved = true;
-                }
+                    component_removed = true;
 
                 ImGui::EndPopup();
             }
@@ -1566,10 +1563,8 @@ namespace origin {
                 ImGui::TreePop();
             }
 
-            if (componentRemoved)
-            {
+            if (component_removed)
                 entity.RemoveComponent<T>();
-            }
         }
     }
 }

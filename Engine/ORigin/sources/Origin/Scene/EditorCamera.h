@@ -26,7 +26,7 @@ namespace origin {
 		void OnEvent(Event& e) override;
         void SetOrthoScale(float value) override;
         void SetOrthoScaleMax(float max) override;
-		void SetViewportSize(float width, float height) override;
+		void SetViewportSize(u32 width, u32 height) override;
         void SetFov(float fovy) override;
         void SetNear(float nearClip) override;
         void SetFar(float farClip) override;

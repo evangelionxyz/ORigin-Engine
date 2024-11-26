@@ -85,9 +85,9 @@ namespace origin
 		return m_Projection * m_View * glm::inverse(m_Transform);
     }
 
-    void SceneCamera::SetViewportSize(float width, float height)
+    void SceneCamera::SetViewportSize(u32 width, u32 height)
 	{
-		float desiredRatio = width / height;
+		float desiredRatio = static_cast<float>(width) / height;
 		float x = 0, y = 0;
 
 		switch (m_AspectRatioType)

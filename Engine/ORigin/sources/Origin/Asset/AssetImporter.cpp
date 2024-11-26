@@ -5,7 +5,6 @@
 #include "AssetImporter.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Project/Project.h"
-#include "Origin/Renderer/ModelLoader.h"
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Serializer/SceneSerializer.h"
 #include "Origin/Utils/PlatformUtils.h"
@@ -22,8 +21,7 @@ namespace origin {
         { AssetType::Texture, TextureImporter::ImportTexture2D },
         { AssetType::Scene, SceneImporter::Import },
         { AssetType::Material, MaterialImporter::Import },
-        { AssetType::StaticMesh, ModelImporter::ImportStaticMesh },
-        { AssetType::Mesh, ModelImporter::ImportMesh },
+        { AssetType::Mesh, ModelImporter::Import },
         { AssetType::Font, FontImporter::Import },
         { AssetType::SpritesSheet, SpriteSheetImporter::Import }
     };
@@ -213,29 +211,17 @@ namespace origin {
         return texture;
     }
 
-    Ref<StaticMeshData> ModelImporter::ImportStaticMesh(AssetHandle handle, const AssetMetadata& metadata)
+    Ref<Model> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
     {
-        return LoadStaticMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    Ref<StaticMeshData> ModelImporter::LoadStaticMesh(const std::filesystem::path &filepath)
-    {
-        if (!std::filesystem::exists(filepath))
-            return nullptr;
-        return ModelLoader::LoadStaticModel(filepath);
-    }
-
-    Ref<MeshData> ModelImporter::ImportMesh(AssetHandle handle, const AssetMetadata &metadata)
-    {
-        return LoadMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
-    }
-
-    Ref<MeshData> ModelImporter::LoadMesh(const std::filesystem::path& filepath)
+    Ref<Model> ModelImporter::Load(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        return ModelLoader::LoadModel(filepath);
+        return Model::Create(filepath.generic_string());
     }
 
     Ref<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)

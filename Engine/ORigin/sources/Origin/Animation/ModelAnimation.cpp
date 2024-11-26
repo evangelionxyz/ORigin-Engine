@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "ModelAnimation.h"
 #include "Origin/Math/Math.h"
-#include "Origin/Renderer/MeshVertexData.h"
+#include "Origin/Renderer/Mesh.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -45,47 +45,48 @@ namespace origin
         LocalTransform = translation * rotation * scale;
     }
 
-    ModelAnimation::ModelAnimation(const std::vector<Ref<MeshData>> &meshes, aiAnimation* anim, const aiScene* scene)
+    ModelAnimation::ModelAnimation(std::vector<Ref<Mesh>> meshes, aiAnimation *anim, const aiScene *scene)
+        : meshes(meshes)
     {
-        m_Name = anim->mName.C_Str();
+        name = anim->mName.C_Str();
 
-        m_TicksPerSecond = (float)anim->mTicksPerSecond;
+        ticks_per_second = (float)anim->mTicksPerSecond;
         if (anim->mTicksPerSecond == 0.0)
         {
-            m_TicksPerSecond = 1.0f;
+            ticks_per_second = 1.0f;
         }
 
-        m_Duration = (float)anim->mDuration;
+        duration = static_cast<float>(anim->mDuration);
 
         m_Bones.clear();
-        ReadHierarchy(m_RootNode, scene->mRootNode);
+        ReadHierarchy(root_node, scene->mRootNode);
         
-        for (auto &m : meshes)
+        for (auto &mesh : meshes)
         {
-            ReadMissingBones(m.get(), anim);
+            ReadMissingBones(mesh, anim);
         }
     }
 
-    void ModelAnimation::ReadMissingBones(MeshData *data, const aiAnimation *anim)
+    void ModelAnimation::ReadMissingBones(Ref<Mesh> mesh, const aiAnimation *anim)
     {
-        auto &boneInfoMap = data->boneInfoMap;
-        int &boneCount = data->boneCount;
+        auto &bone_info_map = mesh->bone_info_map;
+        int &bone_count = mesh->bone_count;
 
         for (u32 i = 0; i < anim->mNumChannels; ++i)
         {
             // find animation bone data
             aiNodeAnim *channel = anim->mChannels[i];
 
-            const std::string &boneName = channel->mNodeName.data;
+            const std::string &bone_name = channel->mNodeName.data;
 
             // if it is not found in mesh data, then add it
-            if (!boneInfoMap.contains(boneName))
+            if (!bone_info_map.contains(bone_name))
             {
-                boneInfoMap[boneName].ID = boneCount;
-                boneCount++;
+                bone_info_map[bone_name].ID = bone_count;
+                bone_count++;
             }
 
-            m_Bones.insert({ boneName, Bone(boneName, boneInfoMap[boneName].ID, channel) });
+            m_Bones.insert({ bone_name, Bone(bone_name, bone_info_map[bone_name].ID, channel) });
         }
     }
 
@@ -98,16 +99,18 @@ namespace origin
 
         for (u32 i = 0; i < src->mNumChildren; ++i)
         {
-            AssimpNodeData newData;
-            ReadHierarchy(newData, src->mChildren[i]);
-            dest.Children.push_back(newData);
+            AssimpNodeData new_data;
+            ReadHierarchy(new_data, src->mChildren[i]);
+            dest.Children.push_back(new_data);
         }
     }
 
     Bone *ModelAnimation::FindBone(const std::string &name)
     {
         if (m_Bones.contains(name))
+        {
             return &m_Bones.at(name);
+        }
 
         return nullptr;
     }

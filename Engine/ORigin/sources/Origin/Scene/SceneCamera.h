@@ -14,7 +14,7 @@ namespace origin {
 		SceneCamera() = default;
 		void InitPerspective(float fovy, float aspectRatio, float nearClip, float farClip) override;
 		void InitOrthographic(float size, float nearClip, float farClip) override;
-		void SetViewportSize(float width, float height) override;
+		void SetViewportSize(u32 width, u32 height) override;
 		void SetFov(float fovy) override;
 		void SetNear(float nearClip) override;
 		void SetFar(float farClip) override;

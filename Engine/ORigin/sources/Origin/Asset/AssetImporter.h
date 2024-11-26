@@ -10,7 +10,7 @@
 #include "Origin/Renderer/Font.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Material.h"
-#include "Origin/Renderer/MeshVertexData.h"
+#include "Origin/Renderer/Model.h"
 
 #include <queue>
 #include <future>
@@ -136,11 +136,8 @@ namespace origin
     class ModelImporter
     {
     public:
-        static Ref<StaticMeshData> ImportStaticMesh(AssetHandle handle, const AssetMetadata &metadata);
-        static Ref<StaticMeshData> LoadStaticMesh(const std::filesystem::path& filepath);
-
-        static Ref<MeshData> ImportMesh(AssetHandle handle, const AssetMetadata &metadata);
-        static Ref<MeshData> LoadMesh(const std::filesystem::path& filepath);
+        static Ref<Model> Import(AssetHandle handle, const AssetMetadata &metadata);
+        static Ref<Model> Load(const std::filesystem::path& filepath);
     };
 
     class SpriteSheetImporter

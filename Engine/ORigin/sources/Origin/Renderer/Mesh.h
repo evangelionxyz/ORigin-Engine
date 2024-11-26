@@ -3,6 +3,7 @@
 #ifndef MESH_VERTEX_DATA_H
 #define MESH_VERTEX_DATA_H
 
+#include "Shader.h"
 #include "Origin/Asset/Asset.h"
 #include "Origin/Animation/ModelAnimation.h"
 #include <assimp/Importer.hpp>
@@ -12,72 +13,66 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
-namespace origin
-{
-    class VertexArray;
-    class VertexBuffer;
-    class Texture2D;
-
-    struct StaticMeshVertexData
-    {
-        glm::vec3 Position;
-        glm::vec3 Normals;
-        glm::vec3 Color;
-        glm::vec2 UV;
-        glm::vec2 TilingFactor;
-        float AlbedoIndex = 0.0f;
-        float SpecularIndex = 0.0f;
-    };
-
-    class StaticMeshData : public Asset
-    {
-    public:
-        std::string Name;
-        std::vector<StaticMeshVertexData> vertices;
-        std::vector<uint32_t> indices;
-        std::shared_ptr<VertexArray> vertexArray;
-        std::shared_ptr<VertexBuffer> vertexBuffer;
-        std::vector<Ref<Texture2D>> textures;
-
-        static AssetType GetStaticType() { return AssetType::StaticMesh; }
-        virtual AssetType GetType() const { return GetStaticType(); }
-    };
-
-    // ================================
-    // Skinned Mesh
+namespace origin {
 
 #define MAX_BONE_INFLUENCE 4
-    struct MeshVertexData
+
+class VertexArray;
+class VertexBuffer;
+class Texture2D;
+
+class MeshMaterial
+{
+    using TextureTypeMap = std::unordered_map<aiTextureType, Ref<Texture2D>>;
+public:
+    std::vector<TextureTypeMap> textures;
+    Ref<Shader> shader;
+
+    glm::vec3 diffuse_color;
+    float metallic_factor;
+    float roughness_factor;
+
+    MeshMaterial(): metallic_factor(1.0f), roughness_factor(0.0f), diffuse_color(1.0f)
     {
-        glm::vec3 Position;
-        glm::vec3 Normals;
-        glm::vec2 UV;
-        int IDs[MAX_BONE_INFLUENCE];
-        float Weights[MAX_BONE_INFLUENCE];
-    };
+    }
+};
 
-    struct BoneInfo
-    {
-        int ID;
-        glm::mat4 OffsetMatrix;
-    };
+struct MeshVertexData
+{
+    glm::vec3 Position;
+    glm::vec3 Normals;
+    glm::vec3 Color;
+    glm::vec2 UV;
+    glm::vec2 TilingFactor;
+    i32 IDs[MAX_BONE_INFLUENCE];
+    f32 Weights[MAX_BONE_INFLUENCE];
+    f32 AlbedoIndex = 0.0f;
+    f32 SpecularIndex = 0.0f;
+};
 
-    class MeshData : public Asset
-    {
-    public:
-        std::string Name;
-        std::vector<MeshVertexData> vertices;
-        std::vector<uint32_t> indices;
-        std::shared_ptr<VertexArray> vertexArray;
-        std::shared_ptr<VertexBuffer> vertexBuffer;
-        std::shared_ptr<Texture2D> diffuseTexture;
+struct BoneInfo
+{
+    i32 ID;
+    glm::mat4 offset_matrix;
+};
 
-        std::map<std::string, BoneInfo> boneInfoMap;
-        int boneCount = 0;
+class Mesh
+{
+public:
+    std::string name;
+    std::vector<MeshVertexData> vertices;
+    std::vector<u32> indices;
+    Ref<VertexArray> vertex_array;
+    Ref<VertexBuffer> vertex_buffer;
+    MeshMaterial material;
 
-        static AssetType GetStaticType() { return AssetType::Mesh; }
-        virtual AssetType GetType() const { return GetStaticType(); }
-    };
+    std::vector<glm::mat4> final_bone_matrices;
+    std::unordered_map<std::string, BoneInfo> bone_info_map;
+
+    i32 bone_count = 0;
+    bool is_active = true;
+};
+
 }
 
 #endif

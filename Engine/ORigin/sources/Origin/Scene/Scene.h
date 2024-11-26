@@ -73,7 +73,7 @@ namespace origin
 
         void Update(Timestep ts);
         void UpdateScripts(Timestep ts);
-        void UpdatePhysics(Timestep ts);
+        void UpdatePhysics(Timestep ts) const;
 
         void RenderScene(const Camera &camera);
         void RenderStencilScene(const Camera &camera, entt::entity selectedId);

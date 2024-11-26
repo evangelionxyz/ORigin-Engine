@@ -16,7 +16,7 @@
 #include "Origin/Renderer/ParticleSystem.h"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
-#include "Origin/Renderer/MeshVertexData.h"
+#include "Origin/Renderer/Mesh.h"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Buffer.h"
 
@@ -221,7 +221,7 @@ namespace origin
         };
 
         std::string Name;
-        std::shared_ptr<StaticMeshData> Data;
+        std::shared_ptr<Mesh> Data;
         AssetHandle HMaterial = UUID(0);
         AssetHandle HMesh = UUID(0);
         Type mType = Type::Default;
@@ -234,7 +234,7 @@ namespace origin
     {
     public:
         std::string Name;
-        std::shared_ptr<MeshData> Data;
+        std::shared_ptr<Mesh> Data;
         AssetHandle HMaterial = UUID(0);
         AssetHandle HMesh = UUID(0);
         float PlaybackSpeed = 1.0f;
