@@ -12,7 +12,7 @@ const int MAX_BONES          = 100;
 const int MAX_BONE_INFLUENCE = 4;
 
 uniform mat4 viewProjection;
-uniform mat4 transform;
+uniform mat4 model_transform;
 uniform mat4 bone_transforms[MAX_BONES];
 
 layout (location = 0) out vec3 fragColor;
@@ -27,11 +27,16 @@ void main()
     bone_transform += bone_transforms[aBoneIDs[2]] * aWeights[2];
     bone_transform += bone_transforms[aBoneIDs[3]] * aWeights[3];
 
-    gl_Position = viewProjection * transform * bone_transform * vec4(aPosition, 1.0);
-    fragColor = aColor;
-    fragUV = aUV;
-    fragNormal = mat3(transpose(inverse(transform))) * aNormal; // Transform normal to world space
-    fragPosition = vec3(transform * vec4(aPosition, 1.0)); // Transform position to world space
+    mat4 final_transform = model_transform;
+    if (aBoneIDs[0] >= 0) {
+      final_transform *= bone_transform;
+    }
+
+    gl_Position  = viewProjection * final_transform * vec4(aPosition, 1.0);
+    fragNormal   = mat3(transpose(inverse(final_transform))) * aNormal;
+    fragPosition = vec3(final_transform * vec4(aPosition, 1.0));
+    fragColor    = aColor;
+    fragUV       = aUV;
 }
 
 // type fragment

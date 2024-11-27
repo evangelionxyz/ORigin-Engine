@@ -24,7 +24,7 @@ Ref<Shader> shader;
 void draw_mesh(const glm::mat4 &view_projection, const glm::mat4 &transform, const Ref<VertexArray> &va)
 {
     shader->SetMatrix("viewProjection", view_projection * transform);
-    shader->SetMatrix("transform", transform);
+    shader->SetMatrix("model_transform", transform);
     RenderCommand::DrawIndexed(va);
 }
 
@@ -35,14 +35,16 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
     camera.SetAllowedMove(true);
 
     shader = Shader::Create("Resources/Shaders/TestShader.glsl", false, true);
-    s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Barbarian.glb");
-    //s_data.model = Model("Resources/Models/storm_trooper/sss.glb");
+    s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
+    // s_data.model = Model("Resources/Models/storm_trooper/sss.glb");
 
     s_data.animations = s_data.model.GetAnimations();
     s_data.animator = Animator(&s_data.animations[0]);
     s_data.animator.PlayAnimation(&s_data.animations[0]);
 
     RenderCommand::ClearColor({ 0.8f,0.8f,0.8f, 1.0f });
+
+    Application::GetInstance().GetWindow().ToggleVSync();
 }
 
 void SandboxLayer::OnAttach()
@@ -54,7 +56,9 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     RenderCommand::Clear();
     camera.OnUpdate(ts);
 
-    s_data.animator.UpdateAnimation(ts, 1.0f);
+    // s_data.animator.UpdateAnimation(ts, 1.0f);
+    // s_data.animator.ApplyToMeshes();
+
     MeshRenderer::Begin(camera);
     for (auto &m : s_data.model.GetMeshes())
     {
@@ -90,10 +94,8 @@ void SandboxLayer::OnUpdate(const Timestep ts)
         shader->SetVector("viewPosition", camera.GetPosition());
         shader->SetVector("lightColor", s_data.light_color);
         shader->SetFloat("shininess", 1.0f);
-        
         shader->SetMatrix("bone_transforms", m->final_bone_matrices[0], m->final_bone_matrices.size());
-
-        draw_mesh(camera.GetViewProjection(), glm::mat4(1.0f), m->vertex_array);
+        draw_mesh(camera.GetViewProjection(), m->transform, m->vertex_array);
         shader->Disable();
     }
     MeshRenderer::End();
@@ -110,7 +112,7 @@ void SandboxLayer::OnEvent(Event &e)
 
 void SandboxLayer::OnGuiRender()
 {
-    //ImGui::ShowDemoWindow(nullptr);
+    ImGui::ShowDemoWindow(nullptr);
 
     ImGui::Begin("Control");
     ImGui::DragFloat3("Light Pos", &s_data.light_pos.x);
@@ -118,10 +120,12 @@ void SandboxLayer::OnGuiRender()
     ImGui::End();
 
     ImGui::Begin("Test");
-    int count = 0;
+
     for (auto &m : s_data.model.GetMeshes())
     {
+        ImGui::PushID(m->name.c_str());
         ImGui::Checkbox(m->name.c_str(), &m->is_active);
+        ImGui::Text("bone count: %d", m->bone_count);
         for (auto tvector : m->material.textures)
         {
             for (auto tmap : tvector)
@@ -130,6 +134,7 @@ void SandboxLayer::OnGuiRender()
                 ImGui::Image(tex_id, ImVec2(256, 128));
             }
         }
+        ImGui::PopID();
     }
     ImGui::End();
 

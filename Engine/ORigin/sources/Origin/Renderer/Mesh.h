@@ -44,7 +44,7 @@ struct MeshVertexData
     glm::vec3 Color;
     glm::vec2 UV;
     glm::vec2 TilingFactor;
-    i32 IDs[MAX_BONE_INFLUENCE];
+    i32 IDs[MAX_BONE_INFLUENCE] = { -1, -1, -1, -1 };
     f32 Weights[MAX_BONE_INFLUENCE];
     f32 AlbedoIndex = 0.0f;
     f32 SpecularIndex = 0.0f;
@@ -66,9 +66,10 @@ public:
     Ref<VertexBuffer> vertex_buffer;
     MeshMaterial material;
 
+    glm::mat4 transform = glm::mat4(1.0f);
+
     std::vector<glm::mat4> final_bone_matrices;
     std::unordered_map<std::string, BoneInfo> bone_info_map;
-
     i32 bone_count = 0;
     bool is_active = true;
 };

@@ -16,157 +16,151 @@
 
 #include <map>
 
-namespace origin
+namespace origin {
+struct BoneInfo;
+class Mesh;
+
+template<typename T>
+struct KeyFrame
 {
-    struct BoneInfo;
-    class Mesh;
+    T Value;
+    float Timestamp;
+};
 
-    template<typename T>
-    struct KeyFrame
+template<typename T>
+using KeyFrames = std::vector<KeyFrame<T>>;
+
+struct TransformKeyFrameBase
+{
+protected:
+    float GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animTime)
     {
-        T Value;
-        float Timestamp;
-    };
+        float midWayLength = animTime - lastTimeStamp;
+        float framesDiff = nextTimeStamp - lastTimeStamp;
+        float scaleFactor = midWayLength / framesDiff;
+        return scaleFactor;
+    }
+};
 
-    template<typename T>
-    using KeyFrames = std::vector<KeyFrame<T>>;
+struct Vec3Key : TransformKeyFrameBase
+{
+    KeyFrames<glm::vec3> Frames;
 
-    struct TransformKeyFrameBase
+    void AddFrame(const KeyFrame<glm::vec3> &keyFrame)
     {
-    protected:
-        float GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animTime)
-        {
-            float midWayLength = animTime - lastTimeStamp;
-            float framesDiff = nextTimeStamp - lastTimeStamp;
-            float scaleFactor = midWayLength / framesDiff;
-            return scaleFactor;
-        }
-    };
+        Frames.push_back(keyFrame);
+    }
 
-    struct Vec3Key : TransformKeyFrameBase
+    int GetIndex(float animTime)
     {
-        KeyFrames<glm::vec3> Frames;
+        for (int i = 0; i < Frames.size() - 1; ++i)
+            if (animTime < Frames[i + 1].Timestamp)
+                return i;
+        return 0;
+    }
 
-        void AddFrame(const KeyFrame<glm::vec3> &keyFrame)
-        {
-            Frames.push_back(keyFrame);
-        }
-
-        int GetIndex(float animTime)
-        {
-            for (int i = 0; i < Frames.size() - 1; ++i)
-                if (animTime < Frames[i + 1].Timestamp)
-                    return i;
-            return 0;
-        }
-
-        glm::mat4 InterpolateTranslation(float animTime)
-        {
-            if (Frames.size() == 1) return glm::translate(glm::mat4(1.0f), Frames[0].Value);
-            int p0Index = GetIndex(animTime);
-            int p1Index = p0Index + 1;
-            float scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, animTime);
-            glm::vec3 finalVector = glm::mix(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
-            return glm::translate(glm::mat4(1.0f), finalVector);
-        }
-
-        glm::mat4 InterpolateScaling(float animTime)
-        {
-            if (Frames.size() == 1) return glm::scale(glm::mat4(1.0f), Frames[0].Value);
-            int p0Index = GetIndex(animTime);
-            int p1Index = p0Index + 1;
-            float scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, animTime);
-            glm::vec3 finalScale = glm::mix(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
-            return glm::scale(glm::mat4(1.0f), finalScale);
-        }
-    };
-
-    struct QuatKey : public TransformKeyFrameBase
+    glm::mat4 InterpolateTranslation(float animTime)
     {
-        KeyFrames<glm::quat> Frames;
+        if (Frames.size() == 1) return glm::translate(glm::mat4(1.0f), Frames[0].Value);
+        int p0Index = GetIndex(animTime);
+        int p1Index = p0Index + 1;
+        float scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, animTime);
+        glm::vec3 finalVector = glm::mix(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
+        return glm::translate(glm::mat4(1.0f), finalVector);
+    }
 
-        void AddFrame(const KeyFrame<glm::quat> &keyFrame)
+    glm::mat4 InterpolateScaling(float animTime)
+    {
+        if (Frames.size() == 1) return glm::scale(glm::mat4(1.0f), Frames[0].Value);
+        int p0Index = GetIndex(animTime);
+        int p1Index = p0Index + 1;
+        float scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, animTime);
+        glm::vec3 finalScale = glm::mix(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
+        return glm::scale(glm::mat4(1.0f), finalScale);
+    }
+};
+
+struct QuatKey : public TransformKeyFrameBase
+{
+    KeyFrames<glm::quat> Frames;
+
+    void AddFrame(const KeyFrame<glm::quat> &keyFrame)
+    {
+        Frames.push_back(keyFrame);
+    }
+
+    int GetIndex(float animTime)
+    {
+        for (int i = 0; i < Frames.size() - 1; ++i)
+            if (animTime < Frames[i + 1].Timestamp)
+                return i;
+        return 0;
+    }
+
+    glm::mat4 Interpolate(float animTime)
+    {
+        if (Frames.size() == 1)
         {
-            Frames.push_back(keyFrame);
+            auto rotation = glm::normalize(Frames[0].Value);
+            return glm::toMat4(rotation);
         }
 
-        int GetIndex(float animTime)
-        {
-            for (int i = 0; i < Frames.size() - 1; ++i)
-                if (animTime < Frames[i + 1].Timestamp)
-                    return i;
-            return 0;
-        }
+        int p0Index = GetIndex(animTime);
+        int p1Index = p0Index + 1;
+        float scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, animTime);
+        glm::quat finalRotation = glm::slerp(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
+        finalRotation = glm::normalize(finalRotation);
+        return glm::toMat4(finalRotation);
+    }
+};
 
-        glm::mat4 Interpolate(float animTime)
-        {
-            if (Frames.size() == 1)
-            {
-                auto rotation = glm::normalize(Frames[0].Value);
-                return glm::toMat4(rotation);
-            }
+class Bone
+{
+public:
+    Bone() = default;
+    Bone(const std::string &name, int id, const aiNodeAnim *channel);
+    void Update(float animTime);
 
-            int p0Index = GetIndex(animTime);
-            int p1Index = p0Index + 1;
-            float scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, animTime);
-            glm::quat finalRotation = glm::slerp(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
-            finalRotation = glm::normalize(finalRotation);
-            return glm::toMat4(finalRotation);
-        }
-    };
+    Vec3Key TranslationKeys;
+    QuatKey RotationKeys;
+    Vec3Key ScaleKeys;
 
-    class Bone
-    {
-    public:
-        Vec3Key TranslationKeys;
-        QuatKey RotationKeys;
-        Vec3Key ScaleKeys;
+    std::string Name;
+    glm::mat4 LocalTransform;
+    int ID;
+};
 
-        std::string Name;
-        glm::mat4 LocalTransform;
-        int ID;
+struct AssimpNodeData
+{
+    int ChildrenCount;
+    std::string Name;
+    std::vector<std::string> mesh_names;
+    glm::mat4 Transformation;
+    std::vector<AssimpNodeData> Children;
+};
 
-        Bone() = default;
-        Bone(const std::string &name, int id, const aiNodeAnim *channel);
+class ModelAnimation : public Animation
+{
+public:
+    ModelAnimation() = default;
+    ModelAnimation(const std::vector<Ref<Mesh>> &meshes, aiAnimation *anim, const aiScene *scene);
+    void ReadHierarchy(AssimpNodeData &dest, const aiNode *src, const aiScene *scene);
+    void ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim);
+    Bone *FindBone(const std::string &name);
+    const AssimpNodeData &GetRootNode() const { return root_node; }
+    static AnimationType GetStaticType() { return AnimationType::Skeletal; }
+    AnimationType GetType() const override { return GetStaticType(); }
+    std::vector<Ref<Mesh>> meshes;
+    std::vector<glm::mat4> global_bone_transforms;
+    std::string name;
+    float duration;
+    float ticks_per_second;
+    AssimpNodeData root_node;
 
-        void Update(float animTime);
-    };
-
-    struct AssimpNodeData
-    {
-        glm::mat4 Transformation;
-        std::string Name;
-        int ChildrenCount;
-        std::vector<AssimpNodeData> Children;
-    };
-
-    class ModelAnimation : public Animation
-    {
-    public:
-        ModelAnimation() = default;
-        ModelAnimation(std::vector<Ref<Mesh>> meshes, aiAnimation *anim, const aiScene *scene);
-
-        void ReadHierarchy(AssimpNodeData &dest, const aiNode *src);
-        void ReadMissingBones(Ref<Mesh> mesh, const aiAnimation *anim);
-
-        Bone *FindBone(const std::string &name);
-        const AssimpNodeData &GetRootNode() const { return root_node; }
-
-        static AnimationType GetStaticType() { return AnimationType::Skeletal; }
-        AnimationType GetType() const override { return GetStaticType(); }
-
-        std::vector<Ref<Mesh>> meshes;
-
-        std::string name;
-        float duration;
-        float ticks_per_second;
-        AssimpNodeData root_node;
-
-    private:
-        std::unordered_map<std::string, Bone> m_Bones;
-
-        friend class Animator;
-    };
+private:
+    std::unordered_map<std::string, Bone> m_Bones;
+    friend class Animator;
+};
 }
 
 #endif

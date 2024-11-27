@@ -25,6 +25,9 @@ public:
 	static Ref<Mesh> LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::string &filepath);
 	static const aiScene *LoadAiScene(const std::string &filepath);
 	static std::vector<Ref<Mesh>> ProcessNode(aiNode *node, const aiScene *scene, const std::string &filepath);
+	static aiNode *FindMeshNode(aiNode *node, const aiScene *scene, aiMesh *target_mesh);
+	static glm::mat4 CalculateTransform(aiNode *node, aiMesh *mesh);
+
 	static std::vector<ModelAnimation> LoadAnimations(const std::vector<Ref<Mesh>> &meshes, const aiScene *scene);
 	static void CreateVertex(const Ref<Mesh> &mesh_data);
 
