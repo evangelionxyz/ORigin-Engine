@@ -71,22 +71,33 @@ namespace origin
 			return s_ActiveProject->m_ActiveScene;
 		}
 
-		static std::shared_ptr<Project> GetActive() 
+		static Ref<Project> GetActive() 
 		{ 
 			return s_ActiveProject;
 		}
 
-		ProjectConfig& GetConfig() { return m_Config; }
-		std::shared_ptr<AssetManagerBase> GetAssetManager() { return m_AssetManager; }
-		std::shared_ptr<EditorAssetManager> GetEditorAssetManager() { return std::static_pointer_cast<EditorAssetManager>(m_AssetManager); }
+		ProjectConfig& GetConfig() 
+		{ 
+			return m_Config; 
+		}
 
-		static std::shared_ptr<Project> New();
-		static std::shared_ptr<Project> Open();
-		static std::shared_ptr<Project> Load(const std::filesystem::path& path);
+		Ref<AssetManagerBase> GetAssetManager() 
+		{ 
+			return m_AssetManager;
+		}
+
+		Ref<EditorAssetManager> GetEditorAssetManager()
+		{
+			return std::static_pointer_cast<EditorAssetManager>(m_AssetManager);
+		}
+
+		static Ref<Project> New();
+		static Ref<Project> Open();
+		static Ref<Project> Load(const std::filesystem::path& path);
 
 		static bool SaveActive();
 		static bool SaveActive(const std::filesystem::path& path);
-		static void SetActiveScene(const std::shared_ptr<Scene> &scene)
+		static void SetActiveScene(const Ref<Scene> &scene)
 		{
 			s_ActiveProject->m_ActiveScene = scene;
 		}

@@ -13,6 +13,7 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/MeshRenderer.h"
+#include "Origin/Renderer/Model.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
@@ -155,9 +156,9 @@ namespace origin
 
         for (auto [e, tc, mesh] : m_Registry.view<TransformComponent, MeshComponent>().each())
         {
-            if (mesh.Data)
+            if (mesh.HModel)
             {
-                mesh.AAnimator.UpdateAnimation(ts, mesh.PlaybackSpeed);
+                mesh.AAnimator.UpdateAnimation(ts, 1.0f /*speed*/);
             }
         }
 
@@ -227,7 +228,8 @@ namespace origin
 
     void Scene::UpdatePhysics(Timestep ts) const
     {
-        m_Physics->Simulate(ts);
+        if (m_Physics)
+            m_Physics->Simulate(ts);
 
         m_Physics2D->Simulate(ts);
     }
@@ -301,8 +303,11 @@ namespace origin
         });
 #endif
 
-        m_Physics->StartSimulation();
+        if (m_Physics)
+            m_Physics->StartSimulation();
+
         m_Physics2D->OnSimulationStart();
+
 	}
 
 	void Scene::OnRuntimeStop()
@@ -470,31 +475,22 @@ namespace origin
         for (const auto &[e, tc, mesh] : mesh_view.each())
         {
             // Render
-            if (mesh.Data && tc.Visible)
+            if (mesh.HModel && tc.Visible)
             {
                 Shader *shader = Renderer::GetShader("AnimatedMesh").get();
                 shader->Enable();
 
-                glActiveTexture(0);
-                //mesh.Data->DiffuseTexture->Bind(0);
-                //shader->SetInt("uTexture", mesh.Data->DiffuseTexture->GetTextureID());
+                Ref<Model> model = AssetManager::GetAsset<Model>(mesh.HModel);
+                // TODO: Render meshes
 
-                shader->SetMatrix("viewProjection", camera.GetViewProjection());
-                shader->SetMatrix("model", tc.GetTransform());
-
-                /*shader->SetMatrix("boneTransforms", 
-                    mesh.AAnimator.m_FinalBoneMatrices[0], 
-                    mesh.AAnimator.m_FinalBoneMatrices.size());*/
-
-                mesh.Data->vertex_array->Bind();
-                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.Data->indices.size()), GL_UNSIGNED_INT, nullptr);
+                /*mesh.Data->vertex_array->Bind();
+                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.Data->indices.size()), GL_UNSIGNED_INT, nullptr);*/
 
                 shader->Disable();
             }
         }
 
         const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-        const auto &sMeshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
         for (auto &li : lightView)
         {
             const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(li);
@@ -508,10 +504,11 @@ namespace origin
             
             MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
 
+#if 0
             MeshRenderer::Begin(camera);
             for (auto e : sMeshView)
             {
-                const auto [tc, mc] = sMeshView.get<TransformComponent, StaticMeshComponent>(e);
+                const auto [tc, mc] = sMeshView.get<TransformComponent, Mesh>(e);
                 if (!tc.Visible)
                     continue;
 
@@ -520,7 +517,7 @@ namespace origin
                 else material = Renderer::GetMaterial("Mesh");
                 switch (mc.mType)
                 {
-                case StaticMeshComponent::Type::Cube:
+                case MeshComponent::Type::Cube:
                     MeshRenderer::DrawCube(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Sphere:
@@ -538,6 +535,7 @@ namespace origin
                 }
             }
             MeshRenderer::End();
+#endif
         }
 
 	}
@@ -614,58 +612,6 @@ namespace origin
             Renderer2D::End();
 
             // 3D Objects
-            //if(entity.HasComponent<MeshComponent>())
-            //{
-            //    MeshComponent &mesh = entity.GetComponent<MeshComponent>();
-            //    if (mesh.Data && tc.Visible)
-            //    {
-            //        Shader *shader = Renderer::GetShader("AnimatedMesh").get();
-            //        shader->Enable();
-            //        glActiveTexture(0);
-            //        Renderer::WhiteTexture->Bind(0);
-            //        shader->SetInt("uTexture", Renderer::WhiteTexture->GetTextureID());
-            //        shader->SetMatrix("viewProjection", camera.GetViewProjection());
-            //        shader->SetMatrix("model", tc.GetTransform());
-
-            //        //auto transforms = mesh.AAnimator.GetFinalBoneMatrices();
-            //        //shader->SetMatrix("boneTransforms", transforms[0], transforms.size());
-
-            //        mesh.Data->vertexArray->Bind();
-            //        glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
-
-            //        shader->Disable();
-            //    }
-            //}
-
-            if (entity.HasComponent<StaticMeshComponent>())
-            {
-                StaticMeshComponent &mc = entity.GetComponent<StaticMeshComponent>();
-                Ref<Material> material;
-                if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
-                else material = Renderer::GetMaterial("Mesh");
-
-                MeshRenderer::Begin(camera);
-                switch (mc.mType)
-                {
-                case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(tc.GetTransform(), material.get());
-                    break;
-                case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get());
-                    break;
-                case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get());
-                    break;
-                case StaticMeshComponent::Type::Default:
-                    if (mc.Data)
-                    {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertex_array);
-                    }
-                    break;
-                }
-                MeshRenderer::End();
-            }
-
 #pragma endregion
 
 #pragma region SECOND_PASS
@@ -757,37 +703,6 @@ namespace origin
                     glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
                 }
             }*/
-
-            MeshRenderer::Begin(camera, outlineShader);
-            if (entity.HasComponent<StaticMeshComponent>())
-            {
-                StaticMeshComponent &mc = entity.GetComponent<StaticMeshComponent>();
-                switch (mc.mType)
-                {
-                case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(scaledTransform, glm::vec4(1.0f));
-                    break;
-                case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(scaledTransform, glm::vec4(1.0f));
-                    break;
-                case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(scaledTransform, glm::vec4(1.0f));
-                    break;
-                case StaticMeshComponent::Type::Default:
-                    if (mc.Data)
-                    {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), scaledTransform, mc.Data->vertex_array, outlineShader);
-                    }
-                    break;
-                }
-                MeshRenderer::End();
-            }
-
-            outlineShader->Disable();
-
-            glStencilMask(0xFF);
-            glStencilFunc(GL_ALWAYS, 0, 0xFF);
-            glEnable(GL_DEPTH_TEST);
 #pragma endregion
         }
 
@@ -815,40 +730,6 @@ namespace origin
             glm::mat4 lightViewProjection = lightProjection * lightView;
 			lc.Light->GetShadow().ViewProjection = lightProjection * lightView;
 
-            Ref<Shader> &shader = lc.Light->GetShadow().GetDepthShader();
-            shader->Enable();
-
-            lc.Light->GetShadow().BindFBO();
-
-            MeshRenderer::Begin(lc.Light->GetShadow().ViewProjection);
-            shader->SetMatrix("viewProjection", lc.Light->GetShadow().ViewProjection);
-
-			const auto &view = m_Registry.view<TransformComponent, StaticMeshComponent>();
-            for (auto &e : view)
-            {
-                const auto &[tc, mc] = view.get<TransformComponent, StaticMeshComponent>(e);
-                if (!tc.Visible)
-                {
-                    continue;
-                }
-
-                switch (mc.mType)
-                {
-                case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
-                    break;
-                case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
-                    break;
-                case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
-                    break;
-                }
-            }
-			
-			MeshRenderer::End();
-			lc.Light->GetShadow().UnbindFBO();
-			shader->Disable();
 		}
 	}
 
@@ -1009,24 +890,10 @@ namespace origin
     OGN_ADD_COMPONENT(TransformComponent);
     OGN_ADD_COMPONENT(UIComponent);
     OGN_ADD_COMPONENT(AudioListenerComponent);
-
-    template<>
-    void Scene::OnComponentAdded<AudioComponent>(Entity entity, AudioComponent &component)
-    {
-    }
-
-    template<>
-    void Scene::OnComponentAdded<SpriteRenderer2DComponent>(Entity entity, SpriteRenderer2DComponent &component)
-    {
-    }
-
-    template<>
-    void Scene::OnComponentAdded<SpriteAnimationComponent>(Entity entity, SpriteAnimationComponent &component)
-    {
-    }
-
+	OGN_ADD_COMPONENT(AudioComponent);
+	OGN_ADD_COMPONENT(SpriteRenderer2DComponent);
+	OGN_ADD_COMPONENT(SpriteAnimationComponent);
 	OGN_ADD_COMPONENT(MeshComponent);
-	OGN_ADD_COMPONENT(MeshRendererComponent);
 	OGN_ADD_COMPONENT(TextComponent);
 	OGN_ADD_COMPONENT(CircleRendererComponent);
 	OGN_ADD_COMPONENT(NativeScriptComponent);
@@ -1054,11 +921,6 @@ namespace origin
     }
 
 	template<>
-	void Scene::OnComponentAdded(Entity entity, StaticMeshComponent &component)
-	{
-	}
-
-    template<>
     void Scene::OnComponentAdded(Entity entity, SphereColliderComponent &component)
     {
         if(!entity.HasComponent<RigidbodyComponent>()) entity.AddComponent<RigidbodyComponent>();

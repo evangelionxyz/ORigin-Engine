@@ -250,4 +250,21 @@ namespace origin
 		q.w = quat.w;
 		return q;
 	}
+
+    glm::mat4 Math::RemoveScale(const glm::mat4 &matrix)
+    {
+        glm::vec3 scale(
+            glm::length(glm::vec3(matrix[0])),
+            glm::length(glm::vec3(matrix[1])),
+            glm::length(glm::vec3(matrix[2]))
+        );
+
+        glm::mat4 result = matrix;
+        result[0] /= scale.x;  // normalize X axis
+        result[1] /= scale.y;  // normalize Y axis
+        result[2] /= scale.z;  // normalize Z axis
+
+        return result;
+    }
+
 }

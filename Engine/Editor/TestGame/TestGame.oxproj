@@ -1,7 +1,0 @@
-Project:
-  Name: TestGame
-  StartScene: 685883756287502992
-  AssetDirectory: Assets
-  AssetRegistry: AssetRegistry
-  ScriptModulePath: bin/TestGame.dll
-  PhysicsAPI: Jolt

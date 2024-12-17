@@ -367,19 +367,6 @@ namespace origin
 			out << YAML::EndMap; // !CameraComponent
 		}
 
-		if (entity.HasComponent<StaticMeshComponent>())
-		{
-			out << YAML::Key << "StaticMeshComponent";
-			out << YAML::BeginMap; // StaticMeshComponent
-
-			const StaticMeshComponent sc = entity.GetComponent<StaticMeshComponent>();
-			out << YAML::Key << "Name" << sc.Name;
-			out << YAML::Key << "Type" << (int)sc.mType;
-			out << YAML::Key << "HMesh" << sc.HMesh;
-			out << YAML::Key << "HMaterial" << sc.HMaterial;
-			out << YAML::EndMap; // !StaticMeshComponent
-		}
-
 		if (entity.HasComponent<MeshComponent>())
 		{
 			out << YAML::Key << "MeshComponent";
@@ -387,7 +374,7 @@ namespace origin
 
 			const MeshComponent sc = entity.GetComponent<MeshComponent>();
 			out << YAML::Key << "Name" << sc.Name;
-			out << YAML::Key << "HMesh" << sc.HMesh;
+			out << YAML::Key << "HModel" << sc.HModel;
 			out << YAML::Key << "HMaterial" << sc.HMaterial;
 			out << YAML::EndMap; // !MeshComponent
 		}
@@ -815,40 +802,12 @@ namespace origin
 					cc.Primary = camera_component["Primary"].as<bool>();
 				}
 
-				if (YAML::Node static_mesh_component = entity["StaticMeshComponent"])
-				{
-					StaticMeshComponent &mc = deserialized_entity.AddComponent<StaticMeshComponent>();
-					mc.Name = static_mesh_component["Name"].as<std::string>();
-					mc.HMaterial = static_mesh_component["HMaterial"].as<uint64_t>();
-					mc.HMesh = static_mesh_component["HMesh"].as<uint64_t>();
-
-					if (mc.HMaterial)
-					{
-						AssetManager::GetAsset<Material>(mc.HMaterial); // load material and store to memory
-					}
-					if (mc.HMesh)
-					{
-						// mc.Data = AssetManager::GetAsset<Model>(mc.HMesh);
-					}
-
-					mc.mType = static_cast<StaticMeshComponent::Type>(static_mesh_component["Type"].as<int>());
-				}
-
 				if (YAML::Node mesh_component = entity["MeshComponent"])
 				{
 					MeshComponent &mc = deserialized_entity.AddComponent<MeshComponent>();
 					mc.Name = mesh_component["Name"].as<std::string>();
 					mc.HMaterial = mesh_component["HMaterial"].as<uint64_t>();
-					mc.HMesh = mesh_component["HMesh"].as<uint64_t>();
-
-					if (mc.HMesh)
-					{
-						// mc.Data = AssetManager::GetAsset<Mesh>(mc.HMesh);
-						//if (!mc.Data->animations.empty())
-						{
-							//mc.AAnimator = Animator(&mc.Data->animations[0]);
-						}
-					}
+					mc.HModel = mesh_component["HModel"].as<uint64_t>();
 				}
 
 				if (YAML::Node particle_component = entity["ParticleComponent"])

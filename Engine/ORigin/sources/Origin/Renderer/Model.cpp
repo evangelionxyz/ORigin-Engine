@@ -6,9 +6,7 @@
 #include "VertexArray.h"
 
 #include <assimp/Importer.hpp>
-
 #include <stb_image.h>
-
 #include "Texture.h"
 
 namespace origin {
@@ -64,53 +62,62 @@ static void ExtractBoneWeightForVertices(Ref<Mesh> &data, aiMesh *mesh, const ai
     {
         i32 bone_id = -1;
         aiBone *bone = mesh->mBones[boneIndex];
+        std::string bone_name = bone->mName.data;
 
-        BoneInfo new_bone_info;
-        new_bone_info.ID = data->bone_count;
-        new_bone_info.offset_matrix = Math::AssimpToGlmMatrix(bone->mOffsetMatrix);
-        data->bone_info_map[bone->mName.data] = new_bone_info;
-        bone_id = data->bone_count++;
+        if (!data->bone_info_map.contains(bone_name))
+        {
+            BoneInfo new_bone_info;
+            new_bone_info.ID = data->bone_count;
+            new_bone_info.offset_matrix = Math::AssimpToGlmMatrix(bone->mOffsetMatrix);
+
+            data->bone_info_map[bone_name] = new_bone_info;
+            bone_id = data->bone_count++;
+        }
+        else
+        {
+            bone_id = data->bone_info_map[bone_name].ID;
+        }
 
         auto weights = bone->mWeights;
-        for (u32 weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
+        for (u32 w_idx = 0; w_idx < bone->mNumWeights; ++w_idx)
         {
-            i32 vertex_id = weights[weightIndex].mVertexId;
-            float weight = weights[weightIndex].mWeight;
+            i32 vertex_id = weights[w_idx].mVertexId;
+            float weight = weights[w_idx].mWeight;
 
             OGN_CORE_ASSERT(vertex_id < data->vertices.size(), "Invalid vertex id");
             MeshVertexData &vertex = data->vertices[vertex_id];
 
             // find the first available slot for bone influence
-            i32 availableSlot = -1;
+            i32 available_slot = -1;
             for (i32 i = 0; i < MAX_BONE_INFLUENCE; ++i)
             {
                 if (vertex.IDs[i] < 0)
                 {
-                    availableSlot = i;
+                    available_slot = i;
                     break;
                 }
             }
 
             // if a slot is found, assign the bone weight
-            if (availableSlot != -1)
+            if (available_slot != -1)
             {
-                vertex.IDs[availableSlot] = bone_id;
-                vertex.Weights[availableSlot] = weight;
+                vertex.IDs[available_slot] = bone_id;
+                vertex.Weights[available_slot] = weight;
             }
             else
             {
-                i32 smallestWeightIndex = 0;
+                i32 smalles_weight_idx = 0;
                 for (i32 i = 1; i < MAX_BONE_INFLUENCE; ++i)
                 {
-                    if (vertex.Weights[i] < vertex.Weights[smallestWeightIndex])
-                        smallestWeightIndex = i;
+                    if (vertex.Weights[i] < vertex.Weights[smalles_weight_idx])
+                        smalles_weight_idx = i;
                 }
 
                 // replace if the current weight is larger
-                if (vertex.Weights[smallestWeightIndex] < weight)
+                if (vertex.Weights[smalles_weight_idx] < weight)
                 {
-                    vertex.IDs[smallestWeightIndex] = bone_id;
-                    vertex.Weights[smallestWeightIndex] = weight;
+                    vertex.IDs[smalles_weight_idx] = bone_id;
+                    vertex.Weights[smalles_weight_idx] = weight;
                 }
             }
         }
@@ -138,15 +145,7 @@ std::vector<Ref<Mesh>> Model::ProcessNode(aiNode* node, const aiScene* scene, co
 glm::mat4 Model::CalculateTransform(aiNode *node, aiMesh *mesh)
 {
     glm::mat4 transform(1.0f);
-
-    if (!node->mParent) node = node->mParent;
-
-    while (node != nullptr)
-    {
-        transform *= Math::AssimpToGlmMatrix(node->mTransformation);
-        node = node->mParent;
-    }
-
+    transform = Math::AssimpToGlmMatrix(node->mTransformation);
     return transform;
 }
 
@@ -189,7 +188,7 @@ Model::Model(const std::string &filepath)
     OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Static Model] File does not exist '{}'", filepath);
 
     Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile(filepath.c_str(), aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenSmoothNormals 
+    const aiScene *scene = importer.ReadFile(filepath.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals 
         | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -231,14 +230,11 @@ Ref<Mesh> Model::LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::str
     mesh_data->name = mesh->mName.C_Str();
     mesh_data->final_bone_matrices.resize(100, glm::mat4(1.0f));
 
+    aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
 
     aiNode *node = FindMeshNode(scene->mRootNode, scene, mesh);
-    if (node)
-    {
-        mesh_data->transform = CalculateTransform(node, mesh);
-    }
+    mesh_data->transformation = node ? CalculateTransform(node, mesh) : glm::mat4(1.0f);
 
-    aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f); // Default color
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
@@ -253,7 +249,14 @@ Ref<Mesh> Model::LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::str
         mesh_data->material.diffuse_color = { diffuse_color.r, diffuse_color.g, diffuse_color.b };
 
         auto texture_map = MLoadTextures(scene, material, filepath, aiTextureType_DIFFUSE);
-        mesh_data->material.textures.push_back(texture_map);
+        if (!texture_map.empty())
+            mesh_data->material.textures.push_back(texture_map);
+
+        if (mesh_data->material.textures.empty())
+        {
+            texture_map[aiTextureType_DIFFUSE] = Renderer::WhiteTexture;
+            mesh_data->material.textures.push_back(texture_map);
+        }
     }
 
     // Vertices
@@ -261,6 +264,7 @@ Ref<Mesh> Model::LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::str
     for (u32 i = 0; i < mesh->mNumVertices; ++i)
     {
         MeshVertexData vertex;
+
         vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
         if (mesh->HasNormals())
             vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
@@ -301,7 +305,7 @@ const aiScene *Model::LoadAiScene(const std::string &filepath)
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         std::string err = importer.GetErrorString();
-        OGN_CORE_ERROR("[Static Model] {}", err);
+        OGN_CORE_ASSERT(false, "[Model] {}", err);
         return nullptr;
     }
 
@@ -320,7 +324,7 @@ void Model::CreateVertex(const Ref<Mesh> &mesh_data)
         { ShaderDataType::Float2, "aUV"           },
         { ShaderDataType::Float2, "aTilingFactor" },
         { ShaderDataType::Int4,   "aBoneIDs"      },
-        { ShaderDataType::Float4, "aBoneWeights"  },
+        { ShaderDataType::Float4, "aWeights"      },
         { ShaderDataType::Float,  "aAlbedoIndex"  },
         { ShaderDataType::Float,  "aSpecularIndex"},
         });

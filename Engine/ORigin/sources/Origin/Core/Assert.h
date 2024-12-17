@@ -22,7 +22,7 @@
 #define OGN_CORE_ASSERT_SIMPLE(check) \
         do { \
             if(!(check)) { \
-                OGN_CORE_ERROR("Assertion '{0}' failed at {1}:{2}", #check, __FILE__, __LINE__); \
+                OGN_CORE_ERROR("Assertion '{}' failed at {}:{}", #check, __FILE__, __LINE__); \
                 OGN_DEBUGBREAK(); \
             } \
         } while(0)

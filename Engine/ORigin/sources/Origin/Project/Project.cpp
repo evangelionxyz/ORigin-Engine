@@ -20,7 +20,7 @@ namespace origin {
 			std::ifstream file(filepath);
 			if (!file.is_open())
 			{
-				OGN_CORE_ASSERT(false, "[Project] Failed to open read file! {0}", filepath);
+				OGN_CORE_ASSERT(false, "[Project] Failed to open read file! {}", filepath);
 				return "";
 			}
 			std::stringstream stream;
@@ -34,7 +34,7 @@ namespace origin {
 			std::ofstream file(filepath);
 			if (!file.is_open())
 			{
-				OGN_CORE_ASSERT(false, "[Project] Failed to open and write file! {0}", filepath);
+                OGN_CORE_ASSERT(false, "[Project] Failed to open and write file! {}", filepath);
 				return false;
 			}
 
@@ -65,13 +65,13 @@ namespace origin {
 			ReplaceAll(content, "{PROJECT_NAME}", projectName);
 			if (!WriteFile(outputPath, content))
 			{
-				OGN_CORE_ASSERT(false, "[Project] Failed to generate file! {0}", outputPath);
+				OGN_CORE_ASSERT(false, "[Project] Failed to generate file! {}", outputPath);
 			}
 		}
 
 		void CopyFile(const std::string &scrPath, const std::string &dstPath)
 		{
-			OGN_CORE_ASSERT(std::filesystem::exists(scrPath), "[Project Copy File] Failed to copy file! {0}", scrPath);
+			OGN_CORE_ASSERT(std::filesystem::exists(scrPath), "[Project Copy File] Failed to copy file! {}", scrPath);
 			std::filesystem::copy_file(scrPath, dstPath, std::filesystem::copy_options::overwrite_existing);
 		}
 	}
@@ -101,7 +101,7 @@ namespace origin {
 		if (projectFilepath == "")
 			return nullptr;
 		
-		OGN_CORE_INFO("[Project New] {0}", projectFilepath.generic_string());
+		OGN_CORE_INFO("[Project New] {}", projectFilepath.generic_string());
 		std::string projectName = projectFilepath.stem().string();
 		std::filesystem::path filepath = projectFilepath.parent_path();
 		

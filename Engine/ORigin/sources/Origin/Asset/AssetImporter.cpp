@@ -155,7 +155,7 @@ namespace origin {
         SceneSerializer serializer(scene);
         auto filepath = Project::GetActiveAssetDirectory() / path;
         serializer.Serialize(filepath);
-        PUSH_CONSOLE_INFO("Scene saved! {0}", filepath.generic_string());
+        PUSH_CONSOLE_INFO("Scene saved! {}", filepath.generic_string());
     }
 
     Ref<Texture2D> TextureImporter::ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)

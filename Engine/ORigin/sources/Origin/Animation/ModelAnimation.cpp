@@ -12,7 +12,7 @@
 
 namespace origin {
 Bone::Bone(const std::string &name, int id, const aiNodeAnim *channel)
-    : Name(name), ID(id), LocalTransform(1.0f)
+    : Name(name), ID(id), local_transform(1.0f)
 {
     for (u32 positionIndex = 0; positionIndex < channel->mNumPositionKeys; ++positionIndex)
     {
@@ -41,7 +41,7 @@ void Bone::Update(float animTime)
     glm::mat4 translation = TranslationKeys.InterpolateTranslation(animTime);
     glm::mat4 rotation = RotationKeys.Interpolate(animTime);
     glm::mat4 scale = ScaleKeys.InterpolateScaling(animTime);
-    LocalTransform = translation * rotation * scale;
+    local_transform = translation * rotation * scale;
 }
 
 ModelAnimation::ModelAnimation(const std::vector<Ref<Mesh>> &meshes, aiAnimation *anim, const aiScene *scene)
@@ -66,9 +66,6 @@ ModelAnimation::ModelAnimation(const std::vector<Ref<Mesh>> &meshes, aiAnimation
 
 void ModelAnimation::ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim)
 {
-    if (mesh->bone_count <= 0)
-        return;
-
     auto &bone_info_map = mesh->bone_info_map;
     int &bone_count = mesh->bone_count;
 
@@ -76,7 +73,12 @@ void ModelAnimation::ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim)
     {
         aiNodeAnim *channel = anim->mChannels[i];
         const std::string &bone_name = channel->mNodeName.data;
-        if (!bone_info_map.contains(bone_name)) bone_info_map[bone_name].ID = bone_count++;
+
+        if (!bone_info_map.contains(bone_name))
+        {
+            bone_info_map[bone_name].ID = bone_count++;
+        }
+
         if (!m_Bones.contains(bone_name))
         {
             m_Bones[bone_name] = Bone(bone_name, bone_info_map[bone_name].ID, channel);

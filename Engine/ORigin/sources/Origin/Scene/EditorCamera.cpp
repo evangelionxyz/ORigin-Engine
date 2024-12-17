@@ -313,11 +313,6 @@ namespace origin {
 
     bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
     {
-        if (!m_IsInViewport)
-        {
-            return false;
-        }
-
         float delta = e.GetYOffset();
         switch (m_ProjectionType)
         {

@@ -5,26 +5,30 @@
 
 namespace origin {
 
-    ThumbnailCache::ThumbnailCache(const std::shared_ptr<Project>& project)
+    ThumbnailCache::ThumbnailCache(const Ref<Project>& project)
         : m_Project(project)
     {
         m_ThumbnailCachePath = project->GetAssetDirectory() / "Thumbnail.cache";
     }
 
-    std::shared_ptr<Texture2D> ThumbnailCache::GetOrCreateThumbnail(const std::filesystem::path& assetPath)
+    Ref<Texture2D> ThumbnailCache::GetOrCreateThumbnail(const std::filesystem::path& asset_path)
     {
-        auto absolutePath = m_Project->GetAssetAbsolutePath(assetPath);
-        std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(absolutePath);
+        auto absolute_path = m_Project->GetAssetAbsolutePath(asset_path);
+
+        if (!std::filesystem::exists(absolute_path))
+            return nullptr;
+
+        std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(absolute_path);
         uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(lastWriteTime.time_since_epoch()).count();
 
-        if (m_CachedImages.find(assetPath) != m_CachedImages.end())
+        if (m_CachedImages.find(asset_path) != m_CachedImages.end())
         {
-            auto &cachedImage = m_CachedImages.at(assetPath);
+            auto &cachedImage = m_CachedImages.at(asset_path);
             if (cachedImage.Timestamp == timestamp)
                 return cachedImage.Image;
         }
 
-        m_Queue.push({absolutePath, assetPath, timestamp});
+        m_Queue.push({absolute_path, asset_path, timestamp});
         return nullptr;
     }
 
@@ -44,7 +48,7 @@ namespace origin {
                 }
             }
 
-            std::shared_ptr<Texture2D> texture = TextureImporter::LoadTexture2D(thumbnailInfo.AbsolutePath);
+            Ref<Texture2D> texture = TextureImporter::LoadTexture2D(thumbnailInfo.AbsolutePath);
             if (!texture)
             {
                 m_Queue.pop();

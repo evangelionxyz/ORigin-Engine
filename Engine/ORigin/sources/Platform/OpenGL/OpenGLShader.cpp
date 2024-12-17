@@ -19,8 +19,8 @@ namespace origin
     OpenGLShader::OpenGLShader(const std::filesystem::path &filepath, const bool recompile)
         : m_Filepath(filepath), m_RendererID(0), m_IsSPIRV(true), m_IsRecompile(recompile)
     {
-        PUSH_CONSOLE_INFO("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
-        OGN_CORE_TRACE("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
+        PUSH_CONSOLE_INFO("[Shader] Load {}", m_Filepath.generic_string());
+        OGN_CORE_TRACE("[Shader] Load {}", m_Filepath.generic_string());
 
         ShaderUtils::CreateCachedDirectoryIfNeeded();
         {
@@ -33,8 +33,8 @@ namespace origin
 
             CreateSpirvProgram();
 
-            PUSH_CONSOLE_INFO("[Shader] Shader Creation took {} ms", timer.ElapsedMillis());
-            OGN_CORE_TRACE("[Shader] Shader Creation took {} ms", timer.ElapsedMillis());
+            PUSH_CONSOLE_INFO("[Shader] Shader create took {} ms", timer.ElapsedMillis());
+            OGN_CORE_TRACE("[Shader] Shader create took {} ms", timer.ElapsedMillis());
         }
     }
 
@@ -42,8 +42,8 @@ namespace origin
         : m_Filepath(filepath), m_RendererID(0), m_IsSPIRV(spirv), m_IsRecompile(recompile)
     {
         OGN_PROFILER_RENDERING();
-        PUSH_CONSOLE_INFO("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
-        OGN_CORE_TRACE("[Shader] Trying to load Shader {}", m_Filepath.generic_string());
+        PUSH_CONSOLE_INFO("[Shader] Load {}", m_Filepath.generic_string());
+        OGN_CORE_TRACE("[Shader] Load {}", m_Filepath.generic_string());
 
         // With SPIRV
         if (spirv)
@@ -190,16 +190,16 @@ namespace origin
         switch (type)
         {
         case GL_VERTEX_SHADER:
-            OGN_CORE_TRACE("[Shader] VERTEX Successfully Compiled");
-            PUSH_CONSOLE_INFO("[Shader] VERTEX Successfully Compiled");
+            OGN_CORE_INFO("[Shader] VERTEX shader compiled");
+            PUSH_CONSOLE_INFO("[Shader] VERTEX shader compiled");
             break;
         case GL_FRAGMENT_SHADER:
-            OGN_CORE_TRACE("[Shader] FRAGMENT Successfully Compiled");
-            PUSH_CONSOLE_INFO("[Shader] FRAGMENT Successfully Compiled");
+            OGN_CORE_INFO("[Shader] FRAGMENT shader compiled");
+            PUSH_CONSOLE_INFO("[Shader] FRAGMENT shader compiled");
             break;
         case GL_GEOMETRY_SHADER:
-            OGN_CORE_TRACE("[Shader] GEOMETRY Successfully Compiled");
-            PUSH_CONSOLE_INFO("[Shader] GEOMETRY Successfully Compiled");
+            OGN_CORE_INFO("[Shader] GEOMETRY shader compiled");
+            PUSH_CONSOLE_INFO("[Shader] GEOMETRY shader compiled");
             break;
         }
 
@@ -259,8 +259,8 @@ namespace origin
 
                 m_OpenGLSPIRV = CompileOrGetOpenGLBinaries(m_OpenGLSourceCode, vulkan_spirv, m_Filepath.generic_string());
                 CreateSpirvProgram();
-                OGN_CORE_TRACE("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
-                PUSH_CONSOLE_INFO("[Shader] Shader Creation took {0} ms", timer.ElapsedMillis());
+                OGN_CORE_TRACE("[Shader] Shader creation took {0} ms", timer.ElapsedMillis());
+                PUSH_CONSOLE_INFO("[Shader] Shader creation took {0} ms", timer.ElapsedMillis());
             }
 
             m_IsRecompile = false;
@@ -444,8 +444,8 @@ namespace origin
         const i32 location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
         {
-            OGN_CORE_WARN("[Shader] WARNING UNIFORM '{}' does not exists or uninitialized", name);
-            PUSH_CONSOLE_INFO("[Shader] WARNING UNIFORM '{}' does not exists or uninitialized", name);
+            OGN_CORE_WARN("[Shader] Uniform '{}' does not exists or uninitialized", name);
+            PUSH_CONSOLE_INFO("[Shader] Uniform '{}' does not exists or uninitialized", name);
         }
 
         m_UniformLocationCache[name] = location;

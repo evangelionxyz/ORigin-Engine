@@ -1,9 +1,0 @@
-Material:
-  AlbedoMap: 0
-  MetallicMap: 0
-  Color: [0.629464269, 0.604173303, 0.224808678, 1]
-  Tiling: [1, 1]
-  Emission: 0
-  Metallic: 0
-  Roughness: 0
-  UseNormalMaps: false

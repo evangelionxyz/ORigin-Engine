@@ -65,37 +65,10 @@ namespace origin
 	Entity EntityManager::CreateMesh(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Mesh, scene);
-		entity.AddComponent<StaticMeshComponent>();
+		entity.AddComponent<MeshComponent>();
 		entity.AddComponent<RigidbodyComponent>();
 		return entity;
 	}
-
-    Entity EntityManager::CreateCube(const std::string &name, Scene *scene)
-    {
-        Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Mesh, scene);
-		entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Cube;
-		entity.AddComponent<RigidbodyComponent>();
-		entity.AddComponent<BoxColliderComponent>();
-        return entity;
-    }
-
-    Entity EntityManager::CreateSphere(const std::string &name, Scene *scene)
-    {
-        Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Mesh, scene);
-        entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Sphere;
-        entity.AddComponent<RigidbodyComponent>();
-        entity.AddComponent<SphereColliderComponent>();
-        return entity;
-    }
-
-    Entity EntityManager::CreateCapsule(const std::string &name, Scene *scene)
-    {
-        Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Mesh, scene);
-        entity.AddComponent<StaticMeshComponent>().mType = StaticMeshComponent::Type::Capsule;
-        entity.AddComponent<RigidbodyComponent>();
-        entity.AddComponent<CapsuleColliderComponent>();
-        return entity;
-    }
 
     Entity EntityManager::CreateUI(const std::string &name, Scene *scene)
 	{

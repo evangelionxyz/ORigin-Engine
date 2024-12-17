@@ -124,7 +124,7 @@ namespace origin
 
             if (m_Texture)
             {
-                texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Texture->GetTextureID()));
+                texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Texture->GetID()));
                 const glm::vec2 atlas_size { static_cast<f32>(m_Texture->GetWidth()), static_cast<f32>(m_Texture->GetHeight()) };
 
                 if (ImGui::Button("Save"))

@@ -59,7 +59,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			MonoType *managedType = mono_reflection_type_get_type(componentType);
-			OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "[ScriptGlue]: Failed to process Entity_HasComponent");
+			OGN_CORE_ASSERT(s_EntityHasComponentFuncs.contains(managedType), "[ScriptGlue]: Failed to process Entity_HasComponent");
 			return s_EntityHasComponentFuncs.at(managedType)(entity);
 		}
 

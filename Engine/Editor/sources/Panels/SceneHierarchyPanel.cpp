@@ -189,12 +189,6 @@ namespace origin {
                 {
                     if (ImGui::MenuItem("Empty Mesh"))
                         SetSelectedEntity(EntityManager::CreateMesh("Empty Mesh", m_Scene.get()));
-                    if (ImGui::MenuItem("Cube"))
-                        SetSelectedEntity(EntityManager::CreateCube("Cube", m_Scene.get()));
-                    if (ImGui::MenuItem("Sphere"))
-                        SetSelectedEntity(EntityManager::CreateSphere("Sphere", m_Scene.get()));
-                    if (ImGui::MenuItem("Capsule"))
-                        SetSelectedEntity(EntityManager::CreateCapsule("Capsule", m_Scene.get()));
                     ImGui::EndMenu();
                 }
 
@@ -398,7 +392,6 @@ namespace origin {
             ImGui::Separator();
             DisplayAddComponentEntry<LightComponent>("Lighting");
             DisplayAddComponentEntry<MeshComponent>("Mesh");
-            DisplayAddComponentEntry<StaticMeshComponent>("Static Mesh");
             DisplayAddComponentEntry<RigidbodyComponent>("Rigidbody");
             DisplayAddComponentEntry<BoxColliderComponent>("Box Collider");
             DisplayAddComponentEntry<SphereColliderComponent>("Sphere Collider");
@@ -419,88 +412,6 @@ namespace origin {
                 transform.Rotation = glm::quat(rotationRadians);
             }
             UI::DrawVec3Control("Scale", transform.Scale, 0.01f, 1.0f);
-
-        });
-
-        DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
-        {
-            ImVec2 buttonSize = { 100.0f, 25.0f };
-
-            std::string modelButtonLabel = "Drop Model";
-
-            if (component.HMesh)
-            {
-                auto &filepath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(component.HMesh);
-                modelButtonLabel = filepath.stem().string();
-            }
-
-            // Model Button
-            ImGui::Button(modelButtonLabel.c_str(), buttonSize);
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                {
-                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                    if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
-                    {
-                        component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<Mesh>(handle);
-                        component.mType = StaticMeshComponent::Type::Default;
-                    }
-                    else
-                    {
-                        OGN_CORE_WARN("Wrong asset type!");
-                    }
-                }
-                ImGui::EndDragDropTarget();
-            }
-
-            std::string materialLabel = "Default Material";
-
-            std::shared_ptr<Material> material;
-            if (component.HMaterial)
-            {
-                material = AssetManager::GetAsset<Material>(component.HMaterial);
-                if (material)
-                {
-                    materialLabel = material->GetName();
-                }
-                else
-                {
-                    materialLabel = "Invalid";
-                }
-            }
-            else
-            {
-                material = Renderer::GetMaterial("Mesh");
-                materialLabel = material->GetName();
-            }
-
-            // Material Button
-            ImGui::SameLine();
-            ImGui::Button(materialLabel.c_str(), buttonSize);
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                {
-                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                    if (AssetManager::GetAssetType(handle) == AssetType::Material)
-                    {
-                        component.HMaterial= handle;
-                    }
-                    else
-                    {
-                        OGN_CORE_WARN("Wrong asset type!");
-                    }
-                }
-                ImGui::EndDragDropTarget();
-            }
-
-            if (material)
-            {
-                ImGui::ColorEdit4("Color", glm::value_ptr(material->Color));
-                UI::DrawVec2Control("Tiling", material->TilingFactor, 0.25f, 1.0f);
-            }
         });
 
         DrawComponent<MeshComponent>("Mesh", entity, [&](auto &component)
@@ -516,25 +427,10 @@ namespace origin {
                     AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
                     if (AssetManager::GetAssetType(handle) == AssetType::Mesh)
                     {
-                        component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<Mesh>(handle);
-
-                        if (component.Data)
-                        {
-                            /*if (!component.Data->animations.empty())
-                            {
-                                component.AAnimator = Animator(&component.Data->animations[0]);
-                            }*/
-                        }
-                        else
-                        {
-                            OGN_CORE_WARN("Asset is not valid");
-                            PUSH_CONSOLE_WARNING("Asset is not valid");
-                        }
+                        component.HModel = handle;
                     }
                     if (AssetManager::GetAssetType(handle) == AssetType::Texture)
                     {
-                       // component.Data->diffuseTexture = AssetManager::GetAsset<Texture2D>(handle);
                     }
                     else
                     {
@@ -544,16 +440,6 @@ namespace origin {
 
                 ImGui::EndDragDropTarget();
             }
-
-            /*if (component.AAnimator.HasAnimation())
-            {
-                UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f, 1.0f);
-                if (ImGui::SliderInt("Index", &component.AnimationIndex, 0, static_cast<i32>(component.Data->animations.size()) - 1))
-                {
-                    if (component.AnimationIndex >= 0 && component.AnimationIndex < component.Data->animations.size())
-                        component.AAnimator.PlayAnimation(&component.Data->animations[component.AnimationIndex]);
-                }
-            }*/
         });
 
         DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
@@ -1489,12 +1375,6 @@ namespace origin {
             {
                 if (ImGui::MenuItem("Empty Mesh"))
                     entity = EntityManager::CreateMesh("Empty Mesh", m_Scene.get());
-                if (ImGui::MenuItem("Cube"))
-                    entity = EntityManager::CreateCube("Cube", m_Scene.get());
-                if (ImGui::MenuItem("Sphere"))
-                    entity = EntityManager::CreateSphere("Sphere", m_Scene.get());
-                if (ImGui::MenuItem("Capsule"))
-                    entity = EntityManager::CreateCapsule("Capsule", m_Scene.get());
                 ImGui::EndMenu();
             }
 
@@ -1544,7 +1424,7 @@ namespace origin {
             ImGui::PopStyleVar();
 
             ImGui::SameLine(content_region_available.x - 24.0f);
-            const ImTextureID tex_id = reinterpret_cast<void*>(static_cast<uintptr_t>(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID()));
+            const ImTextureID tex_id = reinterpret_cast<void*>(static_cast<uintptr_t>(EditorLayer::Get().m_UITextures.at("plus")->GetID()));
             if (ImGui::ImageButton("component_more_button", tex_id, { 14.0f, 14.0f }))
                 ImGui::OpenPopup("Component Settings");
 

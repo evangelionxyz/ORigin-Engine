@@ -23,7 +23,9 @@ namespace origin
 
         void DrawNavButton();	
         void DrawContentBrowser();
+
         void RefreshAssetTree();
+        void LoadAssetTree(const std::filesystem::path &directory);
 
         std::shared_ptr<Texture2D> DirectoryIcons(const std::filesystem::directory_entry& dirExtension);
     
@@ -55,12 +57,5 @@ namespace origin
 
         std::stack<std::filesystem::path> m_BackwardPathStack;
         std::stack<std::filesystem::path> m_ForwardPathStack;
-
-        enum class Mode
-        {
-            Asset = 0, FileSystem = 1
-        };
-
-        Mode m_Mode = Mode::Asset;
     };
 }

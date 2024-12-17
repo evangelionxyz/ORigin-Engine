@@ -1,6 +1,0 @@
-D:\Dev\ORigin-Engine\Engine\Editor\TestGame\bin\TestGame.dll
-D:\Dev\ORigin-Engine\Engine\Editor\TestGame\bin\TestGame.pdb
-D:\Dev\ORigin-Engine\Engine\Editor\TestGame\bin-int\Debug\TestGame.csproj.AssemblyReference.cache
-D:\Dev\ORigin-Engine\Engine\Editor\TestGame\bin-int\Debug\TestGame.csproj.CoreCompileInputs.cache
-D:\Dev\ORigin-Engine\Engine\Editor\TestGame\bin-int\Debug\TestGame.dll
-D:\Dev\ORigin-Engine\Engine\Editor\TestGame\bin-int\Debug\TestGame.pdb

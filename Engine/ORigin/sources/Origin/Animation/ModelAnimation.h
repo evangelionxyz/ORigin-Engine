@@ -126,7 +126,7 @@ public:
     Vec3Key ScaleKeys;
 
     std::string Name;
-    glm::mat4 LocalTransform;
+    glm::mat4 local_transform;
     int ID;
 };
 

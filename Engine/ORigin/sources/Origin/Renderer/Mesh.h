@@ -66,9 +66,10 @@ public:
     Ref<VertexBuffer> vertex_buffer;
     MeshMaterial material;
 
-    glm::mat4 transform = glm::mat4(1.0f);
+    glm::mat4 transformation = glm::mat4(1.0f);
 
     std::vector<glm::mat4> final_bone_matrices;
+
     std::unordered_map<std::string, BoneInfo> bone_info_map;
     i32 bone_count = 0;
     bool is_active = true;

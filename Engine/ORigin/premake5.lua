@@ -19,7 +19,8 @@ project "ORigin"
         "sources/Origin/**.cpp",
         "sources/Origin/**.hpp",
         "sources/Origin/**.h",
-        "sources/Platform/**.cpp",
+        "sources/Platform/OpenGL/**.cpp",
+        "sources/Platform/Vulkan/**.cpp",
         "sources/Platform/**.hpp",
         "sources/Platform/**.h",
     }

@@ -14,7 +14,7 @@ project "Sandbox"
 
     files {
         "sources/**.cpp",
-        "sources/**.hpp"
+        "sources/**.hpp",
         "sources/**.h"
     }
 

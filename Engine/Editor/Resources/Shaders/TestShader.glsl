@@ -23,18 +23,18 @@ layout (location = 3) out vec3 fragPosition;
 void main()
 {
     mat4 bone_transform = bone_transforms[aBoneIDs[0]] * aWeights[0];
-    bone_transform += bone_transforms[aBoneIDs[1]] * aWeights[1];
-    bone_transform += bone_transforms[aBoneIDs[2]] * aWeights[2];
-    bone_transform += bone_transforms[aBoneIDs[3]] * aWeights[3];
+    bone_transform     += bone_transforms[aBoneIDs[1]] * aWeights[1];
+    bone_transform     += bone_transforms[aBoneIDs[2]] * aWeights[2];
+    bone_transform     += bone_transforms[aBoneIDs[3]] * aWeights[3];
 
     mat4 final_transform = model_transform;
     if (aBoneIDs[0] >= 0) {
-      final_transform *= bone_transform;
+      final_transform = bone_transform * model_transform;
     }
 
     gl_Position  = viewProjection * final_transform * vec4(aPosition, 1.0);
-    fragNormal   = mat3(transpose(inverse(final_transform))) * aNormal;
-    fragPosition = vec3(final_transform * vec4(aPosition, 1.0));
+    fragNormal   = mat3(transpose(inverse(model_transform))) * aNormal;
+    fragPosition = vec3(model_transform * vec4(aPosition, 1.0));
     fragColor    = aColor;
     fragUV       = aUV;
 }
@@ -83,6 +83,9 @@ void main()
     vec4 tex_normals_color = texture(texture_normals, fragUV);
     vec4 tex_base_color = texture(texture_base_color, fragUV);
 
-    oColor = tex_diffuse_color * vec4(lighting, 1.0);
+    const float gamma = 2.2;
+    vec3 final_color = pow(tex_diffuse_color.rgb * lighting, vec3(1.0/gamma));
+
+    oColor = vec4(final_color, 1.0);
     //oColor = tex_diffuse_color * vec4(1.0);
 }

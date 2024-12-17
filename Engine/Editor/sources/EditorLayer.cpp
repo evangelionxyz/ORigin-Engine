@@ -230,7 +230,7 @@ namespace origin
             if (m_VisualizeCollider) m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
             if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
             if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-            ShowGrid();
+            //ShowGrid();
 
             // update scene
             m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
@@ -252,7 +252,7 @@ namespace origin
             if (m_VisualizeCollider)m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
             if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
             if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-            ShowGrid();
+            //ShowGrid();
 
             // update scene
             m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
@@ -488,6 +488,7 @@ namespace origin
     void EditorLayer::NewScene()
     {
         OGN_PROFILER_SCENE();
+
         if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
             OnSceneStop();
 
@@ -962,7 +963,7 @@ namespace origin
             ImGui::SetCursorPos({8.0f, 0.0f});
             // Play Button
             Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-            if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
+            if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetID())), bt_size))
             {
                 if (m_SceneHierarchyPanel->GetContext())
                 {
@@ -980,7 +981,7 @@ namespace origin
             ImGui::SameLine();
             bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
             icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-            if (ImGui::ImageButton("simulate_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetTextureID())), bt_size))
+            if (ImGui::ImageButton("simulate_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetID())), bt_size))
             {
                 if (m_SceneHierarchyPanel->GetContext())
                 {
@@ -1000,7 +1001,7 @@ namespace origin
                 ImGui::SameLine();
                 bool isPaused = m_ActiveScene->IsPaused();
                 icon = m_UITextures.at("pause");
-                if (ImGui::ImageButton("pause_button", (void *)(uintptr_t)icon->GetTextureID(), bt_size))
+                if (ImGui::ImageButton("pause_button", (void *)(uintptr_t)icon->GetID(), bt_size))
                 {
                     m_ActiveScene->SetPaused(!isPaused);
                 }
@@ -1009,7 +1010,7 @@ namespace origin
                 {
                     icon = m_UITextures.at("stepping");
                     ImGui::SameLine();
-                    if (ImGui::ImageButton("stepping_button", (void *)(uintptr_t)icon->GetTextureID(), bt_size))
+                    if (ImGui::ImageButton("stepping_button", (void *)(uintptr_t)icon->GetID(), bt_size))
                     {
                         m_ActiveScene->Step(1);
                     }
@@ -1021,7 +1022,7 @@ namespace origin
             // Projection mode
             const auto &mode = m_EditorCamera.GetProjectionType();
             icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
-            if (ImGui::ImageButton("projection_button", (void *)(uintptr_t)icon->GetTextureID(), bt_size, ImVec2(0, 1), ImVec2(1, 0)))
+            if (ImGui::ImageButton("projection_button", (void *)(uintptr_t)icon->GetID(), bt_size, ImVec2(0, 1), ImVec2(1, 0)))
             {
                 if (mode == ProjectionType::Perspective)
                     m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);

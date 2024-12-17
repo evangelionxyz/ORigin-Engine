@@ -42,6 +42,8 @@ public:
     static glm::mat4 AssimpToGlmMatrix(aiMatrix4x4 mat);
     static glm::vec3 AssimpToGlmVec3(aiVector3D vec);
     static glm::quat AssimpToGlmQuat(aiQuaternion quat);
+
+    static glm::mat4 RemoveScale(const glm::mat4 &matrix);
 };
 
 struct Rect

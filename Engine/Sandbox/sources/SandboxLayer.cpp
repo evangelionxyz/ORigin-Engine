@@ -14,8 +14,8 @@ struct Data
     std::vector<ModelAnimation> animations;
     Animator animator;
 
-    glm::vec3 light_pos = { 0.0f, 10.0f, -3.0f };
-    glm::vec3 light_color = { 1.0f, 1.0f, 1.0f };
+    glm::vec3 light_pos = { 0.0f, 10.0f, 14.0f };
+    glm::vec3 light_color = { 0.65f, 0.65f, 0.65f };
 };
 
 static Data s_data;
@@ -30,21 +30,28 @@ void draw_mesh(const glm::mat4 &view_projection, const glm::mat4 &transform, con
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
-    camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 100.0f);
-    camera.SetPosition({ 0.0f, 0.0f, 10.0f });
+    camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
+    camera.SetPosition({ 0.0f, 2.0f, 8.0f });
     camera.SetAllowedMove(true);
 
     shader = Shader::Create("Resources/Shaders/TestShader.glsl", false, true);
     s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
+    // s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Test.glb");
     // s_data.model = Model("Resources/Models/storm_trooper/sss.glb");
+    // s_data.model = Model("Resources/Models/cube_plane.glb");
+    // s_data.model = Model("Resources/Models/survival_guitar_backpack.glb");
+    // s_data.model = Model("Resources/Models/raptoid.glb");
 
     s_data.animations = s_data.model.GetAnimations();
-    s_data.animator = Animator(&s_data.animations[0]);
-    s_data.animator.PlayAnimation(&s_data.animations[0]);
+    if (!s_data.animations.empty())
+    {
+        s_data.animator = Animator(&s_data.animations[0]);
+        s_data.animator.PlayAnimation(&s_data.animations[0]);
+    }
 
-    RenderCommand::ClearColor({ 0.8f,0.8f,0.8f, 1.0f });
+    RenderCommand::ClearColor({ 0.3f,0.3f,0.3f, 1.0f });
 
-    Application::GetInstance().GetWindow().ToggleVSync();
+    //Application::GetInstance().GetWindow().ToggleVSync();
 }
 
 void SandboxLayer::OnAttach()
@@ -56,8 +63,8 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     RenderCommand::Clear();
     camera.OnUpdate(ts);
 
-    // s_data.animator.UpdateAnimation(ts, 1.0f);
-    // s_data.animator.ApplyToMeshes();
+    s_data.animator.UpdateAnimation(ts, 1.0f);
+    s_data.animator.ApplyToMeshes();
 
     MeshRenderer::Begin(camera);
     for (auto &m : s_data.model.GetMeshes())
@@ -95,7 +102,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
         shader->SetVector("lightColor", s_data.light_color);
         shader->SetFloat("shininess", 1.0f);
         shader->SetMatrix("bone_transforms", m->final_bone_matrices[0], m->final_bone_matrices.size());
-        draw_mesh(camera.GetViewProjection(), m->transform, m->vertex_array);
+        draw_mesh(camera.GetViewProjection(), glm::mat4(1.0f), m->vertex_array);
         shader->Disable();
     }
     MeshRenderer::End();
@@ -117,6 +124,10 @@ void SandboxLayer::OnGuiRender()
     ImGui::Begin("Control");
     ImGui::DragFloat3("Light Pos", &s_data.light_pos.x);
     ImGui::ColorEdit3("Light Color", &s_data.light_color.x);
+    if (ImGui::Button("Reload shader"))
+    {
+        shader->Reload();
+    }
     ImGui::End();
 
     ImGui::Begin("Test");
@@ -126,14 +137,24 @@ void SandboxLayer::OnGuiRender()
         ImGui::PushID(m->name.c_str());
         ImGui::Checkbox(m->name.c_str(), &m->is_active);
         ImGui::Text("bone count: %d", m->bone_count);
-        for (auto tvector : m->material.textures)
-        {
-            for (auto tmap : tvector)
-            {
-                ImTextureID tex_id = reinterpret_cast<ImTextureID>((uintptr_t)tmap.second->GetID());
-                ImGui::Image(tex_id, ImVec2(256, 128));
-            }
-        }
+
+        /*glm::vec3 pos, rot, scale;
+        Math::DecomposeTransformEuler(m->transform, pos, rot, scale);
+
+        ImGui::DragFloat3("Position", &pos.x);
+        ImGui::DragFloat3("Rotation", &rot.x);
+        ImGui::DragFloat3("Scale", &scale.x);*/
+
+        //m->transform = glm::recompose(scale, glm::quat(rot), pos, glm::vec3(0.0f), glm::vec4(1.0f));
+
+        /* for (auto tvector : m->material.textures)
+         {
+             for (auto tmap : tvector)
+             {
+                 ImTextureID tex_id = reinterpret_cast<ImTextureID>((uintptr_t)tmap.second->GetID());
+                 ImGui::Image(tex_id, ImVec2(256, 128));
+             }
+         }*/
         ImGui::PopID();
     }
     ImGui::End();
