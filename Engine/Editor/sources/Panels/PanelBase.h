@@ -33,10 +33,7 @@ public:
     void Open() { m_Open = true; }
 
 protected:
-    virtual Rect CalculateCanvas() { return Rect(); }
-
-    ImVec2 m_CanvasPosMin;
-    ImVec2 m_CanvasPosMax;
+    Rect m_ViewportRect = Rect();
 
     std::string m_Title;
     bool m_Open = true;

@@ -32,7 +32,6 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
     camera.SetPosition({ 0.0f, 2.0f, 8.0f });
-    camera.SetAllowedMove(true);
 
     shader = Shader::Create("Resources/Shaders/TestShader.glsl", false, true);
     s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
@@ -62,6 +61,9 @@ void SandboxLayer::OnUpdate(const Timestep ts)
 {
     RenderCommand::Clear();
     camera.OnUpdate(ts);
+
+    camera.UpdateView();
+    camera.UpdateProjection();
 
     s_data.animator.UpdateAnimation(ts, 1.0f);
     s_data.animator.ApplyToMeshes();

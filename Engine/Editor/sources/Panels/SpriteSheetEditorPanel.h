@@ -59,6 +59,7 @@ namespace origin
         void OnEvent(Event &e) override;
         bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
         bool OnKeyPressed(const KeyPressedEvent &e);
+        bool OnMouseScroll(const MouseScrolledEvent &e);
         void OnMouse(f32 ts);
 
         static SpriteSheetEditorPanel *GetInstance();
@@ -75,8 +76,8 @@ namespace origin
         std::shared_ptr<Texture2D> m_Texture;
         std::vector<SpriteSheetController> m_Controls;
 
-        glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-        glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+        Rect m_ViewportRect = Rect();
+
         glm::ivec2 m_Mouse = { 0, 0 };
         glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
         std::filesystem::path m_CurrentFilepath;

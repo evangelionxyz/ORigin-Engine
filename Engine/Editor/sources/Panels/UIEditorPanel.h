@@ -27,6 +27,7 @@ namespace origin
 
         void OnEvent(Event &e) override;
         bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+        bool OnMouseScroll(MouseScrolledEvent &e);
         bool OnKeyPressed(KeyPressedEvent &e);
 
         void OnMouse(float ts);
@@ -46,10 +47,9 @@ namespace origin
         EditorCamera m_Camera;
         UIComponent *m_UICompHandler = nullptr;
 
-        std::shared_ptr<Framebuffer> m_Framebuffer;
+        Ref<Framebuffer> m_Framebuffer;
+        Rect m_ViewportRect = Rect();
 
-        glm::vec2 m_EditorViewportSize = { 1.0f, 1.0f };
-        glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
         glm::ivec2 m_Mouse = { 0, 0 };
         glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
         int m_SelectedIndex = 0;

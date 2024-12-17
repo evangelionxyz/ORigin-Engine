@@ -53,7 +53,7 @@ namespace origin {
         m_Window->SetIcon(logo_black_data, logo_black_width, logo_black_height);
         
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
-        m_InputHandle.Init(m_Window->GetNativeWindow());
+        Input::Init(m_Window->GetNativeWindow());
 
         m_GuiLayer = new GuiLayer(m_Window);
         m_GuiLayer->OnAttach();
@@ -92,7 +92,7 @@ namespace origin {
             Timestep ts = time - m_LastFrame;
             m_LastFrame = time;
 
-            m_InputHandle.Update();
+            Input::Update();
 
             AssetImporter::SyncToMainThread(ts);
             ExecuteMainThreadQueue();

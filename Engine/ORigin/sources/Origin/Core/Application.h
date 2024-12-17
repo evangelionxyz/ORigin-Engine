@@ -66,12 +66,11 @@ namespace origin {
 
     private:
         ProcessMonitor m_ProcessMonitor;
-        std::unique_ptr<ConsoleManager> m_ConsoleManager;
+        Scope<ConsoleManager> m_ConsoleManager;
         ApplicationSpecification m_Spec;
         LayerStack m_LayerStack;
         GuiLayer *m_GuiLayer = nullptr;
-        Input m_InputHandle;
-        std::shared_ptr<Window> m_Window;
+        Ref<Window> m_Window;
         static Application* s_Instance;
         bool OnWindowClose(WindowCloseEvent& e) const;
         bool OnWindowResize(WindowResizeEvent& e);

@@ -19,7 +19,7 @@ namespace origin {
             return nullptr;
 
         std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(absolute_path);
-        uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(lastWriteTime.time_since_epoch()).count();
+        u32 timestamp = std::chrono::duration_cast<std::chrono::seconds>(lastWriteTime.time_since_epoch()).count();
 
         if (m_CachedImages.find(asset_path) != m_CachedImages.end())
         {

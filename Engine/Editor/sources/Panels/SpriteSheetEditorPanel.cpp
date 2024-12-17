@@ -19,7 +19,6 @@ namespace origin
     static SpriteSheetEditorPanel *s_Instance = nullptr;
 
     SpriteSheetEditorPanel::SpriteSheetEditorPanel()
-        : m_ViewportSize(0.0f)
     {
         s_Instance = this;
 
@@ -111,13 +110,12 @@ namespace origin
             const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
             const ImVec2 &viewportOffset = ImGui::GetWindowPos();
 
-            m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-            m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-            m_ViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+            m_ViewportRect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+            m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
             
             // Framebuffer Texture
             auto texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Framebuffer->GetColorAttachmentRendererID()));
-            ImGui::Image(texture, { m_ViewportSize.x, m_ViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(texture, { m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
             ImGui::End();
 
             ImGui::Begin("Sprite Sheet Inspector");
@@ -233,8 +231,12 @@ namespace origin
             return;
         }
 
-        m_Camera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-        m_Camera.OnUpdate(delta_time, m_ViewportBounds[0], m_ViewportBounds[1]);
+        if (IsViewportFocused && IsViewportHovered)
+            m_Camera.OnUpdate(delta_time);
+
+        m_Camera.UpdateView();
+        m_Camera.UpdateProjection();
+
         OnMouse(delta_time);
 
         RenderCommand::ClearColor(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
@@ -242,12 +244,11 @@ namespace origin
         RenderCommand::Clear();
         m_Framebuffer->ClearAttachment(1, -1);
 
-        if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-                m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f
-                && (m_ViewportSize.x != static_cast<f32>(spec.Width) || m_ViewportSize.y != static_cast<f32>(spec.Height)))
+        const glm::vec2 &vp_size = m_ViewportRect.GetSize();
+        if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification(); vp_size.x > 0.0f && vp_size.y > 0.0f && (vp_size.x != static_cast<f32>(spec.Width) || vp_size.y != static_cast<f32>(spec.Height)))
         {
-            m_Camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-            m_Framebuffer->Resize(static_cast<u32>(m_ViewportSize.x), static_cast<u32>(m_ViewportSize.y));
+            m_Camera.SetViewportSize(vp_size.x, vp_size.y);
+            m_Framebuffer->Resize(static_cast<u32>(vp_size.x), static_cast<u32>(vp_size.y));
         }
 
         if (m_Texture)
@@ -359,6 +360,7 @@ namespace origin
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditorPanel::OnMouseButtonPressed));
         dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditorPanel::OnKeyPressed));
+        dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(SpriteSheetEditorPanel::OnMouseScroll));
     }
 
     bool SpriteSheetEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
@@ -409,7 +411,7 @@ namespace origin
         if (!IsViewportFocused)
             return false;
 
-        if (Input::Get().IsKeyPressed(Key::LeftControl))
+        if (Input::IsKeyPressed(Key::LeftControl))
         {
             if (e.GetKeyCode() == Key::D && m_SelectedIndex >= 0 && !m_Controls.empty())
             {
@@ -431,6 +433,12 @@ namespace origin
         return false;
     }
 
+    bool SpriteSheetEditorPanel::OnMouseScroll(const MouseScrolledEvent &e)
+    {
+
+        return false;
+    }
+
     void SpriteSheetEditorPanel::OnMouse(f32 ts)
     {
         OGN_PROFILER_INPUT();
@@ -439,10 +447,10 @@ namespace origin
         {
             return;
         }
-        [[maybe_unused]] const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
-        const glm::vec2 delta = Input::Get().GetMouseDelta();
+        [[maybe_unused]] const glm::vec2 mouse { Input::GetMouseX(), Input::GetMouseY() };
+        const glm::vec2 delta = Input::GetMouseClickDragDelta();
 
-        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered && m_SelectedIndex >= 0)
+        if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered && m_SelectedIndex >= 0)
         {
             auto &[Position, Size, Min, Max, SelectedCorner] = m_Controls[m_SelectedIndex];
             const f32 viewport_height = m_Camera.GetViewportSize().y;
@@ -451,10 +459,10 @@ namespace origin
             m_MoveTranslation.x += delta.x * orthographic_scale;
             m_MoveTranslation.y -= delta.y * orthographic_scale;
 
-            if (Input::Get().IsKeyPressed(Key::LeftShift))
+            if (Input::IsKeyPressed(Key::LeftShift))
             {
                 f32 snap_size = 0.5f;
-                if (Input::Get().IsKeyPressed(Key::LeftControl))
+                if (Input::IsKeyPressed(Key::LeftControl))
                 {
                     snap_size = 0.1f;
                 }
@@ -473,11 +481,11 @@ namespace origin
                 switch (SelectedCorner)
                 {
                 case NONE:
-                    if (Input::Get().IsKeyPressed(Key::X))
+                    if (Input::IsKeyPressed(Key::X))
                     {
                         Position.x += delta.x * orthographic_scale;
                     }
-                    else if (Input::Get().IsKeyPressed(Key::Y))
+                    else if (Input::IsKeyPressed(Key::Y))
                     {
                         Position.y -= delta.y * orthographic_scale;
                     }

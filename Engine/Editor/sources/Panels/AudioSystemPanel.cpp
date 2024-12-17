@@ -19,7 +19,12 @@ void AudioSystemPanel::Render()
     if (m_Open)
     {
         ImGui::Begin("Audio System", &m_Open);
-        const Rect &canvas_rect = CalculateCanvas();
+
+        const ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
+        const ImVec2 canvas_size = ImVec2(ImGui::GetContentRegionAvail());
+
+        m_ViewportRect.min = { canvas_pos.x, canvas_pos.y };
+        m_ViewportRect.max = { canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y };
 
         ImDrawList *dl = ImGui::GetWindowDrawList();
 
@@ -35,14 +40,14 @@ void AudioSystemPanel::Render()
         static float scroll_start_offset = 0.0f;
 
         // master channel
-        Rect master_channel_canvas = canvas_rect - Rect({ horizontal_scroll, 0.0f }, { 0.0f, 0.0f });
+        Rect master_channel_canvas = m_ViewportRect - Rect({ horizontal_scroll, 0.0f }, { 0.0f, 0.0f });
         float master_volume = FmodAudio::GetMasterVolume();
         RenderAudioChannel(master_volume, dl, master_channel_canvas, 0, channel_width,
             channel_margin, gain_margin, label_margin, "Master", "Master\nChannel");
         FmodAudio::SetMasterVolume(master_volume);
 
         // other audio channel
-        Rect audio_channel_canvas = canvas_rect + Rect({ horizontal_scroll, 0.0f }, {0.0f, 0.0f});
+        Rect audio_channel_canvas = m_ViewportRect + Rect({ horizontal_scroll, 0.0f }, {0.0f, 0.0f});
         for (i32 x = 0; x < m_Sounds.size(); ++x)
         {
             float volume = m_Sounds[x]->GetVolume();
@@ -55,13 +60,13 @@ void AudioSystemPanel::Render()
         // horizontal slider
                                     // + 1 (master channel)
         const float total_channel_width = (m_Sounds.size() + 1) * channel_width + (channel_margin.right * 2.0f);
-        const float visible_width = canvas_rect.max.x - canvas_rect.min.x;
+        const float visible_width = m_ViewportRect.max.x - m_ViewportRect.min.x;
         const float scrollbar_height = 15.0f;
 
         if (total_channel_width > visible_width)
         {
-            const float scrollbar_x = canvas_rect.min.x + channel_margin.left;
-            const float scrollbar_y = canvas_rect.max.y - scrollbar_height - 5.0f;
+            const float scrollbar_x = m_ViewportRect.min.x + channel_margin.left;
+            const float scrollbar_y = m_ViewportRect.max.y - scrollbar_height - 5.0f;
             const float scrollbar_width = visible_width - (channel_margin.right * 2.0f);
             const float scrollbar_thumb_width = (visible_width / total_channel_width) * scrollbar_width;
             const float scrollbar_thumb_x = scrollbar_x + (horizontal_scroll / (total_channel_width - visible_width)) * (scrollbar_width - scrollbar_thumb_width);
@@ -75,9 +80,9 @@ void AudioSystemPanel::Render()
             dl->AddRectFilled(
                 { scrollbar_rect.min.x, scrollbar_rect.min.y },
                 { scrollbar_rect.max.x, scrollbar_rect.max.y },
-                ImColor{0.5f, 0.5f, 0.5f, 1.0f}
+                ImColor{ 0.5f, 0.5f, 0.5f, 1.0f }
             );
- 
+
             const ImVec2 &mouse_pos = ImGui::GetMousePos();
 
             if (scrollbar_rect.Contains(mouse_pos) && ImGui::IsMouseClicked(0))
@@ -116,28 +121,18 @@ void AudioSystemPanel::OnEvent(Event &e)
     dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(AudioSystemPanel::OnMouseButtonPressed));
 }
 
-Rect AudioSystemPanel::CalculateCanvas()
-{
-    const ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
-    const ImVec2 canvas_size = ImVec2(ImGui::GetContentRegionAvail());
-
-    ImVec2 min = ImVec2(canvas_pos);
-    ImVec2 max = ImVec2({ canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y });
-    return { min.x, min.y, max.x, max.y };
-}
-
-void AudioSystemPanel::RenderAudioChannel(float &volume, ImDrawList *dl, const Rect &canvas_rect, i32 channel_index,
+void AudioSystemPanel::RenderAudioChannel(float &volume, ImDrawList *dl, const Rect &m_ViewportRect, i32 channel_index,
     float channel_width, const Margin &channel_margin, const Margin &gain_margin,
     const Margin &label_margin, const std::string &top_label, const std::string &bottom_label)
 {
     const Rect channel_size = Rect
     ({
-        canvas_rect.min.x + channel_margin.left + (channel_index * channel_width),
-        canvas_rect.min.y + channel_margin.top
-    },
+        m_ViewportRect.min.x + channel_margin.left + (channel_index * channel_width),
+        m_ViewportRect.min.y + channel_margin.top
+        },
     {
-        canvas_rect.min.x + channel_margin.left + ((channel_index + 1) * channel_width) - channel_margin.right,
-        canvas_rect.max.y - channel_margin.bottom
+        m_ViewportRect.min.x + channel_margin.left + ((channel_index + 1) * channel_width) - channel_margin.right,
+        m_ViewportRect.max.y - channel_margin.bottom
     });
 
     const Rect gain_size = Rect

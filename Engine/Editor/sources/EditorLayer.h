@@ -67,8 +67,11 @@ namespace origin
         void OnDuplicateEntity();
         void OnDestroyEntity();
         void OnEvent(Event& e) override;
-        bool OnKeyPressed(KeyPressedEvent& e);
-        bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+        bool OnKeyPressed(KeyPressedEvent &e);
+        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+        bool OnMouseScroll(MouseScrolledEvent &e);
+        bool OnMouseMove(MouseMovedEvent &e);
+
         void OnGuiRender() override;
         void OnScenePlay();
         void OnScenePause() const;
@@ -123,7 +126,7 @@ namespace origin
         glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
         glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
         glm::vec2 m_ViewportMousePos = { 0.0f, 0.0f };
-        glm::vec2 m_SceneViewportBounds[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
+        Rect m_ViewportRect = Rect();
 
         ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
         int m_GizmosMode = 0;

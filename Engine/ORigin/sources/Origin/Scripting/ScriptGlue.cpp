@@ -1832,48 +1832,38 @@ namespace origin
 
     static void Input_IsMouseDragging(bool *value)
     {
-        *value = Input::Get().IsDragging();
+        *value = Input::IsAnyMouseDown();
     }
 
 	static void Input_SetMouseHide(bool hide)
 	{
-		Input::Get().SetMouseHide(hide);
-		if (!hide)
-		{
-			Input::Get().ResetMouseDelta();
-		}
+		Input::SetCursoreMode(hide ? CursorMode::Lock : CursorMode::Default);
 	}
 
     static void Input_IsMouseHidden(bool *value)
     {
-        *value = Input::Get().IsHidden();
+        *value = Input::GetCursorMode() == CursorMode::Hidden;
     }
 
 	static void Input_ToggleMouseLock()
 	{ 
-		Input::Get().ToggleMouseLock();
+		Input::ToggleMouseLock();
 	}
-
-	static void Input_GetMouseDelta(glm::vec2 *delta)
-    {
-		*delta = Input::Get().GetMouseDelta();
-	}
-
 	static void Input_GetMousePosition(glm::vec2 *value)
     {
-		*value = Input::Get().GetMousePosition();
+		*value = { Input::GetMouseX(), Input::GetMouseY() };
 	}
 
 	static void Input_SetMousePosition(glm::vec2 value)
     {
-		Input::Get().SetMousePosition(value.x, value.y);
+		Input::SetMousePosition(static_cast<int>(value.x), static_cast<int>(value.y));
 	}
 
 	static void Input_IsMouseButtonDown(MouseCode button, bool *value)
 	{ 
         Scene *scene = ScriptEngine::GetSceneContext();
         if (scene->IsFocusing())
-		*value = Input::Get().IsMouseButtonPressed(button);
+		*value = Input::IsMouseButtonPressed(button);
 	}
 
 	static void Input_IsKeyPressed(KeyCode keycode, bool *value)
@@ -1881,7 +1871,7 @@ namespace origin
         Scene *scene = ScriptEngine::GetSceneContext();
 		if (scene->IsFocusing())
 		{
-			*value = Input::Get().IsKeyPressed(keycode);
+			*value = Input::IsKeyPressed(keycode);
 		}
 	}
 
@@ -1890,7 +1880,7 @@ namespace origin
 		Scene *scene = ScriptEngine::GetSceneContext();
 		if (scene->IsFocusing())
 		{
-			*value = Input::Get().IsKeyReleased(keycode);
+			*value = Input::IsKeyReleased(keycode);
 		}
 	}
 
@@ -2103,7 +2093,9 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(Input_ToggleMouseLock);
 		OGN_ADD_INTERNAL_CALLS(Input_GetMousePosition);
 		OGN_ADD_INTERNAL_CALLS(Input_SetMousePosition);
-		OGN_ADD_INTERNAL_CALLS(Input_GetMouseDelta);
+
+		// TODO: Fix this code
+		//OGN_ADD_INTERNAL_CALLS(Input_GetMouseDelta);
 		OGN_ADD_INTERNAL_CALLS(Input_IsMouseButtonDown);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyReleased);

@@ -75,6 +75,7 @@ namespace origin {
         auto filepath =/* Project::GetActiveAssetDirectory() /*/ metadata.Filepath;
 
         Ref<Font> font;
+        font->Handle = handle;
         //FontImporter::LoadAsync(&font, filepath);
 
         return font;
@@ -93,7 +94,9 @@ namespace origin {
     
     Ref<FmodSound> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
     {
-        return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<FmodSound> sound = LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        sound->Handle = handle;
+        return sound;
     }
 
     Ref<FmodSound> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
@@ -116,7 +119,9 @@ namespace origin {
 
     Ref<Scene> SceneImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
     {
-        return LoadScene(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<Scene> scene = LoadScene(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        scene->Handle = handle;
+        return scene;
     }
 
     Ref<Scene> SceneImporter::LoadScene(const std::filesystem::path& filepath)
@@ -160,7 +165,9 @@ namespace origin {
 
     Ref<Texture2D> TextureImporter::ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)
     {
-        return LoadTexture2D(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<Texture2D> texture = LoadTexture2D(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        texture->Handle = handle;
+        return texture;
     }
 
     Ref<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path &filepath)
@@ -226,7 +233,9 @@ namespace origin {
 
     Ref<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
-        return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<SpriteSheet> sprite_sheet = Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        sprite_sheet->Handle = handle;
+        return sprite_sheet;
     }
 
     Ref<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
@@ -239,7 +248,9 @@ namespace origin {
 
     Ref<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
-        return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<Material> material = Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        material->Handle = handle;
+        return material;
     }
 
     Ref<Material> MaterialImporter::Load(const std::filesystem::path &filepath)

@@ -95,7 +95,7 @@ namespace origin
         ImGui::BeginChild("navigation_button", ImVec2(ImGui::GetContentRegionAvail().x, 30.0f), false, childFlags);
 
         // Navigation Button
-        ImVec2 navBtSize = ImVec2(23.0f, 23.0f);
+        ImVec2 navigation_bt_size = ImVec2(23.0f, 23.0f);
         
         // Push Button Colors
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -105,7 +105,7 @@ namespace origin
         // Backward Button
         std::shared_ptr<Texture2D> navButtonTexture = m_IconMap.at("backward_button_icon");
 
-        bool clicked = ImGui::ImageButton("backward_button", (void *)(uintptr_t)(navButtonTexture->GetID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0)) && !m_Project->GetActiveScene()->IsFocusing();
+        bool clicked = ImGui::ImageButton("backward_button", (void *)(uintptr_t)(navButtonTexture->GetID()), navigation_bt_size, ImVec2(0, 1), ImVec2(1, 0)) && !m_Project->GetActiveScene()->IsFocusing();
         if (clicked)
         {
             if (!m_BackwardPathStack.empty())
@@ -120,7 +120,7 @@ namespace origin
         // Forward button
         ImGui::SameLine();
         navButtonTexture = m_IconMap.at("forward_button_icon");
-        clicked = ImGui::ImageButton("forward_button", (void*)(uintptr_t)(navButtonTexture->GetID()), navBtSize, ImVec2(0, 1), ImVec2(1, 0));
+        clicked = ImGui::ImageButton("forward_button", (void*)(uintptr_t)(navButtonTexture->GetID()), navigation_bt_size, ImVec2(0, 1), ImVec2(1, 0));
 
         if (clicked)
         {
@@ -428,10 +428,10 @@ namespace origin
                 else
                 {
                     AssetHandle asset_handle_id = 0;
-                    for (const auto &[handle, metadata] : asset_registry)
+                    if (!std::filesystem::is_directory(path))
                     {
-                        metadata.Filepath;
-                        //if ()
+                        std::string relative_asset_path = std::filesystem::relative(entry.path(), asset_path).generic_string();
+                        asset_handle_id = Project::GetActive()->GetEditorAssetManager()->ImportAsset(relative_asset_path);
                     }
 
                     TreeNode new_node(path, asset_handle_id);

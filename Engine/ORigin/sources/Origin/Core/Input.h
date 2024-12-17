@@ -8,46 +8,51 @@
 
 #include <glm/glm.hpp>
 
-namespace origin
+struct GLFWwindow;
+
+namespace origin {
+
+enum CursorMode : u8
 {
-	class Input
-	{
-	public:
-		Input();
-		void Init(void *window);
-		bool IsKeyReleased(const KeyCode keycode);
-		bool IsKeyPressed(const KeyCode keycode);
-		bool IsMouseButtonPressed(const MouseCode button);
-		float GetMouseX();
-		float GetMouseY();
-		void SetMousePosition(float x, float y);
-		void SetMouseLastPosition(float x, float y);
+	Default = BIT(0),
+	Lock = BIT(1),
+	Hidden = BIT(2),
+	Captured = BIT(3),
+};
 
-		void Update();
-		void ToggleMouseLock();
-		void MouseHide();
-		void MouseUnHide();
-		void SetMouseHide(bool hide);
-		bool IsHidden() const;
-		bool IsDragging() const;
-		void SetMouseToCenter();
-		void ResetMouseDelta();
-		glm::vec2 GetMousePosition() const;
-		glm::vec2 GetMouseDelta() const;
-		void *GetWindow();
-		static Input &Get();
+struct InputData
+{
+    glm::ivec2 mouse_position = glm::ivec2(0);
 
+	// TODO: click delta for individual button
+	// using array
+    glm::ivec2 click_delta_position = glm::ivec2(0);
+	CursorMode cursor_mode = CursorMode::Default;
+    GLFWwindow *window = nullptr;
+};
 
-	private:
-		static Input* s_Instance;
-		bool m_IsMouseLocked = false;
-		bool m_IsMouseDragging = false;
-		bool m_IsMouseHidden = false;
-		glm::vec2 m_MouseDelta = { 0.0f, 0.0f };
-		glm::vec2 m_RawMouseDelta = { 0.0f, 0.0f };
-		glm::vec2 m_LastMousePosition = { 0.0f, 0.0f };
-		friend class EditorCamera;
-	};
+class Input
+{
+public:
+	static void Init(GLFWwindow *window);
+	static bool IsKeyReleased(const KeyCode keycode);
+	static bool IsKeyPressed(const KeyCode keycode);
+	static bool IsMouseButtonPressed(const MouseCode button);
+	static i32 GetMouseX();
+	static i32 GetMouseY();
+	static void SetMousePosition(i32 x, i32 y);
+	static glm::ivec2 GetMouseClickDragDelta();
+
+	static void Update();
+	static void ToggleMouseLock();
+	static void SetCursoreMode(CursorMode mode);
+	static CursorMode GetCursorMode();
+	static bool IsAnyMouseDown();
+	static void SetMouseToCenter();
+private:
+	friend class EditorCamera;
+};
+
 }
 
 #endif

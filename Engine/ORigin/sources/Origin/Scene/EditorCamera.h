@@ -7,6 +7,7 @@
 #include "Origin/Core/MouseEvent.h"
 #include "Origin/Audio/AudioListener.h"
 #include "Origin/Core/Time.h"
+#include "Origin/Core/KeyCodes.h"
 #include "Camera.h"
 
 #include <glm/glm.hpp>
@@ -23,7 +24,6 @@ namespace origin {
         void SetProjectionType(ProjectionType type) override;
 		void OnUpdate(Timestep ts) override;
 		void OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax) override;
-		void OnEvent(Event& e) override;
         void SetOrthoScale(float value) override;
         void SetOrthoScaleMax(float max) override;
 		void SetViewportSize(u32 width, u32 height) override;
@@ -35,12 +35,13 @@ namespace origin {
         void SetStyle(CameraStyle style);
 		void SetPitch(float pitch);
 		void SetYaw(float yaw);
-        bool OnMouseScroll(MouseScrolledEvent &e);
         void MousePan(const glm::vec2 &delta);
-        void MouseRotate(const glm::vec2 &delta, float dt);
-        void MouseZoom(const float dela);
+        void MouseRotate(const glm::vec2 &delta);
+        void MouseZoom(const float delta);
 		void SetDistance(float distance);
         void SetViewMatrix(const glm::mat4 &viewMatrix) override;
+        void OnMouseScroll(float delta);
+        void OnMouseMove(const glm::vec2 &delta);
         static float RotationSpeed();
 
         std::pair<float, float> PanSpeed() const;
@@ -69,18 +70,16 @@ namespace origin {
         const CameraStyle GetStyle() { return m_CameraStyle; }
         const ProjectionType GetProjectionType() const override { return m_ProjectionType; }
 
-        void SetAllowedMove(bool active);
-
-	private:
         void UpdateProjection() override;
         void UpdateView() override;
+
+	private:
         CameraStyle m_CameraStyle = FreeMove;
         float m_Distance = 8.0f;
         float m_Pitch = 0.0f, m_Yaw = 0.0f;
-        bool m_IsInViewport = false;
-        bool m_AllowedMove = false;
         glm::vec3 m_Velocity = glm::vec3(0.0f);
         glm::vec2 m_LastMousePos = glm::vec2(0.0f);
+        glm::vec3 m_LastSwitchPosition = glm::vec3(0.0f);
 
         const float ACCELERATION = 70.0f;
         const float DECELERATION = 130.0f;

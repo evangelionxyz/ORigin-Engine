@@ -104,6 +104,11 @@ namespace origin
         return m_LoadedAssets.find(handle) != m_LoadedAssets.end();
     }
 
+    bool EditorAssetManager::IsAssetLoaded(const std::string &filepath) const
+    {
+        return false;
+    }
+
     AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
     {
         if (!IsAssetHandleValid(handle))
@@ -127,6 +132,16 @@ namespace origin
             return 0;
         }
 
+        for (const auto &[asset_handle, asset_metadata] : m_AssetRegistry)
+        {
+            if (filepath == asset_metadata.Filepath)
+            {
+                handle = asset_handle;
+                metadata = asset_metadata;
+                break;
+            }
+        }
+
         Ref<Asset> asset;
         if (metadata.Type == AssetType::Font)
         {
@@ -140,12 +155,9 @@ namespace origin
             return handle;
         }
        
-
         asset = AssetImporter::ImportAsset(handle, metadata);
-
         if (asset)
         {
-            asset->Handle = handle;
             m_LoadedAssets[handle] = asset;
             m_AssetRegistry[handle] = metadata;
             SerializeAssetRegistry();

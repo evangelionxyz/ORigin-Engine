@@ -113,13 +113,12 @@ namespace origin
             const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
             const ImVec2 &viewportOffset = ImGui::GetWindowPos();
 
-            m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-            m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-            m_EditorViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
+            m_ViewportRect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+            m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
             // Framebuffer Texture
             ImTextureID texture = (void *)(uintptr_t)(m_Framebuffer->GetColorAttachmentRendererID());
-            ImGui::Image(texture, { m_EditorViewportSize.x, m_EditorViewportSize.y }, ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(texture, { m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
             ImGui::End();
 
             DrawInspector();
@@ -415,8 +414,12 @@ namespace origin
             return;
         }
 
-        m_Camera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
-        m_Camera.OnUpdate(delta_time, m_ViewportBounds[0], m_ViewportBounds[1]);
+        if (IsViewportHovered && IsViewportFocused)
+            m_Camera.OnUpdate(delta_time);
+
+        m_Camera.UpdateView();
+        m_Camera.UpdateProjection();
+
         OnMouse(delta_time);
 
         m_Framebuffer->Bind();
@@ -427,11 +430,11 @@ namespace origin
 
         if (m_UICompHandler != nullptr)
         {
-            if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-                    m_EditorViewportSize.x > 0.0f && m_EditorViewportSize.y > 0.0f && (m_EditorViewportSize.x != spec.Width || m_EditorViewportSize.y != spec.Height))
+            const auto &vp_size = m_ViewportRect.GetSize();
+            if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification(); vp_size.x > 0.0f && vp_size.y > 0.0f && (vp_size.x != spec.Width || vp_size.y != spec.Height))
             {
-                m_Camera.SetViewportSize(m_EditorViewportSize.x, m_EditorViewportSize.y);
-                m_Framebuffer->Resize(static_cast<uint32_t>(m_EditorViewportSize.x), static_cast<uint32_t>(m_EditorViewportSize.y));
+                m_Camera.SetViewportSize(vp_size.x, vp_size.y);
+                m_Framebuffer->Resize(static_cast<uint32_t>(vp_size.x), static_cast<uint32_t>(vp_size.y));
             }
 
             Renderer2D::Begin(m_Camera);
@@ -481,6 +484,7 @@ namespace origin
 
         dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseButtonPressed));
         dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnKeyPressed));
+        dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseScroll));
     }
 
     bool UIEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
@@ -510,6 +514,14 @@ namespace origin
         return false;
     }
 
+    bool UIEditorPanel::OnMouseScroll(MouseScrolledEvent &e)
+    {
+        if (IsViewportHovered)
+            m_Camera.OnMouseScroll(e.GetYOffset());
+
+        return false;
+    }
+
     bool UIEditorPanel::OnKeyPressed(KeyPressedEvent &e)
     {
         return false;
@@ -517,13 +529,12 @@ namespace origin
 
     void UIEditorPanel::OnMouse(float ts)
     {
-        const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
-        const glm::vec2 delta = Input::Get().GetMouseDelta();
+        const glm::vec2 delta = Input::GetMouseClickDragDelta();
 
         if (!m_UICompHandler)
             return;
 
-        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered)
+        if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered)
         {
             for (int i = 0; i < m_UICompHandler->Components.size(); i++)
             {
@@ -535,10 +546,10 @@ namespace origin
 
                     static glm::vec3 translation = tc.Translation;
 
-                    if (Input::Get().IsKeyPressed(Key::LeftShift))
+                    if (Input::IsKeyPressed(Key::LeftShift))
                     {
                         float snapeValue = 0.5f;
-                        if (Input::Get().IsKeyPressed(Key::LeftControl))
+                        if (Input::IsKeyPressed(Key::LeftControl))
                             snapeValue = 0.1f;
 
                         translation += glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);

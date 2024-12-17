@@ -442,8 +442,7 @@ namespace origin {
     {
         OGN_PROFILER_LOGIC();
 
-        const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
-        const glm::vec2 delta = Input::Get().GetMouseDelta();
+        const glm::vec2 delta = Input::GetMouseClickDragDelta();
 
         float viewportHeight = camera.GetViewportSize().y;
         float orthoScale = camera.GetOrthoScale() / viewportHeight;
@@ -453,7 +452,7 @@ namespace origin {
 
         if (selectedEntity.IsValid())
         {
-            if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft) && EditorLayer::Get().IsViewportHovered)
+            if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && EditorLayer::Get().IsViewportHovered)
             {
                 auto &tc = selectedEntity.GetComponent<TransformComponent>();
                 auto &idc = selectedEntity.GetComponent<IDComponent>();

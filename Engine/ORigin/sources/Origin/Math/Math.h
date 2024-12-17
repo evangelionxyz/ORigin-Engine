@@ -71,6 +71,7 @@ struct Rect
     void SetMin(float x, float y)      { min.x = x; min.y = y; }
     void SetMax(const glm::vec2 &min)  { this->max = max; }
     void SetMax(float x, float y)      { max.x = x; max.y = y; }
+    const glm::vec2 GetSize() const { return max - min; }
 };
 
 struct Margin

@@ -841,13 +841,13 @@ namespace origin
     void Scene::LockMouse()
     {
 		m_IsFocus = true;
-		Input::Get().MouseHide();
+        Input::SetCursoreMode(CursorMode::Lock);
     }
 
     void Scene::UnlockMouse()
     {
         m_IsFocus = false;
-        Input::Get().MouseUnHide();
+        Input::SetCursoreMode(CursorMode::Default);
     }
 
     void Scene::OnViewportResize(const uint32_t width, const uint32_t height)

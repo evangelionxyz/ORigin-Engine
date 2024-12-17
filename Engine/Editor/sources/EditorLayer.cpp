@@ -40,7 +40,7 @@ namespace origin
         m_UITextures["eyes_open"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_eyes_open.png");
         m_UITextures["eyes_closed"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_eyes_closed.png");
 
-        // Gizmo icons
+        // gizmo icons
         m_UITextures["audio"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_audio.png");
         m_UITextures["camera"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera.png");
         m_UITextures["lighting"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_lighting.png");
@@ -106,6 +106,8 @@ namespace origin
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
         dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+        dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseScroll));
+        dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(EditorLayer::OnMouseMove));
 
         for (auto p : m_Panels)
         {
@@ -123,7 +125,7 @@ namespace origin
         // calculate mouse
         auto [mx, my] = ImGui::GetMousePos();
         m_ViewportMousePos = { mx, my };
-        m_ViewportMousePos -= m_SceneViewportBounds[0];
+        m_ViewportMousePos -= m_ViewportRect.min;
         m_ViewportMousePos.y = m_SceneViewportSize.y - m_ViewportMousePos.y;
         m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_SceneViewportSize - glm::vec2(1.0f, 1.0f));
 
@@ -203,7 +205,7 @@ namespace origin
         {
             if (m_ActiveScene->IsFocusing())
             {
-                Input::Get().SetMouseToCenter();
+                Input::SetMouseToCenter();
             }
 
             m_Gizmos->SetType(GizmoType::NONE);
@@ -220,9 +222,13 @@ namespace origin
         case SceneState::Edit:
         {
             // update camera
-            m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
             // m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-            m_EditorCamera.OnUpdate(ts);
+
+            if (IsViewportFocused && IsViewportFocused && !ImGui::GetIO().WantTextInput)
+                m_EditorCamera.OnUpdate(ts);
+
+            m_EditorCamera.UpdateView();
+            m_EditorCamera.UpdateProjection();
                 
             // draw gizmo
             m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
@@ -241,10 +247,13 @@ namespace origin
         case SceneState::Simulate:
         {
             // update camera
-            m_EditorCamera.SetAllowedMove(IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput);
             //m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-            m_EditorCamera.OnUpdate(ts);
 
+            if (IsViewportFocused && IsViewportFocused && !ImGui::GetIO().WantTextInput)
+                m_EditorCamera.OnUpdate(ts);
+
+            m_EditorCamera.UpdateView();
+            m_EditorCamera.UpdateProjection();
 
             // draw gizmo
             m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
@@ -717,8 +726,8 @@ namespace origin
         const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
         const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
         const ImVec2 &viewportOffset = ImGui::GetWindowPos();
-        m_SceneViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-        m_SceneViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+        m_ViewportRect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+        m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -835,8 +844,10 @@ namespace origin
         // Gizmos
         ImGuizmo::SetDrawlist();
 
-        glm::vec2 windowMin = { m_SceneViewportBounds[0].x, m_SceneViewportBounds[0].y };
-        glm::vec2 windowMax = { m_SceneViewportBounds[1].x - m_SceneViewportBounds[0].x, m_SceneViewportBounds[1].y - m_SceneViewportBounds[0].y };
+        glm::vec2 windowMin = m_ViewportRect.min;
+
+        // flip y
+        glm::vec2 windowMax = { m_ViewportRect.max.x - m_ViewportRect.min.x, m_ViewportRect.max.y - m_ViewportRect.min.y };
 
         ImGuizmo::SetRect(windowMin.x, windowMin.y, windowMax.x, windowMax.y);
         ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
@@ -858,7 +869,7 @@ namespace origin
                 && !entity.HasComponent<LightComponent>()
                 && !entity.HasComponent<AudioComponent>();
 
-            bool snap = Input::Get().IsKeyPressed(KeyCode(Key::LeftShift));
+            bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
             ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
                 m_ImGuizmoOperation, static_cast<ImGuizmo::MODE>(m_GizmosMode), glm::value_ptr(transform), nullptr,
                 snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
@@ -1025,7 +1036,12 @@ namespace origin
             if (ImGui::ImageButton("projection_button", (void *)(uintptr_t)icon->GetID(), bt_size, ImVec2(0, 1), ImVec2(1, 0)))
             {
                 if (mode == ProjectionType::Perspective)
+                {
                     m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
+                    m_EditorCamera.SetYaw(80.0f);
+                    m_EditorCamera.SetPitch(0.0f);
+
+                }
                 else if (mode == ProjectionType::Orthographic)
                     m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
             }
@@ -1492,7 +1508,7 @@ namespace origin
 
         if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && !ImGuizmo::IsOver() && m_SceneHierarchyPanel->GetContext())
         {
-            const glm::vec2 viewportSize = m_SceneViewportBounds[1] - m_SceneViewportBounds[0];
+            const glm::vec2 viewportSize = m_ViewportRect.max - m_ViewportRect.min;
             const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };
 
             float closestT = std::numeric_limits<float>::max();
@@ -1540,17 +1556,37 @@ namespace origin
         return false;
     }
 
+    bool EditorLayer::OnMouseScroll(MouseScrolledEvent &e)
+    {
+        if (IsViewportHovered)
+        {
+            m_EditorCamera.OnMouseScroll(e.GetYOffset());
+        }
+
+        return false;
+    }
+
+    bool EditorLayer::OnMouseMove(MouseMovedEvent &e)
+    {
+        if (IsViewportHovered && IsViewportFocused)
+        {
+            const glm::vec2 &mouse_delta = Input::GetMouseClickDragDelta();
+            m_EditorCamera.OnMouseMove(mouse_delta);
+        }
+
+        return false;
+    }
+
     void EditorLayer::InputProcedure(Timestep time)
     {
-        if (m_SceneState == SceneState::Play || !(IsViewportHovered && IsViewportFocused)  || !m_SceneHierarchyPanel->GetContext())
+        if (m_SceneState == SceneState::Play || !(IsViewportHovered && IsViewportFocused) || !m_SceneHierarchyPanel->GetContext())
         {
             return;
         }
 
-        const glm::vec2 mouse { Input::Get().GetMouseX(), Input::Get().GetMouseY() };
-        const glm::vec2 delta = Input::Get().GetMouseDelta();
+        const glm::vec2 &delta = Input::GetMouseClickDragDelta();
 
-        if (Input::Get().IsMouseButtonPressed(Mouse::ButtonLeft))
+        if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
         {
             Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
 
@@ -1580,21 +1616,21 @@ namespace origin
                         {
                             Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
                             const auto &parent_tc = parent.GetComponent<TransformComponent>();
-                            velocity += inverse(parent_tc.WorldRotation) * glm::vec3(delta.x * orthographic_scale * 0.5f, -delta.y * orthographic_scale * 0.5f, 0.0f);
+                            velocity += inverse(parent_tc.WorldRotation) * glm::vec3(-delta.x * orthographic_scale * 0.5f, delta.y * orthographic_scale * 0.5f, 0.0f);
                         }
                         else
                         {
-                            velocity += glm::vec3(delta.x * orthographic_scale * 0.5f, -delta.y * orthographic_scale * 0.5f, 0.0f);
+                            velocity += glm::vec3(-delta.x * orthographic_scale * 0.5f, delta.y * orthographic_scale * 0.5f, 0.0f);
                         }
 
                         b2Body_SetLinearVelocity(body.BodyId, b2Vec2(velocity.x, velocity.y));
                     }
                     else
                     {
-                        if (Input::Get().IsKeyPressed(Key::LeftShift))
+                        if (Input::IsKeyPressed(Key::LeftShift))
                         {
                             float snap_value = 0.5f;
-                            if (Input::Get().IsKeyPressed(Key::LeftControl))
+                            if (Input::IsKeyPressed(Key::LeftControl))
                             {
                                 snap_value = 0.1f;
                             }
@@ -1603,11 +1639,11 @@ namespace origin
                             {
                                 Entity parent = m_ActiveScene->GetEntityWithUUID(idc.Parent);
                                 auto &parent_tc = parent.GetComponent<TransformComponent>();
-                                translation += inverse(parent_tc.WorldRotation) * glm::vec3(delta.x * orthographic_scale, -delta.y * orthographic_scale, 0.0f);
+                                translation += inverse(parent_tc.WorldRotation) * glm::vec3(-delta.x * orthographic_scale, delta.y * orthographic_scale, 0.0f);
                             }
                             else
                             {
-                                translation += glm::vec3(delta.x * orthographic_scale, -delta.y * orthographic_scale, 0.0f);
+                                translation += glm::vec3(-delta.x * orthographic_scale, delta.y * orthographic_scale, 0.0f);
                             }
 
                             tc.Translation.x = round(translation.x / snap_value) * snap_value;
@@ -1615,7 +1651,7 @@ namespace origin
                         }
                         else
                         {
-                            translation = glm::vec3(delta.x * orthographic_scale, -delta.y * orthographic_scale, 0.0f);
+                            translation = glm::vec3(-delta.x * orthographic_scale, delta.y * orthographic_scale, 0.0f);
 
                             if (selectedEntity.HasParent())
                             {
@@ -1639,8 +1675,8 @@ namespace origin
         OGN_PROFILER_INPUT();
 
         auto &app = Application::GetInstance();
-        const bool control = Input::Get().IsKeyPressed(Key::LeftControl) || Input::Get().IsKeyPressed(Key::RightControl);
-        const bool shift = Input::Get().IsKeyPressed(Key::LeftShift) || Input::Get().IsKeyPressed(Key::RightShift);
+        const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+        const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
         ImGuiIO& io = ImGui::GetIO();
         Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();

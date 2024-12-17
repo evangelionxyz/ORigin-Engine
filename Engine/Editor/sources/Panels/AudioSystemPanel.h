@@ -26,7 +26,6 @@ public:
     void OnEvent(Event &e) override;
 
 private:
-    Rect CalculateCanvas() override;
     void RenderAudioChannel(float &volume, ImDrawList *dl, const Rect &canvas_rect, i32 channel_index,
         float channel_width, const Margin &channel_margin, const Margin &gain_margin,
         const Margin &label_margin, const std::string &top_label, const std::string &bottom_label);
