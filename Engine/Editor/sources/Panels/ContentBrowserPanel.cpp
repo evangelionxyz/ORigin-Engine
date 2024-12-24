@@ -176,8 +176,6 @@ namespace origin
 
             if (node->Children.find(path) != node->Children.end())
                 node = &m_TreeNodes[node->Children[path]];
-
-
         }
 
         for (auto &[item, tree_node_index] : node->Children)
@@ -284,7 +282,7 @@ namespace origin
                 ImGui::EndPopup();
             }
 
-            if (m_Renaming && m_RenamePath == item)
+            if (m_Renaming && !m_Renamed && m_RenamePath == item)
             {
                 if (ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue))
                 {
@@ -329,8 +327,11 @@ namespace origin
 
                         // Serialize the updated asset registry
                         Project::GetActive()->GetEditorAssetManager()->SerializeAssetRegistry();
+
+                        m_Renamed = true;
                     }
-                    m_Renaming = false;
+
+
                 }
             }
             else
@@ -340,6 +341,13 @@ namespace origin
 
             ImGui::NextColumn();
             ImGui::PopID();
+
+            if (m_Renamed)
+            {
+                RefreshAssetTree();
+                m_Renamed = false;
+                break;
+            }
         }
 
         ImGui::Columns(1);
@@ -355,6 +363,7 @@ namespace origin
                     if (!std::filesystem::exists(folder))
                     {
                         std::filesystem::create_directory(folder);
+                        RefreshAssetTree();
                     }
                 }
 

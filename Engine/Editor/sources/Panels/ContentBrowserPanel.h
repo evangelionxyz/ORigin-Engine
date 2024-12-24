@@ -51,6 +51,7 @@ namespace origin
         std::vector<TreeNode> m_TreeNodes;
         std::filesystem::path m_RenamePath;
         bool m_Renaming = false;
+        bool m_Renamed = false;
         char m_RenameBuffer[256] = { 0 };
         std::map<std::filesystem::path, std::vector<std::filesystem::path>> m_AssetTree;
         int m_ThumbnailSize = 64;

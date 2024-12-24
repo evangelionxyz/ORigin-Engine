@@ -1670,7 +1670,7 @@ namespace origin
         }
     }
 
-    bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
+    bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
     {
         OGN_PROFILER_INPUT();
 
@@ -1678,7 +1678,7 @@ namespace origin
         const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
         const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
         Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
 
         switch (e.GetKeyCode())
@@ -1689,16 +1689,16 @@ namespace origin
             {
                 m_ActiveScene->UnlockMouse();
             }
-            else 
+            else
             {
-                if((IsViewportFocused))
+                if ((IsViewportFocused))
                     m_Gizmos->SetType(GizmoType::NONE);
             }
             break;
         }
         case Key::D:
         {
-            if (control && 
+            if (control &&
                 !(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate))
             {
                 OnDuplicateEntity();
