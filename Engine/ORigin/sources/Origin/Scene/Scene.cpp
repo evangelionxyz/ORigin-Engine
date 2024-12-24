@@ -263,6 +263,10 @@ namespace origin
 		OGN_PROFILER_SCENE();
 		m_Running = true;
 		ScriptEngine::SetSceneContext(this);
+
+        if (m_Physics) m_Physics->StartSimulation();
+        m_Physics2D->OnSimulationStart();
+
 		for (auto [e, sc] : m_Registry.view<ScriptComponent>().each())
 		{
 			Entity entity = { e, this };
@@ -302,12 +306,6 @@ namespace origin
             }
         });
 #endif
-
-        if (m_Physics)
-            m_Physics->StartSimulation();
-
-        m_Physics2D->OnSimulationStart();
-
 	}
 
 	void Scene::OnRuntimeStop()
@@ -333,8 +331,8 @@ namespace origin
 		}
 
         if (m_Physics) m_Physics->StopSimulation();
-
 		m_Physics2D->OnSimulationStop();
+
 		m_UIRenderer->Unload();
 	}
 

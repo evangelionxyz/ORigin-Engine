@@ -330,8 +330,6 @@ namespace origin
 
                         m_Renamed = true;
                     }
-
-
                 }
             }
             else

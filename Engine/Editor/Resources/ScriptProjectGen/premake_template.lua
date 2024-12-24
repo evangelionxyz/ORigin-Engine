@@ -31,3 +31,9 @@ workspace "{PROJECT_NAME}"
     filter "configurations:Dist"
         optimize "Full"
         symbols "Off"
+
+engine_path = os.getenv("ORiginEngine")
+script_core_lib = path.join(engine_path, "Engine/ScriptCore/premake5.lua")
+group "ORiginEngine"
+include(script_core_lib)
+group ""
