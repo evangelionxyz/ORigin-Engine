@@ -31,10 +31,6 @@ namespace origin
 
     struct SpriteSheetController
     {
-        glm::vec2 position { 0.0f, 0.0f };
-        glm::vec2 size { 16.0f, 16.0f };
-        Rect rect = Rect({ 1.0f, 1.0f }, { 1.0f, 1.0f });
-
         struct Corner
         {
             Rect top_left;
@@ -43,8 +39,8 @@ namespace origin
             Rect bottom_right;
         };
 
+        Rect rect = Rect({ 1.0f, 1.0f }, { 1.0f, 1.0f });
         Corner corner;
-
         ControllerCorner selected_corner = ControllerCorner::NONE;
     };
 

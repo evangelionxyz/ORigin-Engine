@@ -78,9 +78,9 @@ struct Rect
     const bool Contains(const glm::vec2 &p) const { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
     const bool Contains(const ImVec2 &p) const { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
 
-    void SetMin(const glm::vec2 &min) { this->min = min; }
+    void SetMin(const glm::vec2 &min_) { this->min = min_; }
     void SetMin(float x, float y) { min.x = x; min.y = y; }
-    void SetMax(const glm::vec2 &min) { this->max = max; }
+    void SetMax(const glm::vec2 &max_) { this->max = max_; }
     void SetMax(float x, float y) { max.x = x; max.y = y; }
 
     const glm::vec2 GetCenter() const 

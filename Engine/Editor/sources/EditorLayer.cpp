@@ -1507,16 +1507,13 @@ namespace origin
 
         if (e.Is(Mouse::ButtonLeft) && IsViewportHovered && !ImGuizmo::IsOver() && m_SceneHierarchyPanel->GetContext())
         {
-            const glm::vec2 viewportSize = m_ViewportRect.max - m_ViewportRect.min;
-            const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };
-
             f32 closestT = std::numeric_limits<f32>::max();
             Entity closestEntity = { entt::null, nullptr };
 
             auto ray_direction = glm::vec3(0.0f);
             auto ray_origin = glm::vec3(0.0f);
 
-            ray_direction = Math::GetRayFromScreenCoords(mouse, viewportSize,
+            ray_direction = Math::GetRayFromScreenCoords(m_ViewportMousePos, m_ViewportRect.GetSize(),
                                                         m_EditorCamera.GetProjectionMatrix(),
                                                         m_EditorCamera.GetViewMatrix(),
                                                         m_EditorCamera.IsPerspective(),

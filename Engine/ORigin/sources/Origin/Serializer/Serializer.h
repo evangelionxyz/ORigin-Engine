@@ -46,7 +46,7 @@ struct convert<origin::Rect>
 			return false;
 
 		rect.SetMin({ node[0].as<float>(), node[1].as<float>() });
-		rect.SetMin({ node[2].as<float>(), node[3].as<float>() });
+		rect.SetMax({ node[2].as<float>(), node[3].as<float>() });
 		return true;
 	}
 };

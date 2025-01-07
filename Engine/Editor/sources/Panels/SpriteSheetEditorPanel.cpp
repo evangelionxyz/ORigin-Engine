@@ -135,26 +135,13 @@ namespace origin
                 if (ImGui::Button("Add"))
                 {
                     SpriteSheetController control;
-                    control.size = glm::vec2(m_Camera.GetOrthoScale() * 0.25f);
-                    control.position = glm::vec2(0.0f); //glm::vec2(m_Camera.GetPosition());
-                    m_MoveTranslation = control.position;
+                    control.rect = Rect(-atlas_size / 2.0f, atlas_size / 2.0f);
+                    m_MoveTranslation = control.rect.GetCenter();
                     m_Controls.push_back(control);
                     m_SelectedIndex = static_cast<i32>(m_Controls.size()) - 1;
                 }
 
                 ImGui::Text("Atlas Size: %.2f, %.2f", atlas_size.x, atlas_size.y);
-
-                i32 offset = 0;
-                for (i32 i = 0; i < m_Controls.size(); i++)
-                {
-                    if (m_SelectedIndex == offset / 5)
-                    {
-                        auto &[position, size, rect, corner, selected_corner] = m_Controls[m_SelectedIndex];
-                        rect.min = { (position.x + (atlas_size.x - size.x) / 2.0f) /  atlas_size.x, (position.y + (atlas_size.y - size.y) / 2.0f) / atlas_size.y };
-                        rect.max = { (position.x + (atlas_size.x + size.x) / 2.0f) / atlas_size.x, (position.y + (atlas_size.y + size.y) / 2.0f) / atlas_size.y };
-                    }
-                    offset += 5;
-                }
 
                 constexpr f32 thumbnail_size = 60.0f;
                 constexpr f32 padding = 10.0f;
@@ -171,16 +158,23 @@ namespace origin
                 f32 diff = (f32)(thumbnail_size - thumbnailHeight);
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
 
-                offset = 0;
+                i32 offset = 0;
                 for (i32 i = 0; i < m_Controls.size(); i++)
                 {
-                    auto &[position, size, rect, corner, selected_corner] = m_Controls[i];
+                    auto &[rect, corner, selected_corner] = m_Controls[i];
+
                     ImGui::PushID(i);
-                    ImGui::ImageButton("control", texture, { thumbnail_size, thumbnail_size }, { rect.min.x, rect.max.y }, { rect.max.x, rect.min.y });
+
+                    const glm::vec2 &pos = rect.GetCenter();
+                    const glm::vec2 &size = rect.GetSize();
+
+                    ImVec2 uv0 = { (pos.x + (atlas_size.x - size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y - size.y) / 2.0f) / atlas_size.y };
+                    ImVec2 uv1 = { (pos.x + (atlas_size.x + size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y + size.y) / 2.0f) / atlas_size.y };
+                    ImGui::ImageButton("control", texture, { thumbnail_size, thumbnail_size }, { uv0.x, uv1.y }, { uv1.x, uv0.y });
 
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        m_MoveTranslation = m_Controls[i].position;
+                        m_MoveTranslation = rect.GetCenter();
                         m_SelectedIndex = i;
                     }
 
@@ -198,8 +192,8 @@ namespace origin
                     if (ImGui::IsItemHovered())
                     {
                         ImGui::BeginTooltip();
-                        ImGui::Text("Position: %f, %f ", position.x, position.y);
-                        ImGui::Text("Size: %f, %f ", size.x, size.y);
+                        ImGui::Text("Position: %f, %f ", rect.GetCenter().x, rect.GetCenter().x);
+                        ImGui::Text("Size: %f, %f ", rect.GetSize().x, rect.GetSize().x);
                         ImGui::Text("Min: %f, %f ", rect.min.x, rect.min.y);
                         ImGui::Text("Max: %f, %f ", rect.max.x, rect.max.y);
                         ImGui::EndTooltip();
@@ -252,7 +246,6 @@ namespace origin
         RenderCommand::ClearColor(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
         m_Framebuffer->Bind();
         RenderCommand::Clear();
-        m_Framebuffer->ClearAttachment(1, -1);
 
         const glm::vec2 &vp_size = m_ViewportRect.GetSize();
         if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification(); vp_size.x > 0.0f 
@@ -274,17 +267,12 @@ namespace origin
             Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { texX, texY, -0.1f }), m_Texture);
 
             i32 offset = 0;
-            for (auto & [position, size, rect, corner, selected_corner] : m_Controls)
+            for (auto & [rect, corner, selected_corner] : m_Controls)
             {
                 bool selected = m_SelectedIndex == offset / 5;
-                // Draw Rectangle Line
-                glm::mat4 tf = glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.8f })
-                    * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-                glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 0.1f) : glm::vec4(0.0f, 1.0f, 0.0f, 0.1f);
-                Renderer2D::DrawQuad(tf, col);
 
-                col = { 1.0f, 1.0f, 1.0f, 0.1f };
-                Renderer2D::DrawQuad(tf, col);
+                glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 0.1f) : glm::vec4(0.0f, 1.0f, 0.0f, 0.1f);
+                Renderer2D::DrawQuad(rect, col);
 
                 // Draw corner
                 if (selected)
@@ -294,32 +282,35 @@ namespace origin
 
                     auto red = glm::vec4(0.8f, 0.1f, 0.1f, 0.8f);
                     auto green = glm::vec4(0.1f, 0.8f, 0.1f, 0.8f);
-                    col = selected_corner == ControllerCorner::BOTTOM_LEFT ? green : red;
                     const f32 corner_size = 0.8f * ortho_size;
 
                     corner.top_left = Rect(
-                        glm::vec2(position.x - size.x / 2.0f - corner_size, position.y + size.y / 2.0f - corner_size),
-                        glm::vec2(position.x - size.x / 2.0f + corner_size, position.y + size.y / 2.0f + corner_size)
+                        glm::vec2(rect.min.x - corner_size, rect.max.y - corner_size),
+                        glm::vec2(rect.min.x + corner_size, rect.max.y + corner_size)
                     );
 
                     corner.top_right = Rect(
-                        glm::vec2(position.x + size.x / 2.0f - corner_size, position.y + size.y / 2.0f - corner_size),
-                        glm::vec2(position.x + size.x / 2.0f + corner_size, position.y + size.y / 2.0f + corner_size)
+                        glm::vec2(rect.max.x - corner_size, rect.max.y - corner_size),
+                        glm::vec2(rect.max.x + corner_size, rect.max.y + corner_size)
                     );
 
                     corner.bottom_left = Rect(
-                        glm::vec2(position.x - size.x / 2.0f - corner_size, position.y - size.y / 2.0f - corner_size),
-                        glm::vec2(position.x - size.x / 2.0f + corner_size, position.y - size.y / 2.0f + corner_size)
+                        glm::vec2(rect.min.x - corner_size, rect.min.y - corner_size),
+                        glm::vec2(rect.min.x + corner_size, rect.min.y + corner_size)
                     );
 
                     corner.bottom_right = Rect(
-                        glm::vec2(position.x + size.x / 2.0f - corner_size, position.y - size.y / 2.0f - corner_size),
-                        glm::vec2(position.x + size.x / 2.0f + corner_size, position.y - size.y / 2.0f + corner_size)
+                        glm::vec2(rect.max.x - corner_size, rect.min.y - corner_size),
+                        glm::vec2(rect.max.x + corner_size, rect.min.y + corner_size)
                     );
                     
+                    col = selected_corner == ControllerCorner::TOP_LEFT ? green : red;
                     Renderer2D::DrawQuad(corner.top_left, col);
+                    col = selected_corner == ControllerCorner::TOP_RIGHT ? green : red;
                     Renderer2D::DrawQuad(corner.top_right, col);
+                    col = selected_corner == ControllerCorner::BOTTOM_LEFT ? green : red;
                     Renderer2D::DrawQuad(corner.bottom_left, col);
+                    col = selected_corner == ControllerCorner::BOTTOM_RIGHT ? green : red;
                     Renderer2D::DrawQuad(corner.bottom_right, col);
                 }
                 offset += 5;
@@ -336,7 +327,7 @@ namespace origin
     {
         m_CurrentFilepath = filepath;
         m_SpriteSheet->Sprites.clear();
-        for (auto &[position, size, rect, corner, selected_corner] : m_Controls)
+        for (auto &[rect, corner, selected_corner] : m_Controls)
         {
             SpriteSheetData data;
             data.rect = rect;
@@ -353,16 +344,10 @@ namespace origin
         if (ret)
         {
             m_Texture = AssetManager::GetAsset<Texture2D>(m_SpriteSheet->GetTextureHandle());
-            const glm::vec2 atlas_size { m_Texture->GetWidth(), m_Texture->GetHeight() };
-
             for (const auto &[rect, TextureHandle] : m_SpriteSheet->Sprites)
             {
                 SpriteSheetController control;
                 control.rect = rect;
-                control.size.x = rect.max.x * atlas_size.x - rect.min.x * atlas_size.x;
-                control.size.y = rect.max.y * atlas_size.y - rect.min.y * atlas_size.y;
-                control.position.x = rect.min.x * atlas_size.x - (atlas_size.x - control.size.x) / 2.0f;
-                control.position.y = rect.min.y * atlas_size.y - (atlas_size.y - control.size.y) / 2.0f;
                 m_Controls.push_back(control);
             }
         }
@@ -390,25 +375,43 @@ namespace origin
             }
         }
 
+        auto ray_direction = glm::vec3(0.0f);
+        auto ray_origin = glm::vec3(0.0f);
+
+        ray_direction = Math::GetRayFromScreenCoords(m_ViewportMouse, m_ViewportRect.GetSize(),
+            m_Camera.GetProjectionMatrix(),
+            m_Camera.GetViewMatrix(),
+            m_Camera.IsPerspective(),
+            ray_origin);
+
         if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
         {
         	if (m_SelectedIndex >= 0 && !m_Controls.empty())
         	{
-                if (m_Controls[m_SelectedIndex].corner.top_left.Contains(m_ViewportMouse))
+                const glm::vec2 &center = m_Controls[m_SelectedIndex].corner.top_left.GetCenter();
+                if (m_Controls[m_SelectedIndex].corner.top_left.Contains(ray_origin))
                 {
+                    m_Controls[m_SelectedIndex].selected_corner = TOP_LEFT;
                     OGN_CORE_INFO("top left clicked");
                 }
-                else if (m_Controls[m_SelectedIndex].corner.top_right.Contains(m_ViewportMouse))
+                else if (m_Controls[m_SelectedIndex].corner.top_right.Contains(ray_origin))
                 {
+                    m_Controls[m_SelectedIndex].selected_corner = TOP_RIGHT;
                     OGN_CORE_INFO("top right clicked");
                 }
-                else if (m_Controls[m_SelectedIndex].corner.bottom_left.Contains(m_ViewportMouse))
+                else if (m_Controls[m_SelectedIndex].corner.bottom_left.Contains(ray_origin))
                 {
+                    m_Controls[m_SelectedIndex].selected_corner = BOTTOM_LEFT;
                     OGN_CORE_INFO("bottom left clicked");
                 }
-                else if (m_Controls[m_SelectedIndex].corner.bottom_left.Contains(m_ViewportMouse))
+                else if (m_Controls[m_SelectedIndex].corner.bottom_right.Contains(ray_origin))
                 {
+                    m_Controls[m_SelectedIndex].selected_corner = BOTTOM_RIGHT;
                     OGN_CORE_INFO("bottom right clicked");
+                }
+                else
+                {
+                    m_Controls[m_SelectedIndex].selected_corner = NONE;
                 }
         	}
             else if (m_SelectedIndex < 0 && !m_Controls.empty())
@@ -464,7 +467,7 @@ namespace origin
 
         if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && !m_Controls.empty() && IsViewportHovered && m_SelectedIndex >= 0)
         {
-            auto &[position, size, rect, corner, selected_corner] = m_Controls[m_SelectedIndex];
+            auto &[rect, corner, selected_corner] = m_Controls[m_SelectedIndex];
 
             const f32 viewport_height = m_Camera.GetViewportSize().y;
             const f32 orthographic_scale = m_Camera.GetOrthoScale() / viewport_height;
@@ -483,8 +486,10 @@ namespace origin
                 switch (selected_corner)
                 {
                 case NONE:
-                    position.x = std::round(m_MoveTranslation.x / snap_size) * snap_size;
-                    position.y = std::round(m_MoveTranslation.y / snap_size) * snap_size;
+                    rect.min.x += std::round(m_MoveTranslation.x / snap_size) * snap_size;
+                    rect.max.x += std::round(m_MoveTranslation.x / snap_size) * snap_size;
+                    rect.min.x += std::round(m_MoveTranslation.y / snap_size) * snap_size;
+                    rect.min.x += std::round(m_MoveTranslation.y / snap_size) * snap_size;
                     break;
                 default: break;
                 }
@@ -497,49 +502,46 @@ namespace origin
                 {
                     if (Input::IsKeyPressed(Key::X))
                     {
-                        position.x -= delta.x * orthographic_scale;
+                        rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                        rect.max.x -= delta.x * orthographic_scale / 2.0f;
                     }
                     else if (Input::IsKeyPressed(Key::Y))
                     {
-                        position.y += delta.y * orthographic_scale;
+                        rect.min.y += delta.y * orthographic_scale / 2.0f;
+                        rect.max.y += delta.y * orthographic_scale / 2.0f;
                     }
                     else
                     {
-                        position.x -= delta.x * orthographic_scale;
-                        position.y += delta.y * orthographic_scale;
+                        rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                        rect.max.x -= delta.x * orthographic_scale / 2.0f;
+
+                        rect.min.y += delta.y * orthographic_scale / 2.0f;
+                        rect.max.y += delta.y * orthographic_scale / 2.0f;
                     }
-                    break;
-                }
-                case TOP_RIGHT:
-                {
-                    position.x += delta.x * orthographic_scale / 2.0f;
-                    size.x += delta.x * orthographic_scale;
-                    position.y -= delta.y * orthographic_scale / 2.0f;
-                    size.y -= delta.y * orthographic_scale;
-                    break;
-                }
-                case BOTTOM_RIGHT:
-                {
-                    position.x += delta.x * orthographic_scale / 2.0f;
-                    size.x += delta.x * orthographic_scale;
-                    position.y -= delta.y * orthographic_scale / 2.0f;
-                    size.y += delta.y * orthographic_scale;
                     break;
                 }
                 case TOP_LEFT:
                 {
-                    position.x += delta.x * orthographic_scale / 2.0f;
-                    size.x -= delta.x * orthographic_scale;
-                    position.y -= delta.y * orthographic_scale / 2.0f;
-                    size.y -= delta.y * orthographic_scale;
+                    rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                    rect.max.y += delta.y * orthographic_scale / 2.0f;
+                    break;
+                }
+                case TOP_RIGHT:
+                {
+                    rect.max.x -= delta.x * orthographic_scale / 2.0f;
+                    rect.max.y += delta.y * orthographic_scale / 2.0f;
                     break;
                 }
                 case BOTTOM_LEFT:
                 {
-                    position.x += delta.x * orthographic_scale / 2.0f;
-                    size.x -= delta.x * orthographic_scale;
-                    position.y -= delta.y * orthographic_scale / 2.0f;
-                    size.y += delta.y * orthographic_scale;
+                    rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                    rect.min.y += delta.y * orthographic_scale / 2.0f;
+                    break;
+                }
+                case BOTTOM_RIGHT:
+                {
+                    rect.max.x -= delta.x * orthographic_scale / 2.0f;
+                    rect.min.y += delta.y * orthographic_scale / 2.0f;
                     break;
                 }
                 }
