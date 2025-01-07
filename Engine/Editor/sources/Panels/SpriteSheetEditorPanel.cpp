@@ -100,8 +100,7 @@ namespace origin
     {
         if (m_Open)
         {
-            ImGui::Begin("Sprite Sheet Editor", &m_Open, ImGuiWindowFlags_NoScrollbar
-                | ImGuiWindowFlags_NoScrollWithMouse);
+            ImGui::Begin("Sprite Sheet Editor", &m_Open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
             IsViewportFocused = ImGui::IsWindowFocused();
             IsViewportHovered = ImGui::IsWindowHovered();
@@ -135,8 +134,7 @@ namespace origin
                 if (ImGui::Button("Add"))
                 {
                     SpriteSheetController control;
-                    control.rect = Rect(-atlas_size / 2.0f, atlas_size / 2.0f);
-                    m_MoveTranslation = control.rect.GetCenter();
+                    control.rect = Rect(-atlas_size / 4.0f, atlas_size / 4.0f);
                     m_Controls.push_back(control);
                     m_SelectedIndex = static_cast<i32>(m_Controls.size()) - 1;
                 }
@@ -174,7 +172,6 @@ namespace origin
 
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        m_MoveTranslation = rect.GetCenter();
                         m_SelectedIndex = i;
                     }
 
@@ -386,6 +383,16 @@ namespace origin
 
         if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
         {
+            for (size_t i = 0; i < m_Controls.size(); ++i)
+            {
+                if (m_Controls[i].rect.Contains(ray_origin))
+                {
+                    m_SelectedIndex = i;
+                    m_Controls[i].selected_corner = NONE;
+                    break;
+                }
+            }
+
         	if (m_SelectedIndex >= 0 && !m_Controls.empty())
         	{
                 const glm::vec2 &center = m_Controls[m_SelectedIndex].corner.top_left.GetCenter();
@@ -414,10 +421,6 @@ namespace origin
                     m_Controls[m_SelectedIndex].selected_corner = NONE;
                 }
         	}
-            else if (m_SelectedIndex < 0 && !m_Controls.empty())
-            {
-
-            }
         }
 
         return false;
@@ -472,79 +475,54 @@ namespace origin
             const f32 viewport_height = m_Camera.GetViewportSize().y;
             const f32 orthographic_scale = m_Camera.GetOrthoScale() / viewport_height;
 
-            m_MoveTranslation.x -= delta.x * orthographic_scale;
-            m_MoveTranslation.y += delta.y * orthographic_scale;
-
-            if (Input::IsKeyPressed(Key::LeftShift))
+            switch (selected_corner)
             {
-                f32 snap_size = 0.5f;
-                if (Input::IsKeyPressed(Key::LeftControl))
+            case NONE:
+            {
+                if (Input::IsKeyPressed(Key::X))
                 {
-                    snap_size = 0.1f;
+                    rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                    rect.max.x -= delta.x * orthographic_scale / 2.0f;
                 }
+                else if (Input::IsKeyPressed(Key::Y))
+                {
+                    rect.min.y += delta.y * orthographic_scale / 2.0f;
+                    rect.max.y += delta.y * orthographic_scale / 2.0f;
+                }
+                else
+                {
+                    rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                    rect.max.x -= delta.x * orthographic_scale / 2.0f;
 
-                switch (selected_corner)
-                {
-                case NONE:
-                    rect.min.x += std::round(m_MoveTranslation.x / snap_size) * snap_size;
-                    rect.max.x += std::round(m_MoveTranslation.x / snap_size) * snap_size;
-                    rect.min.x += std::round(m_MoveTranslation.y / snap_size) * snap_size;
-                    rect.min.x += std::round(m_MoveTranslation.y / snap_size) * snap_size;
-                    break;
-                default: break;
+                    rect.min.y += delta.y * orthographic_scale / 2.0f;
+                    rect.max.y += delta.y * orthographic_scale / 2.0f;
                 }
+                break;
             }
-            else
+            case TOP_LEFT:
             {
-                switch (selected_corner)
-                {
-                case NONE:
-                {
-                    if (Input::IsKeyPressed(Key::X))
-                    {
-                        rect.min.x -= delta.x * orthographic_scale / 2.0f;
-                        rect.max.x -= delta.x * orthographic_scale / 2.0f;
-                    }
-                    else if (Input::IsKeyPressed(Key::Y))
-                    {
-                        rect.min.y += delta.y * orthographic_scale / 2.0f;
-                        rect.max.y += delta.y * orthographic_scale / 2.0f;
-                    }
-                    else
-                    {
-                        rect.min.x -= delta.x * orthographic_scale / 2.0f;
-                        rect.max.x -= delta.x * orthographic_scale / 2.0f;
-
-                        rect.min.y += delta.y * orthographic_scale / 2.0f;
-                        rect.max.y += delta.y * orthographic_scale / 2.0f;
-                    }
-                    break;
-                }
-                case TOP_LEFT:
-                {
-                    rect.min.x -= delta.x * orthographic_scale / 2.0f;
-                    rect.max.y += delta.y * orthographic_scale / 2.0f;
-                    break;
-                }
-                case TOP_RIGHT:
-                {
-                    rect.max.x -= delta.x * orthographic_scale / 2.0f;
-                    rect.max.y += delta.y * orthographic_scale / 2.0f;
-                    break;
-                }
-                case BOTTOM_LEFT:
-                {
-                    rect.min.x -= delta.x * orthographic_scale / 2.0f;
-                    rect.min.y += delta.y * orthographic_scale / 2.0f;
-                    break;
-                }
-                case BOTTOM_RIGHT:
-                {
-                    rect.max.x -= delta.x * orthographic_scale / 2.0f;
-                    rect.min.y += delta.y * orthographic_scale / 2.0f;
-                    break;
-                }
-                }
+                rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                rect.max.y += delta.y * orthographic_scale / 2.0f;
+                break;
+            }
+            case TOP_RIGHT:
+            {
+                rect.max.x -= delta.x * orthographic_scale / 2.0f;
+                rect.max.y += delta.y * orthographic_scale / 2.0f;
+                break;
+            }
+            case BOTTOM_LEFT:
+            {
+                rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                rect.min.y += delta.y * orthographic_scale / 2.0f;
+                break;
+            }
+            case BOTTOM_RIGHT:
+            {
+                rect.max.x -= delta.x * orthographic_scale / 2.0f;
+                rect.min.y += delta.y * orthographic_scale / 2.0f;
+                break;
+            }
             }
         }
     }

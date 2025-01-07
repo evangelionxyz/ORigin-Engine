@@ -82,8 +82,6 @@ namespace origin
         std::shared_ptr<Framebuffer> m_Framebuffer;
         std::shared_ptr<Texture2D> m_Texture;
         std::vector<SpriteSheetController> m_Controls;
-
-        glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
         std::filesystem::path m_CurrentFilepath;
         i32 m_SelectedIndex = 0;
     };
