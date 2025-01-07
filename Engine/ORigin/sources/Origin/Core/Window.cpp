@@ -13,15 +13,15 @@ namespace origin
 {
     static void GlfwErrorCallback(int errorCode, const char *description)
     {
-        OGN_CORE_ASSERT(false, "[glfw] [{0}]: {1}", errorCode, description);
+        OGN_CORE_ASSERT(false, "[glfw] [{}]: {}", errorCode, description);
     }
 
-    std::shared_ptr<Window> Window::Create(const char* title, uint32_t width, uint32_t height, bool maximized)
+    Ref<Window> Window::Create(const char* title, uint32_t width, uint32_t height, bool maximized)
     {
 #ifdef OGN_PLATFORM_WINDOWS
-        return std::make_shared<Win32Window>(title, width, height, maximized);
+        return CreateRef<Win32Window>(title, width, height, maximized);
 #elif OGN_PLATFORM_LINUX
-        return std::make_shared<LinuxWindow>(title, width, height, maximized);
+        return CreateRef<LinuxWindow>(title, width, height, maximized);
 #else
         OGN_CORE_ASSERT(false, "Unkown Platform");
         return nullptr;

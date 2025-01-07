@@ -5,12 +5,15 @@
 
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/AudioSource.h"
+#include "Origin/Audio/FmodSound.h"
+#include "Origin/Audio/FmodAudio.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Animation/Animation.h"
 #include "Origin/Physics/2D/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/MeshRenderer.h"
+#include "Origin/Renderer/Model.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
@@ -19,7 +22,10 @@
 #include "Lighting.h"
 #include "Entity.h"
 #include "ScriptableEntity.h"
-#include "Origin/Physics/PhysicsEngine.h"
+
+#include "Origin/Physics/Physics.hpp"
+#include "Origin/Physics/Jolt/JoltScene.hpp"
+#include "Origin/Physics/PhysX/PhysXScene.hpp"
 
 #include <glad/glad.h>
 
@@ -33,65 +39,86 @@ namespace origin
 	Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
-		m_Physics2D = std::make_shared<Physics2D>(this);
-		m_UIRenderer = std::make_shared<UIRenderer>();
+
+        if (Physics::GetPhysicsContext())
+        {
+            switch (Physics::GetAPI())
+            {
+            case PhysicsAPI::Jolt:
+            {
+                m_Physics = CreateRef<JoltScene>(this);
+                break;
+            }
+            case PhysicsAPI::PhysX:
+            {
+                m_Physics = CreateRef<PhysXScene>(this);
+                break;
+            }
+            }
+        }
+
+		m_Physics2D = CreateRef<Physics2D>(this);
+		m_UIRenderer = CreateRef<UIRenderer>();
 	}
 
-	std::shared_ptr<Scene> Scene::Copy(const std::shared_ptr<Scene> &other)
-	{
-		OGN_PROFILER_SCENE();
+    Scene::~Scene()
+    {
+    }
 
-		auto newScene = std::make_shared<Scene>();
-		newScene->m_Name = other->m_Name;
+    Ref<Scene> Scene::Copy(const Ref<Scene> &other)
+    {
+        OGN_PROFILER_SCENE();
 
-		newScene->m_ViewportWidth = other->m_ViewportWidth;
-		newScene->m_ViewportHeight = other->m_ViewportHeight;
+        auto newScene = CreateRef<Scene>();
+        newScene->m_Name = other->m_Name;
 
-		entt::registry &srcSceneRegistry = other->m_Registry;
-		entt::registry &dstSceneRegistry = newScene->m_Registry;
-		std::vector<std::pair<UUID, entt::entity>> enttStorage;
-		auto newEntity = Entity();
+        newScene->m_ViewportWidth = other->m_ViewportWidth;
+        newScene->m_ViewportHeight = other->m_ViewportHeight;
 
-		// create entities in new scene
-		const auto &idView = srcSceneRegistry.view<IDComponent>();
-		for (auto e : idView)
-		{
-			const auto &idc = srcSceneRegistry.get<IDComponent>(e);
-			const auto &name = srcSceneRegistry.get<TagComponent>(e).Tag;
-			newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, idc.Type, newScene.get());
+        entt::registry &srcSceneRegistry = other->m_Registry;
+        entt::registry &dstSceneRegistry = newScene->m_Registry;
+        std::vector<std::pair<UUID, entt::entity>> enttStorage;
+        auto newEntity = Entity();
 
-			auto &eIDC = newEntity.GetComponent<IDComponent>();
-			eIDC.Parent = idc.Parent;
+        // create entities in new scene
+        const auto &idView = srcSceneRegistry.view<IDComponent>();
+        for (auto e : idView)
+        {
+            const auto &idc = srcSceneRegistry.get<IDComponent>(e);
+            const auto &name = srcSceneRegistry.get<TagComponent>(e).Tag;
+            newEntity = EntityManager::CreateEntityWithUUID(idc.ID, name, idc.Type, newScene.get());
+
+            auto &eIDC = newEntity.GetComponent<IDComponent>();
+            eIDC.Parent = idc.Parent;
             eIDC.Children = std::move(idc.Children);
 
-			enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
-		}
+            enttStorage.push_back({ idc.ID, static_cast<entt::entity>(newEntity) });
+        }
 
-		EntityManager::CopyComponent(AllComponents {}, dstSceneRegistry, srcSceneRegistry, enttStorage);
-		return newScene;
-	}
+        EntityManager::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttStorage);
+        return newScene;
+    }
 
     Entity Scene::GetEntityWithUUID(UUID uuid)
-	{
-		OGN_PROFILER_SCENE();
+    {
+        OGN_PROFILER_SCENE();
 
-		for (auto e : m_EntityStorage)
-		{
-			if (e.first == uuid)
-			{
-				return { e.second, this };
-			}
-		}
+        for (auto e : m_EntityStorage)
+        {
+            if (e.first == uuid)
+            {
+                return { e.second, this };
+            }
+        }
 
-		return Entity { entt::null, nullptr };
-	}
+        return Entity{ entt::null, nullptr };
+    }
 
 	Entity Scene::FindEntityByName(std::string_view name)
 	{
 		OGN_PROFILER_SCENE();
 
-		auto view = m_Registry.view<TagComponent>();
-		for (auto entity : view)
+        for (const auto view = m_Registry.view<TagComponent>(); auto entity : view)
 		{
 			const TagComponent &tc = view.get<TagComponent>(entity);
 			if (tc.Tag == name)
@@ -110,12 +137,11 @@ namespace origin
         {
             if (idc.Parent)
             {
-                auto parent = GetEntityWithUUID(idc.Parent);
-                if (parent)
+                if (auto parent = GetEntityWithUUID(idc.Parent))
                 {
                     auto &ptc = parent.GetComponent<TransformComponent>();
-                    glm::vec3 rotatedLocalPos = ptc.WorldRotation * tc.Translation;
-                    tc.WorldTranslation = rotatedLocalPos + ptc.WorldTranslation;
+                    glm::vec3 rotated_local_pos = ptc.WorldRotation * tc.Translation;
+                    tc.WorldTranslation = rotated_local_pos + ptc.WorldTranslation;
                     tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
                     tc.WorldScale = tc.Scale;
                 }
@@ -130,9 +156,9 @@ namespace origin
 
         for (auto [e, tc, mesh] : m_Registry.view<TransformComponent, MeshComponent>().each())
         {
-            if (mesh.Data)
+            if (mesh.HModel)
             {
-                mesh.AAnimator.UpdateAnimation(ts, mesh.PlaybackSpeed);
+                mesh.AAnimator.UpdateAnimation(ts, 1.0f /*speed*/);
             }
         }
 
@@ -147,15 +173,13 @@ namespace origin
 
     void Scene::Update(Timestep ts)
 	{
-        const auto &view = m_Registry.view<TransformComponent>();
-        for (auto e : view)
+        for (const auto &view = m_Registry.view<TransformComponent>(); auto e : view)
         {
             Entity entity = { e, this };
             auto &tc = entity.GetComponent<TransformComponent>();
             if (entity.HasComponent<SpriteAnimationComponent>())
             {
-                auto &ac = entity.GetComponent<SpriteAnimationComponent>();
-                if (ac.State->IsCurrentAnimationExists())
+                if (const auto &ac = entity.GetComponent<SpriteAnimationComponent>(); ac.State->IsCurrentAnimationExists())
                 {
                     ac.State->OnUpdateRuntime(ts);
                 }
@@ -170,18 +194,11 @@ namespace origin
             if (entity.HasComponent<AudioComponent>())
             {
                 auto &ac = entity.GetComponent<AudioComponent>();
-                if (std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+                if (Ref<FmodSound> fmod_sound = AssetManager::GetAsset<FmodSound>(ac.Audio))
                 {
-                    audio->SetVolume(ac.Volume);
-                    audio->SetPitch(ac.Pitch);
-                    audio->SetPanning(ac.Panning);
-                    audio->SetLoop(ac.Looping);
-                    audio->SetSpatial(ac.Spatializing);
-                    if (ac.Spatializing)
-                    {
-                        audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
-                        audio->SetPosition(tc.Translation);
-                    }
+                    fmod_sound->SetVolume(ac.Volume);
+                    fmod_sound->SetPitch(ac.Pitch);
+                    fmod_sound->SetPan(ac.Panning);
                 }
             }
 
@@ -199,7 +216,7 @@ namespace origin
 		// Update Scripts
         m_Registry.view<ScriptComponent>().each([this, time = ts](auto entityID, auto &sc)
         {
-            Entity entity { entityID, this };
+            const Entity entity { entityID, this };
             ScriptEngine::OnUpdateEntity(entity, time);
         });
 
@@ -209,13 +226,15 @@ namespace origin
         });
     }
 
-    void Scene::UpdatePhysics(Timestep ts)
+    void Scene::UpdatePhysics(Timestep ts) const
     {
-        PhysicsEngine::Simulate(ts, this);
+        if (m_Physics)
+            m_Physics->Simulate(ts);
+
         m_Physics2D->Simulate(ts);
     }
 
-	void Scene::OnUpdateRuntime(Timestep ts)
+	void Scene::OnUpdateRuntime(const Timestep ts)
 	{
 		OGN_PROFILER_SCENE();
 
@@ -244,6 +263,10 @@ namespace origin
 		OGN_PROFILER_SCENE();
 		m_Running = true;
 		ScriptEngine::SetSceneContext(this);
+
+        if (m_Physics) m_Physics->StartSimulation();
+        m_Physics2D->OnSimulationStart();
+
 		for (auto [e, sc] : m_Registry.view<ScriptComponent>().each())
 		{
 			Entity entity = { e, this };
@@ -261,7 +284,7 @@ namespace origin
 
 		for (auto [e, ac] : m_Registry.view<AudioComponent>().each())
 		{
-			const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
+			const Ref<FmodSound> &audio = AssetManager::GetAsset<FmodSound>(ac.Audio);
 			if (ac.PlayAtStart)
 			{
 				audio->Play();
@@ -283,9 +306,6 @@ namespace origin
             }
         });
 #endif
-
-        PhysicsEngine::OnSimulateStart(this);
-        m_Physics2D->OnSimulationStart();
 	}
 
 	void Scene::OnRuntimeStop()
@@ -304,14 +324,15 @@ namespace origin
 		for (auto &e : audioView)
 		{
 			auto &ac = audioView.get<AudioComponent>(e);
-			if (const std::shared_ptr<AudioSource> &audio = AssetManager::GetAsset<AudioSource>(ac.Audio))
+			if (const Ref<FmodSound> &fmod_sound = AssetManager::GetAsset<FmodSound>(ac.Audio))
 			{
-				audio->Stop();
+				fmod_sound->Stop();
 			}
 		}
 
-		PhysicsEngine::OnSimulateStop(this);
+        if (m_Physics) m_Physics->StopSimulation();
 		m_Physics2D->OnSimulationStop();
+
 		m_UIRenderer->Unload();
 	}
 
@@ -365,8 +386,8 @@ namespace origin
                         {
                             auto &anim = ac.State->GetAnimation();
                             src.Texture = anim->GetCurrentFrame().Handle;
-                            src.Min = anim->GetCurrentFrame().Min;
-                            src.Max = anim->GetCurrentFrame().Max;
+                            src.UV0 = anim->GetCurrentFrame().Min;
+                            src.UV1 = anim->GetCurrentFrame().Max;
                         }
                     }
                 }
@@ -404,11 +425,10 @@ namespace origin
                 {
                     if (camera.IsPerspective())
                     {
-                        Entity primaryCam = GetPrimaryCameraEntity();
-                        if (primaryCam)
+                        if (Entity primary_cam = GetPrimaryCameraEntity())
                         {
-                            const auto &cc = primaryCam.GetComponent<CameraComponent>().Camera;
-                            const auto &ccTC = primaryCam.GetComponent<TransformComponent>();
+                            const auto &cc = primary_cam.GetComponent<CameraComponent>().Camera;
+                            const auto &ccTC = primary_cam.GetComponent<TransformComponent>();
                             const float ratio = cc.GetAspectRatio();
                             glm::vec2 scale = glm::vec2(tc.WorldScale.x, tc.WorldScale.y * ratio);
                             transform = glm::translate(glm::mat4(1.0f), { tc.WorldTranslation.x, tc.WorldTranslation.y, 0.0f })
@@ -429,11 +449,11 @@ namespace origin
                 }
                 else
                 {
-                    glm::vec3 centerOffset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
-                    glm::vec3 scaledOffset = tc.WorldScale * centerOffset;
-                    glm::vec3 rotatedOffset = glm::toMat3(tc.WorldRotation) * scaledOffset;
+                    glm::vec3 center_offset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
+                    glm::vec3 scaled_offset = tc.WorldScale * center_offset;
+                    glm::vec3 rotated_offset = glm::toMat3(tc.WorldRotation) * scaled_offset;
 
-                    text.Position = tc.WorldTranslation - rotatedOffset;
+                    text.Position = tc.WorldTranslation - rotated_offset;
 
                     transform = glm::translate(glm::mat4(1.0f), text.Position)
                         * glm::toMat4(tc.WorldRotation)
@@ -449,35 +469,26 @@ namespace origin
 
         Renderer2D::End();
 
-        const auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
-        for (auto [e, tc, mesh] : meshView.each())
+        const auto mesh_view = m_Registry.view<TransformComponent, MeshComponent>();
+        for (const auto &[e, tc, mesh] : mesh_view.each())
         {
             // Render
-            if (mesh.Data && tc.Visible)
+            if (mesh.HModel && tc.Visible)
             {
                 Shader *shader = Renderer::GetShader("AnimatedMesh").get();
                 shader->Enable();
 
-                glActiveTexture(0);
-                //mesh.Data->DiffuseTexture->Bind(0);
-                //shader->SetInt("uTexture", mesh.Data->DiffuseTexture->GetTextureID());
+                Ref<Model> model = AssetManager::GetAsset<Model>(mesh.HModel);
+                // TODO: Render meshes
 
-                shader->SetMatrix("viewProjection", camera.GetViewProjection());
-                shader->SetMatrix("model", tc.GetTransform());
-
-                /*shader->SetMatrix("boneTransforms", 
-                    mesh.AAnimator.m_FinalBoneMatrices[0], 
-                    mesh.AAnimator.m_FinalBoneMatrices.size());*/
-
-                mesh.Data->vertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.Data->indices.size()), GL_UNSIGNED_INT, nullptr);
+                /*mesh.Data->vertex_array->Bind();
+                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.Data->indices.size()), GL_UNSIGNED_INT, nullptr);*/
 
                 shader->Disable();
             }
         }
 
         const auto &lightView = m_Registry.view<TransformComponent, LightComponent>();
-        const auto &sMeshView = m_Registry.view<TransformComponent, StaticMeshComponent>();
         for (auto &li : lightView)
         {
             const auto &[lightTC, lc] = lightView.get<TransformComponent, LightComponent>(li);
@@ -491,19 +502,20 @@ namespace origin
             
             MeshRenderer::AttachShadow(lc.Light->GetShadow().DepthMapID);
 
+#if 0
             MeshRenderer::Begin(camera);
             for (auto e : sMeshView)
             {
-                const auto [tc, mc] = sMeshView.get<TransformComponent, StaticMeshComponent>(e);
+                const auto [tc, mc] = sMeshView.get<TransformComponent, Mesh>(e);
                 if (!tc.Visible)
                     continue;
 
-                std::shared_ptr<Material> material;
+                Ref<Material> material;
                 if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
                 else material = Renderer::GetMaterial("Mesh");
                 switch (mc.mType)
                 {
-                case StaticMeshComponent::Type::Cube:
+                case MeshComponent::Type::Cube:
                     MeshRenderer::DrawCube(tc.GetTransform(), material.get());
                     break;
                 case StaticMeshComponent::Type::Sphere:
@@ -515,12 +527,13 @@ namespace origin
                 case StaticMeshComponent::Type::Default:
                     if (mc.Data)
                     {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray);
+                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertex_array);
                     }
                     break;
                 }
             }
             MeshRenderer::End();
+#endif
         }
 
 	}
@@ -560,10 +573,10 @@ namespace origin
                     {
                         if (ac.State->GetAnimation()->HasFrame())
                         {
-                            std::shared_ptr<SpriteAnimation> &anim = ac.State->GetAnimation();
+                            Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
                             sc.Texture = anim->GetCurrentFrame().Handle;
-                            sc.Min = anim->GetCurrentFrame().Min;
-                            sc.Max = anim->GetCurrentFrame().Max;
+                            sc.UV0 = anim->GetCurrentFrame().Min;
+                            sc.UV1 = anim->GetCurrentFrame().Max;
                         }
                     }
                 }
@@ -597,58 +610,6 @@ namespace origin
             Renderer2D::End();
 
             // 3D Objects
-            //if(entity.HasComponent<MeshComponent>())
-            //{
-            //    MeshComponent &mesh = entity.GetComponent<MeshComponent>();
-            //    if (mesh.Data && tc.Visible)
-            //    {
-            //        Shader *shader = Renderer::GetShader("AnimatedMesh").get();
-            //        shader->Enable();
-            //        glActiveTexture(0);
-            //        Renderer::WhiteTexture->Bind(0);
-            //        shader->SetInt("uTexture", Renderer::WhiteTexture->GetTextureID());
-            //        shader->SetMatrix("viewProjection", camera.GetViewProjection());
-            //        shader->SetMatrix("model", tc.GetTransform());
-
-            //        //auto transforms = mesh.AAnimator.GetFinalBoneMatrices();
-            //        //shader->SetMatrix("boneTransforms", transforms[0], transforms.size());
-
-            //        mesh.Data->vertexArray->Bind();
-            //        glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
-
-            //        shader->Disable();
-            //    }
-            //}
-
-            if (entity.HasComponent<StaticMeshComponent>())
-            {
-                StaticMeshComponent &mc = entity.GetComponent<StaticMeshComponent>();
-                std::shared_ptr<Material> material;
-                if (mc.HMaterial) material = AssetManager::GetAsset<Material>(mc.HMaterial);
-                else material = Renderer::GetMaterial("Mesh");
-
-                MeshRenderer::Begin(camera);
-                switch (mc.mType)
-                {
-                case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(tc.GetTransform(), material.get());
-                    break;
-                case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), material.get());
-                    break;
-                case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), material.get());
-                    break;
-                case StaticMeshComponent::Type::Default:
-                    if (mc.Data)
-                    {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), tc.GetTransform(), mc.Data->vertexArray);
-                    }
-                    break;
-                }
-                MeshRenderer::End();
-            }
-
 #pragma endregion
 
 #pragma region SECOND_PASS
@@ -692,10 +653,10 @@ namespace origin
                     {
                         if (ac.State->GetAnimation()->HasFrame())
                         {
-                            std::shared_ptr<SpriteAnimation> &anim = ac.State->GetAnimation();
+                            Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
                             sc.Texture = anim->GetCurrentFrame().Handle;
-                            sc.Min = anim->GetCurrentFrame().Min;
-                            sc.Max = anim->GetCurrentFrame().Max;
+                            sc.UV0 = anim->GetCurrentFrame().Min;
+                            sc.UV1 = anim->GetCurrentFrame().Max;
                         }
                     }
                 }
@@ -740,37 +701,6 @@ namespace origin
                     glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
                 }
             }*/
-
-            MeshRenderer::Begin(camera, outlineShader);
-            if (entity.HasComponent<StaticMeshComponent>())
-            {
-                StaticMeshComponent &mc = entity.GetComponent<StaticMeshComponent>();
-                switch (mc.mType)
-                {
-                case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(scaledTransform, glm::vec4(1.0f));
-                    break;
-                case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(scaledTransform, glm::vec4(1.0f));
-                    break;
-                case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(scaledTransform, glm::vec4(1.0f));
-                    break;
-                case StaticMeshComponent::Type::Default:
-                    if (mc.Data)
-                    {
-                        MeshRenderer::DrawMesh(camera.GetViewProjection(), scaledTransform, mc.Data->vertexArray, outlineShader);
-                    }
-                    break;
-                }
-                MeshRenderer::End();
-            }
-
-            outlineShader->Disable();
-
-            glStencilMask(0xFF);
-            glStencilFunc(GL_ALWAYS, 0, 0xFF);
-            glEnable(GL_DEPTH_TEST);
 #pragma endregion
         }
 
@@ -798,40 +728,6 @@ namespace origin
             glm::mat4 lightViewProjection = lightProjection * lightView;
 			lc.Light->GetShadow().ViewProjection = lightProjection * lightView;
 
-            std::shared_ptr<Shader> &shader = lc.Light->GetShadow().GetDepthShader();
-            shader->Enable();
-
-            lc.Light->GetShadow().BindFBO();
-
-            MeshRenderer::Begin(lc.Light->GetShadow().ViewProjection);
-            shader->SetMatrix("viewProjection", lc.Light->GetShadow().ViewProjection);
-
-			const auto &view = m_Registry.view<TransformComponent, StaticMeshComponent>();
-            for (auto &e : view)
-            {
-                const auto &[tc, mc] = view.get<TransformComponent, StaticMeshComponent>(e);
-                if (!tc.Visible)
-                {
-                    continue;
-                }
-
-                switch (mc.mType)
-                {
-                case StaticMeshComponent::Type::Cube:
-                    MeshRenderer::DrawCube(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
-                    break;
-                case StaticMeshComponent::Type::Sphere:
-                    MeshRenderer::DrawSphere(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
-                    break;
-                case StaticMeshComponent::Type::Capsule:
-                    MeshRenderer::DrawCapsule(tc.GetTransform(), { 1.0f, 1.0f, 1.0f, 1.0f });
-                    break;
-                }
-            }
-			
-			MeshRenderer::End();
-			lc.Light->GetShadow().UnbindFBO();
-			shader->Disable();
 		}
 	}
 
@@ -943,13 +839,13 @@ namespace origin
     void Scene::LockMouse()
     {
 		m_IsFocus = true;
-		Input::Get().MouseHide();
+        Input::SetCursoreMode(CursorMode::Lock);
     }
 
     void Scene::UnlockMouse()
     {
         m_IsFocus = false;
-        Input::Get().MouseUnHide();
+        Input::SetCursoreMode(CursorMode::Default);
     }
 
     void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
@@ -963,7 +859,7 @@ namespace origin
 			auto &cc = view.get<CameraComponent>(e);
 			if (cc.Primary)
 			{
-				cc.Camera.SetViewportSize(static_cast<float>(width), static_cast<float>(height));
+				cc.Camera.SetViewportSize(width, height);
 				const glm::ivec2 &vp = cc.Camera.GetViewportSize();
 				const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
 				m_UIRenderer->SetViewportSize(vp.x, vp.y, ortho.x, ortho.y);
@@ -992,24 +888,10 @@ namespace origin
     OGN_ADD_COMPONENT(TransformComponent);
     OGN_ADD_COMPONENT(UIComponent);
     OGN_ADD_COMPONENT(AudioListenerComponent);
-
-    template<>
-    void Scene::OnComponentAdded<AudioComponent>(Entity entity, AudioComponent &component)
-    {
-    }
-
-    template<>
-    void Scene::OnComponentAdded<SpriteRenderer2DComponent>(Entity entity, SpriteRenderer2DComponent &component)
-    {
-    }
-
-    template<>
-    void Scene::OnComponentAdded<SpriteAnimationComponent>(Entity entity, SpriteAnimationComponent &component)
-    {
-    }
-
+	OGN_ADD_COMPONENT(AudioComponent);
+	OGN_ADD_COMPONENT(SpriteRenderer2DComponent);
+	OGN_ADD_COMPONENT(SpriteAnimationComponent);
 	OGN_ADD_COMPONENT(MeshComponent);
-	OGN_ADD_COMPONENT(MeshRendererComponent);
 	OGN_ADD_COMPONENT(TextComponent);
 	OGN_ADD_COMPONENT(CircleRendererComponent);
 	OGN_ADD_COMPONENT(NativeScriptComponent);
@@ -1026,7 +908,7 @@ namespace origin
 	{
 		if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
 		{
-            component.Camera.SetViewportSize(static_cast<float>(m_ViewportWidth), static_cast<float>(m_ViewportHeight));
+            component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 	}
 
@@ -1037,11 +919,6 @@ namespace origin
     }
 
 	template<>
-	void Scene::OnComponentAdded(Entity entity, StaticMeshComponent &component)
-	{
-	}
-
-    template<>
     void Scene::OnComponentAdded(Entity entity, SphereColliderComponent &component)
     {
         if(!entity.HasComponent<RigidbodyComponent>()) entity.AddComponent<RigidbodyComponent>();

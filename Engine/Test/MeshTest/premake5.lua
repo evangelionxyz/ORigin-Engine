@@ -36,7 +36,7 @@ project "MeshTest"
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
-
+        "%{IncludeDir.PhysX}",
     }
 
     defines {

@@ -11,8 +11,8 @@ namespace origin
 	class SpriteSheetSerializer
 	{
 	public:
-		static bool Serialize(const std::filesystem::path &filepath, const std::shared_ptr<SpriteSheet> &spriteSheet);
-		static bool Deserialize(const std::filesystem::path &filepath, std::shared_ptr<SpriteSheet> &spriteSheet);
+        static bool Serialize(const std::filesystem::path &filepath, const Ref<SpriteSheet> &spriteSheet);
+		static bool Deserialize(const std::filesystem::path &filepath, Ref<SpriteSheet> &spriteSheet);
 	};
 }
 

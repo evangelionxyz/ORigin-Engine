@@ -1,7 +1,7 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "Editor"
-    kind "WindowedApp"
+    kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
@@ -10,11 +10,18 @@ project "Editor"
     targetdir (outputDir)
     objdir (intOutputDir)
 
-    links {"ORigin"}
+    links {
+        "ORigin",
+        "NvPhysX",
+        "NvPhysXCommon",
+        "NvPhysXCooking",
+        "NvPhysXExtensions",
+    }
 
     files {
         "sources/**.cpp",
         "sources/**.h",
+        "sources/**.hpp",
         "**.h",
     }
 
@@ -37,6 +44,7 @@ project "Editor"
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
+        "%{IncludeDir.PhysX}",
     }
 
     defines {
@@ -45,6 +53,9 @@ project "Editor"
     }
 
     buildoptions { "/utf-8" }
+    
+	 
+
 
     -- ///////////////////////////////////////////
     -- Windows
@@ -58,6 +69,7 @@ project "Editor"
             "NV_USE_STATIC_WINCRT",
             "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
         }
+
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
     -- ///////////////////////////////////////////
@@ -102,6 +114,7 @@ project "Editor"
         runtime "Release"
         optimize "on"
         symbols "off"
+        kind "WindowedApp"
         defines {
             "GLFW_INCLUDE_NONE",
             "OGN_DISTRIBUTION", "NDEBUG"

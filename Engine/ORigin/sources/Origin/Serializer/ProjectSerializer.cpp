@@ -7,6 +7,8 @@
 #include "Origin/Core/Assert.h"
 #include "Origin/Profiler/Profiler.h"
 
+#include "Origin/Physics/Physics.hpp"
+
 #include <stdint.h>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
@@ -42,6 +44,7 @@ namespace origin
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
 				out << YAML::Key << "AssetRegistry" << YAML::Value << config.AssetRegistry.string();
 				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
+				out << YAML::Key << "PhysicsAPI" << YAML::Value << PhysicsApiTostring(config.PhysicsApi);
 				out << YAML::EndMap;
 			}
 			out << YAML::EndMap;
@@ -56,7 +59,7 @@ namespace origin
 			m_Project->GetEditorAssetManager()->SerializeAssetRegistry();
 		}
 
-		OGN_CORE_INFO("[Project Serialzer] Project serialized in {0}", filepath.string());
+		OGN_CORE_INFO("[Project Serialzer] Project serialized in {}", filepath.string());
 		return true;
 	}
 
@@ -80,6 +83,7 @@ namespace origin
 		config.AssetDirectory = projectNode["AssetDirectory"].as<std::string>();
 		config.AssetRegistry = projectNode["AssetRegistry"].as<std::string>();
 		config.ScriptModulePath = projectNode["ScriptModulePath"].as<std::string>();
+		config.PhysicsApi = PhysicsApiFromString(projectNode["PhysicsAPI"].as<std::string>());
 
 		OGN_CORE_INFO("ProjectSerializer::Deserialize {}", filepath.string());
 		OGN_CORE_INFO("	Name: {}", config.Name);

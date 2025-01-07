@@ -2,7 +2,7 @@
 
 #include "../EditorLayer.h"
 
-#include "UIEditor.h"
+#include "UIEditorPanel.h"
 #include "SceneHierarchyPanel.h"
 #include "entt/entt.hpp"
 
@@ -21,8 +21,6 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace origin {
-
-    static bool IsDragging = false;
 
     SceneHierarchyPanel::SceneHierarchyPanel(const std::shared_ptr<Scene> &scene)
     {
@@ -95,10 +93,31 @@ namespace origin {
         }
     }
 
-    void SceneHierarchyPanel::OnImGuiRender()
+    void SceneHierarchyPanel::OnEvent(Event &e)
+    {
+        EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SceneHierarchyPanel::OnMouseButtonPressed));
+        dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SceneHierarchyPanel::OnKeyPressed));
+    }
+
+    bool SceneHierarchyPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+    {
+        return false;
+    }
+
+    bool SceneHierarchyPanel::OnKeyPressed(KeyPressedEvent &e)
+    {
+        return false;
+    }
+
+    void SceneHierarchyPanel::Render()
     {
         EntityHierarchyPanel();
         EntityPropertiesPanel();
+    }
+
+    void SceneHierarchyPanel::OnUpdate(float delta_time)
+    {
     }
 
     void SceneHierarchyPanel::EntityHierarchyPanel()
@@ -170,12 +189,6 @@ namespace origin {
                 {
                     if (ImGui::MenuItem("Empty Mesh"))
                         SetSelectedEntity(EntityManager::CreateMesh("Empty Mesh", m_Scene.get()));
-                    if (ImGui::MenuItem("Cube"))
-                        SetSelectedEntity(EntityManager::CreateCube("Cube", m_Scene.get()));
-                    if (ImGui::MenuItem("Sphere"))
-                        SetSelectedEntity(EntityManager::CreateSphere("Sphere", m_Scene.get()));
-                    if (ImGui::MenuItem("Capsule"))
-                        SetSelectedEntity(EntityManager::CreateCapsule("Capsule", m_Scene.get()));
                     ImGui::EndMenu();
                 }
 
@@ -228,19 +241,18 @@ namespace origin {
             if (entity.HasComponent<UIComponent>())
             {
                 auto &ui = entity.GetComponent<UIComponent>();
-                UIEditor::Get()->SetContext(m_Scene.get());
-                UIEditor::Get()->SetActive(&ui);
+                UIEditorPanel::GetInstance()->SetContext(m_Scene.get());
+                UIEditorPanel::GetInstance()->SetActive(&ui);
             }
         }
 
         bool is_deleting = false;
         if (!m_Scene->IsRunning())
         {
-            ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
+            ImGui::PushID(reinterpret_cast<void*>(static_cast<uint64_t>(static_cast<uint32_t>(entity))));
             if (ImGui::BeginPopupContextItem(entity.GetTag().c_str()))
             {
-                Entity e = EntityContextMenu();
-                if (e.GetScene())
+                if (const Entity e = EntityContextMenu(); e.GetScene())
                 {
                     EntityManager::AddChild(entity, e, m_Scene.get());
                     SetSelectedEntity(e);
@@ -287,7 +299,7 @@ namespace origin {
 
         if (!is_deleting)
         {
-            ImGui::PushID((void *)(uint64_t)(uint32_t)entity);
+            ImGui::PushID(reinterpret_cast<void*>(static_cast<uint64_t>(static_cast<uint32_t>(entity))));
             ImGui::TableNextColumn();
             ImGui::TextWrapped(Utils::EntityTypeToString(entity.GetType()).c_str());
             ImGui::TableNextColumn();
@@ -356,10 +368,12 @@ namespace origin {
             std::string search = "Search Component";
             char searchBuffer[256];
             strncpy(searchBuffer, search.c_str(), sizeof(searchBuffer) - 1);
+
             if (ImGui::InputText("##SearchComponent", searchBuffer, sizeof(searchBuffer)))
             {
                 search = std::string(searchBuffer);
             }
+
             DisplayAddComponentEntry<ScriptComponent>("C# Script");
             DisplayAddComponentEntry<CameraComponent>("Camera");
             DisplayAddComponentEntry<UIComponent>("UI");
@@ -378,7 +392,6 @@ namespace origin {
             ImGui::Separator();
             DisplayAddComponentEntry<LightComponent>("Lighting");
             DisplayAddComponentEntry<MeshComponent>("Mesh");
-            DisplayAddComponentEntry<StaticMeshComponent>("Static Mesh");
             DisplayAddComponentEntry<RigidbodyComponent>("Rigidbody");
             DisplayAddComponentEntry<BoxColliderComponent>("Box Collider");
             DisplayAddComponentEntry<SphereColliderComponent>("Sphere Collider");
@@ -391,114 +404,14 @@ namespace origin {
 
         DrawComponent<TransformComponent>("Transform", entity, [&](auto &transform)
         {
-            bool changed = false;
-
-            if (!IsDragging && !ImGuizmo::IsUsing())
-            {
-                auto &temp = ComponentsCommand<TransformComponent>::GetTempComponent();
-                temp = transform;
-            }
-
-            changed |= UI::DrawVec3Control("Translation", transform.Translation);
+            UI::DrawVec3Control("Translation", transform.Translation);
             glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(transform.Rotation));
-            bool rotationChanged = UI::DrawVec3Control("Rotation", eulerRotation, 1.0f);
-            if (rotationChanged)
+            if (UI::DrawVec3Control("Rotation", eulerRotation, 1.0f))
             {
                 glm::vec3 rotationRadians = glm::radians(eulerRotation);
                 transform.Rotation = glm::quat(rotationRadians);
-                changed = true;
             }
-            changed |= UI::DrawVec3Control("Scale", transform.Scale, 0.01f, 1.0f);
-
-            if (changed && !IsDragging)
-            {
-                CommandManager::Instance().ExecuteCommand(
-                    std::make_unique<ComponentsCommand<TransformComponent>>(transform, 
-                    ComponentsCommand<TransformComponent>::GetTempComponent()));
-            }
-
-            IsDragging = changed;
-        });
-
-        DrawComponent<StaticMeshComponent>("Static Mesh", entity, [&](auto &component)
-        {
-            ImVec2 buttonSize = { 100.0f, 25.0f };
-
-            std::string modelButtonLabel = "Drop Model";
-
-            if (component.HMesh)
-            {
-                auto &filepath = Project::GetActive()->GetEditorAssetManager()->GetFilepath(component.HMesh);
-                modelButtonLabel = filepath.stem().string();
-            }
-
-            // Model Button
-            ImGui::Button(modelButtonLabel.c_str(), buttonSize);
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                {
-                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                    if (AssetManager::GetAssetType(handle) == AssetType::StaticMesh)
-                    {
-                        component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<StaticMeshData>(handle);
-                        component.mType = StaticMeshComponent::Type::Default;
-                    }
-                    else
-                    {
-                        OGN_CORE_WARN("Wrong asset type!");
-                    }
-                }
-                ImGui::EndDragDropTarget();
-            }
-
-            std::string materialLabel = "Default Material";
-
-            std::shared_ptr<Material> material;
-            if (component.HMaterial)
-            {
-                material = AssetManager::GetAsset<Material>(component.HMaterial);
-                if (material)
-                {
-                    materialLabel = material->GetName();
-                }
-                else
-                {
-                    materialLabel = "Invalid";
-                }
-            }
-            else
-            {
-                material = Renderer::GetMaterial("Mesh");
-                materialLabel = material->GetName();
-            }
-
-            // Material Button
-            ImGui::SameLine();
-            ImGui::Button(materialLabel.c_str(), buttonSize);
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                {
-                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                    if (AssetManager::GetAssetType(handle) == AssetType::Material)
-                    {
-                        component.HMaterial= handle;
-                    }
-                    else
-                    {
-                        OGN_CORE_WARN("Wrong asset type!");
-                    }
-                }
-                ImGui::EndDragDropTarget();
-            }
-
-            if (material)
-            {
-                ImGui::ColorEdit4("Color", glm::value_ptr(material->Color));
-                UI::DrawVec2Control("Tiling", material->TilingFactor, 0.25f, 1.0f);
-            }
+            UI::DrawVec3Control("Scale", transform.Scale, 0.01f, 1.0f);
         });
 
         DrawComponent<MeshComponent>("Mesh", entity, [&](auto &component)
@@ -514,25 +427,10 @@ namespace origin {
                     AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
                     if (AssetManager::GetAssetType(handle) == AssetType::Mesh)
                     {
-                        component.HMesh = handle;
-                        component.Data = AssetManager::GetAsset<MeshData>(handle);
-
-                        if (component.Data)
-                        {
-                            /*if (!component.Data->animations.empty())
-                            {
-                                component.AAnimator = Animator(&component.Data->animations[0]);
-                            }*/
-                        }
-                        else
-                        {
-                            OGN_CORE_WARN("Asset is not valid");
-                            PUSH_CONSOLE_WARNING("Asset is not valid");
-                        }
+                        component.HModel = handle;
                     }
                     if (AssetManager::GetAssetType(handle) == AssetType::Texture)
                     {
-                       // component.Data->diffuseTexture = AssetManager::GetAsset<Texture2D>(handle);
                     }
                     else
                     {
@@ -542,55 +440,37 @@ namespace origin {
 
                 ImGui::EndDragDropTarget();
             }
-
-            /*if (component.AAnimator.HasAnimation())
-            {
-                UI::DrawFloatControl("Playback Speed", &component.PlaybackSpeed, 0.025f, 0.0f, 1000.0f, 1.0f);
-                if (ImGui::SliderInt("Index", &component.AnimationIndex, 0, static_cast<i32>(component.Data->animations.size()) - 1))
-                {
-                    if (component.AnimationIndex >= 0 && component.AnimationIndex < component.Data->animations.size())
-                        component.AAnimator.PlayAnimation(&component.Data->animations[component.AnimationIndex]);
-                }
-            }*/
         });
 
         DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
         {
             if(ImGui::Button("Edit"))
             {
-                UIEditor::Get()->SetActive(&component);
+                UIEditorPanel::GetInstance()->SetActive(&component);
             }
         });
 
         DrawComponent<CameraComponent>("Camera", entity, [](auto &component)
         {
-            bool changed = false;
-            if (!IsDragging)
-            {
-                auto &temp = ComponentsCommand<CameraComponent>::GetTempComponent();
-                temp = component;
-            }
-
             auto &camera = component.Camera;
             UI::DrawCheckbox("Primary", &component.Primary);
 
             const char* projectionType[2] = { "Perspective", "Orthographic" };
             const char* currentProjectionType = projectionType[static_cast<int>(camera.GetProjectionType())];
 
-            bool isSelected = false;
+            bool is_selected = false;
             if (ImGui::BeginCombo("Projection", currentProjectionType))
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    isSelected = currentProjectionType == projectionType[i];
-                    if (ImGui::Selectable(projectionType[i], isSelected))
+                    is_selected = currentProjectionType == projectionType[i];
+                    if (ImGui::Selectable(projectionType[i], is_selected))
                     {
                         currentProjectionType = projectionType[i];
                         component.Camera.SetProjectionType(static_cast<ProjectionType>(i));
-                        changed = true;
                     }
 
-                    if (isSelected)
+                    if (is_selected)
                         ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
@@ -603,15 +483,14 @@ namespace origin {
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    isSelected = currentAspectRatioType == aspectRatioType[i];
-                    if (ImGui::Selectable(aspectRatioType[i], isSelected))
+                    is_selected = currentAspectRatioType == aspectRatioType[i];
+                    if (ImGui::Selectable(aspectRatioType[i], is_selected))
                     {
                         currentAspectRatioType = aspectRatioType[i];
                         camera.SetAspectRatioType(static_cast<AspectRatioType>(i));
-                        changed = true;
                     }
 
-                    if (isSelected)
+                    if (is_selected)
                         ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
@@ -623,21 +502,18 @@ namespace origin {
                 if (ImGui::DragFloat("FOV", &perspectiveFov, 0.1f, 0.01f, 10000.0f))
                 {
                     camera.SetFov(glm::radians(perspectiveFov));
-                    changed = true;
                 }
 
                 float perspectiveNearClip = camera.GetNear();
                 if (ImGui::DragFloat("Near Clip", &perspectiveNearClip, 0.1f))
                 {
                     camera.SetNear(perspectiveNearClip);
-                    changed = true;
                 }
 
                 float perspectiveFarClip = camera.GetFar();
                 if (ImGui::DragFloat("Far Clip", &perspectiveFarClip, 0.1f))
                 {
                     camera.SetFar(perspectiveFarClip);
-                    changed = true;
                 }
             }
 
@@ -647,32 +523,20 @@ namespace origin {
                 if (ImGui::DragFloat("Ortho Scale", &orthoScale, 0.1f, 1.0f, 100.0f))
                 {
                     camera.SetOrthoScale(orthoScale);
-                    changed = true;
                 }
 
                 float orthoNearClip = camera.GetOrthoNear();
                 if (ImGui::DragFloat("Near Clip", &orthoNearClip, 0.1f, -1.0f, 10.0f))
                 {
                     camera.SetOrthoNear(orthoNearClip);
-                    changed = true;
                 }
 
                 float orthoFarClip = camera.GetOrthoFar();
                 if (ImGui::DragFloat("Far Clip", &orthoFarClip, 0.1f, 10.0f, 100.0f))
                 {
-                    changed = true;
                     camera.SetOrthoFar(orthoFarClip);
                 }
             }
-
-            if (changed && !IsDragging)
-            {
-                CommandManager::Instance().ExecuteCommand(
-                    std::make_unique<ComponentsCommand<CameraComponent>>(component,
-                    ComponentsCommand<CameraComponent>::GetTempComponent()));
-            }
-
-            IsDragging = changed;
         });
 
         DrawComponent<SpriteAnimationComponent>("Sprite Animation", entity, [](auto &component)
@@ -687,7 +551,7 @@ namespace origin {
             {
                 std::string label = "None";
 
-                bool isAudioValid = false;
+                bool is_audio_valid = false;
                 ImGui::Text("Audio Source");
                 ImGui::SameLine();
                 if (component.Audio != 0)
@@ -696,7 +560,7 @@ namespace origin {
                     {
                         const AssetMetadata& metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(component.Audio);
                         label = metadata.Filepath.filename().string();
-                        isAudioValid = true;
+                        is_audio_valid = true;
                     }
                     else
                     {
@@ -728,12 +592,12 @@ namespace origin {
                     ImGui::EndDragDropTarget();
                 }
 
-                if (isAudioValid == false)
+                if (is_audio_valid == false)
                     return;
 
-                std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(component.Audio);
+                Ref<FmodSound> fmod_sound = AssetManager::GetAsset<FmodSound>(component.Audio);
 
-                if (audio->IsLoaded)
+                if (fmod_sound)
                 {
                     auto &name = component.Name;
                     char buffer[256];
@@ -743,36 +607,21 @@ namespace origin {
                     if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
                     {
                         name = std::string(buffer);
-                        audio->SetName(name.c_str());
+                        fmod_sound->SetName(name.c_str());
                     }
-                    if (UI::DrawCheckbox("Allow Overlap", &component.Overlapping))
-                    {
-                        if (component.Overlapping)
-                        {
-                            audio->ActivateOverlapping();
-                        }
-                        else
-                        {
-                            audio->DeactivateOverlapping();
-                        }
-                    }
+                    
                     UI::DrawCheckbox("Play At Start", &component.PlayAtStart);
                     UI::DrawCheckbox("Looping", &component.Looping);
                     UI::DrawFloatControl("Volume", &component.Volume, 0.025f, 0.0f, 1.0f, 1.0f);
                     UI::DrawFloatControl("Pitch", &component.Pitch, 0.025f, 0.0f, 1.0f, 1.0f);
                     UI::DrawFloatControl("Panning", &component.Panning, 0.025f, -1.0f, 1.0f, 0.0f);
-                    float sizeX = ImGui::GetContentRegionAvail().x;
-                    if (ImGui::Button("Play", { sizeX, 0.0f })) audio->Play();
-                    if (ImGui::Button("Pause", { sizeX, 0.0f })) audio->Pause();
-                    if (ImGui::Button("Stop", { sizeX, 0.0f })) audio->Stop();
-                    ImGui::Separator();
-                    UI::DrawCheckbox("Spatialize", &component.Spatializing);
 
-                    if (component.Spatializing)
-                    {
-                        UI::DrawFloatControl("Min Distance", &component.MinDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
-                        UI::DrawFloatControl("Max Distance", &component.MaxDistance, 0.1f, 0.0f, 10000.0f, 0.0f);
-                    }
+                    float sizeX = ImGui::GetContentRegionAvail().x;
+                    if (ImGui::Button("Play", { sizeX, 0.0f })) fmod_sound->Play();
+                    if (ImGui::Button("Pause", { sizeX, 0.0f })) fmod_sound->Pause();
+                    if (ImGui::Button("Resume", { sizeX, 0.0f })) fmod_sound->Resume();
+                    if (ImGui::Button("Stop", { sizeX, 0.0f })) fmod_sound->Stop();
+                    ImGui::Separator();
                 }
             });
 
@@ -854,8 +703,8 @@ namespace origin {
                             if (AssetManager::GetAssetType(handle) == AssetType::Texture)
                             {
                                 component.Texture = handle;
-                                component.Min = glm::vec2(0.0f);
-                                component.Max = glm::vec2(1.0f);
+                                component.UV0 = glm::vec2(0.0f);
+                                component.UV1 = glm::vec2(1.0f);
                             }
                             else
                                 OGN_CORE_WARN("Wrong asset type!");
@@ -863,9 +712,13 @@ namespace origin {
                         else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
                         {
                             SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-                            component.Texture = data.TextureHandle;
-                            component.Min = data.Min;
-                            component.Max = data.Max;
+                            component.Texture = data.texture_handle;
+
+                            const glm::vec2 &pos = data.rect.GetCenter();
+                            const glm::vec2 &size = data.rect.GetSize();
+
+                            component.UV0 = { (pos.x + (data.atlas_size.x - size.x) / 2.0f) / data.atlas_size.x, (pos.y + (data.atlas_size.y - size.y) / 2.0f) / data.atlas_size.y };
+                            component.UV1 = { (pos.x + (data.atlas_size.x + size.x) / 2.0f) / data.atlas_size.x, (pos.y + (data.atlas_size.y + size.y) / 2.0f) / data.atlas_size.y };
                         }
                         ImGui::EndDragDropTarget();
                     }
@@ -876,8 +729,8 @@ namespace origin {
                         if (UI::DrawButton("X"))
                         {
                             component.Texture = 0;
-                            component.Min = glm::vec2(0.0f);
-                            component.Max = glm::vec2(1.0f);
+                            component.UV0 = glm::vec2(0.0f);
+                            component.UV1 = glm::vec2(1.0f);
                         }
                     }
                 });
@@ -899,14 +752,14 @@ namespace origin {
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        bool isSelected = currentLightTypeString == lightTypeString[i];
-                        if (ImGui::Selectable(lightTypeString[i], isSelected))
+                        bool is_selected = currentLightTypeString == lightTypeString[i];
+                        if (ImGui::Selectable(lightTypeString[i], is_selected))
                         {
                             currentLightTypeString = lightTypeString[i];
                             component.Light->Type = static_cast<LightingType>(i);
                         }
 
-                        if (isSelected)
+                        if (is_selected)
                             ImGui::SetItemDefaultFocus();
                     }
                     ImGui::EndCombo();
@@ -973,13 +826,13 @@ namespace origin {
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    bool isSelected = currentBodyTypeString == bodyTypeString[i];
-                    if (ImGui::Selectable(bodyTypeString[i], isSelected))
+                    bool is_selected = currentBodyTypeString == bodyTypeString[i];
+                    if (ImGui::Selectable(bodyTypeString[i], is_selected))
                     {
                         currentBodyTypeString = bodyTypeString[i];
                         component.Type = static_cast<Rigidbody2DComponent::BodyType>(i);
                     }
-                    if (isSelected) ImGui::SetItemDefaultFocus();
+                    if (is_selected) ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
             }
@@ -1084,19 +937,19 @@ namespace origin {
             const char *motionQuality[2] = { "Discrete", "LinearCast" };
             const char *currentMotionQuality = motionQuality[static_cast<int>(component.MotionQuality)];
 
-            bool isSelected = false;
+            bool is_selected = false;
             if (ImGui::BeginCombo("Motion Quality", currentMotionQuality))
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    isSelected = currentMotionQuality == motionQuality[i];
-                    if (ImGui::Selectable(motionQuality[i], isSelected))
+                    is_selected = currentMotionQuality == motionQuality[i];
+                    if (ImGui::Selectable(motionQuality[i], is_selected))
                     {
                         currentMotionQuality = motionQuality[i];
                         component.MotionQuality = static_cast<RigidbodyComponent::EMotionQuality>(i);
                     }
 
-                    if (isSelected)
+                    if (is_selected)
                     {
                         ImGui::SetItemDefaultFocus();
                     }
@@ -1168,7 +1021,7 @@ namespace origin {
         DrawComponent<ScriptComponent>("C# Script", entity, [entity, scene = m_Scene](auto &component) mutable
             {
                 bool scriptClassExist = ScriptEngine::EntityClassExists(component.ClassName);
-                bool isSelected = false;
+                bool is_selected = false;
 
                 if (!scriptClassExist)
                 {
@@ -1183,13 +1036,13 @@ namespace origin {
                 {
                     for (int i = 0; i < scriptStorage.size(); i++)
                     {
-                        isSelected = currentScriptClasses == scriptStorage[i];
-                        if (ImGui::Selectable(scriptStorage[i].c_str(), isSelected))
+                        is_selected = currentScriptClasses == scriptStorage[i];
+                        if (ImGui::Selectable(scriptStorage[i].c_str(), is_selected))
                         {
                             currentScriptClasses = scriptStorage[i];
                             component.ClassName = scriptStorage[i];
                         }
-                        if (isSelected) ImGui::SetItemDefaultFocus();
+                        if (is_selected) ImGui::SetItemDefaultFocus();
                     }
                     ImGui::EndCombo();
                 }
@@ -1197,7 +1050,7 @@ namespace origin {
                 if (ImGui::Button("Detach"))
                 {
                     component.ClassName = "Detached";
-                    isSelected = false;
+                    is_selected = false;
                 }
 
                 bool detached = component.ClassName == "Detached";
@@ -1526,12 +1379,6 @@ namespace origin {
             {
                 if (ImGui::MenuItem("Empty Mesh"))
                     entity = EntityManager::CreateMesh("Empty Mesh", m_Scene.get());
-                if (ImGui::MenuItem("Cube"))
-                    entity = EntityManager::CreateCube("Cube", m_Scene.get());
-                if (ImGui::MenuItem("Sphere"))
-                    entity = EntityManager::CreateSphere("Sphere", m_Scene.get());
-                if (ImGui::MenuItem("Capsule"))
-                    entity = EntityManager::CreateCapsule("Capsule", m_Scene.get());
                 ImGui::EndMenu();
             }
 
@@ -1566,32 +1413,30 @@ namespace origin {
     template<typename T, typename UIFunction>
     void SceneHierarchyPanel::DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction)
     {
-        constexpr ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen
+        constexpr ImGuiTreeNodeFlags tree_node_flags = ImGuiTreeNodeFlags_DefaultOpen
             | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth
             | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
         if (entity.HasComponent<T>())
         {
             auto &component = entity.GetComponent<T>();
-            ImVec2 contentRegionAvailabel = ImGui::GetContentRegionAvail();
+            const ImVec2 content_region_available = ImGui::GetContentRegionAvail();
 
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
             ImGui::Separator();
-            bool open = ImGui::TreeNodeEx((void *)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+            const bool open = ImGui::TreeNodeEx(reinterpret_cast<void*>(typeid(T).hash_code()), tree_node_flags, name.c_str());
             ImGui::PopStyleVar();
 
-            ImGui::SameLine(contentRegionAvailabel.x - 24.0f);
-            ImTextureID texId = (void *)(uintptr_t)(EditorLayer::Get().m_UITextures.at("plus")->GetTextureID());
-            if (ImGui::ImageButton("component_more_button", texId, { 14.0f, 14.0f }))
+            ImGui::SameLine(content_region_available.x - 24.0f);
+            const ImTextureID tex_id = reinterpret_cast<void*>(static_cast<uintptr_t>(EditorLayer::Get().m_UITextures.at("plus")->GetID()));
+            if (ImGui::ImageButton("component_more_button", tex_id, { 14.0f, 14.0f }))
                 ImGui::OpenPopup("Component Settings");
 
-            bool componentRemoved = false;
+            bool component_removed = false;
             if (ImGui::BeginPopup("Component Settings"))
             {
                 if (ImGui::MenuItem("Remove component"))
-                {
-                    componentRemoved = true;
-                }
+                    component_removed = true;
 
                 ImGui::EndPopup();
             }
@@ -1602,10 +1447,8 @@ namespace origin {
                 ImGui::TreePop();
             }
 
-            if (componentRemoved)
-            {
+            if (component_removed)
                 entity.RemoveComponent<T>();
-            }
         }
     }
 }

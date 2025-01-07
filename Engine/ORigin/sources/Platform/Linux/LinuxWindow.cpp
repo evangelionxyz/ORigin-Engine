@@ -7,7 +7,8 @@
 #include "Origin/Core/AppEvent.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Asset/AssetImporter.h"
-#include "Platform/Vulkan/VulkanContext.h"
+
+#include "Platform/Vulkan/VulkanContext.hpp"
 
 #include <stb_image.h>
 

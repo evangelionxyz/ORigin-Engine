@@ -17,23 +17,32 @@ struct FmodSound;
 
 class FmodAudio
 {
+private:
+    FmodAudio() = default;
+    ~FmodAudio() = default;
 public:
-    FmodAudio();
-    ~FmodAudio();
+    static void SetMasterVolume(float volume);
+    static void MuteMaster(bool mute);
 
-    void SetMasterVolume(float volume) const;
-    void MuteMaster(bool mute) const;
-
-    void Update(float delta_time) const;
+    static void Init();
+    static void Shutdown();
+    
+    static void Update(float delta_time);
+    
+    static FMOD::ChannelGroup *CreateChannelGroup(const std::string &name);
+    static std::unordered_map<std::string, FMOD::ChannelGroup *> GetChannelGroupMap();
+    static FMOD::ChannelGroup *GetChannelGroup(const std::string &name);
     static FmodAudio &GetInstance();
     static FMOD::System *GetFmodSystem();
-    static FMOD::ChannelGroup *GetFmodChannelGroup();
+    static FMOD::ChannelGroup *GetMasterChannel();
+    static float GetMasterVolume();
     static void InsertFmodSound(const std::string &name, const Ref<FmodSound>& sound);
     static void RemoveFmodSound(const std::string &name);
 
 private:
     FMOD::System *m_System;
     FMOD::ChannelGroup *m_MasterGroup;
+    std::unordered_map<std::string, FMOD::ChannelGroup *> m_ChannelGroups;
     std::unordered_map<std::string, Ref<FmodSound>> m_SoundMap;
 
     FMOD_VECTOR listenerPos;

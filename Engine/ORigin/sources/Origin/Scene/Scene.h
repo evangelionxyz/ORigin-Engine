@@ -17,12 +17,15 @@ namespace origin
 {
     class Entity;
     class Physics2D;
+    class PhysicsSceneBase;
 
     class Scene : public Asset
     {
     public:
         Scene();
-        static std::shared_ptr<Scene> Copy(const std::shared_ptr<Scene> &other);
+        ~Scene();
+
+        static Ref<Scene> Copy(const Ref<Scene> &other);
 
         Entity GetPrimaryCameraEntity();
         Entity GetEntityWithUUID(UUID uuid);
@@ -43,7 +46,7 @@ namespace origin
 
         void OnUpdateEditor(const Camera &camera, Timestep time, entt::entity selectedID);
 
-        void OnViewportResize(const uint32_t width, const uint32_t height);
+        void OnViewportResize(const u32 width, const u32 height);
         void OnRenderShadow();
 
         void SetFocus(bool focus);
@@ -56,11 +59,13 @@ namespace origin
         std::vector<std::pair<UUID, entt::entity>> &GetEntityMap() { return m_EntityStorage; }
         const std::string &GetName() const { return m_Name; }
         void SetName(const std::string &name) { m_Name = name; }
-        std::shared_ptr<UIRenderer> GetUIRenderer() { return m_UIRenderer; }
-        const std::shared_ptr<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
+        Ref<UIRenderer> GetUIRenderer() { return m_UIRenderer; }
+
+        const Ref<PhysicsSceneBase> &GetPhysics() const { return m_Physics; }
+        const Ref<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
         
-        uint32_t GetWidth() { return m_ViewportWidth; }
-        uint32_t GetHeight() { return m_ViewportHeight; }
+        u32 GetWidth() { return m_ViewportWidth; }
+        u32 GetHeight() { return m_ViewportHeight; }
 
         static AssetType GetStaticType() { return AssetType::Scene; }
         AssetType GetType() const override { return GetStaticType(); }
@@ -68,7 +73,7 @@ namespace origin
 
         void Update(Timestep ts);
         void UpdateScripts(Timestep ts);
-        void UpdatePhysics(Timestep ts);
+        void UpdatePhysics(Timestep ts) const;
 
         void RenderScene(const Camera &camera);
         void RenderStencilScene(const Camera &camera, entt::entity selectedId);
@@ -83,12 +88,15 @@ namespace origin
         void OnComponentAdded(Entity entity, T &component);
         entt::registry m_Registry {};
         std::string m_Name = "untitled";
-        std::shared_ptr<UIRenderer> m_UIRenderer;
-        std::shared_ptr<Physics2D> m_Physics2D;
+        Ref<UIRenderer> m_UIRenderer;
+        Ref<Physics2D> m_Physics2D;
+
+        Ref<PhysicsSceneBase> m_Physics;
+
         glm::vec4 m_GridColor = glm::vec4(1.0f);
         std::vector<std::pair<UUID, entt::entity>> m_EntityStorage;
-        uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
-        uint32_t m_GameViewportWidth = 0, m_GameViewportHeight = 0;
+        u32 m_ViewportWidth = 0, m_ViewportHeight = 0;
+        u32 m_GameViewportWidth = 0, m_GameViewportHeight = 0;
 
         bool m_Running = false;
         bool m_Paused = false;
@@ -101,8 +109,11 @@ namespace origin
         friend class Gizmos;
         friend class SceneSerializer;
         friend class SceneHierarchyPanel;
+
         friend class Physics2D;
-        friend class PhysicsEngine;
+
+        friend class PhysXScene;
+        friend class JoltScene;
     };
 }
 

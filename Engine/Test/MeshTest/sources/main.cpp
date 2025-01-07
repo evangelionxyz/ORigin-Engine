@@ -39,9 +39,9 @@ int main()
 {
     auto logger = Log();
     logger.PrintMessage("Hello World");
-    Ref<StaticModel> model = CreateRef<StaticModel>("data/barbarian.glb");
+    Ref<Model> model = CreateRef<Model>("data/barbarian.glb");
     for (auto& m : model->GetMeshes())
     {
-        logger.PrintMessage(m->Name);
+        logger.PrintMessage(m->name);
     }
 }

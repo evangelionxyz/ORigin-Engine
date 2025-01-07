@@ -22,6 +22,7 @@ workspace "OR1"
     ThirdPartyProjectFiles = "%{THIRD_PARTY_DIR}/ProjectFiles"
     ThirdPartyOutputdir    = "%{BUILD_DIR}/%{cfg.buildcfg}/Binaries/ThirdParty"
     ThirdPartyIntOutputdir = "%{BUILD_DIR}/%{cfg.buildcfg}/Objs/ThirdParty/%{prj.name}"
+    PhysXDir               = "%{THIRD_PARTY_DIR}/nvphysx"
     
     include "dependencies/dependencies.lua"
 

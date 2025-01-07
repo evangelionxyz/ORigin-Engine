@@ -4,7 +4,7 @@
 #include "GraphicsContext.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLContext.h"
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/Vulkan/VulkanContext.hpp"
 
 #ifdef OGN_PLATFORM_WINDOWS
     #include "Platform/DX11/DX11Context.h"
@@ -12,28 +12,28 @@
 
 namespace origin
 {
-    std::shared_ptr<GraphicsContext> GraphicsContext::s_Instance = nullptr;
+    Ref<GraphicsContext> GraphicsContext::s_Instance = nullptr;
 
-    std::shared_ptr<GraphicsContext> GraphicsContext::Create()
+    Ref<GraphicsContext> GraphicsContext::Create()
     {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None:    OGN_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
             case RendererAPI::API::OpenGL: 
             {
-                s_Instance = std::make_shared<OpenGLContext>();
+                s_Instance = CreateRef<OpenGLContext>();
                 return s_Instance;
             }
             case RendererAPI::API::Vulkan:
             {
-                s_Instance = std::make_shared<VulkanContext>();
+                s_Instance = CreateRef<VulkanContext>();
                 return s_Instance;
             }
 #ifdef OGN_PLATFORM_WINDOWS
             case RendererAPI::API::DX11: 
             {
-                s_Instance = std::make_shared<DX11Context>();
-                return std::make_unique<DX11Context>();
+                s_Instance = CreateRef<DX11Context>();
+                return s_Instance;
             }
 #endif
         }

@@ -1,8 +1,9 @@
 // Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "VulkanShader.h"
-#include "VulkanContext.h"
+#include "VulkanShader.hpp"
+#include "VulkanContext.hpp"
+#include "VulkanWrapper.hpp"
 
 namespace origin
 {
@@ -27,13 +28,17 @@ namespace origin
             create_info.stage  = (VkShaderStageFlagBits)Shader::GetVulkanShaderStage(stage);
             create_info.module = shader_module;
             create_info.pName  = "main";
+
             m_Stages.push_back(create_info);
-            vkDestroyShaderModule(context->m_Device, shader_module, nullptr);
+            m_Modules.push_back(shader_module);
         }
     }
 
     VulkanShader::~VulkanShader()
     {
+        const VulkanContext *context = VulkanContext::GetInstance();
+        for (auto &module : m_Modules)
+        vkDestroyShaderModule(context->m_LogicalDevice, module, nullptr);
     }
 
     VkShaderModule VulkanShader::CreateModule(const std::vector<u32> &spirv)
@@ -46,7 +51,9 @@ namespace origin
 
         const VulkanContext *vk_context = VulkanContext::GetInstance();
         
-        vkCreateShaderModule(vk_context->m_Device, &create_info, vk_context->m_Allocator, &module);
+        VkResult result = vkCreateShaderModule(vk_context->m_LogicalDevice, &create_info, vk_context->m_Allocator, &module);
+        VK_ERROR_CHECK(result, "[Vulkan] Failed to create shader module");
+
         return module;
     }
 

@@ -16,21 +16,21 @@ namespace origin
 struct FmodDsp
 {
     FmodDsp(): m_Dsp(nullptr) {}
-    ~FmodDsp()
-    {
-        if (m_Dsp)
-        {
-            m_Dsp->release();
-            m_Dsp = nullptr;
-        }
-    }
+
+    void Release();
 
     void SetActive(bool active) const;
     bool IsActive() const;
 
     [[nodiscard]] FMOD::DSP *GetFmodDsp() const { return m_Dsp; }
 protected:
-    FMOD::DSP* m_Dsp; 
+    FMOD::DSP* m_Dsp;
+};
+
+struct FmodDelay : public FmodDsp
+{
+    FmodDelay();
+    static Ref<FmodDelay> Create();
 };
     
 struct FmodReverb : FmodDsp
@@ -113,6 +113,75 @@ struct FmodDistortion : FmodDsp
     [[nodiscard]] float GetDistortionLevel() const;
     static Ref<FmodDistortion> Create();
 };
+
+struct FmodChorus : FmodDsp
+{
+    FmodChorus();
+
+    /// @param mix Units: percents
+    /// range[0, 100], default [50]
+    /// Percentage of wet signal in mix
+    void SetMix(float mix) const;
+    [[nodiscard]] float GetMix() const;
+    
+    /// @param hertz Units: hertz
+    /// range[0, 20], default [0.8]
+    ///  Chorus modulation rate
+    void SetRate(float hertz) const;
+    [[nodiscard]] float GetRate() const;
+
+    /// @param millis Units: milliseconds
+    /// range[0, 100], default [3]
+    /// Chorus modulation depth
+    void SetDepth(float millis) const;
+    [[nodiscard]] float GetDepth() const;
+    
+    static Ref<FmodChorus> Create();
+};
+
+struct FmodCompressor : FmodDsp
+{
+    FmodCompressor();
+
+    /// @param decibels Units: decibels
+    /// range[-60, 0], default [0]
+    /// Threshold level
+    void SetThreshold(float decibels) const;
+    [[nodiscard]] float GetThreshold() const;
+    
+    /// @param ratio Units: linear
+    /// range[0, 50], default [2.5]
+    /// Compression ratio
+    void SetRatio(float ratio) const;
+    [[nodiscard]] float GetRatio() const;
+
+    /// @param millis Units: milliseconds
+    /// range[10, 5000], default [100]
+    /// Release time
+    void SetRelease(float millis) const;
+    [[nodiscard]] float GetRelease() const;
+
+
+    /// @param decibels Units: decibels
+    /// range[-30, 30], default [0]
+    /// Make-up gain applied after limiting
+    void SetGainMakeup(float decibels) const;
+    [[nodiscard]] float GetGainMakeup() const;
+
+
+    /// @param use Units: boolean
+    /// Sidechain signal instead of the input signal
+    void SetUseSidechain(bool use) const;
+
+    /// @return bool
+    /// false = Independent (compressor per channel
+    /// true  = Linked
+    /// default = true
+    [[nodiscard]] bool IsSidechainLinked() const;
+    
+    static Ref<FmodCompressor> Create();
+};
+
 
 }
 

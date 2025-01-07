@@ -12,17 +12,16 @@
 #define GLFW_INVLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+struct GLFWwindow;
 namespace origin {
-
     class GraphicsContext;
 
     struct WindowData
     {
         std::string Title;
-        uint32_t Width;
-        uint32_t Height;
-        int xPos;
-        int yPos;
+        u32 Width, Height;
+        u32 FbWidth, FbHeight;
+        int xPos, yPos;
         bool Maximized = false;
         bool FullScreen = false;
         bool VSync = true;
@@ -55,11 +54,16 @@ namespace origin {
         virtual void Maximize() = 0;
         virtual void Minimize() = 0;
 
-        virtual uint32_t GetWidth() const = 0;
-        virtual uint32_t GetHeight() const = 0;
+        virtual u32 GetWidth() const = 0;
+        virtual u32 GetHeight() const = 0;
+        virtual u32 GetFramebufferWidth() const = 0;
+        virtual u32 GetFramebufferHeight() const = 0;
         virtual const char* GetTitle() const = 0;
-        virtual void *GetNativeWindow() { return nullptr; }
-        static std::shared_ptr<Window> Create(const char *title, uint32_t width, uint32_t heigth, bool maximized = false);
+        virtual GLFWwindow *GetNativeWindow() = 0;
+
+        static Ref<Window> Create(const char *title, uint32_t width, uint32_t height, bool maximized);
+    protected:
+        bool m_IsVulkanAPI = false;
     };
 }
 

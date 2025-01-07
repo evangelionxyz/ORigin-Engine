@@ -1,34 +1,43 @@
 #pragma once
+#include "Mesh.h"
 #include "Origin/Animation/ModelAnimation.h"
-#include "MeshVertexData.h"
-
 #include <filesystem>
 
-namespace origin
+namespace origin {
+
+struct ModelData
 {
-	class StaticModel
-	{
-	public:
-		StaticModel() = default;
-		StaticModel(const std::filesystem::path& filepath);
+	aiScene *ai_scene;
+	aiNode *ai_root_node;
+};
 
-		const std::vector<Ref<StaticMeshData>> &GetMeshes() { return m_Meshes;  }
+class Model : public Asset
+{
+public:
+	Model() = default;
+	Model(const std::string &filepath);
 
-	private:
-		std::vector<Ref<StaticMeshData>> m_Meshes;
-	};
+	const std::vector<ModelAnimation> &GetAnimations();
+	const std::vector<Ref<Mesh>> &GetMeshes();
+	const std::string &GetFilepath();
 
-	class SkeletalModel
-	{
-	public:
-		SkeletalModel() = default;
-		SkeletalModel(const std::filesystem::path &filepath);
+	static Ref<Model> Create(const std::string &filepath);
+	static Ref<Mesh> LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::string &filepath);
+	static const aiScene *LoadAiScene(const std::string &filepath);
+	static std::vector<Ref<Mesh>> ProcessNode(aiNode *node, const aiScene *scene, const std::string &filepath);
+	static aiNode *FindMeshNode(aiNode *node, const aiScene *scene, aiMesh *target_mesh);
+	static glm::mat4 CalculateTransform(aiNode *node, aiMesh *mesh);
 
-		const std::vector<ModelAnimation>& GetAnimations() { return m_Animations; }
-		const std::vector<Ref<MeshData>>& GetMeshes() { return m_Meshes; }
+	static std::vector<ModelAnimation> LoadAnimations(const std::vector<Ref<Mesh>> &meshes, const aiScene *scene);
+	static void CreateVertex(const Ref<Mesh> &mesh_data);
 
-	private:
-		std::vector<ModelAnimation> m_Animations;
-		std::vector<Ref<MeshData>> m_Meshes;
-	};
+    static AssetType GetStaticType() { return AssetType::Mesh; }
+    virtual AssetType GetType() const { return GetStaticType(); }
+
+private:
+	std::vector<Ref<Mesh>> m_Meshes;
+	std::vector<ModelAnimation> m_Animations;
+	std::string m_Filepath;
+};
+
 }

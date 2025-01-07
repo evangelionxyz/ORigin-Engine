@@ -14,6 +14,7 @@ project "Sandbox"
 
     files {
         "sources/**.cpp",
+        "sources/**.hpp",
         "sources/**.h"
     }
 
@@ -26,7 +27,6 @@ project "Sandbox"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.BOX2D}",
         "%{IncludeDir.ENTT}",
-        --"%{IncludeDir.FMT}",
         "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.IMGUI}",
         "%{IncludeDir.IMGUIZMO}",
@@ -36,6 +36,7 @@ project "Sandbox"
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
+        "%{IncludeDir.PhysX}",
     }
 
     defines {

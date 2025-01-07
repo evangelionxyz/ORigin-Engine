@@ -24,13 +24,12 @@ def register_variables():
     engine_var_name = "ORiginEngine"
     engine_var_path = os.getcwd()
 
-    premake_var_name = "premake5"
     premake_var_path = os.path.abspath("./Scripts/premake")
 
     print("> Registering ORigin Engine path...")
     Utils.set_env_variable(engine_var_name, engine_var_path)
     print("> Registering Premake5 path...")
-    Utils.set_env_variable(premake_var_name, premake_var_path)
+    Utils.set_system_path_variable(premake_var_path)
 
 # Windows only
 def register_msbuild():

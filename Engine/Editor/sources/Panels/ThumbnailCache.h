@@ -12,19 +12,19 @@ namespace origin {
     {
     public:
         ThumbnailCache() = default;
-        ThumbnailCache(const std::shared_ptr<Project>& project);
-        std::shared_ptr<Texture2D> GetOrCreateThumbnail(const std::filesystem::path& path);
+        ThumbnailCache(const Ref<Project>& project);
+        Ref<Texture2D> GetOrCreateThumbnail(const std::filesystem::path& path);
 
         void OnUpdate();
 
     private:
-        std::shared_ptr<Project> m_Project;
+        Ref<Project> m_Project;
         uint64_t m_ThumbnailSize = 128;
 
         struct ThumbnailImage
         {
             uint64_t Timestamp;
-            std::shared_ptr<Texture2D> Image;
+            Ref<Texture2D> Image;
         };
 
         std::map<std::filesystem::path, ThumbnailImage> m_CachedImages;

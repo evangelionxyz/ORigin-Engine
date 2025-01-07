@@ -14,14 +14,15 @@ namespace origin {
     class EditorAssetManager : public AssetManagerBase
     {
     public:
-        std::shared_ptr<Asset> GetAsset(AssetHandle handle) override;
+        Ref<Asset> GetAsset(AssetHandle handle) override;
 
-        virtual bool IsAssetHandleValid(AssetHandle handle) const override;
-        virtual bool IsAssetLoaded(AssetHandle handle) const override;
-        virtual AssetType GetAssetType(AssetHandle handle) const override;
+        bool IsAssetHandleValid(AssetHandle handle) const override;
+        bool IsAssetLoaded(AssetHandle handle) const override;
+        bool IsAssetLoaded(const std::string &filepath) const override;
+        AssetType GetAssetType(AssetHandle handle) const override;
 
         AssetHandle ImportAsset(const std::filesystem::path& filepath);
-        void InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<std::shared_ptr<Asset>()> loader);
+        void InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<Ref<Asset>()> loader);
 
         void RemoveAsset(AssetHandle handle);
         void RemoveLoadedAsset(AssetHandle handle);

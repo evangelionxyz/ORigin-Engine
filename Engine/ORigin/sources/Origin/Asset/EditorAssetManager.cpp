@@ -49,7 +49,7 @@ namespace origin
         return out;
     }
 
-    std::shared_ptr<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
+    Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
     {
         if (!IsAssetHandleValid(handle))
             return nullptr;
@@ -59,7 +59,7 @@ namespace origin
             return m_LoadedAssets.at(handle);
         }
 
-        std::shared_ptr<Asset> asset;
+        Ref<Asset> asset;
         const AssetMetadata &metadata = GetMetadata(handle);
 
         switch (metadata.Type)
@@ -104,6 +104,11 @@ namespace origin
         return m_LoadedAssets.find(handle) != m_LoadedAssets.end();
     }
 
+    bool EditorAssetManager::IsAssetLoaded(const std::string &filepath) const
+    {
+        return false;
+    }
+
     AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
     {
         if (!IsAssetHandleValid(handle))
@@ -127,7 +132,17 @@ namespace origin
             return 0;
         }
 
-        std::shared_ptr<Asset> asset;
+        for (const auto &[asset_handle, asset_metadata] : m_AssetRegistry)
+        {
+            if (filepath == asset_metadata.Filepath)
+            {
+                handle = asset_handle;
+                metadata = asset_metadata;
+                break;
+            }
+        }
+
+        Ref<Asset> asset;
         if (metadata.Type == AssetType::Font)
         {
             OGN_CORE_TRACE("{}", handle);
@@ -140,12 +155,9 @@ namespace origin
             return handle;
         }
        
-
         asset = AssetImporter::ImportAsset(handle, metadata);
-
         if (asset)
         {
-            asset->Handle = handle;
             m_LoadedAssets[handle] = asset;
             m_AssetRegistry[handle] = metadata;
             SerializeAssetRegistry();
@@ -155,9 +167,9 @@ namespace origin
         return 0;
     }
 
-    void EditorAssetManager::InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<std::shared_ptr<Asset>()> loader)
+    void EditorAssetManager::InsertAsset(AssetHandle handle, AssetMetadata metadata, std::function<Ref<Asset>()> loader)
     {
-        std::shared_ptr<Asset> asset;
+        Ref<Asset> asset;
         if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
         {
             asset = m_LoadedAssets.at(handle);
@@ -219,7 +231,7 @@ namespace origin
             if (metadata.Type == AssetType::Material)
             {
                 std::filesystem::path filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
-                std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
+                Ref<Material> mat = AssetManager::GetAsset<Material>(handle);
                 MaterialSerializer::Serialize(filepath, mat);
             }
         }

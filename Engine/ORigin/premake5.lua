@@ -16,13 +16,13 @@ project "ORigin"
     files {
         "sources/pch.cpp",
         "sources/pch.h",
-        "sources/Origin.h",
         "sources/Origin/**.cpp",
+        "sources/Origin/**.hpp",
         "sources/Origin/**.h",
         "sources/Platform/OpenGL/**.cpp",
-        "sources/Platform/OpenGL/**.h",
         "sources/Platform/Vulkan/**.cpp",
-        "sources/Platform/Vulkan/**.h",
+        "sources/Platform/**.hpp",
+        "sources/Platform/**.h",
     }
 
     includedirs {
@@ -45,6 +45,7 @@ project "ORigin"
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.MONO}",
         "%{IncludeDir.FMOD}",
+        "%{IncludeDir.PhysX}",
     }
 
     links {
@@ -58,6 +59,10 @@ project "ORigin"
         "FreeType",
         "YAMLCPP",
         "JOLT",
+        "NvPhysX",
+        "NvPhysXCooking",
+        "NvPhysXCommon",
+        "NvPhysXExtensions",
     }
     
     defines { "_CRT_SECURE_NO_WARNINGS" }
@@ -83,6 +88,11 @@ project "ORigin"
             "sources/Platform/Win32/**.cpp",
             "sources/Platform/Win32/**.h",
         }
+
+        postbuildcommands {
+		      '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
+	      }
+
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
         defines {

@@ -44,10 +44,9 @@ namespace origin
         virtual void InitPerspective(float fovy, float aspectRatio, float nearClip, float farClip) { }
         virtual void InitOrthographic(float scale, float nearClip, float farClip) { }
         virtual void OnUpdate(Timestep ts) {};
-        virtual void OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax) { }
         virtual void SetProjectionType(ProjectionType type) { }
         virtual void OnEvent(Event &e) { };
-        virtual void SetViewportSize(float width, float height) { }
+        virtual void SetViewportSize(u32 width, u32 height) { }
         virtual void SetFov(float fovy) { }
         virtual void SetNear(float nearClip) { }
         virtual void SetFar(float farClip) { }
@@ -89,7 +88,7 @@ namespace origin
         glm::mat4 m_View = glm::mat4(1.0f);
         glm::vec2 m_OrthoSize = glm::vec2(0.0f);
         
-        float m_ViewportWidth = 1280, m_ViewportHeight = 720;
+        u32 m_ViewportWidth = 1280, m_ViewportHeight = 720;
         float m_MoveSpeed = 2.0f;
         float m_FOV = 45.0f;
         float m_AspectRatio = 1.778f;

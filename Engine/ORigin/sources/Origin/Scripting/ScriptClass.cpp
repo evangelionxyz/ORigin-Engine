@@ -32,7 +32,7 @@ namespace origin
 
         if (exception)
         {
-            OGN_CORE_ERROR("[Script Class] Invoking method {0}", mono_method_full_name(method, true));
+            OGN_CORE_ERROR("[Script Class] Invoking method {}", mono_method_full_name(method, true));
 
             HandleException(exception);
             return nullptr;
@@ -55,14 +55,16 @@ namespace origin
         MonoMethod *getStackTraceMethod = mono_property_get_get_method(stackTraceProperty);
         MonoString *stackTraceString = (MonoString *)mono_runtime_invoke(getStackTraceMethod, exception, nullptr, nullptr);
 
-        const char *stackTrace = mono_string_to_utf8(stackTraceString);
-        OGN_CORE_ERROR("[Script Class] {0}", message);
-        OGN_CORE_ERROR("[Script Class] {0}", stackTrace);
-        PUSH_CONSOLE_ERROR("[Script Class] Exception Message {0}", message);
-        PUSH_CONSOLE_ERROR("[Script Class] Exception StackTrace {0}", stackTrace);
+        if (stackTraceString)
+        {
+            const char *stackTrace = mono_string_to_utf8(stackTraceString);
+            OGN_CORE_ERROR("[Script Class] {}", message);
+            OGN_CORE_ERROR("[Script Class] {}", stackTrace);
+            PUSH_CONSOLE_ERROR("[Script Class] Exception Message {}", message);
+            PUSH_CONSOLE_ERROR("[Script Class] Exception StackTrace {}", stackTrace);
+            mono_free((void *)stackTrace);
 
+        }
         mono_free((void *)message);
-        mono_free((void *)stackTrace);
-
     }
 }

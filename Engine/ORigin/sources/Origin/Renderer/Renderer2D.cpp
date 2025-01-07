@@ -335,6 +335,13 @@ namespace origin {
 		StartBatch();
 	}
 
+	void Renderer2D::DrawQuad(const Rect &rect, const glm::vec4 &color)
+	{
+		const glm::vec2 &center = rect.GetCenter();
+		const glm::vec2 &size = rect.GetSize();
+		DrawQuad({ center.x, center.y, 0.0f }, size, color);
+	}
+
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, color);
@@ -583,33 +590,33 @@ namespace origin {
 			constexpr size_t quadVertexCount = 4;
 			glm::vec2 textureCoords[4]
 			{
-				{ src.Min.x, src.Min.y },
-				{ src.Max.x, src.Min.y },
-				{ src.Max.x, src.Max.y },
-				{ src.Min.x, src.Max.y }
+				{ src.UV0.x, src.UV0.y },
+				{ src.UV1.x, src.UV0.y },
+				{ src.UV1.x, src.UV1.y },
+				{ src.UV0.x, src.UV1.y }
 			};
 
 			if (src.FlipX)
 			{
-				textureCoords[0] = { src.Max.x, src.Min.y };
-				textureCoords[1] = { src.Min.x, src.Min.y };
-				textureCoords[2] = { src.Min.x, src.Max.y };
-				textureCoords[3] = { src.Max.x, src.Max.y };
+				textureCoords[0] = { src.UV1.x, src.UV0.y };
+				textureCoords[1] = { src.UV0.x, src.UV0.y };
+				textureCoords[2] = { src.UV0.x, src.UV1.y };
+				textureCoords[3] = { src.UV1.x, src.UV1.y };
 			}
 			else if (src.FlipY)
 			{
-				textureCoords[0] = { src.Min.x, src.Max.y };
-				textureCoords[1] = { src.Max.x, src.Max.y };
-				textureCoords[2] = { src.Max.x, src.Min.y };
-				textureCoords[3] = { src.Min.x, src.Min.y };
+				textureCoords[0] = { src.UV0.x, src.UV1.y };
+				textureCoords[1] = { src.UV1.x, src.UV1.y };
+				textureCoords[2] = { src.UV1.x, src.UV0.y };
+				textureCoords[3] = { src.UV0.x, src.UV0.y };
 			}
 
 			if (src.FlipX && src.FlipY)
 			{
-				textureCoords[0] = { src.Max.x, src.Max.y };
-				textureCoords[1] = { src.Min.x, src.Max.y };
-				textureCoords[2] = { src.Min.x, src.Min.y };
-				textureCoords[3] = { src.Max.x, src.Min.y };
+				textureCoords[0] = { src.UV1.x, src.UV1.y };
+				textureCoords[1] = { src.UV0.x, src.UV1.y };
+				textureCoords[2] = { src.UV0.x, src.UV0.y };
+				textureCoords[3] = { src.UV1.x, src.UV0.y };
 			}
 
 			if (s_Render2DData.QuadIndexCount >= Renderer::s_RenderData.MaxQuadIndices)
@@ -694,10 +701,10 @@ namespace origin {
 		
 		double x = 0.0;
 		double y = 0.0;
-		double maxX = 0.0; // to track the maximum width
-		double minY = 0.0; // to track the minimum y position (since y dreases with line breaks)
-		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+		double max_x = 0.0; // to track the maximum width
+		double min_y = 0.0; // to track the minimum y position (since y dreases with line breaks)
+		double fs_scale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+		const double space_glyph_advance = fontGeometry.getGlyph(' ')->getAdvance();
 
 		for (size_t i = 0; i < string.size(); i++)
 		{
@@ -709,16 +716,16 @@ namespace origin {
 
 			if (character == '\n')
 			{
-				maxX = std::max(maxX, x);
+				max_x = std::max(max_x, x);
 
 				x = 0.0;
-				y -= fsScale * metrics.lineHeight + textParams.LineSpacing;
+				y -= fs_scale * metrics.lineHeight + textParams.LineSpacing;
 				continue;
 			}
 
 			if (character == ' ')
 			{
-				float advance = spaceGlyphAdvance;
+				float advance = static_cast<float>(space_glyph_advance);
 				if (i < string.size() - 1)
 				{
 					char nextCharacter = string[i + 1];
@@ -727,13 +734,13 @@ namespace origin {
 					advance = (float)advance;
 				}
 
-				x += fsScale * advance + textParams.Kerning;
+				x += fs_scale * advance + textParams.Kerning;
 				continue;
 			}
 
 			if (character == '\t')
 			{
-				x += 4.0f * (fsScale * spaceGlyphAdvance + textParams.Kerning);
+				x += 4.0f * (fs_scale * space_glyph_advance + textParams.Kerning);
 				continue;
 			}
 
@@ -745,23 +752,23 @@ namespace origin {
 
 			double atlasLeft, atlasBottom, atlasRight, atlasTop;
 			glyph->getQuadAtlasBounds(atlasLeft, atlasBottom, atlasRight, atlasTop);
-			glm::vec2 texCoordMin(float(atlasLeft), (float)atlasBottom);
-			glm::vec2 texCoordMax(float(atlasRight), (float) atlasTop);
+			glm::vec2 texCoordMin(static_cast<float>(atlasLeft), static_cast<float>(atlasBottom));
+			glm::vec2 texCoordMax(static_cast<float>(atlasRight), static_cast<float>(atlasTop));
 
 			double planeLeft, planeBottom, planeRight, planeTop;
 			glyph->getQuadPlaneBounds(planeLeft, planeBottom, planeRight, planeTop);
-			glm::vec2 quadMin((float)planeLeft, (float)planeBottom);
-			glm::vec2 quadMax((float)planeRight, (float)planeTop);
+			glm::vec2 quadMin(static_cast<float>(planeLeft), static_cast<float>(planeBottom));
+			glm::vec2 quadMax(static_cast<float>(planeRight), static_cast<float>(planeTop));
 
-			quadMin *= fsScale, quadMax *= fsScale;
+			quadMin *= fs_scale, quadMax *= fs_scale;
 			quadMin += glm::vec2(x, y);
 			quadMax += glm::vec2(x, y);
 
-			float texelWidth = 1.0f / s_Render2DData.FontAtlasTextureSlots[(int)textureIndex]->GetWidth();
-			float texelHeight = 1.0f / s_Render2DData.FontAtlasTextureSlots[(int)textureIndex]->GetHeight();
+			float texel_width = 1.0f / s_Render2DData.FontAtlasTextureSlots[static_cast<int>(textureIndex)]->GetWidth();
+			float texel_height = 1.0f / s_Render2DData.FontAtlasTextureSlots[static_cast<int>(textureIndex)]->GetHeight();
 
-			texCoordMin *= glm::vec2(texelWidth, texelHeight);
-			texCoordMax *= glm::vec2(texelWidth, texelHeight);
+			texCoordMin *= glm::vec2(texel_width, texel_height);
+			texCoordMax *= glm::vec2(texel_width, texel_height);
 
 			{
 				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
@@ -797,18 +804,18 @@ namespace origin {
 				double advance = glyph->getAdvance();
 				char nextCharacter = string[i + 1];
 				fontGeometry.getAdvance(advance, character, nextCharacter);
-				x += fsScale * advance + textParams.Kerning;
+				x += fs_scale * advance + textParams.Kerning;
 			}
 
-			maxX = std::max(maxX, x);
-			minY = std::min(minY, y);
+			max_x = std::max(max_x, x);
+			min_y = std::min(min_y, y);
 		}
 
 		if (size)
 		{
-			double totalWidth = maxX;
-			double totalHeight = std::abs(minY) + fsScale * metrics.lineHeight;
-			*size = { static_cast<float>(maxX), static_cast<float>(totalHeight) };
+			double totalWidth = max_x;
+			double totalHeight = std::abs(min_y) + fs_scale * metrics.lineHeight;
+			*size = { static_cast<float>(max_x), static_cast<float>(totalHeight) };
 		}
 	}
 

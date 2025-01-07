@@ -5,7 +5,6 @@
 #include "AssetImporter.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Project/Project.h"
-#include "Origin/Renderer/ModelLoader.h"
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Serializer/SceneSerializer.h"
 #include "Origin/Utils/PlatformUtils.h"
@@ -22,8 +21,7 @@ namespace origin {
         { AssetType::Texture, TextureImporter::ImportTexture2D },
         { AssetType::Scene, SceneImporter::Import },
         { AssetType::Material, MaterialImporter::Import },
-        { AssetType::StaticMesh, ModelImporter::ImportStaticMesh },
-        { AssetType::Mesh, ModelImporter::ImportMesh },
+        { AssetType::Mesh, ModelImporter::Import },
         { AssetType::Font, FontImporter::Import },
         { AssetType::SpritesSheet, SpriteSheetImporter::Import }
     };
@@ -77,6 +75,7 @@ namespace origin {
         auto filepath =/* Project::GetActiveAssetDirectory() /*/ metadata.Filepath;
 
         Ref<Font> font;
+        font->Handle = handle;
         //FontImporter::LoadAsync(&font, filepath);
 
         return font;
@@ -93,34 +92,36 @@ namespace origin {
         s_AssetTaskWorker.AddTask(task); // Move task into the worker queue
     }
     
-    Ref<AudioSource> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
+    Ref<FmodSound> AudioImporter::Import(AssetHandle handle, AssetMetadata metadata)
     {
-        return LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<FmodSound> sound = LoadAudioSource(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        sound->Handle = handle;
+        return sound;
     }
 
-    Ref<AudioSource> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
+    Ref<FmodSound> AudioImporter::LoadAudioSource(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        Ref<AudioSource> source = AudioSource::Create();
-        source->LoadSource("Audio", filepath, false, false);
-        return source;
+        Ref<FmodSound> fmod_sound = FmodSound::Create("Audio", filepath.generic_string());
+        return fmod_sound;
     }
 
-    Ref<AudioSource> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
+    Ref<FmodSound> AudioImporter::LoadStreamingSource(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        Ref<AudioSource> source = AudioSource::Create();
-        source->LoadStreamingSource("Streaming Audio", filepath, false, false);
-        return source;
+        Ref<FmodSound> fmod_sound = FmodSound::CreateStream("Audio", filepath.generic_string());
+        return fmod_sound;
     }
 
     Ref<Scene> SceneImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
     {
-        return LoadScene(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<Scene> scene = LoadScene(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        scene->Handle = handle;
+        return scene;
     }
 
     Ref<Scene> SceneImporter::LoadScene(const std::filesystem::path& filepath)
@@ -159,12 +160,14 @@ namespace origin {
         SceneSerializer serializer(scene);
         auto filepath = Project::GetActiveAssetDirectory() / path;
         serializer.Serialize(filepath);
-        PUSH_CONSOLE_INFO("Scene saved! {0}", filepath.generic_string());
+        PUSH_CONSOLE_INFO("Scene saved! {}", filepath.generic_string());
     }
 
     Ref<Texture2D> TextureImporter::ImportTexture2D(AssetHandle handle, const AssetMetadata& metadata)
     {
-        return LoadTexture2D(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<Texture2D> texture = LoadTexture2D(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        texture->Handle = handle;
+        return texture;
     }
 
     Ref<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path &filepath)
@@ -215,34 +218,24 @@ namespace origin {
         return texture;
     }
 
-    Ref<StaticMeshData> ModelImporter::ImportStaticMesh(AssetHandle handle, const AssetMetadata& metadata)
+    Ref<Model> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)
     {
-        return LoadStaticMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
     }
 
-    Ref<StaticMeshData> ModelImporter::LoadStaticMesh(const std::filesystem::path &filepath)
-    {
-        if (!std::filesystem::exists(filepath))
-            return nullptr;
-        return ModelLoader::LoadStaticModel(filepath);
-    }
-
-    Ref<MeshData> ModelImporter::ImportMesh(AssetHandle handle, const AssetMetadata &metadata)
-    {
-        return LoadMesh(Project::GetActiveAssetDirectory() / metadata.Filepath);
-    }
-
-    Ref<MeshData> ModelImporter::LoadMesh(const std::filesystem::path& filepath)
+    Ref<Model> ModelImporter::Load(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
 
-        return ModelLoader::LoadModel(filepath);
+        return Model::Create(filepath.generic_string());
     }
 
     Ref<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
-        return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<SpriteSheet> sprite_sheet = Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        sprite_sheet->Handle = handle;
+        return sprite_sheet;
     }
 
     Ref<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
@@ -255,7 +248,9 @@ namespace origin {
 
     Ref<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
-        return Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        Ref<Material> material = Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        material->Handle = handle;
+        return material;
     }
 
     Ref<Material> MaterialImporter::Load(const std::filesystem::path &filepath)

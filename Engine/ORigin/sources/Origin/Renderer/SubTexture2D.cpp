@@ -23,7 +23,7 @@ namespace origin {
 
 	std::shared_ptr<SubTexture2D> SubTexture2D::CreateFromSpriteSheet(const std::shared_ptr<Texture2D> &texture, SpriteSheetData sprite)
 	{
-		return std::make_shared<SubTexture2D>(texture, sprite.Min, sprite.Max);
+		return std::make_shared<SubTexture2D>(texture, sprite.rect.min, sprite.rect.max);
 	}
 
 }

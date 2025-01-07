@@ -59,25 +59,25 @@ namespace origin
 		HRESULT result = D3D11CreateDeviceAndSwapChain(
 			   nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
 			   createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels),
-			   D3D11_SDK_VERSION, &sc, &SwapChain, &Device,
-			   &featureLevel, &DeviceContext
+			   D3D11_SDK_VERSION, &sc, &m_Swapchain, &m_Device,
+			   &featureLevel, &m_DeviceContext
 		   );
 
 		OGN_CORE_ASSERT(FAILED(result) == 0, "[DX11 Context] Failed to create Device and Swap Chain");
-		memset(&Viewport, 0, sizeof(D3D11_VIEWPORT));
-		Viewport.Width= static_cast<FLOAT>(window->GetWidth());
-		Viewport.Height = static_cast<FLOAT>(window->GetHeight());
+		memset(&m_viewport, 0, sizeof(D3D11_VIEWPORT));
+		m_viewport.Width= static_cast<FLOAT>(window->GetWidth());
+		m_viewport.Height = static_cast<FLOAT>(window->GetHeight());
 		CreateSwapChain();
 
 		OGN_CORE_TRACE("DirectX 11 Info");
-		OGN_CORE_TRACE(" SDK Version : {0}", D3D11_SDK_VERSION);
-		//OGN_CORE_TRACE(" Vendor      : {0}", D3D11_VENDOR);
-		//OGN_CORE_TRACE(" Renderer    : {0}", glGetString(GL_RENDERER));
+		OGN_CORE_TRACE(" SDK Version : {}", D3D11_SDK_VERSION);
+		//OGN_CORE_TRACE(" Vendor      : {}", D3D11_VENDOR);
+		//OGN_CORE_TRACE(" Renderer    : {}", glGetString(GL_RENDERER));
 	}
 
 	void DX11Context::Shutdown()
 	{
-		
+		m_Device->Release();
 	}
 
 	DX11Context* DX11Context::GetInstance()
@@ -90,73 +90,74 @@ namespace origin
 		OGN_PROFILER_RENDERING();
 
 		ID3D11Texture2D *backBuffer = nullptr;
-		SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBuffer));
-		Device->CreateRenderTargetView(backBuffer, nullptr, &RenderTargetView);
+		m_Swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBuffer));
+
+		m_Device->CreateRenderTargetView(backBuffer, nullptr, &m_RenderTargetView);
 		backBuffer->Release();
 		
 		// Bind 1 view to RenderTargetView
-		DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
+		m_DeviceContext->OMSetRenderTargets(1, &m_RenderTargetView, nullptr);
 		
-		Viewport.MinDepth = 0.0f;
-		Viewport.MaxDepth = 1.0f;
-		Viewport.TopLeftX = Viewport.TopLeftY = 0.0f;
-		DeviceContext->RSSetViewports(1, &Viewport);
+		m_viewport.MinDepth = 0.0f;
+		m_viewport.MaxDepth = 1.0f;
+		m_viewport.TopLeftX = m_viewport.TopLeftY = 0.0f;
+		m_DeviceContext->RSSetViewports(1, &m_viewport);
 	}
 
 	void DX11Context::ResizeSwapChain(uint32_t width, uint32_t height)
 	{
 		OGN_PROFILER_RENDERING();
 
-		if (DeviceContext) DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+		if (m_DeviceContext) m_DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 
 		// Release all outstanding references to the swap chain's buffers.
-		if (RenderTargetView) RenderTargetView->Release();
+		if (m_RenderTargetView) m_RenderTargetView->Release();
 
 		// Preserve the existing buffer count and format
-		SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+		m_Swapchain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 
 		ID3D11Texture2D *backBuffer = nullptr;
-		SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBuffer));
-		Device->CreateRenderTargetView(backBuffer, nullptr, &RenderTargetView);
+		m_Swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&backBuffer));
+		m_Device->CreateRenderTargetView(backBuffer, nullptr, &m_RenderTargetView);
 		backBuffer->Release();
 
-		DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
+		m_DeviceContext->OMSetRenderTargets(1, &m_RenderTargetView, nullptr);
 
-		memset(&Viewport, 0, sizeof(D3D11_VIEWPORT));
-		Viewport.Width = static_cast<FLOAT>(width);
-		Viewport.Height = static_cast<FLOAT>(height);
-		Viewport.MinDepth = 0.0f;
-		Viewport.MaxDepth = 1.0f;
-		Viewport.TopLeftX = Viewport.TopLeftY = 0.0f;
-		DeviceContext->RSSetViewports(1, &Viewport);
+		memset(&m_viewport, 0, sizeof(D3D11_VIEWPORT));
+		m_viewport.Width = static_cast<FLOAT>(width);
+		m_viewport.Height = static_cast<FLOAT>(height);
+		m_viewport.MinDepth = 0.0f;
+		m_viewport.MaxDepth = 1.0f;
+		m_viewport.TopLeftX = m_viewport.TopLeftY = 0.0f;
+		m_DeviceContext->RSSetViewports(1, &m_viewport);
 	}
 
 	void DX11Context::CleanupDevice()
 	{
 		OGN_PROFILER_RENDERING();
 
-		if (RenderTargetView)
+		if (m_RenderTargetView)
 		{
-			RenderTargetView->Release();
-			RenderTargetView = nullptr;
+			m_RenderTargetView->Release();
+			m_RenderTargetView = nullptr;
 		}
 
-		if (SwapChain)
+		if (m_Swapchain)
 		{
-			SwapChain->Release();
-			SwapChain = nullptr;
+			m_Swapchain->Release();
+			m_Swapchain = nullptr;
 		}
 
-		if (Device)
+		if (m_Device)
 		{
-			Device->Release();
-			Device = nullptr;
+			m_Device->Release();
+			m_Device = nullptr;
 		}
 
-		if (DeviceContext)
+		if (m_DeviceContext)
 		{
-			DeviceContext->Release();
-			DeviceContext = nullptr;
+			m_DeviceContext->Release();
+			m_DeviceContext = nullptr;
 		}
 	}
 }

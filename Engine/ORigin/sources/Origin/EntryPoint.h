@@ -22,7 +22,9 @@ namespace origin
 }
 
 #ifdef OGN_PLATFORM_WINDOWS
-    #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+    #ifdef OGN_DISTRIBUTION
+        #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+    #endif
 #endif
 
 int main(const int argc, char **argv)

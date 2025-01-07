@@ -16,8 +16,9 @@ namespace origin
 	{
 		switch (mode)
 		{
-		case ImageWrapMode::REPEAT: return GL_REPEAT;
 		case ImageWrapMode::CLAMP_TO_EDGE: return GL_CLAMP_TO_EDGE;
+		default:
+		case ImageWrapMode::REPEAT: return GL_REPEAT;
 		}
 	}
 
@@ -25,6 +26,7 @@ namespace origin
 	{
 		switch (filter)
 		{
+		default:
 		case ImageFilter::Linear: return GL_LINEAR;
 		case ImageFilter::Nearest: return GL_NEAREST;
 		case ImageFilter::NearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
@@ -38,10 +40,11 @@ namespace origin
 	{
 		switch (format)
 		{
-		case ImageFormat::R8: return GL_R8;
-		case ImageFormat::RGBA8: return GL_RGBA;
+		default:
 		case ImageFormat::RGB8: return GL_RGB8;
+		case ImageFormat::RGBA8: return GL_RGBA;
 		case ImageFormat::RGBA32F: return GL_RGBA32F;
+		case ImageFormat::R8: return GL_R8;
 		}
 	}
 
@@ -161,8 +164,9 @@ namespace origin
 			switch (format)
 			{
 				case FramebufferTextureFormat::RGBA16F: return GL_RGBA16F;
-				case FramebufferTextureFormat::RGBA8: return GL_RGBA8;
 				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+				default:
+				case FramebufferTextureFormat::RGBA8: return GL_RGBA8;
 			}
 			OGN_CORE_ASSERT(false, "Unknown Framebuffer Format");
 		}
@@ -308,23 +312,26 @@ namespace origin
 		Invalidate();
 	}
 
-	int OpenGL_Framebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	int OpenGL_Framebuffer::ReadPixel(uint32_t attachment_idx, int x, int y)
 	{
-		bool valid = attachmentIndex < m_ColorAttachments.size();
-		OGN_CORE_ASSERT(valid, "[OpenGLFramebuffer::ReadPixel] Trying to read wrong attachments {}", attachmentIndex);
+		bool valid = attachment_idx < m_ColorAttachments.size();
+		OGN_CORE_ASSERT(valid, "[OpenGLFramebuffer::ReadPixel] Trying to read wrong attachments {}", attachment_idx);
 		if (!valid)
 			return -1;
 
 		int pixelData;
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment_idx);
 		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
 		return pixelData;
 	}
 
-	void OpenGL_Framebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+	void OpenGL_Framebuffer::ClearAttachment(uint32_t attachment_idx, int value)
 	{
-		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
-		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,
-			Utils::ORiginFBTextureFormatToGL(spec.TextureFormat), GL_INT, &value);
+		if (attachment_idx < m_ColorAttachmentSpecifications.size())
+		{
+			auto &spec = m_ColorAttachmentSpecifications[attachment_idx];
+			glClearTexImage(m_ColorAttachments[attachment_idx], 0,
+				Utils::ORiginFBTextureFormatToGL(spec.TextureFormat), GL_INT, &value);
+		}
 	}
 }

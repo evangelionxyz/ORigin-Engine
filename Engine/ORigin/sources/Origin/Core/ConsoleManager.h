@@ -20,7 +20,7 @@ public:
     ConsoleManager();
     ~ConsoleManager();
 
-    std::string GetCurrentTime();
+    static std::string GetCurrentTime();
     void PushMessage(LogLevel level, const std::string &message);
     void Clear();
 

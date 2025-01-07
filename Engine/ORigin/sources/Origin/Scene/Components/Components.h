@@ -16,7 +16,7 @@
 #include "Origin/Renderer/ParticleSystem.h"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
-#include "Origin/Renderer/MeshVertexData.h"
+#include "Origin/Renderer/Mesh.h"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Buffer.h"
 
@@ -145,13 +145,11 @@ namespace origin
     class SpriteAnimationComponent
     {
     public:
-        std::shared_ptr<AnimationState<SpriteAnimation>> State;
-
+        Ref<AnimationState<SpriteAnimation>> State;
         SpriteAnimationComponent()
         {
-            State = std::make_shared<AnimationState<SpriteAnimation>>();
+            State = CreateRef<AnimationState<SpriteAnimation>>();
         }
-
         SpriteAnimationComponent(const SpriteAnimationComponent&) = default;
         static const AnimationType Type = AnimationType::Sprite;
     };
@@ -209,53 +207,19 @@ namespace origin
         ParticleComponent(const ParticleComponent &) = default;
     };
 
-    class StaticMeshComponent
-    {
-    public:
-        enum class Type
-        {
-            Default = 0,
-            Cube,
-            Sphere,
-            Capsule
-        };
-
-        std::string Name;
-        std::shared_ptr<StaticMeshData> Data;
-        AssetHandle HMaterial = UUID(0);
-        AssetHandle HMesh = UUID(0);
-        Type mType = Type::Default;
-        
-        StaticMeshComponent() = default;
-        StaticMeshComponent(const StaticMeshComponent&) = default;
-    };
-
     class MeshComponent
     {
     public:
         std::string Name;
-        std::shared_ptr<MeshData> Data;
         AssetHandle HMaterial = UUID(0);
-        AssetHandle HMesh = UUID(0);
-        float PlaybackSpeed = 1.0f;
+        AssetHandle HModel = UUID(0);
 
         Animator AAnimator;
-
         i32 AnimationIndex = 0;
         i32 AnimationCount = 0;
 
         MeshComponent() = default;
         MeshComponent(const MeshComponent &) = default;
-    };
-
-    class MeshRendererComponent
-    {
-    public:
-        std::shared_ptr<VertexArray> Va;
-        AssetHandle HMaterial = UUID(0);
-
-        MeshRendererComponent() = default;
-        MeshRendererComponent(const MeshRendererComponent &) = default;
     };
 
     class TextComponent
@@ -375,8 +339,10 @@ namespace origin
         AssetHandle Texture = UUID(0);
 
         glm::vec4 Color = glm::vec4(1.0f);
-        glm::vec2 Min = glm::vec2(0.0f, 0.0f);
-        glm::vec2 Max = glm::vec2(1.0f, 1.0f);
+
+        glm::vec2 UV0 = glm::vec2(0.0f, 0.0f);
+        glm::vec2 UV1 = glm::vec2(1.0f, 1.0f);
+
         glm::vec2 TillingFactor = glm::vec2(1.0f);
 
         bool FlipX = false;
@@ -391,7 +357,7 @@ namespace origin
     class LightComponent
     {
     public:
-        std::shared_ptr<Lighting> Light;
+        Ref<Lighting> Light;
         LightComponent() = default;
         LightComponent(const LightComponent&) = default;
     };
@@ -630,9 +596,9 @@ namespace origin
             Components.erase(Components.begin() + index);
         }
 
-        std::vector<std::shared_ptr<BaseUIData>> Components;
+        std::vector<Ref<BaseUIData>> Components;
         std::unordered_map<std::string, int> ComponentCounters;
-        std::shared_ptr<Framebuffer> OFramebuffer;
+        Ref<Framebuffer> OFramebuffer;
 
     private:
         std::string GenerateUniqueKey(const std::string &name)
@@ -712,9 +678,7 @@ namespace origin
         AudioListenerComponent, 
         LightComponent,
         SpriteRenderer2DComponent, 
-        StaticMeshComponent, 
         MeshComponent, 
-        MeshRendererComponent,
         TextComponent,
         CircleRendererComponent, 
         ParticleComponent, 

@@ -28,17 +28,22 @@ namespace origin::Utils
 		va_end(args);
 	}
 
-    static void ExecuteScript(const std::string &scriptPath)
+    static void ExecuteScript(const std::string &script_path)
     {
-        if (std::filesystem::exists(scriptPath))
+        if (std::filesystem::exists(script_path))
         {
-            std::string absolutePath = std::filesystem::absolute(scriptPath).string();
-#ifdef _WIN32
-            std::string expandedCmd = "\"" + absolutePath + "\"";
-#elif __linux__
-            std::string expandedCmd = "bash " + absolutePath;
+#if defined(__linux__)
+            std::string command_str = "bash " + script_path;
+            std::system(command_str.c_str());
+#elif defined(_WIN32)
+            // Use PowerShell to execute the script
+            std::string command_str = "pwsh -Command \"& '" + script_path + "'\"";
+            std::system(command_str.c_str());
 #endif
-            std::system(expandedCmd.c_str());
+        }
+        else
+        {
+            throw std::runtime_error("Script file does not exist: " + script_path);
         }
     }
 }

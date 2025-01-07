@@ -4,9 +4,13 @@
 #define ASSET_IMPORTER_H
 
 #include "AssetMetadata.h"
-#include "Origin/Audio/AudioSource.h"
+#include "Origin/Audio/FmodSound.h"
 #include "Origin/Scene/SpriteSheet.h"
+
+#include "Origin/Renderer/Font.h"
 #include "Origin/Renderer/Texture.h"
+#include "Origin/Renderer/Material.h"
+#include "Origin/Renderer/Model.h"
 
 #include <queue>
 #include <future>
@@ -108,9 +112,9 @@ namespace origin
     class AudioImporter
     {
     public:
-        static Ref<AudioSource> Import(AssetHandle handle, AssetMetadata metadata);
-        static Ref<AudioSource> LoadAudioSource(const std::filesystem::path &filepath);
-        static Ref<AudioSource> LoadStreamingSource(const std::filesystem::path &filepath);
+        static Ref<FmodSound> Import(AssetHandle handle, AssetMetadata metadata);
+        static Ref<FmodSound> LoadAudioSource(const std::filesystem::path &filepath);
+        static Ref<FmodSound> LoadStreamingSource(const std::filesystem::path &filepath);
     };
 
     class SceneImporter
@@ -132,11 +136,8 @@ namespace origin
     class ModelImporter
     {
     public:
-        static Ref<StaticMeshData> ImportStaticMesh(AssetHandle handle, const AssetMetadata &metadata);
-        static Ref<StaticMeshData> LoadStaticMesh(const std::filesystem::path& filepath);
-
-        static Ref<MeshData> ImportMesh(AssetHandle handle, const AssetMetadata &metadata);
-        static Ref<MeshData> LoadMesh(const std::filesystem::path& filepath);
+        static Ref<Model> Import(AssetHandle handle, const AssetMetadata &metadata);
+        static Ref<Model> Load(const std::filesystem::path& filepath);
     };
 
     class SpriteSheetImporter

@@ -10,11 +10,18 @@ project "Runtime"
     targetdir (outputDir)
     objdir (intOutputDir)
 
-    links {"ORigin"}
+    links {
+        "ORigin",
+        "NvPhysX",
+        "NvPhysXCommon",
+        "NvPhysXCooking",
+        "NvPhysXExtensions",
+    }
 
     files {
         "sources/**.cpp",
-        "sources/**.h"
+        "sources/**.h",
+        "sources/**.hpp",
     }
 
     includedirs {
@@ -36,6 +43,7 @@ project "Runtime"
         "%{IncludeDir.MSDFGEN}",
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
+        "%{IncludeDir.PhysX}",
     }
 
     defines {

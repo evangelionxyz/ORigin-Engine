@@ -5,17 +5,19 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLFramebuffer.h"
+#include "Platform/Vulkan/VulkanFramebuffer.hpp"
+
 #include "Origin/Core/Assert.h"
 
 namespace origin
 {
-	std::shared_ptr<Framebuffer> Framebuffer::Create(const FramebufferSpecification& specification)
+	Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& specification)
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:			return nullptr;
-			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGL_Framebuffer>(specification);
-			case RendererAPI::API::DX11:		OGN_CORE_ASSERT(false, "");
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGL_Framebuffer>(specification);
+			case RendererAPI::API::DX11:   OGN_CORE_ASSERT(false, "");
+			case RendererAPI::API::Vulkan: return CreateRef<VulkanFramebuffer>(specification);
 		}
 
 		OGN_CORE_ASSERT(false, "Unkonwn Framebuffer API");

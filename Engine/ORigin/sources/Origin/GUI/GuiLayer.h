@@ -16,7 +16,7 @@ namespace origin
     class GuiLayer : public Layer
     {
     public:
-        GuiLayer(const std::shared_ptr<Window> &window);
+        GuiLayer(const Ref<Window> &window);
 
         void Init();
         void OnAttach() override;
@@ -29,7 +29,7 @@ namespace origin
         uint32_t GetActiveWidgetID();
 
     private:
-        std::shared_ptr<Window> m_WindowContext;
+        Ref<Window> m_WindowContext;
         bool m_BlockEvents = false;
         float m_Time = 0.0f;
     };

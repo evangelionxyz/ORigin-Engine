@@ -1,23 +1,15 @@
 #include "pch.h"
-#include "VulkanQueue.h"
-#include "VulkanWrapper.h"
+#include "VulkanQueue.hpp"
+#include "VulkanWrapper.hpp"
 
 namespace origin {
 
-VulkanQueue::VulkanQueue(VkDevice device, VkSwapchainKHR swapchain, VkAllocationCallbacks *allocator, u32 queueFamilyIndex, u32 queueIndex)
-    : m_Device(device), m_Swapchain(swapchain), m_Allocator(allocator)
+VulkanQueue::VulkanQueue(VkDevice device, VkAllocationCallbacks *allocator, u32 queueFamilyIndex, u32 queueIndex)
+    : m_Device(device), m_Allocator(allocator)
 {
     vkGetDeviceQueue(m_Device, queueFamilyIndex, queueIndex, &m_Queue);
     OGN_CORE_INFO("[Vulkan] Queue Acquired");
     CreateSemaphores();
-}
-
-u32 VulkanQueue::AcquiredNextImage() const
-{
-    u32 imageIndex = 0;
-    VK_ERROR_CHECK(vkAcquireNextImageKHR(m_Device, m_Swapchain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex),
-        "[Vulkan] Failed to acquired image at index {}", imageIndex);
-    return imageIndex;
 }
 
 void VulkanQueue::SubmitSync(VkCommandBuffer cmd) const
@@ -33,15 +25,13 @@ void VulkanQueue::SubmitSync(VkCommandBuffer cmd) const
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = VK_NULL_HANDLE;
 
-    VK_ERROR_CHECK(vkQueueSubmit(m_Queue, 1, &submitInfo, m_InFlightFence),
-        "[Vulkan] Failed to submit");
+    VkResult result = vkQueueSubmit(m_Queue, 1, &submitInfo, m_InFlightFence);
+    VK_ERROR_CHECK(result, "[Vulkan] Failed to submit");
 }
 
 void VulkanQueue::SubmitAsync(VkCommandBuffer cmd) const
 {
     // submit command buffer
-    VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphore };
-    VkSemaphore signaledSemaphores[] = { m_RenderFinishedSemaphore };
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
     VkSubmitInfo submitInfo = {};
@@ -50,14 +40,15 @@ void VulkanQueue::SubmitAsync(VkCommandBuffer cmd) const
     submitInfo.commandBufferCount = 1u;
     submitInfo.pCommandBuffers = &cmd;
     submitInfo.signalSemaphoreCount = 1u;
-    submitInfo.pSignalSemaphores = signaledSemaphores;
+    submitInfo.pSignalSemaphores = &m_RenderFinishedSemaphore;
     submitInfo.waitSemaphoreCount = 1u;
-    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitSemaphores = &m_ImageAvailableSemaphore;
 
-    vkQueueSubmit(m_Queue, 1u, &submitInfo, m_InFlightFence);
+    VkResult result = vkQueueSubmit(m_Queue, 1u, &submitInfo, m_InFlightFence);
+    VK_ERROR_CHECK(result, "[Vulkan] Failed to submit");
 }
 
-void VulkanQueue::Present(u32 imageIndex) const
+VkResult VulkanQueue::Present(u32 imageIndex, VkSwapchainKHR swapchain) const
 {
     VkSemaphore signaledSemaphores[] = { m_RenderFinishedSemaphore };
     VkPresentInfoKHR presentInfo = {};
@@ -65,11 +56,11 @@ void VulkanQueue::Present(u32 imageIndex) const
     presentInfo.waitSemaphoreCount = 1u;
     presentInfo.pWaitSemaphores = signaledSemaphores;
     presentInfo.swapchainCount = 1u;
-    presentInfo.pSwapchains = &m_Swapchain;
+    presentInfo.pSwapchains = &swapchain;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = VK_NULL_HANDLE;
 
-    vkQueuePresentKHR(m_Queue, &presentInfo);
+    return vkQueuePresentKHR(m_Queue, &presentInfo);
 }
 
 void VulkanQueue::WaitIdle() const
@@ -92,6 +83,11 @@ void VulkanQueue::WaitAndResetFences() const
     vkResetFences(m_Device, 1, &m_InFlightFence);
 }
 
+VkSemaphore VulkanQueue::GetSemaphore() const
+{
+    return m_ImageAvailableSemaphore;
+}
+
 VkQueue VulkanQueue::GetVkQueue() const
 {
     return m_Queue;
@@ -99,16 +95,16 @@ VkQueue VulkanQueue::GetVkQueue() const
 
 void VulkanQueue::CreateSemaphores()
 {
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    VkSemaphoreCreateInfo semaphore_info = {};
+    semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VkFenceCreateInfo fenceInfo = {};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    VkFenceCreateInfo fence_info = {};
+    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFence);
-    vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore);
-    vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore);
+    vkCreateFence(m_Device, &fence_info, nullptr, &m_InFlightFence);
+    vkCreateSemaphore(m_Device, &semaphore_info, nullptr, &m_ImageAvailableSemaphore);
+    vkCreateSemaphore(m_Device, &semaphore_info, nullptr, &m_RenderFinishedSemaphore);
 }
 
 }

@@ -5,7 +5,9 @@
 #include "ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Physics/2D/Physics2D.h"
-#include "Origin/Physics/PhysicsEngine.h"
+
+#include "Origin/Physics/PhysicsSceneBase.hpp"
+
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
@@ -57,7 +59,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			MonoType *managedType = mono_reflection_type_get_type(componentType);
-			OGN_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "[ScriptGlue]: Failed to process Entity_HasComponent");
+			OGN_CORE_ASSERT(s_EntityHasComponentFuncs.contains(managedType), "[ScriptGlue]: Failed to process Entity_HasComponent");
 			return s_EntityHasComponentFuncs.at(managedType)(entity);
 		}
 
@@ -138,7 +140,7 @@ namespace origin
 			Entity copyEntity = scene->DuplicateEntity(entity);
 			copyEntity.GetComponent<TransformComponent>().WorldTranslation = translation;
 			scene->GetPhysics2D()->OnInstantiateEntity(copyEntity);
-			PhysicsEngine::InstantiateEntity(copyEntity);
+			scene->GetPhysics()->InstantiateEntity(copyEntity);
 			return copyEntity.GetUUID();
 		}
 		
@@ -156,7 +158,7 @@ namespace origin
 		if (entity.IsValid())
 		{
 			scene->GetPhysics2D()->OnDestroyEntity(entity);
-			PhysicsEngine::DestroyEntity(entity);
+			scene->GetPhysics()->DestroyEntity(entity);
 			scene->DestroyEntity(entity);
 		}
 	}
@@ -1830,48 +1832,38 @@ namespace origin
 
     static void Input_IsMouseDragging(bool *value)
     {
-        *value = Input::Get().IsDragging();
+        *value = Input::IsAnyMouseDown();
     }
 
 	static void Input_SetMouseHide(bool hide)
 	{
-		Input::Get().SetMouseHide(hide);
-		if (!hide)
-		{
-			Input::Get().ResetMouseDelta();
-		}
+		Input::SetCursoreMode(hide ? CursorMode::Lock : CursorMode::Default);
 	}
 
     static void Input_IsMouseHidden(bool *value)
     {
-        *value = Input::Get().IsHidden();
+        *value = Input::GetCursorMode() == CursorMode::Hidden;
     }
 
 	static void Input_ToggleMouseLock()
 	{ 
-		Input::Get().ToggleMouseLock();
+		Input::ToggleMouseLock();
 	}
-
-	static void Input_GetMouseDelta(glm::vec2 *delta)
-    {
-		*delta = Input::Get().GetMouseDelta();
-	}
-
 	static void Input_GetMousePosition(glm::vec2 *value)
     {
-		*value = Input::Get().GetMousePosition();
+		*value = { Input::GetMouseX(), Input::GetMouseY() };
 	}
 
 	static void Input_SetMousePosition(glm::vec2 value)
     {
-		Input::Get().SetMousePosition(value.x, value.y);
+		Input::SetMousePosition(static_cast<int>(value.x), static_cast<int>(value.y));
 	}
 
 	static void Input_IsMouseButtonDown(MouseCode button, bool *value)
 	{ 
         Scene *scene = ScriptEngine::GetSceneContext();
         if (scene->IsFocusing())
-		*value = Input::Get().IsMouseButtonPressed(button);
+		*value = Input::IsMouseButtonPressed(button);
 	}
 
 	static void Input_IsKeyPressed(KeyCode keycode, bool *value)
@@ -1879,7 +1871,7 @@ namespace origin
         Scene *scene = ScriptEngine::GetSceneContext();
 		if (scene->IsFocusing())
 		{
-			*value = Input::Get().IsKeyPressed(keycode);
+			*value = Input::IsKeyPressed(keycode);
 		}
 	}
 
@@ -1888,7 +1880,7 @@ namespace origin
 		Scene *scene = ScriptEngine::GetSceneContext();
 		if (scene->IsFocusing())
 		{
-			*value = Input::Get().IsKeyReleased(keycode);
+			*value = Input::IsKeyReleased(keycode);
 		}
 	}
 
@@ -2101,7 +2093,9 @@ namespace origin
 		OGN_ADD_INTERNAL_CALLS(Input_ToggleMouseLock);
 		OGN_ADD_INTERNAL_CALLS(Input_GetMousePosition);
 		OGN_ADD_INTERNAL_CALLS(Input_SetMousePosition);
-		OGN_ADD_INTERNAL_CALLS(Input_GetMouseDelta);
+
+		// TODO: Fix this code
+		//OGN_ADD_INTERNAL_CALLS(Input_GetMouseDelta);
 		OGN_ADD_INTERNAL_CALLS(Input_IsMouseButtonDown);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyPressed);
 		OGN_ADD_INTERNAL_CALLS(Input_IsKeyReleased);

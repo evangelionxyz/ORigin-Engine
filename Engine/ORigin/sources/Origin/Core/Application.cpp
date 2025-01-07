@@ -4,25 +4,20 @@
 #include "Application.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Audio/AudioEngine.h"
+#include "Origin/Audio/FmodAudio.h"
 #include "Origin/Scripting/ScriptEngine.h"
-#include "Origin/Physics/PhysicsEngine.h"
+
 #include "ConsoleManager.h"
 #include "EmbeddedImages.h"
-
-#include <imgui.h>
 #include <stb_image.h>
 
 #ifdef OGN_PLATFORM_WINDOWS
     #include "Platform/Win32/Win32Window.h"
-    #include "Platform/DX11/DX11Context.h"
 #endif
-
-// #define OGN_OPENGL_API
 
 namespace origin {
 
     Application* Application::s_Instance = nullptr;
-
     Application::Application(ApplicationSpecification& spec)
         : m_Spec(spec)
     {
@@ -32,7 +27,9 @@ namespace origin {
         s_Instance = this;
 
         if (!m_Spec.WorkingDirectory.empty())
+        {
             std::filesystem::current_path(m_Spec.WorkingDirectory);
+        }
 
         RendererAPI::SetAPI(RendererAPI::API::OpenGL);
 
@@ -42,13 +39,13 @@ namespace origin {
         switch (RendererAPI::GetAPI())
         {
         case RendererAPI::API::DX11:
-            spec.Name.insert(spec.Name.size(), " <DX11>");
+            spec.Name.insert(spec.Name.size(), " - DX11");
             break;
         case RendererAPI::API::OpenGL:
-            spec.Name.insert(spec.Name.size(), " <OpenGL>");
+            spec.Name.insert(spec.Name.size(), " - OpenGL");
             break;
         case RendererAPI::API::Vulkan:
-            spec.Name.insert(spec.Name.size(), " <Vulkan>");
+            spec.Name.insert(spec.Name.size(), " - Vulkan");
             break;
         }
 
@@ -56,13 +53,15 @@ namespace origin {
         m_Window->SetIcon(logo_black_data, logo_black_width, logo_black_height);
         
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
-        m_InputHandle.Init(m_Window->GetNativeWindow());
+        Input::Init(m_Window->GetNativeWindow());
 
         m_GuiLayer = new GuiLayer(m_Window);
-        PushOverlay(m_GuiLayer);
+        m_GuiLayer->OnAttach();
 
-        PhysicsEngine::Init();
+        //Physics::Init(PhysicsAPI::Jolt);
+
         AudioEngine::Init();
+        FmodAudio::Init();
         Renderer::Init();
 
         m_Window->Show();
@@ -70,12 +69,14 @@ namespace origin {
 
     Application::~Application()
     {
-        m_Window->DestroyWindow();
         m_LayerStack.Shutdown();
 
+        m_Window->DestroyWindow();
+
         Renderer::Shutdown();
+        FmodAudio::Shutdown();
         AudioEngine::Shutdown();
-        PhysicsEngine::Shutdown();
+        //Physics::Shutdown();
 
         Window::GLFWShutdown();
     }
@@ -91,7 +92,7 @@ namespace origin {
             Timestep ts = time - m_LastFrame;
             m_LastFrame = time;
 
-            m_InputHandle.Update();
+            Input::Update();
 
             AssetImporter::SyncToMainThread(ts);
             ExecuteMainThreadQueue();
@@ -99,23 +100,25 @@ namespace origin {
             if (!m_Minimized)
             {
                 for (Layer *layer : m_LayerStack)
-                {
                     layer->OnUpdate(ts);
-                }
             }
 
             if (m_GuiLayer)
             {
                 m_GuiLayer->Begin();
                 for (Layer *layer : m_LayerStack)
-                {
                     layer->OnGuiRender();
-                }
-
                 m_GuiLayer->End();
             }
 
             m_Window->OnUpdate();
+        }
+
+        if (m_GuiLayer)
+        {
+            m_GuiLayer->OnDetach();
+
+            delete m_GuiLayer;
         }
     }
 

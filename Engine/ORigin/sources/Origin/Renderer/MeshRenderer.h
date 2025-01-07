@@ -3,7 +3,7 @@
 #ifndef MESH_RENDERER_H
 #define MESH_RENDERER_H
 
-#include "MeshVertexData.h"
+#include "Mesh.h"
 #include "Material.h"
 #include "Texture.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -32,12 +32,15 @@ namespace origin
 			const std::shared_ptr<Texture2D> &specular, 
 			const glm::vec2 &tilingFactor, const glm::vec4 &color);
 
-		static void DrawCube(const glm::mat4 &transform, Material *material);
+		static void DrawCube(const glm::mat4 &transform, const Material *material);
 		static void DrawSphere(const glm::mat4 &transform, const glm::vec4 &color);
-		static void DrawSphere(const glm::mat4 &transform, Material *material);
+		static void DrawSphere(const glm::mat4 &transform, const Material *material);
 
         static void DrawCapsule(const glm::mat4 &transform, const glm::vec4 &color);
-        static void DrawCapsule(const glm::mat4 &transform, Material *material);
+        static void DrawCapsule(const glm::mat4 &transform, const Material *material);
+
+		static Ref<Mesh> LoadMeshVertexData(const std::filesystem::path &filepath);
+
 
 		static Shader *GetShader();
 	};

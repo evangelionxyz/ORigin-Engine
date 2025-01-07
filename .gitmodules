@@ -19,3 +19,9 @@
 [submodule "Engine/ThirdParty/YAMLCPP"]
 	path = Engine/ThirdParty/YAMLCPP
 	url = https://github.com/evangelionmanuhutu/yaml-cpp.git
+[submodule "Engine/ThirdParty/nvphysx"]
+	path = Engine/ThirdParty/nvphysx
+	url = https://github.com/NVIDIA-Omniverse/PhysX.git
+[submodule "Engine/ThirdParty/SPDLOG"]
+	path = Engine/ThirdParty/SPDLOG
+	url = https://github.com/gabime/spdlog.git

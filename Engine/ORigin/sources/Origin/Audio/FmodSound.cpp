@@ -7,23 +7,36 @@
 namespace origin {
 
 FmodSound::FmodSound(std::string name) : m_Sound(nullptr), m_Channel(nullptr),
-                                         m_Name(std::move(name)), m_Paused(false), m_FadeInStartMs(0), m_FadeInEndMs(0),
-                                         m_FadeOutStartMs(0), m_FadeOutEndMs(0)
-{
-}
-
-FmodSound::~FmodSound()
-{    
-    if (m_Sound)
-    {
-        m_Sound->release();
-        m_Sound = nullptr;
-    }
-}
+                                         m_Name(std::move(name)), m_FadeInStartMs(0), m_FadeInEndMs(0),
+                                         m_FadeOutStartMs(0), m_FadeOutEndMs(0), m_ChannelGroup(nullptr)
+{}
 
 void FmodSound::Play()
 {
-    FmodAudio::GetFmodSystem()->playSound(m_Sound, FmodAudio::GetFmodChannelGroup(), m_Paused, &m_Channel);
+    const FMOD_RESULT result = FmodAudio::GetFmodSystem()->playSound(
+        m_Sound,
+        m_ChannelGroup ? m_ChannelGroup : FmodAudio::GetMasterChannel(),
+        false, // start paused
+        &m_Channel
+    );
+
+    FMOD_CHECK(result)
+
+    // remove dsp
+    int dsp_count = 0;
+    m_Channel->getNumDSPs((&dsp_count));
+    for (int i = 0; i < dsp_count; i++)
+    {
+        FMOD::DSP* dsp;
+        m_Channel->getDSP(i, &dsp);
+        m_Channel->removeDSP(dsp);
+    }
+    
+    // re-add dsp
+    for (const auto &dsp : m_DSPs)
+    {
+        m_Channel->addDSP(0, dsp);
+    }
 }
 
 void FmodSound::Stop() const
@@ -31,16 +44,19 @@ void FmodSound::Stop() const
     m_Channel->stop();
 }
 
-void FmodSound::Pause()
+void FmodSound::Pause() const
 {
     m_Channel->setPaused(true);
-    m_Paused = true;
 }
 
-void FmodSound::Resume()
+void FmodSound::Resume() const
 {
     m_Channel->setPaused(false);
-    m_Paused = false;
+}
+
+void FmodSound::SetName(const std::string &name)
+{
+    m_Name = name;
 }
 
 void FmodSound::SetPan(const float pan) const
@@ -76,6 +92,25 @@ void FmodSound::SetFadeOut(const u32 fade_out_start_ms, const u32 fade_out_end_m
     m_FadeOutEndMs = fade_out_end_ms;
 }
 
+void FmodSound::AddToChannelGroup(FMOD::ChannelGroup* channel_group)
+{
+    m_ChannelGroup = channel_group;
+}
+
+void FmodSound::Release()
+{
+    if (m_Sound)
+    {
+        m_Sound->release();
+        m_Sound = nullptr;
+    }
+
+    for (auto &dsp : m_DSPs)
+    {
+        dsp->release();
+    }
+}
+
 float FmodSound::GetPitch() const
 {
     float pitch;
@@ -97,9 +132,7 @@ void FmodSound::Update([[maybe_unused]] float delta_time) const
 
 void FmodSound::AddDsp(FMOD::DSP* dsp)
 {
-    FMOD_RESULT result = m_Channel->addDSP(static_cast<int>(m_Dsps.size()), dsp);
-    FMOD_CHECK(result)
-    m_Dsps.push_back(dsp);
+    m_DSPs.push_back(dsp);
 }
 
 FMOD::Sound* FmodSound::GetFmodSound() const
@@ -138,10 +171,25 @@ u32 FmodSound::GetPositionMs() const
     return position;
 }
 
+FMOD::ChannelGroup* FmodSound::GetChannelGroup() const
+{
+    return m_ChannelGroup;
+}
+
 Ref<FmodSound> FmodSound::Create(const std::string &name, const std::string &filepath, const FMOD_MODE mode)
 {
     Ref<FmodSound> fmod_sound = CreateRef<FmodSound>(name);
     FmodAudio::GetFmodSystem()->createSound(filepath.c_str(), mode, nullptr, &fmod_sound->m_Sound);
+    
+    const FMOD_RESULT result = FmodAudio::GetFmodSystem()->playSound(
+            fmod_sound->m_Sound,
+            fmod_sound->m_ChannelGroup ? fmod_sound->m_ChannelGroup : FmodAudio::GetMasterChannel(),
+            true, // start paused
+            &fmod_sound->m_Channel
+        );
+    
+    FMOD_CHECK(result)
+    
     FmodAudio::InsertFmodSound(name, fmod_sound);
     return fmod_sound;
 }
@@ -150,6 +198,16 @@ Ref<FmodSound> FmodSound::CreateStream(const std::string& name, const std::strin
 {
     Ref<FmodSound> fmod_sound = CreateRef<FmodSound>(name);
     FmodAudio::GetFmodSystem()->createStream(filepath.c_str(), mode, nullptr, &fmod_sound->m_Sound);
+    
+    const FMOD_RESULT result = FmodAudio::GetFmodSystem()->playSound(
+        fmod_sound->m_Sound,
+        fmod_sound->m_ChannelGroup ? fmod_sound->m_ChannelGroup : FmodAudio::GetMasterChannel(),
+        true, // start paused
+        &fmod_sound->m_Channel
+    );
+    
+    FMOD_CHECK(result)
+    
     FmodAudio::InsertFmodSound(name, fmod_sound);
     return fmod_sound;
 }

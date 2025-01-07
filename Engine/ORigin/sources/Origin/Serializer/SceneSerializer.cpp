@@ -11,7 +11,6 @@
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Renderer/Shader.h"
-#include "Origin/Renderer/ModelLoader.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Asset/AssetManager.h"
@@ -168,8 +167,8 @@ namespace origin
 					out << YAML::Key << "Name" << sprite->Name;
 					out << YAML::Key << "Anchor" << (int)sprite->AnchorType;
 					out << YAML::Key << "TextureHandle" << sprite->Component.Texture;
-					out << YAML::Key << "Min" << sprite->Component.Min;
-					out << YAML::Key << "Max" << sprite->Component.Max;
+					out << YAML::Key << "UV0" << sprite->Component.UV0;
+					out << YAML::Key << "UV1" << sprite->Component.UV1;
 					out << YAML::Key << "TillingFactor" << sprite->Component.TillingFactor;
 					out << YAML::Key << "Color" << sprite->Component.Color;
 					out << YAML::Key << "FlipX" << sprite->Component.FlipX;
@@ -368,19 +367,6 @@ namespace origin
 			out << YAML::EndMap; // !CameraComponent
 		}
 
-		if (entity.HasComponent<StaticMeshComponent>())
-		{
-			out << YAML::Key << "StaticMeshComponent";
-			out << YAML::BeginMap; // StaticMeshComponent
-
-			const StaticMeshComponent sc = entity.GetComponent<StaticMeshComponent>();
-			out << YAML::Key << "Name" << sc.Name;
-			out << YAML::Key << "Type" << (int)sc.mType;
-			out << YAML::Key << "HMesh" << sc.HMesh;
-			out << YAML::Key << "HMaterial" << sc.HMaterial;
-			out << YAML::EndMap; // !StaticMeshComponent
-		}
-
 		if (entity.HasComponent<MeshComponent>())
 		{
 			out << YAML::Key << "MeshComponent";
@@ -388,7 +374,7 @@ namespace origin
 
 			const MeshComponent sc = entity.GetComponent<MeshComponent>();
 			out << YAML::Key << "Name" << sc.Name;
-			out << YAML::Key << "HMesh" << sc.HMesh;
+			out << YAML::Key << "HModel" << sc.HModel;
 			out << YAML::Key << "HMaterial" << sc.HMaterial;
 			out << YAML::EndMap; // !MeshComponent
 		}
@@ -448,8 +434,8 @@ namespace origin
 			if (src.Texture != 0)
 			{
 				out << YAML::Key << "Handle" << YAML::Value << src.Texture;
-				out << YAML::Key << "Min" << YAML::Value << src.Min;
-				out << YAML::Key << "Max" << YAML::Value << src.Max;
+				out << YAML::Key << "UV0" << YAML::Value << src.UV0;
+				out << YAML::Key << "UV1" << YAML::Value << src.UV1;
 				out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
 				out << YAML::Key << "FlipX" << YAML::Value << src.FlipX;
 				out << YAML::Key << "FlipY" << YAML::Value << src.FlipY;
@@ -754,8 +740,8 @@ namespace origin
 						{
 							UIData<SpriteRenderer2DComponent> component;
 							component.AnchorType = (BaseUIData::Anchor) comp["Anchor"].as<int>();
-							component.Component.Min = comp["Min"].as<glm::vec2>();
-							component.Component.Max = comp["Max"].as<glm::vec2>();
+							component.Component.UV0 = comp["UV0"].as<glm::vec2>();
+							component.Component.UV1 = comp["UV1"].as<glm::vec2>();
 							component.Component.TillingFactor = comp["TillingFactor"].as<glm::vec2>();
 							component.Component.FlipX = comp["FlipX"].as<bool>();
 							component.Component.FlipY = comp["FlipY"].as<bool>();
@@ -775,7 +761,6 @@ namespace origin
 				if (YAML::Node audio_component = entity["AudioComponent"])
 				{
 					AudioComponent &ac = deserialized_entity.AddComponent<AudioComponent>();
-
 					if (audio_component["AudioHandle"])
 					{
 						ac.Audio = audio_component["AudioHandle"].as<uint64_t>();
@@ -789,16 +774,11 @@ namespace origin
 						ac.Spatializing = audio_component["Spatial"].as<bool>();
 						ac.PlayAtStart = audio_component["PlayAtStart"].as<bool>();
 						ac.Overlapping = audio_component["Overlapping"].as<bool>();
-						std::shared_ptr<AudioSource> audio = AssetManager::GetAsset<AudioSource>(ac.Audio);
-						if (ac.Overlapping)
-						{
-							audio->ActivateOverlapping();
-						}
-						audio->SetVolume(ac.Volume);
-						audio->SetLoop(ac.Looping);
-						audio->SetPitch(ac.Pitch);
-						audio->SetMinMaxDistance(ac.MinDistance, ac.MaxDistance);
-						audio->SetSpatial(ac.Spatializing);
+						Ref<FmodSound> fmod_sound = AssetManager::GetAsset<FmodSound>(ac.Audio);
+						fmod_sound->SetVolume(ac.Volume);
+						if (ac.Looping)
+							fmod_sound->SetMode(FMOD_LOOP_NORMAL);
+						fmod_sound->SetPitch(ac.Pitch);
 					}
 				}
 
@@ -822,40 +802,12 @@ namespace origin
 					cc.Primary = camera_component["Primary"].as<bool>();
 				}
 
-				if (YAML::Node static_mesh_component = entity["StaticMeshComponent"])
-				{
-					StaticMeshComponent &mc = deserialized_entity.AddComponent<StaticMeshComponent>();
-					mc.Name = static_mesh_component["Name"].as<std::string>();
-					mc.HMaterial = static_mesh_component["HMaterial"].as<uint64_t>();
-					mc.HMesh = static_mesh_component["HMesh"].as<uint64_t>();
-
-					if (mc.HMaterial)
-					{
-						AssetManager::GetAsset<Material>(mc.HMaterial); // load material and store to memory
-					}
-					if (mc.HMesh)
-					{
-						mc.Data = AssetManager::GetAsset<StaticMeshData>(mc.HMesh);
-					}
-
-					mc.mType = static_cast<StaticMeshComponent::Type>(static_mesh_component["Type"].as<int>());
-				}
-
 				if (YAML::Node mesh_component = entity["MeshComponent"])
 				{
 					MeshComponent &mc = deserialized_entity.AddComponent<MeshComponent>();
 					mc.Name = mesh_component["Name"].as<std::string>();
 					mc.HMaterial = mesh_component["HMaterial"].as<uint64_t>();
-					mc.HMesh = mesh_component["HMesh"].as<uint64_t>();
-
-					if (mc.HMesh)
-					{
-						mc.Data = AssetManager::GetAsset<MeshData>(mc.HMesh);
-						//if (!mc.Data->animations.empty())
-						{
-							//mc.AAnimator = Animator(&mc.Data->animations[0]);
-						}
-					}
+					mc.HModel = mesh_component["HModel"].as<uint64_t>();
 				}
 
 				if (YAML::Node particle_component = entity["ParticleComponent"])
@@ -880,8 +832,8 @@ namespace origin
 					if(sprite_renderer_2d_component["Handle"])
 					{
 						src.Texture = sprite_renderer_2d_component["Handle"].as<uint64_t>();
-						src.Min = sprite_renderer_2d_component["Min"].as<glm::vec2>();
-						src.Max = sprite_renderer_2d_component["Max"].as<glm::vec2>();
+						src.UV0 = sprite_renderer_2d_component["UV0"].as<glm::vec2>();
+						src.UV1 = sprite_renderer_2d_component["UV1"].as<glm::vec2>();
 						src.TillingFactor = sprite_renderer_2d_component["TillingFactor"].as<glm::vec2>();
 					}
 				}

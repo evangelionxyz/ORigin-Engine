@@ -11,20 +11,16 @@ namespace origin {
 	class OpenGLTexture2D final : public Texture2D
 	{
 	private:
-		TextureSpecification m_Spec;
-
-		std::string m_MaterialTypeName;
-
-		u32 m_TextureID = 0;
-		std::string m_Filepath;
 		u32 m_Width = 0, m_Height = 0, m_BPP = 0;
 		u32 m_Index = 0;
 		GLenum m_InternalFormat, m_DataFormat, m_MinFilter, m_MagFilter;
+		TextureSpecification m_Spec;
+		std::string m_Filepath;
 		bool m_IsLoaded = false;
-
 	public:
 		OpenGLTexture2D(const TextureSpecification &specification, Buffer data);
 		OpenGLTexture2D(const std::filesystem::path &filepath, const TextureSpecification &specification);
+		OpenGLTexture2D(const aiTexture *embedded_texture);
 		~OpenGLTexture2D() override;
 
 		[[nodiscard]] const TextureSpecification &GetSpecification() const override { return m_Spec; }
@@ -36,10 +32,9 @@ namespace origin {
 		void Unbind() override;
 		void Delete() override;
 
-		[[nodiscard]] u32 GetTextureID() const override { return m_TextureID; }
 		[[nodiscard]] u64 GetEstimatedSize() const override { return m_Width * m_Height * 4; }
 
-		void ChangeSize(u64 width, u64 height) override;
+		void ChangeSize(const i32 width, const i32 height) override;
 
 		[[nodiscard]] std::string GetName() const override
 		{
@@ -54,24 +49,17 @@ namespace origin {
 		{
 			return m_TextureID == ((OpenGLTexture2D &)other).m_TextureID;
 		}
-
-		void SetMaterialTypeName(const std::string &typeName) override { m_MaterialTypeName = typeName; }
-		const std::string &GetMaterialTypeName() const override { return m_MaterialTypeName; }
 	};
 
-	class OpenGLTextureCube : public TextureCube
+	class OpenGLTextureCube final : public TextureCube
 	{
 	private:
-		TextureSpecification m_Spec;
-
-		std::string m_MaterialTypeName;
-
-		u32 m_TextureID;
-		std::string m_Filepath;
 		u32 m_Width = 0, m_Height = 0, m_BPP = 0;
 		u32 m_Index = 0;
 		u32 m_LoadCount = 0;
 		GLenum m_InternalFormat, m_DataFormat;
+		TextureSpecification m_Spec;
+		std::string m_Filepath;
 
 	public:
 		OpenGLTextureCube(u32 width, u32 height);
@@ -89,13 +77,12 @@ namespace origin {
 
 		[[nodiscard]] const TextureSpecification &GetSpecification() const override { return m_Spec; }
 
-		[[nodiscard]]u32 GetTextureID() const override { return m_TextureID; }
 		[[nodiscard]]u32 GetIndex() const override { return m_Index; }
 		[[nodiscard]]u32 GetWidth() const override { return m_Width; }
 		[[nodiscard]]u32 GetHeight() const override { return m_Height; }
 
 		[[nodiscard]] u64 GetEstimatedSize() const override { return m_Width * m_Height * 4; }
-		void ChangeSize(u64 width, u64 height) override;
+		void ChangeSize(const i32 width, const i32 height) override;
 
 		[[nodiscard]] std::string GetName() const override
 		{
@@ -107,9 +94,6 @@ namespace origin {
 		{
 			return m_TextureID == ((OpenGLTextureCube &)other).m_TextureID;
 		}
-
-		void SetMaterialTypeName(const std::string &typeName) override { m_MaterialTypeName = typeName; }
-		const std::string &GetMaterialTypeName() const override { return m_MaterialTypeName; }
 	};
 }
 
