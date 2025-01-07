@@ -41,6 +41,7 @@ namespace origin
 
     void SpriteSheetEditorPanel::CreateNewSpriteSheet()
     {
+        Reset();
         m_SpriteSheet = SpriteSheet::Create();
     }
 
@@ -200,7 +201,8 @@ namespace origin
                     {
                         SpriteSheetData data;
                         data.rect = rect;
-                        data.TextureHandle = m_SpriteSheet->GetTextureHandle();
+                        data.atlas_size = atlas_size;
+                        data.texture_handle = m_SpriteSheet->GetTextureHandle();
                         ImGui::SetDragDropPayload("SPRITESHEET_ITEM", &data, sizeof(SpriteSheetData));
                         ImGui::EndDragDropSource();
                     }
@@ -341,7 +343,7 @@ namespace origin
         if (ret)
         {
             m_Texture = AssetManager::GetAsset<Texture2D>(m_SpriteSheet->GetTextureHandle());
-            for (const auto &[rect, TextureHandle] : m_SpriteSheet->Sprites)
+            for (const auto &[rect, atlas_size, texture_handle] : m_SpriteSheet->Sprites)
             {
                 SpriteSheetController control;
                 control.rect = rect;

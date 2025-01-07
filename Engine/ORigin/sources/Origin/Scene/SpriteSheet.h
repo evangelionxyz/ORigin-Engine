@@ -15,7 +15,8 @@ namespace origin
 	struct SpriteSheetData
 	{
 		Rect rect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
-		AssetHandle TextureHandle = UUID(0);
+		glm::vec2 atlas_size = { 0.0f, 0.0f };
+		AssetHandle texture_handle = UUID(0);
 	};
 
 	class SpriteSheet : public Asset

@@ -703,8 +703,8 @@ namespace origin {
                             if (AssetManager::GetAssetType(handle) == AssetType::Texture)
                             {
                                 component.Texture = handle;
-                                component.Min = glm::vec2(0.0f);
-                                component.Max = glm::vec2(1.0f);
+                                component.UV0 = glm::vec2(0.0f);
+                                component.UV1 = glm::vec2(1.0f);
                             }
                             else
                                 OGN_CORE_WARN("Wrong asset type!");
@@ -712,9 +712,13 @@ namespace origin {
                         else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
                         {
                             SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-                            component.Texture = data.TextureHandle;
-                            component.Min = data.rect.min;
-                            component.Max = data.rect.max;
+                            component.Texture = data.texture_handle;
+
+                            const glm::vec2 &pos = data.rect.GetCenter();
+                            const glm::vec2 &size = data.rect.GetSize();
+
+                            component.UV0 = { (pos.x + (data.atlas_size.x - size.x) / 2.0f) / data.atlas_size.x, (pos.y + (data.atlas_size.y - size.y) / 2.0f) / data.atlas_size.y };
+                            component.UV1 = { (pos.x + (data.atlas_size.x + size.x) / 2.0f) / data.atlas_size.x, (pos.y + (data.atlas_size.y + size.y) / 2.0f) / data.atlas_size.y };
                         }
                         ImGui::EndDragDropTarget();
                     }
@@ -725,8 +729,8 @@ namespace origin {
                         if (UI::DrawButton("X"))
                         {
                             component.Texture = 0;
-                            component.Min = glm::vec2(0.0f);
-                            component.Max = glm::vec2(1.0f);
+                            component.UV0 = glm::vec2(0.0f);
+                            component.UV1 = glm::vec2(1.0f);
                         }
                     }
                 });

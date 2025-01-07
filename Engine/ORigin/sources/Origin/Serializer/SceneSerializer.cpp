@@ -167,8 +167,8 @@ namespace origin
 					out << YAML::Key << "Name" << sprite->Name;
 					out << YAML::Key << "Anchor" << (int)sprite->AnchorType;
 					out << YAML::Key << "TextureHandle" << sprite->Component.Texture;
-					out << YAML::Key << "Min" << sprite->Component.Min;
-					out << YAML::Key << "Max" << sprite->Component.Max;
+					out << YAML::Key << "UV0" << sprite->Component.UV0;
+					out << YAML::Key << "UV1" << sprite->Component.UV1;
 					out << YAML::Key << "TillingFactor" << sprite->Component.TillingFactor;
 					out << YAML::Key << "Color" << sprite->Component.Color;
 					out << YAML::Key << "FlipX" << sprite->Component.FlipX;
@@ -434,8 +434,8 @@ namespace origin
 			if (src.Texture != 0)
 			{
 				out << YAML::Key << "Handle" << YAML::Value << src.Texture;
-				out << YAML::Key << "Min" << YAML::Value << src.Min;
-				out << YAML::Key << "Max" << YAML::Value << src.Max;
+				out << YAML::Key << "UV0" << YAML::Value << src.UV0;
+				out << YAML::Key << "UV1" << YAML::Value << src.UV1;
 				out << YAML::Key << "TillingFactor" << YAML::Value << src.TillingFactor;
 				out << YAML::Key << "FlipX" << YAML::Value << src.FlipX;
 				out << YAML::Key << "FlipY" << YAML::Value << src.FlipY;
@@ -740,8 +740,8 @@ namespace origin
 						{
 							UIData<SpriteRenderer2DComponent> component;
 							component.AnchorType = (BaseUIData::Anchor) comp["Anchor"].as<int>();
-							component.Component.Min = comp["Min"].as<glm::vec2>();
-							component.Component.Max = comp["Max"].as<glm::vec2>();
+							component.Component.UV0 = comp["UV0"].as<glm::vec2>();
+							component.Component.UV1 = comp["UV1"].as<glm::vec2>();
 							component.Component.TillingFactor = comp["TillingFactor"].as<glm::vec2>();
 							component.Component.FlipX = comp["FlipX"].as<bool>();
 							component.Component.FlipY = comp["FlipY"].as<bool>();
@@ -832,8 +832,8 @@ namespace origin
 					if(sprite_renderer_2d_component["Handle"])
 					{
 						src.Texture = sprite_renderer_2d_component["Handle"].as<uint64_t>();
-						src.Min = sprite_renderer_2d_component["Min"].as<glm::vec2>();
-						src.Max = sprite_renderer_2d_component["Max"].as<glm::vec2>();
+						src.UV0 = sprite_renderer_2d_component["UV0"].as<glm::vec2>();
+						src.UV1 = sprite_renderer_2d_component["UV1"].as<glm::vec2>();
 						src.TillingFactor = sprite_renderer_2d_component["TillingFactor"].as<glm::vec2>();
 					}
 				}

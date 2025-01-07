@@ -386,8 +386,8 @@ namespace origin
                         {
                             auto &anim = ac.State->GetAnimation();
                             src.Texture = anim->GetCurrentFrame().Handle;
-                            src.Min = anim->GetCurrentFrame().Min;
-                            src.Max = anim->GetCurrentFrame().Max;
+                            src.UV0 = anim->GetCurrentFrame().Min;
+                            src.UV1 = anim->GetCurrentFrame().Max;
                         }
                     }
                 }
@@ -575,8 +575,8 @@ namespace origin
                         {
                             Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
                             sc.Texture = anim->GetCurrentFrame().Handle;
-                            sc.Min = anim->GetCurrentFrame().Min;
-                            sc.Max = anim->GetCurrentFrame().Max;
+                            sc.UV0 = anim->GetCurrentFrame().Min;
+                            sc.UV1 = anim->GetCurrentFrame().Max;
                         }
                     }
                 }
@@ -655,8 +655,8 @@ namespace origin
                         {
                             Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
                             sc.Texture = anim->GetCurrentFrame().Handle;
-                            sc.Min = anim->GetCurrentFrame().Min;
-                            sc.Max = anim->GetCurrentFrame().Max;
+                            sc.UV0 = anim->GetCurrentFrame().Min;
+                            sc.UV1 = anim->GetCurrentFrame().Max;
                         }
                     }
                 }

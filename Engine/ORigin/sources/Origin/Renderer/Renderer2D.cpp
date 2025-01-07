@@ -590,33 +590,33 @@ namespace origin {
 			constexpr size_t quadVertexCount = 4;
 			glm::vec2 textureCoords[4]
 			{
-				{ src.Min.x, src.Min.y },
-				{ src.Max.x, src.Min.y },
-				{ src.Max.x, src.Max.y },
-				{ src.Min.x, src.Max.y }
+				{ src.UV0.x, src.UV0.y },
+				{ src.UV1.x, src.UV0.y },
+				{ src.UV1.x, src.UV1.y },
+				{ src.UV0.x, src.UV1.y }
 			};
 
 			if (src.FlipX)
 			{
-				textureCoords[0] = { src.Max.x, src.Min.y };
-				textureCoords[1] = { src.Min.x, src.Min.y };
-				textureCoords[2] = { src.Min.x, src.Max.y };
-				textureCoords[3] = { src.Max.x, src.Max.y };
+				textureCoords[0] = { src.UV1.x, src.UV0.y };
+				textureCoords[1] = { src.UV0.x, src.UV0.y };
+				textureCoords[2] = { src.UV0.x, src.UV1.y };
+				textureCoords[3] = { src.UV1.x, src.UV1.y };
 			}
 			else if (src.FlipY)
 			{
-				textureCoords[0] = { src.Min.x, src.Max.y };
-				textureCoords[1] = { src.Max.x, src.Max.y };
-				textureCoords[2] = { src.Max.x, src.Min.y };
-				textureCoords[3] = { src.Min.x, src.Min.y };
+				textureCoords[0] = { src.UV0.x, src.UV1.y };
+				textureCoords[1] = { src.UV1.x, src.UV1.y };
+				textureCoords[2] = { src.UV1.x, src.UV0.y };
+				textureCoords[3] = { src.UV0.x, src.UV0.y };
 			}
 
 			if (src.FlipX && src.FlipY)
 			{
-				textureCoords[0] = { src.Max.x, src.Max.y };
-				textureCoords[1] = { src.Min.x, src.Max.y };
-				textureCoords[2] = { src.Min.x, src.Min.y };
-				textureCoords[3] = { src.Max.x, src.Min.y };
+				textureCoords[0] = { src.UV1.x, src.UV1.y };
+				textureCoords[1] = { src.UV0.x, src.UV1.y };
+				textureCoords[2] = { src.UV0.x, src.UV0.y };
+				textureCoords[3] = { src.UV1.x, src.UV0.y };
 			}
 
 			if (s_Render2DData.QuadIndexCount >= Renderer::s_RenderData.MaxQuadIndices)

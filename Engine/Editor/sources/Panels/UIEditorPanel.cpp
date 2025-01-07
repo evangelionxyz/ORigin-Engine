@@ -245,8 +245,8 @@ namespace origin
                                     if (AssetManager::GetAssetType(handle) == AssetType::Texture)
                                     {
                                         sprite->Component.Texture = handle;
-                                        sprite->Component.Min = glm::vec2(0.0f);
-                                        sprite->Component.Max = glm::vec2(1.0f);
+                                        sprite->Component.UV0 = glm::vec2(0.0f);
+                                        sprite->Component.UV1 = glm::vec2(1.0f);
                                     }
                                     else
                                     {
@@ -257,9 +257,9 @@ namespace origin
                                 else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
                                 {
                                     SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-                                    sprite->Component.Texture = data.TextureHandle;
-                                    sprite->Component.Min = data.rect.min;
-                                    sprite->Component.Max = data.rect.max;
+                                    sprite->Component.Texture = data.texture_handle;
+                                    sprite->Component.UV0 = data.rect.min;
+                                    sprite->Component.UV1 = data.rect.max;
                                 }
 
                                 ImGui::EndDragDropTarget();
@@ -270,8 +270,8 @@ namespace origin
                                 if (UI::DrawButton("X"))
                                 {
                                     sprite->Component.Texture = 0;
-                                    sprite->Component.Min = glm::vec2(0.0f);
-                                    sprite->Component.Max = glm::vec2(1.0f);
+                                    sprite->Component.UV0 = glm::vec2(0.0f);
+                                    sprite->Component.UV1 = glm::vec2(1.0f);
                                 }
                             }
                         });

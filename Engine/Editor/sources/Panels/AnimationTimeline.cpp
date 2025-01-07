@@ -220,7 +220,7 @@ namespace origin
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
             {
                 SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-                SpriteAnimationFrame frame(data.TextureHandle);
+                SpriteAnimationFrame frame(data.texture_handle);
                 frame.Min = data.rect.min;
                 frame.Max = data.rect.max;
                 frame.FrameBegin += 4 * static_cast<int>(animation->GetTotalFrames());

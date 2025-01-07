@@ -339,8 +339,10 @@ namespace origin
         AssetHandle Texture = UUID(0);
 
         glm::vec4 Color = glm::vec4(1.0f);
-        glm::vec2 Min = glm::vec2(0.0f, 0.0f);
-        glm::vec2 Max = glm::vec2(1.0f, 1.0f);
+
+        glm::vec2 UV0 = glm::vec2(0.0f, 0.0f);
+        glm::vec2 UV1 = glm::vec2(1.0f, 1.0f);
+
         glm::vec2 TillingFactor = glm::vec2(1.0f);
 
         bool FlipX = false;

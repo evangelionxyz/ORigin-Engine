@@ -55,14 +55,16 @@ namespace origin
         MonoMethod *getStackTraceMethod = mono_property_get_get_method(stackTraceProperty);
         MonoString *stackTraceString = (MonoString *)mono_runtime_invoke(getStackTraceMethod, exception, nullptr, nullptr);
 
-        const char *stackTrace = mono_string_to_utf8(stackTraceString);
-        OGN_CORE_ERROR("[Script Class] {}", message);
-        OGN_CORE_ERROR("[Script Class] {}", stackTrace);
-        PUSH_CONSOLE_ERROR("[Script Class] Exception Message {}", message);
-        PUSH_CONSOLE_ERROR("[Script Class] Exception StackTrace {}", stackTrace);
+        if (stackTraceString)
+        {
+            const char *stackTrace = mono_string_to_utf8(stackTraceString);
+            OGN_CORE_ERROR("[Script Class] {}", message);
+            OGN_CORE_ERROR("[Script Class] {}", stackTrace);
+            PUSH_CONSOLE_ERROR("[Script Class] Exception Message {}", message);
+            PUSH_CONSOLE_ERROR("[Script Class] Exception StackTrace {}", stackTrace);
+            mono_free((void *)stackTrace);
 
+        }
         mono_free((void *)message);
-        mono_free((void *)stackTrace);
-
     }
 }
