@@ -58,7 +58,7 @@ void AudioSystemPanel::Render()
         }
 
         // horizontal slider
-                                    // + 1 (master channel)
+        // + 1 (master channel)
         const float total_channel_width = (m_Sounds.size() + 1) * channel_width + (channel_margin.right * 2.0f);
         const float visible_width = m_ViewportRect.max.x - m_ViewportRect.min.x;
         const float scrollbar_height = 15.0f;

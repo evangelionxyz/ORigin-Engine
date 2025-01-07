@@ -65,13 +65,33 @@ struct Rect
         return { min - rhs.min, max - rhs.max };
     }
 
-    bool Contains(const glm::vec2 &p) { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
-    bool Contains(const ImVec2 &p)    { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
-    void SetMin(const glm::vec2 &min)  { this->min = min; }
-    void SetMin(float x, float y)      { min.x = x; min.y = y; }
-    void SetMax(const glm::vec2 &min)  { this->max = max; }
-    void SetMax(float x, float y)      { max.x = x; max.y = y; }
-    const glm::vec2 GetSize() const { return max - min; }
+    inline Rect operator*(const Rect &rhs) const 
+    {
+        return { min * rhs.min, max * rhs.max };
+    }
+
+    inline Rect operator/(const Rect &rhs) const
+    {
+        return { min / rhs.min, max / rhs.max };
+    }
+
+    const bool Contains(const glm::vec2 &p) const { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
+    const bool Contains(const ImVec2 &p) const { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
+
+    void SetMin(const glm::vec2 &min) { this->min = min; }
+    void SetMin(float x, float y) { min.x = x; min.y = y; }
+    void SetMax(const glm::vec2 &min) { this->max = max; }
+    void SetMax(float x, float y) { max.x = x; max.y = y; }
+
+    const glm::vec2 GetCenter() const 
+    { 
+        return { (min.x + max.x) / 2.0f, (min.y + max.y) / 2.0f };
+    }
+
+    const glm::vec2 GetSize() const
+    {
+        return { max.x - min.x, max.y - min.y };
+    }
 };
 
 struct Margin

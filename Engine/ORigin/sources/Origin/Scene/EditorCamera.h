@@ -23,7 +23,6 @@ namespace origin {
 		void InitOrthographic(float size, float nearClip, float farClip) override;
         void SetProjectionType(ProjectionType type) override;
 		void OnUpdate(Timestep ts) override;
-		void OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax) override;
         void SetOrthoScale(float value) override;
         void SetOrthoScaleMax(float max) override;
 		void SetViewportSize(u32 width, u32 height) override;

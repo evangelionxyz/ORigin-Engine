@@ -44,7 +44,6 @@ namespace origin
         virtual void InitPerspective(float fovy, float aspectRatio, float nearClip, float farClip) { }
         virtual void InitOrthographic(float scale, float nearClip, float farClip) { }
         virtual void OnUpdate(Timestep ts) {};
-        virtual void OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax) { }
         virtual void SetProjectionType(ProjectionType type) { }
         virtual void OnEvent(Event &e) { };
         virtual void SetViewportSize(u32 width, u32 height) { }

@@ -124,7 +124,6 @@ namespace origin
 
         glm::vec4 m_ClearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
         glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
-        glm::vec2 m_SceneViewportSize = { 0.0f, 0.0f };
         glm::vec2 m_ViewportMousePos = { 0.0f, 0.0f };
         Rect m_ViewportRect = Rect();
 

@@ -5,6 +5,8 @@
 
 #include "Origin/Asset/Asset.h"
 
+#include "Origin/Math/Math.h"
+
 #include <filesystem>
 #include <glm/glm.hpp>
 
@@ -12,8 +14,7 @@ namespace origin
 {
 	struct SpriteSheetData
 	{
-		glm::vec2 Min = glm::vec2(0.0f);
-		glm::vec2 Max = glm::vec2(1.0f);
+		Rect rect = Rect(0.0f, 0.0f, 1.0f, 1.0f);
 		AssetHandle TextureHandle = UUID(0);
 	};
 
@@ -29,9 +30,8 @@ namespace origin
 		static std::shared_ptr<SpriteSheet> Create(const std::filesystem::path &filepath);
 
 		static AssetType GetStaticType() { return AssetType::SpritesSheet; }
-		[[nodiscard]] AssetType GetType() const override { return GetStaticType(); }
-
-		[[nodiscard]] AssetHandle GetTextureHandle() const { return m_TextureHandle; }
+		AssetType GetType() const override { return GetStaticType(); }
+		AssetHandle GetTextureHandle() const { return m_TextureHandle; }
 		std::vector<SpriteSheetData> Sprites;
 	private:
 		std::filesystem::path m_Filepath;

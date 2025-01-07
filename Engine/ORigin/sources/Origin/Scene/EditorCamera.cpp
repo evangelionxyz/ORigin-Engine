@@ -232,11 +232,6 @@ namespace origin {
         return 0.8f;
     }
 
-    void EditorCamera::OnUpdate(Timestep ts, const glm::vec2 &screenMin, const glm::vec2 &screenMax)
-    {
-        
-    }
-
     void EditorCamera::SetOrthoScale(float value)
     {
         m_OrthoScale = value;

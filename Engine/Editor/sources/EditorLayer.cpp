@@ -126,8 +126,8 @@ namespace origin
         auto [mx, my] = ImGui::GetMousePos();
         m_ViewportMousePos = { mx, my };
         m_ViewportMousePos -= m_ViewportRect.min;
-        m_ViewportMousePos.y = m_SceneViewportSize.y - m_ViewportMousePos.y;
-        m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_SceneViewportSize - glm::vec2(1.0f, 1.0f));
+        m_ViewportMousePos.y = m_ViewportRect.GetSize().y - m_ViewportMousePos.y;
+        m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_ViewportRect.GetSize() - glm::vec2(1.0f, 1.0f));
 
         ProfilerTimer timer("EditorLayer::OnUpdate", [&](const ProfilerResult result)
         {
@@ -139,13 +139,13 @@ namespace origin
         case SceneState::Edit:
         case SceneState::Simulate:
         {
-            if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_SceneViewportSize.x != fb_spec.Width || m_SceneViewportSize.y != fb_spec.Height)
+            if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_ViewportRect.GetSize().x != fb_spec.Width || m_ViewportRect.GetSize().y != fb_spec.Height)
             {
-                if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
+                if (m_ViewportRect.GetSize().x > 0.0f && m_ViewportRect.GetSize().y > 0.0f)
                 {
-                    m_Framebuffer->Resize(static_cast<u32>(m_SceneViewportSize.x), static_cast<u32>(m_SceneViewportSize.y));
-                    m_EditorCamera.SetViewportSize(m_SceneViewportSize.x, m_SceneViewportSize.y);
-                    m_ActiveScene->OnViewportResize(static_cast<u32>(m_SceneViewportSize.x), static_cast<u32>(m_SceneViewportSize.y));
+                    m_Framebuffer->Resize(static_cast<u32>(m_ViewportRect.GetSize().x), static_cast<u32>(m_ViewportRect.GetSize().y));
+                    m_EditorCamera.SetViewportSize(m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y);
+                    m_ActiveScene->OnViewportResize(static_cast<u32>(m_ViewportRect.GetSize().x), static_cast<u32>(m_ViewportRect.GetSize().y));
                 }
 
             }
@@ -154,12 +154,12 @@ namespace origin
         case SceneState::Play:
             const u32 width = m_ActiveScene->GetWidth();
             const u32 height = m_ActiveScene->GetHeight();
-            if (m_SceneViewportSize.x != width && m_SceneViewportSize.y != height)
+            if (m_ViewportRect.GetSize().x != width && m_ViewportRect.GetSize().y != height)
             {
-                if (m_SceneViewportSize.x > 0.0f && m_SceneViewportSize.y > 0.0f)
+                if (m_ViewportRect.GetSize().x > 0.0f && m_ViewportRect.GetSize().y > 0.0f)
                 {
-                    m_ActiveScene->OnViewportResize(static_cast<u32>(m_SceneViewportSize.x),
-                        static_cast<u32>(m_SceneViewportSize.y));
+                    m_ActiveScene->OnViewportResize(static_cast<u32>(m_ViewportRect.GetSize().x),
+                        static_cast<u32>(m_ViewportRect.GetSize().y));
                 }
                 break;
             }
@@ -729,8 +729,7 @@ namespace origin
         m_ViewportRect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
         m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-        ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-        m_SceneViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+        const glm::vec2 &vpSize = m_ViewportRect.GetSize();
 
         if (m_SceneState == SceneState::Play)
         {
@@ -741,62 +740,62 @@ namespace origin
                     switch (cc.Camera.GetAspectRatioType())
                     {
                     case AspectRatioType::TwentyOneByNine:
-                        m_GameViewportSize.x = m_SceneViewportSize.x;
+                        m_GameViewportSize.x = vpSize.x;
                         m_GameViewportSize.y = m_GameViewportSize.x / 21.0f * 9.0f;
 
-                        if (m_GameViewportSize.y > m_SceneViewportSize.y)
+                        if (m_GameViewportSize.y > vpSize.y)
                         {
-                            m_GameViewportSize.y = m_SceneViewportSize.y;
+                            m_GameViewportSize.y = vpSize.y;
                             m_GameViewportSize.x = m_GameViewportSize.y / 9.0f * 21.0f;
                         }
                         break;
                     case AspectRatioType::SixteenByNine:
-                        m_GameViewportSize.x = m_SceneViewportSize.x;
+                        m_GameViewportSize.x = vpSize.x;
                         m_GameViewportSize.y = m_GameViewportSize.x / 16.0f * 9.0f;
 
-                        if (m_GameViewportSize.y > m_SceneViewportSize.y)
+                        if (m_GameViewportSize.y > vpSize.y)
                         {
-                            m_GameViewportSize.y = m_SceneViewportSize.y;
+                            m_GameViewportSize.y = vpSize.y;
                             m_GameViewportSize.x = m_GameViewportSize.y / 9.0f * 16.0f;
                         }
                         break;
                     case AspectRatioType::SixteenByTen:
-                        m_GameViewportSize.x = m_SceneViewportSize.x;
+                        m_GameViewportSize.x = vpSize.x;
                         m_GameViewportSize.y = m_GameViewportSize.x / 16.0f * 10.0f;
 
-                        if (m_GameViewportSize.y > m_SceneViewportSize.y)
+                        if (m_GameViewportSize.y > vpSize.y)
                         {
-                            m_GameViewportSize.y = m_SceneViewportSize.y;
+                            m_GameViewportSize.y = vpSize.y;
                             m_GameViewportSize.x = m_GameViewportSize.y / 10.0f * 16.0f;
                         }
                         break;
                     case AspectRatioType::FourByThree:
-                        m_GameViewportSize.x = m_SceneViewportSize.x;
+                        m_GameViewportSize.x = vpSize.x;
                         m_GameViewportSize.y = m_GameViewportSize.x / 4.0f * 3.0f;
 
-                        if (m_GameViewportSize.y > m_SceneViewportSize.y)
+                        if (m_GameViewportSize.y > vpSize.y)
                         {
-                            m_GameViewportSize.y = m_SceneViewportSize.y;
+                            m_GameViewportSize.y = vpSize.y;
                             m_GameViewportSize.x = m_GameViewportSize.y / 3.0f * 4.0f;
                         }
                         break;
                     case AspectRatioType::Free:
-                        m_GameViewportSize.x = m_SceneViewportSize.x;
-                        m_GameViewportSize.y = m_SceneViewportSize.y;
+                        m_GameViewportSize.x = vpSize.x;
+                        m_GameViewportSize.y = vpSize.y;
                         break;
                     }
                 }
             }
 
             // centered image position
-            float offsetX = (m_SceneViewportSize.x - m_GameViewportSize.x) * 0.5f;
-            float offsetY = (m_SceneViewportSize.y - m_GameViewportSize.y) * 0.5f;
+            f32 offsetX = (vpSize.x - m_GameViewportSize.x) * 0.5f;
+            f32 offsetY = (vpSize.y - m_GameViewportSize.y) * 0.5f;
             ImGui::SetCursorPos({ offsetX, offsetY + 20.0f });
         }
         else
         {
-            m_GameViewportSize.x = m_SceneViewportSize.x;
-            m_GameViewportSize.y = m_SceneViewportSize.y;
+            m_GameViewportSize.x = vpSize.x;
+            m_GameViewportSize.y = vpSize.y;
         }
 
         ImTextureID viewportID = reinterpret_cast<void*>((uintptr_t)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget));
@@ -822,7 +821,7 @@ namespace origin
 
         m_ImGuizmoOperation = ImGuizmo::OPERATION::NONE;
 
-        float snapValue = 0.5f;
+        f32 snapValue = 0.5f;
         switch (m_Gizmos->GetType())
         {
         case GizmoType::TRANSLATE:
@@ -862,8 +861,8 @@ namespace origin
             glm::mat4 transform = tc.GetTransform();
             auto &idc = entity.GetComponent<IDComponent>();
 
-            float snapValues[] = { snapValue, snapValue, snapValue };
-            float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
+            f32 snapValues[] = { snapValue, snapValue, snapValue };
+            f32 bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
             bool boundSizing = m_Gizmos->GetType() == GizmoType::BOUNDARY
                 && !entity.HasComponent<CameraComponent>()
                 && !entity.HasComponent<LightComponent>()
@@ -1216,7 +1215,7 @@ namespace origin
 
                     if (ImGui::TreeNodeEx("Camera Settings", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
                     {
-                        ImGui::Text("Viewport Size %.0f, %.0f", m_SceneViewportSize.x, m_SceneViewportSize.y);
+                        ImGui::Text("Viewport Size %.0f, %.0f", m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y);
 
                         // Projection Type Settings
                         const char *CMPTypeString[] = { "Perspective", "Orthographic" };
@@ -1258,7 +1257,7 @@ namespace origin
                                 ImGui::EndCombo();
                             }
 
-                            float fov = m_EditorCamera.GetFOV();
+                            f32 fov = m_EditorCamera.GetFOV();
                             if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
                             {
                                 m_EditorCamera.SetFov(fov);
@@ -1426,11 +1425,11 @@ namespace origin
 
     void EditorLayer::DisplayMemoryGraphUsage()
     {
-        static std::vector<float> memory_usage_history(HISTORY_SIZE, 0.0f);
+        static std::vector<f32> memory_usage_history(HISTORY_SIZE, 0.0f);
         static int current_index = 0;
 
         size_t memory_usage = Application::GetInstance().GetProcessMonitor().GetMemoryUsage();
-        float memory_uage_mb = static_cast<float>(memory_usage) / (1024 * 1024);
+        f32 memory_uage_mb = static_cast<f32>(memory_usage) / (1024 * 1024);
 
         memory_usage_history[current_index] = memory_uage_mb;
         current_index = (current_index + 1) % HISTORY_SIZE;
@@ -1444,11 +1443,11 @@ namespace origin
 
     void EditorLayer::DisplayCPUUsageGraph()
     {
-        static std::vector<float> cpu_usage_history(HISTORY_SIZE, 0.0f);
+        static std::vector<f32> cpu_usage_history(HISTORY_SIZE, 0.0f);
         static int current_index = 0;
 
-        static float cpu_usage = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
-        float cpu_usage_graph = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
+        static f32 cpu_usage = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
+        f32 cpu_usage_graph = Application::GetInstance().GetProcessMonitor().GetCpuUsage();
         static auto last_update = std::chrono::steady_clock::now();
 
         auto now = std::chrono::steady_clock::now();
@@ -1511,7 +1510,7 @@ namespace origin
             const glm::vec2 viewportSize = m_ViewportRect.max - m_ViewportRect.min;
             const glm::vec2 &mouse = { m_ViewportMousePos.x, m_ViewportMousePos.y };
 
-            float closestT = std::numeric_limits<float>::max();
+            f32 closestT = std::numeric_limits<f32>::max();
             Entity closestEntity = { entt::null, nullptr };
 
             auto ray_direction = glm::vec3(0.0f);
@@ -1534,7 +1533,7 @@ namespace origin
                     obb = OBB(tc.WorldTranslation, scale, tc.WorldRotation);
                 }
 
-                float t_intersect;
+                f32 t_intersect;
                 if (obb.RayIntersection(ray_origin, ray_direction, t_intersect))
                 {
                     // find the closest entity
@@ -1596,8 +1595,10 @@ namespace origin
                 {
                     auto &tc = selectedEntity.GetComponent<TransformComponent>();
                     const auto &idc = selectedEntity.GetComponent<IDComponent>();
-                    float viewport_height = m_EditorCamera.GetViewportSize().y;
-                    float orthographic_scale = m_EditorCamera.GetOrthoScale() / viewport_height;
+                    
+                    const f32 viewport_height = m_EditorCamera.GetViewportSize().y;
+                    f32 orthographic_scale = m_EditorCamera.GetOrthoScale() / viewport_height;
+
                     if (m_SceneState == SceneState::Play)
                     {
                         if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
@@ -1629,7 +1630,7 @@ namespace origin
                     {
                         if (Input::IsKeyPressed(Key::LeftShift))
                         {
-                            float snap_value = 0.5f;
+                            f32 snap_value = 0.5f;
                             if (Input::IsKeyPressed(Key::LeftControl))
                             {
                                 snap_value = 0.1f;

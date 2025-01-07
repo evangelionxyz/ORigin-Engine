@@ -34,6 +34,7 @@ namespace origin {
 
         Entity connected_entity              = m_Scene->GetEntityWithUUID(joint->ConnectedBodyID);
         Rigidbody2DComponent &connected_body = connected_entity.GetComponent<Rigidbody2DComponent>();
+
         OGN_CORE_ASSERT(b2Body_IsValid(connected_body.BodyId), "[Physics 2D] Invalid connected body id");
 
         b2RevoluteJointDef joint_def = b2DefaultRevoluteJointDef();

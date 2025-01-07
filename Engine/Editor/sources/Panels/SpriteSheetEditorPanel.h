@@ -12,6 +12,8 @@
 #include "Origin/Scene/EditorCamera.h"
 #include "PanelBase.h"
 
+#include "Origin/Math/Math.h"
+
 #include <glm/glm.hpp>
 
 namespace origin
@@ -29,12 +31,21 @@ namespace origin
 
     struct SpriteSheetController
     {
-        glm::vec2 Position { 0.0f, 0.0f };
-        glm::vec2 Size { 16.0f, 16.0f };
-        glm::vec2 Min { 1.0f, 1.0f };
-        glm::vec2 Max { 1.0f, 1.0f };
+        glm::vec2 position { 0.0f, 0.0f };
+        glm::vec2 size { 16.0f, 16.0f };
+        Rect rect = Rect({ 1.0f, 1.0f }, { 1.0f, 1.0f });
 
-        ControllerCorner SelectedCorner = ControllerCorner::NONE;
+        struct Corner
+        {
+            Rect top_left;
+            Rect top_right;
+            Rect bottom_left;
+            Rect bottom_right;
+        };
+
+        Corner corner;
+
+        ControllerCorner selected_corner = ControllerCorner::NONE;
     };
 
     class SpriteSheetEditorPanel : public PanelBase
@@ -46,7 +57,7 @@ namespace origin
         void SetSelectedSpriteSheet(AssetHandle handle);
         void SetMainTexture(AssetHandle handle) const;
 
-        void AddSprite(glm::vec2 position, glm::vec2 size, glm::vec2 min, glm::vec2 max) const;;
+        void AddSprite(const glm::vec2 &position, const glm::vec2 &size, const Rect &rect) const;
         void RemoveSprite(i32 index);
         void Duplicate(i32 index);
 
@@ -76,9 +87,6 @@ namespace origin
         std::shared_ptr<Texture2D> m_Texture;
         std::vector<SpriteSheetController> m_Controls;
 
-        Rect m_ViewportRect = Rect();
-
-        glm::ivec2 m_Mouse = { 0, 0 };
         glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
         std::filesystem::path m_CurrentFilepath;
         i32 m_SelectedIndex = 0;

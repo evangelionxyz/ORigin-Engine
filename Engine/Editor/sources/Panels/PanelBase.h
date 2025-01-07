@@ -33,6 +33,7 @@ public:
     void Open() { m_Open = true; }
 
 protected:
+    glm::vec2 m_ViewportMouse = { 0.0f, 0.0f };
     Rect m_ViewportRect = Rect();
 
     std::string m_Title;

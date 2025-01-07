@@ -10,7 +10,7 @@
 
 namespace origin
 {
-	bool SpriteSheetSerializer::Serialize(const std::filesystem::path &filepath, const std::shared_ptr<SpriteSheet> &spriteSheet)
+	bool SpriteSheetSerializer::Serialize(const std::filesystem::path &filepath, const Ref<SpriteSheet> &spriteSheet)
 	{
 		OGN_PROFILER_FUNCTION();
 
@@ -24,8 +24,7 @@ namespace origin
 			for (auto &sprite : spriteSheet->Sprites)
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "Min" << sprite.Min;
-				out << YAML::Key << "Max" << sprite.Max;
+				out << YAML::Key << "Rect" << sprite.rect;
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
@@ -39,12 +38,13 @@ namespace origin
 		return true;
 	}
 
-	bool SpriteSheetSerializer::Deserialize(const std::filesystem::path &filepath, std::shared_ptr<SpriteSheet> &spriteSheet)
+	bool SpriteSheetSerializer::Deserialize(const std::filesystem::path &filepath, Ref<SpriteSheet> &spriteSheet)
 	{
 		OGN_PROFILER_FUNCTION();
 
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
+
 		strStream << stream.rdbuf();
 
 		YAML::Node s = YAML::Load(strStream.str());
@@ -58,12 +58,11 @@ namespace origin
 
 			if (YAML::Node sprites = data["Sprites"])
 			{
-				for (auto s : sprites)
+				for (auto sprite : sprites)
 				{
-					SpriteSheetData sprite {};
-					sprite.Min = s["Min"].as<glm::vec2>();
-					sprite.Max = s["Max"].as<glm::vec2>();
-					spriteSheet->Sprites.push_back(sprite);
+					SpriteSheetData spriteSheetData {};
+					spriteSheetData.rect = sprite["Rect"].as<Rect>();
+					spriteSheet->Sprites.push_back(spriteSheetData);
 				}
 			}
 		}

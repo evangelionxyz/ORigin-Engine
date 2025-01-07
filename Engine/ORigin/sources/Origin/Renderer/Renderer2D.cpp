@@ -335,6 +335,13 @@ namespace origin {
 		StartBatch();
 	}
 
+	void Renderer2D::DrawQuad(const Rect &rect, const glm::vec4 &color)
+	{
+		const glm::vec2 &center = rect.GetCenter();
+		const glm::vec2 &size = rect.GetSize();
+		DrawQuad({ center.x, center.y, 0.0f }, size, color);
+	}
+
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, color);

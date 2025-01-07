@@ -713,8 +713,8 @@ namespace origin {
                         {
                             SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
                             component.Texture = data.TextureHandle;
-                            component.Min = data.Min;
-                            component.Max = data.Max;
+                            component.Min = data.rect.min;
+                            component.Max = data.rect.max;
                         }
                         ImGui::EndDragDropTarget();
                     }
