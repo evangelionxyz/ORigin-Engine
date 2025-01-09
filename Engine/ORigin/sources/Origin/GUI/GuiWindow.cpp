@@ -39,21 +39,28 @@ void GuiWindow::Begin()
 
 void GuiWindow::End()
 {
-    if (m_Open || (!m_Open && m_Closing))
+    if (m_Open || m_Closing)
     {
         ImGui::End();
+        if (m_Closing)
+        {
+            m_Closing = false;
+            m_Open = false;
+        }
     }
-    ImGui::PopStyleVar(static_cast<int>(m_StyleCount));
-    ImGui::PopStyleColor(static_cast<int>(m_ColorStyleCount));
+
+    if (m_StyleCount > 0)
+        ImGui::PopStyleVar(m_StyleCount);
+    if (m_ColorStyleCount > 0)
+        ImGui::PopStyleColor(m_ColorStyleCount);
 }
 
 void GuiWindow::AddColorStyle(std::initializer_list<std::pair<UI::EColorStyle, glm::vec4>> colorStyles)
 {
     m_ColorStyleCount = static_cast<u8>(colorStyles.size());
-
     for (u8 i = 0; i < m_ColorStyleCount; ++i)
     {
-        auto it = colorStyles.begin() + i;
+        const auto it = colorStyles.begin() + i;
         ImGui::PushStyleColor(static_cast<ImGuiStyleVar>(it->first), { it->second.x, it->second.y, it->second.z, it->second.w });
     }
 }
@@ -64,9 +71,9 @@ void GuiWindow::AddStyle(std::initializer_list<std::pair<UI::EStyle, StyleVarian
 
     for (const auto &style : styles)
     {
-        std::visit([&](auto &&value)
+        std::visit([&]<typename T0>(T0 &&value)
         {
-            using T = std::decay_t<decltype(value)>;
+            using T = std::decay_t<T0>;
             if constexpr (std::is_same_v<T, float>)
                 ImGui::PushStyleVar(static_cast<ImGuiStyleVar>(style.first), value);
             else if constexpr (std::is_same_v<T, glm::vec2>)

@@ -94,9 +94,9 @@ namespace origin {
 		OGN_PROFILER_FUNCTION();
 
 #ifdef _WIN32
-		std::filesystem::path projectFilepath = FileDialogs::SaveFile("ORigin Project (*.oxproj)\0*.oxproj\0");
+		std::filesystem::path projectFilepath = FileDialogs::SaveFile("Origin Project (*.oxproj)\0*.oxproj\0");
 #elif __linux__
-		std::filesystem::path projectFilepath = FileDialogs::SaveFile("ORigin Project | *.oxproj");
+		std::filesystem::path projectFilepath = FileDialogs::SaveFile("Origin Project | *.oxproj");
 #endif
 		if (projectFilepath == "")
 			return nullptr;
@@ -163,11 +163,11 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 #ifdef _WIN32
-		std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Project (*.oxproj)\0*.oxproj\0");
+		std::filesystem::path filepath = FileDialogs::OpenFile("Origin Project (*.oxproj)\0*.oxproj\0");
 #elif __linux__
 															// we can use ; to separate extension
 															// *.oxproj; *.txt ....
-		std::filesystem::path filepath = FileDialogs::OpenFile("ORigin Project | *.oxproj");
+		std::filesystem::path filepath = FileDialogs::OpenFile("Origin Project | *.oxproj");
 #endif
 		if (filepath.string().empty())
 			return nullptr;

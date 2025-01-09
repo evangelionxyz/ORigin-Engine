@@ -2,7 +2,7 @@
 
 #include "Origin/Scene/SpriteSheet.h"
 
-#include "SpriteSheetEditorPanel.h"
+#include "SpriteSheetEditorPanel.hpp"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Serializer/SpriteSheetSerializer.h"

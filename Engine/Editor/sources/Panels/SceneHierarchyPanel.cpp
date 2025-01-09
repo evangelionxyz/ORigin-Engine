@@ -1,9 +1,9 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "../EditorLayer.h"
+#include "../EditorLayer.hpp"
 
-#include "UIEditorPanel.h"
-#include "SceneHierarchyPanel.h"
+#include "UIEditorPanel.hpp"
+#include "SceneHierarchyPanel.hpp"
 #include "entt/entt.hpp"
 
 #include "Origin/GUI/UI.h"

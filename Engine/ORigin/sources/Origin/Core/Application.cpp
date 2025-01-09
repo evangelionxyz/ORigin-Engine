@@ -117,7 +117,6 @@ namespace origin {
         if (m_GuiLayer)
         {
             m_GuiLayer->OnDetach();
-
             delete m_GuiLayer;
         }
     }
@@ -142,6 +141,18 @@ namespace origin {
     {
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();
+    }
+
+    void Application::PopLayer(Layer* layer)
+    {
+        layer->OnDetach();
+        m_LayerStack.PopLayer(layer);
+    }
+
+    void Application::PopOverlay(Layer* layer)
+    {
+        layer->OnDetach();
+        m_LayerStack.PopOverlay(layer);
     }
 
     void Application::OnEvent(Event& e)

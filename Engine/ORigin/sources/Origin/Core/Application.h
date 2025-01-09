@@ -51,7 +51,9 @@ namespace origin {
         void Run();
         void Close();
         void PushLayer(Layer* layer);
+        void PopLayer(Layer *layer);
         void PushOverlay(Layer* layer);
+        void PopOverlay(Layer* layer);
         float GetTime();
 
         void SubmitToMainThread(const std::function<void()>& function);
@@ -59,7 +61,7 @@ namespace origin {
         bool GetMinimized() const { return m_Minimized; }
         Window &GetWindow() const { return *m_Window.get(); }
         const ApplicationSpecification& GetSpecification() const { return m_Spec; }
-        GuiLayer *GetGuiLayer() { return m_GuiLayer; }
+        GuiLayer *GetGuiLayer() const { return m_GuiLayer; }
         bool SetVSync = false;
 
         ProcessMonitor &GetProcessMonitor() { return m_ProcessMonitor; }

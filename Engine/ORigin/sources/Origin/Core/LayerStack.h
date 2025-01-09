@@ -20,7 +20,7 @@ namespace origin {
         void PopLayer(Layer* layer);
         void PopOverlay(Layer* overlay);
 
-        void Shutdown();
+        void Shutdown() const;
 
         std::vector<Layer*>::const_iterator begin() { return m_Layers.begin(); }
         std::vector<Layer*>::const_iterator end() { return m_Layers.end(); }

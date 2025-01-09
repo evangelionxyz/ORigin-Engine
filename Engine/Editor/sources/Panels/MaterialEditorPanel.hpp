@@ -4,7 +4,7 @@
 #include "Origin/Renderer/Material.h"
 #include "Origin/Asset/Asset.h"
 
-#include "PanelBase.h"
+#include "PanelBase.hpp"
 
 #include "Origin/Core/MouseEvent.h"
 #include "Origin/Core/KeyEvent.h"

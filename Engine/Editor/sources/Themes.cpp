@@ -1,38 +1,41 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include <imgui.h>
-#include "Themes.h"
+#include "Themes.hpp"
 
 namespace origin {
 
-Themes::Themes()
+std::string Themes::s_current_theme;
+std::unordered_map<std::string, std::function<void()>> Themes::s_themes_func_map;
+
+void Themes::Init()
 {
-    m_Themes["Dark"] = [this]() { SetDefaultDark(); };
-    m_Themes["Bess Dark"] = [this]() { SetBessDarkThemeColors(); };
-    m_Themes["Modern Dark"] = [this]() { SetModernDark(); };
-    m_Themes["Mocha"] = [this]() { SetMochaColors(); };
-    m_Themes["Modern"] = [this]() { SetModernColors(); };
-    m_Themes["Material You"] = [this]() { SetMaterialYouColors(); };
-    m_Themes["Glass Theme"] = [this]() { SetGlassTheme(); };
-    m_Themes["Fluent UI"] = [this]() { SetFluentUITheme(); };
-    m_Themes["Fluent UI - Light"] = [this]() { SetFluentUILightTheme(); };
+    s_themes_func_map["Dark"] = Themes::SetDefaultDark;
+    s_themes_func_map["Bess Dark"] = Themes::SetBessDarkThemeColors;
+    s_themes_func_map["Modern Dark"] = Themes::SetModernDark;
+    s_themes_func_map["Mocha"] = Themes::SetMochaColors;
+    s_themes_func_map["Modern"] = Themes::SetModernColors;
+    s_themes_func_map["Material You"] = Themes::SetMaterialYouColors;
+    s_themes_func_map["Glass Theme"] = Themes::SetGlassTheme;
+    s_themes_func_map["Fluent UI"] = Themes::SetFluentUITheme;
+    s_themes_func_map["Fluent UI - Light"] = Themes::SetFluentUILightTheme;
 }
 
 void Themes::ApplyTheme(const std::string &name)
 {
-    if (!m_Themes.contains(name))
+    if (!s_themes_func_map.contains(name))
     {
-        m_Themes["Dark"]();
-        m_CurrentTheme = "Dark";
+        s_themes_func_map["Dark"]();
+        s_current_theme = "Dark";
         return;
     }
-    m_Themes[name]();
-    m_CurrentTheme = name;
+    s_themes_func_map[name]();
+    s_current_theme = name;
 }
 
 void Themes::AddTheme(const std::string &name, const std::function<void()> &func)
 {
-    m_Themes[name] = func;
+    s_themes_func_map[name] = func;
 }
 
 void Themes::SetDefaultDark()

@@ -10,7 +10,7 @@
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Scene/EditorCamera.h"
-#include "PanelBase.h"
+#include "PanelBase.hpp"
 
 #include "Origin/Math/Math.h"
 

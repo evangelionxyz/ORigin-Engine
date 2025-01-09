@@ -1,4 +1,4 @@
-#include "MaterialEditorPanel.h"
+#include "MaterialEditorPanel.hpp"
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Profiler/Profiler.h"

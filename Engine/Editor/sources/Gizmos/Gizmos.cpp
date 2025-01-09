@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "Gizmos.h"
-#include "../EditorLayer.h"
+#include "Gizmos.hpp"
+#include "../EditorLayer.hpp"
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Renderer/Renderer2D.h"
 #define GLM_ENABLE_EXPERIMENTAL

@@ -1,19 +1,16 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #pragma once
 
 #include <Origin.h>
-#include "Gizmos/Gizmos.h"
+#include "Gizmos/Gizmos.hpp"
 
-#include "Panels/UIEditorPanel.h"
-#include "Panels/Dockspace.h"
-#include "Panels/MaterialEditorPanel.h"
-#include "Panels/AnimationTimeline.h"
-#include "Panels/SpriteSheetEditorPanel.h"
-#include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/AudioSystemPanel.h"
-
-#include "Themes.h"
+#include "Panels/UIEditorPanel.hpp"
+#include "Panels/MaterialEditorPanel.hpp"
+#include "Panels/AnimationTimeline.hpp"
+#include "Panels/SpriteSheetEditorPanel.hpp"
+#include "Panels/SceneHierarchyPanel.hpp"
+#include "Panels/ContentBrowserPanel.hpp"
 
 #include <ImGuizmo.h>
 
@@ -65,7 +62,7 @@ namespace origin
         void OpenScene(AssetHandle handle);
         void SerializeScene(const Ref<Scene> &scene, const std::filesystem::path &filepath);
         void OnDuplicateEntity();
-        void OnDestroyEntity();
+        void OnDestroyEntity() const;
         void OnEvent(Event& e) override;
         bool OnKeyPressed(KeyPressedEvent &e);
         bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
@@ -86,7 +83,7 @@ namespace origin
         void InitGrid();
         void ShowGrid();
 
-        enum class SceneState
+        enum class SceneState : u8
         {
             Edit = 0,
             Play = 1,
@@ -96,7 +93,6 @@ namespace origin
         std::vector<ProfilerResult> m_ProfilerResults;
 
         SceneState m_SceneState = SceneState::Edit;
-        Dockspace m_Dockspace;
 
         EditorCamera m_EditorCamera;
 
@@ -106,7 +102,6 @@ namespace origin
         UIEditorPanel           *m_UIEditorPanel          = nullptr;
         std::vector<PanelBase *> m_Panels;
         Scope<Gizmos> m_Gizmos;
-        Themes m_Themes;
 
         u32 m_GridVAO, m_GridVBO;
         glm::vec4 m_GridThinColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -139,10 +134,13 @@ namespace origin
         bool m_VisualizeBoundingBox = false;
         Entity m_HoveredEntity = {};
 
+        bool m_IsProjectBrowserOpen = true;
+
         friend class Gizmos;
         friend class UIEditorPanel;
         friend class ContentBrowserPanel;
         friend class SceneHierarchyPanel;
         friend class EditorSerializer;
+        friend class ProjectBrowser;
     };
 }

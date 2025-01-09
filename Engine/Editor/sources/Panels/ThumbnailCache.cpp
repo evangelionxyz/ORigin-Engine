@@ -1,6 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "ThumbnailCache.h"
+#include "ThumbnailCache.hpp"
 #include "Origin/Asset/AssetImporter.h"
 
 namespace origin {

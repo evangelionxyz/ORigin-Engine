@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "ContentBrowserPanel.h"
-#include "../EditorLayer.h"
+#include "ContentBrowserPanel.hpp"
+#include "../EditorLayer.hpp"
 
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Asset/AssetImporter.h"

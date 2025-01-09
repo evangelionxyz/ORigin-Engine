@@ -15,6 +15,7 @@ namespace origin {
 		std::string m_Name;
 
 	public:
+		virtual ~Layer() = default;
 		Layer(const std::string& name = "layer");
 		
 		virtual void OnAttach() {}

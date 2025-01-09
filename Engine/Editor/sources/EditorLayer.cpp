@@ -1,16 +1,22 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "EditorLayer.h"
+#include "EditorLayer.hpp"
+
 #include "Origin/EntryPoint.h"
-#include "Gizmos/Gizmos.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Asset/AssetImporter.h"
-#include "Panels/AnimationTimeline.h"
 #include "Origin/GUI/UI.h"
 
-#include "Serializer/EditorSerializer.h"
+#include "Gizmos/Gizmos.hpp"
+#include "Panels/AnimationTimeline.hpp"
+#include "Serializer/EditorSerializer.hpp"
+
+#include "Panels/AudioSystemPanel.hpp"
+
+#include "Themes.hpp"
+#include "Dockspace.hpp"
 
 #include <filesystem>
 
@@ -24,7 +30,9 @@
 namespace origin
 {
     static EditorLayer *s_Instance = nullptr;
-    EditorLayer::EditorLayer() : Layer("EditorLayer") { s_Instance = this; }
+
+    EditorLayer::EditorLayer()
+        : Layer("EditorLayer") { s_Instance = this; }
 
     void EditorLayer::OnAttach()
     {
@@ -323,7 +331,7 @@ namespace origin
         }
     }
 
-    void EditorLayer::OnDestroyEntity()
+    void EditorLayer::OnDestroyEntity() const
     {
         if (m_SceneState != SceneState::Edit)
             return;
@@ -337,7 +345,7 @@ namespace origin
 
     void EditorLayer::OnGuiRender()
     {
-        m_Dockspace.Begin();
+        Dockspace::Begin();
         SceneViewport();
 
         for (PanelBase *p : m_Panels)
@@ -351,7 +359,7 @@ namespace origin
         GUIRender();
 
         if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
-        m_Dockspace.End();
+        Dockspace::End();
     }
 
     void EditorLayer::OnScenePlay()
@@ -652,8 +660,10 @@ namespace origin
 
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New Project")) NewProject();
-                if (ImGui::MenuItem("Open Project")) OpenProject();
+                if (ImGui::MenuItem("New Project"))
+                    NewProject();
+                if (ImGui::MenuItem("Open Project"))
+                    OpenProject();
 
                 if (ImGui::MenuItem("Save Project", "", nullptr, static_cast<bool>(Project::GetActive())))
                 {
@@ -940,14 +950,17 @@ namespace origin
         m_GuiWindowSceneStats.AddStyle({ 
             { UI::EStyle::WindowPadding, glm::vec2(10.0f, 10.0f)},
         });
+        
         m_GuiWindowSceneStats.Begin();
+        
         const auto renderStats = Renderer::GetStatistics();
-        ImGui::Text("Draw Calls: %d", renderStats.DrawCalls);
-        ImGui::Text("Vertices: %d", renderStats.GetTotalQuadVertexCount());
-        ImGui::Text("Indices: %d", renderStats.GetTotalQuadIndexCount());
+        ImGui::Text("Draw Calls: %u", renderStats.DrawCalls);
+        ImGui::Text("Vertices: %u", renderStats.GetTotalQuadVertexCount());
+        ImGui::Text("Indices: %u", renderStats.GetTotalQuadIndexCount());
 
         DisplayCPUUsageGraph();
         DisplayMemoryGraphUsage();
+        
         m_GuiWindowSceneStats.End();
 
     }
@@ -1112,13 +1125,13 @@ namespace origin
                     ImGui::Text("Appearance");
                     ImGui::Separator();
 
-                    if (ImGui::BeginCombo("Themes", m_Themes.GetCurrentTheme().c_str()))
+                    if (ImGui::BeginCombo("Themes", Themes::GetCurrentTheme().c_str()))
                     {
-                        for (const auto &[key, value] : m_Themes.GetThemes())
+                        for (const auto &[key, value] : Themes::GetThemes())
                         {
-                            const bool is_selected = m_Themes.GetCurrentTheme() == key;
+                            const bool is_selected = Themes::GetCurrentTheme() == key;
                             if (ImGui::Selectable(key.c_str(), is_selected))
-                                m_Themes.ApplyTheme(key);
+                                Themes::ApplyTheme(key);
                             if (is_selected)
                                 ImGui::SetItemDefaultFocus();
                         }

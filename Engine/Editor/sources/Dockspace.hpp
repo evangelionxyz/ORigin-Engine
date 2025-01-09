@@ -7,8 +7,7 @@ namespace origin {
     class Dockspace
     {
     public:
-        Dockspace() = default;
-        void Begin();
-        void End();
+        static void Begin();
+        static void End();
     };
 }

@@ -2,7 +2,7 @@
 
 #pragma once
 #include "Origin/Renderer/Texture.h"
-#include "ThumbnailCache.h"
+#include "ThumbnailCache.hpp"
 
 #include <string>
 #include <unordered_map>
