@@ -1,7 +1,7 @@
 // Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#ifndef SERIALIZER_H
-#define SERIALIZER_H
+#ifndef SERIALIZER_HPP
+#define SERIALIZER_HPP
 
 #include "Origin/Core/UUID.h"
 #include "Origin/Math/Math.h"

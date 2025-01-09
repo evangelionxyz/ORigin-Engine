@@ -29,7 +29,28 @@ void ProjectBrowser::OnGuiRender()
     Dockspace::Begin();
     ImGui::Begin("Project Browser", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
 
-    if (ImGui::Button("Open"))
+    const ImVec2 canvas_size = ImGui::GetContentRegionAvail();
+    const ImVec2 canvas_pos = ImGui::GetWindowPos();
+    
+    constexpr ImVec2 button_size = ImVec2(120.0f, 30.0f);
+    const ImVec2 button_pos = ImVec2(canvas_size.x / 2.0f - button_size.x * 1.5f, canvas_size.y - 50.0f);
+
+    ImGui::SetCursorPos(button_pos);
+    if (ImGui::Button("New Project", button_size))
+    {
+        Application::GetInstance().SubmitToMainThread([this]()
+        {
+            EditorLayer *editor_layer = new EditorLayer();
+            Application::GetInstance().PushLayer(editor_layer);
+            editor_layer->NewProject();
+
+            Application::GetInstance().GetWindow().Maximize();
+            Application::GetInstance().PopLayer(this);
+        });
+    }
+    
+    ImGui::SameLine();
+    if (ImGui::Button("Open", button_size))
     {
         Application::GetInstance().SubmitToMainThread([this]()
          {
@@ -42,14 +63,13 @@ void ProjectBrowser::OnGuiRender()
                  editor_layer->OpenProject(project_filepath);
 
                  Application::GetInstance().GetWindow().Maximize();
-                
                  Application::GetInstance().PopLayer(this);
              }
          });
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Cancel"))
+    if (ImGui::Button("Cancel", button_size))
     {
         Application::GetInstance().Close();
     }

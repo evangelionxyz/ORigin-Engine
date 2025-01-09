@@ -14,7 +14,6 @@ namespace origin
     {
         Serializer sr(filepath);
 
-        // begin root node
         sr.BeginMap();
         sr.AddKeyValue("Editor", filepath.stem().string());
 
@@ -55,7 +54,6 @@ namespace origin
         sr.AddKeyValue("DrawLineMode", editor->m_DrawLineModeActive);
         sr.EndMap();
 
-        // end root node
         sr.EndMap();
 
         sr.Serialize();
