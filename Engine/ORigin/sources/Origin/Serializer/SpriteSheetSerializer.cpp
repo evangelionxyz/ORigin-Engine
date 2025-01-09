@@ -10,30 +10,30 @@
 
 namespace origin
 {
-	bool SpriteSheetSerializer::Serialize(const std::filesystem::path &filepath, const Ref<SpriteSheet> &spriteSheet)
+	bool SpriteSheetSerializer::Serialize(const std::filesystem::path &filepath, const Ref<SpriteSheet> &sprite_sheet)
 	{
-		OGN_PROFILER_FUNCTION();
+		Serializer sr(filepath);
 
-		YAML::Emitter out;
-		out << YAML::BeginMap; // SpriteSheet
-		out << YAML::Key << "SpriteSheet";
+		sr.BeginMap();
+		
+		sr.BeginMap("SpriteSheet");
+		sr.AddKeyValue("Texture", sprite_sheet->GetTextureHandle());
+		sr.AddKeyValue("Grid", sprite_sheet->GetGrid());
+		
+		sr.BeginSequence("Sprites");
+		for (auto &sprite : sprite_sheet->Sprites)
 		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Texture" << YAML::Value << spriteSheet->GetTextureHandle();
-			out << YAML::Key << "Sprites" << YAML::Value << YAML::BeginSeq;
-			for (auto &sprite : spriteSheet->Sprites)
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "Rect" << sprite.rect;
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-			out << YAML::EndMap;
+			sr.BeginMap();
+			sr.AddKeyValue("Rect", sprite.rect);
+			sr.EndMap();
 		}
-		out << YAML::EndMap; // !SpriteSheet
+		sr.EndSequence();
+		
+		sr.EndMap();
+		
+		sr.EndMap();
 
-		std::ofstream outFile(filepath.string());
-		outFile << out.c_str();
+		sr.Serialize();
 
 		return true;
 	}

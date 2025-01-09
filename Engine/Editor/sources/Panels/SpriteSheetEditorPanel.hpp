@@ -16,76 +16,76 @@
 
 #include <glm/glm.hpp>
 
-namespace origin
+namespace origin {
+class SpriteSheet;
+
+enum ControllerCorner : u8
 {
-    class SpriteSheet;
+    NONE = 0,
+    TOP_LEFT,
+    BOTTOM_LEFT,
+    TOP_RIGHT,
+    BOTTOM_RIGHT
+};
 
-    enum ControllerCorner
+struct SpriteSheetController
+{
+    struct Corner
     {
-        NONE = -1,
-        TOP_LEFT,
-        BOTTOM_LEFT,
-        TOP_RIGHT,
-        BOTTOM_RIGHT
+        Rect top_left;
+        Rect top_right;
+        Rect bottom_left;
+        Rect bottom_right;
     };
 
-    struct SpriteSheetController
-    {
-        struct Corner
-        {
-            Rect top_left;
-            Rect top_right;
-            Rect bottom_left;
-            Rect bottom_right;
-        };
+    Rect rect = Rect({ 1.0f, 1.0f }, { 1.0f, 1.0f });
+    Corner corner;
+    ControllerCorner selected_corner = ControllerCorner::NONE;
+};
 
-        Rect rect = Rect({ 1.0f, 1.0f }, { 1.0f, 1.0f });
-        Corner corner;
-        ControllerCorner selected_corner = ControllerCorner::NONE;
-    };
+class SpriteSheetEditorPanel : public PanelBase
+{
+public:
+    SpriteSheetEditorPanel();
 
-    class SpriteSheetEditorPanel : public PanelBase
-    {
-    public:
-        SpriteSheetEditorPanel();
+    void CreateNewSpriteSheet();
+    void SetSelectedSpriteSheet(AssetHandle handle);
+    void SetMainTexture(AssetHandle handle) const;
 
-        void CreateNewSpriteSheet();
-        void SetSelectedSpriteSheet(AssetHandle handle);
-        void SetMainTexture(AssetHandle handle) const;
+    void AddSprite(const glm::vec2 &position, const glm::vec2 &size, const Rect &rect) const;
+    void RemoveSprite(i32 index);
+    void Duplicate(i32 index);
 
-        void AddSprite(const glm::vec2 &position, const glm::vec2 &size, const Rect &rect) const;
-        void RemoveSprite(i32 index);
-        void Duplicate(i32 index);
+    void Render() override;
+    void OnUpdate(float delta_time) override;
 
-        void Render() override;
-        void OnUpdate(float delta_time) override;
+    bool Serialize(const std::filesystem::path &filepath);
+    bool Deserialize();
 
-        bool Serialize(const std::filesystem::path &filepath);
-        bool Deserialize();
+    void OnEvent(Event &e) override;
+    bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+    bool OnKeyPressed(const KeyPressedEvent &e);
+    bool OnMouseScroll(const MouseScrolledEvent &e);
+    void OnMouse(f32 ts);
 
-        void OnEvent(Event &e) override;
-        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
-        bool OnKeyPressed(const KeyPressedEvent &e);
-        bool OnMouseScroll(const MouseScrolledEvent &e);
-        void OnMouse(f32 ts);
+    static SpriteSheetEditorPanel *GetInstance();
 
-        static SpriteSheetEditorPanel *GetInstance();
+    bool IsViewportFocused = false;
+    bool IsViewportHovered = false;
+private:
 
-        bool IsViewportFocused = false;
-        bool IsViewportHovered = false;
-    private:
+    void Reset();
 
-        void Reset();
+    glm::vec2 grid_size;
 
-        EditorCamera m_Camera;
-        std::shared_ptr<SpriteSheet> m_SpriteSheet;
-        std::shared_ptr<Framebuffer> m_Framebuffer;
-        std::shared_ptr<Texture2D> m_Texture;
-        std::vector<SpriteSheetController> m_Controls;
-        std::filesystem::path m_CurrentFilepath;
-        i32 m_SelectedIndex = 0;
-    };
-
+    EditorCamera m_Camera;
+    Ref<SpriteSheet> m_SpriteSheet;
+    Ref<Framebuffer> m_Framebuffer;
+    Ref<Texture2D> m_Texture;
+    std::vector<SpriteSheetController> m_Controls;
+    std::filesystem::path m_CurrentFilepath;
+    i32 m_SelectedIndex = 0;
+};
 }
 
 #endif

@@ -27,16 +27,24 @@ namespace origin
 
 		void SetMainTexture(AssetHandle handle);
 
-		static std::shared_ptr<SpriteSheet> Create();
-		static std::shared_ptr<SpriteSheet> Create(const std::filesystem::path &filepath);
+		static Ref<SpriteSheet> Create();
+		static Ref<SpriteSheet> Create(const std::filesystem::path &filepath);
 
 		static AssetType GetStaticType() { return AssetType::SpritesSheet; }
 		AssetType GetType() const override { return GetStaticType(); }
 		AssetHandle GetTextureHandle() const { return m_TextureHandle; }
 		std::vector<SpriteSheetData> Sprites;
+
+		void SetGrid(const glm::vec2 &grid_size) { m_GridSize = grid_size; }
+
+		const glm::vec2 &GetGrid() const { return m_GridSize; }
+		
 	private:
+		glm::vec2 m_GridSize;
 		std::filesystem::path m_Filepath;
 		AssetHandle m_TextureHandle;
+
+		friend class SpriteSheetEditorPanel;
 	};
 }
 

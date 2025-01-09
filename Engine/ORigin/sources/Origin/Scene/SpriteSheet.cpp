@@ -7,7 +7,7 @@ namespace origin
 {
 
 	SpriteSheet::SpriteSheet(const std::filesystem::path &filepath)
-		: m_Filepath(filepath)
+		: m_Filepath(filepath), m_GridSize({1.0f, 1.0f})
 	{
 	}
 

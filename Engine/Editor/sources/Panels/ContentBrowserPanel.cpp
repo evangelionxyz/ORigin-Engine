@@ -163,6 +163,7 @@ namespace origin
         }
 
         ImGui::EndChild();
+        
         ImGui::SameLine();
 
         ImGui::BeginChild("item_browser", {0.0f, 0.0f}, false);
@@ -249,9 +250,7 @@ namespace origin
                         SpriteSheetEditorPanel::GetInstance()->CreateNewSpriteSheet();
                         SpriteSheetEditorPanel::GetInstance()->SetMainTexture(m_TreeNodes[tree_node_index].Handle);
                         SpriteSheetEditorPanel::GetInstance()->Serialize(sprite_filepath);
-                        
                         RefreshAssetTree();
-                        SpriteSheetEditorPanel::GetInstance()->Open();
                         ImGui::SetWindowFocus("Sprite Sheet Editor");
                     }
                 }
