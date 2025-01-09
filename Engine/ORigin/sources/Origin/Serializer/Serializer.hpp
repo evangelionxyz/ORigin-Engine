@@ -8,6 +8,7 @@
 
 #include <yaml-cpp/yaml.h>
 #include <glm/glm.hpp>
+#include <string>
 
 namespace YAML {
 template <>
@@ -257,6 +258,40 @@ static YAML::Emitter &operator<<(YAML::Emitter &out, const glm::quat &q)
 	out << YAML::BeginSeq << q.x << q.y << q.z << q.w << YAML::EndSeq;
 	return out;
 }
+
+}
+
+namespace origin {
+class Serializer
+{
+public:
+	explicit Serializer(const std::filesystem::path &filepath);
+	
+	void Serialize() const;
+	void Serialize(const std::filesystem::path &filepath);
+	
+	void BeginMap();
+	void BeginMap(const std::string &map_name);
+	void EndMap();
+
+	void BeginSequence();
+	void BeginSequence(const std::string &sequence_name);
+	void EndSequence();
+	
+	template<typename T>
+	void AddKeyValue(const char *key_name, T value)
+	{
+		m_Emitter << YAML::Key << key_name << YAML::Value << value;
+	}
+
+	static YAML::Node Deserialize(const std::filesystem::path &filepath);
+
+	const std::filesystem::path &GetFilepath() const { return m_Filepath; }
+	
+private:
+	YAML::Emitter m_Emitter;
+	std::filesystem::path m_Filepath;
+};
 }
 
 #endif

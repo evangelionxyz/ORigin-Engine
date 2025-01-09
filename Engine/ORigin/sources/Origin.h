@@ -59,7 +59,7 @@
 #include "Origin/Scene/Lighting.h"
 #include "Origin/Scene/SpriteSheet.h"
 #include "Origin/Serializer/ProjectSerializer.h"
-#include "Origin/Serializer/Serializer.h"
+#include "Origin/Serializer/Serializer.hpp"
 #include "Origin/Serializer/SceneSerializer.h"
 #include "Origin/Serializer/SpriteSheetSerializer.h"
 #include "Origin/Serializer/MaterialSerializer.h"

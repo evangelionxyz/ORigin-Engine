@@ -4,7 +4,7 @@
 #include "../EditorLayer.hpp"
 #include "../Themes.hpp"
 
-#include "Origin/Serializer/Serializer.h"
+#include "Origin/Serializer/Serializer.hpp"
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
@@ -12,69 +12,66 @@ namespace origin
 {
     bool EditorSerializer::Serialize(EditorLayer *editor, const std::filesystem::path &filepath)
     {
-        YAML::Emitter out;
-        out << YAML::BeginMap;
-        out << YAML::Key << "Editor" << YAML::Value << filepath.stem().string();
+        Serializer sr(filepath);
 
-        // Editor camera
-        out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(editor->m_EditorCamera.GetProjectionType());
-        out << YAML::Key << "Style" << YAML::Value << (int)editor->m_EditorCamera.GetStyle();
-        out << YAML::Key << "Position" << YAML::Value << editor->m_EditorCamera.GetPosition();
-        out << YAML::Key << "Distance" << YAML::Value << editor->m_EditorCamera.GetDistance();
-        out << YAML::Key << "Yaw" << YAML::Value << editor->m_EditorCamera.GetYaw();
-        out << YAML::Key << "Pitch" << YAML::Value << editor->m_EditorCamera.GetPitch();
-        out << YAML::Key << "FOV" << YAML::Value << editor->m_EditorCamera.GetFOV();
-        out << YAML::Key << "AspectRatio" << YAML::Value << editor->m_EditorCamera.GetAspectRatio();
-        out << YAML::Key << "NearPlane" << YAML::Value << editor->m_EditorCamera.GetNear();
-        out << YAML::Key << "FarPlane" << YAML::Value << editor->m_EditorCamera.GetFar();
-        out << YAML::Key << "OrthoNearPlane" << YAML::Value << editor->m_EditorCamera.GetOrthoNear();
-        out << YAML::Key << "OrthoFarPlane" << YAML::Value << editor->m_EditorCamera.GetOrthoFar();
-        out << YAML::Key << "OrthoScale" << YAML::Value << editor->m_EditorCamera.GetOrthoScale();
-        out << YAML::EndMap;
+        // begin root node
+        sr.BeginMap();
+        sr.AddKeyValue("Editor", filepath.stem().string());
 
-        // Windows
-        out << YAML::Key << "Windows" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "MenuFullScreen" << YAML::Value << editor->GuiMenuFullscreen;
-        out << YAML::Key << "MenuStyleWindow" << YAML::Value << editor->GuiMenuStyleWindow;
-        out << YAML::Key << "RenderSettingsWindow" << YAML::Value << editor->GuiRenderSettingsWindow;
-        out << YAML::Key << "ImGuiDemoWindow" << YAML::Value << editor->GuiImGuiDemoWindow;
-        out << YAML::Key << "ConsoleWindow" << YAML::Value << editor->GuiConsoleWindow;
-        out << YAML::Key << "Theme" << YAML::Value << Themes::GetCurrentTheme();
-        out << YAML::EndMap;
+        // editor camera
+        sr.BeginMap("Camera");
+        sr.AddKeyValue("ProjectionType", static_cast<int>(editor->m_EditorCamera.GetProjectionType()));
+        sr.AddKeyValue("Style", static_cast<int>(editor->m_EditorCamera.GetStyle()));
+        sr.AddKeyValue("Position", editor->m_EditorCamera.GetPosition());
+        sr.AddKeyValue("Distance", editor->m_EditorCamera.GetDistance());
+        sr.AddKeyValue("Yaw", editor->m_EditorCamera.GetYaw());
+        sr.AddKeyValue("Pitch", editor->m_EditorCamera.GetPitch());
+        sr.AddKeyValue("FOV", editor->m_EditorCamera.GetFOV());
+        sr.AddKeyValue("AspectRatio", editor->m_EditorCamera.GetAspectRatio());
+        sr.AddKeyValue("NearPlane", editor->m_EditorCamera.GetNear());
+        sr.AddKeyValue("FarPlane", editor->m_EditorCamera.GetFar());
+        sr.AddKeyValue("OrthoNearPlane", editor->m_EditorCamera.GetOrthoNear());
+        sr.AddKeyValue("OrthoFarPlane", editor->m_EditorCamera.GetOrthoFar());
+        sr.AddKeyValue("OrthoScale", editor->m_EditorCamera.GetOrthoScale());
+        sr.EndMap();
+
+        // windows
+        sr.BeginMap("Windows");
+        sr.AddKeyValue("MenuFullScreen", editor->GuiMenuFullscreen);
+        sr.AddKeyValue("MenuStyleWindow", editor->GuiMenuStyleWindow);
+        sr.AddKeyValue("RenderSettingsWindow", editor->GuiRenderSettingsWindow);
+        sr.AddKeyValue("ImGuiDemoWindow", editor->GuiImGuiDemoWindow);
+        sr.AddKeyValue("ConsoleWindow", editor->GuiConsoleWindow);
+        sr.AddKeyValue("Theme", Themes::GetCurrentTheme());
+        sr.EndMap();
 
         // Settings
-        out << YAML::Key << "Settings" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "Draw3DGrid" << YAML::Value << editor->m_Draw3DGrid;
-        out << YAML::Key << "Draw2DGrid" << YAML::Value << editor->m_Draw2DGrid;
-        out << YAML::Key << "VisualizeCollider" << YAML::Value << editor->m_VisualizeCollider;
-        out << YAML::Key << "VisualizeBoundingBox" << YAML::Value << editor->m_VisualizeBoundingBox;
-        out << YAML::Key << "ClearColor" << YAML::Value << editor->m_ClearColor;
-        out << YAML::Key << "DrawLineMode" << YAML::Value << editor->m_DrawLineModeActive;
-        out << YAML::EndMap;
+        sr.BeginMap("Settings");
+        sr.AddKeyValue("Draw3DGrid", editor->m_Draw3DGrid);
+        sr.AddKeyValue("Draw2DGrid", editor->m_Draw2DGrid);
+        sr.AddKeyValue("VisualizeCollider", editor->m_VisualizeCollider);
+        sr.AddKeyValue("VisualizeBoundingBox", editor->m_VisualizeBoundingBox);
+        sr.AddKeyValue("ClearColor", editor->m_ClearColor);
+        sr.AddKeyValue("DrawLineMode", editor->m_DrawLineModeActive);
+        sr.EndMap();
 
-        out << YAML::EndMap;
+        // end root node
+        sr.EndMap();
 
-        std::ofstream outFile(filepath);
-        outFile << out.c_str();
-        outFile.close();
+        sr.Serialize();
+        
         return true;
     }
 
     bool EditorSerializer::Deserialize(EditorLayer *editor, const std::filesystem::path &filepath)
     {
-        if (!std::filesystem::exists(filepath))
+        if (!exists(filepath))
         {
             PUSH_CONSOLE_WARNING("Could not find editor config");
             return false;
         }
 
-        std::ifstream stream(filepath);
-        std::stringstream strStream;
-        strStream << stream.rdbuf();
-        stream.close();
-
-        YAML::Node editor_node = YAML::Load(strStream.str());
+        YAML::Node editor_node = Serializer::Deserialize(filepath);
         if (!editor_node["Editor"])
             return false;
 
@@ -91,9 +88,9 @@ namespace origin
             editor->m_EditorCamera.SetOrthoFar(camera_node["OrthoFarPlane"].as<float>());
             editor->m_EditorCamera.SetOrthoScale(camera_node["OrthoScale"].as<float>());
 
-            float fov = camera_node["FOV"].as<float>();
-            float aspectRatio = camera_node["AspectRatio"].as<float>();
-            editor->m_EditorCamera.InitPerspective(fov, aspectRatio, camera_node["NearPlane"].as<float>(), camera_node["FarPlane"].as<float>());
+            const float fov = camera_node["FOV"].as<float>();
+            const float aspect_ratio = camera_node["AspectRatio"].as<float>();
+            editor->m_EditorCamera.InitPerspective(fov, aspect_ratio, camera_node["NearPlane"].as<float>(), camera_node["FarPlane"].as<float>());
             editor->m_EditorCamera.SetProjectionType(static_cast<ProjectionType>(camera_node["ProjectionType"].as<int>()));
             editor->m_EditorCamera.SetStyle(static_cast<CameraStyle>(camera_node["Style"].as<int>()));
         }
