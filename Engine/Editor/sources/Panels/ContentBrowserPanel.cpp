@@ -13,6 +13,8 @@
 #ifdef OGN_PLATFORM_WINDOWS
     #include <Windows.h>
     #include <shellapi.h>
+
+#include <algorithm>
 #endif
 
 namespace origin
@@ -77,6 +79,8 @@ namespace origin
                     {
                         m_BackwardPathStack.push(m_CurrentDirectory);
                         m_CurrentDirectory = m_SelectedFileTree;
+
+                        m_ThumbnailCache->Clear();
                     }
                 }
             }
@@ -113,6 +117,8 @@ namespace origin
                 m_ForwardPathStack.push(m_CurrentDirectory);
                 m_CurrentDirectory = m_BackwardPathStack.top();
                 m_BackwardPathStack.pop();
+
+                m_ThumbnailCache->Clear();
             }
             clicked = false;
         }
@@ -129,6 +135,8 @@ namespace origin
                 m_BackwardPathStack.push(m_CurrentDirectory);
                 m_CurrentDirectory = m_ForwardPathStack.top();
                 m_ForwardPathStack.pop();
+
+                m_ThumbnailCache->Clear();
             }
 
             clicked = false;
@@ -162,8 +170,7 @@ namespace origin
         const f32 cellSize = m_ThumbnailSize + padding;
         const f32 panelWidth = ImGui::GetContentRegionAvail().x;
         int columnCount = static_cast<int>(panelWidth / cellSize);
-        if (columnCount < 1)
-            columnCount = 1;
+        columnCount = std::max(columnCount, 1);
 
         ImGui::Columns(columnCount, nullptr, false);
 
@@ -174,7 +181,7 @@ namespace origin
             if (node->Path == relativePath)
                 break;
 
-            if (node->Children.find(path) != node->Children.end())
+            if (node->Children.contains(path))
                 node = &m_TreeNodes[node->Children[path]];
         }
 
@@ -211,6 +218,8 @@ namespace origin
                 {
                     m_BackwardPathStack.push(m_CurrentDirectory);
                     m_CurrentDirectory /= item.filename();
+
+                    m_ThumbnailCache->Clear();
                 }
 
                 if (item.extension() == ".sprite")
@@ -236,10 +245,11 @@ namespace origin
                 {
                     if (ImGui::MenuItem("Create Sprite Sheet"))
                     {
+                        std::filesystem::path sprite_filepath = m_CurrentDirectory / (item.stem().string() + ".sprite");
                         SpriteSheetEditorPanel::GetInstance()->CreateNewSpriteSheet();
                         SpriteSheetEditorPanel::GetInstance()->SetMainTexture(m_TreeNodes[tree_node_index].Handle);
-                        SpriteSheetEditorPanel::GetInstance()->Serialize(m_CurrentDirectory / (item.stem().string() + ".sprite"));
-                        SpriteSheetEditorPanel::GetInstance()->SetSelectedSpriteSheet(m_TreeNodes[tree_node_index].Handle);
+                        SpriteSheetEditorPanel::GetInstance()->Serialize(sprite_filepath);
+                        
                         RefreshAssetTree();
                         SpriteSheetEditorPanel::GetInstance()->Open();
                         ImGui::SetWindowFocus("Sprite Sheet Editor");
@@ -384,12 +394,6 @@ namespace origin
                         RefreshAssetTree();
                     }
                 }
-
-                if (ImGui::MenuItem("Open in Explorer", nullptr))
-                {
-                    OpenFile(m_CurrentDirectory);
-                }
-
                 ImGui::EndMenu();
             }
 
@@ -405,6 +409,17 @@ namespace origin
                 ImGui::EndMenu();
             }
 
+            ImGui::Separator();
+            if (ImGui::MenuItem("Refresh", nullptr))
+            {
+                RefreshAssetTree();
+            }
+            
+            if (ImGui::MenuItem("Open in Explorer", nullptr))
+            {
+                OpenFile(m_CurrentDirectory);
+            }
+
             ImGui::EndPopup();
         }
 
@@ -417,6 +432,8 @@ namespace origin
 
     void ContentBrowserPanel::RefreshAssetTree()
     {
+        m_ThumbnailCache->Clear();
+        
         const std::filesystem::path asset_path = Project::GetActiveAssetDirectory();
         LoadAssetTree(asset_path);
     }
@@ -431,9 +448,9 @@ namespace origin
             const std::filesystem::path &current_relative_path = std::filesystem::relative(entry.path(), asset_path);
 
             u32 current_node_index = 0;
-            for (auto path : current_relative_path)
+            for (const auto &path : current_relative_path)
             {
-                auto it = m_TreeNodes[current_node_index].Children.find(path.generic_string());
+                const auto it = m_TreeNodes[current_node_index].Children.find(path.generic_string());
                 if (it != m_TreeNodes[current_node_index].Children.end())
                 {
                     current_node_index = it->second;
@@ -444,7 +461,7 @@ namespace origin
                     if (!std::filesystem::is_directory(path))
                     {
                         std::string relative_asset_path = std::filesystem::relative(entry.path(), asset_path).generic_string();
-                        asset_handle_id = Project::GetActive()->GetEditorAssetManager()->ImportAsset(relative_asset_path);
+                        asset_handle_id = Project::GetActive()->GetEditorAssetManager()->ImportAsset(relative_asset_path, false);
                     }
 
                     TreeNode new_node(path, asset_handle_id);

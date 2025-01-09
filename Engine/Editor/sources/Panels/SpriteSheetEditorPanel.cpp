@@ -10,6 +10,7 @@
 #include "Origin/Core/Input.h"
 
 #include <imgui.h>
+#include <algorithm>
 #include <cmath>
 
 #include <glad/glad.h>
@@ -59,8 +60,9 @@ namespace origin
 
         if (Deserialize() && !m_Open)
         {
-            m_Camera.SetOrthoScale(static_cast<f32>(m_Texture->GetHeight()) * 1.5f);
-            m_Camera.SetOrthoScaleMax(static_cast<f32>(m_Texture->GetHeight()) * 3.0f);
+            const f32 max_scale = std::max(m_Texture->GetHeight(), m_Texture->GetWidth());
+            m_Camera.SetOrthoScale(max_scale * 1.5f);
+            m_Camera.SetOrthoScaleMax(max_scale * 5.0f);
             m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
             ImGui::SetWindowFocus("Sprite Sheet Editor");
             Open();
@@ -103,6 +105,8 @@ namespace origin
         {
             ImGui::Begin("Sprite Sheet Editor", &m_Open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
+            ImGui::BeginChild("SpriteSheet viewport", {0.0f, 0.0f}, ImGuiChildFlags_ResizeX);
+
             IsViewportFocused = ImGui::IsWindowFocused();
             IsViewportHovered = ImGui::IsWindowHovered();
             
@@ -116,10 +120,10 @@ namespace origin
             // Framebuffer Texture
             auto texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Framebuffer->GetColorAttachmentRendererID()));
             ImGui::Image(texture, { m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::End();
+            ImGui::EndChild();
 
-            ImGui::Begin("Sprite Sheet Inspector");
-
+            ImGui::SameLine();
+            ImGui::BeginChild("Sprite Sheet Inspector", {300.0f, 0.0f}, 0);
             if (m_Texture)
             {
                 texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Texture->GetID()));
@@ -147,8 +151,7 @@ namespace origin
                 constexpr f32 cell_size = thumbnail_size + padding;
                 const f32 panel_width = ImGui::GetWindowContentRegionMax().x;
                 i32 column_count = static_cast<i32>(panel_width / cell_size);
-                if (column_count < 1)
-                    column_count = 1;
+                column_count = std::max(column_count, 1);
 
                 ImGui::Columns(column_count, nullptr, false);
 
@@ -158,7 +161,7 @@ namespace origin
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
 
                 i32 offset = 0;
-                for (i32 i = 0; i < m_Controls.size(); i++)
+                for (size_t i = 0; i < m_Controls.size(); i++)
                 {
                     auto &[rect, corner, selected_corner] = m_Controls[i];
 
@@ -212,6 +215,8 @@ namespace origin
                     offset += 5;
                 }
             }
+            ImGui::EndChild();
+
             ImGui::End();
         }
     }
@@ -397,26 +402,21 @@ namespace origin
 
         	if (m_SelectedIndex >= 0 && !m_Controls.empty())
         	{
-                const glm::vec2 &center = m_Controls[m_SelectedIndex].corner.top_left.GetCenter();
                 if (m_Controls[m_SelectedIndex].corner.top_left.Contains(ray_origin))
                 {
                     m_Controls[m_SelectedIndex].selected_corner = TOP_LEFT;
-                    OGN_CORE_INFO("top left clicked");
                 }
                 else if (m_Controls[m_SelectedIndex].corner.top_right.Contains(ray_origin))
                 {
                     m_Controls[m_SelectedIndex].selected_corner = TOP_RIGHT;
-                    OGN_CORE_INFO("top right clicked");
                 }
                 else if (m_Controls[m_SelectedIndex].corner.bottom_left.Contains(ray_origin))
                 {
                     m_Controls[m_SelectedIndex].selected_corner = BOTTOM_LEFT;
-                    OGN_CORE_INFO("bottom left clicked");
                 }
                 else if (m_Controls[m_SelectedIndex].corner.bottom_right.Contains(ray_origin))
                 {
                     m_Controls[m_SelectedIndex].selected_corner = BOTTOM_RIGHT;
-                    OGN_CORE_INFO("bottom right clicked");
                 }
                 else
                 {
@@ -459,7 +459,8 @@ namespace origin
 
     bool SpriteSheetEditorPanel::OnMouseScroll(const MouseScrolledEvent &e)
     {
-        m_Camera.OnMouseScroll(e.GetYOffset());
+        if (IsViewportHovered)
+            m_Camera.OnMouseScroll(e.GetYOffset());
         return false;
     }
 
@@ -468,7 +469,9 @@ namespace origin
         OGN_PROFILER_INPUT();
 
         const glm::vec2 delta = Input::GetMouseClickDragDelta();
-        m_Camera.OnMouseMove(delta);
+
+        if (IsViewportHovered)
+            m_Camera.OnMouseMove(delta);
 
         if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && !m_Controls.empty() && IsViewportHovered && m_SelectedIndex >= 0)
         {
