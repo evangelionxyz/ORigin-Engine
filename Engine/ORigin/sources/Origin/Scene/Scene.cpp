@@ -35,8 +35,9 @@
 
 namespace origin
 {
+class Model;
 
-	Scene::Scene()
+Scene::Scene()
 	{
 		OGN_PROFILER_SCENE();
 
@@ -340,7 +341,7 @@ namespace origin
 	{
 		Update(ts);
 		RenderScene(camera);
-        RenderStencilScene(camera, selectedID);
+        //RenderStencilScene(camera, selectedID);
 	}
 
 	void Scene::OnUpdateSimulation(const Camera &camera, Timestep ts, entt::entity selectedID)
@@ -353,13 +354,12 @@ namespace origin
         }
 		
 		RenderScene(camera);
-        RenderStencilScene(camera, selectedID);
+        //RenderStencilScene(camera, selectedID);
 	}
 
     void Scene::RenderScene(const Camera &camera)
     {
         OGN_PROFILER_RENDERING();
-        glEnable(GL_DEPTH_TEST);
 
         Renderer2D::Begin(camera);
         const auto &view = m_Registry.view<TransformComponent>();
@@ -386,8 +386,8 @@ namespace origin
                         {
                             auto &anim = ac.State->GetAnimation();
                             src.Texture = anim->GetCurrentFrame().Handle;
-                            src.UV0 = anim->GetCurrentFrame().Min;
-                            src.UV1 = anim->GetCurrentFrame().Max;
+                            src.UV0 = anim->GetCurrentFrame().UV0;
+                            src.UV1 = anim->GetCurrentFrame().UV1;
                         }
                     }
                 }
@@ -565,7 +565,7 @@ namespace origin
             Renderer2D::Begin(camera);
             if (entity.HasComponent<SpriteRenderer2DComponent>())
             {
-                SpriteRenderer2DComponent &sc = entity.GetComponent<SpriteRenderer2DComponent>();
+                SpriteRenderer2DComponent &src = entity.GetComponent<SpriteRenderer2DComponent>();
                 if (entity.HasComponent<SpriteAnimationComponent>())
                 {
                     SpriteAnimationComponent &ac = entity.GetComponent<SpriteAnimationComponent>();
@@ -574,14 +574,14 @@ namespace origin
                         if (ac.State->GetAnimation()->HasFrame())
                         {
                             Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
-                            sc.Texture = anim->GetCurrentFrame().Handle;
-                            sc.UV0 = anim->GetCurrentFrame().Min;
-                            sc.UV1 = anim->GetCurrentFrame().Max;
+                            src.Texture = anim->GetCurrentFrame().Handle;
+                            src.UV0 = anim->GetCurrentFrame().UV0;
+                            src.UV1 = anim->GetCurrentFrame().UV1;
                         }
                     }
                 }
 
-                Renderer2D::DrawSprite(tc.GetTransform(), sc);
+                Renderer2D::DrawSprite(tc.GetTransform(), src);
             }
 
             // Text
@@ -645,7 +645,7 @@ namespace origin
             Renderer2D::Begin(camera, outlineShader);
             if (entity.HasComponent<SpriteRenderer2DComponent>())
             {
-                SpriteRenderer2DComponent &sc = entity.GetComponent<SpriteRenderer2DComponent>();
+                SpriteRenderer2DComponent &src = entity.GetComponent<SpriteRenderer2DComponent>();
                 if (entity.HasComponent<SpriteAnimationComponent>())
                 {
                     SpriteAnimationComponent &ac = entity.GetComponent<SpriteAnimationComponent>();
@@ -654,13 +654,13 @@ namespace origin
                         if (ac.State->GetAnimation()->HasFrame())
                         {
                             Ref<SpriteAnimation> &anim = ac.State->GetAnimation();
-                            sc.Texture = anim->GetCurrentFrame().Handle;
-                            sc.UV0 = anim->GetCurrentFrame().Min;
-                            sc.UV1 = anim->GetCurrentFrame().Max;
+                            src.Texture = anim->GetCurrentFrame().Handle;
+                            src.UV0 = anim->GetCurrentFrame().UV0;
+                            src.UV1 = anim->GetCurrentFrame().UV1;
                         }
                     }
                 }
-                Renderer2D::DrawSprite(scaledTransform, sc);
+                Renderer2D::DrawSprite(scaledTransform, src);
             }
 
             // Text

@@ -1,6 +1,12 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "AnimationTimeline.hpp"
+
+#include <algorithm>
+
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Asset/EditorAssetManager.h"
+#include "Origin/Project/Project.h"
 #include "Origin/Scene/Components/Components.h"
 
 namespace origin
@@ -8,25 +14,30 @@ namespace origin
     static bool SequencerAddDelButton(ImDrawList *draw_list, ImVec2 pos, bool add = true)
     {
         ImGuiIO &io = ImGui::GetIO();
+        
         ImRect btnRect(pos, ImVec2(pos.x + 16, pos.y + 16));
+        
         bool overBtn = btnRect.Contains(io.MousePos);
         bool containedClick = overBtn && btnRect.Contains(io.MouseClickedPos[0]);
         bool clickedBtn = containedClick && io.MouseReleased[0];
-        int btnColor = overBtn ? 0xAAEAFFAA : 0x77A3B2AA;
+        const i32 button_color = overBtn ? 0xAAEAFFAA : 0x77A3B2AA;
         if (containedClick && io.MouseDownDuration[0] > 0)
+        {
             btnRect.Expand(2.0f);
+        }
 
-        float midy = pos.y + 16 / 2 - 0.5f;
-        float midx = pos.x + 16 / 2 - 0.5f;
-        draw_list->AddRect(btnRect.Min, btnRect.Max, btnColor, 4);
-        draw_list->AddLine(ImVec2(btnRect.Min.x + 3, midy), ImVec2(btnRect.Max.x - 3, midy), btnColor, 2);
+        const f32 mid_x = pos.x + 16 / 2 - 0.5f;
+        const f32 mid_y = pos.y + 16 / 2 - 0.5f;
+        
+        draw_list->AddRect(btnRect.Min, btnRect.Max, button_color, 4);
+        draw_list->AddLine(ImVec2(btnRect.Min.x + 3, mid_y), ImVec2(btnRect.Max.x - 3, mid_y), button_color, 2);
         if (add)
-            draw_list->AddLine(ImVec2(midx, btnRect.Min.y + 3), ImVec2(midx, btnRect.Max.y - 3), btnColor, 2);
+            draw_list->AddLine(ImVec2(mid_x, btnRect.Min.y + 3), ImVec2(mid_x, btnRect.Max.y - 3), button_color, 2);
         return clickedBtn;
     }
 
     template<typename T>
-    void Get(const std::shared_ptr<T> &anim, int index, int **start, int **end, unsigned int *color)
+    void Get(const std::shared_ptr<T> &anim, i32 index, i32 **start, i32 **end, u32 *color)
     {
         auto &frame = anim->GetFrame(index);
         if (color)
@@ -39,8 +50,8 @@ namespace origin
 
     void AnimationTimeline::DrawSpriteAnimTimeline(SpriteAnimationComponent &sa)
     {
-        static int selectedEntry = -1;
-        static int firstFrame = 0;
+        static i32 selectedEntry = -1;
+        static i32 firstFrame = 0;
         static bool expanded = true;
 
         ImGui::Begin("Animation");
@@ -53,7 +64,9 @@ namespace origin
         strncpy(buffer, stateName.c_str(), sizeof(buffer) - 1);
         buffer[sizeof(buffer) - 1] = '\0'; // Ensure null termination
         if (ImGui::InputText("##anim_name", buffer, sizeof(buffer)))
+        {
             stateName = std::string(buffer);
+        }
 
         ImGui::SameLine();
         if (ImGui::Button("+"))
@@ -78,7 +91,7 @@ namespace origin
             if (ImGui::BeginCombo("##animation_state", currentAnimName.c_str()))
             {
                 bool isSelected = false;
-                for (int i = 0; i < sa.State->GetStateStorage().size(); i++)
+                for (i32 i = 0; i < sa.State->GetStateStorage().size(); i++)
                 {
                     isSelected = currentAnimName == sa.State->GetStateStorage()[i];
                     if (ImGui::Selectable(sa.State->GetStateStorage()[i].c_str(), isSelected))
@@ -148,190 +161,214 @@ namespace origin
         ImGui::End();
     }
 
-    bool AnimationTimeline::SpriteAnimTimeline(std::shared_ptr<SpriteAnimation> &animation, float *currentFrame, bool *expanded, int *selectedEntry, int *firstFrame, int sequenceOptions)
+    bool AnimationTimeline::SpriteAnimTimeline(std::shared_ptr<SpriteAnimation> &animation, f32 *currentFrame, bool *expanded, i32 *selectedEntry, i32 *firstFrame, i32 sequenceOptions)
     {
         bool ret = false;
 
         ImGuiIO &io = ImGui::GetIO();
 
-        static int movingEntry = -1;
-        static int movingPos = -1;
-        static int movingPart = -1;
+        static i32 moving_entry = -1;
+        static i32 moving_pos = -1;
+        static i32 moving_part = -1;
 
-        int cx = (int)(io.MousePos.x);
-        int cy = (int)(io.MousePos.y);
-        int legendWidth = 130;
+        i32 cx = static_cast<i32>(io.MousePos.x);
+        i32 cy = static_cast<i32>(io.MousePos.y);
+        i32 legend_width = 130;
 
-        int delEntry = -1;
-        int dupEntry = -1;
-        int itemHeight = 20;
+        i32 delete_entry = -1;
+        i32 item_height = 20;
 
-        bool popupOpened = false;
-        int sequenceCount = static_cast<int>(animation->GetTotalFrames());
+        bool popup_opened = false;
+        i32 sequence_count = static_cast<int>(animation->GetTotalFrames());
 
         ImGui::BeginGroup();
 
-        ImDrawList *drawList = ImGui::GetWindowDrawList();
-        ImVec2 canvasPos = ImGui::GetCursorScreenPos();
-        ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+        ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
+        ImVec2 canvas_size = ImGui::GetContentRegionAvail();
 
-        float framePixelWidth = (canvasSize.x - legendWidth) / float(animation->MaxFrame - *firstFrame + 5.0f);
+        f32 framePixelWidth = (canvas_size.x - legend_width) / f32(animation->MaxFrame - *firstFrame + 5.0f);
 
-        int firstFrameUsed = firstFrame ? *firstFrame : 0;
-        int controlHeight = sequenceCount * itemHeight;
-        int frameCount = ImMax(animation->MaxFrame, 1);
+        i32 firstFrameUsed = firstFrame ? *firstFrame : 0;
+        i32 controlHeight = sequence_count * item_height;
+        i32 frameCount = ImMax(animation->MaxFrame, 1);
 
         static bool MovingScrollBar = false;
         static bool MovingCurrentFrame = false;
 
-        ImVec2 headerSize(canvasSize.x, (float)itemHeight);
+        ImVec2 headerSize(canvas_size.x, (f32)item_height);
         ImGui::InvisibleButton("topBar", headerSize);
-        drawList->AddRectFilled(canvasPos, canvasPos + headerSize, IM_COL32(20, 20, 20, 255), 0);
+        draw_list->AddRectFilled(canvas_pos, canvas_pos + headerSize, IM_COL32(20, 20, 20, 255), 0);
 
         ImVec2 childFramePos = ImGui::GetCursorScreenPos();
-        ImVec2 childFrameSize(canvasSize.x, canvasSize.y - 8.f - headerSize.y);
+        ImVec2 childFrameSize(canvas_size.x, canvas_size.y - 8.f - headerSize.y);
 
         ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
         ImGui::BeginChildFrame(889, childFrameSize);
 
-        if (sequenceCount)
-            ImGui::InvisibleButton("contentBar", ImVec2(canvasSize.x, float(controlHeight)));
+        if (sequence_count)
+            ImGui::InvisibleButton("contentBar", ImVec2(canvas_size.x, f32(controlHeight)));
 
         const ImVec2 contentMin = ImGui::GetItemRectMin();
         const ImVec2 contentMax = ImGui::GetItemRectMax();
-        const ImRect contentRect(contentMin, contentMax);
-        const float contentHeight = contentMax.y - contentMin.y;
+        const f32 contentHeight = contentMax.y - contentMin.y;
 
         // Legend
-        drawList->AddRectFilled(canvasPos, { canvasPos.x + legendWidth, canvasPos.y + canvasSize.y }, IM_COL32(20, 20, 20, 255));
-        drawList->AddRectFilled({ canvasPos.x + legendWidth, canvasPos.y }, { canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y }, IM_COL32(10, 10, 10, 255));
+        draw_list->AddRectFilled(canvas_pos, { canvas_pos.x + legend_width, canvas_pos.y + canvas_size.y }, IM_COL32(20, 20, 20, 255));
+        draw_list->AddRectFilled({ canvas_pos.x + legend_width, canvas_pos.y }, { canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y }, IM_COL32(10, 10, 10, 255));
 
-        ImGui::Button("Drag Here");
+        ImGui::Button("Drag Here", {static_cast<f32>(legend_width), 25.0f});
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
             {
-                AssetHandle handle = *(AssetHandle *)payload->Data;
-                SpriteAnimationFrame frame(handle);
-                frame.FrameBegin += 4 * static_cast<int>(animation->GetTotalFrames());
-                frame.FrameEnd += 4 * static_cast<int>(animation->GetTotalFrames());
-                animation->AddFrame(frame);
+                AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+                auto metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(handle);
+
+                // insert all of sprite data
+                if (metadata.Type == AssetType::SpritesSheet)
+                {
+                    Ref<SpriteSheet> sprite_sheet = AssetManager::GetAsset<SpriteSheet>(handle);
+                    for (SpriteSheetData data : sprite_sheet->Sprites)
+                    {
+                        SpriteAnimationFrame frame(sprite_sheet->GetTextureHandle());
+                        frame.UV0 = data.uv0;
+                        frame.UV1 = data.uv1;
+
+                        frame.FrameBegin += 4 * static_cast<int>(animation->GetTotalFrames());
+                        frame.FrameEnd += 4 * static_cast<int>(animation->GetTotalFrames());
+                        
+                        animation->AddFrame(frame);
+                    }
+                }
+                
+                // single texture 2D
+                else if (metadata.Type == AssetType::Texture)
+                {
+                    SpriteAnimationFrame frame(handle);
+                    frame.FrameBegin += 4 * static_cast<int>(animation->GetTotalFrames());
+                    frame.FrameEnd += 4 * static_cast<int>(animation->GetTotalFrames());
+                    animation->AddFrame(frame);
+                }
             }
+
+            // single sprite sheet data
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
             {
-                SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-                SpriteAnimationFrame frame(data.texture_handle);
-                frame.Min = data.rect.min;
-                frame.Max = data.rect.max;
+                auto [rect, atlas_size, uv0, uv1, texture_handle] = *static_cast<SpriteSheetData *>(payload->Data);
+                SpriteAnimationFrame frame(texture_handle);
+                frame.UV0 = uv0;
+                frame.UV1 = uv1;
                 frame.FrameBegin += 4 * static_cast<int>(animation->GetTotalFrames());
                 frame.FrameEnd += 4 * static_cast<int>(animation->GetTotalFrames());
                 animation->AddFrame(frame);
             }
+            
             ImGui::EndDragDropTarget();
         }
 
         // current frame top
-        ImRect topRect(ImVec2(canvasPos.x + legendWidth, canvasPos.y), ImVec2(canvasPos.x + canvasSize.x + framePixelWidth, canvasPos.y + itemHeight));
-        if (!MovingCurrentFrame && !MovingScrollBar && movingEntry == -1 && sequenceOptions & SEQUENCER_CHANGE_FRAME && currentFrame && *currentFrame >= 0 && topRect.Contains(io.MousePos) && io.MouseDown[0])
+        ImRect topRect(ImVec2(canvas_pos.x + legend_width, canvas_pos.y), ImVec2(canvas_pos.x + canvas_size.x + framePixelWidth, canvas_pos.y + item_height));
+        if (!MovingCurrentFrame && !MovingScrollBar && moving_entry == -1 && sequenceOptions & SEQUENCER_CHANGE_FRAME && currentFrame && *currentFrame >= 0 && topRect.Contains(io.MousePos) && io.MouseDown[0])
             MovingCurrentFrame = true;
         if (MovingCurrentFrame)
         {
             if (frameCount)
             {
-                *currentFrame = (float)(int)((io.MousePos.x - topRect.Min.x) / framePixelWidth);
-                if (*currentFrame < 0.0f)
-                    *currentFrame = 0.0f;
+                *currentFrame = (f32)(i32)((io.MousePos.x - topRect.Min.x) / framePixelWidth);
+                *currentFrame = std::max(*currentFrame, 0.0f);
                 if (*currentFrame >= animation->MaxFrame)
-                    *currentFrame = (float)animation->MaxFrame;
+                    *currentFrame = (f32)animation->MaxFrame;
             }
             if (!io.MouseDown[0])
                 MovingCurrentFrame = false;
         }
 
         //header
-        drawList->AddRectFilled(canvasPos, ImVec2(canvasSize.x + canvasPos.x, canvasPos.y + itemHeight), IM_COL32(20, 10, 15, 255), 0);
+        draw_list->AddRectFilled(canvas_pos, ImVec2(canvas_size.x + canvas_pos.x, canvas_pos.y + item_height), IM_COL32(20, 10, 15, 255), 0);
         
         //header frame number and lines
-        int modFrameCount = 10;
-        int frameStep = 1;
+        i32 modFrameCount = 10;
+        i32 frameStep = 1;
         while ((modFrameCount * framePixelWidth) < 150)
         {
             modFrameCount *= 2;
             frameStep *= 2;
-        };
-        int halfModFrameCount = modFrameCount / 2;
+        }
+        
+        i32 halfModFrameCount = modFrameCount / 2;
 
-        auto drawLine = [&](int i, int regionHeight)
+        auto drawLine = [&](i32 i, i32 regionHeight)
             {
                 bool baseIndex = ((i % modFrameCount) == 0) || (i == animation->MaxFrame || i == 0);
                 bool halfIndex = (i % halfModFrameCount) == 0;
-                int px = (int)canvasPos.x + int(i * framePixelWidth) + legendWidth - int(firstFrameUsed * framePixelWidth);
-                int tiretStart = baseIndex ? 4 : (halfIndex ? 10 : 14);
-                int tiretEnd = baseIndex ? regionHeight : itemHeight;
+                i32 px = (i32)canvas_pos.x + int(i * framePixelWidth) + legend_width - int(firstFrameUsed * framePixelWidth);
+                i32 tiretStart = baseIndex ? 4 : (halfIndex ? 10 : 14);
+                i32 tiretEnd = baseIndex ? regionHeight : item_height;
 
-                if (px <= (canvasSize.x + canvasPos.x) && px >= (canvasPos.x + legendWidth))
+                if (px <= (canvas_size.x + canvas_pos.x) && px >= (canvas_pos.x + legend_width))
                 {
-                    drawList->AddLine(ImVec2((float)px, canvasPos.y + (float)tiretStart), ImVec2((float)px, canvasPos.y + (float)tiretEnd - 1), 0xFF606060, 1);
-                    drawList->AddLine(ImVec2((float)px, canvasPos.y + (float)itemHeight), ImVec2((float)px, canvasPos.y + (float)regionHeight - 1), 0x30606060, 1);
+                    draw_list->AddLine(ImVec2(px, canvas_pos.y + tiretStart), ImVec2((f32)px, canvas_pos.y + (f32)tiretEnd - 1), 0xFF606060, 1);
+                    draw_list->AddLine(ImVec2(px, canvas_pos.y + item_height), ImVec2((f32)px, canvas_pos.y + (f32)regionHeight - 1), 0x30606060, 1);
                 }
 
-                if (baseIndex && px > (canvasPos.x + legendWidth))
+                if (baseIndex && px > (canvas_pos.x + legend_width))
                 {
                     char tmps[512];
                     ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", i);
-                    drawList->AddText(ImVec2((float)px + 3.f, canvasPos.y), 0xFFBBBBBB, tmps);
+                    draw_list->AddText(ImVec2((f32)px + 3.f, canvas_pos.y), 0xFFBBBBBB, tmps);
                 }
             };
 
-        auto drawLineContent = [&](int i, int)
+        auto drawLineContent = [&](i32 i, int)
             {
-                int px = (int)canvasPos.x + int(i * framePixelWidth) + legendWidth - int(firstFrameUsed * framePixelWidth);
-                int tiretStart = int(contentMin.y);
-                int tiretEnd = int(contentMax.y);
+                i32 px = (i32)canvas_pos.x + int(i * framePixelWidth) + legend_width - int(firstFrameUsed * framePixelWidth);
+                i32 tiretStart = int(contentMin.y);
+                i32 tiretEnd = int(contentMax.y);
 
-                if (px <= (canvasSize.x + canvasPos.x) && px >= (canvasPos.x + legendWidth))
-                    drawList->AddLine(ImVec2(float(px), float(tiretStart)), ImVec2(float(px), float(tiretEnd)), 0x30606060, 1);
+                if (px <= (canvas_size.x + canvas_pos.x) && px >= (canvas_pos.x + legend_width))
+                    draw_list->AddLine(ImVec2(f32(px), f32(tiretStart)), ImVec2(f32(px), f32(tiretEnd)), 0x30606060, 1);
             };
 
-        for (int i = 0; i <= animation->MaxFrame; i += frameStep)
-            drawLine(i, itemHeight);
+        for (i32 i = 0; i <= animation->MaxFrame; i += frameStep)
+            drawLine(i, item_height);
 
-        drawLine(0, itemHeight);
-        drawLine(animation->MaxFrame, itemHeight);
+        drawLine(0, item_height);
+        drawLine(animation->MaxFrame, item_height);
 
-        drawList->PushClipRect(childFramePos, childFramePos + childFrameSize, true);
+        draw_list->PushClipRect(childFramePos, childFramePos + childFrameSize, true);
 
-        for (int i = 0; i < sequenceCount; i++)
+        for (i32 i = 0; i < sequence_count; i++)
         {
-            ImVec2 tpos(contentMin.x + 3, contentMin.y + i * itemHeight + 2);
+            ImVec2 tpos(contentMin.x + 3, contentMin.y + i * item_height + 2);
             std::string tag = "SPRITE " + std::to_string(i);
-            drawList->AddText(tpos, 0xFFFFFFFF, tag.c_str());
+            draw_list->AddText(tpos, 0xFFFFFFFF, tag.c_str());
             if (sequenceOptions & SEQUENCER_DEL)
             {
-                if (SequencerAddDelButton(drawList, ImVec2(contentMin.x + legendWidth - itemHeight + 2 - 10, tpos.y + 2), false))
-                    delEntry = i;
+                if (SequencerAddDelButton(draw_list, ImVec2(contentMin.x + legend_width - item_height + 2 - 10, tpos.y + 2), false))
+                    delete_entry = i;
             }
         }
 
         // slots background
-        for (int i = 0; i < sequenceCount; i++)
+        for (i32 i = 0; i < sequence_count; i++)
         {
-            unsigned int col = (i & 1) ? 0xFF3A3636 : 0xFF413D3D;
+            u32 col = (i & 1) ? 0xFF3A3636 : 0xFF413D3D;
 
-            ImVec2 pos = ImVec2(contentMin.x + legendWidth, contentMin.y + itemHeight * i + 1);
-            ImVec2 sz = ImVec2(canvasSize.x + canvasPos.x, pos.y + itemHeight - 1);
-            if (!popupOpened && cy >= pos.y && cy < pos.y + itemHeight && movingEntry == -1 && cx>contentMin.x && cx < contentMin.x + canvasSize.x)
+            ImVec2 pos = ImVec2(contentMin.x + legend_width, contentMin.y + item_height * i + 1);
+            ImVec2 sz = ImVec2(canvas_size.x + canvas_pos.x, pos.y + item_height - 1);
+            if (!popup_opened && cy >= pos.y && cy < pos.y + item_height && moving_entry == -1 && cx>contentMin.x && cx < contentMin.x + canvas_size.x)
             {
                 col += 0x80201008;
-                pos.x -= legendWidth;
+                pos.x -= legend_width;
             }
-            drawList->AddRectFilled(pos, sz, col, 0);
+            draw_list->AddRectFilled(pos, sz, col, 0);
         }
 
-        drawList->PushClipRect(childFramePos + ImVec2(float(legendWidth), 0.f), childFramePos + childFrameSize, true);
+        draw_list->PushClipRect(childFramePos + ImVec2(f32(legend_width), 0.f), childFramePos + childFrameSize, true);
 
         // vertical frame lines in content area
-        for (int i = 0; i <= animation->MaxFrame; i += frameStep)
+        for (i32 i = 0; i <= animation->MaxFrame; i += frameStep)
         {
             drawLineContent(i, int(contentHeight));
         }
@@ -342,35 +379,35 @@ namespace origin
         bool selected = selectedEntry && (*selectedEntry >= 0);
         if (selected)
         {
-            drawList->AddRectFilled(
-                { contentMin.x, contentMin.y + itemHeight * *selectedEntry },
-                { contentMin.x + canvasSize.x, contentMin.y + itemHeight * (*selectedEntry + 1)},
+            draw_list->AddRectFilled(
+                { contentMin.x, contentMin.y + item_height * *selectedEntry },
+                { contentMin.x + canvas_size.x, contentMin.y + item_height * (*selectedEntry + 1)},
                 IM_COL32(200, 120, 50, 150), 1.0f);
         }
 
         // slots
-        for (int i = 0; i < sequenceCount; i++)
+        for (i32 i = 0; i < sequence_count; i++)
         {
-            int *start, *end;
-            unsigned int color;
+            i32 *start, *end;
+            u32 color;
             Get<SpriteAnimation>(animation, i, &start, &end, &color);
-            ImVec2 pos = ImVec2(contentMin.x + legendWidth - firstFrameUsed * framePixelWidth, contentMin.y + itemHeight * i + 1);
+            ImVec2 pos = ImVec2(contentMin.x + legend_width - firstFrameUsed * framePixelWidth, contentMin.y + item_height * i + 1);
             ImVec2 slotP1(pos.x + *start * framePixelWidth, pos.y + 2);
-            ImVec2 slotP2(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + itemHeight - 2);
-            ImVec2 slotP3(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + itemHeight - 2);
-            unsigned int slotColor = color | 0xFF000000;
-            unsigned int slotColorHalf = (color & 0xFFFFFF) | 0x40000000;
+            ImVec2 slotP2(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + item_height - 2);
+            ImVec2 slotP3(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + item_height - 2);
+            u32 slotColor = color | 0xFF000000;
+            u32 slotColorHalf = (color & 0xFFFFFF) | 0x40000000;
 
-            if (slotP1.x <= (canvasSize.x + contentMin.x) && slotP2.x >= (contentMin.x + legendWidth))
+            if (slotP1.x <= (canvas_size.x + contentMin.x) && slotP2.x >= (contentMin.x + legend_width))
             {
-                drawList->AddRectFilled(slotP1, slotP3, slotColorHalf, 2);
-                drawList->AddRectFilled(slotP1, slotP2, slotColor, 2);
+                draw_list->AddRectFilled(slotP1, slotP3, slotColorHalf, 2);
+                draw_list->AddRectFilled(slotP1, slotP2, slotColor, 2);
             }
 
             // Ensure grabbable handles
-            const float max_handle_width = slotP2.x - slotP1.x / 3.0f;
-            const float min_handle_width = ImMin(10.0f, max_handle_width);
-            const float handle_width = ImClamp(framePixelWidth / 2.0f, min_handle_width, max_handle_width);
+            const f32 max_handle_width = slotP2.x - slotP1.x / 3.0f;
+            const f32 min_handle_width = ImMin(10.0f, max_handle_width);
+            const f32 handle_width = ImClamp(framePixelWidth / 2.0f, min_handle_width, max_handle_width);
 
             ImRect rects[3] = {
                 ImRect(slotP1, ImVec2(slotP1.x + handle_width, slotP2.y)),
@@ -378,18 +415,18 @@ namespace origin
                 ImRect(slotP1, slotP2)
             };
 
-            const unsigned int quadColor[] = { 0xFFFFFFFF, 0xFFFFFFFF, slotColor + (selected ? 0 : 0x202020) };
-            if (movingEntry == -1 && (sequenceOptions & SEQUENCER_EDIT_STARTEND))
+            const u32 quadColor[] = { 0xFFFFFFFF, 0xFFFFFFFF, slotColor + (selected ? 0 : 0x202020) };
+            if (moving_entry == -1 && (sequenceOptions & SEQUENCER_EDIT_STARTEND))
             {
-                for (int j = 2; j >= 0; j--)
+                for (i32 j = 2; j >= 0; j--)
                 {
                     ImRect &rc = rects[j];
                     if (!rc.Contains(io.MousePos))
                         continue;
-                    drawList->AddRectFilled(rc.Min, rc.Max, quadColor[j], 2);
+                    draw_list->AddRectFilled(rc.Min, rc.Max, quadColor[j], 2);
                 }
 
-                for (int j = 0; j < 3; j++)
+                for (i32 j = 0; j < 3; j++)
                 {
                     ImRect &rc = rects[j];
                     if (!rc.Contains(io.MousePos))
@@ -398,81 +435,82 @@ namespace origin
                         continue;
                     if (ImGui::IsMouseClicked(0) && !MovingScrollBar && !MovingCurrentFrame)
                     {
-                        movingEntry = i;
-                        movingPos = cx;
-                        movingPart = j + 1;
+                        moving_entry = i;
+                        moving_pos = cx;
+                        moving_part = j + 1;
                         break;
                     }
                 }
             }
         }
 
-        if (movingEntry >= 0)
+        if (moving_entry >= 0)
         {
             ImGui::SetNextFrameWantCaptureMouse(true);
 
-            int diffFrame = int((cx - movingPos) / framePixelWidth);
+            i32 diffFrame = i32((cx - moving_pos) / framePixelWidth);
             if (std::abs(diffFrame) > 0)
             {
-                int *start, *end;
-                Get<SpriteAnimation>(animation, movingEntry, &start, &end, NULL);
+                i32 *start, *end;
+                Get<SpriteAnimation>(animation, moving_entry, &start, &end, NULL);
                 if (selectedEntry)
-                    *selectedEntry = movingEntry;
-                int &l = *start;
-                int &r = *end;
-                if (movingPart & 1)
+                    *selectedEntry = moving_entry;
+                i32 &l = *start;
+                i32 &r = *end;
+                if (moving_part & 1)
                     l += diffFrame;
-                if (movingPart & 2)
+                if (moving_part & 2)
                     r += diffFrame;
                 if (l < 0)
                 {
-                    if (movingPart & 2)
+                    if (moving_part & 2)
                         r -= l;
                     l = 0;
                 }
-                if (movingPart & 1 && l > r)
+                if (moving_part & 1 && l > r)
                     l = r;
-                if (movingPart & 2 && r < l)
+                if (moving_part & 2 && r < l)
                     r = l;
-                movingPos += int(diffFrame * framePixelWidth);
+                moving_pos += i32(diffFrame * framePixelWidth);
             }
             if (!io.MouseDown[0])
             {
                 // single select
-                if (!diffFrame && movingPart && selectedEntry)
+                if (!diffFrame && moving_part && selectedEntry)
                 {
-                    *selectedEntry = movingEntry;
+                    *selectedEntry = moving_entry;
                     ret = true;
                 }
-                movingEntry = -1;
+                moving_entry = -1;
             }
         }
 
         // cursor
-        if (currentFrame && firstFrame && (int)*currentFrame >= *firstFrame && (int)*currentFrame <= animation->MaxFrame)
+        if (currentFrame && firstFrame && (i32)*currentFrame >= *firstFrame && (i32)*currentFrame <= animation->MaxFrame)
         {
-            static const float cursorWidth = 4.0f;
-            float cursorOffset = contentMin.x + legendWidth + ((int)*currentFrame - firstFrameUsed) * framePixelWidth + framePixelWidth / 2 - cursorWidth * 0.5f;
-            drawList->AddLine(ImVec2(cursorOffset, canvasPos.y), ImVec2(cursorOffset, contentMax.y), 0xA02A2AFF, cursorWidth);
+            static const f32 cursorWidth = 4.0f;
+            f32 cursorOffset = contentMin.x + legend_width + ((i32)*currentFrame - firstFrameUsed) * framePixelWidth + framePixelWidth / 2 - cursorWidth * 0.5f;
+            draw_list->AddLine(ImVec2(cursorOffset, canvas_pos.y), ImVec2(cursorOffset, contentMax.y), 0xA02A2AFF, cursorWidth);
             char tmps[512];
-            ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", (int)*currentFrame);
-            drawList->AddText(ImVec2(cursorOffset + 10, canvasPos.y + 2), 0xFF2A2AFF, tmps);
+            ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", (i32)*currentFrame);
+            draw_list->AddText(ImVec2(cursorOffset + 10, canvas_pos.y + 2), 0xFF2A2AFF, tmps);
         }
 
-        drawList->PopClipRect();
-        drawList->PopClipRect();
+        draw_list->PopClipRect();
+        draw_list->PopClipRect();
 
         ImGui::EndChildFrame();
         ImGui::PopStyleColor();
 
-
         ImGui::EndGroup();
 
-        if (delEntry != -1)
+        if (delete_entry != -1)
         {
-            animation->DeleteFrame(delEntry);
-            if (selectedEntry && (*selectedEntry == delEntry || *selectedEntry >= sequenceCount))
+            animation->DeleteFrame(delete_entry);
+            if (selectedEntry && (*selectedEntry == delete_entry || *selectedEntry >= sequence_count))
+            {
                 *selectedEntry = -1;
+            }
         }
 
         return ret;

@@ -205,7 +205,7 @@ namespace origin
                 ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", &handle, sizeof(AssetHandle));
 
                 ImGui::BeginTooltip();
-                ImGui::Text("%llu", (u64)handle);
+                ImGui::Text("%llu", static_cast<u64>(handle));
                 ImGui::EndTooltip();
 
                 ImGui::EndDragDropSource();
@@ -225,14 +225,12 @@ namespace origin
 
                 if (item.extension() == ".sprite")
                 {
-                    SpriteSheetEditorPanel::GetInstance()->SetSelectedSpriteSheet(m_TreeNodes[tree_node_index].Handle);
-                    SpriteSheetEditorPanel::GetInstance()->Open();
+                    SpriteSheetEditorPanel::GetInstance()->OpenSpriteSheet(m_TreeNodes[tree_node_index].Handle);
                     ImGui::SetWindowFocus("Sprite Sheet Editor");
                 }
                 else if (item.extension() == ".mat")
                 {
                     MaterialEditorPanel::GetInstance()->SetSelectedMaterial(m_TreeNodes[tree_node_index].Handle);
-                    MaterialEditorPanel::GetInstance()->Open();
                     ImGui::SetWindowFocus("Material Editor");
                 }
             }
@@ -247,11 +245,19 @@ namespace origin
                     if (ImGui::MenuItem("Create Sprite Sheet"))
                     {
                         std::filesystem::path sprite_filepath = m_CurrentDirectory / (item.stem().string() + ".sprite");
-                        SpriteSheetEditorPanel::GetInstance()->CreateNewSpriteSheet();
-                        SpriteSheetEditorPanel::GetInstance()->SetMainTexture(m_TreeNodes[tree_node_index].Handle);
-                        SpriteSheetEditorPanel::GetInstance()->Serialize(sprite_filepath);
-                        RefreshAssetTree();
-                        ImGui::SetWindowFocus("Sprite Sheet Editor");
+
+                        if (!exists(sprite_filepath))
+                        {
+                            Ref<SpriteSheet> sprite_sheet = SpriteSheetEditorPanel::GetInstance()->CreateSpriteSheet(m_TreeNodes[tree_node_index].Handle);
+                            SpriteSheetSerializer::Serialize(sprite_filepath, sprite_sheet);
+
+                            RefreshAssetTree();
+
+                            std::filesystem::path relative_path = std::filesystem::relative(sprite_filepath, Project::GetActiveAssetDirectory());
+                            Project::GetActive()->GetEditorAssetManager()->ImportAsset(relative_path);
+
+                            ImGui::SetWindowFocus("Sprite Sheet Editor");
+                        }
                     }
                 }
 

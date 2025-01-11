@@ -122,8 +122,8 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 				out << YAML::Key << "ID" << YAML::Value <<frame.Handle;
 				out << YAML::Key << "FrameBegin" << YAML::Value <<frame.FrameBegin;
 				out << YAML::Key << "FrameEnd" << YAML::Value <<frame.FrameEnd;
-				out << YAML::Key << "Min" << YAML::Value <<frame.Min;
-				out << YAML::Key << "Max" << YAML::Value <<frame.Max;
+				out << YAML::Key << "UV0" << YAML::Value <<frame.UV0;
+				out << YAML::Key << "UV1" << YAML::Value <<frame.UV1;
 				out << YAML::EndMap; //!ID
 			}
 			out << YAML::EndSeq; //!Frames
@@ -696,8 +696,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 							SpriteAnimationFrame frame(handle);
 							frame.FrameBegin = frames["FrameBegin"].as<int>();
 							frame.FrameEnd = frames["FrameEnd"].as<int>();
-							frame.Min = frames["Min"].as<glm::vec2>();
-							frame.Max = frames["Max"].as<glm::vec2>();
+							frame.UV0 = frames["UV0"].as<glm::vec2>();
+							frame.UV1 = frames["UV1"].as<glm::vec2>();
 							newAnim->AddFrame(frame);
 						}
 

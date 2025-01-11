@@ -231,7 +231,7 @@ void EditorLayer::Render(Timestep ts)
         // update camera
         // m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
 
-        if (IsViewportFocused && IsViewportFocused && !ImGui::GetIO().WantTextInput)
+        if (IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput)
             m_EditorCamera.OnUpdate(ts);
 
         m_EditorCamera.UpdateView();
@@ -315,7 +315,9 @@ void EditorLayer::SystemUpdate(const Timestep ts)
     m_SpriteSheetEditorPanel->OnUpdate(ts);
 
     if (m_UIEditorPanel)
+    {
         m_UIEditorPanel->OnUpdate(ts);
+    }
 }
 
 void EditorLayer::OnDuplicateEntity()
@@ -338,7 +340,7 @@ void EditorLayer::OnDestroyEntity() const
     if (Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity())
     {
         m_ActiveScene->DestroyEntity(selectedEntity);
-        //CommandManager::Instance().ExecuteCommand(CreateScope<DestoryEntityCommand>(m_ActiveScene, selectedEntity));
+        //CommandManager::Instance().ExecuteCommand(CreateScope<DestroyEntityCommand>(m_ActiveScene, selectedEntity));
     }
 }
 

@@ -627,14 +627,16 @@ namespace origin {
 
         DrawComponent<TextComponent>("Text", entity, [](auto &component) 
             {
-            ImGui::Button("DROP FONT", { 80.0f, 30.0f });
+                ImGui::Button("DROP FONT", { 80.0f, 30.0f });
                 if (ImGui::BeginDragDropTarget())
                 {
                     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
                     {
                         AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
                         if (AssetManager::GetAssetType(handle) == AssetType::Font)
+                        {
                             component.FontHandle = handle;
+                        }
                     }
 
                     ImGui::EndDragDropTarget();
@@ -644,7 +646,9 @@ namespace origin {
                 {
                     ImGui::SameLine();
                     if (ImGui::Button("X"))
+                    {
                         component.FontHandle = 0;
+                    }
                 }
                 
                 if (component.FontHandle != 0)
@@ -707,18 +711,16 @@ namespace origin {
                                 component.UV1 = glm::vec2(1.0f);
                             }
                             else
+                            {
                                 OGN_CORE_WARN("Wrong asset type!");
+                            }
                         }
                         else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
                         {
                             SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
                             component.Texture = data.texture_handle;
-
-                            const glm::vec2 &pos = data.rect.GetCenter();
-                            const glm::vec2 &size = data.rect.GetSize();
-
-                            component.UV0 = { (pos.x + (data.atlas_size.x - size.x) / 2.0f) / data.atlas_size.x, (pos.y + (data.atlas_size.y - size.y) / 2.0f) / data.atlas_size.y };
-                            component.UV1 = { (pos.x + (data.atlas_size.x + size.x) / 2.0f) / data.atlas_size.x, (pos.y + (data.atlas_size.y + size.y) / 2.0f) / data.atlas_size.y };
+                            component.UV0 = data.uv0;
+                            component.UV1 = data.uv1;
                         }
                         ImGui::EndDragDropTarget();
                     }

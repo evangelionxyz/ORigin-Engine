@@ -12,7 +12,7 @@ namespace origin
 	{
 	public:
         static bool Serialize(const std::filesystem::path &filepath, const Ref<SpriteSheet> &sprite_sheet);
-		static bool Deserialize(const std::filesystem::path &filepath, Ref<SpriteSheet> &spriteSheet);
+		static bool Deserialize(const std::filesystem::path &filepath, Ref<SpriteSheet> &sprite_sheet);
 	};
 }
 

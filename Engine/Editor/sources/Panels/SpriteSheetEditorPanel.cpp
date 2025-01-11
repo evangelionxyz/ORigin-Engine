@@ -36,52 +36,47 @@ SpriteSheetEditorPanel::SpriteSheetEditorPanel()
 
     m_Framebuffer = Framebuffer::Create(spec);
 
+    m_SpriteSheet = SpriteSheet::Create();
+
     Close();
 }
 
-void SpriteSheetEditorPanel::CreateNewSpriteSheet()
+Ref<SpriteSheet> SpriteSheetEditorPanel::CreateSpriteSheet(const AssetHandle texture_handle)
 {
-    Reset();
     m_SpriteSheet = SpriteSheet::Create();
+    m_SpriteSheet->SetTexture(texture_handle);
+
+    return m_SpriteSheet;
 }
 
-void SpriteSheetEditorPanel::SetSelectedSpriteSheet(const AssetHandle handle)
+void SpriteSheetEditorPanel::OpenSpriteSheet(const AssetHandle sprite_sheet_handle)
 {
     if (!m_CurrentFilepath.empty())
     {
         Serialize(m_CurrentFilepath);
     }
 
-    Reset();
+    m_SpriteSheet = AssetManager::GetAsset<SpriteSheet>(sprite_sheet_handle);
 
-    m_SpriteSheet = AssetManager::GetAsset<SpriteSheet>(handle);
-    m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
+    m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(sprite_sheet_handle);
 
-    if (Deserialize() && !m_Open)
+    LoadSpritesToController();
+
+    m_Texture = AssetManager::GetAsset<Texture2D>(m_SpriteSheet->GetTextureHandle());
+
+    if (m_Texture)
     {
         const f32 max_scale = std::max(m_Texture->GetHeight(), m_Texture->GetWidth());
         m_Camera.SetOrthoScale(max_scale * 1.5f);
-        m_Camera.SetOrthoScaleMax(max_scale * 5.0f);
-        m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 2.f));
-        ImGui::SetWindowFocus("Sprite Sheet Editor");
-        Open();
+        m_Camera.SetOrthoScaleMax(max_scale * 3.0f);
+        m_Camera.SetPosition({ 0.0f, 0.0f, 2.f });
+
     }
+
+    ImGui::SetWindowFocus("Sprite Sheet Editor");
+    Open();
 }
 
-void SpriteSheetEditorPanel::SetMainTexture(const AssetHandle handle) const
-{
-    if (m_SpriteSheet)
-    {
-        m_SpriteSheet->SetMainTexture(handle);
-    }
-}
-
-void SpriteSheetEditorPanel::AddSprite(const glm::vec2 &position, const glm::vec2 &size, const Rect &rect) const
-{
-    SpriteSheetData sprite {};
-    sprite.rect = rect;
-    m_SpriteSheet->Sprites.push_back(sprite);
-}
 
 void SpriteSheetEditorPanel::RemoveSprite(const i32 index)
 {
@@ -99,7 +94,7 @@ void SpriteSheetEditorPanel::RemoveSprite(const i32 index)
 void SpriteSheetEditorPanel::Duplicate(i32 index)
 {
     m_Controls.insert(m_Controls.end(), m_Controls[index]);
-    m_SelectedIndex = 0;
+    m_SelectedIndex = m_Controls.size() - 1;
 }
 
 void SpriteSheetEditorPanel::Render()
@@ -114,12 +109,17 @@ void SpriteSheetEditorPanel::Render()
             
         if (m_Texture)
         {
+            const ImVec2 button_size = ImVec2(80.0f, 25.0f);
+            
             auto texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Texture->GetID()));
             const glm::vec2 atlas_size { static_cast<f32>(m_Texture->GetWidth()), static_cast<f32>(m_Texture->GetHeight()) };
 
-            UI::DrawVec2Control("Grid", m_SpriteSheet->m_GridSize);
-            ImGui::SameLine();
-            if (ImGui::Button("Apply"))
+            UI::DrawFloatControl("Grid X", &m_SpriteSheet->m_GridSize.x);
+            UI::DrawFloatControl("Grid Y", &m_SpriteSheet->m_GridSize.y);
+
+            m_SpriteSheet->m_GridSize = glm::max({ 1.0f, 1.0f }, m_SpriteSheet->m_GridSize);
+            
+            if (ImGui::Button("Apply", {inspector_width, button_size.y}))
             {
                 m_Controls.clear();
 
@@ -143,29 +143,48 @@ void SpriteSheetEditorPanel::Render()
                     for (i32 j = 0; j < y_count; ++j)
                     {
                         SpriteSheetController sprite_controller;
-                        sprite_controller.rect.min.x = static_cast<f32>(i * static_cast<i32>(m_SpriteSheet->m_GridSize.x)) - atlas_size.x / 2.0f;
-                        sprite_controller.rect.min.y = static_cast<f32>(j * static_cast<i32>(m_SpriteSheet->m_GridSize.y)) - atlas_size.y / 2.0f;
+                        sprite_controller.data.rect.min.x = i * m_SpriteSheet->m_GridSize.x - atlas_size.x / 2.0f;
+                        sprite_controller.data.rect.min.y = j * m_SpriteSheet->m_GridSize.y - atlas_size.y / 2.0f;
+                        sprite_controller.data.rect.max.x = static_cast<f32>(i + 1) * m_SpriteSheet->m_GridSize.x - atlas_size.x / 2.0f;
+                        sprite_controller.data.rect.max.y = static_cast<f32>(j) * m_SpriteSheet->m_GridSize.y + atlas_size.y / 2.0f;
 
-                        sprite_controller.rect.max.x = (i + 1) * m_SpriteSheet->m_GridSize.x - atlas_size.x / 2.0f;
-                        sprite_controller.rect.max.y = j * m_SpriteSheet->m_GridSize.y + atlas_size.y / 2.0f;
+                        sprite_controller.data.texture_handle = m_Texture->GetID();
+                        sprite_controller.data.atlas_size = atlas_size;
+
+                        const glm::vec2 &pos = sprite_controller.data.rect.GetCenter();
+                        const glm::vec2 &size = sprite_controller.data.rect.GetSize();
+
+                        sprite_controller.data.uv0 = { (pos.x + (atlas_size.x - size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y - size.y) / 2.0f) / atlas_size.y };
+                        sprite_controller.data.uv1 = { (pos.x + (atlas_size.x + size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y + size.y) / 2.0f) / atlas_size.y };
                     
                         m_Controls.push_back(sprite_controller);
                     }
-                    
                 }
             }
+            ImGui::Separator();
             
-            if (ImGui::Button("Save"))
+            if (ImGui::Button("Save", button_size))
             {
                 Serialize(m_CurrentFilepath);
                 OGN_CORE_TRACE("[Sprite Sheet Editor] Saved in {}", m_CurrentFilepath.generic_string());
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("Create"))
+            if (ImGui::Button("Create", button_size))
             {
                 SpriteSheetController control;
-                control.rect = Rect(-atlas_size / 4.0f, atlas_size / 4.0f);
+
+                f32 rect_size = std::max(atlas_size.x, atlas_size.y);
+                control.data.rect = Rect({0.0f, 0.0f}, {rect_size, rect_size});
+                
+                control.data.texture_handle = m_Texture->GetID();
+                control.data.atlas_size = atlas_size;
+                
+                const glm::vec2 &pos = control.data.rect.GetCenter();
+                const glm::vec2 &size = control.data.rect.GetSize();
+                control.data.uv0 = { (pos.x + (atlas_size.x - size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y - size.y) / 2.0f) / atlas_size.y };
+                control.data.uv1 = { (pos.x + (atlas_size.x + size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y + size.y) / 2.0f) / atlas_size.y };
+                
                 m_Controls.push_back(control);
                 m_SelectedIndex = static_cast<i32>(m_Controls.size()) - 1;
             }
@@ -175,30 +194,23 @@ void SpriteSheetEditorPanel::Render()
             constexpr f32 thumbnail_size = 60.0f;
             constexpr f32 padding = 12.0f;
             constexpr f32 cell_size = thumbnail_size + padding;
-            const f32 panel_width = ImGui::GetWindowContentRegionMax().x;
-            i32 column_count = static_cast<i32>(panel_width / cell_size);
+            i32 column_count = static_cast<i32>(inspector_width / cell_size);
             column_count = std::max(column_count, 1);
 
             ImGui::Columns(column_count, nullptr, false);
 
             // SUB SPRITE TEXTURES
-            f32 thumbnailHeight = thumbnail_size * (static_cast<f32>(atlas_size.y) / static_cast<f32>(atlas_size.x));
-            f32 diff = (f32)(thumbnail_size - thumbnailHeight);
+            const f32 thumbnail_height = thumbnail_size * (static_cast<f32>(atlas_size.y) / static_cast<f32>(atlas_size.x));
+            const f32 diff = thumbnail_size - thumbnail_height;
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + diff);
 
             i32 offset = 0;
             for (size_t i = 0; i < m_Controls.size(); i++)
             {
-                auto &[rect, corner, selected_corner] = m_Controls[i];
+                auto &[data, corner, selected_corner] = m_Controls[i];
 
                 ImGui::PushID(i);
-
-                const glm::vec2 &pos = rect.GetCenter();
-                const glm::vec2 &size = rect.GetSize();
-
-                ImVec2 uv0 = { (pos.x + (atlas_size.x - size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y - size.y) / 2.0f) / atlas_size.y };
-                ImVec2 uv1 = { (pos.x + (atlas_size.x + size.x) / 2.0f) / atlas_size.x, (pos.y + (atlas_size.y + size.y) / 2.0f) / atlas_size.y };
-                ImGui::ImageButton("control", texture, { thumbnail_size, thumbnail_size }, { uv0.x, uv1.y }, { uv1.x, uv0.y });
+                ImGui::ImageButton("control", texture, { thumbnail_size, thumbnail_size }, { data.uv0.x, data.uv1.y }, { data.uv1.x, data.uv0.y });
 
                 if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                 {
@@ -219,19 +231,14 @@ void SpriteSheetEditorPanel::Render()
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::BeginTooltip();
-                    ImGui::Text("Position: %f, %f ", rect.GetCenter().x, rect.GetCenter().x);
-                    ImGui::Text("Size: %f, %f ", rect.GetSize().x, rect.GetSize().x);
-                    ImGui::Text("Min: %f, %f ", rect.min.x, rect.min.y);
-                    ImGui::Text("Max: %f, %f ", rect.max.x, rect.max.y);
+                    ImGui::Text("Position: %f, %f ", data.rect.GetCenter().x, data.rect.GetCenter().x);
+                    ImGui::Text("Size: %f, %f ", data.rect.GetSize().x, data.rect.GetSize().x);
+                    ImGui::Text("Rectangle: %f, %f, %f, %f ", data.rect.min.x, data.rect.min.y, data.rect.max.x, data.rect.max.y);
                     ImGui::EndTooltip();
                 }
 
                 if (ImGui::BeginDragDropSource())
-                {
-                    SpriteSheetData data;
-                    data.rect = rect;
-                    data.atlas_size = atlas_size;
-                    data.texture_handle = m_SpriteSheet->GetTextureHandle();
+                {;
                     ImGui::SetDragDropPayload("SPRITESHEET_ITEM", &data, sizeof(SpriteSheetData));
                     ImGui::EndDragDropSource();
                 }
@@ -249,11 +256,12 @@ void SpriteSheetEditorPanel::Render()
         {
             IsViewportFocused = ImGui::IsWindowFocused();
             IsViewportHovered = ImGui::IsWindowHovered();
-            const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
-            const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-            const ImVec2 &viewportOffset = ImGui::GetWindowPos();
-            m_ViewportRect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-            m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+            const ImVec2 &vp_min_region = ImGui::GetWindowContentRegionMin();
+            const ImVec2 &vp_max_region = ImGui::GetWindowContentRegionMax();
+            const ImVec2 &vp_offset = ImGui::GetWindowPos();
+            m_ViewportRect.min = { vp_min_region.x + vp_offset.x, vp_min_region.y + vp_offset.y };
+            m_ViewportRect.max = { vp_max_region.x + vp_offset.x, vp_max_region.y + vp_offset.y };
+            
             // Framebuffer Texture
             auto texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Framebuffer->GetColorAttachmentRendererID()));
             ImGui::Image(texture, { m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
@@ -317,16 +325,16 @@ void SpriteSheetEditorPanel::OnUpdate(float delta_time)
         Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), { tex_x, tex_y, -0.1f }), m_Texture);
 
         i32 offset = 0;
-        for (auto & [rect, corner, selected_corner] : m_Controls)
+        for (auto & [data, corner, selected_corner] : m_Controls)
         {
             bool selected = m_SelectedIndex == offset / 5;
                 
             glm::vec4 col = selected ? glm::vec4(1.0f, 1.0f, 0.0f, 0.1f) : glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
             glm::vec4 outline_col = selected ? glm::vec4(0.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
             
-            Renderer2D::DrawRect({rect.GetCenter(), 0.0f}, rect.GetSize(), outline_col);
+            Renderer2D::DrawRect({data.rect.GetCenter(), 0.0f}, data.rect.GetSize(), outline_col);
 
-            Renderer2D::DrawQuad(rect, col);
+            Renderer2D::DrawQuad(data.rect, col);
 
             // Draw corner
             if (selected)
@@ -339,23 +347,23 @@ void SpriteSheetEditorPanel::OnUpdate(float delta_time)
                 const f32 corner_size = 0.8f * ortho_size;
 
                 corner.top_left = Rect(
-                    glm::vec2(rect.min.x - corner_size, rect.max.y - corner_size),
-                    glm::vec2(rect.min.x + corner_size, rect.max.y + corner_size)
+                    glm::vec2(data.rect.min.x - corner_size, data.rect.max.y - corner_size),
+                    glm::vec2(data.rect.min.x + corner_size, data.rect.max.y + corner_size)
                 );
 
                 corner.top_right = Rect(
-                    glm::vec2(rect.max.x - corner_size, rect.max.y - corner_size),
-                    glm::vec2(rect.max.x + corner_size, rect.max.y + corner_size)
+                    glm::vec2(data.rect.max.x - corner_size, data.rect.max.y - corner_size),
+                    glm::vec2(data.rect.max.x + corner_size, data.rect.max.y + corner_size)
                 );
 
                 corner.bottom_left = Rect(
-                    glm::vec2(rect.min.x - corner_size, rect.min.y - corner_size),
-                    glm::vec2(rect.min.x + corner_size, rect.min.y + corner_size)
+                    glm::vec2(data.rect.min.x - corner_size, data.rect.min.y - corner_size),
+                    glm::vec2(data.rect.min.x + corner_size, data.rect.min.y + corner_size)
                 );
 
                 corner.bottom_right = Rect(
-                    glm::vec2(rect.max.x - corner_size, rect.min.y - corner_size),
-                    glm::vec2(rect.max.x + corner_size, rect.min.y + corner_size)
+                    glm::vec2(data.rect.max.x - corner_size, data.rect.min.y - corner_size),
+                    glm::vec2(data.rect.max.x + corner_size, data.rect.min.y + corner_size)
                 );
                     
                 col = selected_corner == ControllerCorner::TOP_LEFT ? green : red;
@@ -379,34 +387,34 @@ void SpriteSheetEditorPanel::OnUpdate(float delta_time)
 
 bool SpriteSheetEditorPanel::Serialize(const std::filesystem::path &filepath)
 {
-    m_CurrentFilepath = filepath;
-    m_SpriteSheet->Sprites.clear();
-    for (auto &[rect, corner, selected_corner] : m_Controls)
+    if (m_SpriteSheet)
     {
-        SpriteSheetData data;
-        data.rect = rect;
-        m_SpriteSheet->Sprites.push_back(data);
+        m_CurrentFilepath = filepath;
+
+        m_SpriteSheet->Sprites.clear();
+        for (auto &[data, corner, selected_corner] : m_Controls)
+        {
+            m_SpriteSheet->Sprites.push_back(data);
+        }
+
+        return SpriteSheetSerializer::Serialize(filepath, m_SpriteSheet);
     }
 
-    return SpriteSheetSerializer::Serialize(filepath, m_SpriteSheet);
+    return false;
 }
 
-bool SpriteSheetEditorPanel::Deserialize()
+bool SpriteSheetEditorPanel::LoadSpritesToController()
 {
-    const bool ret = SpriteSheetSerializer::Deserialize(m_CurrentFilepath, m_SpriteSheet);
+    m_Controls.clear();
 
-    if (ret)
+    for (const auto &sprite : m_SpriteSheet->Sprites)
     {
-        m_Texture = AssetManager::GetAsset<Texture2D>(m_SpriteSheet->GetTextureHandle());
-        for (const auto &[rect, atlas_size, texture_handle] : m_SpriteSheet->Sprites)
-        {
-            SpriteSheetController control;
-            control.rect = rect;
-            m_Controls.push_back(control);
-        }
+        SpriteSheetController control;
+        control.data = sprite;
+        m_Controls.push_back(control);
     }
 
-    return ret;
+    return !m_Controls.empty();
 }
 
 void SpriteSheetEditorPanel::OnEvent(Event &e)
@@ -442,7 +450,7 @@ bool SpriteSheetEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
     {
         for (size_t i = 0; i < m_Controls.size(); ++i)
         {
-            if (m_Controls[i].rect.Contains(ray_origin))
+            if (m_Controls[i].data.rect.Contains(ray_origin))
             {
                 m_SelectedIndex = i;
                 m_Controls[i].selected_corner = NONE;
@@ -521,11 +529,13 @@ void SpriteSheetEditorPanel::OnMouse(f32 ts)
     const glm::vec2 delta = Input::GetMouseClickDragDelta();
 
     if (IsViewportHovered)
+    {
         m_Camera.OnMouseMove(delta);
+    }
 
     if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && !m_Controls.empty() && IsViewportHovered && m_SelectedIndex >= 0)
     {
-        auto &[rect, corner, selected_corner] = m_Controls[m_SelectedIndex];
+        auto &[data, corner, selected_corner] = m_Controls[m_SelectedIndex];
 
         const f32 viewport_height = m_Camera.GetViewportSize().y;
         const f32 orthographic_scale = m_Camera.GetOrthoScale() / viewport_height;
@@ -536,46 +546,46 @@ void SpriteSheetEditorPanel::OnMouse(f32 ts)
         {
             if (Input::IsKeyPressed(Key::X))
             {
-                rect.min.x -= delta.x * orthographic_scale / 2.0f;
-                rect.max.x -= delta.x * orthographic_scale / 2.0f;
+                data.rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                data.rect.max.x -= delta.x * orthographic_scale / 2.0f;
             }
             else if (Input::IsKeyPressed(Key::Y))
             {
-                rect.min.y += delta.y * orthographic_scale / 2.0f;
-                rect.max.y += delta.y * orthographic_scale / 2.0f;
+                data.rect.min.y += delta.y * orthographic_scale / 2.0f;
+                data.rect.max.y += delta.y * orthographic_scale / 2.0f;
             }
             else
             {
-                rect.min.x -= delta.x * orthographic_scale / 2.0f;
-                rect.max.x -= delta.x * orthographic_scale / 2.0f;
+                data.rect.min.x -= delta.x * orthographic_scale / 2.0f;
+                data.rect.max.x -= delta.x * orthographic_scale / 2.0f;
 
-                rect.min.y += delta.y * orthographic_scale / 2.0f;
-                rect.max.y += delta.y * orthographic_scale / 2.0f;
+                data.rect.min.y += delta.y * orthographic_scale / 2.0f;
+                data.rect.max.y += delta.y * orthographic_scale / 2.0f;
             }
             break;
         }
         case TOP_LEFT:
         {
-            rect.min.x -= delta.x * orthographic_scale / 2.0f;
-            rect.max.y += delta.y * orthographic_scale / 2.0f;
+            data.rect.min.x -= delta.x * orthographic_scale / 2.0f;
+            data.rect.max.y += delta.y * orthographic_scale / 2.0f;
             break;
         }
         case TOP_RIGHT:
         {
-            rect.max.x -= delta.x * orthographic_scale / 2.0f;
-            rect.max.y += delta.y * orthographic_scale / 2.0f;
+            data.rect.max.x -= delta.x * orthographic_scale / 2.0f;
+            data.rect.max.y += delta.y * orthographic_scale / 2.0f;
             break;
         }
         case BOTTOM_LEFT:
         {
-            rect.min.x -= delta.x * orthographic_scale / 2.0f;
-            rect.min.y += delta.y * orthographic_scale / 2.0f;
+            data.rect.min.x -= delta.x * orthographic_scale / 2.0f;
+            data.rect.min.y += delta.y * orthographic_scale / 2.0f;
             break;
         }
         case BOTTOM_RIGHT:
         {
-            rect.max.x -= delta.x * orthographic_scale / 2.0f;
-            rect.min.y += delta.y * orthographic_scale / 2.0f;
+            data.rect.max.x -= delta.x * orthographic_scale / 2.0f;
+            data.rect.min.y += delta.y * orthographic_scale / 2.0f;
             break;
         }
         }
@@ -587,14 +597,4 @@ SpriteSheetEditorPanel *SpriteSheetEditorPanel::GetInstance()
     return s_Instance;
 }
 
-void SpriteSheetEditorPanel::Reset()
-{
-    if (m_SpriteSheet)
-    {
-        m_SpriteSheet->Sprites.clear();
-        m_SpriteSheet.reset();
-    }
-
-    m_Controls.clear();
-}
 }

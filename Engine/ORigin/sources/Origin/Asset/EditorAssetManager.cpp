@@ -55,8 +55,16 @@ Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
 
     if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
     {
-        if (Ref<Asset> ret_asset = m_LoadedAssets.at(handle); ret_asset != nullptr)
-            return ret_asset;
+        AssetInfo asset_info = m_LoadedAssets.at(handle);
+        if (asset_info.IsLoadingAsync)
+        {
+            return asset_info.Asset;
+        }
+
+        if (asset_info.Asset)
+        {
+            return asset_info.Asset;
+        }
     }
 
     Ref<Asset> asset;
@@ -67,8 +75,9 @@ Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
     case AssetType::Font:
     {
         const auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
-        m_LoadedAssets[handle] = asset;
-        FontImporter::LoadAsync(&m_LoadedAssets[handle], filepath);
+        m_LoadedAssets[handle] = { asset, true };
+        FontImporter::LoadAsync(&m_LoadedAssets[handle].Asset, filepath);
+        
         return nullptr;
     }
     case AssetType::None:
@@ -93,7 +102,7 @@ Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
     }
     else
     {
-        m_LoadedAssets[handle] = asset;
+        m_LoadedAssets[handle] = { asset, false };
     }
 
     return asset;
@@ -129,7 +138,7 @@ AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepat
     AssetHandle handle;
     AssetMetadata metadata;
 
-    metadata.Filepath = filepath;
+    metadata.Filepath = filepath.generic_string();
     metadata.Type = GetAssetTypeFromFileExtension(filepath.extension().string());
 
     if (metadata.Type == AssetType::None)
@@ -141,7 +150,7 @@ AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepat
 
     for (const auto &[asset_handle, asset_metadata] : m_AssetRegistry)
     {
-        if (filepath == asset_metadata.Filepath)
+        if (metadata.Filepath == asset_metadata.Filepath)
         {
             handle = asset_handle;
             metadata = asset_metadata;
@@ -153,13 +162,14 @@ AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepat
     if (metadata.Type == AssetType::Font)
     {
         OGN_CORE_TRACE("{}", handle);
-        m_LoadedAssets[handle] = asset;
+        m_LoadedAssets[handle] = { asset, false };
         m_AssetRegistry[handle] = metadata;
 
         const auto asset_to_path = Project::GetActiveAssetDirectory() / metadata.Filepath;
         if (load_to_scene)
         {
-            FontImporter::LoadAsync(&m_LoadedAssets[handle], asset_to_path);
+            m_LoadedAssets[handle].IsLoadingAsync = true;
+            FontImporter::LoadAsync(&m_LoadedAssets[handle].Asset, asset_to_path);
         }
         
         SerializeAssetRegistry();
@@ -171,7 +181,7 @@ AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepat
         asset = AssetImporter::ImportAsset(handle, metadata);
     }
     
-    m_LoadedAssets[handle] = asset;
+    m_LoadedAssets[handle] = { asset, false };
     m_AssetRegistry[handle] = metadata;
     SerializeAssetRegistry();
     
@@ -183,7 +193,7 @@ void EditorAssetManager::InsertAsset(AssetHandle handle, const AssetMetadata &me
     Ref<Asset> asset;
     if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
     {
-        asset = m_LoadedAssets.at(handle);
+        asset = m_LoadedAssets.at(handle).Asset;
         return;
     }
 
@@ -191,9 +201,8 @@ void EditorAssetManager::InsertAsset(AssetHandle handle, const AssetMetadata &me
     if (asset)
     {
         asset->Handle = handle;
-        m_LoadedAssets[handle] = asset;
+        m_LoadedAssets[handle] = { asset, false };
         m_AssetRegistry[handle] = metadata;
-
         SerializeAssetRegistry();
     }
 }

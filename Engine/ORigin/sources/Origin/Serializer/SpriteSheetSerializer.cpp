@@ -21,10 +21,12 @@ namespace origin
 		sr.AddKeyValue("Grid", sprite_sheet->GetGrid());
 		
 		sr.BeginSequence("Sprites");
-		for (auto &sprite : sprite_sheet->Sprites)
+		for (const auto &sprite : sprite_sheet->Sprites)
 		{
 			sr.BeginMap();
 			sr.AddKeyValue("Rect", sprite.rect);
+			sr.AddKeyValue("UV0", sprite.uv0);
+			sr.AddKeyValue("UV1", sprite.uv1);
 			sr.EndMap();
 		}
 		sr.EndSequence();
@@ -38,31 +40,28 @@ namespace origin
 		return true;
 	}
 
-	bool SpriteSheetSerializer::Deserialize(const std::filesystem::path &filepath, Ref<SpriteSheet> &spriteSheet)
+	bool SpriteSheetSerializer::Deserialize(const std::filesystem::path &filepath, Ref<SpriteSheet> &sprite_sheet)
 	{
-		OGN_PROFILER_FUNCTION();
-
-		std::ifstream stream(filepath);
-		std::stringstream strStream;
-
-		strStream << stream.rdbuf();
-
-		YAML::Node s = YAML::Load(strStream.str());
+		YAML::Node s = Serializer::Deserialize(filepath);
 		if (!s["SpriteSheet"])
 			return false;
 
 		if (YAML::Node data = s["SpriteSheet"])
 		{
-			AssetHandle textureHandle = data["Texture"].as<uint64_t>();
-			spriteSheet->SetMainTexture(textureHandle);
+			AssetHandle texture_handle = data["Texture"].as<uint64_t>();
+			sprite_sheet->SetTexture(texture_handle);
+			sprite_sheet->SetGrid(data["Grid"].as<glm::vec2>());
 
 			if (YAML::Node sprites = data["Sprites"])
 			{
 				for (auto sprite : sprites)
 				{
-					SpriteSheetData spriteSheetData {};
-					spriteSheetData.rect = sprite["Rect"].as<Rect>();
-					spriteSheet->Sprites.push_back(spriteSheetData);
+					SpriteSheetData sp_data {};
+					sp_data.texture_handle = texture_handle;
+					sp_data.rect = sprite["Rect"].as<Rect>();
+					sp_data.uv0 = sprite["UV0"].as<glm::vec2>();
+					sp_data.uv1 = sprite["UV1"].as<glm::vec2>();
+					sprite_sheet->Sprites.push_back(sp_data);
 				}
 			}
 		}

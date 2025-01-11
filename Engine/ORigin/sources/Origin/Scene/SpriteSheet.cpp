@@ -6,19 +6,14 @@
 namespace origin
 {
 
-	SpriteSheet::SpriteSheet(const std::filesystem::path &filepath)
-		: m_Filepath(filepath), m_GridSize({1.0f, 1.0f})
+	SpriteSheet::SpriteSheet()
+		: m_GridSize({1.0f, 1.0f})
 	{
 	}
 
-	void SpriteSheet::SetMainTexture(AssetHandle handle)
+	void SpriteSheet::SetTexture(AssetHandle handle)
 	{
 		m_TextureHandle = handle;
-	}
-
-	std::shared_ptr<SpriteSheet> SpriteSheet::Create(const std::filesystem::path &filepath)
-	{
-		return std::make_shared<SpriteSheet>(filepath);
 	}
 
 	std::shared_ptr<SpriteSheet> SpriteSheet::Create()

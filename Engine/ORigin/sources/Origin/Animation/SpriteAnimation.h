@@ -17,8 +17,8 @@ namespace origin
 		int FrameBegin = 0;
 		int FrameEnd = 4;
 
-		glm::vec2 Min = glm::vec2(0.0f);
-		glm::vec2 Max = glm::vec2(1.0f);
+		glm::vec2 UV0 = glm::vec2(0.0f);
+		glm::vec2 UV1 = glm::vec2(1.0f);
 
 		AssetHandle Handle;
 		SpriteAnimationFrame(AssetHandle handle)

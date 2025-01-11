@@ -38,7 +38,7 @@ struct SpriteSheetController
         Rect bottom_right;
     };
 
-    Rect rect = Rect({ 1.0f, 1.0f }, { 1.0f, 1.0f });
+    SpriteSheetData data;
     Corner corner;
     ControllerCorner selected_corner = ControllerCorner::NONE;
 };
@@ -48,11 +48,10 @@ class SpriteSheetEditorPanel : public PanelBase
 public:
     SpriteSheetEditorPanel();
 
-    void CreateNewSpriteSheet();
-    void SetSelectedSpriteSheet(AssetHandle handle);
-    void SetMainTexture(AssetHandle handle) const;
+    Ref<SpriteSheet> CreateSpriteSheet(const AssetHandle texture_handle);
 
-    void AddSprite(const glm::vec2 &position, const glm::vec2 &size, const Rect &rect) const;
+    void OpenSpriteSheet(const AssetHandle sprite_sheet_handle);
+
     void RemoveSprite(i32 index);
     void Duplicate(i32 index);
 
@@ -60,7 +59,7 @@ public:
     void OnUpdate(float delta_time) override;
 
     bool Serialize(const std::filesystem::path &filepath);
-    bool Deserialize();
+    bool LoadSpritesToController();
 
     void OnEvent(Event &e) override;
     bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
@@ -73,11 +72,7 @@ public:
     bool IsViewportFocused = false;
     bool IsViewportHovered = false;
 private:
-
-    void Reset();
-
     glm::vec2 grid_size;
-
     EditorCamera m_Camera;
     Ref<SpriteSheet> m_SpriteSheet;
     Ref<Framebuffer> m_Framebuffer;
