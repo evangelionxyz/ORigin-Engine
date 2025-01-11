@@ -21,16 +21,15 @@ namespace origin {
 class PanelBase
 {
 public:
-    PanelBase() {}
-    ~PanelBase() {}
+    virtual ~PanelBase() {}
 
     virtual void Render() = 0;
     virtual void OnUpdate(float delta_time) = 0;
 
     virtual void OnEvent(Event &e) = 0;
 
-    void Close() { m_Open = false; }
-    void Open() { m_Open = true; }
+    virtual void Close() { m_Open = false; }
+    virtual void Open() { m_Open = true; }
 
 protected:
     glm::vec2 m_ViewportMouse = { 0.0f, 0.0f };

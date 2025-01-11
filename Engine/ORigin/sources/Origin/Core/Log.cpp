@@ -39,14 +39,12 @@ void Log::PrintColoredMessage(const std::string &message, const LogLevel level)
     }
     if (m_Buffer.tellp() > 1024)
     {
-        m_Buffer.str("");
         m_Buffer.clear();
     }
 
     m_Buffer << color_code << time_string << /* level_str << */ " " << message << "\033[0m\n";
     //m_Buffer << message << "\n";
     std::cout << m_Buffer.rdbuf();
-    m_Buffer.str("");
     m_Buffer.clear();
 }
 

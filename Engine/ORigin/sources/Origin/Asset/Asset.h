@@ -4,11 +4,13 @@
 #define ASSET_H
 
 #include "Origin/Core/UUID.h"
+#include "Origin/Core/Types.h"
 #include <string>
 
 namespace origin {
     
     using AssetHandle = UUID;
+
     enum class AssetType : u16
     {
         None = 0,
@@ -22,6 +24,13 @@ namespace origin {
         SpritesSheet
     };
 
+    class Asset;
+    struct AssetInfo
+    {
+        Ref<Asset> Asset;
+        bool IsLoadingAsync = false;
+    };
+
     const char *AssetTypeToString(AssetType type);
     AssetType AssetTypeFromString(const std::string_view &assetType);
 
@@ -30,6 +39,7 @@ namespace origin {
     public:
         virtual ~Asset() = default;
         AssetHandle Handle;
+
         [[nodiscard]] virtual AssetType GetType() const = 0;
     };
 }

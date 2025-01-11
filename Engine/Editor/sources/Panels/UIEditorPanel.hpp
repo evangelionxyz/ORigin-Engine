@@ -7,7 +7,7 @@
 #include "Origin/Scene/EditorCamera.h"
 #include "Origin/Scene/Scene.h"
 
-#include "PanelBase.h"
+#include "PanelBase.hpp"
 
 namespace origin
 {

@@ -7,9 +7,11 @@
 #include "Origin/Project/Project.h"
 #include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Serializer/SceneSerializer.h"
+#include "Origin/Serializer/SpriteSheetSerializer.h"
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Renderer.h"
+
 #include "stb_image.h"
 
 namespace origin {
@@ -233,17 +235,23 @@ namespace origin {
 
     Ref<SpriteSheet> SpriteSheetImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
-        Ref<SpriteSheet> sprite_sheet = Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
-        sprite_sheet->Handle = handle;
+        auto sprite_sheet = Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
+        if (sprite_sheet)
+            sprite_sheet->Handle = handle;
         return sprite_sheet;
     }
 
     Ref<SpriteSheet> SpriteSheetImporter::Load(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
+        {
             return nullptr;
+        }
+  
+        Ref<SpriteSheet> sprite_sheet = SpriteSheet::Create();
+        SpriteSheetSerializer::Deserialize(filepath, sprite_sheet);
 
-        return SpriteSheet::Create(filepath);
+        return sprite_sheet;
     }
 
     Ref<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)

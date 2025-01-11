@@ -17,6 +17,8 @@ namespace origin {
 
         void OnUpdate();
 
+        void Clear();
+
     private:
         Ref<Project> m_Project;
         uint64_t m_ThumbnailSize = 128;

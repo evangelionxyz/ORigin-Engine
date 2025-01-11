@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include "AudioSystemPanel.h"
+#include "AudioSystemPanel.hpp"
 
 #include <imgui_internal.h>
 

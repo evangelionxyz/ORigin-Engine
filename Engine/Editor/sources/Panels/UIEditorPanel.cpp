@@ -1,5 +1,5 @@
-#include "UIEditorPanel.h"
-#include "../EditorLayer.h"
+#include "UIEditorPanel.hpp"
+#include "../EditorLayer.hpp"
 #include "Origin/GUI/UI.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Asset/AssetManager.h"

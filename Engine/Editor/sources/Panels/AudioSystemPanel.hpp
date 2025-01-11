@@ -3,7 +3,7 @@
 #ifndef AUDIO_SYSTEM_H
 #define AUDIO_SYSTEM_H
 
-#include "PanelBase.h"
+#include "PanelBase.hpp"
 
 #include "Origin/Core/KeyEvent.h"
 #include "Origin/Core/MouseEvent.h"
