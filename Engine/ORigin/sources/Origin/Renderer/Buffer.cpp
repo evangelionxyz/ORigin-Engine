@@ -12,7 +12,9 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:   return nullptr;
+			case RendererAPI::API::None:
+                OGN_CORE_ASSERT(false, "[VertexBuffer] Please specify renderer api");
+				return nullptr;
 			case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(size);
 		}
 
@@ -23,7 +25,9 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:   return nullptr;
+		case RendererAPI::API::None:
+            OGN_CORE_ASSERT(false, "[VertexBuffer] Please specify renderer api");
+			return nullptr;
 		case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(vertices, size);
 		}
 
@@ -34,7 +38,9 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:   return nullptr;
+		case RendererAPI::API::None:
+            OGN_CORE_ASSERT(false, "[IndexBuffer] Please specify renderer api");
+			return nullptr;
 		case RendererAPI::API::OpenGL: return CreateRef<OpenGLIndexBuffer>(size);
 		}
 
@@ -45,7 +51,9 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:   return nullptr;
+		case RendererAPI::API::None:
+            OGN_CORE_ASSERT(false, "[IndexBuffer] Please specify renderer api");
+			return nullptr;
 		case RendererAPI::API::OpenGL: return CreateRef<OpenGLIndexBuffer>(indices, count);
 		}
 

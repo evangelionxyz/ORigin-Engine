@@ -12,26 +12,26 @@
 
 namespace origin {
 Bone::Bone(const std::string &name, int id, const aiNodeAnim *channel)
-    : Name(name), ID(id), local_transform(1.0f)
+    : Name(name), ID(id), LocalTransform(1.0f)
 {
     for (u32 positionIndex = 0; positionIndex < channel->mNumPositionKeys; ++positionIndex)
     {
         aiVector3D aiPos = channel->mPositionKeys[positionIndex].mValue;
-        float timestamp = (float)channel->mPositionKeys[positionIndex].mTime;
+        float timestamp = static_cast<float>(channel->mPositionKeys[positionIndex].mTime);
         TranslationKeys.AddFrame({ Math::AssimpToGlmVec3(aiPos), timestamp });
     }
 
     for (u32 rotationIndex = 0; rotationIndex < channel->mNumRotationKeys; ++rotationIndex)
     {
         aiQuaternion aiQuat = channel->mRotationKeys[rotationIndex].mValue;
-        float timestamp = (float)channel->mRotationKeys[rotationIndex].mTime;
+        float timestamp = static_cast<float>(channel->mRotationKeys[rotationIndex].mTime);
         RotationKeys.AddFrame({ Math::AssimpToGlmQuat(aiQuat), timestamp });
     }
 
     for (u32 scaleIndex = 0; scaleIndex < channel->mNumScalingKeys; ++scaleIndex)
     {
         aiVector3D aiScale = channel->mScalingKeys[scaleIndex].mValue;
-        float timestamp = (float)channel->mScalingKeys[scaleIndex].mTime;
+        float timestamp = static_cast<float>(channel->mScalingKeys[scaleIndex].mTime);
         ScaleKeys.AddFrame({ Math::AssimpToGlmVec3(aiScale), timestamp });
     }
 }
@@ -41,20 +41,22 @@ void Bone::Update(float animTime)
     glm::mat4 translation = TranslationKeys.InterpolateTranslation(animTime);
     glm::mat4 rotation = RotationKeys.Interpolate(animTime);
     glm::mat4 scale = ScaleKeys.InterpolateScaling(animTime);
-    local_transform = translation * rotation * scale;
+    LocalTransform = translation * rotation * scale;
 }
 
 ModelAnimation::ModelAnimation(const std::vector<Ref<Mesh>> &meshes, aiAnimation *anim, const aiScene *scene)
     : meshes(meshes)
 {
     name = anim->mName.C_Str();
-    ticks_per_second = (float)anim->mTicksPerSecond;
+
+    ticks_per_second = static_cast<float>(anim->mTicksPerSecond);
 
     if (anim->mTicksPerSecond == 0.0)
+    {
         ticks_per_second = 1.0f;
+    }
 
     duration = static_cast<float>(anim->mDuration);
-
     global_bone_transforms.resize(100, glm::mat4(1.0f));
 
     ReadHierarchy(root_node, scene->mRootNode, scene);
@@ -67,7 +69,10 @@ ModelAnimation::ModelAnimation(const std::vector<Ref<Mesh>> &meshes, aiAnimation
 void ModelAnimation::ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim)
 {
     auto &bone_info_map = mesh->bone_info_map;
-    int &bone_count = mesh->bone_count;
+    i32 &bone_count = mesh->bone_count;
+
+    if (bone_count <= 0)
+        return;
 
     for (u32 i = 0; i < anim->mNumChannels; ++i)
     {
@@ -88,9 +93,10 @@ void ModelAnimation::ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim)
 
 void ModelAnimation::ReadHierarchy(AssimpNodeData &dest, const aiNode *src, const aiScene *scene)
 {
-    dest.Name = src->mName.C_Str();
-    dest.Transformation = Math::AssimpToGlmMatrix(src->mTransformation);
-    dest.ChildrenCount = src->mNumChildren;
+    dest.name = src->mName.C_Str();
+    dest.transform = Math::AssimpToGlmMatrix(src->mTransformation);
+
+    dest.num_children = src->mNumChildren;
     for (u32 i = 0; i < src->mNumMeshes; ++i)
     {
         aiMesh *mesh = scene->mMeshes[src->mMeshes[i]];
@@ -102,7 +108,7 @@ void ModelAnimation::ReadHierarchy(AssimpNodeData &dest, const aiNode *src, cons
     {
         AssimpNodeData new_data;
         ReadHierarchy(new_data, src->mChildren[i], scene);
-        dest.Children.push_back(new_data);
+        dest.children.push_back(new_data);
     }
 }
 

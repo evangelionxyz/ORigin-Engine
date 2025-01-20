@@ -15,7 +15,11 @@ namespace origin
         void OnGuiRender() override;
         void OnEvent(Event &event) override;
         bool OnWindowResize(FramebufferResizeEvent &e);
-        bool OnKeyPressedEvent(KeyPressedEvent &e);
+        bool OnKeyPressed(KeyPressedEvent &e);
+        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+        bool OnMouseMove(MouseMovedEvent &e);
+        bool OnMouseScroll(MouseScrolledEvent &e);
+
         EditorCamera camera;
     };
 }

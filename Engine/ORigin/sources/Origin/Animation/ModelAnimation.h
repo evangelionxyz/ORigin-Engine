@@ -4,7 +4,6 @@
 #define MODEL_ANIMATION_H
 
 #include "Animation.h"
-
 #include "Origin/Core/Assert.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -125,19 +124,20 @@ public:
     QuatKey RotationKeys;
     Vec3Key ScaleKeys;
 
-    std::string Name;
-    glm::mat4 local_transform;
     int ID;
+    glm::mat4 LocalTransform;
+    std::string Name;
 };
 
 struct AssimpNodeData
 {
-    int ChildrenCount;
-    std::string Name;
+    int num_children;
+    glm::mat4 transform;
+    std::string name;
     std::vector<std::string> mesh_names;
-    glm::mat4 Transformation;
-    std::vector<AssimpNodeData> Children;
+    std::vector<AssimpNodeData> children;
 };
+
 
 class ModelAnimation : public Animation
 {
@@ -161,6 +161,7 @@ private:
     std::unordered_map<std::string, Bone> m_Bones;
     friend class Animator;
 };
+
 }
 
 #endif

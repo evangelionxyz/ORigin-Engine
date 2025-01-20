@@ -1088,104 +1088,104 @@ void EditorLayer::GUIRender()
 
     if (GuiPreferencesWindow)
     {
-        static int selected_option = 0;
+        ImGui::OpenPopup("Preferences");
 
+        static int selected_option = 0;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 5.0f));
 
-        ImGui::Begin("Preferences", &GuiPreferencesWindow);
-
-        // Define a child window for the left menu
-        ImGui::BeginChild("LeftMenu", {200.0f, 0.0f}, ImGuiChildFlags_ResizeX); // 150 width for menu
+        if (ImGui::BeginPopupModal("Preferences", &GuiPreferencesWindow)) 
         {
-            // List of menu items
-            if (ImGui::Selectable("Project", selected_option == 0)) { selected_option = 0; }
-            if (ImGui::Selectable("Appearance", selected_option == 1)) { selected_option = 1; }
-            if (ImGui::Selectable("Physics", selected_option == 2)) { selected_option = 2; }
-            if (ImGui::Selectable("Physics 2D", selected_option == 3)) { selected_option = 3; }
-            if (ImGui::Selectable("Debugging", selected_option == 4)) { selected_option = 4; }
-        }
-        ImGui::EndChild();
-
-        ImGui::SameLine(); // Move to the right for content
-
-        // Define a child window for the right content area
-        ImGui::BeginChild("RightContent", {0.0f, 0.0f}); // Fill remaining space
-        {
-            if (selected_option == 0) // Project
+            ImGui::BeginChild("LeftMenu", {200.0f, 0.0f}, ImGuiChildFlags_ResizeX); // 150 width for menu
             {
-                ImGui::Text("Project");
-                ImGui::Separator();
-
-                if (Project::GetActive())
-                {
-                    const std::string &project_path = Project::GetActiveProjectPath().generic_string();
-                    const std::string &relative_path = std::filesystem::relative(project_path).generic_string();
-                    const UUID start_scene = Project::GetActive()->GetConfig().StartScene;
-                    ImGui::Text("Project Path %s", project_path.c_str());
-                    ImGui::Text("Project Relative Path %s", relative_path.c_str());
-                    ImGui::Text("Start Scene %llu", start_scene);
-                }
+                // List of menu items
+                if (ImGui::Selectable("Project", selected_option == 0)) { selected_option = 0; }
+                if (ImGui::Selectable("Appearance", selected_option == 1)) { selected_option = 1; }
+                if (ImGui::Selectable("Physics", selected_option == 2)) { selected_option = 2; }
+                if (ImGui::Selectable("Physics 2D", selected_option == 3)) { selected_option = 3; }
+                if (ImGui::Selectable("Debugging", selected_option == 4)) { selected_option = 4; }
             }
-            else if (selected_option == 1) // Appearance
-            {
-                ImGui::Text("Appearance");
-                ImGui::Separator();
+            ImGui::EndChild();
 
-                if (ImGui::BeginCombo("Themes", Themes::GetCurrentTheme().c_str()))
+            ImGui::SameLine(); // Move to the right for content
+
+            ImGui::BeginChild("RightContent", {0.0f, 0.0f}); // Fill remaining space
+            {
+                if (selected_option == 0) // Project
                 {
-                    for (const auto &[key, value] : Themes::GetThemes())
+                    ImGui::Text("Project");
+                    ImGui::Separator();
+
+                    if (Project::GetActive())
                     {
-                        const bool is_selected = Themes::GetCurrentTheme() == key;
-                        if (ImGui::Selectable(key.c_str(), is_selected))
-                            Themes::ApplyTheme(key);
-                        if (is_selected)
-                            ImGui::SetItemDefaultFocus();
+                        const std::string &project_path = Project::GetActiveProjectPath().generic_string();
+                        const std::string &relative_path = std::filesystem::relative(project_path).generic_string();
+                        const UUID start_scene = Project::GetActive()->GetConfig().StartScene;
+                        ImGui::Text("Project Path %s", project_path.c_str());
+                        ImGui::Text("Project Relative Path %s", relative_path.c_str());
+                        ImGui::Text("Start Scene %llu", start_scene);
                     }
-                    ImGui::EndCombo();
                 }
-            }
-            else if (selected_option == 2) // Physics
-            {
-                ImGui::Text("Physics");
-                ImGui::Separator();
+                else if (selected_option == 1) // Appearance
+                {
+                    ImGui::Text("Appearance");
+                    ImGui::Separator();
+
+                    if (ImGui::BeginCombo("Themes", Themes::GetCurrentTheme().c_str()))
+                    {
+                        for (const auto &[key, value] : Themes::GetThemes())
+                        {
+                            const bool is_selected = Themes::GetCurrentTheme() == key;
+                            if (ImGui::Selectable(key.c_str(), is_selected))
+                                Themes::ApplyTheme(key);
+                            if (is_selected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
+                else if (selected_option == 2) // Physics
+                {
+                    ImGui::Text("Physics");
+                    ImGui::Separator();
                     
 
-                std::string current_api = PhysicsApiTostring(Physics::GetAPI());
-                const char *apis[2] = { "Jolt", "PhysX" };
+                    std::string current_api = PhysicsApiTostring(Physics::GetAPI());
+                    const char *apis[2] = { "Jolt", "PhysX" };
 
-                if (ImGui::BeginCombo("Physics API", current_api.c_str()))
-                {
-                    for (i32 i = 0; i < 2; ++i)
+                    if (ImGui::BeginCombo("Physics API", current_api.c_str()))
                     {
-                        const bool is_selected = strcmp(current_api.c_str(), apis[0]) == 0;
-                        if (ImGui::Selectable(apis[i], is_selected))
+                        for (i32 i = 0; i < 2; ++i)
                         {
-                            OnSceneStop();
+                            const bool is_selected = strcmp(current_api.c_str(), apis[0]) == 0;
+                            if (ImGui::Selectable(apis[i], is_selected))
+                            {
+                                OnSceneStop();
 
-                            Physics::SetAPI(PhysicsApiFromString(apis[i]));
-                            Project::GetActive()->GetConfig().PhysicsApi = PhysicsApiFromString(apis[i]);
-                            Project::SaveActive();
+                                Physics::SetAPI(PhysicsApiFromString(apis[i]));
+                                Project::GetActive()->GetConfig().PhysicsApi = PhysicsApiFromString(apis[i]);
+                                Project::SaveActive();
+                            }
+                            if (is_selected)
+                                ImGui::SetItemDefaultFocus();
                         }
-                        if (is_selected)
-                            ImGui::SetItemDefaultFocus();
+                        ImGui::EndCombo();
                     }
-                    ImGui::EndCombo();
+                }
+                else if (selected_option == 3) // Physics 2D
+                {
+                    ImGui::Text("Physics 2D");
+                    ImGui::Separator();
+                }
+                else if (selected_option == 4) // Debugging
+                {
+                    ImGui::Text("Debugging");
+                    ImGui::Separator();
                 }
             }
-            else if (selected_option == 3) // Physics 2D
-            {
-                ImGui::Text("Physics 2D");
-                ImGui::Separator();
-            }
-            else if (selected_option == 4) // Debugging
-            {
-                ImGui::Text("Debugging");
-                ImGui::Separator();
-            }
-        }
-        ImGui::EndChild();
+            ImGui::EndChild();
 
-        ImGui::End();
+            ImGui::EndPopup();
+        }
 
         ImGui::PopStyleVar();
     }

@@ -39,6 +39,10 @@ int main()
 {
     auto logger = Log();
     logger.PrintMessage("Hello World");
+
+    RendererAPI::SetAPI(RendererAPI::API::OpenGL);
+    Renderer::Init();
+
     Ref<Model> model = CreateRef<Model>("data/barbarian.glb");
     for (auto& m : model->GetMeshes())
     {

@@ -41,42 +41,63 @@ void Animator::PlayAnimation(ModelAnimation *animation)
 
 void Animator::UpdatePose(const AssimpNodeData *node, const glm::mat4 &parent_transform)
 {
-    glm::mat4 node_transform = node->Transformation;
-    Bone *bone = current_animation->FindBone(node->Name);
+    glm::mat4 node_transform = node->transform;
+    Bone *bone = current_animation->FindBone(node->name);
 
     if (bone)
     {
         bone->Update(time_in_ticks);
-        node_transform = bone->local_transform;
+        node_transform = bone->LocalTransform;
     }
 
     glm::mat4 global_transform = parent_transform * node_transform;
-
     if (!current_animation->meshes.empty())
     {
         auto &bone_info_map = current_animation->meshes[0]->bone_info_map;
-        if (bone_info_map.contains(node->Name))
+        glm::mat4 bone_offset = glm::mat4(1.0f);
+
+        if (bone_info_map.contains(node->name))
         {
-            const i32 index = bone_info_map[node->Name].ID;
-            const glm::mat4 &offset = bone_info_map[node->Name].offset_matrix;
+            const i32 index = bone_info_map[node->name].ID;
+            bone_offset = bone_info_map[node->name].offset_matrix;
             if (index < current_animation->global_bone_transforms.size())
             {
-                current_animation->global_bone_transforms[index] = global_transform * offset;
+                current_animation->global_bone_transforms[index] = global_transform * bone_offset;
+            }
+        }
+
+        for (auto &mesh : current_animation->meshes)
+        {
+            if (mesh->bone_info_map.empty() && mesh->node && mesh->node->parent && mesh->node->parent->name == node->name)
+            {
+                mesh->parent_transform = global_transform;
+                mesh->transform = mesh->parent_transform * mesh->node->local_transform;
             }
         }
     }
 
-    for (i32 i = 0; i < node->ChildrenCount; i++)
+    for (i32 i = 0; i < node->num_children; i++)
     {
-        UpdatePose(&node->Children[i], global_transform);
+        UpdatePose(&node->children[i], global_transform);
     }
 }
 
 void Animator::ApplyToMeshes()
 {
-    if (!current_animation) return;
+    if (!current_animation)
+        return;
+
     for (auto &mesh : current_animation->meshes)
     {
+        if (mesh->bone_info_map.empty())
+        {
+            if (mesh->node)
+                continue;
+            else
+                mesh->transform = glm::mat4(1.0f);
+            continue;
+        }
+
         glm::mat4 bone_transformation = glm::mat4(1.0f);
         for (auto &[bone_name, bone_info] : mesh->bone_info_map)
         {
@@ -86,7 +107,6 @@ void Animator::ApplyToMeshes()
                 bone_transformation += mesh->final_bone_matrices[bone_info.ID];
             }
         }
-        mesh->transformation = glm::inverse(bone_transformation);
     }
 }
 

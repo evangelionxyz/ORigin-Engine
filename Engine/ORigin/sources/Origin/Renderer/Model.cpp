@@ -58,10 +58,10 @@ static std::unordered_map<aiTextureType, Ref<Texture2D>> MLoadTextures(const aiS
 static void ExtractBoneWeightForVertices(Ref<Mesh> &data, aiMesh *mesh, const aiScene *scene)
 {
     // load bones weight and apply it to vertices
-    for (u32 boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+    for (u32 bone_index = 0; bone_index < mesh->mNumBones; ++bone_index)
     {
         i32 bone_id = -1;
-        aiBone *bone = mesh->mBones[boneIndex];
+        aiBone *bone = mesh->mBones[bone_index];
         std::string bone_name = bone->mName.data;
 
         if (!data->bone_info_map.contains(bone_name))
@@ -78,7 +78,7 @@ static void ExtractBoneWeightForVertices(Ref<Mesh> &data, aiMesh *mesh, const ai
             bone_id = data->bone_info_map[bone_name].ID;
         }
 
-        auto weights = bone->mWeights;
+        aiVertexWeight *weights = bone->mWeights;
         for (u32 w_idx = 0; w_idx < bone->mNumWeights; ++w_idx)
         {
             i32 vertex_id = weights[w_idx].mVertexId;
@@ -136,17 +136,16 @@ std::vector<Ref<Mesh>> Model::ProcessNode(aiNode* node, const aiScene* scene, co
 
 	for (u32 i = 0; i < node->mNumChildren; ++i)
 	{
-		std::vector<Ref<Mesh>> childMeshes = ProcessNode(node->mChildren[i], scene, filepath);
-		meshes.insert(meshes.end(), childMeshes.begin(), childMeshes.end());
+		std::vector<Ref<Mesh>> child_meshes = ProcessNode(node->mChildren[i], scene, filepath);
+		meshes.insert(meshes.end(), child_meshes.begin(), child_meshes.end());
 	}
+
 	return meshes;
 }
 
 glm::mat4 Model::CalculateTransform(aiNode *node, aiMesh *mesh)
 {
-    glm::mat4 transform(1.0f);
-    transform = Math::AssimpToGlmMatrix(node->mTransformation);
-    return transform;
+    return Math::AssimpToGlmMatrix(node->mTransformation);
 }
 
 aiNode *Model::FindMeshNode(aiNode *node, const aiScene *scene, aiMesh *target_mesh)
@@ -163,6 +162,7 @@ aiNode *Model::FindMeshNode(aiNode *node, const aiScene *scene, aiMesh *target_m
         if (found_node)
             return found_node;
     }
+
     return nullptr;
 }
 
@@ -179,6 +179,7 @@ std::vector<ModelAnimation> Model::LoadAnimations(const std::vector<Ref<Mesh>> &
             animations.push_back(model_animation);
         }
     }
+
     return animations;
 }
 
@@ -226,70 +227,96 @@ Ref<Model> Model::Create(const std::string &filepath)
 Ref<Mesh> Model::LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::string &filepath)
 {
     Ref<Mesh> mesh_data = CreateRef<Mesh>();
-
-    mesh_data->name = mesh->mName.C_Str();
+    mesh_data->node = new MeshNode();
     mesh_data->final_bone_matrices.resize(100, glm::mat4(1.0f));
 
-    aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
-
     aiNode *node = FindMeshNode(scene->mRootNode, scene, mesh);
-    mesh_data->transformation = node ? CalculateTransform(node, mesh) : glm::mat4(1.0f);
 
-    if (mesh->mMaterialIndex >= 0)
+    if (node)
     {
-        aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+        mesh_data->node->name = node->mName.data;
+        mesh_data->name = node->mName.data;
 
-        aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
-        ai_real metallic_factor = 1.0f;
-        material->Get(AI_MATKEY_BASE_COLOR, base_color);
-        material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
-        material->Get(AI_MATKEY_METALLIC_FACTOR, mesh_data->material.metallic_factor);
-        material->Get(AI_MATKEY_ROUGHNESS_FACTOR, mesh_data->material.roughness_factor);
+        // store local transform of the mesh node
+        mesh_data->node->local_transform = Math::AssimpToGlmMatrix(node->mTransformation);
 
-        mesh_data->material.diffuse_color = { diffuse_color.r, diffuse_color.g, diffuse_color.b };
-
-        auto texture_map = MLoadTextures(scene, material, filepath, aiTextureType_DIFFUSE);
-        if (!texture_map.empty())
-            mesh_data->material.textures.push_back(texture_map);
-
-        if (mesh_data->material.textures.empty())
+        // handle parent node
+        if (aiNode *parent_node = node->mParent)
         {
-            texture_map[aiTextureType_DIFFUSE] = Renderer::WhiteTexture;
-            mesh_data->material.textures.push_back(texture_map);
+            mesh_data->node->parent = new MeshNode();
+            mesh_data->node->parent->name = parent_node->mName.data;
+            mesh_data->node->parent->local_transform = Math::AssimpToGlmMatrix(parent_node->mTransformation);
         }
+
+        aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
+        if (mesh->mMaterialIndex >= 0)
+        {
+            aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+
+            aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
+            ai_real metallic_factor = 1.0f;
+            material->Get(AI_MATKEY_BASE_COLOR, base_color);
+            material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
+            material->Get(AI_MATKEY_METALLIC_FACTOR, mesh_data->material.metallic_factor);
+            material->Get(AI_MATKEY_ROUGHNESS_FACTOR, mesh_data->material.roughness_factor);
+
+            mesh_data->material.diffuse_color = { diffuse_color.r, diffuse_color.g, diffuse_color.b };
+
+            auto texture_map = MLoadTextures(scene, material, filepath, aiTextureType_DIFFUSE);
+            if (!texture_map.empty())
+                mesh_data->material.textures.push_back(texture_map);
+
+            if (mesh_data->material.textures.empty())
+            {
+                texture_map[aiTextureType_DIFFUSE] = Renderer::WhiteTexture;
+                mesh_data->material.textures.push_back(texture_map);
+            }
+        }
+
+        // Vertices
+        mesh_data->vertices.resize(mesh->mNumVertices);
+        for (u32 i = 0; i < mesh->mNumVertices; ++i)
+        {
+            MeshVertexData vertex;
+
+            vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+            if (mesh->HasNormals())
+            {
+                vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+            }
+            else
+            {
+                vertex.Normals = { 0.0f, 0.0f, 0.0f }; // Default normal
+            }
+
+            vertex.Color = { base_color.r, base_color.g, base_color.b };
+            if (mesh->mTextureCoords[0]) // Check for first UV set
+            {
+                vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+            }
+            else
+            {
+                vertex.UV = { 0.0f, 0.0f }; // Default UV
+            }
+
+            vertex.TilingFactor = { 1.0f, 1.0f };
+            vertex.AlbedoIndex = 0.0f;
+            vertex.SpecularIndex = 0.0f;
+            mesh_data->vertices[i] = vertex;
+        }
+
+        for (u32 i = 0; i < mesh->mNumFaces; ++i)
+        {
+            aiFace face = mesh->mFaces[i];
+            for (u32 in = 0; in < face.mNumIndices; ++in)
+            {
+                mesh_data->indices.push_back(face.mIndices[in]);
+            }
+        }
+
+        ExtractBoneWeightForVertices(mesh_data, mesh, scene);
+        CreateVertex(mesh_data);
     }
-
-    // Vertices
-    mesh_data->vertices.resize(mesh->mNumVertices);
-    for (u32 i = 0; i < mesh->mNumVertices; ++i)
-    {
-        MeshVertexData vertex;
-
-        vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-        if (mesh->HasNormals())
-            vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-        else
-            vertex.Normals = { 0.0f, 0.0f, 0.0f }; // Default normal
-        vertex.Color = { base_color.r, base_color.g, base_color.b };
-        if (mesh->mTextureCoords[0]) // Check for first UV set
-            vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-        else
-            vertex.UV = { 0.0f, 0.0f }; // Default UV
-        vertex.TilingFactor = { 1.0f, 1.0f };
-        vertex.AlbedoIndex = 0.0f;
-        vertex.SpecularIndex = 0.0f;
-        mesh_data->vertices[i] = vertex;
-    }
-
-    for (u32 i = 0; i < mesh->mNumFaces; ++i)
-    {
-        aiFace face = mesh->mFaces[i];
-        for (u32 in = 0; in < face.mNumIndices; ++in)
-            mesh_data->indices.push_back(face.mIndices[in]);
-    }
-
-    ExtractBoneWeightForVertices(mesh_data, mesh, scene);
-    CreateVertex(mesh_data);
 
     return mesh_data;
 }
@@ -312,10 +339,11 @@ const aiScene *Model::LoadAiScene(const std::string &filepath)
    return scene;
 }
 
-void Model::CreateVertex(const Ref<Mesh> &mesh_data)
+void Model::CreateVertex(Ref<Mesh> &mesh_data)
 {
     mesh_data->vertex_array = VertexArray::Create();
     mesh_data->vertex_buffer = VertexBuffer::Create(mesh_data->vertices.data(), static_cast<u32>(mesh_data->vertices.size() * sizeof(MeshVertexData)));
+
     mesh_data->vertex_buffer->SetLayout
     ({
         { ShaderDataType::Float3, "aPosition"     },
@@ -327,7 +355,8 @@ void Model::CreateVertex(const Ref<Mesh> &mesh_data)
         { ShaderDataType::Float4, "aWeights"      },
         { ShaderDataType::Float,  "aAlbedoIndex"  },
         { ShaderDataType::Float,  "aSpecularIndex"},
-        });
+    });
+
     mesh_data->vertex_array->AddVertexBuffer(mesh_data->vertex_buffer);
     Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(mesh_data->indices.data(), static_cast<u32>(mesh_data->indices.size()));
     mesh_data->vertex_array->SetIndexBuffer(indexBuffer);

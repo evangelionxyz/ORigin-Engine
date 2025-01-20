@@ -32,7 +32,8 @@ public:
     float metallic_factor;
     float roughness_factor;
 
-    MeshMaterial(): metallic_factor(1.0f), roughness_factor(0.0f), diffuse_color(1.0f)
+    MeshMaterial()
+        : metallic_factor(1.0f), roughness_factor(0.0f), diffuse_color(1.0f)
     {
     }
 };
@@ -56,17 +57,48 @@ struct BoneInfo
     glm::mat4 offset_matrix;
 };
 
+struct MeshNode
+{
+    glm::mat4 local_transform;
+    std::string name;
+    MeshNode *parent;
+
+    MeshNode()
+        : local_transform(1.0f), parent(nullptr)
+    {
+    }
+
+    ~MeshNode()
+    {
+        if (parent)
+        {
+            delete parent;
+        }
+    }
+};
+
 class Mesh
 {
 public:
+    ~Mesh()
+    {
+        if (node)
+        {
+            delete node;
+        }
+    }
+
     std::string name;
+
     std::vector<MeshVertexData> vertices;
     std::vector<u32> indices;
     Ref<VertexArray> vertex_array;
     Ref<VertexBuffer> vertex_buffer;
     MeshMaterial material;
 
-    glm::mat4 transformation = glm::mat4(1.0f);
+    MeshNode *node = nullptr;
+    glm::mat4 transform = glm::mat4(1.0f);
+    glm::mat4 parent_transform = glm::mat4(1.0f);
 
     std::vector<glm::mat4> final_bone_matrices;
 

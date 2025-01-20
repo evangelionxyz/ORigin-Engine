@@ -5,12 +5,6 @@
 
 namespace origin {
 
-struct ModelData
-{
-	aiScene *ai_scene;
-	aiNode *ai_root_node;
-};
-
 class Model : public Asset
 {
 public:
@@ -29,7 +23,7 @@ public:
 	static glm::mat4 CalculateTransform(aiNode *node, aiMesh *mesh);
 
 	static std::vector<ModelAnimation> LoadAnimations(const std::vector<Ref<Mesh>> &meshes, const aiScene *scene);
-	static void CreateVertex(const Ref<Mesh> &mesh_data);
+	static void CreateVertex(Ref<Mesh> &mesh_data);
 
     static AssetType GetStaticType() { return AssetType::Mesh; }
     virtual AssetType GetType() const { return GetStaticType(); }

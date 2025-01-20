@@ -15,8 +15,7 @@ namespace origin
 
         void UpdateAnimation(f32 dt, f32 speed);
         void PlayAnimation(ModelAnimation *animation);
-        void UpdatePose(const AssimpNodeData *node,
-            const glm::mat4 &parent_transform);
+        void UpdatePose(const AssimpNodeData *node, const glm::mat4 &parent_transform);
         void ApplyToMeshes();
 
         bool HasAnimation() { return current_animation != nullptr; }

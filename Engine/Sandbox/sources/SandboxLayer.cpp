@@ -2,19 +2,22 @@
 
 #include "Origin/EntryPoint.h"
 #include "Origin/Asset/AssetImporter.h"
+#include "Origin/Core/Input.h"
 #include "Origin/GUI/UI.h"
 
 #include "SandboxLayer.h"
+
 
 using namespace origin;
 
 struct Data
 {
     Model model;
+    glm::vec3 position {0.0f, 0.0f, 0.0f};
     std::vector<ModelAnimation> animations;
     Animator animator;
 
-    glm::vec3 light_pos = { 0.0f, 10.0f, 14.0f };
+    glm::vec3 light_pos = { -67.0f, 10.0f, 14.0f };
     glm::vec3 light_color = { 0.65f, 0.65f, 0.65f };
 };
 
@@ -35,7 +38,7 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
 
     shader = Shader::Create("Resources/Shaders/TestShader.glsl", false, true);
     s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
-    // s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Test.glb");
+    // s_data.model = Model("Resources/Models/Test/Test.glb");
     // s_data.model = Model("Resources/Models/storm_trooper/sss.glb");
     // s_data.model = Model("Resources/Models/cube_plane.glb");
     // s_data.model = Model("Resources/Models/survival_guitar_backpack.glb");
@@ -60,6 +63,8 @@ void SandboxLayer::OnAttach()
 void SandboxLayer::OnUpdate(const Timestep ts)
 {
     RenderCommand::Clear();
+    const glm::vec2 &delta = Input::GetMouseClickDragDelta();
+    camera.OnMouseMove(delta);
     camera.OnUpdate(ts);
 
     camera.UpdateView();
@@ -104,7 +109,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
         shader->SetVector("lightColor", s_data.light_color);
         shader->SetFloat("shininess", 1.0f);
         shader->SetMatrix("bone_transforms", m->final_bone_matrices[0], m->final_bone_matrices.size());
-        draw_mesh(camera.GetViewProjection(), glm::mat4(1.0f), m->vertex_array);
+        draw_mesh(camera.GetViewProjection(), m->transform, m->vertex_array);
         shader->Disable();
     }
     MeshRenderer::End();
@@ -114,15 +119,16 @@ void SandboxLayer::OnEvent(Event &e)
 {
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<FramebufferResizeEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnWindowResize));
-    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnKeyPressedEvent));
+    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnKeyPressed));
+    dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseMove));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseButtonPressed));
+    dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseScroll));
 
     camera.OnEvent(e);
 }
 
 void SandboxLayer::OnGuiRender()
 {
-    ImGui::ShowDemoWindow(nullptr);
-
     ImGui::Begin("Control");
     ImGui::DragFloat3("Light Pos", &s_data.light_pos.x);
     ImGui::ColorEdit3("Light Color", &s_data.light_color.x);
@@ -143,9 +149,8 @@ void SandboxLayer::OnGuiRender()
         /*glm::vec3 pos, rot, scale;
         Math::DecomposeTransformEuler(m->transform, pos, rot, scale);
 
-        ImGui::DragFloat3("Position", &pos.x);
         ImGui::DragFloat3("Rotation", &rot.x);
-        ImGui::DragFloat3("Scale", &scale.x);*/
+        ImGui::DragFloat3("Scale", &scale.x);
 
         //m->transform = glm::recompose(scale, glm::quat(rot), pos, glm::vec3(0.0f), glm::vec4(1.0f));
 
@@ -180,7 +185,25 @@ bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)
     return false;
 }
 
-bool SandboxLayer::OnKeyPressedEvent(KeyPressedEvent &e)
+bool SandboxLayer::OnKeyPressed(KeyPressedEvent &e)
 {
+    return false;
+}
+
+bool SandboxLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+{
+    return false;
+}
+
+bool SandboxLayer::OnMouseMove(MouseMovedEvent &e)
+{
+   
+    return false;
+}
+
+bool SandboxLayer::OnMouseScroll(MouseScrolledEvent &e)
+{
+    camera.OnMouseScroll(e.GetYOffset());
+
     return false;
 }

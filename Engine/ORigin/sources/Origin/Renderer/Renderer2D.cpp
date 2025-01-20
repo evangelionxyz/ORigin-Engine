@@ -702,7 +702,8 @@ namespace origin {
 		double x = 0.0;
 		double y = 0.0;
 		double max_x = 0.0; // to track the maximum width
-		double min_y = 0.0; // to track the minimum y position (since y dreases with line breaks)
+		double min_y = 0.0; // to track the minimum y position (since y decrease with line breaks)
+
 		double fs_scale = 1.0 / (metrics.ascenderY - metrics.descenderY);
 		const double space_glyph_advance = fontGeometry.getGlyph(' ')->getAdvance();
 
@@ -750,19 +751,21 @@ namespace origin {
 				glyph = fontGeometry.getGlyph('?');
 			}
 
-			double atlasLeft, atlasBottom, atlasRight, atlasTop;
-			glyph->getQuadAtlasBounds(atlasLeft, atlasBottom, atlasRight, atlasTop);
-			glm::vec2 texCoordMin(static_cast<float>(atlasLeft), static_cast<float>(atlasBottom));
-			glm::vec2 texCoordMax(static_cast<float>(atlasRight), static_cast<float>(atlasTop));
+			double atlas_left, atlas_bottom, atlas_right, atlas_top;
+			glyph->getQuadAtlasBounds(atlas_left, atlas_bottom, atlas_right, atlas_top);
+			glm::vec2 texCoordMin(static_cast<float>(atlas_left), static_cast<float>(atlas_bottom));
+			glm::vec2 texCoordMax(static_cast<float>(atlas_right), static_cast<float>(atlas_top));
 
-			double planeLeft, planeBottom, planeRight, planeTop;
-			glyph->getQuadPlaneBounds(planeLeft, planeBottom, planeRight, planeTop);
-			glm::vec2 quadMin(static_cast<float>(planeLeft), static_cast<float>(planeBottom));
-			glm::vec2 quadMax(static_cast<float>(planeRight), static_cast<float>(planeTop));
+			double plane_left, plane_bottom, plane_right, plane_top;
+			glyph->getQuadPlaneBounds(plane_left, plane_bottom, plane_right, plane_top);
+			glm::vec2 quad_min(static_cast<float>(plane_left), static_cast<float>(plane_bottom));
+			glm::vec2 quad_max(static_cast<float>(plane_right), static_cast<float>(plane_top));
 
-			quadMin *= fs_scale, quadMax *= fs_scale;
-			quadMin += glm::vec2(x, y);
-			quadMax += glm::vec2(x, y);
+			quad_min *= fs_scale;
+			quad_max *= fs_scale;
+
+			quad_min += glm::vec2(x, y);
+			quad_max += glm::vec2(x, y);
 
 			float texel_width = 1.0f / s_Render2DData.FontAtlasTextureSlots[static_cast<int>(textureIndex)]->GetWidth();
 			float texel_height = 1.0f / s_Render2DData.FontAtlasTextureSlots[static_cast<int>(textureIndex)]->GetHeight();
@@ -771,25 +774,25 @@ namespace origin {
 			texCoordMax *= glm::vec2(texel_width, texel_height);
 
 			{
-				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quad_min, 0.0f, 1.0f);
 				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
 				s_Render2DData.TextVertexBufferPtr->TexCoord = texCoordMin;
 				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
 				s_Render2DData.TextVertexBufferPtr++;
 
-				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quad_min.x, quad_max.y, 0.0f, 1.0f);
 				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
 				s_Render2DData.TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
 				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
 				s_Render2DData.TextVertexBufferPtr++;
 
-				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quad_max, 0.0f, 1.0f);
 				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
 				s_Render2DData.TextVertexBufferPtr->TexCoord = texCoordMax;
 				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
 				s_Render2DData.TextVertexBufferPtr++;
 
-				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+				s_Render2DData.TextVertexBufferPtr->Position = transform * glm::vec4(quad_max.x, quad_min.y, 0.0f, 1.0f);
 				s_Render2DData.TextVertexBufferPtr->Color = textParams.Color;
 				s_Render2DData.TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
 				s_Render2DData.TextVertexBufferPtr->TexIndex = textureIndex;
@@ -799,7 +802,7 @@ namespace origin {
 				Renderer::GetStatistics().QuadCount++;
 			}
 
-			if (i < string.size() - 1)
+			if (i < string.size())
 			{
 				double advance = glyph->getAdvance();
 				char nextCharacter = string[i + 1];
@@ -813,7 +816,6 @@ namespace origin {
 
 		if (size)
 		{
-			double totalWidth = max_x;
 			double totalHeight = std::abs(min_y) + fs_scale * metrics.lineHeight;
 			*size = { static_cast<float>(max_x), static_cast<float>(totalHeight) };
 		}

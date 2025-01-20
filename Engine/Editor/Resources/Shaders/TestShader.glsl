@@ -58,34 +58,53 @@ uniform vec3 viewPosition;
 uniform vec3 lightColor;
 uniform float shininess;
 
+const float PI = 3.14592;
+const float Epsilon = 0.00001;
+
+#if VULKAN
+#else
+#endif
+
+float ndfGGX(float cosLh, float roughness)
+{
+  float alpha = roughness * roughness;
+  float alphaSq = alpha * alpha;
+  float denom = (cosLh * cosLh) * (alphaSq - 1.0) + 1.0;
+  return alphaSq / (PI * denom * denom);
+}
+
+float gaSchlickG1(float cosTheta, float k) {
+  return cosTheta / (cosTheta * (1.0 - k) + k);
+}
+
+float gaChlickGGX(float cosLi, float cosLo, float roughness) {
+  float r = roughness + 1.0;
+  float k = (r * r) / 8.0;
+  return gaSchlickG1(cosLi, k) * gaSchlickG1(cosLo, k);
+}
+
+vec3 fresnelChlick(vec3 F0, float cosTheta) {
+  return F0 + (vec3(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
 void main()
 {
-    // Ambient lighting
     vec3 ambient = 0.1 * lightColor;
-
-    // Diffuse lighting
     vec3 norm = normalize(fragNormal);
     vec3 lightDir = normalize(lightPosition - fragPosition);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
-
-    // Specular lighting
     vec3 viewDir = normalize(viewPosition - fragPosition);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = spec * lightColor;
-
-    // Combine results
     vec3 lighting = (ambient + diffuse + specular) * fragColor;
-
     vec4 tex_diffuse_color = texture(texture_diffuse, fragUV);
     vec4 tex_specular_color = texture(texture_specular, fragUV);
     vec4 tex_normals_color = texture(texture_normals, fragUV);
     vec4 tex_base_color = texture(texture_base_color, fragUV);
-
     const float gamma = 2.2;
     vec3 final_color = pow(tex_diffuse_color.rgb * lighting, vec3(1.0/gamma));
-
     oColor = vec4(final_color, 1.0);
     //oColor = tex_diffuse_color * vec4(1.0);
 }
