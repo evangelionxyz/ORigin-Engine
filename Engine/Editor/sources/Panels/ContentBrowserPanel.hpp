@@ -25,6 +25,7 @@ namespace origin
         void DrawContentBrowser();
 
         void RefreshAssetTree();
+        void RefreshEntryPathList();
         void LoadAssetTree(const std::filesystem::path &directory);
 
         std::shared_ptr<Texture2D> DirectoryIcons(const std::filesystem::directory_entry& dirExtension);
@@ -50,6 +51,7 @@ namespace origin
 
         std::vector<TreeNode> m_TreeNodes;
         std::filesystem::path m_RenamePath;
+
         bool m_Renaming = false;
         bool m_Renamed = false;
         char m_RenameBuffer[256] = { 0 };
@@ -58,5 +60,6 @@ namespace origin
 
         std::stack<std::filesystem::path> m_BackwardPathStack;
         std::stack<std::filesystem::path> m_ForwardPathStack;
+        std::vector<std::filesystem::path> m_PathEntryList;
     };
 }
