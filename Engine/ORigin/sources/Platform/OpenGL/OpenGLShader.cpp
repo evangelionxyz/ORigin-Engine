@@ -174,14 +174,14 @@ namespace origin
                 strcpy(msg, m);
                 strcat(msg, shaderType);
 
-                OGN_CORE_ERROR("[Shader] Error: {}", msg);
-                PUSH_CONSOLE_ERROR("[Shader] Error: {}", msg);
+                OGN_CORE_ERROR("[Shader]: {}", msg);
+                PUSH_CONSOLE_ERROR("[Shader]: {}", msg);
 
                 free(msg);
             }
 
-            PUSH_CONSOLE_ERROR("[Shader] Error {}", info_log);
-            OGN_CORE_ASSERT(false, "[Shader] Error {}", info_log);
+            PUSH_CONSOLE_ERROR("[Shader] {}", info_log);
+            OGN_CORE_ASSERT(false, "[Shader] {}", info_log);
 
             delete[] info_log;
             return 0;

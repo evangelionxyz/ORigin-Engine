@@ -89,6 +89,8 @@ void ModelAnimation::ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim)
             m_Bones[bone_name] = Bone(bone_name, bone_info_map[bone_name].ID, channel);
         }
     }
+
+    m_AllBoneInfoMap.insert(bone_info_map.begin(), bone_info_map.end());
 }
 
 void ModelAnimation::ReadHierarchy(AssimpNodeData &dest, const aiNode *src, const aiScene *scene)

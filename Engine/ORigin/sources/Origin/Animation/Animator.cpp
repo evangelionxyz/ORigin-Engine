@@ -53,9 +53,9 @@ void Animator::UpdatePose(const AssimpNodeData *node, const glm::mat4 &parent_tr
     glm::mat4 global_transform = parent_transform * node_transform;
     if (!current_animation->meshes.empty())
     {
-        auto &bone_info_map = current_animation->meshes[0]->bone_info_map;
-        glm::mat4 bone_offset = glm::mat4(1.0f);
+        auto &bone_info_map = current_animation->GetBoneInfoMap();
 
+        glm::mat4 bone_offset = glm::mat4(1.0f);
         if (bone_info_map.contains(node->name))
         {
             const i32 index = bone_info_map[node->name].ID;

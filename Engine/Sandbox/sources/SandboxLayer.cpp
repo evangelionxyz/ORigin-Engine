@@ -6,54 +6,46 @@
 #include "Origin/GUI/UI.h"
 
 #include "SandboxLayer.h"
-
+#include "SM.hpp"
 
 using namespace origin;
 
-struct Data
+struct CamData
 {
-    Model model;
-    glm::vec3 position {0.0f, 0.0f, 0.0f};
-    std::vector<ModelAnimation> animations;
-    Animator animator;
-
-    glm::vec3 light_pos = { -67.0f, 10.0f, 14.0f };
-    glm::vec3 light_color = { 0.65f, 0.65f, 0.65f };
+    glm::mat4 view_projection;
+    glm::vec3 positon;
 };
 
-static Data s_data;
 Ref<Shader> shader;
+Ref<SkinnedMesh> skinned_mesh;
+i32 display_bone = 0;
+CamData cam_data;
+Ref<UniformBuffer> ubo;
 
-void draw_mesh(const glm::mat4 &view_projection, const glm::mat4 &transform, const Ref<VertexArray> &va)
-{
-    shader->SetMatrix("viewProjection", view_projection * transform);
-    shader->SetMatrix("model_transform", transform);
-    RenderCommand::DrawIndexed(va);
-}
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
     camera.SetPosition({ 0.0f, 2.0f, 8.0f });
 
-    shader = Shader::Create("Resources/Shaders/TestShader.glsl", false, true);
-    s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
+    std::string filepath = "Resources/Models/raptoid.glb";
+    skinned_mesh = CreateRef<SkinnedMesh>();
+    if (!skinned_mesh->LoadMesh(filepath))
+    {
+        OGN_CORE_ASSERT(false, "Failed to load mesh {}", filepath);
+        return;
+    }
+
+    shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
+    ubo = UniformBuffer::Create(sizeof(CamData), 0);
+
+    // s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
     // s_data.model = Model("Resources/Models/Test/Test.glb");
     // s_data.model = Model("Resources/Models/storm_trooper/sss.glb");
     // s_data.model = Model("Resources/Models/cube_plane.glb");
     // s_data.model = Model("Resources/Models/survival_guitar_backpack.glb");
     // s_data.model = Model("Resources/Models/raptoid.glb");
-
-    s_data.animations = s_data.model.GetAnimations();
-    if (!s_data.animations.empty())
-    {
-        s_data.animator = Animator(&s_data.animations[0]);
-        s_data.animator.PlayAnimation(&s_data.animations[0]);
-    }
-
     RenderCommand::ClearColor({ 0.3f,0.3f,0.3f, 1.0f });
-
-    //Application::GetInstance().GetWindow().ToggleVSync();
 }
 
 void SandboxLayer::OnAttach()
@@ -70,49 +62,18 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     camera.UpdateView();
     camera.UpdateProjection();
 
-    s_data.animator.UpdateAnimation(ts, 1.0f);
-    s_data.animator.ApplyToMeshes();
+    cam_data.view_projection = camera.GetViewProjection();
+    cam_data.positon = camera.GetPosition();
 
-    MeshRenderer::Begin(camera);
-    for (auto &m : s_data.model.GetMeshes())
-    {
-        if (!m->is_active)
-            continue;
+    ubo->Bind();
+    ubo->SetData(&cam_data, sizeof(CamData));
 
-        shader->Enable();
-        for (auto t : m->material.textures)
-        {
-            if (t.contains(aiTextureType_DIFFUSE))
-            {
-                t.at(aiTextureType_DIFFUSE)->Bind(0);
-                shader->SetInt("texture_diffuse", 0);
-            }
-           /* else if (t.contains(aiTextureType_SPECULAR))
-            {
-                t.at(aiTextureType_SPECULAR)->Bind(1);
-                shader->SetInt("texture_specular", 1);
-            }
-            else if (t.contains(aiTextureType_NORMALS))
-            {
-                t.at(aiTextureType_NORMALS)->Bind(2);
-                shader->SetInt("texture_normals", 2);
-            }
-            else if (t.contains(aiTextureType_BASE_COLOR))
-            {
-                t.at(aiTextureType_BASE_COLOR)->Bind(3);
-                shader->SetInt("texture_base_color", 3);
-            }*/
-        }
+    shader->Enable();
+    shader->SetInt("udisplay_bone_index", display_bone);
+    shader->SetMatrix("umodel", glm::mat4(1.0f));
 
-        shader->SetVector("lightPosition", s_data.light_pos);
-        shader->SetVector("viewPosition", camera.GetPosition());
-        shader->SetVector("lightColor", s_data.light_color);
-        shader->SetFloat("shininess", 1.0f);
-        shader->SetMatrix("bone_transforms", m->final_bone_matrices[0], m->final_bone_matrices.size());
-        draw_mesh(camera.GetViewProjection(), m->transform, m->vertex_array);
-        shader->Disable();
-    }
-    MeshRenderer::End();
+    skinned_mesh->Render();
+
 }
 
 void SandboxLayer::OnEvent(Event &e)
@@ -130,50 +91,9 @@ void SandboxLayer::OnEvent(Event &e)
 void SandboxLayer::OnGuiRender()
 {
     ImGui::Begin("Control");
-    ImGui::DragFloat3("Light Pos", &s_data.light_pos.x);
-    ImGui::ColorEdit3("Light Color", &s_data.light_color.x);
-    if (ImGui::Button("Reload shader"))
-    {
-        shader->Reload();
-    }
-    ImGui::End();
-
-    ImGui::Begin("Test");
-
-    for (auto &m : s_data.model.GetMeshes())
-    {
-        ImGui::PushID(m->name.c_str());
-        ImGui::Checkbox(m->name.c_str(), &m->is_active);
-        ImGui::Text("bone count: %d", m->bone_count);
-
-        /*glm::vec3 pos, rot, scale;
-        Math::DecomposeTransformEuler(m->transform, pos, rot, scale);
-
-        ImGui::DragFloat3("Rotation", &rot.x);
-        ImGui::DragFloat3("Scale", &scale.x);
-
-        //m->transform = glm::recompose(scale, glm::quat(rot), pos, glm::vec3(0.0f), glm::vec4(1.0f));
-
-        /* for (auto tvector : m->material.textures)
-         {
-             for (auto tmap : tvector)
-             {
-                 ImTextureID tex_id = reinterpret_cast<ImTextureID>((uintptr_t)tmap.second->GetID());
-                 ImGui::Image(tex_id, ImVec2(256, 128));
-             }
-         }*/
-        ImGui::PopID();
-    }
-    ImGui::End();
-
-    ImGui::Begin("Animations");
-    for (auto &a : s_data.animations)
-    {
-        if (ImGui::Button(a.name.c_str()))
-        {
-            s_data.animator.PlayAnimation(&a);
-        }
-    }
+    ImGui::SliderInt("Select Bone", &display_bone, 0, skinned_mesh->NumBones());
+    const f32 &fps = ImGui::GetIO().Framerate;
+    ImGui::Text("FPS %.2f", fps);
     ImGui::End();
 }
 

@@ -82,7 +82,7 @@ static void ExtractBoneWeightForVertices(Ref<Mesh> &data, aiMesh *mesh, const ai
         for (u32 w_idx = 0; w_idx < bone->mNumWeights; ++w_idx)
         {
             i32 vertex_id = weights[w_idx].mVertexId;
-            float weight = weights[w_idx].mWeight;
+            f32 weight = weights[w_idx].mWeight;
 
             OGN_CORE_ASSERT(vertex_id < data->vertices.size(), "Invalid vertex id");
             MeshVertexData &vertex = data->vertices[vertex_id];
