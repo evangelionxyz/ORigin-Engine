@@ -370,8 +370,6 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
 	{
-		OGN_PROFILER_RENDERING();
-
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; // White Texture
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -396,8 +394,6 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
-		OGN_PROFILER_RENDERING();
-
 		OGN_CORE_ASSERT(texture, "Renderer2D: Invalid texture");
 
 		constexpr size_t quadVertexCount = 4;
@@ -441,8 +437,6 @@ namespace origin {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 	{
-		OGN_PROFILER_RENDERING();
-
 		constexpr int QuadVertexCount = 4;
 		const glm::vec2* textureCoords = subTexture->GetTexCoords();
 		const std::shared_ptr<Texture2D> texture = subTexture->GetTexture();
@@ -539,8 +533,6 @@ namespace origin {
 
 	void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade)
 	{
-		OGN_PROFILER_RENDERING();
-
 		for (size_t i = 0; i < 4; i++)
 		{
 			s_Render2DData.CircleVertexBufferPtr->TransformedPosition = transform * s_Render2DData.QuadVertexPositions[i];
@@ -563,8 +555,6 @@ namespace origin {
 
 	void Renderer2D::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)
 	{
-		OGN_PROFILER_RENDERING();
-
 		if (s_Render2DData.LineVertexCount >= Renderer2DData::MaxLines)
 			NextBatch();
 
@@ -582,8 +572,6 @@ namespace origin {
 
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src)
 	{
-		OGN_PROFILER_RENDERING();
-
 		const std::shared_ptr<Texture2D> &texture = AssetManager::GetAsset<Texture2D>(src.Texture);
 		if (texture)
 		{
@@ -662,8 +650,6 @@ namespace origin {
 
 	void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, glm::vec2 *size)
 	{
-		OGN_PROFILER_RENDERING();
-
 		if (!font)
 			return;
 

@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef UI_EDITOR_PANEL_HPP
+#define UI_EDITOR_PANEL_HPP
+
 #include "Origin/Core/Event.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Core/KeyEvent.h"
@@ -9,50 +11,51 @@
 
 #include "PanelBase.hpp"
 
-namespace origin
+namespace origin {
+class UIComponent;
+class UIEditorPanel : public PanelBase
 {
-    class UIComponent;
-    class UIEditorPanel : public PanelBase
-    {
-    public:
-        UIEditorPanel(Scene *scene, bool open = false);
-        void SetContext(Scene *scene);
-        void SetActive(UIComponent *component);
-        void CreateNewText();
-        void CreateNewTexture();
-        bool RenameComponent(int index, const std::string &newName);
+public:
+    UIEditorPanel(Scene *scene, bool open = false);
+    void SetContext(Scene *scene);
+    void SetActive(UIComponent *component);
+    void CreateNewText();
+    void CreateNewTexture();
+    bool RenameComponent(int index, const std::string &newName);
 
-        void Render() override;
-        void OnUpdate(float delta_time) override;
+    void Render() override;
+    void OnUpdate(float delta_time) override;
 
-        void OnEvent(Event &e) override;
-        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
-        bool OnMouseScroll(MouseScrolledEvent &e);
-        bool OnKeyPressed(KeyPressedEvent &e);
+    void OnEvent(Event &e) override;
+    bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+    bool OnMouseScroll(MouseScrolledEvent &e);
+    bool OnKeyPressed(KeyPressedEvent &e);
 
-        void OnMouse(float ts);
+    void OnMouse(float ts);
 
-        void Open();
+    void Open();
 
-        static UIEditorPanel *GetInstance();
+    static UIEditorPanel *GetInstance();
 
-        bool IsViewportFocused = false;
-        bool IsViewportHovered = false;
+    bool IsViewportFocused = false;
+    bool IsViewportHovered = false;
 
-    private:
-        void DrawInspector();
-        void DrawHierarchy();
+private:
+    void DrawInspector();
+    void DrawHierarchy();
 
-        Scene *m_Scene = nullptr;
-        EditorCamera m_Camera;
-        UIComponent *m_UICompHandler = nullptr;
+    Scene *m_Scene = nullptr;
+    EditorCamera m_Camera;
+    UIComponent *m_UICompHandler = nullptr;
 
-        Ref<Framebuffer> m_Framebuffer;
-        Rect m_ViewportRect = Rect();
+    Ref<Framebuffer> m_Framebuffer;
+    Rect m_ViewportRect = Rect();
 
-        glm::ivec2 m_Mouse = { 0, 0 };
-        glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
-        int m_SelectedIndex = 0;
-    };
+    glm::ivec2 m_Mouse = { 0, 0 };
+    glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
+    int m_SelectedIndex = 0;
+};
 
 }
+
+#endif

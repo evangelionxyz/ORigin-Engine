@@ -4,8 +4,8 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Shader.h"
-#include "Model.h"
-#include "Mesh.h"
+#include "Model/Model.hpp"
+#include "Model/Mesh.hpp"
 #include "MeshRenderer.h"
 
 #include <glad/glad.h>
@@ -23,17 +23,16 @@ static void ProcessStaticMeshNode(aiNode *node, const aiScene *scene, Mesh *data
         for (u32 i = 0; i < mesh->mNumVertices; ++i)
         {
             MeshVertexData vertex;
-            vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-            vertex.Normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+            vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+            vertex.normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
             if (mesh->mTextureCoords[0])
             {
-                vertex.UV = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+                vertex.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
             }
             else
             {
-                vertex.UV = { 1.0f, 1.0f };
+                vertex.texcoord = { 1.0f, 1.0f };
             }
-            vertex.TilingFactor = glm::vec2(1.0f);
             data->vertices.push_back(vertex);
         }
 
@@ -66,7 +65,7 @@ Ref<Mesh> MeshRenderer::LoadMeshVertexData(const std::filesystem::path &filepath
     aiNode *node = scene->mRootNode;
     Ref<Mesh> mesh = CreateRef<Mesh>();
     ProcessStaticMeshNode(node, scene, mesh.get());
-    Model::CreateVertex(mesh);
+    // Model::CreateVertex(mesh);
     return mesh;
 }
 struct MeshRenderData
@@ -152,7 +151,7 @@ void MeshRenderer::Init()
     s_MeshRenderData.CubeData = LoadMeshVertexData("Resources/Models/cube.obj");
     for (auto &v : s_MeshRenderData.CubeData->vertices)
     {
-        v.Position *= glm::vec3(0.5f);
+        v.position *= glm::vec3(0.5f);
     }
     s_MeshRenderData.CubeVAO = VertexArray::Create();
     s_MeshRenderData.CubeVBO = VertexBuffer::Create(MeshRenderData::MaxCubeVertices * sizeof(MeshVertexData));
@@ -394,14 +393,14 @@ void MeshRenderer::DrawCube(const glm::mat4 &transform, glm::vec4 color)
 
     for (size_t i = 0; i < s_MeshRenderData.CubeData->vertices.size(); i++)
     {
-        s_MeshRenderData.CubeVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CubeData->vertices[i].Position, 1.0f);
+        s_MeshRenderData.CubeVBOPtr->position = transform * glm::vec4(s_MeshRenderData.CubeData->vertices[i].position, 1.0f);
         //glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(transform)));
-        s_MeshRenderData.CubeVBOPtr->Normals = s_MeshRenderData.CubeData->vertices[i].Normals;
-        s_MeshRenderData.CubeVBOPtr->Color = color;
-        s_MeshRenderData.CubeVBOPtr->UV = s_MeshRenderData.CubeData->vertices[i].UV;
-        s_MeshRenderData.CubeVBOPtr->TilingFactor = s_MeshRenderData.CubeData->vertices[i].TilingFactor;
-        s_MeshRenderData.CubeVBOPtr->AlbedoIndex = 0.0f;
-        s_MeshRenderData.CubeVBOPtr->SpecularIndex = 0.0f;
+        s_MeshRenderData.CubeVBOPtr->normals = s_MeshRenderData.CubeData->vertices[i].normals;
+        s_MeshRenderData.CubeVBOPtr->color = color;
+        s_MeshRenderData.CubeVBOPtr->texcoord = s_MeshRenderData.CubeData->vertices[i].texcoord;
+        //s_MeshRenderData.CubeVBOPtr->TilingFactor = s_MeshRenderData.CubeData->vertices[i].TilingFactor;
+        //s_MeshRenderData.CubeVBOPtr->albedo_index = 0.0f;
+        //s_MeshRenderData.CubeVBOPtr->specular_index = 0.0f;
         s_MeshRenderData.CubeVBOPtr++;
     }
 
@@ -479,14 +478,14 @@ void MeshRenderer::DrawCube(const glm::mat4 &transform,
 
     for (size_t i = 0; i < s_MeshRenderData.CubeData->vertices.size(); i++)
     {
-        s_MeshRenderData.CubeVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CubeData->vertices[i].Position, 1.0f);
+        s_MeshRenderData.CubeVBOPtr->position = transform * glm::vec4(s_MeshRenderData.CubeData->vertices[i].position, 1.0f);
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transform)));
-        s_MeshRenderData.CubeVBOPtr->Normals = normalMatrix * s_MeshRenderData.CubeData->vertices[i].Normals;
-        s_MeshRenderData.CubeVBOPtr->Color = color;
-        s_MeshRenderData.CubeVBOPtr->UV = s_MeshRenderData.CubeData->vertices[i].UV;
-        s_MeshRenderData.CubeVBOPtr->TilingFactor = tilingFactor;
-        s_MeshRenderData.CubeVBOPtr->AlbedoIndex = albedoIndex;
-        s_MeshRenderData.CubeVBOPtr->SpecularIndex = specularIndex;
+        s_MeshRenderData.CubeVBOPtr->normals = normalMatrix * s_MeshRenderData.CubeData->vertices[i].normals;
+        s_MeshRenderData.CubeVBOPtr->color = color;
+        s_MeshRenderData.CubeVBOPtr->texcoord = s_MeshRenderData.CubeData->vertices[i].texcoord;
+        //s_MeshRenderData.CubeVBOPtr->TilingFactor = tilingFactor;
+        //s_MeshRenderData.CubeVBOPtr->albedo_index = albedoIndex;
+        //s_MeshRenderData.CubeVBOPtr->specular_index = specularIndex;
         s_MeshRenderData.CubeVBOPtr++;
     }
 
@@ -501,14 +500,14 @@ void MeshRenderer::DrawSphere(const glm::mat4 &transform, const glm::vec4 &color
 
     for (size_t i = 0; i < s_MeshRenderData.SphereData->vertices.size(); i++)
     {
-        s_MeshRenderData.SphereVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.SphereData->vertices[i].Position, 1.0f);
+        s_MeshRenderData.SphereVBOPtr->position = transform * glm::vec4(s_MeshRenderData.SphereData->vertices[i].position, 1.0f);
         glm::mat3 transpose_mat = glm::mat3(glm::transpose(glm::inverse(transform)));
-        s_MeshRenderData.SphereVBOPtr->Normals = transpose_mat * s_MeshRenderData.SphereData->vertices[i].Normals;
-        s_MeshRenderData.SphereVBOPtr->Color = color;
-        s_MeshRenderData.SphereVBOPtr->UV = s_MeshRenderData.SphereData->vertices[i].UV;
-        s_MeshRenderData.SphereVBOPtr->TilingFactor = s_MeshRenderData.SphereData->vertices[i].TilingFactor;
-        s_MeshRenderData.SphereVBOPtr->AlbedoIndex = 0.0f;
-        s_MeshRenderData.SphereVBOPtr->SpecularIndex = 0.0f;
+        s_MeshRenderData.SphereVBOPtr->normals = transpose_mat * s_MeshRenderData.SphereData->vertices[i].normals;
+        s_MeshRenderData.SphereVBOPtr->color = color;
+        s_MeshRenderData.SphereVBOPtr->texcoord = s_MeshRenderData.SphereData->vertices[i].texcoord;
+        //s_MeshRenderData.SphereVBOPtr->TilingFactor = s_MeshRenderData.SphereData->vertices[i].TilingFactor;
+        //s_MeshRenderData.SphereVBOPtr->albedo_index = 0.0f;
+        //s_MeshRenderData.SphereVBOPtr->specular_index = 0.0f;
         s_MeshRenderData.SphereVBOPtr++;
     }
 
@@ -529,14 +528,14 @@ void MeshRenderer::DrawCapsule(const glm::mat4 &transform, const glm::vec4 &colo
 
     for (size_t i = 0; i < s_MeshRenderData.CapsuleData->vertices.size(); i++)
     {
-        s_MeshRenderData.CapsuleVBOPtr->Position = transform * glm::vec4(s_MeshRenderData.CapsuleData->vertices[i].Position, 1.0f);
+        s_MeshRenderData.CapsuleVBOPtr->position = transform * glm::vec4(s_MeshRenderData.CapsuleData->vertices[i].position, 1.0f);
         glm::mat3 transposeMat = glm::mat3(glm::transpose(glm::inverse(transform)));
-        s_MeshRenderData.CapsuleVBOPtr->Normals = transposeMat * s_MeshRenderData.CapsuleData->vertices[i].Normals;
-        s_MeshRenderData.CapsuleVBOPtr->Color = color;
-        s_MeshRenderData.CapsuleVBOPtr->UV = s_MeshRenderData.CapsuleData->vertices[i].UV;
-        s_MeshRenderData.CapsuleVBOPtr->TilingFactor = s_MeshRenderData.CapsuleData->vertices[i].TilingFactor;
-        s_MeshRenderData.CapsuleVBOPtr->AlbedoIndex = 0.0f;
-        s_MeshRenderData.CapsuleVBOPtr->SpecularIndex = 0.0f;
+        s_MeshRenderData.CapsuleVBOPtr->normals = transposeMat * s_MeshRenderData.CapsuleData->vertices[i].normals;
+        s_MeshRenderData.CapsuleVBOPtr->color = color;
+        s_MeshRenderData.CapsuleVBOPtr->texcoord = s_MeshRenderData.CapsuleData->vertices[i].texcoord;
+        //s_MeshRenderData.CapsuleVBOPtr->TilingFactor = s_MeshRenderData.CapsuleData->vertices[i].TilingFactor;
+        //s_MeshRenderData.CapsuleVBOPtr->albedo_index = 0.0f;
+        //s_MeshRenderData.CapsuleVBOPtr->specular_index = 0.0f;
         s_MeshRenderData.CapsuleVBOPtr++;
     }
 

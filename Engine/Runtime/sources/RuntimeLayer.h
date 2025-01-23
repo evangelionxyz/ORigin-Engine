@@ -1,5 +1,5 @@
 #pragma once
-#include <Origin.h>
+#include <Origin.hpp>
 
 #ifdef APIENTRY
 	#undef APIENTRY

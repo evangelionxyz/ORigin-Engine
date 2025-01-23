@@ -13,7 +13,7 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/MeshRenderer.h"
-#include "Origin/Renderer/Model.h"
+#include "Origin/Renderer/Model/Model.hpp"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"

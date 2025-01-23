@@ -6,7 +6,7 @@
 #include "Origin/GUI/UI.h"
 
 #include "SandboxLayer.h"
-#include "SM.hpp"
+#include "SkinnedMesh.hpp"
 
 using namespace origin;
 
@@ -16,44 +16,44 @@ struct CamData
     glm::vec3 positon;
 };
 
-Ref<Shader> shader;
-Ref<SkinnedMesh> skinned_mesh;
-i32 display_bone = 0;
 CamData cam_data;
 Ref<UniformBuffer> ubo;
+Ref<Shader> shader;
+Ref<Model> model;
+Animator animator;
+std::vector<ModelAnimation> animations;
 
+f32 total_time_sec = 0.0f;
+std::vector<glm::mat4> bone_transforms;
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
-    camera.SetPosition({ 0.0f, 2.0f, 8.0f });
+    camera.SetPosition({ -198.020416, 144.280899, 81.7220459 });
+    camera.SetFocalPoint({ -193.653824, 142.863403, 79.7412262 });
+    camera.SetPitch(0.287439466);
+    camera.SetYaw(1.14492643);
 
-    std::string filepath = "Resources/Models/raptoid.glb";
-    skinned_mesh = CreateRef<SkinnedMesh>();
-    if (!skinned_mesh->LoadMesh(filepath))
-    {
-        OGN_CORE_ASSERT(false, "Failed to load mesh {}", filepath);
-        return;
-    }
-
-    shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
-    ubo = UniformBuffer::Create(sizeof(CamData), 0);
-
-    // s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
-    // s_data.model = Model("Resources/Models/Test/Test.glb");
-    // s_data.model = Model("Resources/Models/storm_trooper/sss.glb");
-    // s_data.model = Model("Resources/Models/cube_plane.glb");
-    // s_data.model = Model("Resources/Models/survival_guitar_backpack.glb");
-    // s_data.model = Model("Resources/Models/raptoid.glb");
-    RenderCommand::ClearColor({ 0.3f,0.3f,0.3f, 1.0f });
+    RenderCommand::ClearColor({ 0.125f, 0.125f, 0.125f, 1.0f });
 }
 
 void SandboxLayer::OnAttach()
 {
+    shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
+    ubo = UniformBuffer::Create(sizeof(CamData), 0);
+
+    std::string filepath = "Resources/Models/raptoid.glb";
+    model = Model::Create(filepath);
+    //animations = model->GetAnimations();
+
+    //animator.PlayAnimation(&animations[0]);
+
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
 {
+    total_time_sec += ts;
+
     RenderCommand::Clear();
     const glm::vec2 &delta = Input::GetMouseClickDragDelta();
     camera.OnMouseMove(delta);
@@ -67,13 +67,42 @@ void SandboxLayer::OnUpdate(const Timestep ts)
 
     ubo->Bind();
     ubo->SetData(&cam_data, sizeof(CamData));
-
     shader->Enable();
-    shader->SetInt("udisplay_bone_index", display_bone);
-    shader->SetMatrix("umodel", glm::mat4(1.0f));
 
-    skinned_mesh->Render();
+    model->GetFinalBoneTransforms(bone_transforms);
+    model->UpdateAnimation(ts);
 
+    for (auto &mesh : model->GetMeshes())
+    {
+        for (const auto &texture : mesh->material.textures)
+        {
+            if (texture.contains(TextureType::DIFFUSE))
+            {
+                texture.at(TextureType::DIFFUSE)->Bind(0);
+                shader->SetInt("udiffuse_texture", 0);
+            }
+            /*else if (texture.contains(TextureType::SPECULAR))
+            {
+                texture.at(TextureType::SPECULAR)->Bind(1);
+                shader->SetInt("texture_specular", 1);
+            }
+            else if (texture.contains(TextureType::NORMALS))
+            {
+                texture.at(TextureType::NORMALS)->Bind(2);
+                shader->SetInt("texture_normals", 2);
+            }
+            else if (texture.contains(TextureType::BASE_COLOR))
+            {
+                texture.at(TextureType::BASE_COLOR)->Bind(3);
+                shader->SetInt("texture_base_color", 3);
+            }*/
+        }
+
+
+        shader->SetMatrix("umodel_transform", mesh->transform);
+        shader->SetMatrix("ubone_transforms", bone_transforms[0], bone_transforms.size());
+        RenderCommand::DrawIndexed(mesh->vertex_array);
+    }
 }
 
 void SandboxLayer::OnEvent(Event &e)
@@ -90,11 +119,6 @@ void SandboxLayer::OnEvent(Event &e)
 
 void SandboxLayer::OnGuiRender()
 {
-    ImGui::Begin("Control");
-    ImGui::SliderInt("Select Bone", &display_bone, 0, skinned_mesh->NumBones());
-    const f32 &fps = ImGui::GetIO().Framerate;
-    ImGui::Text("FPS %.2f", fps);
-    ImGui::End();
 }
 
 bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)
@@ -117,7 +141,6 @@ bool SandboxLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 
 bool SandboxLayer::OnMouseMove(MouseMovedEvent &e)
 {
-   
     return false;
 }
 

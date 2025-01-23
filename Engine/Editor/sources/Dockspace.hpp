@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef DOCKSPACE_HPP
+#define DOCKSPACE_HPP
 
 namespace origin {
 
@@ -11,3 +12,5 @@ namespace origin {
         static void End();
     };
 }
+
+#endif

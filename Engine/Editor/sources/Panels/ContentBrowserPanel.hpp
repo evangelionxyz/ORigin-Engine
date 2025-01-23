@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef CONTENT_BROWSER_PANEL_HPP
+#define CONTENT_BROWSER_PANEL_HPP
+
 #include "Origin/Renderer/Texture.h"
 #include "ThumbnailCache.hpp"
 
@@ -63,3 +65,5 @@ namespace origin
         std::vector<std::filesystem::path> m_PathEntryList;
     };
 }
+
+#endif

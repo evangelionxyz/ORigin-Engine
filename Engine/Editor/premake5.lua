@@ -34,7 +34,7 @@ project "Editor"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.BOX2D}",
         "%{IncludeDir.ENTT}",
-        --"%{IncludeDir.FMT}",
+        "%{IncludeDir.FMT}",
         "%{IncludeDir.MINIAUDIO}",
         "%{IncludeDir.IMGUI}",
         "%{IncludeDir.IMGUIZMO}",
@@ -45,6 +45,7 @@ project "Editor"
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
+        "%{IncludeDir.OPTICK}",
     }
 
     defines {
@@ -54,9 +55,6 @@ project "Editor"
 
     buildoptions { "/utf-8" }
     
-	 
-
-
     -- ///////////////////////////////////////////
     -- Windows
     filter "system:windows"

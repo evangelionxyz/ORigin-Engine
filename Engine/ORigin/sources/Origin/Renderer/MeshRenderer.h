@@ -1,9 +1,10 @@
-// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #ifndef MESH_RENDERER_H
 #define MESH_RENDERER_H
 
-#include "Mesh.h"
+#include "Model/Mesh.hpp"
+
 #include "Material.h"
 #include "Texture.h"
 #include <glm/gtc/type_ptr.hpp>

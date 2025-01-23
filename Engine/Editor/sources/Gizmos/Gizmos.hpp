@@ -1,4 +1,7 @@
-#pragma once
+// Copyright (c) Evangelion Manuhutu | Origin Engine
+
+#ifndef GIZMOS_HPP
+#define GIZMOS_HPP
 
 #include "Origin/Core/Base.h"
 #include "Origin/Core/Event.h"
@@ -60,3 +63,4 @@ namespace origin {
 
 }
 
+#endif

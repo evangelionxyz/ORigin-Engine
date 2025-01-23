@@ -25,6 +25,7 @@ IncludeDir["MSDFGEN"]                  = "%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdfge
 IncludeDir["JOLT"]                     = "%{THIRD_PARTY_DIR}/JOLTPHYSICS"
 IncludeDir["FMOD"]                     = "%{THIRD_PARTY_DIR}/FMOD/include"
 IncludeDir["PhysX"]                    = "%{THIRD_PARTY_DIR}/nvphysx/physx/include"
+IncludeDir["OPTICK"]                    = "%{THIRD_PARTY_DIR}/OPTICK/src"
 
 -- Windows
 EDITOR_LIB_DIR                         = "%{wks.location}Engine/Editor/Lib/"
@@ -77,5 +78,6 @@ group "Dependencies"
     include "freetype.lua"
     include "JoltPhysics.lua"
     include "fmt.lua"
+    include "optick.lua"
 group ""
 

@@ -1,5 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
-#pragma once
+
+#ifndef THEMES_HPP
+#define THEMES_HPP
+
 #include <string>
 #include <unordered_map>
 #include <functional>
@@ -33,3 +36,5 @@ private:
 };
 
 }
+
+#endif

@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef MATERIAL_EDITOR_PANEL_HPP
+#define MATERIAL_EDITOR_PANEL_HPP
+
 #include "Origin/Renderer/Material.h"
 #include "Origin/Asset/Asset.h"
 
@@ -35,3 +37,5 @@ private:
 };
 
 }
+
+#endif

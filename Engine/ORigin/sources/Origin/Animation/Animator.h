@@ -1,9 +1,9 @@
-// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | Origin Engine
 
 #ifndef ANIMATOR_H
 #define ANIMATOR_H
 
-#include "ModelAnimation.h"
+#include "ModelAnimation.hpp"
 
 namespace origin
 {
@@ -15,8 +15,8 @@ namespace origin
 
         void UpdateAnimation(f32 dt, f32 speed);
         void PlayAnimation(ModelAnimation *animation);
+
         void UpdatePose(const AssimpNodeData *node, const glm::mat4 &parent_transform);
-        void ApplyToMeshes();
 
         bool HasAnimation() { return current_animation != nullptr; }
         

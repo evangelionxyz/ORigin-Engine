@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef EDITOR_LAYER_HPP
+#define EDITOR_LAYER_HPP
 
-#include <Origin.h>
+#include <Origin.hpp>
 #include "Gizmos/Gizmos.hpp"
 
 #include "Panels/UIEditorPanel.hpp"
@@ -144,3 +145,5 @@ namespace origin
         friend class ProjectBrowser;
     };
 }
+
+#endif

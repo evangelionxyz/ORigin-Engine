@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef EDITOR_SERIALIZER_HPP
+#define EDITOR_SERIALIZER_HPP
+
 #include <filesystem>
 
 namespace origin
@@ -13,3 +15,5 @@ namespace origin
         static bool Deserialize(EditorLayer *editor, const std::filesystem::path &filepath);
     };
 }
+
+#endif

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#ifndef AUDIO_SYSTEM_H
-#define AUDIO_SYSTEM_H
+#ifndef AUDIO_SYSTEM_HPP
+#define AUDIO_SYSTEM_HPP
 
 #include "PanelBase.hpp"
 

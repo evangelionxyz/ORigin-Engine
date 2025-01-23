@@ -1,4 +1,4 @@
--- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "AudioTest"
     language "C++"
@@ -37,6 +37,7 @@ project "AudioTest"
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
+        "%{IncludeDir.OPTICK}",
     }
 
     defines {
