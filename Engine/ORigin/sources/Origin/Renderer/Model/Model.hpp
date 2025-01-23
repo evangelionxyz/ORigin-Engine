@@ -67,12 +67,12 @@ public:
 	void LoadVertexBones(const u32 mesh_index, Ref<Mesh> &data, aiMesh *mesh);
 	void LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone);
 	void LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath);
-	i32 GetBoneID(const aiBone *bone);
 	
 	TextureTypeMap LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
 	void CreateVertex(Ref<Mesh> &mesh_data);
     const std::vector<Anim> &GetAnimations();
     const std::vector<Ref<Mesh>> &GetMeshes();
+	i32 GetBoneID(const aiBone *bone);
 
 	static Ref<Model> Create(const std::string &filepath);
     static AssetType GetStaticType() { return AssetType::Mesh; }

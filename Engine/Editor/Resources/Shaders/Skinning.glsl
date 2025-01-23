@@ -35,7 +35,7 @@ void main()
     bone_transform     += ubone_transforms[bone_ids[2]] * weights[2];
     bone_transform     += ubone_transforms[bone_ids[3]] * weights[3];
 
-  gl_Position = CameraBuffer.view_projection * bone_transform * umodel_transform * vec4(position, 1.0);
+  gl_Position = CameraBuffer.view_projection * umodel_transform * bone_transform * vec4(position, 1.0);
 
   vout.position = position;
   vout.normals = normals;

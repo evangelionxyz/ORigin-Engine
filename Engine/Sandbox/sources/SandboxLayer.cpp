@@ -29,9 +29,9 @@ struct TestModel
 {
     Ref<Model> model;
     std::vector<glm::mat4> bone_transforms;
+    u32 anim_index = 0;
 
     TestModel() = default;
-
     TestModel(const std::string &filepath)
     {
         model = Model::Create(filepath);
@@ -40,6 +40,9 @@ struct TestModel
 
 TestModel model_a;
 TestModel model_b;
+i32 model_count = 8;
+f32 model_pos_spacing = 2.0f;
+Ref<FmodSound> roar_sound;
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
@@ -66,9 +69,9 @@ void SandboxLayer::OnAttach()
 
     reverb_group->addDSP(0, reverb->GetFmodDsp());
 
-    const Ref<FmodSound> roar_sound = FmodSound::Create("roar", "Resources/Sounds/sound.mp3");
-    roar_sound->SetVolume(0.5f);
+    roar_sound = FmodSound::Create("roar", "Resources/Sounds/sound.mp3");
     roar_sound->AddToChannelGroup(reverb_group);
+    roar_sound->SetVolume(0.5f);
     roar_sound->Play();
 }
 
@@ -92,7 +95,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     shader->Enable();
 
     {
-        model_a.model->GetBoneTransforms(total_time_sec, model_a.bone_transforms, 0);
+        model_a.model->GetBoneTransforms(total_time_sec, model_a.bone_transforms, model_a.anim_index);
         for (auto &mesh : model_a.model->GetMeshes())
         {
             for (const auto &texture : mesh->material.textures)
@@ -109,22 +112,29 @@ void SandboxLayer::OnUpdate(const Timestep ts)
         }
     }
 
+    for (i32 x = -model_count; x <= model_count; ++x)
     {
-        model_b.model->GetBoneTransforms(total_time_sec, model_b.bone_transforms, 0);
-        for (auto &mesh : model_b.model->GetMeshes())
+        for (i32 z = -model_count; z <= model_count; ++z)
         {
-            for (const auto &texture : mesh->material.textures)
+            model_b.model->GetBoneTransforms(total_time_sec, model_b.bone_transforms, 0);
+            for (auto &mesh : model_b.model->GetMeshes())
             {
-                if (texture.contains(TextureType::DIFFUSE))
+                for (const auto &texture : mesh->material.textures)
                 {
-                    texture.at(TextureType::DIFFUSE)->Bind(0);
-                    shader->SetInt("udiffuse_texture", 0);
+                    if (texture.contains(TextureType::DIFFUSE))
+                    {
+                        texture.at(TextureType::DIFFUSE)->Bind(0);
+                        shader->SetInt("udiffuse_texture", 0);
+                    }
                 }
+
+                glm::mat4 translation = glm::translate(glm::mat4(1.0f), { x * model_pos_spacing, 0.0f, z * model_pos_spacing });
+                shader->SetMatrix("umodel_transform", translation);
+                shader->SetMatrix("ubone_transforms", model_b.bone_transforms[0], model_b.bone_transforms.size());
+                RenderCommand::DrawIndexed(mesh->vertex_array);
             }
-            shader->SetMatrix("umodel_transform", mesh->transform);
-            shader->SetMatrix("ubone_transforms", model_b.bone_transforms[0], model_a.bone_transforms.size());
-            RenderCommand::DrawIndexed(mesh->vertex_array);
         }
+        
     }
     
 }
@@ -143,6 +153,29 @@ void SandboxLayer::OnEvent(Event &e)
 
 void SandboxLayer::OnGuiRender()
 {
+    ImGui::Begin("Control");
+
+    const f32 &fps = ImGui::GetIO().Framerate;
+    ImGui::Text("%.2f", fps);
+    ImGui::SliderInt("Model Count x2", &model_count, 0, 100);
+    ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
+    ImGui::Separator();
+
+    if (ImGui::Button("Play Sound"))
+    {
+        roar_sound->Play();
+    }
+
+    ImGui::Separator();
+    for (size_t i = 0; i < model_a.model->GetAnimations().size(); ++i)
+    {
+        if (ImGui::Button(model_a.model->GetAnimations()[i].GetName().c_str()))
+        {
+            model_a.anim_index = i;
+        }
+    }
+
+    ImGui::End();
 }
 
 bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)

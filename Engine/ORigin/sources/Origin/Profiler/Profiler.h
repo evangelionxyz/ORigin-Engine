@@ -58,7 +58,7 @@ namespace origin
 	#define __FUNCNAME__ __FUNCSIG__
 #endif
 
-#define OGN_ENABLE_PROFILING
+//#define OGN_ENABLE_PROFILING
 
 #if defined(OGN_ENABLE_PROFILING)
 	#define OGN_PROFILER_START(name)        OPTICK_APP(name) OPTICK_START_CAPTURE()
