@@ -39,7 +39,11 @@ public:
     static void SetAPI(PhysicsAPI api);
     static PhysicsAPI GetAPI();
 
-    static Ref<PhysicsAPIBase> GetPhysicsContext();
+    template<typename T>
+    static Ref<T> GetContext()
+    {
+        return std::static_pointer_cast<T>(s_PhysicsAPIContext);
+    }
 
 private:
     static Ref<PhysicsAPIBase> s_PhysicsAPIContext;

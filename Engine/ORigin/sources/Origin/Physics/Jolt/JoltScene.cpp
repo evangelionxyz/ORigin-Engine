@@ -170,14 +170,12 @@ void JoltScene::CreateBoxCollider(Entity entity)
     bc.Shape = (void *)shape.GetPtr();
 }
 
-void JoltScene::CreateCircleCollider(Entity entity)
+void JoltScene::CreateCapsuleCollider(Entity entity)
 {
-
 }
 
 void JoltScene::CreateSphereCollider(Entity entity)
 {
-
 }
 
 }

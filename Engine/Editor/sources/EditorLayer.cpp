@@ -228,9 +228,6 @@ void EditorLayer::Render(Timestep ts)
 
     case SceneState::Edit:
     {
-        // update camera
-        // m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-
         if (IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput)
             m_EditorCamera.OnUpdate(ts);
 
@@ -243,7 +240,6 @@ void EditorLayer::Render(Timestep ts)
         if (m_VisualizeCollider) m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
         if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
         if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-        //ShowGrid();
 
         // update scene
         m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
@@ -253,9 +249,6 @@ void EditorLayer::Render(Timestep ts)
 
     case SceneState::Simulate:
     {
-        // update camera
-        //m_EditorCamera.OnUpdate(ts, m_SceneViewportBounds[0], m_SceneViewportBounds[1]);
-
         if (IsViewportFocused && IsViewportFocused && !ImGui::GetIO().WantTextInput)
             m_EditorCamera.OnUpdate(ts);
 
@@ -268,7 +261,6 @@ void EditorLayer::Render(Timestep ts)
         if (m_VisualizeCollider)m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
         if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
         if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
-        //ShowGrid();
 
         // update scene
         m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());

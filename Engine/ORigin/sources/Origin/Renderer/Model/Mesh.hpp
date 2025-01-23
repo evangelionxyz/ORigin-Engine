@@ -6,7 +6,6 @@
 #include "MeshMaterial.hpp"
 #include "Origin/Renderer/Shader.h"
 #include "Origin/Asset/Asset.h"
-#include "Origin/Animation/ModelAnimation.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -19,6 +18,29 @@ namespace origin {
 class VertexArray;
 class VertexBuffer;
 class Texture2D;
+
+#define MAX_NUM_BONES_PER_VERTEX (4)
+
+struct VertexBoneData
+{
+    VertexBoneData() = default;
+
+    void AddBoneData(u32 bone_id, f32 weight)
+    {
+        for (u32 i = 0; i < std::size(bone_ids); ++i)
+        {
+            if (weights[i] == 0.0f)
+            {
+                bone_ids[i] = bone_id;
+                weights[i] = weight;
+                return;
+            }
+        }
+    }
+
+    u32 bone_ids[MAX_NUM_BONES_PER_VERTEX] = { 0 };
+    f32 weights[MAX_NUM_BONES_PER_VERTEX] = { 0.0f };
+};
 
 struct MeshVertexData
 {

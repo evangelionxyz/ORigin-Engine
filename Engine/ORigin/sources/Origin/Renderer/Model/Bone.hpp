@@ -9,31 +9,6 @@
 #include <assimp/Importer.hpp>
 
 namespace origin {
-
-#define MAX_NUM_BONES_PER_VERTEX (4)
-
-struct VertexBoneData
-{
-    VertexBoneData() = default;
-
-    void AddBoneData(u32 bone_id, f32 weight)
-    {
-        for (u32 i = 0; i < std::size(bone_ids); ++i)
-        {
-            if (weights[i] == 0.0f)
-            {
-                bone_ids[i] = bone_id;
-                weights[i] = weight;
-                return;
-            }
-        }
-    }
-
-    u32 bone_ids[MAX_NUM_BONES_PER_VERTEX] = { 0 };
-    f32 weights[MAX_NUM_BONES_PER_VERTEX] = { 0.0f };
-};
-
-
 class AnimationNode
 {
 public:

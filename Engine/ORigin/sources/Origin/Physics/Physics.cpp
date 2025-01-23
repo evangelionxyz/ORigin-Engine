@@ -55,9 +55,4 @@ PhysicsAPI Physics::GetAPI()
     return Physics::s_PhysicsAPI;
 }
 
-Ref<PhysicsAPIBase> Physics::GetPhysicsContext()
-{
-    return s_PhysicsAPIContext;
-}
-
 }

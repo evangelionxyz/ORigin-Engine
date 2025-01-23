@@ -128,7 +128,7 @@ namespace origin {
 
 		s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl", false);
 		s_ShaderLibrary.Load("GridShader", "Resources/Shaders/InfiniteGrid.glsl", false);
-		s_ShaderLibrary.Load("AnimatedMesh", "Resources/Shaders/AnimatedMesh.glsl", false);
+		s_ShaderLibrary.Load("SkinnedMesh", "Resources/Shaders/Skinning.glsl", false);
 		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl", false);
 		s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl", false);
 		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);

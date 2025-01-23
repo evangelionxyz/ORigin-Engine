@@ -11,6 +11,7 @@ namespace origin
     public:
         SandboxLayer();
         void OnAttach() override;
+        void OnDetach() override;
         void OnUpdate(Timestep ts) override;
         void OnGuiRender() override;
         void OnEvent(Event &event) override;

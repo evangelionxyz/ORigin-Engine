@@ -23,12 +23,10 @@ struct CamData
 CamData cam_data;
 Ref<UniformBuffer> ubo;
 Ref<Shader> shader;
-f32 total_time_sec = 0.0f;
 
 struct TestModel
 {
     Ref<Model> model;
-    std::vector<glm::mat4> bone_transforms;
     u32 anim_index = 0;
 
     TestModel() = default;
@@ -47,7 +45,6 @@ Ref<FmodSound> roar_sound;
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
-
     RenderCommand::ClearColor({ 0.125f, 0.125f, 0.125f, 1.0f });
 }
 
@@ -57,7 +54,7 @@ void SandboxLayer::OnAttach()
     ubo = UniformBuffer::Create(sizeof(CamData), 0);
 
     model_a = TestModel("Resources/Models/raptoid.glb");
-    model_b = TestModel("Resources/Models/storm_trooper/sss.glb");
+    model_b = TestModel("Resources/Models/storm_trooper/storm_trooper.glb");
 
     Ref<FmodReverb> reverb = FmodReverb::Create();
     reverb->SetDiffusion(100.0f);
@@ -73,12 +70,12 @@ void SandboxLayer::OnAttach()
     roar_sound->AddToChannelGroup(reverb_group);
     roar_sound->SetVolume(0.5f);
     roar_sound->Play();
+
+    Physics::Init(PhysicsAPI::Jolt);
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
 {
-    total_time_sec += ts;
-
     RenderCommand::Clear();
     const glm::vec2 &delta = Input::GetMouseClickDragDelta();
     camera.OnMouseMove(delta);
@@ -95,7 +92,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     shader->Enable();
 
     {
-        model_a.model->GetBoneTransforms(total_time_sec, model_a.bone_transforms, model_a.anim_index);
+        model_a.model->UpdateAnimation(ts, model_a.anim_index);
         for (auto &mesh : model_a.model->GetMeshes())
         {
             for (const auto &texture : mesh->material.textures)
@@ -107,7 +104,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
                 }
             }
             shader->SetMatrix("umodel_transform", mesh->transform);
-            shader->SetMatrix("ubone_transforms", model_a.bone_transforms[0], model_a.bone_transforms.size());
+            shader->SetMatrix("ubone_transforms", model_a.model->GetBoneTransforms()[0], model_a.model->GetBoneTransforms().size());
             RenderCommand::DrawIndexed(mesh->vertex_array);
         }
     }
@@ -116,7 +113,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     {
         for (i32 z = -model_count; z <= model_count; ++z)
         {
-            model_b.model->GetBoneTransforms(total_time_sec, model_b.bone_transforms, 0);
+            model_b.model->UpdateAnimation(ts, 0);
             for (auto &mesh : model_b.model->GetMeshes())
             {
                 for (const auto &texture : mesh->material.textures)
@@ -130,7 +127,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
 
                 glm::mat4 translation = glm::translate(glm::mat4(1.0f), { x * model_pos_spacing, 0.0f, z * model_pos_spacing });
                 shader->SetMatrix("umodel_transform", translation);
-                shader->SetMatrix("ubone_transforms", model_b.bone_transforms[0], model_b.bone_transforms.size());
+                shader->SetMatrix("ubone_transforms", model_b.model->GetBoneTransforms()[0], model_b.model->GetBoneTransforms().size());
                 RenderCommand::DrawIndexed(mesh->vertex_array);
             }
         }
@@ -206,4 +203,9 @@ bool SandboxLayer::OnMouseScroll(MouseScrolledEvent &e)
     camera.OnMouseScroll(e.GetYOffset());
 
     return false;
+}
+
+void SandboxLayer::OnDetach()
+{
+    Physics::Shutdown();
 }

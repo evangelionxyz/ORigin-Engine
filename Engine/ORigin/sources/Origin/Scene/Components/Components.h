@@ -3,10 +3,8 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include "Origin/Animation/Animator.h"
 #include "Origin/Animation/AnimationState.h"
 #include "Origin/Animation/SpriteAnimation.h"
-#include "Origin/Animation/ModelAnimation.hpp"
 
 #include "Origin/Audio/AudioListener.h"
 #include "Origin/Math/Math.h"
@@ -212,7 +210,6 @@ public:
     AssetHandle HMaterial = UUID(0);
     AssetHandle HModel = UUID(0);
 
-    Animator AAnimator;
     i32 AnimationIndex = 0;
     i32 AnimationCount = 0;
 

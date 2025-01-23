@@ -58,8 +58,6 @@ namespace origin {
         m_GuiLayer = new GuiLayer(m_Window);
         m_GuiLayer->OnAttach();
 
-        //Physics::Init(PhysicsAPI::Jolt);
-
         AudioEngine::Init();
         FmodAudio::Init();
         Renderer::Init();
@@ -76,7 +74,6 @@ namespace origin {
         Renderer::Shutdown();
         FmodAudio::Shutdown();
         AudioEngine::Shutdown();
-        //Physics::Shutdown();
 
         Window::GLFWShutdown();
     }

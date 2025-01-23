@@ -17,6 +17,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/hash.hpp>
 #include <glm/glm.hpp>
+#include <PxPhysicsAPI.h>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -42,6 +43,13 @@ public:
     static glm::mat4 AssimpToGlmMatrix(aiMatrix4x4 mat);
     static glm::vec3 AssimpToGlmVec3(aiVector3D vec);
     static glm::quat AssimpToGlmQuat(aiQuaternion quat);
+
+    static physx::PxVec3 GlmToPhysXVec3(const glm::vec3 &vec);
+    static physx::PxQuat GlmToPhysXQuat(const glm::quat &quat);
+    static glm::vec3 PhysXToGlmVec3(const physx::PxVec3 &vec);
+    static glm::quat PhysXToGlmQuat(const physx::PxQuat quat);
+    static physx::PxTransform GlmToPhysXMatrix(const glm::mat4 &transform);
+    static glm::vec3 PhysXQuatToGlmVec3(const physx::PxQuat &quat);
 
     static glm::mat4 RemoveScale(const glm::mat4 &matrix);
 };

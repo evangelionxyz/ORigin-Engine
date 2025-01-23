@@ -5,7 +5,6 @@
 
 #include "Origin/Animation/Animation.h"
 #include "Origin/Animation/AnimationState.h"
-#include "Origin/Animation/ModelAnimation.hpp"
 #include "Origin/Animation/KeyFrame.hpp"
 #include "Origin/Audio/AudioSource.h"
 #include "Origin/Audio/AudioListener.h"

@@ -34,20 +34,26 @@ Model::Model(const std::string &filepath)
 	LoadMeshes(m_Scene, filepath);
 }
 
-void Model::GetBoneTransforms(f32 time_in_sec, std::vector<glm::mat4> &transforms, const u32 anim_index)
+void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
 {
     glm::mat4 identity(1.0f);
 
-    const f32 time_in_ticks = time_in_sec * m_Animations[anim_index].GetTicksPerSecond();
-    const f32 animation_time_in_ticks = fmod(time_in_ticks, static_cast<f32>(m_Animations[anim_index].GetDuration()));
+    Anim *current_anim = &m_Animations[anim_index];
+    current_anim->UpdateTime(delta_time);
 
-    UpdateAnimation(animation_time_in_ticks, m_Scene->mRootNode, identity, anim_index);
+    const f32 anim_time_in_ticks = fmod(current_anim->GetTimeInTicks(), static_cast<f32>(m_Animations[anim_index].GetDuration()));
+    CalculateBoneTransforms(anim_time_in_ticks, m_Scene->mRootNode, identity, anim_index);
 
-    transforms.resize(m_BoneInfo.size());
+    m_FinalBoneTransforms.resize(m_BoneInfo.size());
     for (size_t i = 0; i < m_BoneInfo.size(); ++i)
     {
-        transforms[i] = m_BoneInfo[i].final_transformation;
+        m_FinalBoneTransforms[i] = m_BoneInfo[i].final_transformation;
     }
+}
+
+const std::vector<glm::mat4> &Model::GetBoneTransforms() const
+{
+    return m_FinalBoneTransforms;
 }
 
 void Model::LoadMeshes(const aiScene *scene, const std::string &filepath)
@@ -77,7 +83,8 @@ void Model::LoadMeshes(const aiScene *scene, const std::string &filepath)
         m_Meshes[i]->indices.reserve(num_indices);
     }
 
-    m_GlobalBones.resize(num_vertices);
+    if (scene->HasAnimations())
+        m_GlobalBones.resize(num_vertices);
 
     // load meshes
     for (u32 mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index)
@@ -97,6 +104,7 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string
     m_Meshes[mesh_index]->vertices.resize(mesh->mNumVertices);
     for (u32 i = 0; i < mesh->mNumVertices; ++i)
     {
+        vertex.color = { 1.0f, 1.0f, 1.0f };
         vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
         if (mesh->HasNormals())
         {
@@ -107,7 +115,6 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string
             vertex.normals = { 0.0f, 1.0f, 0.0f }; // Default normal
         }
 
-        vertex.color = { 1.0f, 1.0f, 1.0f };
         if (mesh->mTextureCoords[0])
         {
             vertex.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
@@ -128,8 +135,10 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string
         m_Meshes[mesh_index]->indices.push_back(face.mIndices[2]);
     }
 
+    if (m_Scene->HasAnimations())
+        LoadVertexBones(mesh_index, m_Meshes[mesh_index], mesh);
+
     LoadMaterials(m_Meshes[mesh_index], mesh, filepath);
-    LoadVertexBones(mesh_index, m_Meshes[mesh_index], mesh);
     CreateVertex(m_Meshes[mesh_index]);
 }
 
@@ -144,7 +153,7 @@ void Model::LoadAnimations()
     }
 }
 
-void Model::UpdateAnimation(f32 time_in_ticks, const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index)
+void Model::CalculateBoneTransforms(f32 time_in_ticks, const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index)
 {
     std::string node_name(node->mName.C_Str());
 
@@ -166,7 +175,7 @@ void Model::UpdateAnimation(f32 time_in_ticks, const aiNode *node, const glm::ma
 
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
-        UpdateAnimation(time_in_ticks, node->mChildren[i], global_transform, anim_index);
+        CalculateBoneTransforms(time_in_ticks, node->mChildren[i], global_transform, anim_index);
     }
 }
 
@@ -299,12 +308,12 @@ void Model::CreateVertex(Ref<Mesh> &mesh_data)
 
     mesh_data->vertex_buffer->SetLayout
     ({
-        { ShaderDataType::Float3, "position"      },
-        { ShaderDataType::Float3, "normals"       },
-        { ShaderDataType::Float3, "color"         },
-        { ShaderDataType::Float2, "texcoord"      },
-        { ShaderDataType::Int4,   "bone_ids"      },
-        { ShaderDataType::Float4, "weights"       },
+        { ShaderDataType::Float3, "position"},
+        { ShaderDataType::Float3, "normals" },
+        { ShaderDataType::Float3, "color"   },
+        { ShaderDataType::Float2, "texcoord"},
+        { ShaderDataType::Int4,   "bone_ids"},
+        { ShaderDataType::Float4, "weights" },
     });
 
     mesh_data->vertex_array->AddVertexBuffer(mesh_data->vertex_buffer);
