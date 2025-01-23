@@ -5,8 +5,8 @@
 
 namespace origin {
 
-Bone::Bone(const std::string &name, int id, const aiNodeAnim *anim_node)
-    : name(name), id(id), local_transform(1.0f), global_transform(1.0f), offset_matrix(1.0f)
+AnimationNode::AnimationNode(const aiNodeAnim *anim_node)
+    : local_transform(1.0f)
 {
     for (u32 positionIndex = 0; positionIndex < anim_node->mNumPositionKeys; ++positionIndex)
     {
@@ -30,7 +30,7 @@ Bone::Bone(const std::string &name, int id, const aiNodeAnim *anim_node)
     }
 }
 
-void Bone::Update(f32 anim_time)
+void AnimationNode::Update(f32 anim_time)
 {
     const glm::mat4 translation = translation_keys.InterpolateTranslation(anim_time);
     const glm::mat4 rotation = rotation_keys.Interpolate(anim_time);

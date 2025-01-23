@@ -39,7 +39,7 @@ public:
 
     void ReadHierarchy(AssimpNodeData &dest, const aiNode *src, const aiScene *scene);
     void ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim);
-    Bone *FindBone(const std::string &name);
+    AnimationNode *FindBone(const std::string &name);
     const AssimpNodeData &GetRootNode() const { return root_node; }
     static AnimationType GetStaticType() { return AnimationType::Skeletal; }
     AnimationType GetType() const override { return GetStaticType(); }
@@ -51,7 +51,7 @@ public:
     AssimpNodeData root_node;
 
 private:
-    std::unordered_map<std::string, Bone> m_Bones;
+    std::unordered_map<std::string, AnimationNode> m_Bones;
     friend class Animator;
 };
 

@@ -62,9 +62,9 @@ struct NodeInfo
     bool is_requiered = false;
 };
 
-struct MeshEntry
+struct MeshEntryA
 {
-    MeshEntry()
+    MeshEntryA()
         : num_indices(0), base_vertex(0),
         base_index(0), material_index(INVALID_MATERIAL)
     {
@@ -80,7 +80,7 @@ struct SkinnedVertex
     glm::vec3 position;
     glm::vec2 texcoord;
     glm::vec3 normal;
-    MeshEntry bone;
+    MeshEntryA bone;
 };
 
 struct SkinnedMeshData
@@ -88,7 +88,7 @@ struct SkinnedMeshData
     std::vector<SkinnedVertex> vertices;
     Ref<origin::VertexArray> vertex_array;
     Ref<origin::VertexBuffer> vertex_buffer;
-    MeshEntry mesh_entry;
+    MeshEntryA mesh_entry;
     std::vector<u32> indices;
 };
 

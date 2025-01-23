@@ -42,7 +42,7 @@ void Animator::PlayAnimation(ModelAnimation *animation)
 void Animator::UpdatePose(const AssimpNodeData *node, const glm::mat4 &parent_transform)
 {
     glm::mat4 node_transform = node->transform;
-    Bone *bone = current_animation->FindBone(node->name);
+    AnimationNode *bone = current_animation->FindBone(node->name);
 
     if (bone)
     {

@@ -40,8 +40,11 @@ struct Vec3Key : TransformKeyFrameBase
     i32 GetIndex(f32 animTime)
     {
         for (i32 i = 0; i < Frames.size() - 1; ++i)
+        {
             if (animTime < Frames[i + 1].Timestamp)
                 return i;
+        }
+
         return 0;
     }
 

@@ -34,7 +34,7 @@ ModelAnimation::ModelAnimation(const std::vector<Ref<Mesh>> &meshes, aiAnimation
 
 void ModelAnimation::ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim)
 {
-    auto &bone_info_map = mesh->bones;
+    /*auto &bone_info_map = mesh->bones;
 
     if (mesh->bones.empty())
         return;
@@ -53,7 +53,7 @@ void ModelAnimation::ReadChannels(Ref<Mesh> mesh, const aiAnimation *anim)
         {
             m_Bones[bone_name] = Bone(bone_name, bone_info_map[bone_name].id, node_anim);
         }
-    }
+    }*/
 }
 
 void ModelAnimation::ReadHierarchy(AssimpNodeData &dest, const aiNode *src, const aiScene *scene)
@@ -79,7 +79,7 @@ void ModelAnimation::ReadHierarchy(AssimpNodeData &dest, const aiNode *src, cons
     }
 }
 
-Bone *ModelAnimation::FindBone(const std::string &name)
+AnimationNode *ModelAnimation::FindBone(const std::string &name)
 {
     if (m_Bones.contains(name))
     {

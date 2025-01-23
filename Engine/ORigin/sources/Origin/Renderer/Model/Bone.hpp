@@ -34,11 +34,11 @@ struct VertexBoneData
 };
 
 
-class Bone
+class AnimationNode
 {
 public:
-    Bone() = default;
-    Bone(const std::string &name, i32 id, const aiNodeAnim *anim_node);
+    AnimationNode() = default;
+    AnimationNode(const aiNodeAnim *anim_node);
 
     void Update(f32 time);
 
@@ -46,13 +46,19 @@ public:
     QuatKey rotation_keys;
     Vec3Key scale_keys;
 
-    i32 id;
-    std::string name;
-    glm::mat4 offset_matrix;
-    glm::mat4 local_transform;
-    glm::mat4 global_transform;
+    glm::mat4 local_transform = glm::mat4(1.0f);
+};
 
-    std::vector<std::string> children;
+struct BoneInfo
+{
+    glm::mat4 offset_matrix;
+    glm::mat4 final_transformation;
+
+    BoneInfo(const glm::mat4 &offset)
+    {
+        offset_matrix = offset;
+        final_transformation = glm::mat4(1.0f);
+    }
 };
 
 }

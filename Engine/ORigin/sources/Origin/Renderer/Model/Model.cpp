@@ -17,112 +17,6 @@ namespace origin {
 
 static std::vector<Ref<Texture2D>> loaded_textures_cache;
 
-void Model::LoadMeshes(const aiScene *scene, const std::string &filepath)
-{
-	m_Meshes.resize(scene->mNumMeshes);
-
-    for (u32 mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index)
-    {
-        aiMesh *mesh = scene->mMeshes[mesh_index];
-        m_Meshes[mesh_index] = LoadMeshData(scene, mesh, filepath);
-    }
-}
-
-aiNode *Model::FindMeshNode(aiNode *node, const aiScene *scene, aiMesh *target_mesh)
-{
-    for (u32 i = 0; i < node->mNumMeshes; i++)
-    {
-        if (scene->mMeshes[node->mMeshes[i]] == target_mesh)
-            return node;
-    }
-
-    for (u32 i = 0; i < node->mNumChildren; i++)
-    {
-        aiNode *found_node = FindMeshNode(node->mChildren[i], scene, target_mesh);
-        if (found_node)
-            return found_node;
-    }
-
-    return nullptr;
-}
-
-void Model::LoadAnimations(const aiScene *scene)
-{
-    for (u32 i = 0; i < scene->mNumAnimations; ++i)
-    {
-        const aiAnimation *anim = scene->mAnimations[i];
-        m_Animations.emplace_back(anim, global_bones);
-    }
-
-    if (!m_Animations.empty())
-    {
-        current_animation = &m_Animations[0];
-    }
-}
-
-void Model::GetFinalBoneTransforms(std::vector<glm::mat4> &out_bone_transforms)
-{
-    out_bone_transforms.resize(global_bones.size(), glm::mat4(1.0f));
-    if (!current_animation)
-        return;
-
-    const f32 anim_time = fmod(current_time * current_animation->ticks_per_second, current_animation->duration);
-    std::function<void(const std::string &, const glm::mat4 &)> CalculateBoneTransforms;
-    CalculateBoneTransforms = [&](const std::string &bone_name, const glm::mat4 &parent_transform)
-    {
-        Bone &bone = global_bones[bone_name];
-        const aiNodeAnim *node_anim = current_animation->FindNodeAnim(bone_name);
-
-        if (node_anim)
-        {
-            bone.Update(anim_time);
-        }
-
-        bone.global_transform = parent_transform * bone.local_transform;
-        out_bone_transforms[bone.id] = bone.global_transform * bone.offset_matrix;
-
-        for (const auto &child_name : bone.children)
-        {
-            CalculateBoneTransforms(child_name, bone.global_transform);
-        }
-    };
-
-    CalculateBoneTransforms("_rootJoint", glm::mat4(1.0f));
-}
-
-void Model::UpdateAnimation(const f32 dt, const f32 speed)
-{
-    if (current_animation)
-    {
-        current_time += dt * speed;
-    }
-}
-
-void Model::BuildBoneHierarchy(const aiNode *node, std::map<std::string, Bone> &global_bones)
-{
-    std::string node_name(node->mName.C_Str());
-
-    if (global_bones.contains(node_name))
-    {
-        Bone &parent_bone = global_bones[node_name];
-        for (u32 i = 0; i < node->mNumChildren; ++i)
-        {
-            const aiNode *child_node = node->mChildren[i];
-            std::string child_name(child_node->mName.C_Str());
-
-            if (global_bones.contains(child_name))
-            {
-                parent_bone.children.push_back(child_name);
-            }
-        }
-    }
-
-    for (u32 i = 0; i < node->mNumChildren; ++i)
-    {
-        BuildBoneHierarchy(node->mChildren[i], global_bones);
-    }
-}
-
 Model::Model(const std::string &filepath)
 {
     OGN_CORE_ASSERT(std::filesystem::exists(filepath), "[Model] File does not exist '{}'", filepath);
@@ -136,139 +30,224 @@ Model::Model(const std::string &filepath)
         return;
     }
 
+    LoadAnimations();
 	LoadMeshes(m_Scene, filepath);
-    LoadAnimations(m_Scene);
 }
 
-Ref<Mesh> Model::LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::string &filepath)
+void Model::GetBoneTransforms(f32 time_in_sec, std::vector<glm::mat4> &transforms, const u32 anim_index)
 {
-    Ref<Mesh> mesh_data = CreateRef<Mesh>();
-    mesh_data->name = mesh->mName.C_Str();
-    mesh_data->bone_transforms.resize(100, glm::mat4(1.0f));
+    glm::mat4 identity(1.0f);
 
-    aiNode *node = FindMeshNode(scene->mRootNode, scene, mesh);
+    const f32 time_in_ticks = time_in_sec * m_Animations[anim_index].GetTicksPerSecond();
+    const f32 animation_time_in_ticks = fmod(time_in_ticks, static_cast<f32>(m_Animations[anim_index].GetDuration()));
 
-    if (node)
+    UpdateAnimation(animation_time_in_ticks, m_Scene->mRootNode, identity, anim_index);
+
+    transforms.resize(m_BoneInfo.size());
+    for (size_t i = 0; i < m_BoneInfo.size(); ++i)
     {
-        mesh_data->transform = Math::AssimpToGlmMatrix(node->mTransformation);
+        transforms[i] = m_BoneInfo[i].final_transformation;
+    }
+}
 
-        aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
-        if (mesh->mMaterialIndex >= 0)
-        {
-            aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+void Model::LoadMeshes(const aiScene *scene, const std::string &filepath)
+{
+    m_Meshes.resize(scene->mNumMeshes);
 
-            aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
-            ai_real metallic_factor = 1.0f;
-            material->Get(AI_MATKEY_BASE_COLOR, base_color);
-            material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
-            material->Get(AI_MATKEY_METALLIC_FACTOR, mesh_data->material.metallic_factor);
-            material->Get(AI_MATKEY_ROUGHNESS_FACTOR, mesh_data->material.roughness_factor);
+    // count vertices and indices
+    u32 num_vertices = 0;
+    u32 num_indices = 0;
 
-            mesh_data->material.diffuse_color = { diffuse_color.r, diffuse_color.g, diffuse_color.b };
+    for (size_t i = 0; i < m_Meshes.size(); ++i)
+    {
+        m_Meshes[i] = CreateRef<Mesh>();
 
-            auto texture_map = LoadTextures(scene, material, filepath, TextureType::DIFFUSE);
-            if (!texture_map.empty())
-            {
-                mesh_data->material.textures.push_back(texture_map);
-            }
+        m_Meshes[i]->mesh_entry.base_vertex = num_vertices;
+        m_Meshes[i]->mesh_entry.base_index = num_indices;
+        m_Meshes[i]->mesh_entry.num_indices = scene->mMeshes[i]->mNumFaces * 3;
 
-            if (mesh_data->material.textures.empty())
-            {
-                texture_map[TextureType::DIFFUSE] = Renderer::WhiteTexture;
-                mesh_data->material.textures.push_back(texture_map);
-            }
-        }
-
-        // Vertices
-        MeshVertexData vertex;
-        mesh_data->vertices.resize(mesh->mNumVertices);
-        for (u32 i = 0; i < mesh->mNumVertices; ++i)
-        {
-
-            vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-            if (mesh->HasNormals())
-            {
-                vertex.normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-            }
-            else
-            {
-                vertex.normals = { 0.0f, 1.0f, 0.0f }; // Default normal
-            }
-
-            vertex.color = { base_color.r, base_color.g, base_color.b };
-            if (mesh->mTextureCoords[0])
-            {
-                vertex.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-            }
-            else
-            {
-                vertex.texcoord = { 0.0f, 0.0f };
-            }
-
-            mesh_data->vertices[i] = vertex;
-        }
-
-        for (u32 i = 0; i < mesh->mNumFaces; ++i)
-        {
-            aiFace face = mesh->mFaces[i];
-            mesh_data->indices.push_back(face.mIndices[0]);
-            mesh_data->indices.push_back(face.mIndices[1]);
-            mesh_data->indices.push_back(face.mIndices[2]);
-        }
-
-        LoadBones(mesh_data, mesh);
-        CreateVertex(mesh_data);
+        num_vertices += scene->mMeshes[i]->mNumVertices;
+        num_indices += m_Meshes[i]->mesh_entry.num_indices;
     }
 
-    return mesh_data;
+    // reserve space
+    for (size_t i = 0; i < m_Meshes.size(); ++i)
+    {
+        m_Meshes[i]->vertices.reserve(num_vertices);
+        m_Meshes[i]->indices.reserve(num_indices);
+    }
+
+    m_GlobalBones.resize(num_vertices);
+
+    // load meshes
+    for (u32 mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index)
+    {
+        aiMesh *mesh = scene->mMeshes[mesh_index];
+        LoadSingleMesh(mesh_index, mesh, filepath);
+    }
 }
 
-void Model::LoadBones(Ref<Mesh> &data, aiMesh *mesh)
+void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string &filepath)
 {
-    for (u32 bone_index = 0; bone_index < mesh->mNumBones; ++bone_index)
+    m_Meshes[mesh_index]->name = mesh->mName.C_Str();
+    m_Meshes[mesh_index]->bone_transforms.resize(100, glm::mat4(1.0f));
+
+    // Vertices
+    MeshVertexData vertex;
+    m_Meshes[mesh_index]->vertices.resize(mesh->mNumVertices);
+    for (u32 i = 0; i < mesh->mNumVertices; ++i)
     {
-        aiBone *mesh_bone = mesh->mBones[bone_index];
-
-        std::string bone_name(mesh_bone->mName.data);
-
-        i32 bone_id;
-        auto it = global_bones.find(bone_name);
-        if (it != global_bones.end())
+        vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+        if (mesh->HasNormals())
         {
-            // bone already exists, reuse its ID
-            bone_id = it->second.id;
+            vertex.normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
         }
         else
         {
-            // new bone, assign a new ID and add it to the map
-            Bone new_bone;
-            new_bone.name = bone_name;
-            new_bone.id = data->bones.size();
-            new_bone.offset_matrix = Math::AssimpToGlmMatrix(mesh_bone->mOffsetMatrix);
-            global_bones[bone_name] = new_bone;
-            bone_id = new_bone.id;
+            vertex.normals = { 0.0f, 1.0f, 0.0f }; // Default normal
         }
 
-        // store the bone in the mesh's local bones map
-        if (data->bones.find(bone_name) == data->bones.end())
+        vertex.color = { 1.0f, 1.0f, 1.0f };
+        if (mesh->mTextureCoords[0])
         {
-            data->bones[bone_name] = global_bones[bone_name];
+            vertex.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
         }
-
-        // assign weights to the vertices
-        for (u32 w_idx = 0; w_idx < mesh_bone->mNumWeights; ++w_idx)
+        else
         {
-            aiVertexWeight vertex_weight = mesh_bone->mWeights[w_idx];
-            const i32 &vertex_id = vertex_weight.mVertexId;
-            const f32 &weight = vertex_weight.mWeight;
-
-            OGN_CORE_ASSERT(vertex_id < data->vertices.size(), "Invalid vertex id");
-            MeshVertexData &vertex = data->vertices[vertex_id];
-            vertex.bone.AddBoneData(bone_id, weight);
+            vertex.texcoord = { 0.0f, 0.0f };
         }
+
+        m_Meshes[mesh_index]->vertices[i] = vertex;
     }
 
-    BuildBoneHierarchy(m_Scene->mRootNode, global_bones);
+    for (u32 i = 0; i < mesh->mNumFaces; ++i)
+    {
+        aiFace face = mesh->mFaces[i];
+        m_Meshes[mesh_index]->indices.push_back(face.mIndices[0]);
+        m_Meshes[mesh_index]->indices.push_back(face.mIndices[1]);
+        m_Meshes[mesh_index]->indices.push_back(face.mIndices[2]);
+    }
+
+    LoadMaterials(m_Meshes[mesh_index], mesh, filepath);
+    LoadVertexBones(mesh_index, m_Meshes[mesh_index], mesh);
+    CreateVertex(m_Meshes[mesh_index]);
+}
+
+void Model::LoadAnimations()
+{
+    m_Animations.resize(m_Scene->mNumAnimations);
+
+    for (u32 i = 0; i < m_Scene->mNumAnimations; ++i)
+    {
+        aiAnimation *anim = m_Scene->mAnimations[i];
+        m_Animations[i] = Anim(anim);
+    }
+}
+
+void Model::UpdateAnimation(f32 time_in_ticks, const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index)
+{
+    std::string node_name(node->mName.C_Str());
+
+    glm::mat4 node_transform = Math::AssimpToGlmMatrix(node->mTransformation);
+    auto &channel_map = m_Animations[anim_index].GetChannelMap();
+    if (channel_map.contains(node_name))
+    {
+        AnimationNode &anim_node = channel_map[node_name];
+        anim_node.Update(time_in_ticks);
+        node_transform = anim_node.local_transform;
+    }
+
+    glm::mat4 global_transform = parent_transform * node_transform;
+    if (m_BoneNameToIndexMap.contains(node_name))
+    {
+        const u32 bone_index = m_BoneNameToIndexMap[node_name];
+        m_BoneInfo[bone_index].final_transformation = global_transform * m_BoneInfo[bone_index].offset_matrix;
+    }
+
+    for (u32 i = 0; i < node->mNumChildren; ++i)
+    {
+        UpdateAnimation(time_in_ticks, node->mChildren[i], global_transform, anim_index);
+    }
+}
+
+void Model::LoadVertexBones(const u32 mesh_index, Ref<Mesh> &mesh_data, aiMesh *mesh)
+{
+    for (u32 i = 0; i < mesh->mNumBones; ++i)
+    {
+        const aiBone *bone = mesh->mBones[i];
+        LoadSingleVertexBone(mesh_index, mesh_data, bone);
+    }
+}
+
+void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone)
+{
+    // get bone id by its index
+    i32 bone_id = GetBoneID(bone);
+
+    // check if the bone id (index) is large then it is a new bone
+    if (bone_id == m_BoneInfo.size())
+    {
+        BoneInfo new_bone_info(Math::AssimpToGlmMatrix(bone->mOffsetMatrix));
+        m_BoneInfo.push_back(new_bone_info);
+    }
+
+    // assign bone's ids and weights
+    for (u32 i = 0; i < bone->mNumWeights; ++i)
+    {
+        const aiVertexWeight &v_weight = bone->mWeights[i];
+
+        // assign to mesh's vertices
+        OGN_CORE_ASSERT(v_weight.mVertexId < m_Meshes[mesh_index]->vertices.size(), "Invalid vertex id");
+        m_Meshes[mesh_index]->vertices[v_weight.mVertexId].bone.AddBoneData(bone_id, v_weight.mWeight);
+
+        // add the bone's weight and id to the model's global bones
+        const u32 global_vertex_id = m_Meshes[mesh_index]->mesh_entry.base_vertex + bone->mWeights[i].mVertexId;
+        m_GlobalBones[global_vertex_id].AddBoneData(bone_id, v_weight.mWeight);
+    }
+}
+
+void Model::LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath)
+{
+    aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
+    if (mesh->mMaterialIndex >= 0)
+    {
+        aiMaterial *material = m_Scene->mMaterials[mesh->mMaterialIndex];
+
+        aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
+        ai_real metallic_factor = 1.0f;
+        material->Get(AI_MATKEY_BASE_COLOR, base_color);
+        material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
+        material->Get(AI_MATKEY_METALLIC_FACTOR, mesh_data->material.metallic_factor);
+        material->Get(AI_MATKEY_ROUGHNESS_FACTOR, mesh_data->material.roughness_factor);
+
+        mesh_data->material.diffuse_color = { diffuse_color.r, diffuse_color.g, diffuse_color.b };
+
+        auto texture_map = LoadTextures(m_Scene, material, filepath, TextureType::DIFFUSE);
+        if (!texture_map.empty())
+        {
+            mesh_data->material.textures.push_back(texture_map);
+        }
+
+        if (mesh_data->material.textures.empty())
+        {
+            texture_map[TextureType::DIFFUSE] = Renderer::WhiteTexture;
+            mesh_data->material.textures.push_back(texture_map);
+        }
+    }
+}
+
+i32 Model::GetBoneID(const aiBone *bone)
+{
+    // register each bone's name with index
+    std::string bone_name(bone->mName.C_Str());
+    if (!m_BoneNameToIndexMap.contains(bone_name))
+    {
+        const i32 bone_index = static_cast<i32>(m_BoneNameToIndexMap.size());
+        m_BoneNameToIndexMap[bone_name] = bone_index;
+        return bone_index;
+    }
+
+    return m_BoneNameToIndexMap[bone_name];
 }
 
 TextureTypeMap Model::LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type)

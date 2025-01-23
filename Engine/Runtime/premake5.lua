@@ -45,6 +45,7 @@ project "Runtime"
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
+        "%{IncludeDir.OPTICK}",
     }
 
     defines {

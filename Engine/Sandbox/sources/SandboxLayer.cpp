@@ -5,6 +5,10 @@
 #include "Origin/Core/Input.h"
 #include "Origin/GUI/UI.h"
 
+#include "Origin/Audio/AudioEngine.h"
+#include "Origin/Audio/FmodSound.h"
+#include "Origin/Audio/FmodDsp.h"
+
 #include "SandboxLayer.h"
 #include "SkinnedMesh.hpp"
 
@@ -19,20 +23,27 @@ struct CamData
 CamData cam_data;
 Ref<UniformBuffer> ubo;
 Ref<Shader> shader;
-Ref<Model> model;
-Animator animator;
-std::vector<ModelAnimation> animations;
-
 f32 total_time_sec = 0.0f;
-std::vector<glm::mat4> bone_transforms;
+
+struct TestModel
+{
+    Ref<Model> model;
+    std::vector<glm::mat4> bone_transforms;
+
+    TestModel() = default;
+
+    TestModel(const std::string &filepath)
+    {
+        model = Model::Create(filepath);
+    }
+};
+
+TestModel model_a;
+TestModel model_b;
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
-    camera.SetPosition({ -198.020416, 144.280899, 81.7220459 });
-    camera.SetFocalPoint({ -193.653824, 142.863403, 79.7412262 });
-    camera.SetPitch(0.287439466);
-    camera.SetYaw(1.14492643);
 
     RenderCommand::ClearColor({ 0.125f, 0.125f, 0.125f, 1.0f });
 }
@@ -42,12 +53,23 @@ void SandboxLayer::OnAttach()
     shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
     ubo = UniformBuffer::Create(sizeof(CamData), 0);
 
-    std::string filepath = "Resources/Models/raptoid.glb";
-    model = Model::Create(filepath);
-    //animations = model->GetAnimations();
+    model_a = TestModel("Resources/Models/raptoid.glb");
+    model_b = TestModel("Resources/Models/storm_trooper/sss.glb");
 
-    //animator.PlayAnimation(&animations[0]);
+    Ref<FmodReverb> reverb = FmodReverb::Create();
+    reverb->SetDiffusion(100.0f);
+    reverb->SetWetLevel(20.0f);
+    reverb->SetDecayTime(5000.0f);
 
+    FMOD::ChannelGroup *reverb_group = FmodAudio::CreateChannelGroup("ReverbGroup");
+    reverb_group->setMode(FMOD_CHANNELCONTROL_DSP_TAIL);
+
+    reverb_group->addDSP(0, reverb->GetFmodDsp());
+
+    const Ref<FmodSound> roar_sound = FmodSound::Create("roar", "Resources/Sounds/sound.mp3");
+    roar_sound->SetVolume(0.5f);
+    roar_sound->AddToChannelGroup(reverb_group);
+    roar_sound->Play();
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
@@ -69,40 +91,42 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     ubo->SetData(&cam_data, sizeof(CamData));
     shader->Enable();
 
-    model->GetFinalBoneTransforms(bone_transforms);
-    model->UpdateAnimation(ts);
-
-    for (auto &mesh : model->GetMeshes())
     {
-        for (const auto &texture : mesh->material.textures)
+        model_a.model->GetBoneTransforms(total_time_sec, model_a.bone_transforms, 0);
+        for (auto &mesh : model_a.model->GetMeshes())
         {
-            if (texture.contains(TextureType::DIFFUSE))
+            for (const auto &texture : mesh->material.textures)
             {
-                texture.at(TextureType::DIFFUSE)->Bind(0);
-                shader->SetInt("udiffuse_texture", 0);
+                if (texture.contains(TextureType::DIFFUSE))
+                {
+                    texture.at(TextureType::DIFFUSE)->Bind(0);
+                    shader->SetInt("udiffuse_texture", 0);
+                }
             }
-            /*else if (texture.contains(TextureType::SPECULAR))
-            {
-                texture.at(TextureType::SPECULAR)->Bind(1);
-                shader->SetInt("texture_specular", 1);
-            }
-            else if (texture.contains(TextureType::NORMALS))
-            {
-                texture.at(TextureType::NORMALS)->Bind(2);
-                shader->SetInt("texture_normals", 2);
-            }
-            else if (texture.contains(TextureType::BASE_COLOR))
-            {
-                texture.at(TextureType::BASE_COLOR)->Bind(3);
-                shader->SetInt("texture_base_color", 3);
-            }*/
+            shader->SetMatrix("umodel_transform", mesh->transform);
+            shader->SetMatrix("ubone_transforms", model_a.bone_transforms[0], model_a.bone_transforms.size());
+            RenderCommand::DrawIndexed(mesh->vertex_array);
         }
-
-
-        shader->SetMatrix("umodel_transform", mesh->transform);
-        shader->SetMatrix("ubone_transforms", bone_transforms[0], bone_transforms.size());
-        RenderCommand::DrawIndexed(mesh->vertex_array);
     }
+
+    {
+        model_b.model->GetBoneTransforms(total_time_sec, model_b.bone_transforms, 0);
+        for (auto &mesh : model_b.model->GetMeshes())
+        {
+            for (const auto &texture : mesh->material.textures)
+            {
+                if (texture.contains(TextureType::DIFFUSE))
+                {
+                    texture.at(TextureType::DIFFUSE)->Bind(0);
+                    shader->SetInt("udiffuse_texture", 0);
+                }
+            }
+            shader->SetMatrix("umodel_transform", mesh->transform);
+            shader->SetMatrix("ubone_transforms", model_b.bone_transforms[0], model_a.bone_transforms.size());
+            RenderCommand::DrawIndexed(mesh->vertex_array);
+        }
+    }
+    
 }
 
 void SandboxLayer::OnEvent(Event &e)

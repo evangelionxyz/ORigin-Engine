@@ -15,32 +15,39 @@ class Anim
 {
 public:
 	Anim() = default;
-	Anim(const aiAnimation *anim, std::map<std::string, Bone> &global_bones)
-		: duration(static_cast<f32>(anim->mDuration)),
-		ticks_per_second(static_cast<f32>(anim->mTicksPerSecond ? anim->mTicksPerSecond : 25.0f))
-	{
-		for (u32 i = 0; i < anim->mNumChannels; ++i)
-		{
-			const aiNodeAnim *channel = anim->mChannels[i];
-			std::string bone_name(channel->mNodeName.C_Str());
+    Anim(aiAnimation *anim)
+        : m_Anim(anim)
+    {
+        m_Name = anim->mName.C_Str();
+        m_Duration = static_cast<float>(anim->mDuration);
+        m_TicksPerSecond = static_cast<float>(anim->mTicksPerSecond);
+        if (anim->mTicksPerSecond == 0.0) m_TicksPerSecond = 1.0f;
 
-			if (global_bones.contains(bone_name))
-			{
-				bone_animation_map[bone_name] = channel;
-			}
-		}
+        ReadChannels(anim);
+    }
 
-	}
+    const std::string &GetName() const { return m_Name; }
+    const f32 GetDuration() const { return m_Duration; }
+    const f32 GetTicksPerSecond() const { return m_TicksPerSecond; }
 
-	const aiNodeAnim *FindNodeAnim(const std::string &bone_name) const
-	{
-		auto it = bone_animation_map.find(bone_name);
-		return it != bone_animation_map.end() ? it->second : nullptr;
-	}
+    std::unordered_map<std::string, AnimationNode> &GetChannelMap() { return m_ChannelMap; }
 
-	f32 duration;
-	f32 ticks_per_second;
-	std::map<std::string, const aiNodeAnim *> bone_animation_map;
+private:
+    void ReadChannels(const aiAnimation *anim)
+    {
+        for (u32 i = 0; i < anim->mNumChannels; ++i)
+        {
+            aiNodeAnim *node_anim = anim->mChannels[i];
+            std::string node_name(node_anim->mNodeName.C_Str());
+            m_ChannelMap[node_name] = AnimationNode(node_anim);
+        }
+    }
+
+    std::string m_Name;
+    aiAnimation *m_Anim = nullptr;
+    f32 m_Duration = 0.0f;
+    f32 m_TicksPerSecond = 1.0f;
+    std::unordered_map<std::string, AnimationNode> m_ChannelMap;
 };
 
 class Model : public Asset
@@ -49,11 +56,20 @@ public:
 	Model() = default;
 	Model(const std::string &filepath);
 
-	void LoadBones(Ref<Mesh> &data, aiMesh *mesh);
-	TextureTypeMap LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
-	Ref<Mesh> LoadMeshData(const aiScene *scene, aiMesh *mesh, const std::string &filepath);
+	void GetBoneTransforms(f32 time_in_sec, std::vector<glm::mat4> &transforms, const u32 anim_index = 0);
+
 	void LoadMeshes(const aiScene *scene, const std::string &filepath);
-	aiNode *FindMeshNode(aiNode *node, const aiScene *scene, aiMesh *target_mesh);
+	void LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string &filepath);
+    void LoadAnimations();
+
+    void UpdateAnimation(f32 time_in_ticks, const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
+
+	void LoadVertexBones(const u32 mesh_index, Ref<Mesh> &data, aiMesh *mesh);
+	void LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone);
+	void LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath);
+	i32 GetBoneID(const aiBone *bone);
+	
+	TextureTypeMap LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
 	void CreateVertex(Ref<Mesh> &mesh_data);
     const std::vector<Anim> &GetAnimations();
     const std::vector<Ref<Mesh>> &GetMeshes();
@@ -62,18 +78,14 @@ public:
     static AssetType GetStaticType() { return AssetType::Mesh; }
     virtual AssetType GetType() const { return GetStaticType(); }
 
-	void LoadAnimations(const aiScene *scene);
-	void GetFinalBoneTransforms(std::vector<glm::mat4> &out_bone_transforms);
-	void UpdateAnimation(const f32 dt, const f32 speed = 1.0f);
-	void BuildBoneHierarchy(const aiNode *node, std::map<std::string, Bone> &global_bones);
-
-	Anim *current_animation = nullptr;
-	f32 current_time = 0.0f;
-
 private:
 	Assimp::Importer m_Importer;
 	const aiScene *m_Scene = nullptr;
-	std::map<std::string, Bone> global_bones;
+	
+	std::vector<BoneInfo> m_BoneInfo;
+	std::vector<VertexBoneData> m_GlobalBones;
+	std::unordered_map<std::string, u32> m_BoneNameToIndexMap;
+
 	std::vector<Ref<Mesh>> m_Meshes;
 	std::vector<Anim> m_Animations;
 };
