@@ -360,8 +360,10 @@ namespace origin {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8.0f, 8.0f });
         ImGui::PushItemWidth(-1);
 
-        if (ImGui::Button("Add"))
+        if (ImGui::Button("Add", { ImGui::GetContentRegionAvail().x, 0.0f }))
+        {
             ImGui::OpenPopup("AddComponent");
+        }
 
         if (ImGui::BeginPopup("AddComponent"))
         {

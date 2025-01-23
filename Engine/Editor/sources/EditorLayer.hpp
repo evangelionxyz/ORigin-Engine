@@ -125,10 +125,8 @@ namespace origin
 
         ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
         int m_GizmosMode = 0;
-        int m_3DGridSize = 30;
         int m_RenderTarget = 0;
         float m_Time = 0.0f;
-        bool m_Draw3DGrid = false;
         bool m_Draw2DGrid = true;
         bool m_DrawLineModeActive = false;
         bool m_VisualizeCollider = false;

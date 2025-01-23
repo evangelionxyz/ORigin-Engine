@@ -4,7 +4,6 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 #include "ShaderLibrary.h"
-#include "MeshRenderer.h"
 #include "Renderer2D.h"
 #include "MaterialLibrary.h"
 #include "Origin/Asset/AssetImporter.h"
@@ -52,7 +51,6 @@ namespace origin {
 			BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
 			LoadShaders();
 			LoadMaterials();
-			MeshRenderer::Init();
 			Renderer2D::Init();
 
 			break;
@@ -82,7 +80,6 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 
-		MeshRenderer::Shutdown();
 		Renderer2D::Shutdown();
 
 		OGN_CORE_TRACE("[Renderer] Shutdown");

@@ -40,7 +40,6 @@
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/SubTexture2D.h"
 #include "Origin/Renderer/Framebuffer.h"
-#include "Origin/Renderer/MeshRenderer.h"
 #include "Origin/Renderer/Frustum.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Scene/SceneCommand.h"

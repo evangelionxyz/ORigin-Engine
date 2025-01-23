@@ -238,7 +238,6 @@ void EditorLayer::Render(Timestep ts)
         m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
         if(m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
         if (m_VisualizeCollider) m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
-        if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
         if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
 
         // update scene
@@ -259,7 +258,6 @@ void EditorLayer::Render(Timestep ts)
         m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
         if (m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
         if (m_VisualizeCollider)m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
-        if (m_Draw3DGrid) m_Gizmos->Draw3DGrid(m_EditorCamera, true, false, m_3DGridSize);
         if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
 
         // update scene
@@ -451,9 +449,6 @@ bool EditorLayer::OpenProject(const std::filesystem::path& path)
     {
         ScriptEngine::Init();
 
-        PhysicsAPI api = Project::GetActive()->GetConfig().PhysicsApi;
-        Physics::Init(api);
-
         AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
         OpenScene(handle);
 
@@ -481,9 +476,6 @@ bool EditorLayer::OpenProject()
     if (Project::Open())
     {
         ScriptEngine::Init();
-
-        PhysicsAPI api = Project::GetActive()->GetConfig().PhysicsApi;
-        Physics::Init(api);
 
         AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
         OpenScene(handle);
@@ -1085,9 +1077,9 @@ void EditorLayer::GUIRender()
         static int selected_option = 0;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 5.0f));
 
-        if (ImGui::BeginPopupModal("Preferences", &GuiPreferencesWindow)) 
+        if (ImGui::BeginPopupModal("Preferences", &GuiPreferencesWindow))
         {
-            ImGui::BeginChild("LeftMenu", {200.0f, 0.0f}, ImGuiChildFlags_ResizeX); // 150 width for menu
+            ImGui::BeginChild("LeftMenu", { 200.0f, 0.0f }, ImGuiChildFlags_ResizeX); // 150 width for menu
             {
                 // List of menu items
                 if (ImGui::Selectable("Project", selected_option == 0)) { selected_option = 0; }
@@ -1100,7 +1092,7 @@ void EditorLayer::GUIRender()
 
             ImGui::SameLine(); // Move to the right for content
 
-            ImGui::BeginChild("RightContent", {0.0f, 0.0f}); // Fill remaining space
+            ImGui::BeginChild("RightContent", { 0.0f, 0.0f }); // Fill remaining space
             {
                 if (selected_option == 0) // Project
                 {
@@ -1139,7 +1131,7 @@ void EditorLayer::GUIRender()
                 {
                     ImGui::Text("Physics");
                     ImGui::Separator();
-                    
+
 
                     std::string current_api = PhysicsApiTostring(Physics::GetAPI());
                     const char *apis[2] = { "Jolt", "PhysX" };
@@ -1152,10 +1144,8 @@ void EditorLayer::GUIRender()
                             if (ImGui::Selectable(apis[i], is_selected))
                             {
                                 OnSceneStop();
-
                                 Physics::SetAPI(PhysicsApiFromString(apis[i]));
-                                Project::GetActive()->GetConfig().PhysicsApi = PhysicsApiFromString(apis[i]);
-                                Project::SaveActive();
+                                EditorSerializer::Serialize(this, "Editor.cfg");
                             }
                             if (is_selected)
                                 ImGui::SetItemDefaultFocus();
@@ -1272,12 +1262,6 @@ void EditorLayer::GUIRender()
                         if (UI::DrawFloatControl("FOV", &fov, 1.0f, 20.0f, 120.0f))
                         {
                             m_EditorCamera.SetFov(fov);
-                        }
-
-                        UI::DrawCheckbox("Grid 3D", &m_Draw3DGrid);
-                        if (m_Draw3DGrid)
-                        {
-                            UI::DrawIntControl("Grid Size", &m_3DGridSize, 1.0f);
                         }
                         break;
                     }

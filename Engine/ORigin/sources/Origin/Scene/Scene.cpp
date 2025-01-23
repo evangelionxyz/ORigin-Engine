@@ -12,7 +12,6 @@
 #include "Origin/Physics/2D/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
-#include "Origin/Renderer/MeshRenderer.h"
 #include "Origin/Renderer/Model/Model.hpp"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
@@ -156,7 +155,8 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
         if (mesh.HModel)
         {
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh.HModel);
-            model->UpdateAnimation(ts, mesh.AnimationIndex);
+            if (model->HasAnimations())
+                model->UpdateAnimation(ts, mesh.AnimationIndex);
         }
     }
 
@@ -478,7 +478,10 @@ void Scene::RenderScene(const Camera &camera)
         {
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_component.HModel);
             shader->SetMatrix("umodel_transform", tc.GetTransform());
-            shader->SetMatrix("ubone_transforms", model->GetBoneTransforms()[0], static_cast<u32>(model->GetBoneTransforms().size()));
+            shader->SetBool("uhas_animation", model->HasAnimations());
+
+            if (model->HasAnimations())
+                shader->SetMatrix("ubone_transforms", model->GetBoneTransforms()[0], static_cast<u32>(model->GetBoneTransforms().size()));
 
             for (auto &mesh : model->GetMeshes())
             {

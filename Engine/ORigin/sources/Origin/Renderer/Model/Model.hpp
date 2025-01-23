@@ -84,6 +84,7 @@ public:
     const std::vector<Anim> &GetAnimations();
     const std::vector<Ref<Mesh>> &GetMeshes();
 	i32 GetBoneID(const aiBone *bone);
+    const bool HasAnimations() const;
 
 	static Ref<Model> Create(const std::string &filepath);
     static AssetType GetStaticType() { return AssetType::Mesh; }

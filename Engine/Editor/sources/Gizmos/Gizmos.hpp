@@ -49,7 +49,6 @@ namespace origin {
         GizmoType GetType() const { return m_Type; }
 
         void Draw2DGrid(const Camera &camera);
-        void Draw3DGrid(const Camera &camera, bool horizontal, bool vertical, int size);
         void DrawIcons(const Camera &camera, Scene *scene);
         void DrawBoundingBox(const Camera &camera, Scene *scene);
         void DrawFrustum(const Camera &camera, Scene *scene);

@@ -36,6 +36,9 @@ Model::Model(const std::string &filepath)
 
 void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
 {
+    if (!HasAnimations())
+        return;
+
     glm::mat4 identity(1.0f);
 
     Anim *current_anim = &m_Animations[anim_index];
@@ -257,6 +260,11 @@ i32 Model::GetBoneID(const aiBone *bone)
     }
 
     return m_BoneNameToIndexMap[bone_name];
+}
+
+const bool Model::HasAnimations() const
+{
+    return !m_Animations.empty();
 }
 
 TextureTypeMap Model::LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type)

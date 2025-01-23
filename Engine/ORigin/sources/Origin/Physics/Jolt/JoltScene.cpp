@@ -149,10 +149,9 @@ void JoltScene::CreateBoxCollider(Entity entity)
     auto &rb = entity.GetComponent<RigidbodyComponent>();
     auto &bc = entity.GetComponent<BoxColliderComponent>();
 
-    glm::vec3 halfExtents = (tc.Scale / 2.0f) * bc.Scale;
+    glm::vec3 halfExtents = bc.Scale / 2.0f;
     JPH::BoxShapeSettings shapeSettings(GlmToJoltVec3(halfExtents));
 
-    shapeSettings.mUserData = entity.GetUUID();
     JPH::ShapeSettings::ShapeResult shapeResult = shapeSettings.Create();
     JPH::ShapeRefC shape = shapeResult.Get();
 
