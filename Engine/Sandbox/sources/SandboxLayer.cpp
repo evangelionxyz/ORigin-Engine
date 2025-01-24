@@ -31,6 +31,11 @@ struct Data
     std::vector<SkeletalAnimation> anims;
     glm::vec2 blending_position = { 0.0f, 0.0f };
 
+    f32 idling = 2.0f;
+    f32 threatening = 0.0f;
+    f32 retreating = 0.0f;
+    f32 running = 0.0f;
+
     Data() = default;
     Data(const std::string &filepath)
     {
@@ -63,11 +68,12 @@ void SandboxLayer::OnAttach()
 
     storm_trooper = Data("Resources/Models/storm_trooper/storm_trooper.glb");
 
+    // init blending space animation X and Y max is 2.0
     raptoid = Data("Resources/Models/raptoid.glb");
-    raptoid.blender.AddAnimation(0, { 0.0, 0.0 });
-    raptoid.blender.AddAnimation(1, { 2.0, 0.0 });
-    raptoid.blender.AddAnimation(2, { 0.0, 2.0 });
-    raptoid.blender.AddAnimation(3, { 2.0, 2.0 });
+    raptoid.blender.AddAnimation(0, { 0.0, 0.0 }); // idling animation
+    raptoid.blender.AddAnimation(1, { 2.0, 0.0 }); // threatening animation
+    raptoid.blender.AddAnimation(2, { 0.0, 2.0 }); // retreating animation
+    raptoid.blender.AddAnimation(3, { 2.0, 2.0 }); // running animation
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
@@ -160,12 +166,73 @@ void SandboxLayer::OnGuiRender()
     ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
     ImGui::Separator();
 
-    ImGui::SliderFloat("Blending X", &raptoid.blending_position.x, 0.0f, raptoid.blender.GetMaxSize().x);
-    ImGui::SliderFloat("Blending Y", &raptoid.blending_position.y, 0.0f, raptoid.blender.GetMaxSize().y);
+    auto  update_blending_position = [&]()
+    {
+        // Ensure total blending doesn't exceed 2.0
+        f32 total = raptoid.idling + raptoid.running +
+            raptoid.threatening + raptoid.retreating;
+
+        if (total > 2.0f)
+        {
+            // Proportionally reduce other values
+            f32 scaleFactor = 2.0f / total;
+            raptoid.idling *= scaleFactor;
+            raptoid.running *= scaleFactor;
+            raptoid.threatening *= scaleFactor;
+            raptoid.retreating *= scaleFactor;
+        }
+
+        // Update blending position based on animations
+        raptoid.blending_position.x =
+            (raptoid.running + raptoid.threatening);
+        raptoid.blending_position.y =
+            (raptoid.running + raptoid.retreating);
+    };
+
+    ImGui::SliderFloat2("Blending XY", &raptoid.blending_position.x, 0.0f, 2.0f);
+
+    if (ImGui::SliderFloat("Idling", &raptoid.idling, 0.0f, 2.0f))
+    {
+        // Dynamically adjust other animations to maintain total blend of 2.0
+        raptoid.running = std::max(0.0f, 2.0f - raptoid.idling -
+            raptoid.threatening - raptoid.retreating);
+        update_blending_position();
+    }
+
+    if (ImGui::SliderFloat("Retreating", &raptoid.retreating, 0.0f, 2.0f))
+    {
+        // Dynamically adjust other animations to maintain total blend of 2.0
+        raptoid.idling = std::max(0.0f, 2.0f - raptoid.retreating -
+            raptoid.running - raptoid.threatening);
+        update_blending_position();
+    }
+
+    if (ImGui::SliderFloat("Threatening", &raptoid.threatening, 0.0f, 2.0f))
+    {
+        // Dynamically adjust other animations to maintain total blend of 2.0
+        raptoid.idling = std::max(0.0f, 2.0f - raptoid.threatening -
+            raptoid.running - raptoid.retreating);
+        update_blending_position();
+    }
+
+    if (ImGui::SliderFloat("Running", &raptoid.running, 0.0f, 2.0f))
+    {
+        // Dynamically adjust other animations to maintain total blend of 2.0
+        raptoid.idling = std::max(0.0f, 2.0f - raptoid.running -
+            raptoid.threatening - raptoid.retreating);
+        update_blending_position();
+    }
+
+    ImGui::Separator();
 
     if (ImGui::Button("Play Sound"))
     {
         roar_sound->Play();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reload Shader"))
+    {
+        shader->Reload();
     }
 
     ImGui::End();
