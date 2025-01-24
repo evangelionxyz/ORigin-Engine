@@ -41,44 +41,12 @@ void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
 
     glm::mat4 identity(1.0f);
 
-    Anim &current_anim = m_Animations[anim_index];
+    SkeletalAnimation &current_anim = m_Animations[anim_index];
     current_anim.UpdateTime(delta_time);
 
     CalculateBoneTransforms(current_anim.GetTimeInTicks(), m_Scene->mRootNode, identity, anim_index);
 
-    m_FinalBoneTransforms.resize(m_BoneInfo.size());
-    for (size_t i = 0; i < m_BoneInfo.size(); ++i)
-    {
-        m_FinalBoneTransforms[i] = m_BoneInfo[i].final_transformation;
-    }
-}
-
-void Model::UpdateAnimationBlended(f32 delta_time, const u32 start_anim_index, const u32 end_anim_index, const f32 blend_factor)
-{
-    // Ensure the model has animations
-    if (!HasAnimations() || start_anim_index >= m_Animations.size() || end_anim_index >= m_Animations.size())
-        return;
-
-    // Identity matrix as the root transform
-    glm::mat4 identity(1.0f);
-
-    Anim &start_anim = m_Animations[start_anim_index];
-    Anim &end_anim = m_Animations[end_anim_index];
-
-    start_anim.UpdateTime(delta_time);
-    end_anim.UpdateTime(delta_time);
-
-    CalculateBoneTransformsBlended(
-        start_anim.GetTimeInTicks(),
-        end_anim.GetTimeInTicks(),
-        m_Scene->mRootNode,
-        start_anim_index,
-        end_anim_index,
-        blend_factor,
-        identity
-    );
-
-    m_FinalBoneTransforms.resize(m_BoneInfo.size());
+    m_FinalBoneTransforms.resize(m_BoneInfo.size(), glm::mat4(1.0f));
     for (size_t i = 0; i < m_BoneInfo.size(); ++i)
     {
         m_FinalBoneTransforms[i] = m_BoneInfo[i].final_transformation;
@@ -93,7 +61,6 @@ const std::vector<glm::mat4> &Model::GetBoneTransforms() const
 void Model::LoadMeshes(const aiScene *scene, const std::string &filepath)
 {
     m_Meshes.resize(scene->mNumMeshes);
-    LoadRequiredNodeMap(scene->mRootNode);
 
     // count vertices and indices
     u32 num_vertices = 0;
@@ -176,7 +143,7 @@ void Model::LoadAnimations()
     for (u32 i = 0; i < m_Scene->mNumAnimations; ++i)
     {
         aiAnimation *anim = m_Scene->mAnimations[i];
-        m_Animations[i] = Anim(anim);
+        m_Animations[i] = SkeletalAnimation(anim);
     }
 }
 
@@ -202,82 +169,7 @@ void Model::CalculateBoneTransforms(f32 time_in_ticks, const aiNode *node, const
 
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
-        std::string child_name(node->mChildren[i]->mName.C_Str());
-        auto it = m_RequiredNodeMap.find(child_name);
-        if (it == m_RequiredNodeMap.end())
-        {
-            OGN_CORE_ASSERT(false, "Child {} cannot be found in the required node map", child_name);
-        }
-
-        if (it->second.is_required)
-        {
-            CalculateBoneTransforms(time_in_ticks, node->mChildren[i], global_transform, anim_index);
-        }
-    }
-}
-
-void Model::CalculateBoneTransformsBlended(f32 start_anim_time_in_ticks, f32 end_anim_time_in_ticks, const aiNode *node, const u32 start_anim_index, const u32 end_anim_index, f32 blend_factor, const glm::mat4 &parent_transform)
-{
-    std::string node_name(node->mName.C_Str());
-    glm::mat4 node_transform = Math::AssimpToGlmMatrix(node->mTransformation);
-
-    glm::mat4 start_node_transform(1.0f);
-    glm::mat4 end_node_transform(1.0f);
-
-    auto &start_anim_channel_map = m_Animations[start_anim_index].GetChannelMap();
-    if (start_anim_channel_map.contains(node_name))
-    {
-        AnimationNode &anim_node = start_anim_channel_map[node_name];
-        anim_node.Update(start_anim_time_in_ticks);
-        start_node_transform = anim_node.local_transform;
-    }
-
-    auto &end_anim_channel_map = m_Animations[end_anim_index].GetChannelMap();
-    if (end_anim_channel_map.contains(node_name))
-    {
-        AnimationNode &anim_node = end_anim_channel_map[node_name];
-        anim_node.Update(end_anim_time_in_ticks);
-        end_node_transform = anim_node.local_transform;
-    }
-
-    glm::vec3 start_translation, start_rotation, start_scaling, end_translation, end_rotation, end_scaling;
-    Math::DecomposeTransformEuler(start_node_transform, start_translation, start_rotation, start_scaling);
-    Math::DecomposeTransformEuler(end_node_transform, end_translation, end_rotation, end_scaling);
-
-    glm::vec3 blended_translation = glm::mix(start_translation, end_translation, blend_factor);
-
-    glm::quat blended_rotation = glm::slerp(glm::quat(start_rotation), glm::quat(end_rotation), blend_factor);
-
-    glm::vec3 blended_scaling = glm::mix(start_scaling, end_scaling, blend_factor);
-
-    glm::mat4 translation_transform = glm::translate(glm::mat4(1.0f), blended_translation);
-    glm::mat4 rotation_transform = glm::toMat4(blended_rotation);
-    glm::mat4 scaling_transform = glm::scale(glm::mat4(1.0f), blended_scaling);
-
-    node_transform = translation_transform * rotation_transform * scaling_transform;
-
-    const glm::mat4 global_transform = parent_transform * node_transform;
-
-    if (m_BoneNameToIndexMap.contains(node_name))
-    {
-        const u32 bone_index = m_BoneNameToIndexMap[node_name];
-        m_BoneInfo[bone_index].final_transformation = global_transform * m_BoneInfo[bone_index].offset_matrix;
-    }
-
-    for (u32 i = 0; i < node->mNumChildren; ++i)
-    {
-        std::string child_name(node->mChildren[i]->mName.C_Str());
-        auto it = m_RequiredNodeMap.find(child_name);
-        if (it == m_RequiredNodeMap.end())
-        {
-            OGN_CORE_ASSERT(false, "Child {} cannot be found in the required node map", child_name);
-        }
-
-        if (it->second.is_required)
-        {
-            CalculateBoneTransformsBlended(start_anim_time_in_ticks, end_anim_time_in_ticks, node->mChildren[i],
-                start_anim_index, end_anim_index, blend_factor, global_transform);
-        }
+        CalculateBoneTransforms(time_in_ticks, node->mChildren[i], global_transform, anim_index);
     }
 }
 
@@ -312,7 +204,7 @@ void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const ai
         m_Meshes[mesh_index]->vertices[v_weight.mVertexId].bone.AddBoneData(bone_id, v_weight.mWeight);
     }
 
-    MarkRequiredNodesForBones(bone);
+    // MarkRequiredNodesForBones(bone);
 }
 
 void Model::LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath)
@@ -343,40 +235,6 @@ void Model::LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &
             mesh_data->material.textures.push_back(texture_map);
         }
     }
-}
-
-void Model::LoadRequiredNodeMap(const aiNode *node)
-{
-    std::string node_name(node->mName.C_Str());
-    NodeInfo info(node);
-
-    m_RequiredNodeMap[node_name] = info;
-    for (u32 i = 0; i < node->mNumChildren; ++i)
-    {
-        LoadRequiredNodeMap(node->mChildren[i]);
-    }
-}
-
-void Model::MarkRequiredNodesForBones(const aiBone *bone)
-{
-    std::string node_name(bone->mName.C_Str());
-    const aiNode *parent = nullptr;
-    do
-    {
-        auto it = m_RequiredNodeMap.find(node_name);
-        if (it == m_RequiredNodeMap.end())
-        {
-            OGN_CORE_ASSERT(false, "Cannot find bone {} in the hierarchy", node_name);
-        }
-
-        it->second.is_required = true;
-
-        if (parent = it->second.node->mParent)
-        {
-            node_name = std::string(parent->mName.C_Str());
-        }
-
-    } while (parent);
 }
 
 i32 Model::GetBoneID(const aiBone *bone)
@@ -465,9 +323,14 @@ Ref<Model> Model::Create(const std::string &filepath)
     return CreateRef<Model>(filepath);
 }
 
-const std::vector<Anim> &Model::GetAnimations()
+std::vector<SkeletalAnimation> &Model::GetAnimations()
 {
     return m_Animations;
+}
+
+SkeletalAnimation *Model::GetAnimation(u32 index)
+{
+    return &m_Animations[index];
 }
 
 const std::vector<Ref<Mesh>> &Model::GetMeshes()

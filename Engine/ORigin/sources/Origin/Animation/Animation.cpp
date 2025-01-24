@@ -1,12 +1,12 @@
-// Copyright (c) Evangelion Manuhutu | Origin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Bone.hpp"
+#include "Animation.h"
 
 namespace origin {
 
 AnimationNode::AnimationNode(const aiNodeAnim *anim_node)
-    : local_transform(1.0f), translation(0.0f), scale(1.0f), rotation({1.0f, 0.0f, 0.0f, 0.0f})
+    : local_transform(1.0f), translation(0.0f), scale(1.0f), rotation({ 1.0f, 0.0f, 0.0f, 0.0f })
 {
     for (u32 positionIndex = 0; positionIndex < anim_node->mNumPositionKeys; ++positionIndex)
     {
@@ -36,9 +36,38 @@ void AnimationNode::Update(f32 anim_time)
     rotation = rotation_keys.InterpolateRotation(anim_time);
     scale = scale_keys.InterpolateScaling(anim_time);
 
-    local_transform = glm::translate(glm::mat4(1.0f), translation) 
-        * glm::toMat4(rotation) 
+    local_transform = glm::translate(glm::mat4(1.0f), translation)
+        * glm::toMat4(rotation)
         * glm::scale(glm::mat4(1.0f), scale);
 }
 
+SkeletalAnimation::SkeletalAnimation(aiAnimation *anim)
+    : m_Anim(anim)
+{
+    m_Name = anim->mName.C_Str();
+
+    modf(static_cast<f32>(anim->mDuration), &m_Duration);
+
+    m_TicksPerSecond = static_cast<f32>(anim->mTicksPerSecond);
+    if (anim->mTicksPerSecond == 0.0) m_TicksPerSecond = 25.0f;
+
+    ReadChannels(anim);
+}
+
+void SkeletalAnimation::UpdateTime(f32 delta_time)
+{
+    m_TimeInSeconds += delta_time;
+    m_TimeInTicks = m_TimeInSeconds * m_TicksPerSecond;
+    m_TimeInTicks = fmod(m_TimeInTicks, m_Duration);
+}
+
+void SkeletalAnimation::ReadChannels(const aiAnimation *anim)
+{
+    for (u32 i = 0; i < anim->mNumChannels; ++i)
+    {
+        aiNodeAnim *node_anim = anim->mChannels[i];
+        std::string node_name(node_anim->mNodeName.C_Str());
+        m_ChannelMap[node_name] = AnimationNode(node_anim);
+    }
+}
 }

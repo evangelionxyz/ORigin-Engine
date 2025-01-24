@@ -21,6 +21,8 @@ namespace origin
         bool OnMouseMove(MouseMovedEvent &e);
         bool OnMouseScroll(MouseScrolledEvent &e);
 
+        void InitSounds();
+
         EditorCamera camera;
     };
 }

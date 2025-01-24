@@ -54,8 +54,6 @@ struct MeshVertexData
 class Mesh
 {
 public:
-    bool is_active = true;
-
     std::string name;
     MeshMaterial material;
     Ref<VertexArray> vertex_array;

@@ -24,22 +24,25 @@ CamData cam_data;
 Ref<UniformBuffer> ubo;
 Ref<Shader> shader;
 
-struct TestModel
+struct Data
 {
     Ref<Model> model;
-    i32 start_anim_index = 0;
-    i32 end_anim_index = 1;
-    f32 blend_factor = 0.0f;
+    AnimationBlender blender;
+    std::vector<SkeletalAnimation> anims;
+    glm::vec2 blending_position = { 0.0f, 0.0f };
 
-    TestModel() = default;
-    TestModel(const std::string &filepath)
+    Data() = default;
+    Data(const std::string &filepath)
     {
         model = Model::Create(filepath);
+        anims = model->GetAnimations();
+        blender.SetModel(model);
     }
 };
 
-TestModel model_a;
-TestModel model_b;
+Data raptoid;
+Data storm_trooper;
+
 i32 model_count = 8;
 f32 model_pos_spacing = 2.0f;
 Ref<FmodSound> roar_sound;
@@ -52,28 +55,19 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
 
 void SandboxLayer::OnAttach()
 {
+    Physics::Init(PhysicsAPI::Jolt);
+    InitSounds();
+
     shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
     ubo = UniformBuffer::Create(sizeof(CamData), 0);
 
-    model_a = TestModel("Resources/Models/raptoid.glb");
-    model_b = TestModel("Resources/Models/storm_trooper/storm_trooper.glb");
+    storm_trooper = Data("Resources/Models/storm_trooper/storm_trooper.glb");
 
-    Ref<FmodReverb> reverb = FmodReverb::Create();
-    reverb->SetDiffusion(100.0f);
-    reverb->SetWetLevel(20.0f);
-    reverb->SetDecayTime(5000.0f);
-
-    FMOD::ChannelGroup *reverb_group = FmodAudio::CreateChannelGroup("ReverbGroup");
-    reverb_group->setMode(FMOD_CHANNELCONTROL_DSP_TAIL);
-
-    reverb_group->addDSP(0, reverb->GetFmodDsp());
-
-    roar_sound = FmodSound::Create("roar", "Resources/Sounds/sound.mp3");
-    roar_sound->AddToChannelGroup(reverb_group);
-    roar_sound->SetVolume(0.5f);
-    roar_sound->Play();
-
-    Physics::Init(PhysicsAPI::Jolt);
+    raptoid = Data("Resources/Models/raptoid.glb");
+    raptoid.blender.AddAnimation(0, { 0.0, 0.0 });
+    raptoid.blender.AddAnimation(1, { 2.0, 0.0 });
+    raptoid.blender.AddAnimation(2, { 0.0, 2.0 });
+    raptoid.blender.AddAnimation(3, { 2.0, 2.0 });
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
@@ -94,11 +88,13 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     shader->Enable();
 
     {
-        //model_a.model->UpdateAnimationBlended(ts, model_a.start_anim_index, model_a.end_anim_index, model_a.blend_factor);
-        model_a.model->UpdateAnimation(ts, model_a.start_anim_index);
-        shader->SetBool("uhas_animation", model_a.model->HasAnimations());
-        shader->SetMatrix("ubone_transforms", model_a.model->GetBoneTransforms()[0], model_a.model->GetBoneTransforms().size());
-        for (auto &mesh : model_a.model->GetMeshes())
+        raptoid.blender.UpdateBlending(raptoid.blending_position);
+        raptoid.blender.BlendAnimations(ts);
+        // 
+        //model_a.model->UpdateAnimation(ts, model_a.start_anim_index);
+        shader->SetBool("uhas_animation", raptoid.model->HasAnimations());
+        shader->SetMatrix("ubone_transforms", raptoid.model->GetBoneTransforms()[0], raptoid.model->GetBoneTransforms().size());
+        for (auto &mesh : raptoid.model->GetMeshes())
         {
             for (const auto &texture : mesh->material.textures)
             {
@@ -114,15 +110,15 @@ void SandboxLayer::OnUpdate(const Timestep ts)
         }
     }
 
-    model_b.model->UpdateAnimation(ts, 0);
-    shader->SetBool("uhas_animation", model_b.model->HasAnimations());
-    shader->SetMatrix("ubone_transforms", model_b.model->GetBoneTransforms()[0], model_b.model->GetBoneTransforms().size());
+    storm_trooper.model->UpdateAnimation(ts, 0);
+    shader->SetBool("uhas_animation", storm_trooper.model->HasAnimations());
+    shader->SetMatrix("ubone_transforms", storm_trooper.model->GetBoneTransforms()[0], storm_trooper.model->GetBoneTransforms().size());
 
     for (i32 x = -model_count; x <= model_count; ++x)
     {
         for (i32 z = -model_count; z <= model_count; ++z)
         {
-            for (auto &mesh : model_b.model->GetMeshes())
+            for (auto &mesh : storm_trooper.model->GetMeshes())
             {
                 for (const auto &texture : mesh->material.textures)
                 {
@@ -164,23 +160,12 @@ void SandboxLayer::OnGuiRender()
     ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
     ImGui::Separator();
 
+    ImGui::SliderFloat("Blending X", &raptoid.blending_position.x, 0.0f, raptoid.blender.GetMaxSize().x);
+    ImGui::SliderFloat("Blending Y", &raptoid.blending_position.y, 0.0f, raptoid.blender.GetMaxSize().y);
+
     if (ImGui::Button("Play Sound"))
     {
         roar_sound->Play();
-    }
-
-    ImGui::Separator();
-
-    ImGui::DragFloat("Blend Factor", &model_a.blend_factor, 0.1f, 0.0f, 1.0f);
-    ImGui::SliderInt("Start Anim", &model_a.start_anim_index, 0, model_a.model->GetAnimations().size() - 1);
-    ImGui::SliderInt("End Anim", &model_a.end_anim_index, 0, model_a.model->GetAnimations().size() - 1);
-
-    for (size_t i = 0; i < model_a.model->GetAnimations().size(); ++i)
-    {
-        if (ImGui::Button(model_a.model->GetAnimations()[i].GetName().c_str()))
-        {
-            model_a.start_anim_index = i;
-        }
     }
 
     ImGui::End();
@@ -219,4 +204,22 @@ bool SandboxLayer::OnMouseScroll(MouseScrolledEvent &e)
 void SandboxLayer::OnDetach()
 {
     Physics::Shutdown();
+}
+
+void SandboxLayer::InitSounds()
+{
+    Ref<FmodReverb> reverb = FmodReverb::Create();
+    reverb->SetDiffusion(100.0f);
+    reverb->SetWetLevel(20.0f);
+    reverb->SetDecayTime(5000.0f);
+
+    FMOD::ChannelGroup *reverb_group = FmodAudio::CreateChannelGroup("ReverbGroup");
+    reverb_group->setMode(FMOD_CHANNELCONTROL_DSP_TAIL);
+
+    reverb_group->addDSP(0, reverb->GetFmodDsp());
+
+    roar_sound = FmodSound::Create("roar", "Resources/Sounds/sound.mp3");
+    roar_sound->AddToChannelGroup(reverb_group);
+    roar_sound->SetVolume(0.5f);
+    roar_sound->Play();
 }
