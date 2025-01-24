@@ -473,7 +473,7 @@ void SkinnedMesh::ReadNodeHierarchyBlended(f32 start_anim_time_ticks, f32 end_an
 void SkinnedMesh::InitializeRequiredNodeMap(const aiNode *node)
 {
     std::string node_name(node->mName.C_Str());
-    NodeInfo info(node);
+    NodeInfoA info(node);
 
     m_RequiredNodeMap[node_name] = info;
     for (u32 i = 0; i < node->mNumChildren; ++i)

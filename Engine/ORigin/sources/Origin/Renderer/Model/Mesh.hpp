@@ -51,20 +51,6 @@ struct MeshVertexData
     VertexBoneData bone;
 };
 
-struct MeshEntry
-{
-    MeshEntry()
-        : num_indices(0),
-        base_vertex(0),
-        base_index(0)
-    {
-    }
-
-    u32 num_indices;
-    u32 base_vertex;
-    u32 base_index;
-};
-
 class Mesh
 {
 public:
@@ -72,8 +58,6 @@ public:
 
     std::string name;
     MeshMaterial material;
-    MeshEntry mesh_entry;
-
     Ref<VertexArray> vertex_array;
     Ref<VertexBuffer> vertex_buffer;
 

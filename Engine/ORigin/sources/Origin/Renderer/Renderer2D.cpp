@@ -88,7 +88,7 @@ namespace origin {
 		// =============================================
 		// =================== Lines ===================
 		// =============================================
-		static const uint32_t MaxLines = 102400;
+		static const uint32_t MaxLines = 51200;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 
 		std::shared_ptr<VertexArray> LineVertexArray;

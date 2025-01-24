@@ -68,8 +68,46 @@ layout (location = 0) in Vertex
 
 uniform sampler2D udiffuse_texture;
 
+// Existing hardcoded light and view positions
+vec3 light_position = vec3(3.0, 0.0, 4.0);
+vec3 view_position = vec3(0.0, -0.124, 1.0);
+vec3 light_color = vec3(0.882, 0.6321, 1.0);
+
+// Dummy hardcoded light source
+vec3 dummy_light_position = vec3(-2.0, 2.0, 2.0);
+vec3 dummy_light_color = vec3(0.4, 0.6, 0.9);
+
 void main()
 {
-  vec3 texcolor = texture(udiffuse_texture, vin.texcoord).rgb;
-  frag_color = vec4(vin.color * texcolor, 1.0);
+    // Existing light calculations
+    vec3 ambient_color = 0.8 * light_color;
+    vec3 norm = normalize(vin.normals);
+    vec3 light_direction = normalize(light_position - vin.position);
+
+    float diffuse = max(dot(norm, light_direction), 0.0);
+    vec3 diffuse_color = diffuse * light_color;
+
+    vec3 view_direction = normalize(view_position - vin.position);
+    vec3 reflect_direction = reflect(-light_direction, norm);
+
+    float specular = pow(max(dot(view_direction, reflect_direction), 0.0), 32);
+    vec3 specular_color = specular * light_color;
+
+    // Dummy light calculations
+    vec3 dummy_light_direction = normalize(dummy_light_position - vin.position);
+    float dummy_diffuse = max(dot(norm, dummy_light_direction), 0.0);
+    vec3 dummy_diffuse_color = dummy_diffuse * dummy_light_color;
+
+    vec3 dummy_reflect_direction = reflect(-dummy_light_direction, norm);
+    float dummy_specular = pow(max(dot(view_direction, dummy_reflect_direction), 0.0), 16); // Lower specular power
+    vec3 dummy_specular_color = dummy_specular * dummy_light_color;
+
+    // Combine original and dummy lighting
+    vec3 lighting = (ambient_color + diffuse_color + specular_color 
+                     + dummy_diffuse_color + dummy_specular_color) * vin.color;
+
+    // Texture color
+    vec3 diffuse_texture_color = texture(udiffuse_texture, vin.texcoord).rgb;
+
+    frag_color = vec4(diffuse_texture_color * lighting, 1.0);
 }

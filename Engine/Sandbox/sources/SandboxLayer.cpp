@@ -27,7 +27,9 @@ Ref<Shader> shader;
 struct TestModel
 {
     Ref<Model> model;
-    u32 anim_index = 0;
+    i32 start_anim_index = 0;
+    i32 end_anim_index = 1;
+    f32 blend_factor = 0.0f;
 
     TestModel() = default;
     TestModel(const std::string &filepath)
@@ -92,7 +94,10 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     shader->Enable();
 
     {
-        model_a.model->UpdateAnimation(ts, model_a.anim_index);
+        //model_a.model->UpdateAnimationBlended(ts, model_a.start_anim_index, model_a.end_anim_index, model_a.blend_factor);
+        model_a.model->UpdateAnimation(ts, model_a.start_anim_index);
+        shader->SetBool("uhas_animation", model_a.model->HasAnimations());
+        shader->SetMatrix("ubone_transforms", model_a.model->GetBoneTransforms()[0], model_a.model->GetBoneTransforms().size());
         for (auto &mesh : model_a.model->GetMeshes())
         {
             for (const auto &texture : mesh->material.textures)
@@ -104,16 +109,19 @@ void SandboxLayer::OnUpdate(const Timestep ts)
                 }
             }
             shader->SetMatrix("umodel_transform", mesh->transform);
-            shader->SetMatrix("ubone_transforms", model_a.model->GetBoneTransforms()[0], model_a.model->GetBoneTransforms().size());
+
             RenderCommand::DrawIndexed(mesh->vertex_array);
         }
     }
+
+    model_b.model->UpdateAnimation(ts, 0);
+    shader->SetBool("uhas_animation", model_b.model->HasAnimations());
+    shader->SetMatrix("ubone_transforms", model_b.model->GetBoneTransforms()[0], model_b.model->GetBoneTransforms().size());
 
     for (i32 x = -model_count; x <= model_count; ++x)
     {
         for (i32 z = -model_count; z <= model_count; ++z)
         {
-            model_b.model->UpdateAnimation(ts, 0);
             for (auto &mesh : model_b.model->GetMeshes())
             {
                 for (const auto &texture : mesh->material.textures)
@@ -127,11 +135,9 @@ void SandboxLayer::OnUpdate(const Timestep ts)
 
                 glm::mat4 translation = glm::translate(glm::mat4(1.0f), { x * model_pos_spacing, 0.0f, z * model_pos_spacing });
                 shader->SetMatrix("umodel_transform", translation);
-                shader->SetMatrix("ubone_transforms", model_b.model->GetBoneTransforms()[0], model_b.model->GetBoneTransforms().size());
                 RenderCommand::DrawIndexed(mesh->vertex_array);
             }
         }
-        
     }
     
 }
@@ -164,11 +170,16 @@ void SandboxLayer::OnGuiRender()
     }
 
     ImGui::Separator();
+
+    ImGui::DragFloat("Blend Factor", &model_a.blend_factor, 0.1f, 0.0f, 1.0f);
+    ImGui::SliderInt("Start Anim", &model_a.start_anim_index, 0, model_a.model->GetAnimations().size() - 1);
+    ImGui::SliderInt("End Anim", &model_a.end_anim_index, 0, model_a.model->GetAnimations().size() - 1);
+
     for (size_t i = 0; i < model_a.model->GetAnimations().size(); ++i)
     {
         if (ImGui::Button(model_a.model->GetAnimations()[i].GetName().c_str()))
         {
-            model_a.anim_index = i;
+            model_a.start_anim_index = i;
         }
     }
 

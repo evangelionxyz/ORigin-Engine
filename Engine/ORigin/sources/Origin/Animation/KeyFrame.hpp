@@ -23,82 +23,95 @@ protected:
     {
         f32 midWayLength = time - last_time_stamp;
         f32 framesDiff = next_time_stamp - last_time_stamp;
-        f32 scaleFactor = midWayLength / framesDiff;
-        return scaleFactor;
+        f32 scale_factor = midWayLength / framesDiff;
+        return scale_factor;
     }
 };
 
 struct Vec3Key : TransformKeyFrameBase
 {
-    KeyFrames<glm::vec3> Frames;
+    KeyFrames<glm::vec3> frames;
 
-    void AddFrame(const KeyFrame<glm::vec3> &keyFrame)
+    void AddFrame(const KeyFrame<glm::vec3> &key_frame)
     {
-        Frames.push_back(keyFrame);
+        frames.push_back(key_frame);
     }
 
-    i32 GetIndex(f32 animTime)
+    i32 GetIndex(f32 anim_time)
     {
-        for (i32 i = 0; i < Frames.size() - 1; ++i)
+        for (i32 i = 0; i < frames.size() - 1; ++i)
         {
-            if (animTime < Frames[i + 1].Timestamp)
+            if (anim_time < frames[i + 1].Timestamp)
                 return i;
         }
 
         return 0;
     }
 
-    glm::mat4 InterpolateTranslation(f32 time)
+    glm::vec3 InterpolateTranslation(f32 time)
     {
-        if (Frames.size() == 1) return glm::translate(glm::mat4(1.0f), Frames[0].Value);
+        if (frames.size() == 1)
+            return frames[0].Value;
+
         i32 p0Index = GetIndex(time);
         i32 p1Index = p0Index + 1;
-        f32 scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, time);
-        glm::vec3 finalVector = glm::mix(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
-        return glm::translate(glm::mat4(1.0f), finalVector);
+        f32 scale_factor = GetScaleFactor(frames[p0Index].Timestamp, frames[p1Index].Timestamp, time);
+        return glm::mix(frames[p0Index].Value, frames[p1Index].Value, scale_factor);
     }
 
-    glm::mat4 InterpolateScaling(f32 time)
+    glm::vec3 InterpolateScaling(f32 time)
     {
-        if (Frames.size() == 1) return glm::scale(glm::mat4(1.0f), Frames[0].Value);
+        if (frames.size() == 1) 
+            return frames[0].Value;
         i32 p0Index = GetIndex(time);
         i32 p1Index = p0Index + 1;
-        f32 scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, time);
-        glm::vec3 finalScale = glm::mix(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
-        return glm::scale(glm::mat4(1.0f), finalScale);
+        f32 scale_factor = GetScaleFactor(frames[p0Index].Timestamp, frames[p1Index].Timestamp, time);
+        return glm::mix(frames[p0Index].Value, frames[p1Index].Value, scale_factor);
+    }
+
+    glm::mat4 InterpolateTranslateMatrix(f32 time)
+    {
+        return glm::translate(glm::mat4(1.0f), InterpolateTranslation(time));
+    }
+
+    glm::mat4 InterpolateScaleMatrix(f32 time)
+    {
+        return glm::scale(glm::mat4(1.0f), InterpolateScaling(time));
     }
 };
 
 struct QuatKey : public TransformKeyFrameBase
 {
-    KeyFrames<glm::quat> Frames;
+    KeyFrames<glm::quat> frames;
 
     void AddFrame(const KeyFrame<glm::quat> &keyFrame)
     {
-        Frames.push_back(keyFrame);
+        frames.push_back(keyFrame);
     }
 
     i32 GetIndex(f32 time)
     {
-        for (i32 i = 0; i < Frames.size() - 1; ++i)
-            if (time < Frames[i + 1].Timestamp)
+        for (i32 i = 0; i < frames.size() - 1; ++i)
+            if (time < frames[i + 1].Timestamp)
                 return i;
         return 0;
     }
 
-    glm::mat4 Interpolate(f32 time)
+    glm::quat InterpolateRotation(f32 time)
     {
-        if (Frames.size() == 1)
-        {
-            auto rotation = glm::normalize(Frames[0].Value);
-            return glm::toMat4(rotation);
-        }
+        if (frames.size() == 1)
+            return glm::normalize(frames[0].Value);
 
         i32 p0Index = GetIndex(time);
         i32 p1Index = p0Index + 1;
-        f32 scaleFactor = GetScaleFactor(Frames[p0Index].Timestamp, Frames[p1Index].Timestamp, time);
-        glm::quat finalRotation = glm::slerp(Frames[p0Index].Value, Frames[p1Index].Value, scaleFactor);
-        return glm::toMat4(glm::normalize(finalRotation));
+        f32 scale_factor = GetScaleFactor(frames[p0Index].Timestamp, frames[p1Index].Timestamp, time);
+        glm::quat final_rotation = glm::slerp(frames[p0Index].Value, frames[p1Index].Value, scale_factor);
+        return glm::normalize(final_rotation);
+    }
+
+    glm::mat4 InterpolateRotationMatrix(f32 time)
+    {
+        return glm::toMat4(InterpolateRotation(time));
     }
 };
 

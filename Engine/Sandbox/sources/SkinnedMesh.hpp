@@ -50,10 +50,10 @@ struct BoneInfoA
     }
 };
 
-struct NodeInfo
+struct NodeInfoA
 {
-    NodeInfo() = default;
-    NodeInfo(const aiNode *n)
+    NodeInfoA() = default;
+    NodeInfoA(const aiNode *n)
         : node(n)
     {
     }
@@ -166,5 +166,5 @@ private:
     std::vector<BoneInfoA> m_BoneInfo;
 
     std::map<std::string, u32> m_BoneNameToIndexMap;
-    std::map<std::string, NodeInfo> m_RequiredNodeMap;
+    std::map<std::string, NodeInfoA> m_RequiredNodeMap;
 };
