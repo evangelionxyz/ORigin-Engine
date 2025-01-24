@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#ifndef PANEL_BASE_H
-#define PANEL_BASE_H
+#ifndef PANEL_BASE_HPP
+#define PANEL_BASE_HPP
 
 #include "Origin/Core/Event.h"
 

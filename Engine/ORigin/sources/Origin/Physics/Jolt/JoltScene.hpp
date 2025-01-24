@@ -33,7 +33,7 @@ public:
 
 private:
     void CreateBoxCollider(Entity entity);
-    void CreateCircleCollider(Entity entity);
+    void CreateCapsuleCollider(Entity entity);
     void CreateSphereCollider(Entity entity);
 
     JPH::BodyInterface *m_BodyInterface;

@@ -797,7 +797,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				cc.Camera.InitOrthographic(orthoScale, nearClip, farClip);
 				cc.Camera.SetProjectionType(static_cast<ProjectionType>(cameraProps["ProjectionType"].as<int>()));
 				cc.Camera.SetAspectRatioType(static_cast<AspectRatioType>(cameraProps["AspectRatioType"].as<int>()));
-				cc.Camera.SetViewportSize(viewportSize.x, viewportSize.y);
+                cc.Camera.SetViewportSize(static_cast<u32>(viewportSize.x), static_cast<u32>(viewportSize.y));
 				cc.Primary = camera_component["Primary"].as<bool>();
 			}
 

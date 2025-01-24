@@ -360,8 +360,10 @@ namespace origin {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8.0f, 8.0f });
         ImGui::PushItemWidth(-1);
 
-        if (ImGui::Button("Add"))
+        if (ImGui::Button("Add", { ImGui::GetContentRegionAvail().x, 0.0f }))
+        {
             ImGui::OpenPopup("AddComponent");
+        }
 
         if (ImGui::BeginPopup("AddComponent"))
         {
@@ -440,6 +442,22 @@ namespace origin {
 
                 ImGui::EndDragDropTarget();
             }
+
+            if (component.HModel != 0)
+            {
+                ImGui::Separator();
+
+                Ref<Model> model = AssetManager::GetAsset<Model>(component.HModel);
+                for (size_t i = 0; i < model->GetAnimations().size(); ++i)
+                {
+                    auto &anim = model->GetAnimations()[i];
+                    if (ImGui::Button(anim.GetName().c_str()))
+                    {
+                        component.AnimationIndex = i;
+                    }
+                }
+            }
+
         });
 
         DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)

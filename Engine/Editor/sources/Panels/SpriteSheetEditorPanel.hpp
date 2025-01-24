@@ -1,7 +1,7 @@
-// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#ifndef SPRITE_SHEET_EDITOR_H
-#define SPRITE_SHEET_EDITOR_H
+#ifndef SPRITE_SHEET_EDITOR_HPP
+#define SPRITE_SHEET_EDITOR_HPP
 
 #include "Origin/Core/Event.h"
 #include "Origin/Core/KeyEvent.h"

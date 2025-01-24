@@ -21,8 +21,6 @@ namespace origin
 		std::filesystem::path AssetDirectory = "Assets";
 		std::filesystem::path AssetRegistry = "AssetRegistry";
 		std::filesystem::path ScriptModulePath;
-
-		PhysicsAPI PhysicsApi = PhysicsAPI::Jolt;
 	};
 
 	class Scene;

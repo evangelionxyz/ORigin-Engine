@@ -46,12 +46,12 @@ namespace origin
 
         // Settings
         sr.BeginMap("Settings");
-        sr.AddKeyValue("Draw3DGrid", editor->m_Draw3DGrid);
         sr.AddKeyValue("Draw2DGrid", editor->m_Draw2DGrid);
         sr.AddKeyValue("VisualizeCollider", editor->m_VisualizeCollider);
         sr.AddKeyValue("VisualizeBoundingBox", editor->m_VisualizeBoundingBox);
         sr.AddKeyValue("ClearColor", editor->m_ClearColor);
         sr.AddKeyValue("DrawLineMode", editor->m_DrawLineModeActive);
+        sr.AddKeyValue("PhysicsAPI", PhysicsApiTostring(Physics::GetAPI()));
         sr.EndMap();
 
         sr.EndMap();
@@ -107,12 +107,14 @@ namespace origin
         // Deserialize settings
         if (YAML::Node settings_node = editor_node["Settings"])
         {
-            editor->m_Draw3DGrid = settings_node["Draw3DGrid"].as<bool>();
             editor->m_Draw2DGrid = settings_node["Draw2DGrid"].as<bool>();
             editor->m_VisualizeCollider = settings_node["VisualizeCollider"].as<bool>();
             editor->m_VisualizeBoundingBox = settings_node["VisualizeBoundingBox"].as<bool>();
             editor->m_ClearColor = settings_node["ClearColor"].as<glm::vec4>();
             editor->m_DrawLineModeActive = settings_node["DrawLineMode"].as<bool>();
+
+            PhysicsAPI api = PhysicsApiFromString(settings_node["PhysicsAPI"].as<std::string>());
+            Physics::Init(api);
         }
 
         return true;

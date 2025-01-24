@@ -2,173 +2,187 @@
 
 #include "Origin/EntryPoint.h"
 #include "Origin/Asset/AssetImporter.h"
+#include "Origin/Core/Input.h"
 #include "Origin/GUI/UI.h"
 
+#include "Origin/Audio/AudioEngine.h"
+#include "Origin/Audio/FmodSound.h"
+#include "Origin/Audio/FmodDsp.h"
+
 #include "SandboxLayer.h"
+#include "SkinnedMesh.hpp"
 
 using namespace origin;
 
-struct Data
+struct CamData
 {
-    Model model;
-    std::vector<ModelAnimation> animations;
-    Animator animator;
-
-    glm::vec3 light_pos = { 0.0f, 10.0f, 14.0f };
-    glm::vec3 light_color = { 0.65f, 0.65f, 0.65f };
+    glm::mat4 view_projection;
+    glm::vec3 positon;
 };
 
-static Data s_data;
+CamData cam_data;
+Ref<UniformBuffer> ubo;
 Ref<Shader> shader;
 
-void draw_mesh(const glm::mat4 &view_projection, const glm::mat4 &transform, const Ref<VertexArray> &va)
+struct TestModel
 {
-    shader->SetMatrix("viewProjection", view_projection * transform);
-    shader->SetMatrix("model_transform", transform);
-    RenderCommand::DrawIndexed(va);
-}
+    Ref<Model> model;
+    i32 start_anim_index = 0;
+    i32 end_anim_index = 1;
+    f32 blend_factor = 0.0f;
+
+    TestModel() = default;
+    TestModel(const std::string &filepath)
+    {
+        model = Model::Create(filepath);
+    }
+};
+
+TestModel model_a;
+TestModel model_b;
+i32 model_count = 8;
+f32 model_pos_spacing = 2.0f;
+Ref<FmodSound> roar_sound;
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
-    camera.SetPosition({ 0.0f, 2.0f, 8.0f });
-
-    shader = Shader::Create("Resources/Shaders/TestShader.glsl", false, true);
-    s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Knight.glb");
-    // s_data.model = Model("Resources/Models/kay_kit/Characters/gltf/Test.glb");
-    // s_data.model = Model("Resources/Models/storm_trooper/sss.glb");
-    // s_data.model = Model("Resources/Models/cube_plane.glb");
-    // s_data.model = Model("Resources/Models/survival_guitar_backpack.glb");
-    // s_data.model = Model("Resources/Models/raptoid.glb");
-
-    s_data.animations = s_data.model.GetAnimations();
-    if (!s_data.animations.empty())
-    {
-        s_data.animator = Animator(&s_data.animations[0]);
-        s_data.animator.PlayAnimation(&s_data.animations[0]);
-    }
-
-    RenderCommand::ClearColor({ 0.3f,0.3f,0.3f, 1.0f });
-
-    //Application::GetInstance().GetWindow().ToggleVSync();
+    RenderCommand::ClearColor({ 0.125f, 0.125f, 0.125f, 1.0f });
 }
 
 void SandboxLayer::OnAttach()
 {
+    shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
+    ubo = UniformBuffer::Create(sizeof(CamData), 0);
+
+    model_a = TestModel("Resources/Models/raptoid.glb");
+    model_b = TestModel("Resources/Models/storm_trooper/storm_trooper.glb");
+
+    Ref<FmodReverb> reverb = FmodReverb::Create();
+    reverb->SetDiffusion(100.0f);
+    reverb->SetWetLevel(20.0f);
+    reverb->SetDecayTime(5000.0f);
+
+    FMOD::ChannelGroup *reverb_group = FmodAudio::CreateChannelGroup("ReverbGroup");
+    reverb_group->setMode(FMOD_CHANNELCONTROL_DSP_TAIL);
+
+    reverb_group->addDSP(0, reverb->GetFmodDsp());
+
+    roar_sound = FmodSound::Create("roar", "Resources/Sounds/sound.mp3");
+    roar_sound->AddToChannelGroup(reverb_group);
+    roar_sound->SetVolume(0.5f);
+    roar_sound->Play();
+
+    Physics::Init(PhysicsAPI::Jolt);
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
 {
     RenderCommand::Clear();
+    const glm::vec2 &delta = Input::GetMouseClickDragDelta();
+    camera.OnMouseMove(delta);
     camera.OnUpdate(ts);
 
     camera.UpdateView();
     camera.UpdateProjection();
 
-    s_data.animator.UpdateAnimation(ts, 1.0f);
-    s_data.animator.ApplyToMeshes();
+    cam_data.view_projection = camera.GetViewProjection();
+    cam_data.positon = camera.GetPosition();
 
-    MeshRenderer::Begin(camera);
-    for (auto &m : s_data.model.GetMeshes())
+    ubo->Bind();
+    ubo->SetData(&cam_data, sizeof(CamData));
+    shader->Enable();
+
     {
-        if (!m->is_active)
-            continue;
-
-        shader->Enable();
-        for (auto t : m->material.textures)
+        //model_a.model->UpdateAnimationBlended(ts, model_a.start_anim_index, model_a.end_anim_index, model_a.blend_factor);
+        model_a.model->UpdateAnimation(ts, model_a.start_anim_index);
+        shader->SetBool("uhas_animation", model_a.model->HasAnimations());
+        shader->SetMatrix("ubone_transforms", model_a.model->GetBoneTransforms()[0], model_a.model->GetBoneTransforms().size());
+        for (auto &mesh : model_a.model->GetMeshes())
         {
-            if (t.contains(aiTextureType_DIFFUSE))
+            for (const auto &texture : mesh->material.textures)
             {
-                t.at(aiTextureType_DIFFUSE)->Bind(0);
-                shader->SetInt("texture_diffuse", 0);
+                if (texture.contains(TextureType::DIFFUSE))
+                {
+                    texture.at(TextureType::DIFFUSE)->Bind(0);
+                    shader->SetInt("udiffuse_texture", 0);
+                }
             }
-           /* else if (t.contains(aiTextureType_SPECULAR))
-            {
-                t.at(aiTextureType_SPECULAR)->Bind(1);
-                shader->SetInt("texture_specular", 1);
-            }
-            else if (t.contains(aiTextureType_NORMALS))
-            {
-                t.at(aiTextureType_NORMALS)->Bind(2);
-                shader->SetInt("texture_normals", 2);
-            }
-            else if (t.contains(aiTextureType_BASE_COLOR))
-            {
-                t.at(aiTextureType_BASE_COLOR)->Bind(3);
-                shader->SetInt("texture_base_color", 3);
-            }*/
-        }
+            shader->SetMatrix("umodel_transform", mesh->transform);
 
-        shader->SetVector("lightPosition", s_data.light_pos);
-        shader->SetVector("viewPosition", camera.GetPosition());
-        shader->SetVector("lightColor", s_data.light_color);
-        shader->SetFloat("shininess", 1.0f);
-        shader->SetMatrix("bone_transforms", m->final_bone_matrices[0], m->final_bone_matrices.size());
-        draw_mesh(camera.GetViewProjection(), glm::mat4(1.0f), m->vertex_array);
-        shader->Disable();
+            RenderCommand::DrawIndexed(mesh->vertex_array);
+        }
     }
-    MeshRenderer::End();
+
+    model_b.model->UpdateAnimation(ts, 0);
+    shader->SetBool("uhas_animation", model_b.model->HasAnimations());
+    shader->SetMatrix("ubone_transforms", model_b.model->GetBoneTransforms()[0], model_b.model->GetBoneTransforms().size());
+
+    for (i32 x = -model_count; x <= model_count; ++x)
+    {
+        for (i32 z = -model_count; z <= model_count; ++z)
+        {
+            for (auto &mesh : model_b.model->GetMeshes())
+            {
+                for (const auto &texture : mesh->material.textures)
+                {
+                    if (texture.contains(TextureType::DIFFUSE))
+                    {
+                        texture.at(TextureType::DIFFUSE)->Bind(0);
+                        shader->SetInt("udiffuse_texture", 0);
+                    }
+                }
+
+                glm::mat4 translation = glm::translate(glm::mat4(1.0f), { x * model_pos_spacing, 0.0f, z * model_pos_spacing });
+                shader->SetMatrix("umodel_transform", translation);
+                RenderCommand::DrawIndexed(mesh->vertex_array);
+            }
+        }
+    }
+    
 }
 
 void SandboxLayer::OnEvent(Event &e)
 {
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<FramebufferResizeEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnWindowResize));
-    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnKeyPressedEvent));
+    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnKeyPressed));
+    dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseMove));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseButtonPressed));
+    dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseScroll));
 
     camera.OnEvent(e);
 }
 
 void SandboxLayer::OnGuiRender()
 {
-    ImGui::ShowDemoWindow(nullptr);
-
     ImGui::Begin("Control");
-    ImGui::DragFloat3("Light Pos", &s_data.light_pos.x);
-    ImGui::ColorEdit3("Light Color", &s_data.light_color.x);
-    if (ImGui::Button("Reload shader"))
+
+    const f32 &fps = ImGui::GetIO().Framerate;
+    ImGui::Text("%.2f", fps);
+    ImGui::SliderInt("Model Count x2", &model_count, 0, 100);
+    ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
+    ImGui::Separator();
+
+    if (ImGui::Button("Play Sound"))
     {
-        shader->Reload();
+        roar_sound->Play();
     }
-    ImGui::End();
 
-    ImGui::Begin("Test");
+    ImGui::Separator();
 
-    for (auto &m : s_data.model.GetMeshes())
+    ImGui::DragFloat("Blend Factor", &model_a.blend_factor, 0.1f, 0.0f, 1.0f);
+    ImGui::SliderInt("Start Anim", &model_a.start_anim_index, 0, model_a.model->GetAnimations().size() - 1);
+    ImGui::SliderInt("End Anim", &model_a.end_anim_index, 0, model_a.model->GetAnimations().size() - 1);
+
+    for (size_t i = 0; i < model_a.model->GetAnimations().size(); ++i)
     {
-        ImGui::PushID(m->name.c_str());
-        ImGui::Checkbox(m->name.c_str(), &m->is_active);
-        ImGui::Text("bone count: %d", m->bone_count);
-
-        /*glm::vec3 pos, rot, scale;
-        Math::DecomposeTransformEuler(m->transform, pos, rot, scale);
-
-        ImGui::DragFloat3("Position", &pos.x);
-        ImGui::DragFloat3("Rotation", &rot.x);
-        ImGui::DragFloat3("Scale", &scale.x);*/
-
-        //m->transform = glm::recompose(scale, glm::quat(rot), pos, glm::vec3(0.0f), glm::vec4(1.0f));
-
-        /* for (auto tvector : m->material.textures)
-         {
-             for (auto tmap : tvector)
-             {
-                 ImTextureID tex_id = reinterpret_cast<ImTextureID>((uintptr_t)tmap.second->GetID());
-                 ImGui::Image(tex_id, ImVec2(256, 128));
-             }
-         }*/
-        ImGui::PopID();
-    }
-    ImGui::End();
-
-    ImGui::Begin("Animations");
-    for (auto &a : s_data.animations)
-    {
-        if (ImGui::Button(a.name.c_str()))
+        if (ImGui::Button(model_a.model->GetAnimations()[i].GetName().c_str()))
         {
-            s_data.animator.PlayAnimation(&a);
+            model_a.start_anim_index = i;
         }
     }
+
     ImGui::End();
 }
 
@@ -180,7 +194,29 @@ bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)
     return false;
 }
 
-bool SandboxLayer::OnKeyPressedEvent(KeyPressedEvent &e)
+bool SandboxLayer::OnKeyPressed(KeyPressedEvent &e)
 {
     return false;
+}
+
+bool SandboxLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+{
+    return false;
+}
+
+bool SandboxLayer::OnMouseMove(MouseMovedEvent &e)
+{
+    return false;
+}
+
+bool SandboxLayer::OnMouseScroll(MouseScrolledEvent &e)
+{
+    camera.OnMouseScroll(e.GetYOffset());
+
+    return false;
+}
+
+void SandboxLayer::OnDetach()
+{
+    Physics::Shutdown();
 }

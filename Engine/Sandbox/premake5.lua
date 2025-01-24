@@ -37,6 +37,7 @@ project "Sandbox"
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
+        "%{IncludeDir.OPTICK}",
     }
 
     defines {

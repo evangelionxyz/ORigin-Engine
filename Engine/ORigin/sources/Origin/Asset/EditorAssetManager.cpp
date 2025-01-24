@@ -23,6 +23,7 @@ static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap =
     { ".glb", AssetType::Mesh },
     { ".obj", AssetType::Mesh },
     { ".dae", AssetType::Mesh },
+    { ".md5mesh", AssetType::Mesh },
     { ".mat", AssetType::Material },
     { ".ogg", AssetType::Audio },
     { ".mp3", AssetType::Audio },

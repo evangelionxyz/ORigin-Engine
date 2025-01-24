@@ -10,8 +10,8 @@ layout(location = 6) in float aSpecularIndex;
 
 layout(std140, binding = 0) uniform Camera
 {
-    mat4 ViewProjection;
-    vec3 Position;
+    mat4 view_projection;
+    vec3 position;
 } CameraBuffer;
 
 layout(std140, binding = 1) uniform Lighting

@@ -6,9 +6,7 @@
             "label": "build_sandbox",
             "command": "make",
             "args": [
-                "-j",
-                "3",
-                "Sandbox"
+                "-j3 Sandbox",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

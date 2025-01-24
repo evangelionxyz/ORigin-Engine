@@ -1,5 +1,5 @@
 #pragma once
-#include <Origin.h>
+#include <Origin.hpp>
 
 #include <random>
 #include <chrono>
@@ -11,11 +11,16 @@ namespace origin
     public:
         SandboxLayer();
         void OnAttach() override;
+        void OnDetach() override;
         void OnUpdate(Timestep ts) override;
         void OnGuiRender() override;
         void OnEvent(Event &event) override;
         bool OnWindowResize(FramebufferResizeEvent &e);
-        bool OnKeyPressedEvent(KeyPressedEvent &e);
+        bool OnKeyPressed(KeyPressedEvent &e);
+        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
+        bool OnMouseMove(MouseMovedEvent &e);
+        bool OnMouseScroll(MouseScrolledEvent &e);
+
         EditorCamera camera;
     };
 }

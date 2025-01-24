@@ -37,6 +37,7 @@ project "MeshTest"
         "%{IncludeDir.MSDFATLASGEN}",
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
+        "%{IncludeDir.OPTICK}",
     }
 
     defines {

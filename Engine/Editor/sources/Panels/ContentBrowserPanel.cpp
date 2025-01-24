@@ -28,11 +28,12 @@ namespace origin
 #endif
     }
 
-    ContentBrowserPanel::ContentBrowserPanel(const std::shared_ptr<Project>& project)
+    ContentBrowserPanel::ContentBrowserPanel(const Ref<Project>& project)
         : m_Project(project), m_ThumbnailCache(std::make_shared<ThumbnailCache>(project)),
         m_BaseDirectory(m_Project->GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory)
     {
         m_TreeNodes.push_back(TreeNode(".", 0));
+
         m_IconMap["backward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_backward_bt.png");
         m_IconMap["forward_button_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_forward_bt.png");
         m_IconMap["directory_icon"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_folder.png");
@@ -42,13 +43,18 @@ namespace origin
         m_IconMap[".org"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_scene.png");
         m_IconMap[".mp3"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic/ic_audio_source.png");
         
+        m_PathEntryList.push_back(m_BaseDirectory);
+
         RefreshAssetTree();
     }
 
     void ContentBrowserPanel::OnImGuiRender()
     {
         if (!m_Project)
+        {
             return;
+        }
+
         DrawContentBrowser();
     }
 
@@ -64,23 +70,34 @@ namespace origin
                 | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
 
             if (!entry.is_directory())
+            {
                 flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            }
 
             bool opened = ImGui::TreeNodeEx(filename.c_str(), flags, filename.c_str());
 
             if (ImGui::IsItemHovered(ImGuiMouseButton_Left))
             {
                 if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                {
                     m_SelectedFileTree = entry.path();
+                }
                 
                 if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                 {
                     if (std::filesystem::directory_entry(m_SelectedFileTree).is_directory())
                     {
-                        m_BackwardPathStack.push(m_CurrentDirectory);
-                        m_CurrentDirectory = m_SelectedFileTree;
+                        if (m_CurrentDirectory != m_SelectedFileTree)
+                        {
+                            m_BackwardPathStack.push(m_CurrentDirectory);
+                            m_CurrentDirectory = m_SelectedFileTree;
+                            RefreshEntryPathList();
 
-                        m_ThumbnailCache->Clear();
+                            m_ThumbnailCache->Clear();
+
+                            while (!m_ForwardPathStack.empty())
+                                m_ForwardPathStack.pop();
+                        }
                     }
                 }
             }
@@ -107,7 +124,7 @@ namespace origin
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         // Backward Button
-        std::shared_ptr<Texture2D> navButtonTexture = m_IconMap.at("backward_button_icon");
+        Ref<Texture2D> navButtonTexture = m_IconMap.at("backward_button_icon");
 
         bool clicked = ImGui::ImageButton("backward_button", (void *)(uintptr_t)(navButtonTexture->GetID()), navigation_bt_size, ImVec2(0, 1), ImVec2(1, 0)) && !m_Project->GetActiveScene()->IsFocusing();
         if (clicked)
@@ -117,9 +134,11 @@ namespace origin
                 m_ForwardPathStack.push(m_CurrentDirectory);
                 m_CurrentDirectory = m_BackwardPathStack.top();
                 m_BackwardPathStack.pop();
-
                 m_ThumbnailCache->Clear();
+
+                RefreshEntryPathList();
             }
+
             clicked = false;
         }
         
@@ -135,8 +154,9 @@ namespace origin
                 m_BackwardPathStack.push(m_CurrentDirectory);
                 m_CurrentDirectory = m_ForwardPathStack.top();
                 m_ForwardPathStack.pop();
-
                 m_ThumbnailCache->Clear();
+
+                RefreshEntryPathList();
             }
 
             clicked = false;
@@ -145,8 +165,41 @@ namespace origin
         ImGui::SameLine();
         ImGui::PopStyleColor(3);
 
-        ImGui::SameLine();
-        ImGui::SliderInt("Thumbnail Size", &m_ThumbnailSize, 24, 256);
+        ImGui::SameLine(0.0f, 5.0f);
+
+        if (ImGui::Button("Refresh", { 0.0f, ImGui::GetContentRegionAvail().y }))
+        {
+            RefreshAssetTree();
+        }
+
+        ImGui::SameLine(0.0f, 10.0f);
+
+        bool change_directory = false;
+        for (size_t i = 0; i < m_PathEntryList.size(); ++i)
+        {
+            const std::filesystem::path &filepath = m_PathEntryList[i];
+            ImGui::PushID(i);
+            if (ImGui::Button(filepath.filename().string().c_str(), {0.0f, ImGui::GetContentRegionAvail().y}))
+            {
+                m_BackwardPathStack.push(m_CurrentDirectory);
+                m_CurrentDirectory = filepath;
+                change_directory = true;
+            }
+
+            ImGui::SameLine(0.0f, 1.0f);
+
+            if (i < m_PathEntryList.size() - 1)
+                ImGui::Text("/");
+
+            ImGui::SameLine(0.0f, 1.0f);
+
+            ImGui::PopID();
+        }
+
+        if (change_directory)
+        {
+            RefreshEntryPathList();
+        }
 
         ImGui::EndChild();
     }
@@ -180,17 +233,21 @@ namespace origin
         for (const auto &path : relativePath)
         {
             if (node->Path == relativePath)
+            {
                 break;
+            }
 
             if (node->Children.contains(path))
+            {
                 node = &m_TreeNodes[node->Children[path]];
+            }
         }
 
         for (auto &[item, tree_node_index] : node->Children)
         {
             std::string filenameStr = item.generic_string();
             ImGui::PushID(filenameStr.c_str());
-            const std::shared_ptr<Texture2D> thumbnail = DirectoryIcons(std::filesystem::directory_entry(m_CurrentDirectory / item));
+            const Ref<Texture2D> thumbnail = DirectoryIcons(std::filesystem::directory_entry(m_CurrentDirectory / item));
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
             f32 thumbnailHeight = m_ThumbnailSize * ((f32)thumbnail->GetHeight() / (f32)thumbnail->GetWidth());
@@ -220,6 +277,10 @@ namespace origin
                     m_BackwardPathStack.push(m_CurrentDirectory);
                     m_CurrentDirectory /= item.filename();
 
+                    while (!m_ForwardPathStack.empty())
+                        m_ForwardPathStack.pop();
+
+                    RefreshEntryPathList();
                     m_ThumbnailCache->Clear();
                 }
 
@@ -308,6 +369,7 @@ namespace origin
                 if (ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue))
                 {
                     std::filesystem::path newPath = m_CurrentDirectory / m_RenameBuffer;
+
                     if (!std::filesystem::exists(newPath))
                     {
                         std::filesystem::path renamingItem = item;
@@ -335,12 +397,12 @@ namespace origin
 
                                 if (metadata.Type == AssetType::Material)
                                 {
-                                    std::shared_ptr<Material> mat = AssetManager::GetAsset<Material>(handle);
+                                    Ref<Material> mat = AssetManager::GetAsset<Material>(handle);
                                     mat->SetName(metadata.Filepath.stem().string());
                                 }
                                 else if (metadata.Type == AssetType::Scene)
                                 {
-                                    std::shared_ptr<Scene> scene = AssetManager::GetAsset<Scene>(handle);
+                                    Ref<Scene> scene = AssetManager::GetAsset<Scene>(handle);
                                     scene->SetName(metadata.Filepath.stem().string());
                                 }
                             }
@@ -388,7 +450,7 @@ namespace origin
 
                 if (ImGui::MenuItem("Material", nullptr))
                 {
-                    std::shared_ptr<Material> material = Material::Create("Material");
+                    Ref<Material> material = Material::Create("Material");
                     const std::filesystem::path materialPath = m_CurrentDirectory / "Material.mat";
                     if (!std::filesystem::exists(materialPath))
                     {
@@ -415,6 +477,7 @@ namespace origin
             }
 
             ImGui::Separator();
+
             if (ImGui::MenuItem("Refresh", nullptr))
             {
                 RefreshAssetTree();
@@ -441,6 +504,24 @@ namespace origin
         
         const std::filesystem::path asset_path = Project::GetActiveAssetDirectory();
         LoadAssetTree(asset_path);
+    }
+
+    void ContentBrowserPanel::RefreshEntryPathList()
+    {
+        m_PathEntryList.erase(m_PathEntryList.begin() + 1, m_PathEntryList.end());
+
+        const auto &rel_path = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
+        auto current_dir = Project::GetActiveAssetDirectory();
+
+        for (auto p : rel_path)
+        {
+            const std::string &p_string = p.string();
+            if (p_string != ".")
+            {
+                current_dir /= p;
+                m_PathEntryList.push_back(current_dir);
+            }
+        }
     }
 
     void ContentBrowserPanel::LoadAssetTree(const std::filesystem::path &directory)
@@ -486,12 +567,12 @@ namespace origin
         }
     }
 
-    std::shared_ptr<Texture2D> ContentBrowserPanel::DirectoryIcons(const std::filesystem::directory_entry &dirEntry)
+    Ref<Texture2D> ContentBrowserPanel::DirectoryIcons(const std::filesystem::directory_entry &dirEntry)
     {
         const std::string& fileExtension = dirEntry.path().extension().string();
         auto relativePath = std::filesystem::relative(dirEntry.path(), Project::GetActiveAssetDirectory());
 
-        std::shared_ptr<Texture2D> texture = m_IconMap.at("directory_icon");
+        Ref<Texture2D> texture = m_IconMap.at("directory_icon");
 
         if (!dirEntry.is_directory())
         {
@@ -500,11 +581,10 @@ namespace origin
                 texture = m_ThumbnailCache->GetOrCreateThumbnail(relativePath);
                 if (!texture)
                     texture = m_IconMap.at("unknown");
+                return texture;
             }
-            else if (m_IconMap.find(fileExtension) == m_IconMap.end())
-                texture = m_IconMap.at("unknown");
-            else
-                texture = m_IconMap.at(fileExtension);
+
+            texture = m_IconMap.contains(fileExtension) ? m_IconMap.at(fileExtension) : m_IconMap.at("unknown");
         }
 
         return texture;

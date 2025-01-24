@@ -13,7 +13,9 @@ namespace origin
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:   return nullptr;
+			case RendererAPI::API::None:
+				OGN_CORE_ASSERT(false, "[VertexArray] Please specify renderer api");
+				return nullptr;
 			case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexArray>();
 		}
 		OGN_CORE_ASSERT(false, "Unkonwn VertexArray API");

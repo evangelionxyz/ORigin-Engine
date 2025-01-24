@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#include <Origin.h>
+#ifndef EDITOR_APP_HPP
+#define EDITOR_APP_HPP
+
+#include <Origin.hpp>
 
 namespace origin
 {
@@ -11,3 +14,5 @@ public:
 };
 
 }
+
+#endif

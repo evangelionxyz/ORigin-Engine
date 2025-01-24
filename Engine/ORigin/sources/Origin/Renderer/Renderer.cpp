@@ -4,7 +4,6 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 #include "ShaderLibrary.h"
-#include "MeshRenderer.h"
 #include "Renderer2D.h"
 #include "MaterialLibrary.h"
 #include "Origin/Asset/AssetImporter.h"
@@ -52,7 +51,6 @@ namespace origin {
 			BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
 			LoadShaders();
 			LoadMaterials();
-			MeshRenderer::Init();
 			Renderer2D::Init();
 
 			break;
@@ -82,7 +80,6 @@ namespace origin {
 	{
 		OGN_PROFILER_FUNCTION();
 
-		MeshRenderer::Shutdown();
 		Renderer2D::Shutdown();
 
 		OGN_CORE_TRACE("[Renderer] Shutdown");
@@ -128,7 +125,7 @@ namespace origin {
 
 		s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl", false);
 		s_ShaderLibrary.Load("GridShader", "Resources/Shaders/InfiniteGrid.glsl", false);
-		s_ShaderLibrary.Load("AnimatedMesh", "Resources/Shaders/AnimatedMesh.glsl", false);
+		s_ShaderLibrary.Load("SkinnedMesh", "Resources/Shaders/Skinning.glsl", false);
 		s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl", false);
 		s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl", false);
 		s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);

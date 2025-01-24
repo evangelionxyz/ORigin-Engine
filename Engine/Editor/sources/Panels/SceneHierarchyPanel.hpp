@@ -1,6 +1,8 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef SCENE_HIERARCHY_PANEL_HPP
+#define SCENE_HIERARCHY_PANEL_HPP
+
 #include "Origin/Scene/Scene.h"
 #include "Origin/Scene/Entity.h"
 
@@ -55,3 +57,5 @@ namespace origin {
         Entity m_SelectedEntity = Entity();
     };
 }
+
+#endif

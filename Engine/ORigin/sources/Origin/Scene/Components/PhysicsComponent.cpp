@@ -1,4 +1,8 @@
 #include "pch.h"
+#include "Origin/Physics/Physics.hpp"
+#include "Origin/Physics/Jolt/JoltScene.hpp"
+#include "Origin/Physics/PhysX/PhysXScene.hpp"
+
 #include "PhysicsComponents.h"
 
 #include <Jolt/Physics/Body/Body.h>
@@ -8,32 +12,98 @@ namespace origin
 {
     void RigidbodyComponent::AddForce(const glm::vec3 &force)
     {
-        JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
-        //PhysicsEngine::GetBodyInterface()->AddForce(body->GetID(), GlmToJoltVec3(force));
+        switch (Physics::GetAPI())
+        {
+        case PhysicsAPI::Jolt:
+        {
+            JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
+            JoltScene::GetInstance()->GetBodyInterface()->AddForce(body->GetID(), GlmToJoltVec3(force));
+            break;
+        }
+        case PhysicsAPI::PhysX:
+        {
+            physx::PxRigidDynamic *actor = static_cast<physx::PxRigidDynamic *>(Body);
+            actor->addForce(Math::GlmToPhysXVec3(force), physx::PxForceMode::eFORCE);
+            break;
+        }
+        }
     }
 
     void RigidbodyComponent::AddTorque(const glm::vec3 &torque)
     {
-        JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
-        //PhysicsEngine::GetBodyInterface()->AddTorque(body->GetID(), GlmToJoltVec3(torque));
+        switch (Physics::GetAPI())
+        {
+        case PhysicsAPI::Jolt:
+        {
+            JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
+            JoltScene::GetInstance()->GetBodyInterface()->AddTorque(body->GetID(), GlmToJoltVec3(torque));
+            break;
+        }
+        case PhysicsAPI::PhysX:
+        {
+            physx::PxRigidDynamic *actor = static_cast<physx::PxRigidDynamic *>(Body);
+            actor->addTorque(Math::GlmToPhysXVec3(torque), physx::PxForceMode::eFORCE);
+            break;
+        }
+        }
     }
 
     void RigidbodyComponent::AddForceAndTorque(const glm::vec3 &force, const glm::vec3 &torque)
     {
-        JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
-        //PhysicsEngine::GetBodyInterface()->AddForceAndTorque(body->GetID(), GlmToJoltVec3(force), GlmToJoltVec3(torque));
+        switch (Physics::GetAPI())
+        {
+        case PhysicsAPI::Jolt:
+        {
+            JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
+            JoltScene::GetInstance()->GetBodyInterface()->AddForceAndTorque(body->GetID(), GlmToJoltVec3(force), GlmToJoltVec3(torque));
+            break;
+        }
+        case PhysicsAPI::PhysX:
+        {
+            AddForce(force);
+            AddTorque(torque);
+            break;
+        }
+        }
     }
 
     void RigidbodyComponent::AddAngularImpulse(const glm::vec3 &impulse)
     {
-        JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
-        //PhysicsEngine::GetBodyInterface()->AddAngularImpulse(body->GetID(), GlmToJoltVec3(impulse));
+        switch (Physics::GetAPI())
+        {
+        case PhysicsAPI::Jolt:
+        {
+            JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
+            JoltScene::GetInstance()->GetBodyInterface()->AddAngularImpulse(body->GetID(), GlmToJoltVec3(impulse));
+            break;
+        }
+        case PhysicsAPI::PhysX:
+        {
+            physx::PxRigidDynamic *actor = static_cast<physx::PxRigidDynamic *>(Body);
+            // actor->angular(Math::GlmToPhysXVec3(force), physx::PxForceMode::eFORCE);
+            break;
+        }
+        }
     }
 
     void RigidbodyComponent::ActivateBody()
     {
+        switch (Physics::GetAPI())
+        {
+        case PhysicsAPI::Jolt:
+        {
+            JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
+            JoltScene::GetInstance()->GetBodyInterface()->ActivateBody(body->GetID());
+            break;
+        }
+        case PhysicsAPI::PhysX:
+        {
+            physx::PxRigidDynamic *actor = static_cast<physx::PxRigidDynamic *>(Body);
+            break;
+        }
+        }
         JPH::Body *body = reinterpret_cast<JPH::Body *>(Body);
-        //PhysicsEngine::GetBodyInterface()->ActivateBody(body->GetID());
+        //PhysicsEngine::GetBodyInterface()->
     }
 
     void RigidbodyComponent::DeactivateBody()

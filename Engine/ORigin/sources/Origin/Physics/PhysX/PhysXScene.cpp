@@ -1,4 +1,4 @@
-// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
 #include "PhysXScene.hpp"
@@ -13,10 +13,13 @@
 
 namespace origin {
 
+static PhysXScene *s_Instance = nullptr;
+
 PhysXScene::PhysXScene(Scene *scene_ctx)
     : PhysicsSceneBase(scene_ctx), m_PhysXScene(nullptr),
     m_Material(nullptr)
 {
+    s_Instance = this;
 }
 
 void PhysXScene::Simulate(float delta_time)
@@ -36,7 +39,7 @@ void PhysXScene::Simulate(float delta_time)
 
         physx::PxRigidActor *actor = static_cast<physx::PxRigidActor *>(rb.Body);
         physx::PxTransform pose = actor->getGlobalPose();
-        tc.Translation = utils::FromPhysXVec3(pose.p);
+        tc.Translation = Math::PhysXToGlmVec3(pose.p);
         tc.Rotation = glm::quat(pose.q.w, pose.q.x, pose.q.y, pose.q.z);
     }
 }
@@ -123,7 +126,7 @@ physx::PxRigidActor *PhysXScene::CreateBody(RigidbodyComponent &rb, const glm::v
 {
     physx::PxPhysics *physics = PhysXAPI::GetInstance()->m_Physics;
 
-    physx::PxTransform pose = physx::PxTransform(utils::ToPhysXVec3(pos), utils::ToPhysXQuat(rot));
+    physx::PxTransform pose = physx::PxTransform(Math::GlmToPhysXVec3(pos), Math::GlmToPhysXQuat(rot));
     physx::PxRigidDynamic *actor = physics->createRigidDynamic(pose);
 
     OGN_CORE_ASSERT(actor, "[PhysX] Failed to create actor");
@@ -143,12 +146,17 @@ physx::PxRigidActor *PhysXScene::CreateBody(RigidbodyComponent &rb, const glm::v
     actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, !rb.MoveY);
     actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, !rb.MoveZ);
 
-    auto center_mass = utils::ToPhysXVec3(rb.CenterMass);
+    const physx::PxVec3 center_mass = Math::GlmToPhysXVec3(rb.CenterMass);
 
     physx::PxRigidBodyExt::updateMassAndInertia(*actor, rb.Mass, &center_mass);
     rb.Body = static_cast<void *>(actor);
 
     return actor;
+}
+
+PhysXScene *PhysXScene::GetInstance()
+{
+    return s_Instance;
 }
 
 void PhysXScene::CreateBoxCollider(Entity entity)
@@ -160,10 +168,10 @@ void PhysXScene::CreateBoxCollider(Entity entity)
     auto &rb = entity.GetComponent<RigidbodyComponent>();
 
     physx::PxRigidActor *actor = CreateBody(rb, tc.WorldTranslation, tc.WorldRotation);
-    physx::PxTransform relative_pos(utils::ToPhysXVec3(rb.Offset));
+    physx::PxTransform relative_pos(Math::GlmToPhysXVec3(rb.Offset));
     physx::PxMaterial *material = physics->createMaterial(bc.StaticFriction, bc.Friction, bc.Restitution);
 
-    physx::PxShape *box_shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxBoxGeometry(utils::ToPhysXVec3(tc.Scale * (bc.Scale / 2.0f))), *material);
+    physx::PxShape *box_shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxBoxGeometry(Math::GlmToPhysXVec3(tc.Scale * (bc.Scale / 2.0f))), *material);
 
     box_shape->setLocalPose(relative_pos);
     bc.Shape = static_cast<void *>(box_shape);
@@ -180,7 +188,7 @@ void PhysXScene::CreateSphereCollider(Entity entity)
     auto &rb = entity.GetComponent<RigidbodyComponent>();
 
     physx::PxRigidActor *actor = CreateBody(rb, tc.WorldTranslation, tc.WorldRotation);
-    physx::PxTransform relative_pos(utils::ToPhysXVec3(rb.Offset));
+    physx::PxTransform relative_pos(Math::GlmToPhysXVec3(rb.Offset));
     physx::PxMaterial *material = physics->createMaterial(sc.StaticFriction, sc.Friction, sc.Restitution);
 
     physx::PxShape *sphere_shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxSphereGeometry(tc.Scale.x * sc.Radius * 2.0f), *material);
@@ -200,7 +208,7 @@ void PhysXScene::CreateCapsueCollider(Entity entity)
     auto &rb = entity.GetComponent<RigidbodyComponent>();
 
     physx::PxRigidActor *actor = CreateBody(rb, tc.WorldTranslation, tc.WorldRotation);
-    physx::PxTransform relative_pos(utils::ToPhysXVec3(rb.Offset));
+    physx::PxTransform relative_pos(Math::GlmToPhysXVec3(rb.Offset));
     physx::PxMaterial *material = physics->createMaterial(cc.StaticFriction, cc.Friction, cc.Restitution);
 
     physx::PxShape *capsule_shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxCapsuleGeometry(cc.Radius, tc.Scale.y * (cc.HalfHeight / 2.0f)), *material);

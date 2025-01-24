@@ -46,10 +46,12 @@ project "ORigin"
         "%{IncludeDir.MONO}",
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
+        "%{IncludeDir.OPTICK}",
     }
 
     links {
         "ASSIMP",
+        "OPTICK",
         "BOX2D",
         "GLFW",
         "GLAD",

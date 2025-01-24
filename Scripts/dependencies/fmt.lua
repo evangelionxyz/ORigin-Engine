@@ -24,7 +24,7 @@ project "FMT"
     filter "system:windows"
         systemversion "latest"
         defines { "WIN32", "_WINDOWS", "_UNICODE" }
-        buildoptions { "/utf-8" }
+        buildoptions { "/utf-8", "/interface" }
 
     filter "configurations:Debug"
         defines "DEBUG"

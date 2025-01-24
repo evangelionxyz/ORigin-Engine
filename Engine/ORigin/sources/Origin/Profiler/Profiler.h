@@ -3,7 +3,7 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
-//#include "optick.h"
+#include "optick.h"
 #include "Origin/Core/Time.h"
 
 #include <vector>
@@ -58,7 +58,9 @@ namespace origin
 	#define __FUNCNAME__ __FUNCSIG__
 #endif
 
-#if defined(OGN_PROFILING)
+//#define OGN_ENABLE_PROFILING
+
+#if defined(OGN_ENABLE_PROFILING)
 	#define OGN_PROFILER_START(name)        OPTICK_APP(name) OPTICK_START_CAPTURE()
 	#define OGN_PROFILER_STOP()             OPTICK_STOP_CAPTURE()
 	#define OGN_PROFILER_BEGIN_FRAME(name)	OPTICK_FRAME(name)

@@ -29,7 +29,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/Engine/ThirdParty/origin-glfw/include",
+                "${workspaceFolder}/Engine/ThirdParty/GLFW/include",
                 "${workspaceFolder}/Engine/ThirdParty/Vulkan/Include",
                 "${workspaceFolder}/Engine/ORigin/sources",
                 "${workspaceFolder}/Engine/ORigin/sources/Origin",

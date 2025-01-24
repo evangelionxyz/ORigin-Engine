@@ -1,6 +1,6 @@
 // Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
-#include <Origin.h>
+#include <Origin.hpp>
 
 #include "Origin/Audio/FmodSound.h"
 using namespace origin;
@@ -39,6 +39,10 @@ int main()
 {
     auto logger = Log();
     logger.PrintMessage("Hello World");
+
+    RendererAPI::SetAPI(RendererAPI::API::OpenGL);
+    Renderer::Init();
+
     Ref<Model> model = CreateRef<Model>("data/barbarian.glb");
     for (auto& m : model->GetMeshes())
     {

@@ -22,6 +22,7 @@ public:
     void DestroyEntity(Entity entity) override;
 
     physx::PxRigidActor *CreateBody(RigidbodyComponent &rb, const glm::vec3 &pos, const glm::quat &rot);
+    static PhysXScene *GetInstance();
 
 private:
     void CreateBoxCollider(Entity entity);

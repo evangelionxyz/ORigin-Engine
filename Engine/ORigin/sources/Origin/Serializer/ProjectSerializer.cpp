@@ -44,7 +44,6 @@ namespace origin
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
 				out << YAML::Key << "AssetRegistry" << YAML::Value << config.AssetRegistry.string();
 				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
-				out << YAML::Key << "PhysicsAPI" << YAML::Value << PhysicsApiTostring(config.PhysicsApi);
 				out << YAML::EndMap;
 			}
 			out << YAML::EndMap;
@@ -83,7 +82,6 @@ namespace origin
 		config.AssetDirectory = projectNode["AssetDirectory"].as<std::string>();
 		config.AssetRegistry = projectNode["AssetRegistry"].as<std::string>();
 		config.ScriptModulePath = projectNode["ScriptModulePath"].as<std::string>();
-		config.PhysicsApi = PhysicsApiFromString(projectNode["PhysicsAPI"].as<std::string>());
 
 		OGN_CORE_INFO("ProjectSerializer::Deserialize {}", filepath.string());
 		OGN_CORE_INFO("	Name: {}", config.Name);

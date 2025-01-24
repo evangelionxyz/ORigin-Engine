@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#pragma once
+#ifndef PROJECT_BROWSER_HPP
+#define PROJECT_BROWSER_HPP
+
 #include "Origin/Core/Layer.h"
 
 namespace origin {
@@ -21,3 +23,5 @@ private:
 };
 
 }
+
+#endif
