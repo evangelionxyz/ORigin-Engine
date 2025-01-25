@@ -49,7 +49,7 @@ void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
     m_FinalBoneTransforms.resize(m_BoneInfo.size(), glm::mat4(1.0f));
     for (size_t i = 0; i < m_BoneInfo.size(); ++i)
     {
-        m_FinalBoneTransforms[i] = m_BoneInfo[i].final_transformation;
+        m_FinalBoneTransforms[i] = m_BoneInfo[i].transform;
     }
 }
 
@@ -157,14 +157,14 @@ void Model::CalculateBoneTransforms(f32 time_in_ticks, const aiNode *node, const
     {
         AnimationNode &anim_node = channel_map[node_name];
         anim_node.Update(time_in_ticks);
-        node_transform = anim_node.local_transform;
+        node_transform = anim_node.transform;
     }
 
     glm::mat4 global_transform = parent_transform * node_transform;
     if (m_BoneNameToIndexMap.contains(node_name))
     {
         const u32 bone_index = m_BoneNameToIndexMap[node_name];
-        m_BoneInfo[bone_index].final_transformation = global_transform * m_BoneInfo[bone_index].offset_matrix;
+        m_BoneInfo[bone_index].transform = global_transform * m_BoneInfo[bone_index].offset_matrix;
     }
 
     for (u32 i = 0; i < node->mNumChildren; ++i)
@@ -203,8 +203,6 @@ void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const ai
         OGN_CORE_ASSERT(v_weight.mVertexId < m_Meshes[mesh_index]->vertices.size(), "Invalid vertex id");
         m_Meshes[mesh_index]->vertices[v_weight.mVertexId].bone.AddBoneData(bone_id, v_weight.mWeight);
     }
-
-    // MarkRequiredNodesForBones(bone);
 }
 
 void Model::LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath)

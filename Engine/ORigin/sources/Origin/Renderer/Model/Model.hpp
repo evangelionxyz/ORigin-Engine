@@ -15,12 +15,12 @@ namespace origin {
 struct BoneInfo
 {
     glm::mat4 offset_matrix;
-    glm::mat4 final_transformation;
+    glm::mat4 transform;
 
     BoneInfo(const glm::mat4 &offset)
     {
         offset_matrix = offset;
-        final_transformation = glm::mat4(1.0f);
+        transform = glm::mat4(1.0f);
     }
 };
 

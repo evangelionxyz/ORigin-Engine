@@ -68,12 +68,14 @@ void SandboxLayer::OnAttach()
 
     storm_trooper = Data("Resources/Models/storm_trooper/storm_trooper.glb");
 
-    // init blending space animation X and Y max is 2.0
     raptoid = Data("Resources/Models/raptoid.glb");
-    raptoid.blender.AddAnimation(0, { 0.0, 0.0 }); // idling animation
-    raptoid.blender.AddAnimation(1, { 2.0, 0.0 }); // threatening animation
-    raptoid.blender.AddAnimation(2, { 0.0, 2.0 }); // retreating animation
-    raptoid.blender.AddAnimation(3, { 2.0, 2.0 }); // running animation
+
+    raptoid.blender.AddAnimation(0, { 0.0f, 0.0f });
+    raptoid.blender.AddAnimation(0, { 1.0f, 0.0f });
+    raptoid.blender.AddAnimation(0, { 2.0f, 0.0f });
+    raptoid.blender.AddAnimation(3, { 0.0f, 2.0f });
+    raptoid.blender.AddAnimation(3, { 1.0f, 2.0f });
+    raptoid.blender.AddAnimation(3, { 2.0f, 2.0f });
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
@@ -94,10 +96,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     shader->Enable();
 
     {
-        raptoid.blender.UpdateBlending(raptoid.blending_position);
-        raptoid.blender.BlendAnimations(ts);
-        // 
-        //model_a.model->UpdateAnimation(ts, model_a.start_anim_index);
+        raptoid.blender.BlendAnimations(raptoid.blending_position, ts);
         shader->SetBool("uhas_animation", raptoid.model->HasAnimations());
         shader->SetMatrix("ubone_transforms", raptoid.model->GetBoneTransforms()[0], raptoid.model->GetBoneTransforms().size());
         for (auto &mesh : raptoid.model->GetMeshes())
@@ -166,62 +165,7 @@ void SandboxLayer::OnGuiRender()
     ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
     ImGui::Separator();
 
-    auto  update_blending_position = [&]()
-    {
-        // Ensure total blending doesn't exceed 2.0
-        f32 total = raptoid.idling + raptoid.running +
-            raptoid.threatening + raptoid.retreating;
-
-        if (total > 2.0f)
-        {
-            // Proportionally reduce other values
-            f32 scaleFactor = 2.0f / total;
-            raptoid.idling *= scaleFactor;
-            raptoid.running *= scaleFactor;
-            raptoid.threatening *= scaleFactor;
-            raptoid.retreating *= scaleFactor;
-        }
-
-        // Update blending position based on animations
-        raptoid.blending_position.x =
-            (raptoid.running + raptoid.threatening);
-        raptoid.blending_position.y =
-            (raptoid.running + raptoid.retreating);
-    };
-
     ImGui::SliderFloat2("Blending XY", &raptoid.blending_position.x, 0.0f, 2.0f);
-
-    if (ImGui::SliderFloat("Idling", &raptoid.idling, 0.0f, 2.0f))
-    {
-        // Dynamically adjust other animations to maintain total blend of 2.0
-        raptoid.running = std::max(0.0f, 2.0f - raptoid.idling -
-            raptoid.threatening - raptoid.retreating);
-        update_blending_position();
-    }
-
-    if (ImGui::SliderFloat("Retreating", &raptoid.retreating, 0.0f, 2.0f))
-    {
-        // Dynamically adjust other animations to maintain total blend of 2.0
-        raptoid.idling = std::max(0.0f, 2.0f - raptoid.retreating -
-            raptoid.running - raptoid.threatening);
-        update_blending_position();
-    }
-
-    if (ImGui::SliderFloat("Threatening", &raptoid.threatening, 0.0f, 2.0f))
-    {
-        // Dynamically adjust other animations to maintain total blend of 2.0
-        raptoid.idling = std::max(0.0f, 2.0f - raptoid.threatening -
-            raptoid.running - raptoid.retreating);
-        update_blending_position();
-    }
-
-    if (ImGui::SliderFloat("Running", &raptoid.running, 0.0f, 2.0f))
-    {
-        // Dynamically adjust other animations to maintain total blend of 2.0
-        raptoid.idling = std::max(0.0f, 2.0f - raptoid.running -
-            raptoid.threatening - raptoid.retreating);
-        update_blending_position();
-    }
 
     ImGui::Separator();
 
@@ -288,5 +232,5 @@ void SandboxLayer::InitSounds()
     roar_sound = FmodSound::Create("roar", "Resources/Sounds/sound.mp3");
     roar_sound->AddToChannelGroup(reverb_group);
     roar_sound->SetVolume(0.5f);
-    roar_sound->Play();
+    // roar_sound->Play();
 }

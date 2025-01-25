@@ -58,7 +58,9 @@ public:
     QuatKey rotation_keys;
     Vec3Key scale_keys;
 
-    glm::mat4 local_transform;
+    /// node's local transform
+    glm::mat4 transform;
+
     glm::vec3 translation;
     glm::vec3 scale;
     glm::quat rotation;

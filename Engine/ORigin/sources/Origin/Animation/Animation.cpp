@@ -6,7 +6,7 @@
 namespace origin {
 
 AnimationNode::AnimationNode(const aiNodeAnim *anim_node)
-    : local_transform(1.0f), translation(0.0f), scale(1.0f), rotation({ 1.0f, 0.0f, 0.0f, 0.0f })
+    : transform(1.0f), translation(0.0f), scale(1.0f), rotation({ 1.0f, 0.0f, 0.0f, 0.0f })
 {
     for (u32 positionIndex = 0; positionIndex < anim_node->mNumPositionKeys; ++positionIndex)
     {
@@ -36,7 +36,7 @@ void AnimationNode::Update(f32 anim_time)
     rotation = rotation_keys.InterpolateRotation(anim_time);
     scale = scale_keys.InterpolateScaling(anim_time);
 
-    local_transform = glm::translate(glm::mat4(1.0f), translation)
+    transform = glm::translate(glm::mat4(1.0f), translation)
         * glm::toMat4(rotation)
         * glm::scale(glm::mat4(1.0f), scale);
 }
