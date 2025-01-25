@@ -8,19 +8,10 @@
 
 namespace origin {
 
-void AnimationBlender::SetModel(Ref<Model> &model)
+void AnimationBlender::SetModel(const Ref<Model> &model)
 {
     m_Model = model;
     m_Model->m_FinalBoneTransforms.resize(m_Model->m_BoneInfo.size());
-
-    std::function<void(aiNode *)> ReadNodeFunc = [&](aiNode * node)
-    {
-        m_AiNodes.push_back(node);
-        for (u32 i = 0; i < node->mNumChildren; ++i)
-        {
-            ReadNodeFunc(node->mChildren[i]);
-        }
-    };
 }
 
 void AnimationBlender::SetRange(const glm::vec2 &min_size, const glm::vec2 &max_size)
@@ -31,9 +22,20 @@ void AnimationBlender::SetRange(const glm::vec2 &min_size, const glm::vec2 &max_
 
 void AnimationBlender::AddAnimation(i32 anim_index, const glm::vec2 &min_range, const glm::vec2 &max_range)
 {
-    glm::vec2 pos = glm::clamp(min_range, m_MinSize, m_MaxSize);
     std::string name = m_Model->m_Animations[anim_index].GetName();
     m_States.push_back({ name, min_range, max_range, anim_index, 0.0f, {} });
+}
+
+void AnimationBlender::AddAnimation(const std::string &anim_name, const glm::vec2 &min_range, const glm::vec2 &max_range)
+{
+    for (size_t i = 0; i < m_Model->GetAnimations().size(); ++i)
+    {
+        if (m_Model->GetAnimations()[i].GetName() == anim_name)
+        {
+            m_States.push_back({ anim_name, min_range, max_range, static_cast<i32>(i), 0.0f, {} });
+            break;
+        }
+    }
 }
 
 void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 delta_time, const f32 speed)
@@ -134,7 +136,7 @@ void AnimationBlender::UpdateWeights(const glm::vec2 &current_position)
         raw_weights[i] = CalculateWeightForRange(current_position, m_States[i].min_range, m_States[i].max_range);
     }
 
-    // Step 2: cormalize weights
+    // Step 2: normalize weights
     f32 total_weight = std::accumulate(raw_weights.begin(), raw_weights.end(), 0.0f);
     if (total_weight > 0.0f)
     {

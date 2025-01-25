@@ -26,9 +26,10 @@ public:
         std::unordered_map<std::string, AnimationNode> anim_nodes;
     };
 
-    void SetModel(Ref<Model> &model);
+    void SetModel(const Ref<Model> &model);
     void SetRange(const glm::vec2 &min_size, const glm::vec2 &max_size);
     void AddAnimation(i32 anim_index, const glm::vec2 &min_range, const glm::vec2 &max_range);
+    void AddAnimation(const std::string &anim_name, const glm::vec2 &min_range, const glm::vec2 &max_range);
     void BlendAnimations(const glm::vec2 &current_position, f32 delta_time, const f32 speed);
     const glm::vec2 GetMaxSize() const { return m_MaxSize; }
     const glm::vec2 GetMinSize() const { return m_MinSize; }
@@ -42,7 +43,6 @@ private:
 
     glm::vec2 m_MaxSize { 10.0f, 10.0f };
     glm::vec2 m_MinSize{ -10.0f, -10.0f };
-    std::vector<aiNode *> m_AiNodes;
     Ref<Model> m_Model;
 };
 

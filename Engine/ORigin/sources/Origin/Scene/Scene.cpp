@@ -150,13 +150,22 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
         }
     }
 
+    std::unordered_set<UUID> updated_models;
     for (auto [e, tc, mesh] : m_Registry.view<TransformComponent, MeshComponent>().each())
     {
-        if (mesh.HModel)
+        if (mesh.HModel && !updated_models.contains(mesh.HModel))
         {
+            updated_models.insert(mesh.HModel);
+
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh.HModel);
             if (model->HasAnimations())
-                model->UpdateAnimation(ts, mesh.AnimationIndex);
+            {
+                if (!mesh.blend_space.GetStates().empty())
+                    mesh.blend_space.BlendAnimations(mesh.blend_position, ts, mesh.animation_speed);
+                else
+                    model->UpdateAnimation(ts, mesh.AnimationIndex);
+            }
+            
         }
     }
 

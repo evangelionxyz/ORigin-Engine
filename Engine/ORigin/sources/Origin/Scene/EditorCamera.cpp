@@ -385,7 +385,6 @@ namespace origin {
 
         glm::decompose(inverseView, scale, orientation, m_Position, skew, perspective);
 
-        // Extract yaw and pitch from the orientation quaternion
         glm::vec3 euler = glm::eulerAngles(orientation);
         m_Yaw = -euler.y;
         m_Pitch = -euler.x;

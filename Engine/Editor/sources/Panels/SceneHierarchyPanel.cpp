@@ -114,6 +114,68 @@ namespace origin {
     {
         EntityHierarchyPanel();
         EntityPropertiesPanel();
+
+        if (m_BlendSpacePopUp)
+        {
+            ImGui::OpenPopup("Blend Space");
+
+            if (ImGui::BeginPopupModal("Blend Space", &m_BlendSpacePopUp))
+            {
+                MeshComponent &comp = *(MeshComponent *)m_SendData;
+                Ref<Model> model = AssetManager::GetAsset<Model>(comp.HModel);
+
+                if (model)
+                {
+                    for (auto &anim : model->GetAnimations())
+                        ImGui::Text(anim.GetName().c_str());
+                }
+
+                ImGui::Text("Blend Space Range");
+                if (UI::DrawVec2Control("Blend Min", m_BlendSpaceInfo.blend_min_range))
+                {
+                    comp.blend_space.SetRange(m_BlendSpaceInfo.blend_min_range, m_BlendSpaceInfo.blend_max_range);
+                }
+
+                if (UI::DrawVec2Control("Blend Max", m_BlendSpaceInfo.blend_max_range))
+                {
+                    comp.blend_space.SetRange(m_BlendSpaceInfo.blend_min_range, m_BlendSpaceInfo.blend_max_range);
+                }
+                
+
+                ImGui::InputText("Name", &m_BlendSpaceInfo.name);
+                UI::DrawVec2Control("Min Range", m_BlendSpaceInfo.min_range);
+                UI::DrawVec2Control("Max Range", m_BlendSpaceInfo.max_range);
+
+                if (!m_BlendSpaceInfo.name.empty())
+                {
+                    ImGui::SameLine();
+                    if (ImGui::Button("Create"))
+                    {
+                        comp.blend_space.AddAnimation(m_BlendSpaceInfo.name, m_BlendSpaceInfo.min_range, m_BlendSpaceInfo.max_range);
+                    }
+                }
+
+                for (auto &state : comp.blend_space.GetStates())
+                {
+                    ImGui::PushID((i32)(u64)&state.anim_index);
+
+                    ImGui::InputText("Name", &state.name);
+                    UI::DrawVec2Control("Min Range", state.min_range);
+                    ImGui::SameLine();
+                    UI::DrawVec2Control("Max Range", state.max_range);
+
+                    ImGui::PopID();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            if (!m_BlendSpacePopUp)
+            {
+                m_SendData = nullptr;
+            }
+
+        }
     }
 
     void SceneHierarchyPanel::OnUpdate(float delta_time)
@@ -430,6 +492,7 @@ namespace origin {
                     if (AssetManager::GetAssetType(handle) == AssetType::Mesh)
                     {
                         component.HModel = handle;
+                        component.blend_space.SetModel(AssetManager::GetAsset<Model>(handle));
                     }
                     if (AssetManager::GetAssetType(handle) == AssetType::Texture)
                     {
@@ -448,13 +511,17 @@ namespace origin {
                 ImGui::Separator();
 
                 Ref<Model> model = AssetManager::GetAsset<Model>(component.HModel);
-                for (size_t i = 0; i < model->GetAnimations().size(); ++i)
+
+                if (ImGui::Button("Open Blend Space"))
                 {
-                    auto &anim = model->GetAnimations()[i];
-                    if (ImGui::Button(anim.GetName().c_str()))
-                    {
-                        component.AnimationIndex = i;
-                    }
+                    m_SendData = (void *)&component;
+                    m_BlendSpacePopUp = true;
+                }
+
+                if (!component.blend_space.GetStates().empty())
+                {
+                    ImGui::SliderFloat("Blend X", &component.blend_position.x, component.blend_space.GetMinSize().x, component.blend_space.GetMaxSize().x);
+                    ImGui::SliderFloat("Blend Y", &component.blend_position.y, component.blend_space.GetMinSize().y, component.blend_space.GetMaxSize().y);
                 }
             }
 

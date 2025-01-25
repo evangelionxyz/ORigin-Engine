@@ -11,7 +11,6 @@
 
 #include <imgui.h>
 #include <string>
-
 #include <glm/glm.hpp>
 
 #include "Origin/Math/Math.h"

@@ -807,6 +807,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				mc.Name = mesh_component["Name"].as<std::string>();
 				mc.HMaterial = mesh_component["HMaterial"].as<uint64_t>();
 				mc.HModel = mesh_component["HModel"].as<uint64_t>();
+				mc.blend_space.SetModel(AssetManager::GetAsset<Model>(mc.HModel));
 			}
 
 			if (YAML::Node particle_component = entity["ParticleComponent"])

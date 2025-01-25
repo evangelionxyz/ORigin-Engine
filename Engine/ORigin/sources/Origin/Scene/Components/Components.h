@@ -3,6 +3,7 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+#include "Origin/Animation/AnimationBlender.h"
 #include "Origin/Animation/AnimationState.h"
 #include "Origin/Animation/SpriteAnimation.h"
 
@@ -209,10 +210,13 @@ public:
     std::string Name;
     AssetHandle HMaterial = UUID(0);
     AssetHandle HModel = UUID(0);
+    AnimationBlender blend_space;
 
     i32 AnimationIndex = 0;
-    i32 AnimationCount = 0;
 
+    glm::vec2 blend_position{ 0.0f, 0.0f };
+    f32 animation_speed = 1.0f;
+    
     MeshComponent() = default;
     MeshComponent(const MeshComponent &) = default;
 };

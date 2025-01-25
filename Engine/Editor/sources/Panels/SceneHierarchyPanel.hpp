@@ -14,11 +14,11 @@ namespace origin {
     {
     public:
         SceneHierarchyPanel() = default;
-        SceneHierarchyPanel(const std::shared_ptr<Scene> &scene);
+        SceneHierarchyPanel(const Ref<Scene> &scene);
 
         ~SceneHierarchyPanel();
 
-        std::shared_ptr<Scene> GetContext() { return m_Scene; }
+        Ref<Scene> GetContext() { return m_Scene; }
 
         Entity SetSelectedEntity(Entity entity);
         Entity GetSelectedEntity();
@@ -29,7 +29,7 @@ namespace origin {
         void EntityHierarchyPanel();
         void EntityPropertiesPanel();
 
-        void SetActiveScene(const std::shared_ptr<Scene> &scene, bool reset = false);
+        void SetActiveScene(const Ref<Scene> &scene, bool reset = false);
         void DestroyEntity(Entity entity);
 
         bool IsSceneHierarchyFocused = false;
@@ -51,8 +51,23 @@ namespace origin {
 
         Entity EntityContextMenu();
 
-        std::shared_ptr<Scene> m_Scene;
-        std::shared_ptr<Texture2D> m_NoTextureButton;
+        Ref<Scene> m_Scene;
+        Ref<Texture2D> m_NoTextureButton;
+        bool m_BlendSpacePopUp = false;
+
+        struct BlendSpaceCreateInfo
+        {
+            std::string name;
+            glm::vec2 min_range{0.0f, 0.0f};
+            glm::vec2 max_range{10.0f, 10.0f};
+
+            glm::vec2 blend_min_range{ 0.0f, 0.0f };
+            glm::vec2 blend_max_range{ 10.0f, 10.0f };
+        };
+
+        BlendSpaceCreateInfo m_BlendSpaceInfo;
+
+        void *m_SendData = nullptr;
 
         Entity m_SelectedEntity = Entity();
     };
