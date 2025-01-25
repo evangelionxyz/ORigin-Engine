@@ -36,6 +36,7 @@ public:
 
 private:
     f32 CalculateWeightForRange(const glm::vec2 &current_pos, const glm::vec2 &min_range, const glm::vec2 &max_range);
+    void UpdateWeights(const glm::vec2 &current_position);
 
     std::vector<BlendState> m_States;
 

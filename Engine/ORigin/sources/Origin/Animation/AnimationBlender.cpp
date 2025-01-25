@@ -38,13 +38,13 @@ void AnimationBlender::AddAnimation(i32 anim_index, const glm::vec2 &min_range, 
 
 void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 delta_time, const f32 speed)
 {
+    UpdateWeights(current_position);
+
     std::unordered_set<int> updated_animations;
 
     // First pass: Update animation times
     for (auto &state : m_States)
     {
-        state.weight = CalculateWeightForRange(current_position, state.min_range, state.max_range);
-
         // check if this animation has already been updated
         if (!updated_animations.contains(state.anim_index))
         {
@@ -123,6 +123,35 @@ f32 AnimationBlender::CalculateWeightForRange(const glm::vec2 &current_pos, cons
 
     f32 normalized_distance = glm::length(distance_from_center);
     return std::max(0.0f, 1.0f - normalized_distance);
+}
+
+void AnimationBlender::UpdateWeights(const glm::vec2 &current_position)
+{
+    // Step 1: calculate raw weights based on ranges
+    std::vector<f32> raw_weights(m_States.size());
+    for (size_t i = 0; i < m_States.size(); ++i)
+    {
+        raw_weights[i] = CalculateWeightForRange(current_position, m_States[i].min_range, m_States[i].max_range);
+    }
+
+    // Step 2: cormalize weights
+    f32 total_weight = std::accumulate(raw_weights.begin(), raw_weights.end(), 0.0f);
+    if (total_weight > 0.0f)
+    {
+        for (size_t i = 0; i < m_States.size(); ++i)
+        {
+            m_States[i].weight = raw_weights[i] / total_weight;
+        }
+    }
+    else
+    {
+        // if no weight, set default weights
+        m_States[0].weight = 1.0f;
+        for (size_t i = 1; i < m_States.size(); ++i)
+        {
+            m_States[i].weight = 0.0f;
+        }
+    }
 }
 
 }
