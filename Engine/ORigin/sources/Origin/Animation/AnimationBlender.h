@@ -27,7 +27,7 @@ public:
     void SetModel(Ref<Model> &model);
     void SetRange(const glm::vec2 &min_size, const glm::vec2 &max_size);
     void AddAnimation(i32 anim_index, const glm::vec2 &position);
-    void BlendAnimations(const glm::vec2 &current_position, f32 delta_time, const f32 speed, f32 blend_factor);
+    void BlendAnimations(const glm::vec2 &current_position, f32 delta_time, const f32 speed);
     const glm::vec2 GetMaxSize() const { return m_MaxSize; }
     const glm::vec2 GetMinSize() const { return m_MinSize; }
 
