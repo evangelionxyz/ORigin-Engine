@@ -69,9 +69,9 @@ layout (location = 0) in Vertex
 uniform sampler2D udiffuse_texture;
 
 // Existing hardcoded light and view positions
-vec3 light_position = vec3(3.0, 0.0, 4.0);
+vec3 light_position = vec3(3.0, 10.0, 4.0);
 vec3 view_position = vec3(0.0, -0.124, 1.0);
-vec3 light_color = vec3(0.882, 0.6321, 1.0);
+vec3 light_color = vec3(0.382, 0.3321, 1.0);
 
 // Dummy hardcoded light source
 vec3 dummy_light_position = vec3(-2.0, 2.0, 2.0);
@@ -80,7 +80,7 @@ vec3 dummy_light_color = vec3(0.4, 0.6, 0.9);
 void main()
 {
     // Existing light calculations
-    vec3 ambient_color = 0.8 * light_color;
+    vec3 ambient_color = 0.4 * light_color;
     vec3 norm = normalize(vin.normals);
     vec3 light_direction = normalize(light_position - vin.position);
 
