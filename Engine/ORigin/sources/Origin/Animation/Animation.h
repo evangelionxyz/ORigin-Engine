@@ -72,7 +72,7 @@ public:
     SkeletalAnimation() = default;
 
     SkeletalAnimation(aiAnimation *anim);
-    void UpdateTime(f32 delta_time);
+    void UpdateTime(f32 delta_time, f32 speed = 1.0f);
 
     const std::string &GetName() const { return m_Name; }
     const f32 GetDuration() const { return m_Duration; }

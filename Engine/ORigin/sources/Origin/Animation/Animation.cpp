@@ -54,9 +54,9 @@ SkeletalAnimation::SkeletalAnimation(aiAnimation *anim)
     ReadChannels(anim);
 }
 
-void SkeletalAnimation::UpdateTime(f32 delta_time)
+void SkeletalAnimation::UpdateTime(f32 delta_time, f32 speed)
 {
-    m_TimeInSeconds += delta_time;
+    m_TimeInSeconds += delta_time * speed;
     m_TimeInTicks = m_TimeInSeconds * m_TicksPerSecond;
     m_TimeInTicks = fmod(m_TimeInTicks, m_Duration);
 }

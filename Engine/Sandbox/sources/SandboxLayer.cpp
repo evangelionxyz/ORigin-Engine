@@ -29,7 +29,7 @@ struct Data
     Ref<Model> model;
     AnimationBlender blender;
     std::vector<SkeletalAnimation> anims;
-    glm::vec2 blending_position = { 0.0f, 0.0f };
+    glm::vec2 blending_position = { 180.0f, 400.0f };
 
     f32 idling = 2.0f;
     f32 threatening = 0.0f;
@@ -47,6 +47,7 @@ struct Data
 
 Data raptoid;
 Data storm_trooper;
+f32 speed = 1.0f;
 
 i32 model_count = 8;
 f32 model_pos_spacing = 2.0f;
@@ -55,6 +56,9 @@ Ref<FmodSound> roar_sound;
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
+    camera.SetPosition({ -1.62620163f, 1.37793064f,2.60992050f });
+    camera.SetPitch(0.161835521f);
+    camera.SetYaw(0.640095532);
     RenderCommand::ClearColor({ 0.125f, 0.125f, 0.125f, 1.0f });
 }
 
@@ -68,15 +72,12 @@ void SandboxLayer::OnAttach()
 
     storm_trooper = Data("Resources/Models/storm_trooper/storm_trooper.glb");
 
-    raptoid = Data("Resources/Models/raptoid.glb");
+    raptoid = Data("Resources/Models/base_character.glb");
 
-    raptoid.blender.SetRange({ -180.0f, 0.0f }, { 180.0f, 400.0f });
-    raptoid.blender.AddAnimation(0, { -180.0f, 0.0f });
-    raptoid.blender.AddAnimation(0, { 0.0f,    0.0f });
-    raptoid.blender.AddAnimation(0, { 180.0f,  0.0f });
-    raptoid.blender.AddAnimation(3, { -180.0f, 400.0f });
-    raptoid.blender.AddAnimation(3, { 0.0f,    400.0f });
-    raptoid.blender.AddAnimation(3, { 180.0f,  400.0f });
+    raptoid.blender.SetRange({ 0.0f, 0.0f }, { 360.0f, 400.0f });
+    raptoid.blender.AddAnimation(0, { 0.0f, 400.0f }); // backward
+    raptoid.blender.AddAnimation(1, { 360.0f,    400.0f}); // forward
+    //raptoid.blender.AddAnimation(0, { 360.0f,  400.0f }); // backward
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
@@ -97,7 +98,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     shader->Enable();
 
     {
-        raptoid.blender.BlendAnimations(raptoid.blending_position, ts);
+        raptoid.blender.BlendAnimations(raptoid.blending_position, ts, speed);
         shader->SetBool("uhas_animation", raptoid.model->HasAnimations());
         shader->SetMatrix("ubone_transforms", raptoid.model->GetBoneTransforms()[0], raptoid.model->GetBoneTransforms().size());
         for (auto &mesh : raptoid.model->GetMeshes())
@@ -116,7 +117,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
         }
     }
 
-    storm_trooper.model->UpdateAnimation(ts, 0);
+   /* storm_trooper.model->UpdateAnimation(ts, 0);
     shader->SetBool("uhas_animation", storm_trooper.model->HasAnimations());
     shader->SetMatrix("ubone_transforms", storm_trooper.model->GetBoneTransforms()[0], storm_trooper.model->GetBoneTransforms().size());
 
@@ -140,7 +141,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
                 RenderCommand::DrawIndexed(mesh->vertex_array);
             }
         }
-    }
+    }*/
     
 }
 
@@ -164,12 +165,21 @@ void SandboxLayer::OnGuiRender()
     ImGui::Text("%.2f", fps);
     ImGui::SliderInt("Model Count x2", &model_count, 0, 100);
     ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
+    ImGui::DragFloat("Animation Speed", &speed, 0.01f, 0.0f, 10.0f);
     ImGui::Separator();
 
-    ImGui::SliderFloat("Blending X", &raptoid.blending_position.x, raptoid.blender.GetMinSize().x, raptoid.blender.GetMaxSize().x);
-    ImGui::SliderFloat("Blending Y", &raptoid.blending_position.y, raptoid.blender.GetMinSize().y, raptoid.blender.GetMaxSize().y);
+    ImGui::SliderFloat("Direction", &raptoid.blending_position.x, raptoid.blender.GetMinSize().x, raptoid.blender.GetMaxSize().x);
+    ImGui::SliderFloat("Speed", &raptoid.blending_position.y, raptoid.blender.GetMinSize().y, raptoid.blender.GetMaxSize().y);
 
     ImGui::Separator();
+    
+    for (auto &anim : raptoid.model->GetAnimations())
+    {
+        ImGui::Text(anim.GetName().c_str());
+    }
+
+    ImGui::Separator();
+
 
     if (ImGui::Button("Play Sound"))
     {

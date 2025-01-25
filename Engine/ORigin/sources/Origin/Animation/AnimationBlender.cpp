@@ -29,15 +29,12 @@ void AnimationBlender::AddAnimation(i32 anim_index, const glm::vec2 &position)
     m_States.push_back({ anim_index, 0.0f, position });
 }
 
-void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 delta_time)
+void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 delta_time, const f32 speed)
 {
     m_Model->m_FinalBoneTransforms.resize(m_Model->m_BoneInfo.size());
 
     std::vector<glm::mat4> blended_transforms(m_Model->m_BoneInfo.size(), glm::mat4(1.0f));
-    std::vector<glm::vec3> blend_translations(m_Model->m_BoneInfo.size(), glm::vec3(0.0f));
-    std::vector<glm::vec3> blend_scales(m_Model->m_BoneInfo.size(), glm::vec3(0.0f));
-    std::vector<glm::quat> blend_rotations(m_Model->m_BoneInfo.size(), glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
-
+    
     for (auto &state : m_States)
     {
         state.weight = CalculateWeight(current_position, state.position);
@@ -72,14 +69,14 @@ void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 de
 
     for (const auto &state : m_States)
     {
-        if (processed_anim_indices.contains(state.anim_index) || state.weight <= 0.0f)
+        if (processed_anim_indices.contains(state.anim_index) || total_weight <= 0.0f)
         {
             state_index++;
             continue;
         }
 
         SkeletalAnimation &anim = m_Model->GetAnimations()[state.anim_index];
-        anim.UpdateTime(delta_time);
+        anim.UpdateTime(delta_time, speed);
 
         glm::mat4 identity(1.0f);
         m_Model->CalculateBoneTransforms(
@@ -94,23 +91,25 @@ void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 de
 
         for (size_t i = 0; i < m_Model->m_BoneInfo.size(); ++i)
         {
-            glm::vec3 translation, scale;
-            glm::quat rotation;
-            glm::vec3 skew;
+            glm::vec3 translationA, scaleA, translationB, scaleB, skew;
+            glm::quat rotationA, rotationB;
             glm::vec4 perspective;
 
-            glm::decompose(
-                m_Model->m_BoneInfo[i].transform,
-                scale,
-                rotation,
-                translation,
-                skew,
-                perspective
-            );
+            // Decompose current blended transform
+            glm::decompose(blended_transforms[i], scaleA, rotationA, translationA, skew, perspective);
 
-            blend_translations[i] += translation * normalized_weight;
-            blend_rotations[i] = glm::slerp(blend_rotations[i], rotation, normalized_weight);
-            blend_scales[i] += scale * normalized_weight;
+            // Decompose current animation transform
+            glm::decompose(m_Model->m_BoneInfo[i].transform, scaleB, rotationB, translationB, skew, perspective);
+
+            // Interpolate each component
+            glm::vec3 blended_translation = glm::mix(translationA, translationB, normalized_weight);
+            glm::quat blended_rotation = glm::slerp(rotationA, rotationB, normalized_weight);
+            glm::vec3 blended_scale = glm::mix(scaleA, scaleB, normalized_weight);
+
+            // Recompose the transform
+            blended_transforms[i] = glm::translate(glm::mat4(1.0f), blended_translation) *
+                glm::mat4_cast(blended_rotation) *
+                glm::scale(glm::mat4(1.0f), blended_scale);
         }
 
         processed_anim_indices.insert(state.anim_index);
@@ -120,10 +119,7 @@ void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 de
     // recompose transforms
     for (size_t i = 0; i < m_Model->m_BoneInfo.size(); ++i)
     {
-        glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0f), blend_translations[i]);
-        glm::mat4 rotation_matrix = glm::mat4_cast(glm::normalize(blend_rotations[i]));
-        glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0f), blend_scales[i]);
-        m_Model->m_FinalBoneTransforms[i] = translation_matrix * rotation_matrix * scale_matrix;
+        m_Model->m_FinalBoneTransforms[i] = blended_transforms[i];
     }
 }
 
