@@ -73,11 +73,10 @@ void SandboxLayer::OnAttach()
     storm_trooper = Data("Resources/Models/storm_trooper/storm_trooper.glb");
 
     raptoid = Data("Resources/Models/base_character.glb");
-
     raptoid.blender.SetRange({ 0.0f, 0.0f }, { 360.0f, 400.0f });
-    raptoid.blender.AddAnimation(0, { 0.0f,   400.0f }); // backward
-    raptoid.blender.AddAnimation(1, { 360.0f, 400.0f}); // forward
-    // raptoid.blender.AddAnimation(0, { 360.0f, 400.0f }); // backward
+    raptoid.blender.AddAnimation(0, { 0.0f, 0.0f }, { 120.0f, 400.0f }); // backward
+    raptoid.blender.AddAnimation(1, { 120.0f, 0.0f }, { 240.0f, 400.0f }); // backward
+    raptoid.blender.AddAnimation(0, { 240.0f, 0.0f }, { 360.0f, 400.0f }); // backward
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
@@ -176,6 +175,11 @@ void SandboxLayer::OnGuiRender()
     for (auto &anim : raptoid.model->GetAnimations())
     {
         ImGui::Text(anim.GetName().c_str());
+    }
+
+    for (auto &state : raptoid.blender.GetStates())
+    {
+        ImGui::Text("%s %d: %.5f", state.name.c_str(), state.anim_index, state.weight);
     }
 
     ImGui::Separator();

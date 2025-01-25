@@ -4,8 +4,7 @@
 #include "AnimationBlender.h"
 #include "Animation.h"
 #include "Origin/Renderer/Model/Model.hpp"
-
-#include <functional>
+#include <numeric>
 
 namespace origin {
 
@@ -28,29 +27,36 @@ void AnimationBlender::SetRange(const glm::vec2 &min_size, const glm::vec2 &max_
 {
     m_MinSize = min_size;
     m_MaxSize = max_size;
-
-    for (auto &state : m_States)
-    {
-        state.position = glm::clamp(state.position, min_size, max_size);
-    }
 }
 
-void AnimationBlender::AddAnimation(i32 anim_index, const glm::vec2 &position)
+void AnimationBlender::AddAnimation(i32 anim_index, const glm::vec2 &min_range, const glm::vec2 &max_range)
 {
-    glm::vec2 pos = glm::clamp(position, m_MinSize, m_MaxSize);
-    m_States.push_back({ anim_index, 0.0f, position, {} });
+    glm::vec2 pos = glm::clamp(min_range, m_MinSize, m_MaxSize);
+    std::string name = m_Model->m_Animations[anim_index].GetName();
+    m_States.push_back({ name, min_range, max_range, anim_index, 0.0f, {} });
 }
 
 void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 delta_time, const f32 speed)
 {
+    std::unordered_set<int> updated_animations;
+
+    // First pass: Update animation times
     for (auto &state : m_States)
     {
-        state.weight = CalculateWeight(current_position, state.position);
-        SkeletalAnimation &anim = m_Model->GetAnimations()[state.anim_index];
-        anim.UpdateTime(delta_time, speed);
+        state.weight = CalculateWeightForRange(current_position, state.min_range, state.max_range);
+
+        // check if this animation has already been updated
+        if (!updated_animations.contains(state.anim_index))
+        {
+            updated_animations.insert(state.anim_index); // mark as updated
+
+            SkeletalAnimation &anim = m_Model->GetAnimations()[state.anim_index];
+            anim.UpdateTime(delta_time, speed);
+        }
         m_Model->CalculateAnimationTransforms(m_Model->m_Scene->mRootNode, state.anim_index, state.anim_nodes);
     }
 
+    // Third pass: Blend the bone transforms
     for (auto &[bone_name, bone_index] : m_Model->m_BoneNameToIndexMap)
     {
         glm::vec3 blended_translation(0.0f);
@@ -65,6 +71,8 @@ void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 de
 
         for (auto &state : m_States)
         {
+            updated_animations.insert(state.anim_index); // mark as updated
+
             total_weight += state.weight;
 
             glm::vec3 translation = state.anim_nodes[bone_name].translation;
@@ -103,16 +111,18 @@ void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 de
     }
 }
 
-f32 AnimationBlender::CalculateWeight(const glm::vec2 &current_pos, const glm::vec2 &position)
+f32 AnimationBlender::CalculateWeightForRange(const glm::vec2 &current_pos, const glm::vec2 &min_range, const glm::vec2 &max_range)
 {
-    // Calculate normalized distances for each axis
-    glm::vec2 distance = glm::abs(current_pos - position) / (m_MaxSize - m_MinSize);
+    glm::vec2 clamped_pos = glm::clamp(current_pos, min_range, max_range);
 
-    f32 normalized_distance = glm::length(distance);
-    f32 max_blend_distance = 1.0f; // Use a normalized distance scale (0 to 1)
+    glm::vec2 range_size = max_range - min_range;
+    glm::vec2 normalized_pos = (clamped_pos - min_range) / range_size;
 
-    // Calculate weight
-    return std::max(0.0f, 1.0f - (normalized_distance / max_blend_distance));
+    glm::vec2 center = (max_range + min_range) * 0.5f;
+    glm::vec2 distance_from_center = glm::abs(current_pos - center) / (max_range - min_range);
+
+    f32 normalized_distance = glm::length(distance_from_center);
+    return std::max(0.0f, 1.0f - normalized_distance);
 }
 
 }
