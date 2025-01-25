@@ -10,6 +10,7 @@
 #include <assimp/scene.h>
 
 namespace origin {
+
 enum class AnimationType
 {
 	Sprite = BIT(0),
@@ -52,7 +53,7 @@ public:
     AnimationNode() = default;
     AnimationNode(const aiNodeAnim * anim_node);
 
-    void Update(f32 time);
+    void CalculateTransform(f32 time);
 
     Vec3Key translation_keys;
     QuatKey rotation_keys;
@@ -64,6 +65,7 @@ public:
     glm::vec3 translation;
     glm::vec3 scale;
     glm::quat rotation;
+    glm::mat4 parent_transform;
 };
 
 class SkeletalAnimation : public Animation

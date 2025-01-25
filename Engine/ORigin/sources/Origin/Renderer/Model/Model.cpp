@@ -44,7 +44,7 @@ void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
     SkeletalAnimation &current_anim = m_Animations[anim_index];
     current_anim.UpdateTime(delta_time);
 
-    CalculateBoneTransforms(current_anim.GetTimeInTicks(), m_Scene->mRootNode, identity, anim_index);
+    CalculateBoneTransforms(m_Scene->mRootNode, identity, anim_index);
 
     m_FinalBoneTransforms.resize(m_BoneInfo.size(), glm::mat4(1.0f));
     for (size_t i = 0; i < m_BoneInfo.size(); ++i)
@@ -147,29 +147,60 @@ void Model::LoadAnimations()
     }
 }
 
-void Model::CalculateBoneTransforms(f32 time_in_ticks, const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index)
+void Model::CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index)
 {
     std::string node_name(node->mName.C_Str());
     glm::mat4 node_transform = Math::AssimpToGlmMatrix(node->mTransformation);
 
-    auto &channel_map = m_Animations[anim_index].GetChannelMap();
+    SkeletalAnimation &anim = m_Animations[anim_index];
+    auto &channel_map = anim.GetChannelMap();
     if (channel_map.contains(node_name))
     {
+        // Updating animation's node transformation
         AnimationNode &anim_node = channel_map[node_name];
-        anim_node.Update(time_in_ticks);
+        anim_node.CalculateTransform(anim.GetTimeInTicks());
         node_transform = anim_node.transform;
     }
 
-    glm::mat4 global_transform = parent_transform * node_transform;
     if (m_BoneNameToIndexMap.contains(node_name))
     {
         const u32 bone_index = m_BoneNameToIndexMap[node_name];
-        m_BoneInfo[bone_index].transform = global_transform * m_BoneInfo[bone_index].offset_matrix;
+        m_BoneInfo[bone_index].transform = parent_transform * node_transform * m_BoneInfo[bone_index].offset_matrix;
     }
+
+    glm::mat4 global_transform = parent_transform * node_transform;
+    for (u32 i = 0; i < node->mNumChildren; ++i)
+    {
+        CalculateBoneTransforms(node->mChildren[i], global_transform, anim_index);
+    }
+}
+
+void Model::CalculateAnimationTransforms(const aiNode *node, const u32 anim_index, std::unordered_map<std::string, AnimationNode> &anim_nodes, const glm::mat4 &parent_transform)
+{
+    std::string node_name(node->mName.C_Str());
+
+    glm::mat4 node_transform = Math::AssimpToGlmMatrix(node->mTransformation);
+
+    SkeletalAnimation &anim = m_Animations[anim_index];
+    auto &channel_map = anim.GetChannelMap();
+
+    if (channel_map.contains(node_name))
+    {
+        // Updating animation's node transformation
+        AnimationNode &anim_node = channel_map[node_name];
+        anim_node.CalculateTransform(anim.GetTimeInTicks());
+        anim_nodes[node_name] = anim_node;
+        anim_nodes[node_name].parent_transform = parent_transform;
+
+        // set node transform
+        node_transform = anim_nodes[node_name].transform;
+    }
+    
+    glm::mat4 global_transform = parent_transform * node_transform;
 
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
-        CalculateBoneTransforms(time_in_ticks, node->mChildren[i], global_transform, anim_index);
+        CalculateAnimationTransforms(node->mChildren[i], anim_index, anim_nodes, global_transform);
     }
 }
 
@@ -191,6 +222,7 @@ void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const ai
     if (bone_id == m_BoneInfo.size())
     {
         BoneInfo new_bone_info(Math::AssimpToGlmMatrix(bone->mOffsetMatrix));
+        new_bone_info.name = bone->mName.data;
         m_BoneInfo.push_back(new_bone_info);
     }
 

@@ -48,6 +48,7 @@ struct Data
 Data raptoid;
 Data storm_trooper;
 f32 speed = 1.0f;
+f32 blend_factor = 0.0f;
 
 i32 model_count = 8;
 f32 model_pos_spacing = 2.0f;
@@ -98,7 +99,7 @@ void SandboxLayer::OnUpdate(const Timestep ts)
     shader->Enable();
 
     {
-        raptoid.blender.BlendAnimations(raptoid.blending_position, ts, speed);
+        raptoid.blender.BlendAnimations(raptoid.blending_position, ts, speed, blend_factor);
         shader->SetBool("uhas_animation", raptoid.model->HasAnimations());
         shader->SetMatrix("ubone_transforms", raptoid.model->GetBoneTransforms()[0], raptoid.model->GetBoneTransforms().size());
         for (auto &mesh : raptoid.model->GetMeshes())
@@ -166,6 +167,7 @@ void SandboxLayer::OnGuiRender()
     ImGui::SliderInt("Model Count x2", &model_count, 0, 100);
     ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
     ImGui::DragFloat("Animation Speed", &speed, 0.01f, 0.0f, 10.0f);
+    ImGui::DragFloat("Blend Factor", &blend_factor, 0.01f, 0.0f, 1.0f);
     ImGui::Separator();
 
     ImGui::SliderFloat("Direction", &raptoid.blending_position.x, raptoid.blender.GetMinSize().x, raptoid.blender.GetMaxSize().x);

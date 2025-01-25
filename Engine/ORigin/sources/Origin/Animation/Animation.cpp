@@ -30,11 +30,11 @@ AnimationNode::AnimationNode(const aiNodeAnim *anim_node)
     }
 }
 
-void AnimationNode::Update(f32 anim_time)
+void AnimationNode::CalculateTransform(f32 time_in_ticks)
 {
-    translation = translation_keys.InterpolateTranslation(anim_time);
-    rotation = rotation_keys.InterpolateRotation(anim_time);
-    scale = scale_keys.InterpolateScaling(anim_time);
+    translation = translation_keys.InterpolateTranslation(time_in_ticks);
+    rotation = rotation_keys.InterpolateRotation(time_in_ticks);
+    scale = scale_keys.InterpolateScaling(time_in_ticks);
 
     transform = glm::translate(glm::mat4(1.0f), translation)
         * glm::toMat4(rotation)

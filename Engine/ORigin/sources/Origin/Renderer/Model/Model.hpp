@@ -14,6 +14,7 @@ namespace origin {
 
 struct BoneInfo
 {
+    std::string name;
     glm::mat4 offset_matrix;
     glm::mat4 transform;
 
@@ -49,8 +50,9 @@ public:
 	void LoadVertexBones(const u32 mesh_index, Ref<Mesh> &data, aiMesh *mesh);
 	void LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone);
 	void LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath);
-    void CalculateBoneTransforms(f32 time_in_ticks, const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
-	
+    void CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
+    void CalculateAnimationTransforms(const aiNode *node, const u32 anim_index, std::unordered_map<std::string, AnimationNode> &anim_nodes, const glm::mat4 &parent_transform = glm::mat4(1.0f));
+
 	TextureTypeMap LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
 	void CreateVertex(Ref<Mesh> &mesh_data);
     std::vector<SkeletalAnimation> &GetAnimations();
