@@ -70,12 +70,13 @@ void SandboxLayer::OnAttach()
 
     raptoid = Data("Resources/Models/raptoid.glb");
 
-    raptoid.blender.AddAnimation(0, { 0.0f, 0.0f });
-    raptoid.blender.AddAnimation(0, { 1.0f, 0.0f });
-    raptoid.blender.AddAnimation(0, { 2.0f, 0.0f });
-    raptoid.blender.AddAnimation(3, { 0.0f, 2.0f });
-    raptoid.blender.AddAnimation(3, { 1.0f, 2.0f });
-    raptoid.blender.AddAnimation(3, { 2.0f, 2.0f });
+    raptoid.blender.SetRange({ -180.0f, 0.0f }, { 180.0f, 400.0f });
+    raptoid.blender.AddAnimation(0, { -180.0f, 0.0f });
+    raptoid.blender.AddAnimation(0, { 0.0f,    0.0f });
+    raptoid.blender.AddAnimation(0, { 180.0f,  0.0f });
+    raptoid.blender.AddAnimation(3, { -180.0f, 400.0f });
+    raptoid.blender.AddAnimation(3, { 0.0f,    400.0f });
+    raptoid.blender.AddAnimation(3, { 180.0f,  400.0f });
 }
 
 void SandboxLayer::OnUpdate(const Timestep ts)
@@ -165,7 +166,8 @@ void SandboxLayer::OnGuiRender()
     ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
     ImGui::Separator();
 
-    ImGui::SliderFloat2("Blending XY", &raptoid.blending_position.x, 0.0f, 2.0f);
+    ImGui::SliderFloat("Blending X", &raptoid.blending_position.x, raptoid.blender.GetMinSize().x, raptoid.blender.GetMaxSize().x);
+    ImGui::SliderFloat("Blending Y", &raptoid.blending_position.y, raptoid.blender.GetMinSize().y, raptoid.blender.GetMaxSize().y);
 
     ImGui::Separator();
 

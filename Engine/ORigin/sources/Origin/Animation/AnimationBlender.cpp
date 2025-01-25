@@ -12,13 +12,20 @@ void AnimationBlender::SetModel(Ref<Model> &model)
     m_Model = model;
 }
 
-void AnimationBlender::SetMaxSize(const glm::vec2 &max_size)
+void AnimationBlender::SetRange(const glm::vec2 &min_size, const glm::vec2 &max_size)
 {
+    m_MinSize = min_size;
     m_MaxSize = max_size;
+
+    for (auto &state : m_States)
+    {
+        state.position = glm::clamp(state.position, min_size, max_size);
+    }
 }
 
 void AnimationBlender::AddAnimation(i32 anim_index, const glm::vec2 &position)
 {
+    glm::vec2 pos = glm::clamp(position, m_MinSize, m_MaxSize);
     m_States.push_back({ anim_index, 0.0f, position });
 }
 
@@ -122,9 +129,14 @@ void AnimationBlender::BlendAnimations(const glm::vec2 &current_position, f32 de
 
 f32 AnimationBlender::CalculateWeight(const glm::vec2 &current_pos, const glm::vec2 &position)
 {
-    f32 distance = glm::length(current_pos - position);
-    f32 max_blend_distance = 2.0f;
-    return std::max(0.0f, 1.0f - (distance / max_blend_distance));
+    // Calculate normalized distances for each axis
+    glm::vec2 distance = glm::abs(current_pos - position) / (m_MaxSize - m_MinSize);
+
+    f32 normalized_distance = glm::length(distance);
+    f32 max_blend_distance = 1.0f; // Use a normalized distance scale (0 to 1)
+
+    // Calculate weight
+    return std::max(0.0f, 1.0f - (normalized_distance / max_blend_distance));
 }
 
 }
