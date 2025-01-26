@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "AudioSystemPanel.hpp"
-
 #include <imgui_internal.h>
 
 namespace origin {
 
+static AudioSystemPanel *s_instance = nullptr;
+
 AudioSystemPanel::AudioSystemPanel()
 {
+    s_instance = this;
 }
 
 AudioSystemPanel::~AudioSystemPanel()
@@ -16,15 +18,15 @@ AudioSystemPanel::~AudioSystemPanel()
 
 void AudioSystemPanel::Render()
 {
-    if (m_Open)
+    if (m_is_open)
     {
-        ImGui::Begin("Audio System", &m_Open);
+        ImGui::Begin("Audio System", &m_is_open);
 
         const ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
         const ImVec2 canvas_size = ImVec2(ImGui::GetContentRegionAvail());
 
-        m_ViewportRect.min = { canvas_pos.x, canvas_pos.y };
-        m_ViewportRect.max = { canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y };
+        m_viewport_rect.min = { canvas_pos.x, canvas_pos.y };
+        m_viewport_rect.max = { canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y };
 
         ImDrawList *dl = ImGui::GetWindowDrawList();
 
@@ -32,44 +34,44 @@ void AudioSystemPanel::Render()
         Margin channel_margin(20.0f, 20.0f, 20.0f, 30.0f);
         Margin gain_margin(30.0f, 50.0f);
         Margin label_margin(10.0f);
-        float channel_width = 100.0f;
+        f32 channel_width = 100.0f;
 
-        static float horizontal_scroll = 0.0f;
+        static f32 horizontal_scroll = 0.0f;
         static bool is_scrolling = false;
         static ImVec2 scroll_start_mouse_pos;
-        static float scroll_start_offset = 0.0f;
+        static f32 scroll_start_offset = 0.0f;
 
         // master channel
-        Rect master_channel_canvas = m_ViewportRect - Rect({ horizontal_scroll, 0.0f }, { 0.0f, 0.0f });
-        float master_volume = FmodAudio::GetMasterVolume();
+        Rect master_channel_canvas = m_viewport_rect - Rect({ horizontal_scroll, 0.0f }, { 0.0f, 0.0f });
+        f32 master_volume = FmodAudio::GetMasterVolume();
         RenderAudioChannel(master_volume, dl, master_channel_canvas, 0, channel_width,
             channel_margin, gain_margin, label_margin, "Master", "Master\nChannel");
         FmodAudio::SetMasterVolume(master_volume);
 
         // other audio channel
-        Rect audio_channel_canvas = m_ViewportRect + Rect({ horizontal_scroll, 0.0f }, {0.0f, 0.0f});
-        for (i32 x = 0; x < m_Sounds.size(); ++x)
+        Rect audio_channel_canvas = m_viewport_rect + Rect({ horizontal_scroll, 0.0f }, {0.0f, 0.0f});
+        for (size_t x = 0; x < m_Sounds.size(); ++x)
         {
-            float volume = m_Sounds[x]->GetVolume();
+            f32 volume = m_Sounds[x]->GetVolume();
             std::string bottom_label = "Channel " + std::to_string(x + 1);
-            RenderAudioChannel(volume, dl, audio_channel_canvas, x+1, channel_width,
+            RenderAudioChannel(volume, dl, audio_channel_canvas, static_cast<i32>(x + 1), channel_width,
                 channel_margin, gain_margin, label_margin, m_Sounds[0]->GetName(), bottom_label);
             m_Sounds[0]->SetVolume(volume);
         }
 
         // horizontal slider
         // + 1 (master channel)
-        const float total_channel_width = (m_Sounds.size() + 1) * channel_width + (channel_margin.right * 2.0f);
-        const float visible_width = m_ViewportRect.max.x - m_ViewportRect.min.x;
-        const float scrollbar_height = 15.0f;
+        const f32 total_channel_width = static_cast<f32>(m_Sounds.size() + 1) * channel_width + (channel_margin.right * 2.0f);
+        const f32 visible_width = m_viewport_rect.max.x - m_viewport_rect.min.x;
 
         if (total_channel_width > visible_width)
         {
-            const float scrollbar_x = m_ViewportRect.min.x + channel_margin.left;
-            const float scrollbar_y = m_ViewportRect.max.y - scrollbar_height - 5.0f;
-            const float scrollbar_width = visible_width - (channel_margin.right * 2.0f);
-            const float scrollbar_thumb_width = (visible_width / total_channel_width) * scrollbar_width;
-            const float scrollbar_thumb_x = scrollbar_x + (horizontal_scroll / (total_channel_width - visible_width)) * (scrollbar_width - scrollbar_thumb_width);
+            constexpr f32 scrollbar_height = 15.0f;
+            const f32 scrollbar_x = m_viewport_rect.min.x + channel_margin.left;
+            const f32 scrollbar_y = m_viewport_rect.max.y - scrollbar_height - 5.0f;
+            const f32 scrollbar_width = visible_width - (channel_margin.right * 2.0f);
+            const f32 scrollbar_thumb_width = (visible_width / total_channel_width) * scrollbar_width;
+            const f32 scrollbar_thumb_x = scrollbar_x + (horizontal_scroll / (total_channel_width - visible_width)) * (scrollbar_width - scrollbar_thumb_width);
 
             Rect scrollbar_rect = Rect(
                 { scrollbar_thumb_x, scrollbar_y },
@@ -121,17 +123,22 @@ void AudioSystemPanel::OnEvent(Event &e)
     dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(AudioSystemPanel::OnMouseButtonPressed));
 }
 
+AudioSystemPanel* AudioSystemPanel::GetInstance()
+{
+    return s_instance;
+}
+
 void AudioSystemPanel::RenderAudioChannel(float &volume, ImDrawList *dl, const Rect &m_ViewportRect, i32 channel_index,
-    float channel_width, const Margin &channel_margin, const Margin &gain_margin,
-    const Margin &label_margin, const std::string &top_label, const std::string &bottom_label)
+                                          float channel_width, const Margin &channel_margin, const Margin &gain_margin,
+                                          const Margin &label_margin, const std::string &top_label, const std::string &bottom_label)
 {
     const Rect channel_size = Rect
     ({
-        m_ViewportRect.min.x + channel_margin.left + (channel_index * channel_width),
+        m_ViewportRect.min.x + channel_margin.left + (static_cast<f32>(channel_index) * channel_width),
         m_ViewportRect.min.y + channel_margin.top
         },
     {
-        m_ViewportRect.min.x + channel_margin.left + ((channel_index + 1) * channel_width) - channel_margin.right,
+        m_ViewportRect.min.x + channel_margin.left + (static_cast<f32>(channel_index + 1) * channel_width) - channel_margin.right,
         m_ViewportRect.max.y - channel_margin.bottom
     });
 

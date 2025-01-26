@@ -13,14 +13,14 @@
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Font.h"
 #include "Origin/Renderer/ParticleSystem.h"
+#include "Origin/Renderer/Lighting/Lighting.hpp"
 #include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Renderer/Model/Mesh.hpp"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Buffer.h"
 
-#include "Origin/Scene/Camera.h"
-#include "Origin/Scene/SceneCamera.h"
+#include "Origin/Scene/Camera/SceneCamera.h"
 #include "Origin/Scene/SpriteSheet.h"
 
 #include <glm/glm.hpp>
@@ -55,6 +55,7 @@ enum class EntityType
 };
 
 namespace Utils {
+
 static std::string EntityTypeToString(EntityType type)
 {
     switch (type)
@@ -73,14 +74,14 @@ static std::string EntityTypeToString(EntityType type)
 
 static EntityType EntityTypeStringToType(const std::string &type)
 {
-    if ("Entity")   return EntityType::Entity;
-    else if ("Prefabs")  return EntityType::Prefabs;
-    else if ("Audio")    return EntityType::Audio;
-    else if ("UI")       return EntityType::UI;
-    else if ("Mesh")     return EntityType::Mesh;
-    else if ("Bone")     return EntityType::Bone;
-    else if ("Camera")   return EntityType::Camera;
-    else if ("Lighting") return EntityType::Lighting;
+    if (R"(Entity)")   return EntityType::Entity;
+    if (R"(Prefabs)")  return EntityType::Prefabs;
+    if (R"(Audio)")    return EntityType::Audio;
+    if (R"(UI)")       return EntityType::UI;
+    if (R"(Mesh)")     return EntityType::Mesh;
+    if (R"(Bone)")     return EntityType::Bone;
+    if (R"(Camera)")   return EntityType::Camera;
+    if (R"(Lighting)") return EntityType::Lighting;
     return static_cast<EntityType>(-1);
 }
 }
@@ -355,13 +356,35 @@ public:
     }
 };
 
+#pragma region LIGHTING_COMPONENTS
+
 class LightComponent
 {
 public:
     Ref<Lighting> Light;
     LightComponent() = default;
     LightComponent(const LightComponent &) = default;
+
+    glm::vec3 color;
 };
+
+class DirectionalLightComponent : public LightComponent
+{
+public:
+    DirectionalLightComponent() = default;
+    DirectionalLightComponent(const DirectionalLightComponent &) = default;
+};
+
+class SpotLightComponent : public LightComponent
+{
+public:
+    SpotLightComponent() = default;
+    SpotLightComponent(const SpotLightComponent &) = default;
+};
+
+#pragma endregion
+
+
 
 class CircleRendererComponent
 {
@@ -677,7 +700,10 @@ using AllComponents = ComponentGroup <
     SpriteAnimationComponent,
     AudioComponent,
     AudioListenerComponent,
-    LightComponent,
+
+    DirectionalLightComponent,
+    SpotLightComponent,
+
     SpriteRenderer2DComponent,
     MeshComponent,
     TextComponent,

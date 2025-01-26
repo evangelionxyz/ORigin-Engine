@@ -7,7 +7,7 @@
 #include "Origin/Scene/EntityManager.h"
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Scene/Entity.h"
-#include "Origin/Scene/Lighting.h"
+#include "Origin/Renderer/Lighting/Lighting.hpp"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Project/Project.h"
 #include "Origin/Renderer/Shader.h"
@@ -340,6 +340,19 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		out << YAML::EndMap; // !TransformComponent
 	}
 
+	if (entity.HasComponent<DirectionalLightComponent>())
+	{
+		out << YAML::Key << "DirectionalLightComponent";
+		out << YAML::BeginMap; // DirectionalLightComponent
+
+		const auto &dlc = entity.GetComponent<DirectionalLightComponent>();
+		Ref<DirectionalLight> light = std::static_pointer_cast<DirectionalLight>(dlc.Light);
+		out << YAML::Key << "Direction" << light->color;
+		out << YAML::Key << "Color" << light->color;
+
+		out << YAML::EndMap; // !DirectionalLightComponent
+	}
+
 	if (entity.HasComponent<CameraComponent>())
 	{
 		out << YAML::Key << "CameraComponent";
@@ -441,46 +454,6 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		}
 
 		out << YAML::EndMap; // !SpriteRenderer2DComponent
-	}
-
-	if (entity.HasComponent<LightComponent>())
-	{
-		out << YAML::Key << "LightComponent";
-		out << YAML::BeginMap;
-		const auto& light = entity.GetComponent<LightComponent>().Light;
-		out << YAML::Key << "Type" << YAML::Value << light->GetTypeString();
-
-		switch (light->Type)
-		{
-#if 0
-		case LightingType::Spot:
-		{
-			out << YAML::Key << "InnerConeAngle" << YAML::Value << light->InnerConeAngle;
-			out << YAML::Key << "OuterConeAngle" << YAML::Value << light->OuterConeAngle;
-			out << YAML::Key << "Exponent" << YAML::Value << light->Exponent;
-			break;
-		}
-		case LightingType::Point:
-		{
-			out << YAML::Key << "Ambient" << YAML::Value << light->Ambient;
-			out << YAML::Key << "Specular" << YAML::Value << light->Specular;
-			break;
-		}
-#endif
-		case LightingType::Directional:
-		{
-			out << YAML::Key << "Color" << YAML::Value << light->DirLightData.Color;
-			out << YAML::Key << "Near" << YAML::Value << light->NearPlane;
-			out << YAML::Key << "Far" << YAML::Value << light->FarPlane;
-			out << YAML::Key << "OrthoSize" << YAML::Value << light->OrthoSize;
-			out << YAML::Key << "Ambient" << YAML::Value << light->DirLightData.Ambient;
-			out << YAML::Key << "Diffuse" << YAML::Value << light->DirLightData.Diffuse;
-			out << YAML::Key << "Specular" << YAML::Value << light->DirLightData.Specular;
-			break;
-		}
-		}
-
-		out << YAML::EndMap;
 	}
 
 	if (entity.HasComponent<CircleRendererComponent>())
@@ -810,6 +783,14 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				mc.blend_space.SetModel(AssetManager::GetAsset<Model>(mc.HModel));
 			}
 
+			if (YAML::Node directional_light_component = entity["DirectionalLightComponent"])
+			{
+				DirectionalLightComponent &dlc = deserialized_entity.AddComponent<DirectionalLightComponent>();
+				Ref<DirectionalLight> light = std::static_pointer_cast<DirectionalLight>(dlc.Light);
+				light->color = directional_light_component["Color"].as<glm::vec3>();
+				light->direction = directional_light_component["Direction"].as<glm::vec3>();
+			}
+
 			if (YAML::Node particle_component = entity["ParticleComponent"])
 			{
 				ParticleComponent &pc = deserialized_entity.AddComponent<ParticleComponent>();
@@ -835,42 +816,6 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					src.UV0 = sprite_renderer_2d_component["UV0"].as<glm::vec2>();
 					src.UV1 = sprite_renderer_2d_component["UV1"].as<glm::vec2>();
 					src.TillingFactor = sprite_renderer_2d_component["TillingFactor"].as<glm::vec2>();
-				}
-			}
-
-			if (YAML::Node light_component = entity["LightComponent"])
-			{
-				auto& light = deserialized_entity.AddComponent<LightComponent>().Light;
-				//light = Lighting::Create(Utils::LightTypeStringToType(lightComponent["Type"].as<std::string>()));
-					
-				switch (light->Type)
-				{
-#if 0
-				case LightingType::Spot:
-				{
-					light->InnerConeAngle = lightComponent["InnerConeAngle"].as<float>();
-					light->OuterConeAngle = lightComponent["OuterConeAngle"].as<float>();
-					light->Exponent = lightComponent["Exponent"].as<float>();
-					break;
-				}
-				case LightingType::Point:
-				{
-					light->Ambient = lightComponent["Ambient"].as<float>();
-					light->Specular = lightComponent["Specular"].as<float>();
-					break;
-				}
-#endif
-				case LightingType::Directional:
-				{
-					light->DirLightData.Color = light_component["Color"].as<glm::vec4>();
-					light->DirLightData.Ambient = light_component["Ambient"].as<glm::vec4>();
-					light->DirLightData.Diffuse = light_component["Diffuse"].as<float>();
-					light->DirLightData.Specular = light_component["Specular"].as<float>();
-					light->NearPlane = light_component["Near"].as<float>();
-					light->FarPlane = light_component["Far"].as<float>();
-					light->OrthoSize = light_component["OrthoSize"].as<float>();
-					break;
-				}
 				}
 			}
 
@@ -1085,6 +1030,11 @@ void SceneSerializer::SerializeDeletedEntity(Entity entity, const std::filesyste
 	std::ofstream fout(filepath);
 	fout << out.c_str();
 	fout.close();
+}
+
+void SceneSerializer::DeserializeDeletedEntity(const std::filesystem::path& path)
+{
+	
 }
 }
 

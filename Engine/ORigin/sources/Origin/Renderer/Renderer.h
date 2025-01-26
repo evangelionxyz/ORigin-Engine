@@ -6,72 +6,81 @@
 #include "RenderCommand.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Scene/Components/Components.h"
-#include "Origin/Scene/EditorCamera.h"
+#include "Origin/Renderer/Lighting/LightingManager.hpp"
+#include "Origin/Scene/Camera/EditorCamera.h"
 
 namespace origin {
 
-#define CAMERA_BINDING 0
-#define LIGHTING_BINDING 1
-#define MATERIAL_BINDING 2
+#define CAMERA_BINDING            (0)
+#define LIGHTING_BINDING          (1)
+#define DIRECTIONAL_LIGHT_BINDING (2)
+#define SPOT_LIGHT_BINDING        (3)
+#define POINT_LIGHT_BINDING       (4)
+#define AREA_LIGHT_BINDING        (5)
+#define SHADOW_BINDING            (6)
 
-	struct RenderData
-	{
-		static const uint32_t MaxTriangles = 1024;
-		static const uint32_t MaxVertices = MaxTriangles * 24;
-		static const uint32_t MaxQuadIndices = MaxTriangles * 6;
-		static const uint32_t MaxTextureSlots = 32;
-	};
+#define MATERIAL_BINDING          (7)
 
-	struct Statistics
-	{
-		uint32_t DrawCalls = 0;
-		uint32_t QuadCount = 0;
-		uint32_t CircleCount = 0;
-		uint32_t LineCount = 0;
+struct RenderData
+{
+	static constexpr u32 max_triangles = 1024;
+	static constexpr u32 max_vertices = max_triangles * 24;
+	static constexpr u32 max_quad_indices = max_triangles * 6;
+	static constexpr u32 max_texture_slots = 32;
+};
 
-		uint32_t CubeCount = 0;
-		uint32_t SphereCount = 0;
+struct Statistics
+{
+	u32 draw_calls = 0;
+	u32 quad_count = 0;
+	u32 circle_count = 0;
+	u32 line_count = 0;
+	u32 cube_count = 0;
+	u32 sphere_count = 0;
 
-		uint32_t GetTotalQuadVertexCount() const { return QuadCount * 4; }
-		uint32_t GetTotalQuadIndexCount() const { return QuadCount * 6; }
-		uint32_t GetTotalCubeVertexCount() const { return CubeCount * 24; }
-		uint32_t GetTotalCubeIndexCount() const { return CubeCount * 36; }
-        uint32_t GetTotalSphereVertexCount() const { return SphereCount * 544; }
-        uint32_t GetTotalSphereIndexCount() const { return SphereCount * 768; }
+	[[nodiscard]] u32 GetTotalQuadVertexCount() const { return quad_count * 4; }
+	[[nodiscard]] u32 GetTotalQuadIndexCount() const { return quad_count * 6; }
+	[[nodiscard]] u32 GetTotalCubeVertexCount() const { return cube_count * 24; }
+	[[nodiscard]] u32 GetTotalCubeIndexCount() const { return cube_count * 36; }
+	[[nodiscard]] u32 GetTotalSphereVertexCount() const { return sphere_count * 544; }
+	[[nodiscard]] u32 GetTotalSphereIndexCount() const { return sphere_count * 768; }
 
-		void Reset() { memset(this, 0, sizeof(Statistics)); };
-	};
+	void Reset() { memset(this, 0, sizeof(Statistics)); };
+};
 
-	class ShaderLibrary;
-	class Renderer
-	{
-	public:
-		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+class ShaderLibrary;
+class Renderer
+{
+public:
+	static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
-		static bool Init();
-		static void Shutdown();
+	static bool Init();
+	static void Shutdown();
 
-		static void OnWindowResize(uint32_t width, uint32_t height);
-		static void SetCurrentShader(const Ref<Shader> &shader);
+	static void OnWindowResize(u32 width, u32 height);
+	static void SetCurrentShader(const Ref<Shader> &shader);
 
-		const static Ref<Shader>& GetCurrentShader() { return s_GlobalShader; }
-		static Ref<Shader> GetShader(const std::string &name);
-		static ShaderLibrary &GetShaderLibrary();
 
-		static Ref<Material> GetMaterial(const std::string &name);
+	const static Ref<Shader>& GetCurrentShader() { return s_GlobalShader; }
+	static Ref<Shader> GetShader(const std::string &name);
+	static ShaderLibrary &GetShaderLibrary();
 
-		static Ref<Texture2D> WhiteTexture;
-		static Ref<Texture2D> BlackTexture;
+	static Ref<Material> GetMaterial(const std::string &name);
 
-		static Statistics &GetStatistics();
-		static RenderData s_RenderData;
+	static Ref<Texture2D> WhiteTexture;
+	static Ref<Texture2D> BlackTexture;
 
-	private:
-		static void LoadShaders();
-		static void LoadMaterials();
+	static Statistics &GetStatistics();
+	
+	static LightingManager *lighting_manager;
+	static RenderData render_data;
 
-        static Ref<Shader> s_GlobalShader;
-	};
+private:
+	static void LoadShaders();
+	static void LoadMaterials();
+
+	static Ref<Shader> s_GlobalShader;
+};
 }
 
 #endif

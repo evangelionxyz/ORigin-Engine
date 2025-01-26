@@ -267,6 +267,8 @@ namespace origin
         }
         else
         {
+            glDeleteProgram(m_RendererID);
+
             m_ShaderSource = ParseShader(m_Filepath.string());
             m_RendererID   = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
         }

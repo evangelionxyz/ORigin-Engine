@@ -13,12 +13,12 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Renderer/Model/Model.hpp"
+#include "Origin/Renderer/Lighting/Lighting.hpp"
 #include "Origin/Scripting/ScriptEngine.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Log.h"
 #include "Origin/Core/Input.h"
 #include "EntityManager.h"
-#include "Lighting.h"
 #include "Entity.h"
 #include "ScriptableEntity.h"
 
@@ -128,54 +128,64 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 {
     OGN_PROFILER_FUNCTION();
 
-    const auto &view = m_Registry.view<IDComponent, TransformComponent>();
-    for (auto [entity, idc, tc] : view.each())
+    // bind ligtings
+    Renderer::lighting_manager->Bind();
+    const auto &directional_light_view = m_Registry.view<DirectionalLightComponent, TransformComponent>();
+    for (const auto& [entity, dir_light_comp, transform_comp] : directional_light_view.each())
     {
-        if (idc.Parent)
+        const Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
+        dir_light->direction = eulerAngles(transform_comp.WorldRotation);
+        dir_light->Bind();
+    }
+    
+    const auto &entity_id_view = m_Registry.view<IDComponent, TransformComponent>();
+    for (auto [entity, id_comp, transform_comp] : entity_id_view.each())
+    {
+        if (id_comp.Parent)
         {
-            if (auto parent = GetEntityWithUUID(idc.Parent))
+            if (auto parent = GetEntityWithUUID(id_comp.Parent))
             {
                 auto &ptc = parent.GetComponent<TransformComponent>();
-                glm::vec3 rotated_local_pos = ptc.WorldRotation * tc.Translation;
-                tc.WorldTranslation = rotated_local_pos + ptc.WorldTranslation;
-                tc.WorldRotation = ptc.WorldRotation * tc.Rotation;
-                tc.WorldScale = tc.Scale;
+                glm::vec3 rotated_local_pos = ptc.WorldRotation * transform_comp.Translation;
+                transform_comp.WorldTranslation = rotated_local_pos + ptc.WorldTranslation;
+                transform_comp.WorldRotation = ptc.WorldRotation * transform_comp.Rotation;
+                transform_comp.WorldScale = transform_comp.Scale;
             }
         }
         else
         {
-            tc.WorldTranslation = tc.Translation;
-            tc.WorldRotation = tc.Rotation;
-            tc.WorldScale = tc.Scale;
+            transform_comp.WorldTranslation = transform_comp.Translation;
+            transform_comp.WorldRotation = transform_comp.Rotation;
+            transform_comp.WorldScale = transform_comp.Scale;
         }
     }
 
     std::unordered_set<UUID> updated_models;
-    for (auto [e, tc, mesh] : m_Registry.view<TransformComponent, MeshComponent>().each())
+    const auto &mesh_view = m_Registry.view<TransformComponent, MeshComponent>();
+    for (auto [entity, transform_comp, mesh_comp] : mesh_view.each())
     {
-        if (mesh.HModel && !updated_models.contains(mesh.HModel))
+        if (mesh_comp.HModel && !updated_models.contains(mesh_comp.HModel))
         {
-            updated_models.insert(mesh.HModel);
+            updated_models.insert(mesh_comp.HModel);
 
-            Ref<Model> model = AssetManager::GetAsset<Model>(mesh.HModel);
+            Ref<Model> model = AssetManager::GetAsset<Model>(mesh_comp.HModel);
             if (model->HasAnimations())
             {
-                if (!mesh.blend_space.GetStates().empty())
-                    mesh.blend_space.BlendAnimations(mesh.blend_position, ts, mesh.animation_speed);
+                if (!mesh_comp.blend_space.GetStates().empty())
+                    mesh_comp.blend_space.BlendAnimations(mesh_comp.blend_position, ts, mesh_comp.animation_speed);
                 else
-                    model->UpdateAnimation(ts, mesh.AnimationIndex);
+                    model->UpdateAnimation(ts, mesh_comp.AnimationIndex);
             }
             
         }
     }
 
-    OnRenderShadow();
     m_UIRenderer->RenderFramebuffer();
 }
 
 void Scene::PostRender(const Camera &camera, Timestep ts)
 {
-
+    Renderer::lighting_manager->Unbind();
 }
 
 void Scene::Update(Timestep ts)
@@ -639,7 +649,7 @@ void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
         {
             auto &text = entity.GetComponent<TextComponent>();
             glm::mat4 transform = glm::mat4(1.0f);
-            glm::mat4 invertedCamTransform = glm::mat4(1.0f);
+            glm::mat4 inverted_cam_transform = glm::mat4(1.0f);
 
             glm::vec3 centerOffset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
             glm::vec3 scaledOffset = tc.WorldScale * centerOffset;
@@ -658,73 +668,32 @@ void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
         }
 
         Renderer2D::End();
-
-
-        // 3D Objects
-
-        /*if (entity.HasComponent<MeshComponent>())
-        {
-            MeshComponent &mesh = entity.GetComponent<MeshComponent>();
-            if (mesh.Data && tc.Visible)
-            {
-                outlineShader->SetMatrix("viewProjection", camera.GetViewProjection() * scaledTransform);
-                mesh.Data->vertexArray->Bind();
-                glDrawElements(GL_TRIANGLES, mesh.Data->indices.size(), GL_UNSIGNED_INT, nullptr);
-            }
-        }*/
 #pragma endregion
     }
 
     glDisable(GL_STENCIL_TEST);
 }
 
-void Scene::OnRenderShadow()
-{
-    glEnable(GL_DEPTH_TEST);
-    const auto &dirLight = m_Registry.view<TransformComponent, LightComponent>();
-    for (auto &light : dirLight)
-    {
-        const auto &[lightTC, lc] = dirLight.get<TransformComponent, LightComponent>(light);
-        if (!lightTC.Visible)
-        {
-            continue;
-        }
-
-        float size = lc.Light->OrthoSize;
-        glm::mat4 lightProjection = glm::ortho(-size, size, -size, size, lc.Light->NearPlane, lc.Light->FarPlane);
-        glm::mat4 lightView = glm::lookAt(lightTC.WorldTranslation,
-            glm::eulerAngles(lightTC.Rotation),
-            glm::vec3(0.0f, 1.0f, 0.0f));
-
-        glm::mat4 lightViewProjection = lightProjection * lightView;
-        lc.Light->GetShadow().ViewProjection = lightProjection * lightView;
-
-    }
-}
-
 void Scene::DestroyEntityRecursive(UUID entityId)
 {
-    Entity entity = GetEntityWithUUID(entityId);
-
-    if (entity)
+    if (Entity entity = GetEntityWithUUID(entityId))
     {
-        std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId);
-        for (const auto &childId : childrenIds)
+        for (std::vector<UUID> childrenIds = GetChildrenUUIDs(entityId); const auto &childId : childrenIds)
         {
             entity.GetComponent<IDComponent>().RemoveChild(childId);
             DestroyEntityRecursive(childId);
         }
 
         m_Registry.destroy(static_cast<entt::entity>(entity));
-        m_EntityStorage.erase(std::remove_if(m_EntityStorage.begin(), m_EntityStorage.end(),
-            [entityId](const auto &pair) { return pair.first == entityId; }),
+        m_EntityStorage.erase(std::ranges::remove_if(m_EntityStorage,
+                                                     [entityId](const auto &pair) { return pair.first == entityId; }).begin(),
             m_EntityStorage.end());
     }
 }
 
 void Scene::DestroyEntity(Entity entity)
 {
-    UUID uuid = entity.GetUUID();
+    const UUID uuid = entity.GetUUID();
     DestroyEntityRecursive(uuid);
 }
 
@@ -769,17 +738,17 @@ Entity Scene::DuplicateEntity(Entity entity)
     return DuplicateEntityRecursive(entity, {});
 }
 
-std::vector<origin::UUID> Scene::GetChildrenUUIDs(UUID parentId)
+std::vector<UUID> Scene::GetChildrenUUIDs(UUID parentId)
 {
-    std::vector<UUID> childrenUUIDs;
+    std::vector<UUID> children_uui_ds;
     m_Registry.view<IDComponent>().each([&](auto entity, const IDComponent idc)
     {
         if (idc.Parent == parentId)
         {
-            childrenUUIDs.push_back(idc.ID);
+            children_uui_ds.push_back(idc.ID);
         }
     });
-    return childrenUUIDs;
+    return children_uui_ds;
 }
 
 Entity Scene::GetPrimaryCameraEntity()
@@ -841,7 +810,7 @@ void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
     m_ViewportHeight = height;
 }
 
-void Scene::Step(int frames)
+void Scene::Step(const i32 frames)
 {
     m_StepFrames = frames;
 }
@@ -851,9 +820,9 @@ void Scene::OnComponentAdded(Entity entity, T &component)
 {
 }
 
-#define OGN_ADD_COMPONENT(components)\
+#define OGN_ADD_COMPONENT(ComponentType)\
 	template<>\
-	void Scene::OnComponentAdded<components>(Entity entity, components &component){}
+	void Scene::OnComponentAdded<ComponentType>(Entity entity, ComponentType &c){}
 
 OGN_ADD_COMPONENT(IDComponent);
 OGN_ADD_COMPONENT(TagComponent);
@@ -861,6 +830,7 @@ OGN_ADD_COMPONENT(TransformComponent);
 OGN_ADD_COMPONENT(UIComponent);
 OGN_ADD_COMPONENT(AudioListenerComponent);
 OGN_ADD_COMPONENT(AudioComponent);
+OGN_ADD_COMPONENT(SpotLightComponent);
 OGN_ADD_COMPONENT(SpriteRenderer2DComponent);
 OGN_ADD_COMPONENT(SpriteAnimationComponent);
 OGN_ADD_COMPONENT(MeshComponent);
@@ -903,11 +873,9 @@ void Scene::OnComponentAdded(Entity entity, CapsuleColliderComponent &component)
 }
 
 template<>
-void Scene::OnComponentAdded(Entity entity, LightComponent &component)
+void Scene::OnComponentAdded(Entity entity, DirectionalLightComponent &component)
 {
-    if (!component.Light)
-    {
-        component.Light = Lighting::Create(LightingType::Directional);
-    }
+    component.Light = Lighting::Create<DirectionalLight>();
 }
+
 }

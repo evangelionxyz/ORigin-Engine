@@ -3,8 +3,8 @@
 #ifndef SKYBOX_H
 #define SKYBOX_H
 
-#include "Origin/Scene/EditorCamera.h"
-#include "Origin/Scene/SceneCamera.h"
+#include "Origin/Scene/Camera/EditorCamera.h"
+#include "Origin/Scene/Camera/SceneCamera.h"
 
 #include <memory>
 

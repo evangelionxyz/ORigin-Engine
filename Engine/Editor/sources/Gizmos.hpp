@@ -6,7 +6,7 @@
 #include "Origin/Core/Base.h"
 #include "Origin/Core/Event.h"
 #include "Origin/Scene/Entity.h"
-#include "Origin/Scene/EditorCamera.h"
+#include "Origin/Scene/Camera/EditorCamera.h"
 #include <glm/glm.hpp>
 
 namespace origin {

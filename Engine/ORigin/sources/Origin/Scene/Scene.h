@@ -4,10 +4,11 @@
 #define SCENE_H
 
 #include "UIRenderer.h"
-#include "EditorCamera.h"
 #include "Origin/Asset/Asset.h"
 #include "Origin/Scene/Skybox.h"
 #include "Origin/Core/Time.h"
+
+#include "Camera/EditorCamera.h"
 
 #include <entt/entt.hpp>
 
@@ -47,7 +48,6 @@ namespace origin
         void OnUpdateEditor(const Camera &camera, Timestep time, entt::entity selectedID);
 
         void OnViewportResize(const u32 width, const u32 height);
-        void OnRenderShadow();
 
         void SetFocus(bool focus);
         void LockMouse();

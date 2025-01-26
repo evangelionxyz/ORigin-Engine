@@ -68,6 +68,9 @@ project "Editor"
             "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS"
         }
 
+        filter "action:vs*"
+          linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
+
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
     -- ///////////////////////////////////////////

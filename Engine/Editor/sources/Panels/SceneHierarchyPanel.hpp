@@ -26,6 +26,7 @@ namespace origin {
         void Render() override;
         void OnUpdate(float delta_time) override;
 
+        Entity ShowEntityContextMenu();
         void EntityHierarchyPanel();
         void EntityPropertiesPanel();
 
@@ -37,12 +38,14 @@ namespace origin {
 
         void OnEvent(Event &e) override;
 
+        static SceneHierarchyPanel *GetInstance();
+
     private:
         bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
         bool OnKeyPressed(KeyPressedEvent &e);
 
         template<typename T>
-        bool DisplayAddComponentEntry(const std::string& entryName);
+        bool DisplayAddComponentEntry(const std::string& entry_name);
         template<typename T, typename UIFunction>
         void DrawComponent(const std::string &name, Entity entity, UIFunction uiFunction);
 

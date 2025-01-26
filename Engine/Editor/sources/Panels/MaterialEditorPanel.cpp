@@ -22,15 +22,15 @@ void MaterialEditorPanel::SetSelectedMaterial(AssetHandle handle)
     m_Material = AssetManager::GetAsset<Material>(handle);
     m_CurrentFilepath = Project::GetActiveAssetDirectory() / Project::GetActive()->GetEditorAssetManager()->GetFilepath(handle);
 
-    if (Deserialize() && !m_Open)
+    if (Deserialize() && !m_is_open)
         Open();
 }
 
 void MaterialEditorPanel::Render()
 {
-    if (m_Open && m_Material)
+    if (m_is_open && m_Material)
     {
-        ImGui::Begin("Material Editor", &m_Open);
+        ImGui::Begin("Material Editor", &m_is_open);
 
         ImGui::Text("%s", m_CurrentFilepath.stem().string().c_str());
         ImVec2 buttonSize = ImVec2(100.0f, 40.0f);

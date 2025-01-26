@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "Gizmos.hpp"
-#include "../EditorLayer.hpp"
+#include "EditorLayer.hpp"
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Renderer/Renderer2D.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -66,16 +66,6 @@ void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
         for (const auto &edge : frustum.GetEdges())
         {
             Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
-        }
-    }
-
-    // Lighting
-    for (auto [e, tc, lc] : scene->m_Registry.view<TransformComponent, LightComponent>().each())
-    {
-        Frustum frustum(lc.Light->GetShadow().ViewProjection);
-        for (const auto &edge : frustum.GetEdges())
-        {
-            Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.7f, 0.0f, 1.0f });
         }
     }
 
@@ -228,7 +218,7 @@ void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
     glEnable(GL_DEPTH_TEST);
     Renderer2D::Begin(camera);
 
-    Entity selectedEntity = EditorLayer::Get().GetSceneHierarchy()->GetSelectedEntity();
+    Entity selectedEntity = SceneHierarchyPanel::GetInstance()->GetSelectedEntity();
 
     const auto view = scene->GetAllEntitiesWith<TransformComponent>();
     for (auto [e, tc] : view.each())
@@ -364,7 +354,7 @@ void Gizmos::CalculateBoundary2DSizing(const Camera &camera)
     float orthoScale = camera.GetOrthoScale() / viewportHeight;
     glm::vec3 translation = glm::vec3(delta, 0.0f);
 
-    Entity selectedEntity = EditorLayer::Get().GetSceneHierarchy()->GetSelectedEntity();
+    Entity selectedEntity = SceneHierarchyPanel::GetInstance()->GetSelectedEntity();
 
     if (selectedEntity.IsValid())
     {

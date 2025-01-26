@@ -18,7 +18,7 @@ namespace origin
     {
         s_Instance = this;
 
-        m_Open = open;
+        m_is_open = open;
 
         m_Camera.InitOrthographic(10.0f, 0.1f, 10.0f);
         m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
@@ -42,8 +42,8 @@ namespace origin
             m_UICompHandler = nullptr;
         }
 
-        if (m_Open)
-            m_Open = false;
+        if (m_is_open)
+            m_is_open = false;
 
         m_Scene = scene;
     }
@@ -53,7 +53,7 @@ namespace origin
         if (!m_Scene)
             return;
 
-        if (!m_Open)
+        if (!m_is_open)
         {
             Entity cam = m_Scene->GetPrimaryCameraEntity();
             if (cam.IsValid())
@@ -64,7 +64,7 @@ namespace origin
                 m_Camera.SetOrthoScaleMax(orthoSizeY * 4.0f);
             }
             m_UICompHandler = component;
-            m_Open = true;
+            m_is_open = true;
 
             ImGui::SetWindowFocus("UI Editor");
         }
@@ -101,9 +101,9 @@ namespace origin
 
     void UIEditorPanel::Render()
     {
-        if (m_Open)
+        if (m_is_open)
         {
-            ImGui::Begin("UI Editor", &m_Open,
+            ImGui::Begin("UI Editor", &m_is_open,
                 ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
             IsViewportFocused = ImGui::IsWindowFocused();
@@ -400,7 +400,7 @@ namespace origin
 
     void UIEditorPanel::OnUpdate(float delta_time)
     {
-        if (!m_Open)
+        if (!m_is_open)
         {
             if (m_UICompHandler)
             {
@@ -569,7 +569,7 @@ namespace origin
 
     void UIEditorPanel::Open()
     {
-        m_Open = true;
+        m_is_open = true;
         ImGui::SetWindowFocus("UI Editor");
     }
 

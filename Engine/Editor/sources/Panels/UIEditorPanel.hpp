@@ -6,7 +6,7 @@
 #include "Origin/Core/Event.h"
 #include "Origin/Scene/Entity.h"
 #include "Origin/Core/KeyEvent.h"
-#include "Origin/Scene/EditorCamera.h"
+#include "Origin/Scene/Camera/EditorCamera.h"
 #include "Origin/Scene/Scene.h"
 
 #include "PanelBase.hpp"

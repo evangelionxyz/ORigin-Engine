@@ -3,7 +3,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include "Origin/Scene/Camera.h"
+#include "Origin/Scene/Camera/Camera.h"
 
 #include <assimp/postprocess.h>
 

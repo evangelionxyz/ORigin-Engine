@@ -99,9 +99,9 @@ void SpriteSheetEditorPanel::Duplicate(i32 index)
 
 void SpriteSheetEditorPanel::Render()
 {
-    if (m_Open)
+    if (m_is_open)
     {
-        ImGui::Begin("Sprite Sheet Editor", &m_Open);
+        ImGui::Begin("Sprite Sheet Editor", &m_is_open);
 
         const ImVec2 &window_region = ImGui::GetContentRegionAvail();
         ImGui::BeginChild("sprite_sheet_inspector", {300.0f, 0.0f}, ImGuiChildFlags_ResizeX);
@@ -259,12 +259,12 @@ void SpriteSheetEditorPanel::Render()
             const ImVec2 &vp_min_region = ImGui::GetWindowContentRegionMin();
             const ImVec2 &vp_max_region = ImGui::GetWindowContentRegionMax();
             const ImVec2 &vp_offset = ImGui::GetWindowPos();
-            m_ViewportRect.min = { vp_min_region.x + vp_offset.x, vp_min_region.y + vp_offset.y };
-            m_ViewportRect.max = { vp_max_region.x + vp_offset.x, vp_max_region.y + vp_offset.y };
+            m_viewport_rect.min = { vp_min_region.x + vp_offset.x, vp_min_region.y + vp_offset.y };
+            m_viewport_rect.max = { vp_max_region.x + vp_offset.x, vp_max_region.y + vp_offset.y };
             
             // Framebuffer Texture
             auto texture = reinterpret_cast<void*>(static_cast<uintptr_t>(m_Framebuffer->GetColorAttachmentRendererID()));
-            ImGui::Image(texture, { m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(texture, { m_viewport_rect.GetSize().x, m_viewport_rect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
         }
         ImGui::EndChild();
 
@@ -276,12 +276,12 @@ void SpriteSheetEditorPanel::OnUpdate(float delta_time)
 {
     // calculate mouse
     auto [mx, my] = ImGui::GetMousePos();
-    m_ViewportMouse = { mx, my };
-    m_ViewportMouse -= m_ViewportRect.min;
-    m_ViewportMouse.y = m_ViewportRect.GetSize().y - m_ViewportMouse.y;
-    m_ViewportMouse = glm::clamp(m_ViewportMouse, { 0.0f, 0.0f }, m_ViewportRect.GetSize() - glm::vec2(1.0f, 1.0f));
+    m_viewport_mouse = { mx, my };
+    m_viewport_mouse -= m_viewport_rect.min;
+    m_viewport_mouse.y = m_viewport_rect.GetSize().y - m_viewport_mouse.y;
+    m_viewport_mouse = glm::clamp(m_viewport_mouse, { 0.0f, 0.0f }, m_viewport_rect.GetSize() - glm::vec2(1.0f, 1.0f));
 
-    if (!m_Open)
+    if (!m_is_open)
     {
         return;
     }
@@ -301,7 +301,7 @@ void SpriteSheetEditorPanel::OnUpdate(float delta_time)
     m_Framebuffer->Bind();
     RenderCommand::Clear();
 
-    const glm::vec2 &vp_size = m_ViewportRect.GetSize();
+    const glm::vec2 &vp_size = m_viewport_rect.GetSize();
     if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification(); vp_size.x > 0.0f 
         && vp_size.y > 0.0f && (vp_size.x != static_cast<f32>(spec.Width) || vp_size.y != static_cast<f32>(spec.Height)))
     {
@@ -440,7 +440,7 @@ bool SpriteSheetEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
     auto ray_direction = glm::vec3(0.0f);
     auto ray_origin = glm::vec3(0.0f);
 
-    ray_direction = Math::GetRayFromScreenCoords(m_ViewportMouse, m_ViewportRect.GetSize(),
+    ray_direction = Math::GetRayFromScreenCoords(m_viewport_mouse, m_viewport_rect.GetSize(),
         m_Camera.GetProjectionMatrix(),
         m_Camera.GetViewMatrix(),
         m_Camera.IsPerspective(),

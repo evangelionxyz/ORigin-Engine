@@ -36,7 +36,7 @@ namespace origin {
 		{
 			Release();
 
-			Data = (uint8_t*)malloc(size);
+			Data = static_cast<u8 *>(malloc(size));
 			Size = size;
 		}
 
@@ -50,12 +50,12 @@ namespace origin {
 		template<typename T>
 		T* As()
 		{
-			return (T*)Data;
+			return static_cast<T *>(Data);
 		}
 
 		operator bool() const
 		{
-			return (bool)Data;
+			return static_cast<bool>(Data);
 		}
 	};
 

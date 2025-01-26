@@ -91,6 +91,9 @@ project "ORigin"
             "sources/Platform/Win32/**.h",
         }
 
+        filter "action:vs*"
+          linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
+
         postbuildcommands {
 		      '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
 	      }
