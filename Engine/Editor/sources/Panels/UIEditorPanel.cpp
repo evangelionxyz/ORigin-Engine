@@ -437,7 +437,7 @@ namespace origin
                 m_Framebuffer->Resize(static_cast<uint32_t>(vp_size.x), static_cast<uint32_t>(vp_size.y));
             }
 
-            Renderer2D::Begin(m_Camera);
+            Renderer2D::Begin();
 
             // Draw Camera Boundary
             Entity cam = m_Scene->GetPrimaryCameraEntity();

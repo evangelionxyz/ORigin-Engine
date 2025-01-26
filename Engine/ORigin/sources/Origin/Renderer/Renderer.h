@@ -32,6 +32,12 @@ struct RenderData
 	static constexpr u32 max_texture_slots = 32;
 };
 
+struct CameraBufferData
+{
+    glm::mat4 view_projection;
+    glm::vec3 position;
+};
+
 struct Statistics
 {
 	u32 draw_calls = 0;
@@ -77,6 +83,8 @@ public:
 	
 	static LightingManager *lighting_manager;
 	static MaterialManager *material_manager;
+	static Ref<UniformBuffer> camera_uniform_buffer;
+
 	static RenderData render_data;
 
 private:

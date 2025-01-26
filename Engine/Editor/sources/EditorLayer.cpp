@@ -193,12 +193,24 @@ void EditorLayer::Render(Timestep ts)
         }
 
         m_gizmo->SetType(GizmoType::NONE);
-        m_ActiveScene->OnUpdateRuntime(ts);
         if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
         {
             CameraComponent cc = cam.GetComponent<CameraComponent>();
-            if(m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
-            if(m_VisualizeCollider) m_gizmo->DrawCollider(cc.Camera, m_ActiveScene.get());
+
+            Renderer::camera_uniform_buffer->Bind();
+            glm::mat4 view_projection = cc.Camera.GetViewProjection();
+            glm::vec3 cam_position = cc.Camera.GetPosition();
+            Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
+            Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
+
+            m_ActiveScene->OnUpdateRuntime(ts);
+
+            if(m_VisualizeBoundingBox) 
+                m_gizmo->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
+            if(m_VisualizeCollider) 
+                m_gizmo->DrawCollider(cc.Camera, m_ActiveScene.get());
+
+            Renderer::camera_uniform_buffer->Unbind();
         }
         break;
     }
@@ -210,6 +222,12 @@ void EditorLayer::Render(Timestep ts)
 
         m_EditorCamera.UpdateView();
         m_EditorCamera.UpdateProjection();
+
+        Renderer::camera_uniform_buffer->Bind();
+        glm::mat4 view_projection = m_EditorCamera.GetViewProjection();
+        glm::vec3 cam_position = m_EditorCamera.GetPosition();
+        Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
+        Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
                 
         // draw gizmo
         m_gizmo->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
@@ -220,16 +238,25 @@ void EditorLayer::Render(Timestep ts)
         // update scene
         m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
         m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+
+        Renderer::camera_uniform_buffer->Unbind();
         break;
     }
 
     case SceneState::Simulate:
     {
+
         if (IsViewportFocused && IsViewportFocused && !ImGui::GetIO().WantTextInput)
             m_EditorCamera.OnUpdate(ts);
 
         m_EditorCamera.UpdateView();
         m_EditorCamera.UpdateProjection();
+
+        Renderer::camera_uniform_buffer->Bind();
+        glm::mat4 view_projection = m_EditorCamera.GetViewProjection();
+        glm::vec3 cam_position = m_EditorCamera.GetPosition();
+        Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
+        Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
 
         // draw gizmo
         m_gizmo->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
@@ -240,6 +267,8 @@ void EditorLayer::Render(Timestep ts)
         // update scene
         m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
         m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+
+        Renderer::camera_uniform_buffer->Unbind();
 
         break;
     }

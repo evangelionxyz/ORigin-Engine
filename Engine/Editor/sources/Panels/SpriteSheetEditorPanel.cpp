@@ -315,7 +315,7 @@ void SpriteSheetEditorPanel::OnUpdate(float delta_time)
     {
         glDisable(GL_DEPTH_TEST);
 
-        Renderer2D::Begin(m_Camera);
+        Renderer2D::Begin();
 
         const i32 tex_x = static_cast<i32>(m_Texture->GetWidth());
         const i32 tex_y = static_cast<i32>(m_Texture->GetHeight());

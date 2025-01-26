@@ -29,6 +29,7 @@ Ref<Texture2D> Renderer::BlackTexture;
 RendererAPI *RenderCommand::s_RendererAPI = nullptr;
 LightingManager *Renderer::lighting_manager = nullptr;
 MaterialManager *Renderer::material_manager = nullptr;
+Ref<UniformBuffer> Renderer::camera_uniform_buffer;
 
 Statistics &Renderer::GetStatistics()
 {
@@ -73,6 +74,8 @@ bool Renderer::Init()
 	
 	lighting_manager = new LightingManager();
 	material_manager = new MaterialManager();
+
+	camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 	
 	RenderCommand::Init();
 	OGN_CORE_TRACE("[Renderer] Initialized");
@@ -82,6 +85,8 @@ bool Renderer::Init()
 void Renderer::Shutdown()
 {
 	OGN_PROFILER_FUNCTION();
+
+	camera_uniform_buffer.reset();
 
 	delete material_manager;
 	delete lighting_manager;

@@ -64,10 +64,11 @@ namespace origin
 		for (auto &ui : m_UIs)
 		{
 			ui.OFramebuffer->Bind();
+
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			Renderer2D::Begin(m_Projection);
+			Renderer2D::Begin();
 			for (int i = 0; i < ui.Components.size(); i++)
 			{
 				if (UIData<TextComponent> *comp = ui.GetComponent<TextComponent>(ui.Components[i]->Name))

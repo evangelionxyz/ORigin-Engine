@@ -20,7 +20,7 @@ void Gizmos::Draw2DGrid(const Camera &camera)
         return;
     }
 
-    Renderer2D::Begin(camera);
+    Renderer2D::Begin();
     f32 orthoSize = camera.GetOrthoScale();
     glm::vec2 cameraPosition = { camera.GetPosition().x, camera.GetPosition().y };
 
@@ -57,7 +57,7 @@ void Gizmos::Draw2DGrid(const Camera &camera)
 void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
 {
     glEnable(GL_DEPTH_TEST);
-    Renderer2D::Begin(camera);
+    Renderer2D::Begin();
 
     // Camera
     for (auto [e, tc, cc] : scene->m_Registry.view<TransformComponent, CameraComponent>().each())
@@ -98,7 +98,7 @@ void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
     {
         auto &textures = EditorLayer::Get().m_UITextures;
         glEnable(GL_DEPTH_TEST);
-        Renderer2D::Begin(camera);
+        Renderer2D::Begin();
         for (auto [e, tc] : scene->GetAllEntitiesWith<TransformComponent>().each())
         {
             Entity entity = { e, scene };
@@ -130,7 +130,7 @@ void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
 void Gizmos::DrawBoundingBox(const Camera &camera, Scene *scene)
 {
     glEnable(GL_DEPTH_TEST);
-    Renderer2D::Begin(camera);
+    Renderer2D::Begin();
 #if 0
     // AABB
     for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
@@ -211,7 +211,7 @@ void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
     OGN_PROFILER_RENDERING();
 
     glEnable(GL_DEPTH_TEST);
-    Renderer2D::Begin(camera);
+    Renderer2D::Begin();
 
     Entity selectedEntity = SceneHierarchyPanel::GetInstance()->GetSelectedEntity();
 
@@ -223,7 +223,6 @@ void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
         // Selected entity
         if (entity == selectedEntity && selectedEntity.IsValid())
         {
-            // 2D Boundsizing
             if (m_Type == GizmoType::BOUNDARY2D && !camera.IsPerspective())
             {
                 CalculateBoundary2DSizing(camera);
@@ -326,33 +325,6 @@ void Gizmos::OnEvent(Event &e)
 bool Gizmos::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 {
     OGN_PROFILER_INPUT();
-
-    // TODO: Fix Me!
-    //if (e.GetButton() == Mouse::ButtonLeft)
-    //{
-    //	switch (m_Hovered)
-    //	{
-    //		// bottom left
-    //		case BOUNDARY2D_ID - 1:
-    //			m_Boundary2DCorner = Boundary2DCorner::BOTTOM_LEFT;
-    //			break;
-    //			// top left
-    //		case BOUNDARY2D_ID - 2:
-    //			m_Boundary2DCorner = Boundary2DCorner::TOP_LEFT;
-    //			break;
-    //			// bottom right
-    //		case BOUNDARY2D_ID - 3:
-    //			m_Boundary2DCorner = Boundary2DCorner::BOTTOM_RIGHT;
-    //			break;
-    //			// top right
-    //		case BOUNDARY2D_ID - 4:
-    //			m_Boundary2DCorner = Boundary2DCorner::TOP_RIGHT;
-    //			break;
-    //		default:
-    //			m_Boundary2DCorner = Boundary2DCorner::NONE;
-    //			break;
-    //	}
-    //}
 
     return false;
 }

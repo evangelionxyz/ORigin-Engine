@@ -7,11 +7,6 @@
 #include "Origin/Scene/Camera/EditorCamera.h"
 
 namespace origin {
-struct CameraBufferData
-{
-	glm::mat4 ViewProjection;
-	glm::vec3 Position;
-};
 
 struct TextVertex
 {
@@ -104,14 +99,11 @@ struct Renderer2DData
 };
 
 static Renderer2DData s_Render2DData;
-static CameraBufferData s_CameraBufferData;
 static std::shared_ptr<UniformBuffer> s_CameraUniformBuffer;
 
 void Renderer2D::Init()
 {
 	OGN_PROFILER_FUNCTION();
-
-	s_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 
 	// Quads
 	s_Render2DData.QuadVertexArray = VertexArray::Create();
@@ -207,25 +199,9 @@ void Renderer2D::Shutdown()
 	delete[] s_Render2DData.QuadVertexBufferBase;
 }
 
-void Renderer2D::Begin(const Camera &camera, Shader *renderShader)
+void Renderer2D::Begin(Shader *renderShader)
 {
-	s_CameraBufferData.ViewProjection = camera.GetViewProjection();
-	s_CameraBufferData.Position = camera.GetPosition();
-	s_CameraUniformBuffer->Bind();
-	s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
-
 	s_Render2DData.RenderShader = renderShader;
-
-	StartBatch();
-}
-
-void Renderer2D::Begin(const glm::mat4 &viewProjection, glm::vec3 pos)
-{
-	s_CameraBufferData.ViewProjection = viewProjection;
-	s_CameraBufferData.Position = pos;
-	s_CameraUniformBuffer->Bind();
-	s_CameraUniformBuffer->SetData(&s_CameraBufferData, sizeof(CameraBufferData));
-
 	StartBatch();
 }
 

@@ -388,7 +388,9 @@ void Scene::RenderScene(const Camera &camera)
 {
     OGN_PROFILER_RENDERING();
 
-    Renderer2D::Begin(camera);
+    glEnable(GL_DEPTH_TEST);
+
+    Renderer2D::Begin();
     const auto &view = m_Registry.view<TransformComponent>();
     for (auto e : view)
     {
@@ -588,7 +590,7 @@ void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
         glStencilMask(0xFF);
 
         // 2D Objects
-        Renderer2D::Begin(camera);
+        Renderer2D::Begin();
         if (entity.HasComponent<SpriteRenderer2DComponent>())
         {
             SpriteRenderer2DComponent &src = entity.GetComponent<SpriteRenderer2DComponent>();
@@ -668,7 +670,7 @@ void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
         outlineShader->SetMatrix("viewProjection", camera.GetViewProjection());
 
         // 2D Objects
-        Renderer2D::Begin(camera, outlineShader);
+        Renderer2D::Begin(outlineShader);
         if (entity.HasComponent<SpriteRenderer2DComponent>())
         {
             SpriteRenderer2DComponent &src = entity.GetComponent<SpriteRenderer2DComponent>();

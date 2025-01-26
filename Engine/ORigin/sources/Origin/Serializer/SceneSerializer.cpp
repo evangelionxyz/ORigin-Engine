@@ -789,7 +789,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				MeshComponent &mc = deserialized_entity.AddComponent<MeshComponent>();
 				mc.Name = mesh_component["Name"].as<std::string>();
 				mc.HModel = mesh_component["HModel"].as<uint64_t>();
-				mc.blend_space.SetModel(AssetManager::GetAsset<Model>(mc.HModel));
+				Ref<Model> model = AssetManager::GetAsset<Model>(mc.HModel);
+				if (model)
+					mc.blend_space.SetModel(model);
 			}
 
 			if (YAML::Node env_component = entity["EnvironmentMap"])
