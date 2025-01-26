@@ -8,6 +8,12 @@ namespace origin {
 
 DirectionalLight::DirectionalLight()
 {
+    Renderer::lighting_manager->directional_light_count++;
+}
+
+DirectionalLight::~DirectionalLight()
+{
+    Renderer::lighting_manager->directional_light_count--;
 }
 
 void DirectionalLight::Bind() const

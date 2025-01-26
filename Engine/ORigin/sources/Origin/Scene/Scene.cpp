@@ -128,7 +128,11 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 {
     OGN_PROFILER_FUNCTION();
 
-    // bind ligtings
+    // bind materials
+    Renderer::material_manager->Bind();
+    
+
+    // bind lighting
     Renderer::lighting_manager->Bind();
     const auto &directional_light_view = m_Registry.view<DirectionalLightComponent, TransformComponent>();
     for (const auto& [entity, dir_light_comp, transform_comp] : directional_light_view.each())
@@ -172,9 +176,13 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
             if (model->HasAnimations())
             {
                 if (!mesh_comp.blend_space.GetStates().empty())
+                {
                     mesh_comp.blend_space.BlendAnimations(mesh_comp.blend_position, ts, mesh_comp.animation_speed);
+                }
                 else
+                {
                     model->UpdateAnimation(ts, mesh_comp.AnimationIndex);
+                }
             }
             
         }
@@ -186,6 +194,8 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 void Scene::PostRender(const Camera &camera, Timestep ts)
 {
     Renderer::lighting_manager->Unbind();
+
+    Renderer::material_manager->Unbind();
 }
 
 void Scene::Update(Timestep ts)
@@ -500,19 +510,32 @@ void Scene::RenderScene(const Camera &camera)
             shader->SetBool("uhas_animation", model->HasAnimations());
 
             if (model->HasAnimations())
+            {
                 shader->SetMatrix("ubone_transforms", model->GetBoneTransforms()[0], static_cast<u32>(model->GetBoneTransforms().size()));
+            }
 
             for (auto &mesh : model->GetMeshes())
             {
-                for (const auto &texture : mesh->material.textures)
+                mesh->material.Bind();
+
+                if (mesh->material.diffuse_texture)
                 {
-                    if (texture.contains(TextureType::DIFFUSE))
-                    {
-                        texture.at(TextureType::DIFFUSE)->Bind(0);
-                        shader->SetInt("udiffuse_texture", 0);
-                    }
+                    mesh->material.diffuse_texture->Bind(DIFFUSE_TEXTURE_BINDING);
+                    shader->SetInt("udiffuse_texture", DIFFUSE_TEXTURE_BINDING);
                 }
+                if (mesh->material.specular_texture)
+                {
+                    mesh->material.specular_texture->Bind(SPECULAR_TEXTURE_BINDING);
+                    shader->SetInt("uspecular_texture", SPECULAR_TEXTURE_BINDING);
+                }
+                if (mesh->material.roughness_texture)
+                {
+                    mesh->material.roughness_texture->Bind(ROUGHNESS_TEXTURE_BINDING);
+                    shader->SetInt("uroughness_texture", ROUGHNESS_TEXTURE_BINDING);
+                }
+
                 RenderCommand::DrawIndexed(mesh->vertex_array);
+               // mesh->material.Unbind();
             }
         }
         shader->Disable();

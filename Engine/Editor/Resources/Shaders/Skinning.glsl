@@ -77,6 +77,10 @@ layout (location = 0) in Vertex
     vec4 weights;
 } vin;
 
+layout(binding = 0) uniform sampler2D udiffuse_texture;
+layout(binding = 1) uniform sampler2D uspecular_texture;
+layout(binding = 2) uniform sampler2D uroughness_texture;
+
 layout(std140, binding = 0) uniform Camera
 {
     mat4 view_projection;
@@ -117,13 +121,12 @@ layout(std140, binding = 5) uniform AreaLight
 
 layout(std140, binding = 6) uniform Material
 {
-    vec3 color;
-    // smapler2D diffuse_texture;
-    // sampler2D specular_texture;
-    // sampler2D roughness_texture;
+    float metallic_factor;
+    float roughness_factor;
+    vec2 tiling_factor;
+    vec3 diffuse_color;
+    vec3 base_color;
 } material_buffer;
-
-uniform sampler2D udiffuse_texture;
 
 vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord)
 {

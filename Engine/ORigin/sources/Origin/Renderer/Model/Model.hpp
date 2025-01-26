@@ -4,7 +4,7 @@
 #define MODEL_HPP
 
 #include "Mesh.hpp"
-#include "MeshMaterial.hpp"
+#include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Animation/Animation.h"
 #include "Origin/Animation/AnimationBlender.h"
 
@@ -49,11 +49,11 @@ public:
     void LoadAnimations();
 	void LoadVertexBones(const u32 mesh_index, Ref<Mesh> &data, aiMesh *mesh);
 	void LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone);
-	void LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath);
+	void LoadMaterials(MeshMaterial &material, const aiMesh *mesh, const std::string &filepath);
     void CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
     void CalculateAnimationTransforms(const aiNode *node, const u32 anim_index, std::unordered_map<std::string, AnimationNode> &anim_nodes, const glm::mat4 &parent_transform = glm::mat4(1.0f));
 
-	TextureTypeMap LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
+	Ref<Texture2D> LoadTexture(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
 	void CreateVertex(Ref<Mesh> &mesh_data);
     std::vector<SkeletalAnimation> &GetAnimations();
     SkeletalAnimation *GetAnimation(u32 index);
@@ -64,7 +64,7 @@ public:
 
 	static Ref<Model> Create(const std::string &filepath);
     static AssetType GetStaticType() { return AssetType::Mesh; }
-    virtual AssetType GetType() const { return GetStaticType(); }
+    AssetType GetType() const override { return GetStaticType(); }
 
 private:
 	Assimp::Importer m_Importer;

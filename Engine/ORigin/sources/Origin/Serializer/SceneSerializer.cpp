@@ -387,7 +387,6 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		const MeshComponent sc = entity.GetComponent<MeshComponent>();
 		out << YAML::Key << "Name" << sc.Name;
 		out << YAML::Key << "HModel" << sc.HModel;
-		out << YAML::Key << "HMaterial" << sc.HMaterial;
 		out << YAML::EndMap; // !MeshComponent
 	}
 
@@ -778,7 +777,6 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			{
 				MeshComponent &mc = deserialized_entity.AddComponent<MeshComponent>();
 				mc.Name = mesh_component["Name"].as<std::string>();
-				mc.HMaterial = mesh_component["HMaterial"].as<uint64_t>();
 				mc.HModel = mesh_component["HModel"].as<uint64_t>();
 				mc.blend_space.SetModel(AssetManager::GetAsset<Model>(mc.HModel));
 			}

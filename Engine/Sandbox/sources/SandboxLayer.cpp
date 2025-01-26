@@ -223,17 +223,26 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
         shader->SetMatrix("ubone_transforms", raptoid.model->GetBoneTransforms()[0], raptoid.model->GetBoneTransforms().size());
         for (auto &mesh : raptoid.model->GetMeshes())
         {
-            for (const auto &texture : mesh->material.textures)
-            {
-                if (texture.contains(TextureType::DIFFUSE))
-                {
-                    texture.at(TextureType::DIFFUSE)->Bind(0);
-                    shader->SetInt("udiffuse_texture", 0);
-                }
-            }
             shader->SetMatrix("umodel_transform", mesh->transform);
-
+            
+            mesh->material.Bind();
+            if (mesh->material.diffuse_texture)
+            {
+                mesh->material.diffuse_texture->Bind(DIFFUSE_TEXTURE_BINDING);
+                shader->SetInt("udiffuse_texture", DIFFUSE_TEXTURE_BINDING);
+            }
+            if (mesh->material.specular_texture)
+            {
+                mesh->material.specular_texture->Bind(SPECULAR_TEXTURE_BINDING);
+                shader->SetInt("uspecular_texture", SPECULAR_TEXTURE_BINDING);
+            }
+            if (mesh->material.roughness_texture)
+            {
+                mesh->material.roughness_texture->Bind(ROUGHNESS_TEXTURE_BINDING);
+                shader->SetInt("uroughness_texture", ROUGHNESS_TEXTURE_BINDING);
+            }
             RenderCommand::DrawIndexed(mesh->vertex_array);
+            mesh->material.Unbind();
         }
     }
 

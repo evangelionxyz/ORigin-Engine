@@ -15,7 +15,7 @@
 
 namespace origin {
 
-static std::vector<Ref<Texture2D>> loaded_textures_cache;
+static std::vector<std::pair<TextureType, Ref<Texture2D>>> loaded_textures_cache;
 
 Model::Model(const std::string &filepath)
 {
@@ -131,8 +131,9 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string
 
     if (m_Scene->HasAnimations())
         LoadVertexBones(mesh_index, m_Meshes[mesh_index], mesh);
-
-    LoadMaterials(m_Meshes[mesh_index], mesh, filepath);
+    if (mesh->mMaterialIndex >= 0)
+        LoadMaterials(m_Meshes[mesh_index]->material, mesh, filepath);
+    
     CreateVertex(m_Meshes[mesh_index]);
 }
 
@@ -237,34 +238,25 @@ void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const ai
     }
 }
 
-void Model::LoadMaterials(Ref<Mesh> mesh_data, aiMesh *mesh, const std::string &filepath)
+void Model::LoadMaterials(MeshMaterial &material, const aiMesh *mesh, const std::string &filepath)
 {
+    aiMaterial *ai_material = m_Scene->mMaterials[mesh->mMaterialIndex];
+        
     aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
-    if (mesh->mMaterialIndex >= 0)
-    {
-        aiMaterial *material = m_Scene->mMaterials[mesh->mMaterialIndex];
+    aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
+        
+    ai_material->Get(AI_MATKEY_BASE_COLOR, base_color);
+    ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
+    ai_material->Get(AI_MATKEY_METALLIC_FACTOR, material.buffer_data.metallic_factor);
+    ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.roughness_factor);
 
-        aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
-        ai_real metallic_factor = 1.0f;
-        material->Get(AI_MATKEY_BASE_COLOR, base_color);
-        material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
-        material->Get(AI_MATKEY_METALLIC_FACTOR, mesh_data->material.metallic_factor);
-        material->Get(AI_MATKEY_ROUGHNESS_FACTOR, mesh_data->material.roughness_factor);
+    material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b};
+    material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b};
 
-        mesh_data->material.diffuse_color = { diffuse_color.r, diffuse_color.g, diffuse_color.b };
-
-        auto texture_map = LoadTextures(m_Scene, material, filepath, TextureType::DIFFUSE);
-        if (!texture_map.empty())
-        {
-            mesh_data->material.textures.push_back(texture_map);
-        }
-
-        if (mesh_data->material.textures.empty())
-        {
-            texture_map[TextureType::DIFFUSE] = Renderer::WhiteTexture;
-            mesh_data->material.textures.push_back(texture_map);
-        }
-    }
+    // load textures
+    material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);
+    if (!material.diffuse_texture)
+        material.diffuse_texture = Renderer::WhiteTexture;
 }
 
 i32 Model::GetBoneID(const aiBone *bone)
@@ -286,9 +278,9 @@ const bool Model::HasAnimations() const
     return !m_Animations.empty();
 }
 
-TextureTypeMap Model::LoadTextures(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type)
+Ref<Texture2D> Model::LoadTexture(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type)
 {
-    TextureTypeMap textures;
+    Ref<Texture2D> texture;
 
     const i32 tex_count = material->GetTextureCount(ToAssimpTexture(type));
     for (i32 i = 0; i < tex_count; ++i)
@@ -297,11 +289,12 @@ TextureTypeMap Model::LoadTextures(const aiScene *scene, aiMaterial *material, c
         material->GetTexture(ToAssimpTexture(type), i, &texture_filename);
 
         bool skip_import = false;
-        for (i32 j = 0; j < loaded_textures_cache.size(); ++j)
+        
+        for (size_t loaded_texture_index = 0; loaded_texture_index < loaded_textures_cache.size(); ++loaded_texture_index)
         {
-            if (std::strcmp(loaded_textures_cache[j]->GetName().c_str(), texture_filename.C_Str()) == 0)
+            if (std::strcmp(loaded_textures_cache[loaded_texture_index].second->GetName().c_str(), texture_filename.C_Str()) == 0)
             {
-                textures[type] = loaded_textures_cache[j];
+                texture = loaded_textures_cache[loaded_texture_index].second;
                 skip_import = true;
                 break;
             }
@@ -312,20 +305,20 @@ TextureTypeMap Model::LoadTextures(const aiScene *scene, aiMaterial *material, c
             const aiTexture *embedded_texture = scene->GetEmbeddedTexture(texture_filename.C_Str());
             if (embedded_texture)
             {
-                textures[type] = Texture2D::Create(embedded_texture);
+                texture = Texture2D::Create(embedded_texture);
             }
             else
             {
                 // handle external texture
                 size_t end = filepath.find_last_of('/');
                 auto texture_dir = filepath.substr(0, end);
-                textures[type] = Texture2D::Create(texture_dir + "/" + texture_filename.C_Str());
+                texture = Texture2D::Create(texture_dir + "/" + texture_filename.C_Str());
             }
-            loaded_textures_cache.push_back(textures[type]);
+            loaded_textures_cache.emplace_back(type, texture);
         }
     }
 
-    return textures;
+    return texture;
 }
 
 void Model::CreateVertex(Ref<Mesh> &mesh_data)

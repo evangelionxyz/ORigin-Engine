@@ -3,7 +3,7 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-#include "MeshMaterial.hpp"
+#include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Renderer/Shader.h"
 #include "Origin/Asset/Asset.h"
 

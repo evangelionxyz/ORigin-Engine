@@ -8,6 +8,7 @@
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Renderer/Lighting/LightingManager.hpp"
 #include "Origin/Scene/Camera/EditorCamera.h"
+#include "Origin/Renderer/Materials/MaterialManager.hpp"
 
 namespace origin {
 
@@ -17,9 +18,11 @@ namespace origin {
 #define SPOT_LIGHT_BINDING        (3)
 #define POINT_LIGHT_BINDING       (4)
 #define AREA_LIGHT_BINDING        (5)
-#define SHADOW_BINDING            (6)
 
-#define MATERIAL_BINDING          (7)
+#define MATERIAL_BINDING          (6)
+#define DIFFUSE_TEXTURE_BINDING   (0)
+#define SPECULAR_TEXTURE_BINDING  (1)
+#define ROUGHNESS_TEXTURE_BINDING (2)
 
 struct RenderData
 {
@@ -73,12 +76,11 @@ public:
 	static Statistics &GetStatistics();
 	
 	static LightingManager *lighting_manager;
+	static MaterialManager *material_manager;
 	static RenderData render_data;
 
 private:
 	static void LoadShaders();
-	static void LoadMaterials();
-
 	static Ref<Shader> s_GlobalShader;
 };
 }

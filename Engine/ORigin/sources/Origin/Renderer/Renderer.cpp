@@ -17,7 +17,6 @@
 
 namespace origin {
 
-
 static Statistics s_Statistics;
 static ShaderLibrary s_ShaderLibrary;
 static MaterialLibrary s_MaterialLibrary;
@@ -29,6 +28,7 @@ Ref<Texture2D> Renderer::BlackTexture;
 
 RendererAPI *RenderCommand::s_RendererAPI = nullptr;
 LightingManager *Renderer::lighting_manager = nullptr;
+MaterialManager *Renderer::material_manager = nullptr;
 
 Statistics &Renderer::GetStatistics()
 {
@@ -52,7 +52,6 @@ bool Renderer::Init()
 		BlackTexture = Texture2D::Create(TextureSpecification());
 		BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
 		LoadShaders();
-		LoadMaterials();
 		Renderer2D::Init();
 
 		break;
@@ -71,7 +70,10 @@ bool Renderer::Init()
 #endif
 	}
 	OGN_CORE_ASSERT(RenderCommand::s_RendererAPI, "[Renderer] Renderer API is null");
+	
 	lighting_manager = new LightingManager();
+	material_manager = new MaterialManager();
+	
 	RenderCommand::Init();
 	OGN_CORE_TRACE("[Renderer] Initialized");
 	return true;
@@ -80,6 +82,8 @@ bool Renderer::Init()
 void Renderer::Shutdown()
 {
 	OGN_PROFILER_FUNCTION();
+
+	delete material_manager;
 	delete lighting_manager;
 	
 	Renderer2D::Shutdown();
@@ -89,8 +93,6 @@ void Renderer::Shutdown()
 
 void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 {
-	OGN_PROFILER_FUNCTION();
-
 	RenderCommand::SetViewport(0, 0, width, height);
 }
 
@@ -132,12 +134,5 @@ void Renderer::LoadShaders()
 	s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl", false);
 	s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);
 	s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
-}
-
-void Renderer::LoadMaterials()
-{
-	Ref<Material>material = Material::Create(Renderer::GetShader("BatchMesh"));
-	material->SetName("Default Material");
-	s_MaterialLibrary.Add("Mesh", material);
 }
 }

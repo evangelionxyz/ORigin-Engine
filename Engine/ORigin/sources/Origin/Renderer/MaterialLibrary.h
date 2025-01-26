@@ -3,7 +3,7 @@
 #ifndef MATERIAL_LIBRARY_H
 #define MATERIAL_LIBRARY_H
 
-#include "Material.h"
+#include "Materials/Material.hpp"
 
 namespace origin
 {
@@ -13,7 +13,7 @@ namespace origin
 		MaterialLibrary() = default;
 
 		void Add(const std::string &name, const Ref<Material> &material);
-		bool Exist(const std::string &name);
+		bool Exist(const std::string &name) const;
 
 		Ref<Material> Get(const std::string &name);
 		std::unordered_map<std::string, Ref<Material>> GetMap() const { return m_MaterialMap; }

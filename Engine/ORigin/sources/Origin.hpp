@@ -62,7 +62,6 @@
 #include "Origin/Serializer/Serializer.hpp"
 #include "Origin/Serializer/SceneSerializer.h"
 #include "Origin/Serializer/SpriteSheetSerializer.h"
-#include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/GUI/GuiLayer.h"
 #include "Origin/GUI/GuiWindow.h"
 

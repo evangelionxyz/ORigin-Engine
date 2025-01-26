@@ -14,7 +14,6 @@
 #include "Origin/Renderer/Font.h"
 #include "Origin/Renderer/ParticleSystem.h"
 #include "Origin/Renderer/Lighting/Lighting.hpp"
-#include "Origin/Renderer/Material.h"
 #include "Origin/Renderer/Framebuffer.h"
 #include "Origin/Renderer/Model/Mesh.hpp"
 #include "Origin/Renderer/VertexArray.h"
@@ -209,7 +208,6 @@ class MeshComponent
 {
 public:
     std::string Name;
-    AssetHandle HMaterial = UUID(0);
     AssetHandle HModel = UUID(0);
     AnimationBlender blend_space;
 

@@ -35,6 +35,7 @@ static std::string_view LightingTypeToString(LightingType type)
 class Lighting
 {
 public:
+    virtual ~Lighting() = default;
     Lighting() = default;
     glm::vec3 color = glm::vec3(1.0f);
 
@@ -45,10 +46,11 @@ public:
     virtual void Unbind() const = 0;
 };
 
-class DirectionalLight : public Lighting
+class DirectionalLight final : public Lighting
 {
 public:
     DirectionalLight();
+    ~DirectionalLight() override;
 
     void Bind() const override;
     void Unbind() const override;

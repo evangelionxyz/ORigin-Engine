@@ -15,6 +15,8 @@
 
 #include <glad/glad.h>
 
+#include "Origin/Profiler/Profiler.h"
+
 namespace origin {
 static SpriteSheetEditorPanel *s_Instance = nullptr;
 
