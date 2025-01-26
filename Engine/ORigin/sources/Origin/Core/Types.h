@@ -4,6 +4,7 @@
 #define TYPES_H
 
 #include <memory>
+#include <glm/glm.hpp>
 
 typedef unsigned char byte;
 typedef unsigned short ushort;

@@ -117,8 +117,12 @@ void PhysXScene::DestroyEntity(Entity entity)
             shape = static_cast<physx::PxShape *>(c.Shape);
         }
 
-        actor->detachShape(*shape);
-        actor->release();
+        if (actor)
+        {
+            if (shape)
+                actor->detachShape(*shape);
+            actor->release();
+        }
     }
 }
 
@@ -208,12 +212,18 @@ void PhysXScene::CreateCapsueCollider(Entity entity)
     auto &rb = entity.GetComponent<RigidbodyComponent>();
 
     physx::PxRigidActor *actor = CreateBody(rb, tc.WorldTranslation, tc.WorldRotation);
-    physx::PxTransform relative_pos(Math::GlmToPhysXVec3(rb.Offset));
+
+    physx::PxTransform relative_pos(Math::GlmToPhysXVec3(rb.Offset), physx::PxQuat(physx::PxHalfPi, physx::PxVec3(0, 0, 1)));
+
     physx::PxMaterial *material = physics->createMaterial(cc.StaticFriction, cc.Friction, cc.Restitution);
 
-    physx::PxShape *capsule_shape = physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxCapsuleGeometry(cc.Radius, tc.Scale.y * (cc.HalfHeight / 2.0f)), *material);
+    physx::PxShape *capsule_shape = physx::PxRigidActorExt::createExclusiveShape(
+        *actor, 
+        physx::PxCapsuleGeometry(cc.Radius, tc.Scale.y * (cc.HalfHeight / 2.0f)), 
+        *material);
 
     capsule_shape->setLocalPose(relative_pos);
+
     cc.Shape = static_cast<void *>(capsule_shape);
 
     m_PhysXScene->addActor(*actor);

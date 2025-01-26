@@ -51,6 +51,17 @@ project "Sandbox"
     filter "system:windows"
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
+        systemversion "latest"
+        defines {
+            "NV_USE_STATIC_WINCRT",
+            "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
+            "GLFW_INCLUDE_VULKAN",
+            "NOMINMAX"
+        }
+
+        filter "action:vs*"
+          linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
+
     filter "system:linux"
         pic "On"
         includedirs { 
@@ -60,15 +71,6 @@ project "Sandbox"
         links {
             "vulkan", "shaderc_shared", "spirv-cross-core", "spirv-cross-glsl",
             "monosgen-2.0", "pthread", "dl", "m", "rt"
-        }
-
-    filter "system:windows"
-        systemversion "latest"
-        defines {
-            "NV_USE_STATIC_WINCRT",
-            "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS",
-            "GLFW_INCLUDE_VULKAN",
-            "NOMINMAX"
         }
 
     -- //////////////////////////////

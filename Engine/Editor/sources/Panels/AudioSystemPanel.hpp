@@ -18,13 +18,14 @@ class AudioSystemPanel : public PanelBase
 {
 public:
     AudioSystemPanel();
-    ~AudioSystemPanel();
+    ~AudioSystemPanel() override;
 
     void Render() override;
     void OnUpdate(float delta_time) override;
 
     void OnEvent(Event &e) override;
 
+    static AudioSystemPanel *GetInstance();
 private:
     void RenderAudioChannel(float &volume, ImDrawList *dl, const Rect &canvas_rect, i32 channel_index,
         float channel_width, const Margin &channel_margin, const Margin &gain_margin,

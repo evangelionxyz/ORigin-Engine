@@ -3,8 +3,7 @@
 
 #include "EditorAssetManager.h"
 #include "AssetManager.h"
-#include "Origin/Renderer/Material.h"
-#include "Origin/Serializer/MaterialSerializer.h"
+#include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Core/ConsoleManager.h"
 #include "AssetImporter.h"
 #include "Origin/Project/Project.h"
@@ -247,7 +246,7 @@ void EditorAssetManager::SerializeAssetRegistry()
     OGN_CORE_INFO("[Editor Asset Manager] Serialize Registry {}", path.string());
     PUSH_CONSOLE_INFO("Assets Saved!");
 
-    for (const auto &[handle, metadata] : m_AssetRegistry)
+    /*for (const auto &[handle, metadata] : m_AssetRegistry)
     {
         if (metadata.Type == AssetType::Material)
         {
@@ -255,7 +254,7 @@ void EditorAssetManager::SerializeAssetRegistry()
             Ref<Material> mat = AssetManager::GetAsset<Material>(handle);
             MaterialSerializer::Serialize(filepath, mat);
         }
-    }
+    }*/
 
     YAML::Emitter out;
     {

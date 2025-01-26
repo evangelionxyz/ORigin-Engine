@@ -3,7 +3,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include "Origin/Scene/Camera.h"
+#include "Origin/Scene/Camera/Camera.h"
 
 #include <assimp/postprocess.h>
 
@@ -83,8 +83,14 @@ struct Rect
         return { min / rhs.min, max / rhs.max };
     }
 
-    const bool Contains(const glm::vec2 &p) const { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
-    const bool Contains(const ImVec2 &p) const { return p.x >= min.x && p.y >= min.y && p.x < max.x && p.y < max.y; }
+    const bool Contains(const glm::vec2 &p) const
+    {
+        return p.x >= min.x && p.y >= min.y && p.x <= max.x && p.y <= max.y;
+    }
+    const bool Contains(const ImVec2 &p) const
+    {
+        return p.x >= min.x && p.y >= min.y && p.x <= max.x && p.y <= max.y;
+    }
 
     void SetMin(const glm::vec2 &min_) { this->min = min_; }
     void SetMin(float x, float y) { min.x = x; min.y = y; }

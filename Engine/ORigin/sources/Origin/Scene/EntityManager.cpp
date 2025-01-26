@@ -2,8 +2,7 @@
 
 #include "pch.h"
 #include "EntityManager.h"
-
-#include "Lighting.h"
+#include "Origin/Renderer/Lighting/Lighting.hpp"
 
 namespace origin
 {
@@ -21,7 +20,7 @@ namespace origin
 
 	Entity EntityManager::CreateSprite(const std::string &name, Scene *scene)
 	{
-		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Entity, scene);
+		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Camera, scene);
 		entity.AddComponent<SpriteRenderer2DComponent>();
 		return entity;
 	}
@@ -45,20 +44,21 @@ namespace origin
 		return entity;
 	}
 
-	Entity EntityManager::CreateLighting(const std::string &name, Scene *scene)
+	Entity EntityManager::CreateDirectionalLighting(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Lighting, scene);
-		entity.AddComponent<LightComponent>().Light = Lighting::Create(LightingType::Directional);
+		entity.AddComponent<DirectionalLightComponent>().Light = Lighting::Create<DirectionalLight>();
+        entity.GetComponent<TransformComponent>().Clickable = true;
 		return entity;
 	}
 
-	Entity EntityManager::CreateEntityWithUUID(UUID uuid, const std::string &name, EntityType type, Scene *scene)
+	Entity EntityManager::CreateEntityWithUUID(UUID uuid, const std::string &name, const EntityType type, Scene *scene)
 	{
 		Entity entity = { scene->m_Registry.create(), scene};
 		entity.AddComponent<IDComponent>(uuid).Type = type;
-		TransformComponent &tc = entity.AddComponent<TransformComponent>();
+		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<TagComponent>().Tag = name;
-		scene->m_EntityStorage.push_back({ uuid, entity });
+		scene->m_EntityStorage.emplace_back(uuid, entity);
 		return entity;
 	}
 
@@ -70,45 +70,52 @@ namespace origin
 		return entity;
 	}
 
+    Entity EntityManager::CreateEnvironmentMap(const std::string &name, Scene *scene)
+    {
+		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Entity, scene);
+		entity.AddComponent<EnvironmentMap>();
+		entity.GetComponent<TransformComponent>().Clickable = false;
+		return entity;
+    }
+
     Entity EntityManager::CreateUI(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::UI, scene);
 		entity.AddComponent<UIComponent>();
+        entity.GetComponent<TransformComponent>().Clickable = false;
 		return entity;
 	}
 
 	void EntityManager::AddChild(Entity destination, Entity source, Scene *scene)
 	{
-		auto &destIDC = destination.GetComponent<IDComponent>();
-		auto &srcIDC = source.GetComponent<IDComponent>();
+		auto &destination_id_comp = destination.GetComponent<IDComponent>();
+		auto &source_id_comp = source.GetComponent<IDComponent>();
 
-		if (!IsParent(destIDC.ID, srcIDC.ID, scene))
+		if (!IsParent(destination_id_comp.ID, source_id_comp.ID, scene))
 		{
-			if (srcIDC.Parent != 0)
+			if (source_id_comp.Parent != 0)
 			{
-				Entity current_parent = scene->GetEntityWithUUID(srcIDC.Parent);
-				current_parent.GetComponent<IDComponent>().RemoveChild(srcIDC.ID);
+				Entity current_parent = scene->GetEntityWithUUID(source_id_comp.Parent);
+				current_parent.GetComponent<IDComponent>().RemoveChild(source_id_comp.ID);
 			}
 
-			destIDC.AddChild(srcIDC.ID);
-			srcIDC.SetParent(destIDC.ID);
+			destination_id_comp.AddChild(source_id_comp.ID);
+			source_id_comp.SetParent(destination_id_comp.ID);
 		}
 	}
 
 	bool EntityManager::ChildExists(Entity destination, Entity source, Scene *scene)
 	{
-		auto &destIDC = destination.GetComponent<IDComponent>();
-		auto &srcIDC = source.GetComponent<IDComponent>();
+		auto &destination_id_comp = destination.GetComponent<IDComponent>();
+		auto &source_id_comp = source.GetComponent<IDComponent>();
 
-		if (srcIDC.Parent == destIDC.ID)
-			return true;
-		else
+		if (source_id_comp.Parent == destination_id_comp.ID)
 		{
-			auto nextParent = scene->GetEntityWithUUID(srcIDC.Parent);
-			if (ChildExists(nextParent, source, scene))
-				return true;
+			return true;
 		}
-
+		auto next_parent = scene->GetEntityWithUUID(source_id_comp.Parent);
+		if (ChildExists(next_parent, source, scene))
+			return true;
 		return false;
 	}
 
@@ -117,14 +124,15 @@ namespace origin
 		Entity destEntity = scene->GetEntityWithUUID(target);
 		if (!destEntity.IsValid())
 			return false;
-		auto &destIDC = destEntity.GetComponent<IDComponent>();
+		
+		const auto &destination_id_comp = destEntity.GetComponent<IDComponent>();
+		
 		if (target == source)
 			return true;
-		if (destIDC.Parent)
-		{
-			if (EntityManager::IsParent(destIDC.Parent, source, scene))
-				return true;
-		}
+			
+		if (destination_id_comp.Parent && IsParent(destination_id_comp.Parent, source, scene))
+			return true;
+		
 		return false;
 	}
 
@@ -132,6 +140,7 @@ namespace origin
 	{
 		if (IsParent(parent.GetUUID(), uuid, scene))
 			return scene->GetEntityWithUUID(uuid);
+		
 		return {entt::null, nullptr};
 	}
 

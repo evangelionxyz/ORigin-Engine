@@ -12,7 +12,7 @@ layout(std140, binding = 0) uniform Camera
 {
     mat4 view_projection;
     vec3 position;
-} CameraBuffer;
+} camera_buffer;
 
 layout(std140, binding = 1) uniform Lighting
 {
@@ -39,7 +39,7 @@ layout(location = 6) out flat float vSpecularIndex;
 
 void main()
 {
-    gl_Position = CameraBuffer.ViewProjection * vec4(aPosition, 1.0);
+    gl_Position = camera_buffer.view_projection * vec4(aPosition, 1.0);
     Out.Position = aPosition;
     Out.Normals = aNormals;
     Out.Color = aColor;
@@ -70,9 +70,9 @@ layout(binding = 0) uniform sampler2D uTextures[32];
 
 layout(std140, binding = 0) uniform Camera
 {
-    mat4 ViewProjection;
-    vec3 Position;
-} CameraBuffer;
+    mat4 view_projection;
+    vec3 position;
+} camera_buffer;
 
 layout(std140, binding = 1) uniform Lighting
 {
@@ -123,7 +123,7 @@ void main()
     vec3 lightDir = normalize(LightBuffer.Position.xyz - In.Position);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * lightColor;
-    vec3 viewDir = normalize(CameraBuffer.Position - In.Position);
+    vec3 viewDir = normalize(camera_buffer.position - In.Position);
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);

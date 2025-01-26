@@ -5,7 +5,6 @@
 #include "Origin/Utils/PlatformUtils.h"
 #include "Origin/Serializer/ProjectSerializer.h"
 #include "Origin/Serializer/SceneSerializer.h"
-#include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Profiler/Profiler.h"
 #include "Origin/Utils/Utils.h"
 #include <fstream>

@@ -5,11 +5,10 @@
 #include "AssetImporter.h"
 #include "Origin/Core/Application.h"
 #include "Origin/Project/Project.h"
-#include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Serializer/SceneSerializer.h"
 #include "Origin/Serializer/SpriteSheetSerializer.h"
 #include "Origin/Utils/PlatformUtils.h"
-#include "Origin/Renderer/Material.h"
+#include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Renderer/Renderer.h"
 
 #include "stb_image.h"
@@ -257,17 +256,14 @@ namespace origin {
     Ref<Material> MaterialImporter::Import(AssetHandle handle, const AssetMetadata &metadata)
     {
         Ref<Material> material = Load(Project::GetActiveAssetDirectory() / metadata.Filepath);
-        material->Handle = handle;
-        return material;
+        //material->Handle = handle;
+        return nullptr;
     }
 
     Ref<Material> MaterialImporter::Load(const std::filesystem::path &filepath)
     {
         if (!std::filesystem::exists(filepath))
             return nullptr;
-
-        Ref<Material> material = Material::Create(filepath.stem().string());
-        MaterialSerializer::Deserialize(filepath, material);
-        return material;
+        return nullptr;
     }
 }

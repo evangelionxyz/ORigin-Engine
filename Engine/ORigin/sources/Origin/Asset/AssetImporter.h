@@ -9,7 +9,7 @@
 
 #include "Origin/Renderer/Font.h"
 #include "Origin/Renderer/Texture.h"
-#include "Origin/Renderer/Material.h"
+#include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Renderer/Model/Model.hpp"
 
 #include <queue>

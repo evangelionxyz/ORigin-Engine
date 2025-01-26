@@ -19,7 +19,7 @@ void RuntimeLayer::OnUpdate(Timestep ts)
     {
         RenderCommand::Clear();
         m_ActiveScene->GetUIRenderer()->RenderFramebuffer();
-        RenderCommand::SetViewport(X, Y, Width, Height);
+        RenderCommand::SetViewport(X, Y, static_cast<u32>(Width), static_cast<u32>(Height));
 
         m_ActiveScene->OnUpdateRuntime(ts);
         m_ActiveScene->GetUIRenderer()->Render();

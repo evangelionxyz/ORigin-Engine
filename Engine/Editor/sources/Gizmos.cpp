@@ -1,7 +1,7 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "Gizmos.hpp"
-#include "../EditorLayer.hpp"
+#include "EditorLayer.hpp"
 #include "Origin/Scene/Components/Components.h"
 #include "Origin/Renderer/Renderer2D.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -21,32 +21,32 @@ void Gizmos::Draw2DGrid(const Camera &camera)
     }
 
     Renderer2D::Begin(camera);
-    float orthoSize = camera.GetOrthoScale();
+    f32 orthoSize = camera.GetOrthoScale();
     glm::vec2 cameraPosition = { camera.GetPosition().x, camera.GetPosition().y };
 
-    float lineSpacing = 1.0f;
+    f32 lineSpacing = 1.0f;
     if (orthoSize >= 20.0f)
     {
         lineSpacing = pow(5.0f, floor(log10(orthoSize)));
     }
 
-    float offset = -0.5f * lineSpacing;
+    f32 offset = -0.5f * lineSpacing;
 
     glm::vec2 viewportSize = camera.GetViewportSize();
-    float minX = cameraPosition.x - orthoSize - viewportSize.x / 10.0f;
-    float maxX = cameraPosition.x + orthoSize + viewportSize.x / 10.0f;
-    float minY = cameraPosition.y - orthoSize - viewportSize.y / 10.0f;
-    float maxY = cameraPosition.y + orthoSize + viewportSize.y / 10.0f;
+    f32 minX = cameraPosition.x - orthoSize - viewportSize.x / 10.0f;
+    f32 maxX = cameraPosition.x + orthoSize + viewportSize.x / 10.0f;
+    f32 minY = cameraPosition.y - orthoSize - viewportSize.y / 10.0f;
+    f32 maxY = cameraPosition.y + orthoSize + viewportSize.y / 10.0f;
 
     glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.15f);
     auto n = floor(minX / lineSpacing) * lineSpacing;
-    for (float i = n; i <= maxX; i += lineSpacing)
+    for (f32 i = n; i <= maxX; i += lineSpacing)
     {
         Renderer2D::DrawLine({ i + offset, minY, 0.0f }, { i + offset, maxY, 0.0f }, color);
     }
 
     n = floor(minY / lineSpacing) * lineSpacing;
-    for (float i = n; i <= maxY; i += lineSpacing)
+    for (f32 i = n; i <= maxY; i += lineSpacing)
     {
         Renderer2D::DrawLine({ minX, i + offset, 0.0f }, { maxX, i + offset, 0.0f }, color);
     }
@@ -66,16 +66,6 @@ void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
         for (const auto &edge : frustum.GetEdges())
         {
             Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.0f, 0.0f, 1.0f });
-        }
-    }
-
-    // Lighting
-    for (auto [e, tc, lc] : scene->m_Registry.view<TransformComponent, LightComponent>().each())
-    {
-        Frustum frustum(lc.Light->GetShadow().ViewProjection);
-        for (const auto &edge : frustum.GetEdges())
-        {
-            Renderer2D::DrawLine(edge.first, edge.second, { 1.0f, 0.7f, 0.0f, 1.0f });
         }
     }
 
@@ -181,6 +171,9 @@ void Gizmos::DrawBoundingBox(const Camera &camera, Scene *scene)
     // OBB
     for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
     {
+        if (!tc.Clickable)
+            continue;
+
         OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
         if (scene->m_Registry.any_of<TextComponent>(e))
         {
@@ -189,30 +182,22 @@ void Gizmos::DrawBoundingBox(const Camera &camera, Scene *scene)
             obb = OBB(tc.WorldTranslation, scale, tc.WorldRotation);
         }
 
-        glm::vec3 vertices[8];
+        const auto &vertices = obb.GetVertices();
+        static constexpr glm::vec4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
 
-        // Calculate the vertices of the OBB
-        vertices[0] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, -obb.HalfExtents.y, -obb.HalfExtents.z);
-        vertices[1] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, -obb.HalfExtents.y, -obb.HalfExtents.z);
-        vertices[2] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, obb.HalfExtents.y, -obb.HalfExtents.z);
-        vertices[3] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, obb.HalfExtents.y, -obb.HalfExtents.z);
-        vertices[4] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, -obb.HalfExtents.y, obb.HalfExtents.z);
-        vertices[5] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, -obb.HalfExtents.y, obb.HalfExtents.z);
-        vertices[6] = obb.Center + obb.Orientation * glm::vec3(obb.HalfExtents.x, obb.HalfExtents.y, obb.HalfExtents.z);
-        vertices[7] = obb.Center + obb.Orientation * glm::vec3(-obb.HalfExtents.x, obb.HalfExtents.y, obb.HalfExtents.z);
-
-        glm::vec4 color = { 0.0f, 1.0f, 0.0f, 1.0f }; // Orange color
-        // Draw the edges of the OBB
+        // Bottom face
         Renderer2D::DrawLine(vertices[0], vertices[1], color);
-        Renderer2D::DrawLine(vertices[1], vertices[2], color);
-        Renderer2D::DrawLine(vertices[2], vertices[3], color);
-        Renderer2D::DrawLine(vertices[3], vertices[0], color);
+        Renderer2D::DrawLine(vertices[1], vertices[3], color);
+        Renderer2D::DrawLine(vertices[3], vertices[2], color);
+        Renderer2D::DrawLine(vertices[2], vertices[0], color);
 
+        // Top face
         Renderer2D::DrawLine(vertices[4], vertices[5], color);
-        Renderer2D::DrawLine(vertices[5], vertices[6], color);
-        Renderer2D::DrawLine(vertices[6], vertices[7], color);
-        Renderer2D::DrawLine(vertices[7], vertices[4], color);
+        Renderer2D::DrawLine(vertices[5], vertices[7], color);
+        Renderer2D::DrawLine(vertices[7], vertices[6], color);
+        Renderer2D::DrawLine(vertices[6], vertices[4], color);
 
+        // Vertical edges connecting top and bottom faces
         Renderer2D::DrawLine(vertices[0], vertices[4], color);
         Renderer2D::DrawLine(vertices[1], vertices[5], color);
         Renderer2D::DrawLine(vertices[2], vertices[6], color);
@@ -228,7 +213,7 @@ void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
     glEnable(GL_DEPTH_TEST);
     Renderer2D::Begin(camera);
 
-    Entity selectedEntity = EditorLayer::Get().GetSceneHierarchy()->GetSelectedEntity();
+    Entity selectedEntity = SceneHierarchyPanel::GetInstance()->GetSelectedEntity();
 
     const auto view = scene->GetAllEntitiesWith<TransformComponent>();
     for (auto [e, tc] : view.each())
@@ -242,7 +227,7 @@ void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
             if (m_Type == GizmoType::BOUNDARY2D && !camera.IsPerspective())
             {
                 CalculateBoundary2DSizing(camera);
-                float size = camera.GetOrthoScale() * 0.03f;
+                f32 size = camera.GetOrthoScale() * 0.03f;
 
                 // bottom left corner
                 glm::vec4 red = glm::vec4(0.8f, 0.1f, 0.1f, 1.0f);
@@ -300,6 +285,30 @@ void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
                 * glm::scale(glm::mat4(1.0f), glm::vec3(glm::vec2(tc.WorldScale * cc.Radius * 2.0f), 1.0f));
 
             Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.05f, 0.0f);
+        }
+
+        // 3D Collider
+        if (entity.HasComponent<RigidbodyComponent>())
+        {
+            RigidbodyComponent &rb = entity.GetComponent<RigidbodyComponent>();
+
+            if (entity.HasComponent<BoxColliderComponent>())
+            {
+                BoxColliderComponent &bc = entity.GetComponent<BoxColliderComponent>();
+                DrawBoxLine(tc.WorldTranslation + rb.Offset, glm::eulerAngles(tc.WorldRotation), tc.WorldScale * bc.Scale, {1.0f, 0.0f, 1.0f, 1.0f});
+            }
+
+            if (entity.HasComponent<CapsuleColliderComponent>())
+            {
+                CapsuleColliderComponent &cc = entity.GetComponent<CapsuleColliderComponent>();
+                DrawCapsuleLine(tc.WorldTranslation + rb.Offset, glm::eulerAngles(tc.WorldRotation), tc.Scale.y * (cc.HalfHeight / 2.0f), cc.Radius, { 1.0f, 0.0f, 1.0f, 1.0f });
+            }
+
+            if (entity.HasComponent<SphereColliderComponent>())
+            {
+                SphereColliderComponent &sc = entity.GetComponent<SphereColliderComponent>();
+                DrawSphereLine(tc.WorldTranslation + rb.Offset, tc.WorldScale.x * sc.Radius * 2.0f, { 1.0f, 0.0f, 1.0f, 1.0f });
+            }
         }
     }
 
@@ -360,11 +369,11 @@ void Gizmos::CalculateBoundary2DSizing(const Camera &camera)
 
     const glm::vec2 delta = Input::GetMouseClickDragDelta();
 
-    float viewportHeight = camera.GetViewportSize().y;
-    float orthoScale = camera.GetOrthoScale() / viewportHeight;
+    f32 viewportHeight = camera.GetViewportSize().y;
+    f32 orthoScale = camera.GetOrthoScale() / viewportHeight;
     glm::vec3 translation = glm::vec3(delta, 0.0f);
 
-    Entity selectedEntity = EditorLayer::Get().GetSceneHierarchy()->GetSelectedEntity();
+    Entity selectedEntity = SceneHierarchyPanel::GetInstance()->GetSelectedEntity();
 
     if (selectedEntity.IsValid())
     {
@@ -417,4 +426,131 @@ void Gizmos::CalculateBoundary2DSizing(const Camera &camera)
         }
     }
 }
+
+void Gizmos::DrawBoxLine(const glm::vec3 &position, const glm::vec3 &rotation, const glm::vec3 &size, const glm::vec4 &color)
+{
+    glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+        * glm::rotate(rotation.x, glm::vec3{1.0f, 0.0f, 0.0f})
+        * glm::rotate(rotation.y, glm::vec3{0.0f, 1.0f, 0.0f}) 
+        * glm::rotate(rotation.z, glm::vec3{0.0f, 0.0f, 1.0f}) 
+        * glm::scale(glm::mat4(1.0f), size * 0.5f);
+
+    std::array<glm::vec3, 8> vertices = {
+        glm::vec3(-1, -1, -1), glm::vec3(1, -1, -1),
+        glm::vec3(1, 1, -1), glm::vec3(-1, 1, -1),
+        glm::vec3(-1, -1, 1), glm::vec3(1, -1, 1),
+        glm::vec3(1, 1, 1), glm::vec3(-1, 1, 1)
+    };
+
+    for (auto &v : vertices)
+    {
+        v = glm::vec3(transform * glm::vec4(v, 1.0f));
+    }
+
+    // Bottom face
+    Renderer2D::DrawLine(vertices[0], vertices[1], color);
+    Renderer2D::DrawLine(vertices[1], vertices[2], color);
+    Renderer2D::DrawLine(vertices[2], vertices[3], color);
+    Renderer2D::DrawLine(vertices[3], vertices[0], color);
+
+    // Top face
+    Renderer2D::DrawLine(vertices[4], vertices[5], color);
+    Renderer2D::DrawLine(vertices[5], vertices[6], color);
+    Renderer2D::DrawLine(vertices[6], vertices[7], color);
+    Renderer2D::DrawLine(vertices[7], vertices[4], color);
+
+    // Vertical edges
+    Renderer2D::DrawLine(vertices[0], vertices[4], color);
+    Renderer2D::DrawLine(vertices[1], vertices[5], color);
+    Renderer2D::DrawLine(vertices[2], vertices[6], color);
+    Renderer2D::DrawLine(vertices[3], vertices[7], color);
+}
+
+void Gizmos::DrawCapsuleLine(const glm::vec3 &position, const glm::vec3 &rotation, f32 half_height, f32 radius, const glm::vec4 &color)
+{
+    const int segments = 8;
+    const int stacks = 4;
+
+    // Calculate rotated axes
+    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1, 0, 0))
+        * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), glm::vec3(0, 1, 0))
+        * glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1));
+
+    glm::vec3 up = glm::vec3(rotationMatrix * glm::vec4(0, 1, 0, 0));
+    glm::vec3 right = glm::normalize(glm::cross(up, glm::vec3(1, 0, 0)));
+    glm::vec3 forward = glm::normalize(glm::cross(up, right));
+
+    // Vertical line
+    glm::vec3 top = position + up * half_height;
+    glm::vec3 bottom = position - up * half_height;
+    Renderer2D::DrawLine(bottom, top, color);
+
+    // Additional vertical lines
+    glm::vec3 rightPoint = right * radius;
+    glm::vec3 forwardPoint = forward * radius;
+
+    Renderer2D::DrawLine(bottom + rightPoint, top + rightPoint, color);
+    Renderer2D::DrawLine(bottom - rightPoint, top - rightPoint, color);
+    Renderer2D::DrawLine(bottom + forwardPoint, top + forwardPoint, color);
+    Renderer2D::DrawLine(bottom - forwardPoint, top - forwardPoint, color);
+
+    // Draw hemispheres
+    for (int hemisphere = 0; hemisphere < 2; ++hemisphere)
+    {
+        glm::vec3 hemisphereCenter = hemisphere == 0 ? top : bottom;
+        f32 sign = hemisphere == 0 ? 1.0f : -1.0f;
+
+        for (int stack = 0; stack <= stacks; ++stack)
+        {
+            f32 stackAngle = glm::pi<f32>() * 0.5f * stack / stacks * sign;
+            f32 stackRadius = radius * std::cos(std::abs(stackAngle));
+            f32 stackHeight = radius * std::sin(std::abs(stackAngle));
+
+            for (int segment = 0; segment < segments; ++segment)
+            {
+                f32 angle1 = 2.0f * glm::pi<f32>() * segment / segments;
+                f32 angle2 = 2.0f * glm::pi<f32>() * (segment + 1) / segments;
+
+                glm::vec3 p1 = hemisphereCenter +
+                    right * (stackRadius * std::cos(angle1)) +
+                    forward * (stackRadius * std::sin(angle1)) +
+                    up * stackHeight * sign;
+
+                glm::vec3 p2 = hemisphereCenter +
+                    right * (stackRadius * std::cos(angle2)) +
+                    forward * (stackRadius * std::sin(angle2)) +
+                    up * stackHeight * sign;
+
+                Renderer2D::DrawLine(p1, p2, color);
+            }
+        }
+    }
+}
+
+
+void Gizmos::DrawSphereLine(const glm::vec3 &position, f32 radius, const glm::vec4 &color)
+{
+    const int segments = 16;
+
+    // Draw latitude rings
+    for (int i = 0; i < segments; ++i)
+    {
+        f32 theta1 = glm::pi<f32>() * i / segments;
+        f32 theta2 = glm::pi<f32>() * (i + 1) / segments;
+
+        for (int j = 0; j < segments; ++j)
+        {
+            f32 phi1 = 2.0f * glm::pi<f32>() * j / segments;
+            f32 phi2 = 2.0f * glm::pi<f32>() * (j + 1) / segments;
+
+            glm::vec3 p1 = position + radius * glm::vec3(sin(theta1) * cos(phi1), cos(theta1), sin(theta1) * sin(phi1));
+            glm::vec3 p2 = position + radius * glm::vec3(sin(theta2) * cos(phi1), cos(theta2), sin(theta2) * sin(phi1));
+            glm::vec3 p3 = position + radius * glm::vec3(sin(theta1) * cos(phi2), cos(theta1), sin(theta1) * sin(phi2));
+
+            Renderer2D::DrawLine(p1, p2, color);
+            Renderer2D::DrawLine(p1, p3, color);
+        }
+    }
+}
+
 }

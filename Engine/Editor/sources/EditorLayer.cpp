@@ -1,37 +1,24 @@
 ﻿// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "EditorLayer.hpp"
-
 #include "Origin/EntryPoint.h"
-#include "Origin/Utils/PlatformUtils.h"
-#include "Origin/Scripting/ScriptEngine.h"
-#include "Origin/Asset/AssetManager.h"
-#include "Origin/Asset/AssetImporter.h"
-#include "Origin/GUI/UI.h"
-
-#include "Gizmos/Gizmos.hpp"
-#include "Panels/AnimationTimeline.hpp"
-#include "Serializer/EditorSerializer.hpp"
-
-#include "Panels/AudioSystemPanel.hpp"
-
-#include "Themes.hpp"
-#include "Dockspace.hpp"
 
 #include <filesystem>
-
 #include <glad/glad.h>
 #include <vector>
-
 #include <algorithm>
 #include <numeric>
 #include <chrono>
 
 namespace origin {
-static EditorLayer *s_Instance = nullptr;
+
+static EditorLayer *s_instance = nullptr;
 
 EditorLayer::EditorLayer()
-    : Layer("EditorLayer") { s_Instance = this; }
+    : Layer("EditorLayer")
+{
+    s_instance = this;
+}
 
 void EditorLayer::OnAttach()
 {
@@ -84,7 +71,7 @@ void EditorLayer::OnAttach()
     }
 
     CreatePanels();
-    m_Gizmos = CreateScope<Gizmos>();
+    m_gizmo = CreateScope<Gizmos>();
 
     if (!m_UIEditorPanel)
     {
@@ -121,7 +108,7 @@ void EditorLayer::OnEvent(Event &e)
         p->OnEvent(e);
     }
 
-    m_Gizmos->OnEvent(e);
+    m_gizmo->OnEvent(e);
     m_EditorCamera.OnEvent(e);
 }
 
@@ -132,9 +119,9 @@ void EditorLayer::OnUpdate(const Timestep ts)
     // calculate mouse
     auto [mx, my] = ImGui::GetMousePos();
     m_ViewportMousePos = { mx, my };
-    m_ViewportMousePos -= m_ViewportRect.min;
-    m_ViewportMousePos.y = m_ViewportRect.GetSize().y - m_ViewportMousePos.y;
-    m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_ViewportRect.GetSize() - glm::vec2(1.0f, 1.0f));
+    m_ViewportMousePos -= m_viewport_rect.min;
+    m_ViewportMousePos.y = m_viewport_rect.GetSize().y - m_ViewportMousePos.y;
+    m_ViewportMousePos = glm::clamp(m_ViewportMousePos, { 0.0f, 0.0f }, m_viewport_rect.GetSize() - glm::vec2(1.0f, 1.0f));
 
     ProfilerTimer timer("EditorLayer::OnUpdate", [&](const ProfilerResult result)
     {
@@ -146,30 +133,25 @@ void EditorLayer::OnUpdate(const Timestep ts)
     case SceneState::Edit:
     case SceneState::Simulate:
     {
-        if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_ViewportRect.GetSize().x != fb_spec.Width || m_ViewportRect.GetSize().y != fb_spec.Height)
+        if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_viewport_rect.GetSize().x != fb_spec.Width || m_viewport_rect.GetSize().y != fb_spec.Height)
         {
-            if (m_ViewportRect.GetSize().x > 0.0f && m_ViewportRect.GetSize().y > 0.0f)
+            if (m_viewport_rect.GetSize().x > 0.0f && m_viewport_rect.GetSize().y > 0.0f)
             {
-                m_Framebuffer->Resize(static_cast<u32>(m_ViewportRect.GetSize().x), static_cast<u32>(m_ViewportRect.GetSize().y));
-                m_EditorCamera.SetViewportSize(m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y);
-                m_ActiveScene->OnViewportResize(static_cast<u32>(m_ViewportRect.GetSize().x), static_cast<u32>(m_ViewportRect.GetSize().y));
+                m_Framebuffer->Resize(static_cast<u32>(m_viewport_rect.GetSize().x), static_cast<u32>(m_viewport_rect.GetSize().y));
+                m_EditorCamera.SetViewportSize(m_viewport_rect.GetSize().x, m_viewport_rect.GetSize().y);
+                m_ActiveScene->OnViewportResize(static_cast<u32>(m_viewport_rect.GetSize().x), static_cast<u32>(m_viewport_rect.GetSize().y));
             }
-
         }
         break;
     }
     case SceneState::Play:
         const u32 width = m_ActiveScene->GetWidth();
         const u32 height = m_ActiveScene->GetHeight();
-        if (m_ViewportRect.GetSize().x != width && m_ViewportRect.GetSize().y != height)
+        if (m_viewport_rect.GetSize().x != static_cast<f32>(width) && m_viewport_rect.GetSize().y != static_cast<f32>(height) && m_viewport_rect.GetSize().x > 0.0f && m_viewport_rect.GetSize().y > 0.0f)
         {
-            if (m_ViewportRect.GetSize().x > 0.0f && m_ViewportRect.GetSize().y > 0.0f)
-            {
-                m_ActiveScene->OnViewportResize(static_cast<u32>(m_ViewportRect.GetSize().x),
-                    static_cast<u32>(m_ViewportRect.GetSize().y));
-            }
-            break;
+            m_ActiveScene->OnViewportResize(static_cast<u32>(m_viewport_rect.GetSize().x),  static_cast<u32>(m_viewport_rect.GetSize().y));
         }
+        break;
     }
 
     SystemUpdate(ts);
@@ -187,14 +169,9 @@ void EditorLayer::OnUpdate(const Timestep ts)
     InputProcedure(ts);
 }
 
-SceneHierarchyPanel *EditorLayer::GetSceneHierarchy() const
-{
-    return m_SceneHierarchyPanel;
-}
-
 EditorLayer &EditorLayer::Get()
 {
-    return *s_Instance;
+    return *s_instance;
 }
 
 void EditorLayer::Render(Timestep ts)
@@ -215,13 +192,13 @@ void EditorLayer::Render(Timestep ts)
             Input::SetMouseToCenter();
         }
 
-        m_Gizmos->SetType(GizmoType::NONE);
+        m_gizmo->SetType(GizmoType::NONE);
         m_ActiveScene->OnUpdateRuntime(ts);
         if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
         {
             CameraComponent cc = cam.GetComponent<CameraComponent>();
-            if(m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
-            if(m_VisualizeCollider) m_Gizmos->DrawCollider(cc.Camera, m_ActiveScene.get());
+            if(m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
+            if(m_VisualizeCollider) m_gizmo->DrawCollider(cc.Camera, m_ActiveScene.get());
         }
         break;
     }
@@ -235,14 +212,14 @@ void EditorLayer::Render(Timestep ts)
         m_EditorCamera.UpdateProjection();
                 
         // draw gizmo
-        m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
-        if(m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
-        if (m_VisualizeCollider) m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
-        if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+        m_gizmo->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
+        if(m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
+        if (m_VisualizeCollider) m_gizmo->DrawCollider(m_EditorCamera, m_ActiveScene.get());
+        if (m_Draw2DGrid) m_gizmo->Draw2DGrid(m_EditorCamera);
 
         // update scene
         m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
-        m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+        m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
         break;
     }
 
@@ -255,14 +232,14 @@ void EditorLayer::Render(Timestep ts)
         m_EditorCamera.UpdateProjection();
 
         // draw gizmo
-        m_Gizmos->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
-        if (m_VisualizeBoundingBox) m_Gizmos->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
-        if (m_VisualizeCollider)m_Gizmos->DrawCollider(m_EditorCamera, m_ActiveScene.get());
-        if (m_Draw2DGrid) m_Gizmos->Draw2DGrid(m_EditorCamera);
+        m_gizmo->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
+        if (m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
+        if (m_VisualizeCollider)m_gizmo->DrawCollider(m_EditorCamera, m_ActiveScene.get());
+        if (m_Draw2DGrid) m_gizmo->Draw2DGrid(m_EditorCamera);
 
         // update scene
         m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
-        m_Gizmos->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+        m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 
         break;
     }
@@ -729,10 +706,10 @@ void EditorLayer::SceneViewport()
     const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
     const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
     const ImVec2 &viewportOffset = ImGui::GetWindowPos();
-    m_ViewportRect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-    m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+    m_viewport_rect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+    m_viewport_rect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-    const glm::vec2 &vpSize = m_ViewportRect.GetSize();
+    const glm::vec2 &vpSize = m_viewport_rect.GetSize();
 
     if (m_SceneState == SceneState::Play)
     {
@@ -822,23 +799,23 @@ void EditorLayer::SceneViewport()
         ImGui::EndDragDropTarget();
     }
 
-    m_ImGuizmoOperation = ImGuizmo::OPERATION::NONE;
+    m_gizmo_operation = ImGuizmo::OPERATION::NONE;
 
     f32 snapValue = 0.5f;
-    switch (m_Gizmos->GetType())
+    switch (m_gizmo->GetType())
     {
     case GizmoType::TRANSLATE:
-        m_ImGuizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+        m_gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
         break;
     case GizmoType::ROTATE:
-        m_ImGuizmoOperation = ImGuizmo::OPERATION::ROTATE;
+        m_gizmo_operation = ImGuizmo::OPERATION::ROTATE;
         snapValue = 15.0f;
         break;
     case GizmoType::SCALE:
-        m_ImGuizmoOperation = ImGuizmo::OPERATION::SCALE;
+        m_gizmo_operation = ImGuizmo::OPERATION::SCALE;
         break;
     case GizmoType::BOUNDARY:
-        m_ImGuizmoOperation = ImGuizmo::OPERATION::BOUNDS;
+        m_gizmo_operation = ImGuizmo::OPERATION::BOUNDS;
         snapValue = 0.1f;
         break;
     }
@@ -846,10 +823,10 @@ void EditorLayer::SceneViewport()
     // Gizmos
     ImGuizmo::SetDrawlist();
 
-    glm::vec2 windowMin = m_ViewportRect.min;
+    glm::vec2 windowMin = m_viewport_rect.min;
 
     // flip y
-    glm::vec2 windowMax = { m_ViewportRect.max.x - m_ViewportRect.min.x, m_ViewportRect.max.y - m_ViewportRect.min.y };
+    glm::vec2 windowMax = { m_viewport_rect.max.x - m_viewport_rect.min.x, m_viewport_rect.max.y - m_viewport_rect.min.y };
 
     ImGuizmo::SetRect(windowMin.x, windowMin.y, windowMax.x, windowMax.y);
     ImGuizmo::SetOrthographic(m_EditorCamera.GetProjectionType() == ProjectionType::Orthographic);
@@ -858,7 +835,7 @@ void EditorLayer::SceneViewport()
     const glm::mat4 &cameraView = m_EditorCamera.GetViewMatrix();
 
     Entity entity = m_SceneHierarchyPanel->GetSelectedEntity();
-    if (entity && m_Gizmos->GetType() != GizmoType::NONE)
+    if (entity && m_gizmo->GetType() != GizmoType::NONE)
     {
         auto &tc = entity.GetComponent<TransformComponent>();
         glm::mat4 transform = tc.GetTransform();
@@ -866,14 +843,14 @@ void EditorLayer::SceneViewport()
 
         f32 snapValues[] = { snapValue, snapValue, snapValue };
         f32 bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-        bool boundSizing = m_Gizmos->GetType() == GizmoType::BOUNDARY
+        bool boundSizing = m_gizmo->GetType() == GizmoType::BOUNDARY
             && !entity.HasComponent<CameraComponent>()
             && !entity.HasComponent<LightComponent>()
             && !entity.HasComponent<AudioComponent>();
 
         bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
         ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-            m_ImGuizmoOperation, static_cast<ImGuizmo::MODE>(m_GizmosMode), glm::value_ptr(transform), nullptr,
+            m_gizmo_operation, static_cast<ImGuizmo::MODE>(m_gizmo_mode), glm::value_ptr(transform), nullptr,
             snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
             
         static bool changed = false;
@@ -947,7 +924,7 @@ void EditorLayer::SceneViewport()
     m_GuiWindowSceneStats.Begin();
         
     const auto renderStats = Renderer::GetStatistics();
-    ImGui::Text("Draw Calls: %u", renderStats.DrawCalls);
+    ImGui::Text("Draw Calls: %u", renderStats.draw_calls);
     ImGui::Text("Vertices: %u", renderStats.GetTotalQuadVertexCount());
     ImGui::Text("Indices: %u", renderStats.GetTotalQuadIndexCount());
 
@@ -1216,7 +1193,7 @@ void EditorLayer::GUIRender()
 
                 if (ImGui::TreeNodeEx("Camera Settings", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    ImGui::Text("Viewport Size %.0f, %.0f", m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y);
+                    ImGui::Text("Viewport Size %.0f, %.0f", m_viewport_rect.GetSize().x, m_viewport_rect.GetSize().y);
 
                     // Projection Type Settings
                     const char *CMPTypeString[] = { "Perspective", "Orthographic" };
@@ -1508,7 +1485,7 @@ bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
         auto ray_direction = glm::vec3(0.0f);
         auto ray_origin = glm::vec3(0.0f);
 
-        ray_direction = Math::GetRayFromScreenCoords(m_ViewportMousePos, m_ViewportRect.GetSize(),
+        ray_direction = Math::GetRayFromScreenCoords(m_ViewportMousePos, m_viewport_rect.GetSize(),
                                                     m_EditorCamera.GetProjectionMatrix(),
                                                     m_EditorCamera.GetViewMatrix(),
                                                     m_EditorCamera.IsPerspective(),
@@ -1517,6 +1494,9 @@ bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
         const auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
         for (auto [entity, tc] : view.each())
         {
+            if (!tc.Clickable)
+                continue;
+
             OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
             if (m_ActiveScene->m_Registry.any_of<TextComponent>(entity))
             {
@@ -1540,7 +1520,7 @@ bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
         m_SceneHierarchyPanel->SetSelectedEntity(closestEntity);
         if (!closestEntity)
         {
-            m_Gizmos->SetType(GizmoType::NONE);
+            m_gizmo->SetType(GizmoType::NONE);
         }
     }
 
@@ -1685,7 +1665,7 @@ bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
         else
         {
             if ((IsViewportFocused))
-                m_Gizmos->SetType(GizmoType::NONE);
+                m_gizmo->SetType(GizmoType::NONE);
         }
         break;
     }
@@ -1701,8 +1681,8 @@ bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
 
     case Key::E:
     {
-        if (!ImGuizmo::IsUsing() && !io.WantTextInput && m_GizmosMode == ImGuizmo::MODE::LOCAL)
-            m_Gizmos->SetType(GizmoType::SCALE);
+        if (!ImGuizmo::IsUsing() && !io.WantTextInput && m_gizmo_mode == ImGuizmo::MODE::LOCAL)
+            m_gizmo->SetType(GizmoType::SCALE);
         break;
     }
 
@@ -1738,7 +1718,7 @@ bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
     case Key::R:
     {
         if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-            m_Gizmos->SetType(GizmoType::ROTATE);
+            m_gizmo->SetType(GizmoType::ROTATE);
         break;
     }
     case Key::F5:
@@ -1789,7 +1769,7 @@ bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
     case Key::T:
     {
         if (!ImGuizmo::IsUsing() && !io.WantTextInput)
-            m_Gizmos->SetType(GizmoType::TRANSLATE);
+            m_gizmo->SetType(GizmoType::TRANSLATE);
         break;
     }
 
@@ -1799,7 +1779,7 @@ bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
         {
             if (!ImGuizmo::IsUsing() && !m_EditorCamera.IsPerspective())
             {
-                m_Gizmos->SetType(GizmoType::BOUNDARY2D);
+                m_gizmo->SetType(GizmoType::BOUNDARY2D);
             }
 
             if (control)

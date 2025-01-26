@@ -3,7 +3,7 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-#include "MeshMaterial.hpp"
+#include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Renderer/Shader.h"
 #include "Origin/Asset/Asset.h"
 
@@ -54,8 +54,6 @@ struct MeshVertexData
 class Mesh
 {
 public:
-    bool is_active = true;
-
     std::string name;
     MeshMaterial material;
     Ref<VertexArray> vertex_array;

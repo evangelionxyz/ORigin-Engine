@@ -14,9 +14,9 @@ namespace origin
 		m_MaterialMap[name] = material;
 	}
 
-	bool MaterialLibrary::Exist(const std::string &name)
+	bool MaterialLibrary::Exist(const std::string &name) const
 	{
-		return m_MaterialMap.find(name) != m_MaterialMap.end();
+		return m_MaterialMap.contains(name);
 	}
 
 	std::shared_ptr<Material> MaterialLibrary::Get(const std::string &name)

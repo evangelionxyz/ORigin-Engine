@@ -3,7 +3,7 @@
 #ifndef MATERIAL_EDITOR_PANEL_HPP
 #define MATERIAL_EDITOR_PANEL_HPP
 
-#include "Origin/Renderer/Material.h"
+#include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Asset/Asset.h"
 
 #include "PanelBase.hpp"
@@ -33,7 +33,7 @@ public:
 
 private:
     std::filesystem::path m_CurrentFilepath;
-    std::shared_ptr<Material> m_Material;
+    Material *m_Material;
 };
 
 }

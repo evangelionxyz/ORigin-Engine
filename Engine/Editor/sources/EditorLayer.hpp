@@ -4,14 +4,26 @@
 #define EDITOR_LAYER_HPP
 
 #include <Origin.hpp>
-#include "Gizmos/Gizmos.hpp"
+#include "Gizmos.hpp"
+#include "Themes.hpp"
+#include "Dockspace.hpp"
 
+#include "Origin/Utils/PlatformUtils.h"
+#include "Origin/Scripting/ScriptEngine.h"
+#include "Origin/Asset/AssetManager.h"
+#include "Origin/Asset/AssetImporter.h"
+#include "Origin/GUI/UI.h"
+
+#include "Panels/AudioSystemPanel.hpp"
+#include "Panels/BlendSpacePanel.hpp"
 #include "Panels/UIEditorPanel.hpp"
 #include "Panels/MaterialEditorPanel.hpp"
 #include "Panels/AnimationTimeline.hpp"
 #include "Panels/SpriteSheetEditorPanel.hpp"
 #include "Panels/SceneHierarchyPanel.hpp"
 #include "Panels/ContentBrowserPanel.hpp"
+
+#include "Serializer/EditorSerializer.hpp"
 
 #include <ImGuizmo.h>
 
@@ -39,9 +51,6 @@ namespace origin
 
         bool IsViewportHovered = false;
         bool IsViewportFocused = false;
-
-        SceneHierarchyPanel *GetSceneHierarchy() const;
-        SpriteSheetEditorPanel *GetSpriteEditor() const;
 
     private:
         void CreatePanels();
@@ -92,47 +101,45 @@ namespace origin
         };
 
         std::vector<ProfilerResult> m_ProfilerResults;
-
         SceneState m_SceneState = SceneState::Edit;
-
         EditorCamera m_EditorCamera;
 
-        // Panels
+        // ================ Panels ==================
         SceneHierarchyPanel     *m_SceneHierarchyPanel    = nullptr;
         SpriteSheetEditorPanel  *m_SpriteSheetEditorPanel = nullptr;
         UIEditorPanel           *m_UIEditorPanel          = nullptr;
+        BlendSpacePanel         *m_BlendSpacePanel        = nullptr;
+        Scope<ContentBrowserPanel> m_ContentBrowser;
+        Scope<Gizmos> m_gizmo;
         std::vector<PanelBase *> m_Panels;
-        Scope<Gizmos> m_Gizmos;
-
-        u32 m_GridVAO, m_GridVBO;
-        glm::vec4 m_GridThinColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-        glm::vec4 m_GridThickColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+        // ==========================================
+        // ==========================================
+        
 
         std::unordered_map<std::string, Ref<Texture2D>> m_UITextures;
         Ref<Texture2D> m_OriginEngineTex;
         Ref<Framebuffer> m_Framebuffer, m_GameFramebuffer;
-        Scope<ContentBrowserPanel> m_ContentBrowser;
         Ref<Scene> m_ActiveScene, m_EditorScene;
-
         GuiWindow m_GuiWindowSceneStats;
 
         std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
-
+        glm::vec4 m_GridThinColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+        glm::vec4 m_GridThickColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
         glm::vec4 m_ClearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
         glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
         glm::vec2 m_ViewportMousePos = { 0.0f, 0.0f };
-        Rect m_ViewportRect = Rect();
+        Rect m_viewport_rect = Rect();
+        Entity m_HoveredEntity = {};
 
-        ImGuizmo::OPERATION m_ImGuizmoOperation = (ImGuizmo::OPERATION)0;
-        int m_GizmosMode = 0;
-        int m_RenderTarget = 0;
-        float m_Time = 0.0f;
+        ImGuizmo::OPERATION m_gizmo_operation = static_cast<ImGuizmo::OPERATION>(0);
+        i32 m_gizmo_mode = 0;
+        i32 m_RenderTarget = 0;
+        f32 m_Time = 0.0f;
+        u32 m_GridVAO, m_GridVBO;
         bool m_Draw2DGrid = true;
         bool m_DrawLineModeActive = false;
         bool m_VisualizeCollider = false;
         bool m_VisualizeBoundingBox = false;
-        Entity m_HoveredEntity = {};
-
         bool m_IsProjectBrowserOpen = true;
 
         friend class Gizmos;

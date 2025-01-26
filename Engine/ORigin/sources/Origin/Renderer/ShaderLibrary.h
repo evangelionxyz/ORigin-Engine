@@ -1,4 +1,4 @@
-// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #ifndef SHADER_LIBRARY_H
 #define SHADER_LIBRARY_H

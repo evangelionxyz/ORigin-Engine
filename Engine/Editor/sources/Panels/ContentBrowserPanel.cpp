@@ -3,7 +3,6 @@
 #include "ContentBrowserPanel.hpp"
 #include "../EditorLayer.hpp"
 
-#include "Origin/Serializer/MaterialSerializer.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Project/Project.h"
@@ -397,8 +396,8 @@ namespace origin
 
                                 if (metadata.Type == AssetType::Material)
                                 {
-                                    Ref<Material> mat = AssetManager::GetAsset<Material>(handle);
-                                    mat->SetName(metadata.Filepath.stem().string());
+                                    /*Ref<Material> mat = AssetManager::GetAsset<Material>(handle);
+                                    mat->SetName(metadata.Filepath.stem().string());*/
                                 }
                                 else if (metadata.Type == AssetType::Scene)
                                 {
@@ -444,20 +443,6 @@ namespace origin
                     if (!std::filesystem::exists(folder))
                     {
                         std::filesystem::create_directory(folder);
-                        RefreshAssetTree();
-                    }
-                }
-
-                if (ImGui::MenuItem("Material", nullptr))
-                {
-                    Ref<Material> material = Material::Create("Material");
-                    const std::filesystem::path materialPath = m_CurrentDirectory / "Material.mat";
-                    if (!std::filesystem::exists(materialPath))
-                    {
-                        MaterialSerializer::Serialize(materialPath, material);
-                        std::filesystem::path relativePath = std::filesystem::relative(materialPath, Project::GetActiveAssetDirectory());
-                        Project::GetActive()->GetEditorAssetManager()->ImportAsset(relativePath);
-
                         RefreshAssetTree();
                     }
                 }

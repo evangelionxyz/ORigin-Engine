@@ -1,4 +1,4 @@
-// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #ifndef ANIMATION_CONTROLLER_H
 #define ANIMATION_CONTROLLER_H
