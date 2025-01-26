@@ -31,7 +31,12 @@ layout(location = 0) in Vertex
   vec3 texcoord;
 } vin;
 
-uniform float ublur_factor;
+layout(std140, binding = 1) uniform Skybox
+{
+  vec4 tint_color;
+  float blur_factor;
+} skybox_buffer;
+
 uniform samplerCube uskybox_cube;
 
 void main()
@@ -42,9 +47,10 @@ void main()
     for (int j = -2; j < 2; ++j)
     {
       color += texture(uskybox_cube, 
-        vin.texcoord + vec3(float(i) * ublur_factor, float(j) * ublur_factor, 0.0)).rgb;
+        vin.texcoord + vec3(float(i) * skybox_buffer.blur_factor, float(j) * skybox_buffer.blur_factor, 0.0)).rgb;
     }
   }
   color /= 25.0;
+  color *= skybox_buffer.tint_color.rgb;
   frag_color = vec4(color, 1.0);
 }

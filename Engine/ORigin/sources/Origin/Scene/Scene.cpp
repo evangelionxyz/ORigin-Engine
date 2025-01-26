@@ -543,9 +543,11 @@ void Scene::RenderScene(const Camera &camera)
         if (env_map.skybox)
         {
             glDepthFunc(GL_LEQUAL);
-            Renderer::GetShader("Skybox")->Enable();
 
-            Renderer::GetShader("Skybox")->SetFloat("ublur_factor", env_map.blur_factor);
+            Renderer::GetShader("Skybox")->Enable();
+            Renderer::skybox_uniform_buffer->Bind();
+            Renderer::skybox_uniform_buffer->SetData(&env_map.tint_color, sizeof(glm::vec4) + sizeof(f32));
+            Renderer::skybox_uniform_buffer->SetData(&env_map.blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);

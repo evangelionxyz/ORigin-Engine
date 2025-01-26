@@ -19,6 +19,8 @@ namespace origin {
 #define POINT_LIGHT_BINDING       (4)
 #define AREA_LIGHT_BINDING        (5)
 
+#define SKYBOX_BINDING            (1)
+
 #define MATERIAL_BINDING          (6)
 #define DIFFUSE_TEXTURE_BINDING   (7)
 #define SPECULAR_TEXTURE_BINDING  (8)
@@ -84,6 +86,7 @@ public:
 	static LightingManager *lighting_manager;
 	static MaterialManager *material_manager;
 	static Ref<UniformBuffer> camera_uniform_buffer;
+	static Ref<UniformBuffer> skybox_uniform_buffer;
 
 	static RenderData render_data;
 

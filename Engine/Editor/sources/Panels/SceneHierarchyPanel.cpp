@@ -583,7 +583,8 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
     DrawComponent<EnvironmentMap>("Environment Map", entity, [](auto &component)
     {
-        UI::DrawFloatControl("Blur", &component.blur_factor, 0.0001f, 0.0f, 100.0f);
+        ImGui::ColorEdit4("Tint Color", &component.tint_color.x);
+        UI::DrawFloatControl("Blur", &component.blur_factor, 0.0001f, 0.0f, 2.0f);
     });
 
     DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
@@ -1050,7 +1051,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
         UI::DrawCheckbox("Static", &component.IsStatic);
         UI::DrawCheckbox("Allow Sleeping", &component.AllowSleeping);
-        if (UI::DrawFloatControl("Gravity Factor", &component.GravityFactor, 0.05f, 0.0f, 1000.0f, 0.0f))
+        if (UI::DrawFloatControl("Gravity Factor", &component.GravityFactor, 0.05f, 0.0f, 1000.0f, 1.0f))
         {
             if (scene->IsRunning())
             {
@@ -1058,21 +1059,21 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
             }
         }
             
-        if (UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f))
+        if (UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 1.0f))
         {
             if (scene->IsRunning())
             {
                 component.SetMass(component.Mass);
             }
         }
-        if (UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f))
+        if (UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f))
         {
             if (scene->IsRunning())
             {
                 component.SetOffset(component.Offset);
             }
         }
-        if (UI::DrawVec3Control("Center Mass", component.CenterMass))
+        if (UI::DrawVec3Control("Center Mass", component.CenterMass, 0.025f, 0.0f))
         {
             if (scene->IsRunning())
             {
@@ -1084,8 +1085,8 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
     DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto &component)
     {
         UI::DrawVec3Control("Scale", component.Scale, 0.025f, 1.0f);
-        UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
-        UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+        UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.6f);
+        UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.6f);
     });
 
     DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto &component)

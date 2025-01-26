@@ -30,6 +30,7 @@ RendererAPI *RenderCommand::s_RendererAPI = nullptr;
 LightingManager *Renderer::lighting_manager = nullptr;
 MaterialManager *Renderer::material_manager = nullptr;
 Ref<UniformBuffer> Renderer::camera_uniform_buffer;
+Ref<UniformBuffer> Renderer::skybox_uniform_buffer;
 
 Statistics &Renderer::GetStatistics()
 {
@@ -77,6 +78,7 @@ bool Renderer::Init()
 	material_manager->CreateMeshMaterialSSBO();
 
 	camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
+	skybox_uniform_buffer = UniformBuffer::Create(sizeof(glm::vec4) + sizeof(f32), SKYBOX_BINDING);
 	
 	RenderCommand::Init();
 	OGN_CORE_TRACE("[Renderer] Initialized");
@@ -87,6 +89,7 @@ void Renderer::Shutdown()
 {
 	OGN_PROFILER_FUNCTION();
 
+	skybox_uniform_buffer.reset();
 	camera_uniform_buffer.reset();
 
 	delete material_manager;

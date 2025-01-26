@@ -396,7 +396,8 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		EnvironmentMap &env_comp = entity.GetComponent<EnvironmentMap>();
 		out << YAML::Key << "EnvironmentMap";
 		out << YAML::BeginMap;
-		out << YAML::Key << "Blur Factor" << env_comp.blur_factor;
+        out << YAML::Key << "TintColor" << env_comp.tint_color;
+		out << YAML::Key << "BlurFactor" << env_comp.blur_factor;
 		out << YAML::EndMap;
 	}
 
@@ -791,13 +792,16 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				mc.HModel = mesh_component["HModel"].as<uint64_t>();
 				Ref<Model> model = AssetManager::GetAsset<Model>(mc.HModel);
 				if (model)
+				{
 					mc.blend_space.SetModel(model);
+				}
 			}
 
 			if (YAML::Node env_component = entity["EnvironmentMap"])
 			{
 				EnvironmentMap &env_map_comp = deserialized_entity.AddComponent<EnvironmentMap>();
-				env_map_comp.blur_factor = env_component["Blur Factor"].as<float>();
+				env_map_comp.tint_color = env_component["TintColor"].as<glm::vec4>();
+				env_map_comp.blur_factor = env_component["BlurFactor"].as<float>();
 			}
 
 			if (YAML::Node directional_light_component = entity["DirectionalLightComponent"])

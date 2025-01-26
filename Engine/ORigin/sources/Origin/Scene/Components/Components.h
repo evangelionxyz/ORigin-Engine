@@ -19,6 +19,7 @@
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Buffer.h"
 #include "Origin/Scene/Skybox.h"
+#include "Origin/Renderer/Renderer.h"
 
 #include "Origin/Scene/Camera/SceneCamera.h"
 #include "Origin/Scene/SpriteSheet.h"
@@ -169,7 +170,8 @@ public:
     EnvironmentMap(const EnvironmentMap &) = default;
 
     Ref<Skybox> skybox;
-    f32 blur_factor = 0.0005f;
+    glm::vec4 tint_color{ 1.0f, 1.0f, 1.0f, 1.0f };
+    f32 blur_factor{ 0.0005f };
 };
 
 class AudioComponent
