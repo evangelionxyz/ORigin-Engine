@@ -65,6 +65,21 @@ void main()
 
 // type fragment
 #version 450 core
+
+struct Material
+{
+    vec4 base_color;
+    vec4 tiling_factor;
+};
+
+struct SpotLight
+{
+    vec4 position;
+    vec4 direction;
+    vec4 color;
+    vec2 cut_off;
+};
+
 layout (location = 0) out vec4 frag_color;
 
 layout (location = 0) in Vertex
@@ -76,6 +91,20 @@ layout (location = 0) in Vertex
     flat ivec4 bone_ids;
     vec4 weights;
 } vin;
+
+/// ====================================
+//          STORAGE BUFFER
+/// ====================================
+layout(std140, binding = 0) buffer MaterialBuffer
+{
+    Material materials[];
+};
+
+layout(std140, binding = 1) buffer SpotLightBuffer
+{
+    SpotLight spot_lights[];
+};
+/// ====================================
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -93,65 +122,99 @@ layout(std140, binding = 1) uniform Lighting
 
 layout(std140, binding = 2) uniform DirectionalLight
 {
-    vec3 color;     // Light light color
-    vec3 direction; // light direction (should be normalized)
+    vec4 color;     // Light light color
+    vec4 direction; // light direction (should be normalized)
 } dir_light_buffer;
 
-layout(std140, binding = 3) uniform SpotLight
-{
-    vec3 position;
-    vec3 color;
-} spot_light_buffer;
 
-layout(std140, binding = 4) uniform PointLight
+layout(std140, binding = 3) uniform PointLight
 {
     vec3 position;
     vec3 color;
 } point_light_buffer;
 
-layout(std140, binding = 5) uniform AreaLight
+layout(std140, binding = 4) uniform AreaLight
 {
     vec3 position;
     vec3 color;
 } area_light_buffer;
 
-struct Material
-{
-    vec4 base_color;
-    vec4 tiling_factor;
-};
+layout(binding = 6) uniform sampler2D udiffuse_texture;
+layout(binding = 7) uniform sampler2D uspecular_texture;
+layout(binding = 8) uniform sampler2D uroughness_texture;
 
-layout(std140, binding = 0) buffer MaterialBuffer
-{
-    Material materials[];
-};
-
-layout(binding = 7) uniform sampler2D udiffuse_texture;
-layout(binding = 8) uniform sampler2D uspecular_texture;
-layout(binding = 9) uniform sampler2D uroughness_texture;
+uniform int uspot_light_count;
 uniform int umaterial_index;
 
 Material material = materials[umaterial_index];
 
+/// ====================================
+///        SPOT LIGHT CALCULATION
+/// ====================================
+vec3 calculate_spot_light(SpotLight light, vec3 view_dir, vec3 frag_pos, vec3 normal)
+{
+    vec3 normalized_view_dir = normalize(view_dir);
+    vec3 light_dir = normalize(light.direction.xyz);
+    
+    // direction to fragment
+    vec3 to_frag = normalize(frag_pos - light.position.xyz);
+
+    // angel between light direction and fragment direction
+    float theta = dot(-light_dir, to_frag);
+
+    // check if within spotlight cone
+    float epsilon = light.cut_off.x - light.cut_off.y;
+    float intensity = clamp((theta - light.cut_off.y) / epsilon, 0.0, 1.0);
+
+    vec3 ambient_color = 0.1 * light.color.rgb;
+
+    float diffuse = max(dot(normal, -light_dir), 0.0);
+    vec3 diffuse_color = diffuse * light.color.rgb;
+
+    // specular phong
+    vec3 reflect_dir = reflect(light_dir, normal);
+    float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0);
+    vec3 specular_color = specular * light.color.rgb;
+
+    // combine
+    return (ambient_color + intensity * (diffuse_color + specular_color)) * light.color.a;
+}
+
+vec3 calculate_all_spotlights(vec3 view_dir, vec3 frag_pos, vec3 normal)
+{
+    vec3 result = vec3(0.0);
+
+    for (int i = 0; i < uspot_light_count; ++i)
+    {
+        result += calculate_spot_light(spot_lights[i], view_dir, frag_pos, normal);
+    }
+
+    return result;
+}
+
+/// ====================================
+///   DIRECTIONAL LIGHT CALCULATION
+/// ====================================
+
 vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord)
 {
-  vec3 light_direction = normalize(-dir_light_buffer.direction); // light direction (inverted for incoming light)
+  vec3 light_direction = normalize(-dir_light_buffer.direction.xyz); // light direction (inverted for incoming light)
   vec3 normalized_normal = normalize(normal);
   vec3 normalized_view_dir = normalize(view_dir);
 
   // ambient light contribution
   float ambient_strength = 0.1;
-  vec3 ambient_color = ambient_strength * dir_light_buffer.color;
+  vec3 ambient_color = ambient_strength * dir_light_buffer.color.rgb;
 
   // diffuse light contribution
   float diffuse = max(dot(normalized_normal, light_direction), 0.0);
-  vec3 diffuse_color = diffuse * dir_light_buffer.color;
+  vec3 diffuse_color = diffuse * dir_light_buffer.color.rgb;
 
   // specular light contribution (phong)
   float specular_strength = 0.5;
   vec3 reflect_dir = reflect(-light_direction, normalized_normal); // reflected light vector
   float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0); // shininess = 16
-  vec3 specular_color = specular_strength * specular * dir_light_buffer.color;
+  vec3 specular_color = specular_strength * specular * dir_light_buffer.color.rgb;
 
   // combine the contributions
   vec3 base_color = texture(udiffuse_texture, texcoord).rgb;
@@ -162,9 +225,14 @@ void main()
 {
     vec3 normal = vin.normals;
     vec3 view_dir = camera_buffer.position - vin.position;
+    vec3 frag_pos = normalize(vin.position);
 
+    // calculate lighting
     vec3 lighting = vec3(0.0);
+
+    lighting += calculate_all_spotlights(view_dir, frag_pos, normal);
     lighting += calculate_directional_light(normal, view_dir, vin.texcoord * material.tiling_factor.xy);
+
 
     frag_color = vec4(lighting, 1.0);
 }

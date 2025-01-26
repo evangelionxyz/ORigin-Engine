@@ -386,6 +386,9 @@ class DirectionalLightComponent : public LightComponent
 public:
     DirectionalLightComponent() = default;
     DirectionalLightComponent(const DirectionalLightComponent &) = default;
+
+    glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+    glm::vec4 direction{ 0.0f, 0.0f, 0.0f, 1.0f };
 };
 
 class SpotLightComponent : public LightComponent

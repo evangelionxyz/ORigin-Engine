@@ -134,7 +134,10 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
     for (const auto& [entity, dir_light_comp, transform_comp] : directional_light_view.each())
     {
         const Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
-        dir_light->direction = eulerAngles(transform_comp.WorldRotation);
+
+        dir_light_comp.direction = glm::vec4(eulerAngles(transform_comp.WorldRotation), 1.0f);
+        dir_light->direction = dir_light_comp.direction;
+        dir_light->color = dir_light_comp.color;
         dir_light->Bind();
     }
     

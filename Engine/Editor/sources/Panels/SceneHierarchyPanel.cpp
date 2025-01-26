@@ -892,7 +892,13 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
     DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto &component)
     {
-        ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->color));
+        glm::vec3 color = { component.color.x, component.color.y, component.color.z };
+        if (ImGui::ColorEdit3("Color", &color.x))
+        {
+            component.color.x = color.x;
+            component.color.y = color.y;
+            component.color.z = color.z;
+        }
     });
 
     DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto &component)

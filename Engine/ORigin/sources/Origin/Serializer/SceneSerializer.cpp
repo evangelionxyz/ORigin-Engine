@@ -348,8 +348,8 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 
 		const auto &dlc = entity.GetComponent<DirectionalLightComponent>();
 		Ref<DirectionalLight> light = std::static_pointer_cast<DirectionalLight>(dlc.Light);
-		out << YAML::Key << "Direction" << light->color;
 		out << YAML::Key << "Color" << light->color;
+		out << YAML::Key << "Direction" << light->direction;
 
 		out << YAML::EndMap; // !DirectionalLightComponent
 	}
@@ -808,8 +808,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			{
 				DirectionalLightComponent &dlc = deserialized_entity.AddComponent<DirectionalLightComponent>();
 				Ref<DirectionalLight> light = std::static_pointer_cast<DirectionalLight>(dlc.Light);
-				light->color = directional_light_component["Color"].as<glm::vec3>();
-				light->direction = directional_light_component["Direction"].as<glm::vec3>();
+				light->color = directional_light_component["Color"].as<glm::vec4>();
+				light->direction = directional_light_component["Direction"].as<glm::vec4>();
 			}
 
 			if (YAML::Node particle_component = entity["ParticleComponent"])
