@@ -32,6 +32,8 @@ Model::Model(const std::string &filepath)
 
     LoadAnimations();
 	LoadMeshes(m_Scene, filepath);
+
+    SetMeshTransform(m_Scene->mRootNode);
 }
 
 void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
@@ -202,6 +204,25 @@ void Model::CalculateAnimationTransforms(const aiNode *node, const u32 anim_inde
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
         CalculateAnimationTransforms(node->mChildren[i], anim_index, anim_nodes, global_transform);
+    }
+}
+
+void Model::SetMeshTransform(const aiNode *node)
+{
+    std::string node_name(node->mName.data);
+
+    for (auto &mesh : m_Meshes)
+    {
+        if (mesh->name == node_name)
+        {
+            mesh->transform = Math::AssimpToGlmMatrix(node->mTransformation);
+            break;
+        }
+    }
+
+    for (u32 i = 0; i < node->mNumChildren; ++i)
+    {
+        SetMeshTransform(node->mChildren[i]);
     }
 }
 

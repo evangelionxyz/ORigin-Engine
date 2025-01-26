@@ -1,44 +1,53 @@
 // type vertex
 #version 450 core
-layout(location = 0) in vec3 aPos;
+layout(location = 0) in vec3 position;
 
-uniform mat4 uViewProjection;
-uniform float scale = 1000.0f;
+layout(std140, binding = 0) uniform Camera
+{
+    mat4 view_projection;
+    vec3 position;
+} camera_buffer;
 
-out vec3 vTexCoord;
+layout(location = 0) out Vertex
+{
+  vec3 texcoord;
+} vout;
 
 void main()
 {
-	vTexCoord = aPos;
-	vec4 Position = uViewProjection * vec4(aPos * scale, 1);
-	gl_Position = Position.xyww;
+  mat4 view_no_translation = mat4(mat3(camera_buffer.view_projection));
+
+	vec4 pos = view_no_translation * vec4(position, 1.0);
+	gl_Position = vec4(pos.xy, pos.z, pos.z);
+	// gl_Position = camera_buffer.view_projection * vec4(position, 1.0);
+	vout.texcoord = position;
 }
 
 // type fragment
 #version 450 core
-layout(location = 0) out vec4 oColor;
-layout(location = 1) out int entColor;
+layout(location = 0) out vec4 frag_color;
 
-in vec3 vTexCoord;
-uniform float blurFactor = 0.0f;
-uniform samplerCube uSkybox;
+layout(location = 0) in Vertex
+{
+  vec3 texcoord;
+} vin;
+
+uniform float ublur_factor;
+uniform samplerCube uskybox_cube;
 
 void main()
 {
-	vec3 color = vec3(0.0);
-    
-    // Sample the texture multiple times and average the colors
-    for(int i = -2; i <= 2; i++)
-    {
-        for(int j = -2; j <= 2; j++)
-        {
-            color += texture(uSkybox, vTexCoord + vec3(float(i) * blurFactor, float(j) * blurFactor, 0.0)).rgb;
-        }
-    }
-    
-    // Divide the total color by the number of samples
-    color /= 25.0;
+  vec3 color = vec3(0.0);
 
-    entColor = -1;
-	oColor = vec4(color, 1.0);
+  for (int i = -2; i < 2; ++i)
+  {
+    for (int j = -2; j < 2; ++j)
+    {
+      color += texture(uskybox_cube, 
+        vin.texcoord + vec3(float(i) * ublur_factor, float(j) * ublur_factor, 0.0)).rgb;
+    }
+  }
+
+  color /= 25.0;
+  frag_color = vec4(color, 1.0);
 }

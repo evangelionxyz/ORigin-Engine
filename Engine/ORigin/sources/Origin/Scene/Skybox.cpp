@@ -11,12 +11,12 @@
 
 namespace origin
 {
-	std::shared_ptr<Skybox> Skybox::Create(const std::string& filepath, const std::string& format)
+	Ref<Skybox> Skybox::Create(const std::string& filepath, const std::string& format)
 	{
 		switch (RendererAPI::GetAPI())
 		{
 			case RendererAPI::API::None:		return nullptr;
-			case RendererAPI::API::OpenGL:		return std::make_shared<OpenGLSkybox>(filepath, format);
+			case RendererAPI::API::OpenGL:		return CreateRef<OpenGLSkybox>(filepath, format);
 		}
 		return nullptr;
 	}

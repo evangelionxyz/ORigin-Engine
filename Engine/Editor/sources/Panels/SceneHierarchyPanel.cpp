@@ -211,6 +211,10 @@ Entity SceneHierarchyPanel::ShowEntityContextMenu()
     {
         if (ImGui::MenuItem("Empty Mesh"))
             entity = SetSelectedEntity(EntityManager::CreateMesh("Empty Mesh", m_Scene.get()));
+
+        if (ImGui::MenuItem("Environment Map"))
+            entity = SetSelectedEntity(EntityManager::CreateEnvironmentMap("Environment Map", m_Scene.get()));
+
         ImGui::EndMenu();
     }
 
@@ -230,6 +234,8 @@ Entity SceneHierarchyPanel::ShowEntityContextMenu()
     {
         entity = SetSelectedEntity(EntityManager::CreateCamera("Camera", m_Scene.get()));
     }
+
+    
 
     return entity;
 }
@@ -483,6 +489,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
         ImGui::Separator();
         DisplayAddComponentEntry<DirectionalLightComponent>("Directional Light");
+        DisplayAddComponentEntry<EnvironmentMap>("Environment Map");
         
         DisplayAddComponentEntry<MeshComponent>("Mesh");
         DisplayAddComponentEntry<RigidbodyComponent>("Rigidbody");
@@ -512,7 +519,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         ImVec2 buttonSize = { 100.0f, 25.0f };
 
         // Model Button
-        ImGui::Button("Drop Here", buttonSize);
+        ImGui::Button(component.HModel == 0 ? "Drop Here" : "Loaded", buttonSize);
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -522,9 +529,6 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
                 {
                     component.HModel = handle;
                     component.blend_space.SetModel(AssetManager::GetAsset<Model>(handle));
-                }
-                if (AssetManager::GetAssetType(handle) == AssetType::Texture)
-                {
                 }
                 else
                 {
@@ -537,11 +541,9 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
         if (component.HModel != 0)
         {
-            ImGui::Separator();
-
             Ref<Model> model = AssetManager::GetAsset<Model>(component.HModel);
 
-            if (ImGui::Button("Open Blend Space"))
+            if (ImGui::Button("Open Blend Space", buttonSize))
             {
                 m_SendData = (void *)&component;
                 m_BlendSpacePopUp = true;
@@ -552,8 +554,29 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
                 ImGui::SliderFloat("Blend X", &component.blend_position.x, component.blend_space.GetMinSize().x, component.blend_space.GetMaxSize().x);
                 ImGui::SliderFloat("Blend Y", &component.blend_position.y, component.blend_space.GetMinSize().y, component.blend_space.GetMaxSize().y);
             }
+
+            ImGui::Separator();
+
+            if (ImGui::TreeNode("Meshes"))
+            {
+                for (auto &mesh : model->GetMeshes())
+                {
+                    if (ImGui::TreeNode(mesh->name.c_str()))
+                    {
+                        ImGui::ColorEdit3("Base Color", &mesh->material.buffer_data.base_color.x);
+                        ImGui::TreePop();
+                    }
+                }
+                ImGui::TreePop();
+            }
+
         }
 
+    });
+
+    DrawComponent<EnvironmentMap>("Environment Map", entity, [](auto &component)
+    {
+        UI::DrawFloatControl("Blur", &component.blur_factor, 0.0001f, 0.0f, 100.0f);
     });
 
     DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)

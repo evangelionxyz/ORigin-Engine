@@ -6,6 +6,10 @@
 #include "Origin/Scene/Camera/EditorCamera.h"
 #include "Origin/Scene/Camera/SceneCamera.h"
 
+#include "Origin/Core/Types.h"
+#include "Origin/Renderer/VertexArray.h"
+#include "Origin/Renderer/Buffer.h"
+
 #include <memory>
 
 namespace origin
@@ -13,11 +17,11 @@ namespace origin
 	class Skybox
 	{
 	public:
-		virtual void Draw(const glm::mat4& viewProjection) = 0;
-		virtual void Draw(const SceneCamera& camera) = 0;
-		virtual void Draw(const EditorCamera& camera) = 0;
-		virtual void SetBlur(float blur) = 0;
-		static std::shared_ptr<Skybox> Create(const std::string& filepath, const std::string& format);
+		static Ref<Skybox> Create(const std::string& filepath, const std::string& format);
+
+        Ref<VertexArray> vao;
+        Ref<VertexBuffer> vbo;
+        u32 texture_id;
 	};
 }
 

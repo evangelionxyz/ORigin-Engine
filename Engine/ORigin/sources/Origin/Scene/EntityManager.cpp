@@ -69,6 +69,13 @@ namespace origin
 		return entity;
 	}
 
+    Entity EntityManager::CreateEnvironmentMap(const std::string &name, Scene *scene)
+    {
+		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Entity, scene);
+		entity.AddComponent<EnvironmentMap>();
+		return entity;
+    }
+
     Entity EntityManager::CreateUI(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::UI, scene);

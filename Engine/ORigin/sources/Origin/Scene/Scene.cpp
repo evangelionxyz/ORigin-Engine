@@ -506,8 +506,8 @@ void Scene::RenderScene(const Camera &camera)
         if (mesh_component.HModel && tc.Visible)
         {
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_component.HModel);
-            shader->SetMatrix("umodel_transform", tc.GetTransform());
             shader->SetBool("uhas_animation", model->HasAnimations());
+            shader->SetMatrix("umodel_transform", tc.GetTransform());
 
             if (model->HasAnimations())
             {
@@ -535,10 +535,34 @@ void Scene::RenderScene(const Camera &camera)
                 }
 
                 RenderCommand::DrawIndexed(mesh->vertex_array);
-               // mesh->material.Unbind();
+                mesh->material.Unbind();
             }
         }
+
         shader->Disable();
+    }
+
+    const auto &env_map_view = m_Registry.view<EnvironmentMap, TransformComponent>();
+    for (const auto &[entity, env_map, transform_comp] : env_map_view.each())
+    {
+        if (env_map.skybox)
+        {
+            glDepthFunc(GL_LEQUAL);
+            Renderer::GetShader("Skybox")->Enable();
+
+            Renderer::GetShader("Skybox")->SetFloat("ublur_factor", env_map.blur_factor);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);
+            Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
+
+            RenderCommand::DrawIndexed(env_map.skybox->vao);
+
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            Renderer::GetShader("Skybox")->Disable();
+
+            glDepthFunc(GL_LESS);
+        }
     }
 }
 
@@ -559,8 +583,6 @@ void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
             glDisable(GL_STENCIL_TEST);
             return;
         }
-
-        // First pass: Render all objects and mark the selected object in the stencil buffer
 
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilMask(0xFF);
@@ -899,6 +921,12 @@ template<>
 void Scene::OnComponentAdded(Entity entity, DirectionalLightComponent &component)
 {
     component.Light = Lighting::Create<DirectionalLight>();
+}
+
+template<>
+void Scene::OnComponentAdded(Entity entity, EnvironmentMap &component)
+{
+    component.skybox = Skybox::Create("Resources/Skybox", ".jpg");
 }
 
 }

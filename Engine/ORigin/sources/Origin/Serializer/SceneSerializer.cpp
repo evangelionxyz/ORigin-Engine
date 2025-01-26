@@ -390,6 +390,15 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		out << YAML::EndMap; // !MeshComponent
 	}
 
+	if (entity.HasComponent<EnvironmentMap>())
+	{
+		EnvironmentMap &env_comp = entity.GetComponent<EnvironmentMap>();
+		out << YAML::Key << "EnvironmentMap";
+		out << YAML::BeginMap;
+		out << YAML::Key << "Blur Factor" << env_comp.blur_factor;
+		out << YAML::EndMap;
+	}
+
 	if (entity.HasComponent<AudioListenerComponent>())
 	{
 		out << YAML::Key << "AudioListenerComponent";
@@ -779,6 +788,12 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				mc.Name = mesh_component["Name"].as<std::string>();
 				mc.HModel = mesh_component["HModel"].as<uint64_t>();
 				mc.blend_space.SetModel(AssetManager::GetAsset<Model>(mc.HModel));
+			}
+
+			if (YAML::Node env_component = entity["EnvironmentMap"])
+			{
+				EnvironmentMap &env_map_comp = deserialized_entity.AddComponent<EnvironmentMap>();
+				env_map_comp.blur_factor = env_component["Blur Factor"].as<float>();
 			}
 
 			if (YAML::Node directional_light_component = entity["DirectionalLightComponent"])

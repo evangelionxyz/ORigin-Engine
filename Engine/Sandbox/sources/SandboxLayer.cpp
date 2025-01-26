@@ -12,6 +12,8 @@
 #include "SandboxLayer.h"
 #include "SkinnedMesh.hpp"
 
+#include <glad/glad.h>
+
 using namespace origin;
 
 struct CamData
@@ -23,6 +25,7 @@ struct CamData
 CamData cam_data;
 Ref<UniformBuffer> ubo;
 Ref<Shader> shader;
+Ref<Shader> skybox_shader;
 
 struct Data
 {
@@ -46,12 +49,13 @@ struct Data
 };
 
 Data raptoid;
-Data storm_trooper;
 f32 animation_speed_playback = 1.0f;
 f32 increment_speed = 300.0f;
 f32 decrement_speed = 800.0f;
 f32 target_direction = 180.0f;
 f32 target_speed = 0.0f;
+Ref<Skybox> skybox;
+f32 blur_factor = 0.005f;
 
 i32 model_count = 8;
 f32 model_pos_spacing = 2.0f;
@@ -73,9 +77,9 @@ void SandboxLayer::OnAttach()
     InitSounds();
 
     shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
-    ubo = UniformBuffer::Create(sizeof(CamData), 0);
+    skybox_shader = Shader::Create("Resources/Shaders/Skybox.glsl", false, true);
 
-    storm_trooper = Data("Resources/Models/storm_trooper/storm_trooper.glb");
+    ubo = UniformBuffer::Create(sizeof(CamData), 0);
 
     raptoid = Data("Resources/Models/base_character.glb");
     raptoid.blender.SetRange({ 0.0f, 0.0f }, { 360.0f, 400.0f });
@@ -94,6 +98,8 @@ void SandboxLayer::OnAttach()
     raptoid.blender.AddAnimation("Running_Forward", { 144.0f, 180.0f }, { 216.0f, 400.0f }); // forward
     raptoid.blender.AddAnimation("Running_Backward", { 230.0f, 200.0f }, { 360.0f, 400.0f }); // backward
     raptoid.blender.AddAnimation("Walking_Backward", { 288.0f, 50.0f }, { 360.0f, 150.0f }); // walking backward
+
+    skybox = Skybox::Create("Resources/Skybox", ".jpg");
 }
 
 void SandboxLayer::OnUpdate(const Timestep delta_time)
@@ -119,11 +125,11 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
     f32 direction_increment_speed = DIRECTION_INCREMENT_SPEED;
 
     // Check for movement input
-    if (Input::IsKeyPressed(Key::W))
+    if (Input::IsKeyPressed(Key::Up))
     {
         target_direction = FORWARD_DIRECTION;
 
-        if (Input::IsKeyPressed(Key::LeftShift))
+        if (Input::IsKeyPressed(Key::RightShift))
         {
             target_speed = RUN_SPEED;        // Running forward
             move_increment_speed = RUN_INCREMENT_SPEED;
@@ -133,10 +139,10 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
             target_speed = WALK_FORWARD_SPEED;      // Walking forward
         }
     }
-    else if (Input::IsKeyPressed(Key::S))
+    else if (Input::IsKeyPressed(Key::Down))
     {
 
-        if (Input::IsKeyPressed(Key::LeftShift))
+        if (Input::IsKeyPressed(Key::RightShift))
         {
             target_direction = RUN_BACKWARD_DIRECTION;
 
@@ -149,9 +155,9 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
             target_speed = WALK_BACKWARD_SPEED;      // Walking backward
         }
     }
-    else if (Input::IsKeyPressed(Key::A))
+    else if (Input::IsKeyPressed(Key::Left))
     {
-        if (Input::IsKeyPressed(Key::LeftShift))
+        if (Input::IsKeyPressed(Key::RightShift))
         {
             target_speed = RUN_SPEED;        // Running backward
             move_increment_speed = RUN_INCREMENT_SPEED;
@@ -204,8 +210,8 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
     RenderCommand::Clear();
     const glm::vec2 &delta = Input::GetMouseClickDragDelta();
 
-    // camera.OnMouseMove(delta);
-    // camera.OnUpdate(delta_time);
+    camera.OnMouseMove(delta);
+    camera.OnUpdate(delta_time);
 
     camera.UpdateView();
     camera.UpdateProjection();
@@ -215,9 +221,13 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
 
     ubo->Bind();
     ubo->SetData(&cam_data, sizeof(CamData));
-    shader->Enable();
 
     {
+        shader->Enable();
+
+        GLenum error = glGetError();
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
+
         raptoid.blender.BlendAnimations(raptoid.blending_position, delta_time, animation_speed_playback);
         shader->SetBool("uhas_animation", raptoid.model->HasAnimations());
         shader->SetMatrix("ubone_transforms", raptoid.model->GetBoneTransforms()[0], raptoid.model->GetBoneTransforms().size());
@@ -244,34 +254,29 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
             RenderCommand::DrawIndexed(mesh->vertex_array);
             mesh->material.Unbind();
         }
+
+        shader->Disable();
     }
 
-   /* storm_trooper.model->UpdateAnimation(ts, 0);
-    shader->SetBool("uhas_animation", storm_trooper.model->HasAnimations());
-    shader->SetMatrix("ubone_transforms", storm_trooper.model->GetBoneTransforms()[0], storm_trooper.model->GetBoneTransforms().size());
 
-    for (i32 x = -model_count; x <= model_count; ++x)
-    {
-        for (i32 z = -model_count; z <= model_count; ++z)
-        {
-            for (auto &mesh : storm_trooper.model->GetMeshes())
-            {
-                for (const auto &texture : mesh->material.textures)
-                {
-                    if (texture.contains(TextureType::DIFFUSE))
-                    {
-                        texture.at(TextureType::DIFFUSE)->Bind(0);
-                        shader->SetInt("udiffuse_texture", 0);
-                    }
-                }
+    glDepthFunc(GL_LEQUAL);
+    skybox_shader->Enable();
 
-                glm::mat4 translation = glm::translate(glm::mat4(1.0f), { x * model_pos_spacing, 0.0f, z * model_pos_spacing });
-                shader->SetMatrix("umodel_transform", translation);
-                RenderCommand::DrawIndexed(mesh->vertex_array);
-            }
-        }
-    }*/
-    
+    GLenum error = glGetError();
+    OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
+
+    skybox_shader->SetFloat("ublur_factor", blur_factor);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture_id);
+    skybox_shader->SetInt("uskybox_cube", 0);
+
+    RenderCommand::DrawIndexed(skybox->vao);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    skybox_shader->Disable();
+
+    glDepthFunc(GL_LESS);
 }
 
 void SandboxLayer::OnEvent(Event &e)
@@ -300,6 +305,8 @@ void SandboxLayer::OnGuiRender()
     ImGui::SliderFloat("Direction", &raptoid.blending_position.x, raptoid.blender.GetMinSize().x, raptoid.blender.GetMaxSize().x);
     ImGui::SliderFloat("Speed", &raptoid.blending_position.y, raptoid.blender.GetMinSize().y, raptoid.blender.GetMaxSize().y);
 
+    ImGui::SliderFloat("Blur Factor", &blur_factor, 0.0f, 1000.0f);
+
     ImGui::Separator();
     
 
@@ -310,7 +317,6 @@ void SandboxLayer::OnGuiRender()
 
     ImGui::Separator();
 
-
     if (ImGui::Button("Play Sound"))
     {
         roar_sound->Play();
@@ -319,6 +325,7 @@ void SandboxLayer::OnGuiRender()
     if (ImGui::Button("Reload Shader"))
     {
         shader->Reload();
+        skybox_shader->Reload();
     }
 
     ImGui::End();

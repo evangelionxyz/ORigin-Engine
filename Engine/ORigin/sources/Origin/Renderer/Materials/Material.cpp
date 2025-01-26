@@ -18,9 +18,6 @@ void MeshMaterial::Bind() const
 {
     Renderer::material_manager->mesh_material_uniform_buffer->Bind();
     Renderer::material_manager->mesh_material_uniform_buffer->SetData(&buffer_data, sizeof(MeshMaterialBufferData));
-
-    GLenum error = glGetError();
-    OGN_CORE_ASSERT(error == GL_NO_ERROR, "[OpenGLRendererAPI] {}", error);
 }
 
 void MeshMaterial::Unbind() const

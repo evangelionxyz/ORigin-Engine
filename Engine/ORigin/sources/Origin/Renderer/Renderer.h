@@ -20,9 +20,9 @@ namespace origin {
 #define AREA_LIGHT_BINDING        (5)
 
 #define MATERIAL_BINDING          (6)
-#define DIFFUSE_TEXTURE_BINDING   (0)
-#define SPECULAR_TEXTURE_BINDING  (1)
-#define ROUGHNESS_TEXTURE_BINDING (2)
+#define DIFFUSE_TEXTURE_BINDING   (7)
+#define SPECULAR_TEXTURE_BINDING  (8)
+#define ROUGHNESS_TEXTURE_BINDING (9)
 
 struct RenderData
 {

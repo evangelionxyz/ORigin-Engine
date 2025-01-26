@@ -18,6 +18,7 @@
 #include "Origin/Renderer/Model/Mesh.hpp"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Buffer.h"
+#include "Origin/Scene/Skybox.h"
 
 #include "Origin/Scene/Camera/SceneCamera.h"
 #include "Origin/Scene/SpriteSheet.h"
@@ -159,6 +160,16 @@ public:
     bool Enable = true;
     AudioListenerComponent() = default;
     AudioListenerComponent(const AudioListenerComponent &) = default;
+};
+
+class EnvironmentMap
+{
+public:
+    EnvironmentMap() = default;
+    EnvironmentMap(const EnvironmentMap &) = default;
+
+    Ref<Skybox> skybox;
+    f32 blur_factor = 0.0005f;
 };
 
 class AudioComponent
@@ -701,6 +712,8 @@ using AllComponents = ComponentGroup <
 
     DirectionalLightComponent,
     SpotLightComponent,
+
+    EnvironmentMap,
 
     SpriteRenderer2DComponent,
     MeshComponent,

@@ -19,6 +19,9 @@ namespace origin
     OpenGLShader::OpenGLShader(const std::filesystem::path &filepath, const bool recompile)
         : m_Filepath(filepath), m_RendererID(0), m_IsSPIRV(true), m_IsRecompile(recompile)
     {
+
+        OGN_CORE_ASSERT(std::filesystem::exists(filepath), "Shader filepath not found");
+
         PUSH_CONSOLE_INFO("[Shader] Load {}", m_Filepath.generic_string());
         OGN_CORE_TRACE("[Shader] Load {}", m_Filepath.generic_string());
 
@@ -36,6 +39,8 @@ namespace origin
             PUSH_CONSOLE_INFO("[Shader] Shader create took {} ms", timer.ElapsedMillis());
             OGN_CORE_TRACE("[Shader] Shader create took {} ms", timer.ElapsedMillis());
         }
+
+        glUseProgram(0);
     }
 
     OpenGLShader::OpenGLShader(const std::filesystem::path &filepath, const bool spirv, const bool recompile)
@@ -66,6 +71,8 @@ namespace origin
             m_ShaderSource = ParseShader(filepath.string());
             m_RendererID   = CreateProgram(m_ShaderSource.VertexSources, m_ShaderSource.FragmentSources, m_ShaderSource.GeometrySources);
         }
+
+        glUseProgram(0);
     }
 
     OpenGLShader::~OpenGLShader()
@@ -238,7 +245,11 @@ namespace origin
     void OpenGLShader::Enable() const
     {
         glUseProgram(m_RendererID);
+
+        GLenum error = glGetError();
+        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
     }
+
     void OpenGLShader::Disable() const
     {
         glUseProgram(0);

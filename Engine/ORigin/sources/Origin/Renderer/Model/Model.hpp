@@ -53,6 +53,8 @@ public:
     void CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
     void CalculateAnimationTransforms(const aiNode *node, const u32 anim_index, std::unordered_map<std::string, AnimationNode> &anim_nodes, const glm::mat4 &parent_transform = glm::mat4(1.0f));
 
+    void SetMeshTransform(const aiNode *node);
+
 	Ref<Texture2D> LoadTexture(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
 	void CreateVertex(Ref<Mesh> &mesh_data);
     std::vector<SkeletalAnimation> &GetAnimations();

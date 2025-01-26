@@ -77,10 +77,6 @@ layout (location = 0) in Vertex
     vec4 weights;
 } vin;
 
-layout(binding = 0) uniform sampler2D udiffuse_texture;
-layout(binding = 1) uniform sampler2D uspecular_texture;
-layout(binding = 2) uniform sampler2D uroughness_texture;
-
 layout(std140, binding = 0) uniform Camera
 {
     mat4 view_projection;
@@ -128,6 +124,10 @@ layout(std140, binding = 6) uniform Material
     vec3 base_color;
 } material_buffer;
 
+layout(binding = 7) uniform sampler2D udiffuse_texture;
+layout(binding = 8) uniform sampler2D uspecular_texture;
+layout(binding = 9) uniform sampler2D uroughness_texture;
+
 vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord)
 {
   vec3 light_direction = normalize(-dir_light_buffer.direction); // light direction (inverted for incoming light)
@@ -150,7 +150,7 @@ vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord)
 
   // combine the contributions
   vec3 base_color = texture(udiffuse_texture, texcoord).rgb;
-  return (ambient_color + diffuse_color + specular_color) * base_color;
+  return (ambient_color + diffuse_color + specular_color) * base_color * material_buffer.diffuse_color;
 }
 
 void main()
