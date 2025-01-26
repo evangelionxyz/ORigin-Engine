@@ -54,6 +54,10 @@ namespace origin {
         void DrawFrustum(const Camera &camera, Scene *scene);
         void CalculateBoundary2DSizing(const Camera &camera);
 
+        static void DrawBoxLine(const glm::vec3 &position, const glm::vec3 &rotation, const glm::vec3 &size, const glm::vec4 &color);
+        static void DrawCapsuleLine(const glm::vec3 &position, const glm::vec3 &rotation, f32 half_height, f32 radius, const glm::vec4 &color);
+        static void DrawSphereLine(const glm::vec3 &position, f32 radius, const glm::vec4 &color);
+
     private:
         Boundary2DCorner m_Boundary2DCorner = Boundary2DCorner::NONE;
         GizmoType m_Type = GizmoType::NONE;

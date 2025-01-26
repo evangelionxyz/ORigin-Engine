@@ -48,6 +48,7 @@ namespace origin
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Lighting, scene);
 		entity.AddComponent<DirectionalLightComponent>().Light = Lighting::Create<DirectionalLight>();
+        entity.GetComponent<TransformComponent>().Clickable = true;
 		return entity;
 	}
 
@@ -73,6 +74,7 @@ namespace origin
     {
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Entity, scene);
 		entity.AddComponent<EnvironmentMap>();
+		entity.GetComponent<TransformComponent>().Clickable = false;
 		return entity;
     }
 
@@ -80,6 +82,7 @@ namespace origin
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::UI, scene);
 		entity.AddComponent<UIComponent>();
+        entity.GetComponent<TransformComponent>().Clickable = false;
 		return entity;
 	}
 

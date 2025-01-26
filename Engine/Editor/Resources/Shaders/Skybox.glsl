@@ -19,7 +19,6 @@ void main()
 
 	vec4 pos = view_no_translation * vec4(position, 1.0);
 	gl_Position = vec4(pos.xy, pos.z, pos.z);
-	// gl_Position = camera_buffer.view_projection * vec4(position, 1.0);
 	vout.texcoord = position;
 }
 
@@ -38,7 +37,6 @@ uniform samplerCube uskybox_cube;
 void main()
 {
   vec3 color = vec3(0.0);
-
   for (int i = -2; i < 2; ++i)
   {
     for (int j = -2; j < 2; ++j)
@@ -47,7 +45,6 @@ void main()
         vin.texcoord + vec3(float(i) * ublur_factor, float(j) * ublur_factor, 0.0)).rgb;
     }
   }
-
   color /= 25.0;
   frag_color = vec4(color, 1.0);
 }

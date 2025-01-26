@@ -336,6 +336,7 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		out << YAML::Key << "Rotation" << YAML::Value << tc.Rotation;
 		out << YAML::Key << "Scale" << YAML::Value << tc.Scale;
 		out << YAML::Key << "Visible" << tc.Visible;
+		out << YAML::Key << "Clickable" << tc.Clickable;
 
 		out << YAML::EndMap; // !TransformComponent
 	}
@@ -650,6 +651,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				tc.Rotation = transform_component["Rotation"].as<glm::quat>();
 				tc.Scale = transform_component["Scale"].as<glm::vec3>();
 				tc.Visible = transform_component["Visible"].as<bool>();
+				tc.Clickable = transform_component["Clickable"].as<bool>();
 			}
 
 			if (YAML::Node audio_listener_component = entity["AudioListenerComponent"])

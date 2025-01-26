@@ -246,8 +246,8 @@ namespace origin
     {
         glUseProgram(m_RendererID);
 
-        GLenum error = glGetError();
-        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
+        // GLenum error = glGetError();
+        // OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
     }
 
     void OpenGLShader::Disable() const

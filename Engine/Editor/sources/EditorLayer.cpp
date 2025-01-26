@@ -1494,6 +1494,9 @@ bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
         const auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
         for (auto [entity, tc] : view.each())
         {
+            if (!tc.Clickable)
+                continue;
+
             OBB obb = OBB(tc.WorldTranslation, tc.WorldScale, tc.WorldRotation);
             if (m_ActiveScene->m_Registry.any_of<TextComponent>(entity))
             {

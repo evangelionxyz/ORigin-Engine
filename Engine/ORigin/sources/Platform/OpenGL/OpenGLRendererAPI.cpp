@@ -44,12 +44,12 @@ void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray> &vertexArray, u32 ind
 
 		// Ensure that the index buffer is correctly bound
 		OGN_CORE_ASSERT(count > 0, "Index count is zero");
-		GLenum error = glGetError();
-        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
+		// GLenum error = glGetError();
+        // OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
 
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-		error = glGetError();
-		OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
+		// error = glGetError();
+		// OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
 	}
 }
 

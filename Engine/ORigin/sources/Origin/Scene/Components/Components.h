@@ -260,6 +260,8 @@ public:
 
     bool Visible = true;
 
+    bool Clickable = true;
+
     TransformComponent() = default;
     TransformComponent(const TransformComponent &) = default;
 

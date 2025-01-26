@@ -543,6 +543,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         {
             Ref<Model> model = AssetManager::GetAsset<Model>(component.HModel);
 
+            ImGui::SameLine();
             if (ImGui::Button("Open Blend Space", buttonSize))
             {
                 m_SendData = (void *)&component;
@@ -564,14 +565,14 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
                     if (ImGui::TreeNode(mesh->name.c_str()))
                     {
                         ImGui::ColorEdit3("Base Color", &mesh->material.buffer_data.base_color.x);
+                        UI::DrawVec2Control("Tiling", mesh->material.buffer_data.tiling_factor);
+
                         ImGui::TreePop();
                     }
                 }
                 ImGui::TreePop();
             }
-
         }
-
     });
 
     DrawComponent<EnvironmentMap>("Environment Map", entity, [](auto &component)
