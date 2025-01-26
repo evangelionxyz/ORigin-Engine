@@ -74,6 +74,7 @@ bool Renderer::Init()
 	
 	lighting_manager = new LightingManager();
 	material_manager = new MaterialManager();
+	material_manager->CreateMeshMaterialSSBO();
 
 	camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 	

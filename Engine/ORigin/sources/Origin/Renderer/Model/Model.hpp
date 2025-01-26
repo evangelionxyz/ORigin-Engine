@@ -49,7 +49,7 @@ public:
     void LoadAnimations();
 	void LoadVertexBones(const u32 mesh_index, Ref<Mesh> &data, aiMesh *mesh);
 	void LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone);
-	void LoadMaterials(MeshMaterial &material, const aiMesh *mesh, const std::string &filepath);
+	void LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath);
     void CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
     void CalculateAnimationTransforms(const aiNode *node, const u32 anim_index, std::unordered_map<std::string, AnimationNode> &anim_nodes, const glm::mat4 &parent_transform = glm::mat4(1.0f));
 

@@ -56,6 +56,7 @@ class Mesh
 public:
     std::string name;
     MeshMaterial material;
+    i32 material_index = -1;
     Ref<VertexArray> vertex_array;
     Ref<VertexBuffer> vertex_buffer;
 

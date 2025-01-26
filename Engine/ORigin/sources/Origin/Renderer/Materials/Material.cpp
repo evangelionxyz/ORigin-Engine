@@ -14,16 +14,4 @@ MeshMaterial::MeshMaterial()
 {
 }
 
-void MeshMaterial::Bind() const
-{
-    Renderer::material_manager->mesh_material_uniform_buffer->Bind();
-    Renderer::material_manager->mesh_material_uniform_buffer->SetData(&buffer_data, sizeof(MeshMaterialBufferData));
-}
-
-void MeshMaterial::Unbind() const
-{
-    Renderer::material_manager->mesh_material_uniform_buffer->Unbind();
-}
-
-
 }

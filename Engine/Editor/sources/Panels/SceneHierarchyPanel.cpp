@@ -544,7 +544,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
             Ref<Model> model = AssetManager::GetAsset<Model>(component.HModel);
 
             ImGui::SameLine();
-            if (ImGui::Button("Open Blend Space", buttonSize))
+            if (ImGui::Button("Blend Space", { 0.0f, buttonSize.y }))
             {
                 m_SendData = (void *)&component;
                 m_BlendSpacePopUp = true;
@@ -564,8 +564,14 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
                 {
                     if (ImGui::TreeNode(mesh->name.c_str()))
                     {
-                        ImGui::ColorEdit3("Base Color", &mesh->material.buffer_data.base_color.x);
-                        UI::DrawVec2Control("Tiling", mesh->material.buffer_data.tiling_factor);
+                        ImGui::Text("Material Index: %d", mesh->material_index);
+                        ImGui::ColorEdit4("Base Color", &mesh->material.buffer_data.base_color.x);
+                        glm::vec2 tiling_factor{ mesh->material.buffer_data.tiling_factor.x, mesh->material.buffer_data.tiling_factor.y };
+                        if (UI::DrawVec2Control("Tiling", tiling_factor))
+                        {
+                            mesh->material.buffer_data.tiling_factor.x = tiling_factor.x;
+                            mesh->material.buffer_data.tiling_factor.y = tiling_factor.y;
+                        }
 
                         ImGui::TreePop();
                     }

@@ -128,10 +128,6 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 {
     OGN_PROFILER_FUNCTION();
 
-    // bind materials
-    Renderer::material_manager->Bind();
-    
-
     // bind lighting
     Renderer::lighting_manager->Bind();
     const auto &directional_light_view = m_Registry.view<DirectionalLightComponent, TransformComponent>();
@@ -184,7 +180,6 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
                     model->UpdateAnimation(ts, mesh_comp.AnimationIndex);
                 }
             }
-            
         }
     }
 
@@ -194,8 +189,6 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 void Scene::PostRender(const Camera &camera, Timestep ts)
 {
     Renderer::lighting_manager->Unbind();
-
-    Renderer::material_manager->Unbind();
 }
 
 void Scene::Update(Timestep ts)
@@ -518,7 +511,8 @@ void Scene::RenderScene(const Camera &camera)
 
             for (auto &mesh : model->GetMeshes())
             {
-                mesh->material.Bind();
+                Renderer::material_manager->UpdateMeshMaterial(mesh->material_index, mesh->material.buffer_data);
+                shader->SetInt("umaterial_index", mesh->material_index);
 
                 if (mesh->material.diffuse_texture)
                 {
@@ -537,7 +531,6 @@ void Scene::RenderScene(const Camera &camera)
                 }
 
                 RenderCommand::DrawIndexed(mesh->vertex_array);
-                mesh->material.Unbind();
             }
         }
 

@@ -20,9 +20,6 @@ class Material : public Asset
 public:
     virtual ~Material();
     
-    virtual void Bind() const = 0;
-    virtual void Unbind() const = 0;
-
     template<typename MaterialType>
     static Ref<Material> Create()
     {
@@ -45,9 +42,6 @@ public:
     MeshMaterialBufferData buffer_data;
     
     Ref<Shader> shader;
-
-    void Bind() const override;
-    void Unbind() const override;
     
 };
 

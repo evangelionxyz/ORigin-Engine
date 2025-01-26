@@ -115,18 +115,23 @@ layout(std140, binding = 5) uniform AreaLight
     vec3 color;
 } area_light_buffer;
 
-layout(std140, binding = 6) uniform Material
+struct Material
 {
-    float metallic_factor;
-    float roughness_factor;
-    vec2 tiling_factor;
-    vec3 diffuse_color;
-    vec3 base_color;
-} material_buffer;
+    vec4 base_color;
+    vec4 tiling_factor;
+};
+
+layout(std140, binding = 0) buffer MaterialBuffer
+{
+    Material materials[];
+};
 
 layout(binding = 7) uniform sampler2D udiffuse_texture;
 layout(binding = 8) uniform sampler2D uspecular_texture;
 layout(binding = 9) uniform sampler2D uroughness_texture;
+uniform int umaterial_index;
+
+Material material = materials[umaterial_index];
 
 vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord)
 {
@@ -150,7 +155,7 @@ vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord)
 
   // combine the contributions
   vec3 base_color = texture(udiffuse_texture, texcoord).rgb;
-  return (ambient_color + diffuse_color + specular_color) * base_color * material_buffer.diffuse_color;
+  return (ambient_color + diffuse_color + specular_color) * base_color * material.base_color.rgb;
 }
 
 void main()
@@ -159,7 +164,7 @@ void main()
     vec3 view_dir = camera_buffer.position - vin.position;
 
     vec3 lighting = vec3(0.0);
-    lighting += calculate_directional_light(normal, view_dir, vin.texcoord);
+    lighting += calculate_directional_light(normal, view_dir, vin.texcoord * material.tiling_factor.xy);
 
     frag_color = vec4(lighting, 1.0);
 }

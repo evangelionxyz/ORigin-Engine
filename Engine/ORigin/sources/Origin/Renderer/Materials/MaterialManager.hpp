@@ -8,12 +8,19 @@ namespace origin {
 
 struct MaterialManager
 {
-    Ref<UniformBuffer> mesh_material_uniform_buffer;
+    size_t initiali_capcity = 10;
+    size_t mesh_material_count = 0;
+    size_t mesh_material_buffer_size = initiali_capcity * sizeof(MeshMaterialBufferData);
 
     MaterialManager();
+    
+    void CreateMeshMaterialSSBO();
+    size_t AddMeshMaterial(MeshMaterialBufferData &buffer);
+    void UpdateMeshMaterial(size_t index, const MeshMaterialBufferData &updatedBuffer);
 
-    void Bind() const;
-    void Unbind() const;
+    std::unordered_map<std::string, i32> material_index_map;
+
+    u32 ssbo;
 };
 
 }

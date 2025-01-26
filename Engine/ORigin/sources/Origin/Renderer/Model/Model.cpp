@@ -134,7 +134,24 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string
     if (m_Scene->HasAnimations())
         LoadVertexBones(mesh_index, m_Meshes[mesh_index], mesh);
     if (mesh->mMaterialIndex >= 0)
-        LoadMaterials(m_Meshes[mesh_index]->material, mesh, filepath);
+    {
+        aiMaterial *ai_material = m_Scene->mMaterials[mesh->mMaterialIndex];
+        std::string mat_name(ai_material->GetName().C_Str());
+
+        LoadMaterials(m_Meshes[mesh_index]->material, ai_material, filepath);
+        m_Meshes[mesh_index]->material_index = static_cast<i32>(Renderer::material_manager->AddMeshMaterial(m_Meshes[mesh_index]->material.buffer_data));
+        Renderer::material_manager->UpdateMeshMaterial(m_Meshes[mesh_index]->material_index, m_Meshes[mesh_index]->material.buffer_data);
+        //Renderer::material_manager->material_index_map[mat_name] = m_Meshes[mesh_index]->material_index;
+
+        /*if (!Renderer::material_manager->material_index_map.contains(mat_name))
+        {
+        }
+        else
+        {
+            m_Meshes[mesh_index]->material_index = Renderer::material_manager->material_index_map[mat_name];
+        }*/
+        
+    }
     
     CreateVertex(m_Meshes[mesh_index]);
 }
@@ -259,20 +276,18 @@ void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const ai
     }
 }
 
-void Model::LoadMaterials(MeshMaterial &material, const aiMesh *mesh, const std::string &filepath)
+void Model::LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath)
 {
-    aiMaterial *ai_material = m_Scene->mMaterials[mesh->mMaterialIndex];
-        
     aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
     aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
         
     ai_material->Get(AI_MATKEY_BASE_COLOR, base_color);
     ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
-    ai_material->Get(AI_MATKEY_METALLIC_FACTOR, material.buffer_data.metallic_factor);
-    ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.roughness_factor);
+    /*ai_material->Get(AI_MATKEY_METALLIC_FACTOR, material.buffer_data.metallic_factor);
+    ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.roughness_factor);*/
 
-    material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b};
-    material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b};
+    material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b, 1.0f};
+    //material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b};
 
     // load textures
     material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);

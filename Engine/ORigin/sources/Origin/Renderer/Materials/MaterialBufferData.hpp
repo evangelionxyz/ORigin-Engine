@@ -5,12 +5,8 @@ namespace origin {
 
 struct MeshMaterialBufferData
 {
-    f32 metallic_factor;
-    f32 roughness_factor;
-    glm::vec2 tiling_factor;
-    glm::vec3 diffuse_color;
-    glm::vec3 base_color;
+    glm::vec4 base_color;
+    glm::vec4 tiling_factor{1.0f, 1.0f, 1.0f, 1.0f};
 };
-
 
 }
