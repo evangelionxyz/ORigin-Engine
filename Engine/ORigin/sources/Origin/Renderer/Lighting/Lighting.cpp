@@ -8,24 +8,46 @@ namespace origin {
 
 DirectionalLight::DirectionalLight()
 {
-    Renderer::lighting_manager->directional_light_count++;
+    LightingManager::GetInstance()->m_data.directional_light_count++;
 }
 
 DirectionalLight::~DirectionalLight()
 {
-    Renderer::lighting_manager->directional_light_count--;
+    LightingManager::GetInstance()->m_data.directional_light_count--;
 }
 
 void DirectionalLight::Bind() const
 {
-    Renderer::lighting_manager->directional_uniform_buffer->Bind();
-    Renderer::lighting_manager->directional_uniform_buffer->SetData(&color, DIRECTIONAL_LIGHT_BUFFER_SIZE, 0);
-    Renderer::lighting_manager->directional_uniform_buffer->SetData(&direction, DIRECTIONAL_LIGHT_BUFFER_SIZE, sizeof(glm::vec4));
+    LightingManager::GetInstance()->directional_uniform_buffer->Bind();
+    LightingManager::GetInstance()->directional_uniform_buffer->SetData(&data, sizeof(DirectionalLight::Data));
 }
 
 void DirectionalLight::Unbind() const
 {
-    Renderer::lighting_manager->directional_uniform_buffer->Unbind();
+    LightingManager::GetInstance()->directional_uniform_buffer->Unbind();
+}
+
+
+// ======================================
+//               SPOT LIGHT
+// ======================================
+SpotLight::SpotLight()
+{
+    LightingManager::GetInstance()->m_data.spot_light_count++;
+}
+
+SpotLight::~SpotLight()
+{
+    LightingManager::GetInstance()->m_data.spot_light_count--;
+}
+
+void SpotLight::Bind() const
+{
+}
+
+void SpotLight::Unbind() const
+{
+
 }
 
 }

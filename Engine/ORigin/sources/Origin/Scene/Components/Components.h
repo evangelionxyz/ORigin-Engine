@@ -8,7 +8,7 @@
 #include "Origin/Animation/SpriteAnimation.h"
 
 #include "Origin/Audio/AudioListener.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 #include "Origin/Core/UUID.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Font.h"
@@ -34,7 +34,7 @@
 #include <box2d/types.h>
 
 namespace origin {
-class Lighting;
+struct Lighting;
 class AudioSource;
 class SpriteAnimation;
 class ScriptableEntity;

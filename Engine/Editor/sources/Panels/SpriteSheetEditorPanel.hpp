@@ -12,7 +12,7 @@
 #include "Origin/Scene/Camera/EditorCamera.h"
 #include "PanelBase.hpp"
 
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 
 #include <glm/glm.hpp>
 

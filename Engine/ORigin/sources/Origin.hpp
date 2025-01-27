@@ -23,7 +23,7 @@
 #include "Origin/Core/MouseEvent.h"
 #include "Origin/Core/Time.h"
 #include "Origin/Core/Assert.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 #include "Origin/Math/AABB.h"
 #include "Origin/Math/OBB.h"
 #include "Origin/Project/Project.h"

@@ -15,6 +15,8 @@ void SceneCamera::InitPerspective(f32 fovy, f32 aspectRatio, f32 nearClip, f32 f
 
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::InitOrthographic(f32 size, f32 nearClip, f32 farClip)
@@ -26,6 +28,8 @@ void SceneCamera::InitOrthographic(f32 size, f32 nearClip, f32 farClip)
 
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetOrthoScale(f32 scale)
@@ -37,13 +41,18 @@ void SceneCamera::SetOrthoScale(f32 scale)
 
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetOrthoNear(f32 nearClip)
 {
 	m_OrthoNearClip = nearClip;
+	
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetOrthoFar(f32 farClip)
@@ -51,6 +60,8 @@ void SceneCamera::SetOrthoFar(f32 farClip)
 	m_OrthoFarClip = farClip;
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetOrthoScaleMax(f32 max)
@@ -58,6 +69,8 @@ void SceneCamera::SetOrthoScaleMax(f32 max)
 	m_MaxOrthoScale = max;
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetAspectRatioType(AspectRatioType type)
@@ -77,6 +90,8 @@ void SceneCamera::SetProjectionType(ProjectionType type)
 	SceneCamera::SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	UpdateView(); 
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 glm::mat4 SceneCamera::GetViewProjection() const
@@ -128,6 +143,8 @@ void SceneCamera::SetViewportSize(u32 width, u32 height)
 
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetFov(f32 fovy)
@@ -135,6 +152,8 @@ void SceneCamera::SetFov(f32 fovy)
 	m_FOV = fovy;
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetNear(f32 nearClip)
@@ -142,6 +161,8 @@ void SceneCamera::SetNear(f32 nearClip)
 	m_NearClip = nearClip;
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::SetFar(f32 farClip)
@@ -149,6 +170,8 @@ void SceneCamera::SetFar(f32 farClip)
 	m_FarClip = farClip;
 	UpdateView();
 	UpdateProjection();
+
+	m_Frustum.Update(GetViewProjection());
 }
 
 void SceneCamera::UpdateProjection()

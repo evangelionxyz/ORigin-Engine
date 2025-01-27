@@ -16,6 +16,7 @@ project "ORigin"
     files {
         "sources/pch.cpp",
         "sources/pch.h",
+        "sources/Origin.hpp",
         "sources/Origin/**.cpp",
         "sources/Origin/**.hpp",
         "sources/Origin/**.h",

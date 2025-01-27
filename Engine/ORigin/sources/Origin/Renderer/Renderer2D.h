@@ -15,7 +15,7 @@ public:
 	static void Init();
 	static void Shutdown();
 
-	static void Begin(Shader *renderShader = nullptr);
+	static void Begin(Shader *render_shader = nullptr);
 	static void End();
 	static void Flush();
 

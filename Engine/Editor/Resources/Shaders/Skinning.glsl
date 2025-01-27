@@ -8,6 +8,7 @@ layout (location = 4) in ivec4 bone_ids;
 layout (location = 5) in vec4 weights;
 
 const int MAX_BONES = 200;
+const int NUM_CASCADES = 3;
 
 layout (location = 0) out Vertex
 {
@@ -17,6 +18,7 @@ layout (location = 0) out Vertex
   vec2 texcoord;
   flat ivec4 bone_ids;
   vec4 weights;
+  vec4 light_space[NUM_CASCADES];
 } vout;
 
 layout(std140, binding = 0) uniform Camera
@@ -26,6 +28,7 @@ layout(std140, binding = 0) uniform Camera
 } camera_buffer;
 
 uniform mat4 ubone_transforms[MAX_BONES];
+uniform mat4 ulight_matrices[NUM_CASCADES];
 uniform mat4 umodel_transform;
 uniform bool uhas_animation;
 
@@ -37,6 +40,12 @@ void main()
         bone_transform     += ubone_transforms[bone_ids[1]] * weights[1];
         bone_transform     += ubone_transforms[bone_ids[2]] * weights[2];
         bone_transform     += ubone_transforms[bone_ids[3]] * weights[3];
+
+        for (int i = 0; i < NUM_CASCADES; ++i)
+        {
+            vout.light_space[i] = ulight_matrices[i] * umodel_transform * bone_transform * vec4(position, 1.0);
+        }
+
         gl_Position = camera_buffer.view_projection * umodel_transform * bone_transform * vec4(position, 1.0);
 
         // bone transformation for the normal (3x3 matrix, ignores translation)
@@ -51,6 +60,11 @@ void main()
     }
     else
     {
+        for (int i = 0; i < NUM_CASCADES; ++i)
+        {
+            vout.light_space[i] = ulight_matrices[i] * umodel_transform * vec4(position, 1.0);
+        }
+
         gl_Position = camera_buffer.view_projection * umodel_transform * vec4(position, 1.0);
         mat3 normal_matrix = mat3(transpose(inverse(mat3(umodel_transform))));
         vout.normals = normalize(normal_matrix * normals);
@@ -65,6 +79,8 @@ void main()
 
 // type fragment
 #version 450 core
+
+const int NUM_CASCADES = 3;
 
 struct Material
 {
@@ -90,6 +106,7 @@ layout (location = 0) in Vertex
     vec2 texcoord;
     flat ivec4 bone_ids;
     vec4 weights;
+    vec4 light_space[NUM_CASCADES];
 } vin;
 
 /// ====================================
@@ -104,7 +121,6 @@ layout(std140, binding = 1) buffer SpotLightBuffer
 {
     SpotLight spot_lights[];
 };
-/// ====================================
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -142,11 +158,40 @@ layout(std140, binding = 4) uniform AreaLight
 layout(binding = 6) uniform sampler2D udiffuse_texture;
 layout(binding = 7) uniform sampler2D uspecular_texture;
 layout(binding = 8) uniform sampler2D uroughness_texture;
+layout(binding = 9) uniform sampler2DArray ushadow_map;
 
 uniform int uspot_light_count;
 uniform int umaterial_index;
+uniform vec4 ucascade_splits;
+uniform int unum_cascades;
 
 Material material = materials[umaterial_index];
+
+/// ====================================
+///         SHADOW CALCULATION
+/// ====================================
+float calculate_shadow(vec4 light_space, int cascade_index)
+{
+    if (light_space.w == 0.0) {
+      return 1.0; // fully lit, as this is invalid
+    }
+
+    vec3 projection_coords = light_space.xyz / light_space.w; // perspective division
+    projection_coords = projection_coords * 0.5 + 0.5; // transform to [0, 1] range
+
+    if (projection_coords.z > 1.0 || projection_coords.x < 0.0 || projection_coords.x > 1.0 || projection_coords.y < 0.0 || projection_coords.y > 1.0)
+    {
+      return 1.0; // fully lit
+    }
+
+    // sample the shadow map
+    float shadow_depth = texture(ushadow_map, vec3(projection_coords.xy, cascade_index)).r;
+    float current_depth = projection_coords.z;
+
+    float bias = max(0.005 * (1.0 - dot(normalize(dir_light_buffer.direction.xyz), normalize(vin.position))), 0.001);
+
+    return current_depth - bias > shadow_depth ? 0.0 : 1.0;
+}
 
 /// ====================================
 ///        SPOT LIGHT CALCULATION
@@ -227,12 +272,21 @@ void main()
     vec3 view_dir = camera_buffer.position - vin.position;
     vec3 frag_pos = normalize(vin.position);
 
+    // shadow
+    float shadow = 1.0;
+    for (int i = 0; i < unum_cascades; ++i)
+    {
+        if (vin.light_space[i].z < ucascade_splits[i])
+        {
+            shadow = calculate_shadow(vin.light_space[i], i);
+            break;
+        }
+    }
+
     // calculate lighting
     vec3 lighting = vec3(0.0);
-
     lighting += calculate_all_spotlights(view_dir, frag_pos, normal);
     lighting += calculate_directional_light(normal, view_dir, vin.texcoord * material.tiling_factor.xy);
 
-
-    frag_color = vec4(lighting, 1.0);
+    frag_color = vec4(shadow * lighting, 1.0);
 }

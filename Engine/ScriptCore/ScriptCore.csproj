@@ -18,8 +18,8 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Build\VS2022\Debug\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Build\VS2022\Debug\Objs\ScriptCore\</BaseIntermediateOutputPath>
+    <OutputPath>..\Build\Bin\Debug\Binaries\</OutputPath>
+    <BaseIntermediateOutputPath>..\Build\Bin\Debug\Objs\ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -30,8 +30,8 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Build\VS2022\Release\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Build\VS2022\Release\Objs\ScriptCore\</BaseIntermediateOutputPath>
+    <OutputPath>..\Build\Bin\Release\Binaries\</OutputPath>
+    <BaseIntermediateOutputPath>..\Build\Bin\Release\Objs\ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -42,8 +42,8 @@
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Build\VS2022\Dist\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Build\VS2022\Dist\Objs\ScriptCore\</BaseIntermediateOutputPath>
+    <OutputPath>..\Build\Bin\Dist\Binaries\</OutputPath>
+    <BaseIntermediateOutputPath>..\Build\Bin\Dist\Objs\ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>

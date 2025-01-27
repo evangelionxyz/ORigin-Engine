@@ -70,30 +70,24 @@ public:
 
 	static void OnWindowResize(u32 width, u32 height);
 	static void SetCurrentShader(const Ref<Shader> &shader);
-
-
-	const static Ref<Shader>& GetCurrentShader() { return s_GlobalShader; }
+	
 	static Ref<Shader> GetShader(const std::string &name);
 	static ShaderLibrary &GetShaderLibrary();
-
 	static Ref<Material> GetMaterial(const std::string &name);
-
-	static Ref<Texture2D> WhiteTexture;
-	static Ref<Texture2D> BlackTexture;
-
 	static Statistics &GetStatistics();
+	const static Ref<Shader>& GetCurrentShader() { return global_shader; }
 	
-	static LightingManager *lighting_manager;
-	static MaterialManager *material_manager;
+	static Ref<Texture2D> white_texture;
+	static Ref<Texture2D> black_texture;
 	static Ref<UniformBuffer> camera_uniform_buffer;
 	static Ref<UniformBuffer> skybox_uniform_buffer;
-
 	static RenderData render_data;
 
 private:
 	static void LoadShaders();
-	static Ref<Shader> s_GlobalShader;
+	static Ref<Shader> global_shader;
 };
+
 }
 
 #endif

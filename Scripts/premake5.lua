@@ -13,13 +13,14 @@ workspace "OR1"
     flags{ "MultiProcessorCompile" }
 
     startproject "Editor"
-    BUILD_DIR              = "%{wks.location}/Engine/Build/VS2022"
+
+    BUILD_DIR              = "%{wks.location}/Engine/Build/Bin"
     THIRD_PARTY_DIR        = "%{wks.location}/Engine/ThirdParty"
 
     outputDir              = "%{BUILD_DIR}/%{cfg.buildcfg}/Binaries"
     intOutputDir           = "%{BUILD_DIR}/%{cfg.buildcfg}/Objs/%{prj.name}"
 
-    ThirdPartyProjectFiles = "%{THIRD_PARTY_DIR}/ProjectFiles"
+    ThirdPartyProjectFiles = "%{THIRD_PARTY_DIR}/Project Files"
     ThirdPartyOutputdir    = "%{BUILD_DIR}/%{cfg.buildcfg}/Binaries/ThirdParty"
     ThirdPartyIntOutputdir = "%{BUILD_DIR}/%{cfg.buildcfg}/Objs/ThirdParty/%{prj.name}"
     PhysXDir               = "%{THIRD_PARTY_DIR}/nvphysx"

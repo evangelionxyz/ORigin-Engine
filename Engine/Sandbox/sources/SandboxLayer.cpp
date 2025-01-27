@@ -4,14 +4,10 @@
 #include "Origin/Asset/AssetImporter.h"
 #include "Origin/Core/Input.h"
 #include "Origin/GUI/UI.h"
-
 #include "Origin/Audio/AudioEngine.h"
 #include "Origin/Audio/FmodSound.h"
 #include "Origin/Audio/FmodDsp.h"
-
 #include "SandboxLayer.h"
-#include "SkinnedMesh.hpp"
-
 #include <glad/glad.h>
 
 using namespace origin;
@@ -24,8 +20,6 @@ struct CamData
 
 CamData cam_data;
 Ref<UniformBuffer> ubo;
-Ref<Shader> shader;
-Ref<Shader> skybox_shader;
 
 struct Data
 {
@@ -40,7 +34,7 @@ struct Data
     f32 running = 0.0f;
 
     Data() = default;
-    Data(const std::string &filepath)
+    explicit Data(const std::string &filepath)
     {
         model = Model::Create(filepath);
         anims = model->GetAnimations();
@@ -48,26 +42,23 @@ struct Data
     }
 };
 
-Data raptoid;
+Data character, floor_;
 f32 animation_speed_playback = 1.0f;
 f32 increment_speed = 300.0f;
 f32 decrement_speed = 800.0f;
 f32 target_direction = 180.0f;
 f32 target_speed = 0.0f;
-Ref<Skybox> skybox;
-f32 blur_factor = 0.005f;
-
-i32 model_count = 8;
-f32 model_pos_spacing = 2.0f;
-Ref<FmodSound> roar_sound;
-
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
-    camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 10000.0f);
-    camera.SetPosition({ -1.62620163f, 1.37793064f,2.60992050f });
+    camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+    camera.SetPosition({ -1.62620163f, 1.37793064f, 2.60992050f });
     camera.SetPitch(0.161835521f);
     camera.SetYaw(0.640095532f);
+
+    camera2.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+    camera2.SetPosition({ 0.0f, 2.0f, 10.0f });
+    
     RenderCommand::ClearColor({ 0.125f, 0.125f, 0.125f, 1.0f });
 }
 
@@ -76,33 +67,264 @@ void SandboxLayer::OnAttach()
     Physics::Init(PhysicsAPI::Jolt);
     InitSounds();
 
-    shader = Shader::Create("Resources/Shaders/Skinning.glsl", false, true);
-    skybox_shader = Shader::Create("Resources/Shaders/Skybox.glsl", false, true);
+    shader = Renderer::GetShader("SkinnedMesh");
+    skybox_shader = Renderer::GetShader("Skybox");
+    shadow_map_shader = Renderer::GetShader("ShadowMap");
 
     ubo = UniformBuffer::Create(sizeof(CamData), 0);
 
-    raptoid = Data("Resources/Models/base_character.glb");
-    raptoid.blender.SetRange({ 0.0f, 0.0f }, { 360.0f, 400.0f });
+    floor_ = Data("Resources/Models/checker_plane.glb");
+    character = Data("Resources/Models/base_character.glb");
+    character.blender.SetRange({ 0.0f, 0.0f }, { 360.0f, 400.0f });
+    // character animation setup
+    {
+        character.blender.AddAnimation("Idling", { 0.0f, 0.0f }, { 72.0f, 25.0f }); // idle
+        character.blender.AddAnimation("Idling", { 72.0f, 0.0f }, { 144.0f, 25.0f }); // idle
+        character.blender.AddAnimation("Idling", { 144.0f, 0.0f }, { 216.0f, 25.0f }); // idle
+        character.blender.AddAnimation("Idling", { 216.0f, 0.0f }, { 288.0f, 25.0f }); // idle
+        character.blender.AddAnimation("Idling", { 288.0f, 0.0f }, { 360.0f, 25.0f }); // idle
 
-    raptoid.blender.AddAnimation("Idling", { 0.0f, 0.0f }, { 72.0f, 25.0f }); // idle
-    raptoid.blender.AddAnimation("Idling", { 72.0f, 0.0f }, { 144.0f, 25.0f }); // idle
-    raptoid.blender.AddAnimation("Idling", { 144.0f, 0.0f }, { 216.0f, 25.0f }); // idle
-    raptoid.blender.AddAnimation("Idling", { 216.0f, 0.0f }, { 288.0f, 25.0f }); // idle
-    raptoid.blender.AddAnimation("Idling", { 288.0f, 0.0f }, { 360.0f, 25.0f }); // idle
+        character.blender.AddAnimation("Walking_Forward", { 72.0f, 50.0f }, { 180.0f, 150.0f }); // walking
+        character.blender.AddAnimation("Walking_Forward", { 180.0f, 50.0f }, { 288.0f, 150.0f }); // walking
 
-    raptoid.blender.AddAnimation("Walking_Forward", { 72.0f, 50.0f }, { 180.0f, 150.0f }); // walking
-    raptoid.blender.AddAnimation("Walking_Forward", { 180.0f, 50.0f }, { 288.0f, 150.0f }); // walking
-
-    raptoid.blender.AddAnimation("Walking_Backward", { 0.0f, 50.0f }, { 72.0f, 150.0f }); // walking backward
-    raptoid.blender.AddAnimation("Running_Backward", { 0.0f, 200.0f }, { 120.0f, 400.0f }); // backward
-    raptoid.blender.AddAnimation("Running_Forward", { 144.0f, 180.0f }, { 216.0f, 400.0f }); // forward
-    raptoid.blender.AddAnimation("Running_Backward", { 230.0f, 200.0f }, { 360.0f, 400.0f }); // backward
-    raptoid.blender.AddAnimation("Walking_Backward", { 288.0f, 50.0f }, { 360.0f, 150.0f }); // walking backward
+        character.blender.AddAnimation("Walking_Backward", { 0.0f, 50.0f }, { 72.0f, 150.0f }); // walking backward
+        character.blender.AddAnimation("Running_Backward", { 0.0f, 200.0f }, { 120.0f, 400.0f }); // backward
+        character.blender.AddAnimation("Running_Forward", { 144.0f, 180.0f }, { 216.0f, 400.0f }); // forward
+        character.blender.AddAnimation("Running_Backward", { 230.0f, 200.0f }, { 360.0f, 400.0f }); // backward
+        character.blender.AddAnimation("Walking_Backward", { 288.0f, 50.0f }, { 360.0f, 150.0f }); // walking backward
+    }
+    
 
     skybox = Skybox::Create("Resources/Skybox", ".jpg");
+
+    // directional light
+    dir_light = CreateRef<DirectionalLight>();
+    dir_light->data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    dir_light->data.direction = { -90.0f, -70.0f, 0.0f, 1.0f };
 }
 
 void SandboxLayer::OnUpdate(const Timestep delta_time)
+{
+    UpdateCharacterMovement(delta_time);
+    UpdateCamera(delta_time);
+
+    // directional light
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, Application::GetInstance().GetWindow().GetWidth(), Application::GetInstance().GetWindow().GetHeight());
+    dir_light->Bind();
+
+    RenderDebug(delta_time);
+
+    RenderScene(delta_time);
+    RenderSkybox(delta_time);
+}
+
+void SandboxLayer::RenderDebug(f32 delta_time)
+{
+    Renderer2D::Begin();
+    Renderer2D::DrawQuad(glm::mat4(1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    for (const auto & [fst, snd] : camera2.GetFrustum().GetEdges())
+    {
+        Renderer2D::DrawLine(fst, snd, { 1.0f, 0.0f, 0.0f, 1.0f });
+    }
+    Renderer2D::End();
+}
+
+void SandboxLayer::UpdateCamera(f32 delta_time)
+{
+    const glm::vec2 &mouse_click_drag_delta = Input::GetMouseClickDragDelta();
+    camera.OnMouseMove(mouse_click_drag_delta);
+    camera.OnUpdate(delta_time);
+
+    camera.UpdateView();
+    camera.UpdateProjection();
+
+    cam_data.view_projection = camera.GetViewProjection();
+    cam_data.positon = camera.GetPosition();
+    ubo->Bind();
+    ubo->SetData(&cam_data, sizeof(CamData));
+}
+
+void SandboxLayer::RenderScene(f32 delta_time)
+{
+    shader->Enable();
+
+    // floor
+    shader->SetBool("uhas_animation", floor_.model->HasAnimations());
+    shader->SetMatrix("umodel_transform", glm::scale(glm::mat4(1.0f), glm::vec3(10.0f)));
+
+    for (auto &mesh : floor_.model->GetMeshes())
+    {
+        MaterialManager::UpdateMaterial(mesh->material_index, mesh->material.buffer_data);
+        shader->SetInt("umaterial_index", mesh->material_index);
+        mesh->material.Update(shader.get());
+        RenderCommand::DrawIndexed(mesh->vertex_array);
+    }
+
+    // CHARACTER
+    character.blender.BlendAnimations(character.blending_position, delta_time, animation_speed_playback);
+    shader->SetBool("uhas_animation", character.model->HasAnimations());
+    shader->SetMatrix("ubone_transforms", character.model->GetBoneTransforms()[0], character.model->GetBoneTransforms().size());
+    shader->SetMatrix("umodel_transform", glm::mat4(1.0));
+
+    for (auto &mesh : character.model->GetMeshes())
+    {
+        MaterialManager::UpdateMaterial(mesh->material_index, mesh->material.buffer_data);
+        shader->SetInt("umaterial_index", mesh->material_index);
+        mesh->material.Update(shader.get());
+        RenderCommand::DrawIndexed(mesh->vertex_array);
+    }
+
+    shader->Disable();
+}
+
+void SandboxLayer::RenderSkybox(f32 delta_time)
+{
+    glDepthFunc(GL_LEQUAL);
+
+    Renderer::GetShader("Skybox")->Enable();
+    Renderer::skybox_uniform_buffer->Bind();
+    Renderer::skybox_uniform_buffer->SetData(&tint_color, sizeof(glm::vec4) + sizeof(f32));
+    Renderer::skybox_uniform_buffer->SetData(&blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture_id);
+    Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
+
+    RenderCommand::DrawIndexed(skybox->vao);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    Renderer::GetShader("Skybox")->Disable();
+
+    glDepthFunc(GL_LESS);
+}
+
+void SandboxLayer::OnEvent(Event &e)
+{
+    EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<FramebufferResizeEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnWindowResize));
+    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnKeyPressed));
+    dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseMove));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseButtonPressed));
+    dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseScroll));
+
+    camera.OnEvent(e);
+}
+
+void SandboxLayer::OnGuiRender()
+{
+    ImGui::Begin("Control");
+
+    const f32 &fps = ImGui::GetIO().Framerate;
+    ImGui::Text("%.2f", fps);
+    ImGui::DragFloat("Animation Speed", &animation_speed_playback, 0.01f, 0.0f, 10.0f);
+
+    ImGui::Separator();
+    ImGui::SliderFloat("Direction", &character.blending_position.x, character.blender.GetMinSize().x, character.blender.GetMaxSize().x);
+    ImGui::SliderFloat("Speed", &character.blending_position.y, character.blender.GetMinSize().y, character.blender.GetMaxSize().y);
+
+    ImGui::Separator();
+    ImGui::ColorEdit4("Tint Color", glm::value_ptr(tint_color));
+    ImGui::SliderFloat("Blur Factor", &blur_factor, 0.0f, 1.0f);
+
+    ImGui::Separator();
+
+    glm::vec3 light_direction = glm::vec3(dir_light->data.direction);
+    if (UI::DrawVec3Control("Light Direction", light_direction, 0.1f, 0.0f))
+    {
+        dir_light->data.direction.x = light_direction.x;
+        dir_light->data.direction.y = light_direction.y;
+        dir_light->data.direction.z = light_direction.z;
+    }
+
+    ImGui::ColorEdit4("Light Color", glm::value_ptr(dir_light->data.color));
+
+    ImGui::Separator();
+    for (auto &state : character.blender.GetStates())
+    {
+        ImGui::Text("%s\t%d: %.5f", state.name.c_str(), state.anim_index, state.weight);
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::Button("Play Sound"))
+    {
+        roar_sound->Play();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reload Shader"))
+    {
+        shader->Reload();
+        skybox_shader->Reload();
+    }
+
+#if 0
+    for (int i = 0; i < NUM_CASCADES; ++i)
+    {
+        std::string cascade_label = "Cascade " + std::to_string(i);
+        if (ImGui::TreeNode(cascade_label.c_str()))
+        {
+            ImGui::Text("Cascade %d", i);
+
+            GLuint texture_layer;
+            glGenTextures(1, &texture_layer);
+            glBindTexture(GL_TEXTURE_2D, texture_layer);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            // Copy layer from shadow map texture array
+            glCopyImageSubData(
+                shadow_map_texture, GL_TEXTURE_2D_ARRAY, 0, 0, 0, i,
+                texture_layer, GL_TEXTURE_2D, 0, 0, 0, 0,
+                shadow_map_resolution, shadow_map_resolution, 1
+            );
+
+            ImGui::Image((void *)(intptr_t)texture_layer, ImVec2(256, 256));
+
+            // Cleanup
+            glDeleteTextures(1, &texture_layer);
+
+            ImGui::TreePop();
+        }
+    }
+#endif
+
+    ImGui::End();
+}
+
+bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)
+{
+    RenderCommand::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
+    camera.SetViewportSize(e.GetWidth(), e.GetHeight());
+
+    return false;
+}
+
+bool SandboxLayer::OnKeyPressed(KeyPressedEvent &e)
+{
+    return false;
+}
+
+bool SandboxLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+{
+    return false;
+}
+
+bool SandboxLayer::OnMouseMove(MouseMovedEvent &e)
+{
+    return false;
+}
+
+bool SandboxLayer::OnMouseScroll(MouseScrolledEvent &e)
+{
+    camera.OnMouseScroll(e.GetYOffset());
+
+    return false;
+}
+
+void SandboxLayer::UpdateCharacterMovement(f32 delta_time)
 {
     constexpr f32 WALK_FORWARD_SPEED = 72.0f;
     constexpr f32 WALK_BACKWARD_SPEED = 50.0f;
@@ -120,7 +342,7 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
 
     // Define target values for speed and direction
     f32 target_speed = IDLE_SPEED;
-    f32 target_direction = raptoid.blending_position.x;
+    f32 target_direction = character.blending_position.x;
     f32 move_increment_speed = MOVE_INCREMENT_SPEED;
     f32 direction_increment_speed = DIRECTION_INCREMENT_SPEED;
 
@@ -174,191 +396,38 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
     }
 
     // Smoothly adjust direction (X-axis)
-    if (target_direction != raptoid.blending_position.x)
+    if (target_direction != character.blending_position.x)
     {
-        if (target_direction > raptoid.blending_position.x)
+        if (target_direction > character.blending_position.x)
         {
-            raptoid.blending_position.x += delta_time * direction_increment_speed;
-            if (raptoid.blending_position.x > target_direction)
-                raptoid.blending_position.x = target_direction;
+            character.blending_position.x += delta_time * direction_increment_speed;
+            if (character.blending_position.x > target_direction)
+                character.blending_position.x = target_direction;
         }
         else
         {
-            raptoid.blending_position.x -= delta_time * direction_increment_speed;
-            if (raptoid.blending_position.x < target_direction)
-                raptoid.blending_position.x = target_direction;
+            character.blending_position.x -= delta_time * direction_increment_speed;
+            if (character.blending_position.x < target_direction)
+                character.blending_position.x = target_direction;
         }
     }
 
     // Smoothly adjust speed (Y-axis)
-    if (target_speed != raptoid.blending_position.y)
+    if (target_speed != character.blending_position.y)
     {
-        if (target_speed > raptoid.blending_position.y)
+        if (target_speed > character.blending_position.y)
         {
-            raptoid.blending_position.y += delta_time * move_increment_speed;
-            if (raptoid.blending_position.y > target_speed)
-                raptoid.blending_position.y = target_speed;
+            character.blending_position.y += delta_time * move_increment_speed;
+            if (character.blending_position.y > target_speed)
+                character.blending_position.y = target_speed;
         }
         else
         {
-            raptoid.blending_position.y -= delta_time * DECREMENT_SPEED;
-            if (raptoid.blending_position.y < target_speed)
-                raptoid.blending_position.y = target_speed;
+            character.blending_position.y -= delta_time * DECREMENT_SPEED;
+            if (character.blending_position.y < target_speed)
+                character.blending_position.y = target_speed;
         }
     }
-
-    RenderCommand::Clear();
-    const glm::vec2 &delta = Input::GetMouseClickDragDelta();
-
-    camera.OnMouseMove(delta);
-    camera.OnUpdate(delta_time);
-
-    camera.UpdateView();
-    camera.UpdateProjection();
-
-    cam_data.view_projection = camera.GetViewProjection();
-    cam_data.positon = camera.GetPosition();
-
-    ubo->Bind();
-    ubo->SetData(&cam_data, sizeof(CamData));
-
-    {
-        shader->Enable();
-
-        GLenum error = glGetError();
-        OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
-
-        raptoid.blender.BlendAnimations(raptoid.blending_position, delta_time, animation_speed_playback);
-        shader->SetBool("uhas_animation", raptoid.model->HasAnimations());
-        shader->SetMatrix("ubone_transforms", raptoid.model->GetBoneTransforms()[0], raptoid.model->GetBoneTransforms().size());
-        for (auto &mesh : raptoid.model->GetMeshes())
-        {
-            shader->SetMatrix("umodel_transform", mesh->transform);
-            
-            mesh->material.Bind();
-            if (mesh->material.diffuse_texture)
-            {
-                mesh->material.diffuse_texture->Bind(DIFFUSE_TEXTURE_BINDING);
-                shader->SetInt("udiffuse_texture", DIFFUSE_TEXTURE_BINDING);
-            }
-            if (mesh->material.specular_texture)
-            {
-                mesh->material.specular_texture->Bind(SPECULAR_TEXTURE_BINDING);
-                shader->SetInt("uspecular_texture", SPECULAR_TEXTURE_BINDING);
-            }
-            if (mesh->material.roughness_texture)
-            {
-                mesh->material.roughness_texture->Bind(ROUGHNESS_TEXTURE_BINDING);
-                shader->SetInt("uroughness_texture", ROUGHNESS_TEXTURE_BINDING);
-            }
-            RenderCommand::DrawIndexed(mesh->vertex_array);
-            mesh->material.Unbind();
-        }
-
-        shader->Disable();
-    }
-
-
-    glDepthFunc(GL_LEQUAL);
-    skybox_shader->Enable();
-
-    GLenum error = glGetError();
-    OGN_CORE_ASSERT(error == GL_NO_ERROR, "[GL ERROR] {}", error);
-
-    skybox_shader->SetFloat("ublur_factor", blur_factor);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->texture_id);
-    skybox_shader->SetInt("uskybox_cube", 0);
-
-    RenderCommand::DrawIndexed(skybox->vao);
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    skybox_shader->Disable();
-
-    glDepthFunc(GL_LESS);
-}
-
-void SandboxLayer::OnEvent(Event &e)
-{
-    EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<FramebufferResizeEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnWindowResize));
-    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnKeyPressed));
-    dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseMove));
-    dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseButtonPressed));
-    dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(SandboxLayer::OnMouseScroll));
-
-    camera.OnEvent(e);
-}
-
-void SandboxLayer::OnGuiRender()
-{
-    ImGui::Begin("Control");
-
-    const f32 &fps = ImGui::GetIO().Framerate;
-    ImGui::Text("%.2f", fps);
-    ImGui::SliderInt("Model Count x2", &model_count, 0, 100);
-    ImGui::SliderFloat("Spacing", &model_pos_spacing, 0.0f, 100.0f);
-    ImGui::DragFloat("Animation Speed", &animation_speed_playback, 0.01f, 0.0f, 10.0f);
-    ImGui::Separator();
-
-    ImGui::SliderFloat("Direction", &raptoid.blending_position.x, raptoid.blender.GetMinSize().x, raptoid.blender.GetMaxSize().x);
-    ImGui::SliderFloat("Speed", &raptoid.blending_position.y, raptoid.blender.GetMinSize().y, raptoid.blender.GetMaxSize().y);
-
-    ImGui::SliderFloat("Blur Factor", &blur_factor, 0.0f, 1000.0f);
-
-    ImGui::Separator();
-    
-
-    for (auto &state : raptoid.blender.GetStates())
-    {
-        ImGui::Text("%s\t%d: %.5f", state.name.c_str(), state.anim_index, state.weight);
-    }
-
-    ImGui::Separator();
-
-    if (ImGui::Button("Play Sound"))
-    {
-        roar_sound->Play();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Reload Shader"))
-    {
-        shader->Reload();
-        skybox_shader->Reload();
-    }
-
-    ImGui::End();
-}
-
-bool SandboxLayer::OnWindowResize(FramebufferResizeEvent &e)
-{
-    RenderCommand::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
-    camera.SetViewportSize(e.GetWidth(), e.GetHeight());
-
-    return false;
-}
-
-bool SandboxLayer::OnKeyPressed(KeyPressedEvent &e)
-{
-    return false;
-}
-
-bool SandboxLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)
-{
-    return false;
-}
-
-bool SandboxLayer::OnMouseMove(MouseMovedEvent &e)
-{
-    return false;
-}
-
-bool SandboxLayer::OnMouseScroll(MouseScrolledEvent &e)
-{
-    camera.OnMouseScroll(e.GetYOffset());
-
-    return false;
 }
 
 void SandboxLayer::OnDetach()

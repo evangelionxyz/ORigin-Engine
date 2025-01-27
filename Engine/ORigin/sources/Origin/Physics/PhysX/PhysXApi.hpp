@@ -6,7 +6,7 @@
 
 #include "../PhysicsApiBase.hpp"
 
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 
 namespace origin {
 

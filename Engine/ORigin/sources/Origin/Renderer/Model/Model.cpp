@@ -7,7 +7,7 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Texture.h"
-
+#include "Origin/Renderer/Materials/MaterialManager.hpp"
 #include "Origin/Renderer/TextureType.hpp"
 
 #include <assimp/Importer.hpp>
@@ -132,25 +132,18 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string
     }
 
     if (m_Scene->HasAnimations())
+    {
         LoadVertexBones(mesh_index, m_Meshes[mesh_index], mesh);
+    }
+    
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial *ai_material = m_Scene->mMaterials[mesh->mMaterialIndex];
         std::string mat_name(ai_material->GetName().C_Str());
 
         LoadMaterials(m_Meshes[mesh_index]->material, ai_material, filepath);
-        m_Meshes[mesh_index]->material_index = static_cast<i32>(Renderer::material_manager->AddMeshMaterial(m_Meshes[mesh_index]->material.buffer_data));
-        Renderer::material_manager->UpdateMeshMaterial(m_Meshes[mesh_index]->material_index, m_Meshes[mesh_index]->material.buffer_data);
-        //Renderer::material_manager->material_index_map[mat_name] = m_Meshes[mesh_index]->material_index;
-
-        /*if (!Renderer::material_manager->material_index_map.contains(mat_name))
-        {
-        }
-        else
-        {
-            m_Meshes[mesh_index]->material_index = Renderer::material_manager->material_index_map[mat_name];
-        }*/
-        
+        m_Meshes[mesh_index]->material_index = static_cast<i32>(MaterialManager::AddMaterial(m_Meshes[mesh_index]->material.buffer_data));
+        MaterialManager::UpdateMaterial(m_Meshes[mesh_index]->material_index, m_Meshes[mesh_index]->material.buffer_data);
     }
     
     CreateVertex(m_Meshes[mesh_index]);
@@ -292,7 +285,7 @@ void Model::LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const
     // load textures
     material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);
     if (!material.diffuse_texture)
-        material.diffuse_texture = Renderer::WhiteTexture;
+        material.diffuse_texture = Renderer::white_texture;
 }
 
 i32 Model::GetBoneID(const aiBone *bone)

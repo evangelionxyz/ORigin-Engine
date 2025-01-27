@@ -4,7 +4,6 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/Renderer2D.h"
 #include "Origin/Asset/AssetManager.h"
-#include "Origin/Scene/Camera/EditorCamera.h"
 
 namespace origin {
 
@@ -48,11 +47,11 @@ struct Renderer2DData
 
 	Shader *RenderShader = nullptr;
 
-	std::shared_ptr<VertexArray> TextVertexArray;
-	std::shared_ptr<VertexBuffer> TextVertexBuffer;
-	std::shared_ptr<Shader> TextShader;
+	Ref<VertexArray> TextVertexArray;
+	Ref<VertexBuffer> TextVertexBuffer;
+	Ref<Shader> TextShader;
 	uint32_t FontAtlasTextureIndex = 0;
-	std::array<std::shared_ptr<Texture2D>, 32> FontAtlasTextureSlots;
+	std::array<Ref<Texture2D>, 32> FontAtlasTextureSlots;
 	uint32_t TextIndexCount = 0;
 	TextVertex *TextVertexBufferBase = nullptr;
 	TextVertex *TextVertexBufferPtr = nullptr;
@@ -60,9 +59,9 @@ struct Renderer2DData
 	// =============================================
 	// =================== Quads ===================
 	// =============================================
-	std::shared_ptr<VertexArray> QuadVertexArray;
-	std::shared_ptr<VertexBuffer> QuadVertexBuffer;
-	std::shared_ptr<Shader> QuadShader;
+	Ref<VertexArray> QuadVertexArray;
+	Ref<VertexBuffer> QuadVertexBuffer;
+	Ref<Shader> QuadShader;
 
 	uint32_t QuadIndexCount = 0;
 	QuadVertex *QuadVertexBufferBase = nullptr;
@@ -72,9 +71,9 @@ struct Renderer2DData
 	// =============================================
 	// =================== Circles ===================
 	// =============================================
-	std::shared_ptr<VertexArray> CircleVertexArray;
-	std::shared_ptr<VertexBuffer> CircleVertexBuffer;
-	std::shared_ptr<Shader> CircleShader;
+	Ref<VertexArray> CircleVertexArray;
+	Ref<VertexBuffer> CircleVertexBuffer;
+	Ref<Shader> CircleShader;
 
 	uint32_t CircleIndexCount = 0;
 	CircleVertex *CircleVertexBufferBase = nullptr;
@@ -86,20 +85,19 @@ struct Renderer2DData
 	static const uint32_t MaxLines = 51200;
 	static const uint32_t MaxLineVertices = MaxLines * 2;
 
-	std::shared_ptr<VertexArray> LineVertexArray;
-	std::shared_ptr<VertexBuffer> LineVertexBuffer;
-	std::shared_ptr<Shader> LineShader;
+	Ref<VertexArray> LineVertexArray;
+	Ref<VertexBuffer> LineVertexBuffer;
+	Ref<Shader> LineShader;
 
 	uint32_t LineVertexCount = 0;
 	LineVertex *LineVertexBufferBase = nullptr;
 	LineVertex *LineVertexBufferPtr = nullptr;
 
-	std::array<std::shared_ptr<Texture2D>, 32> TextureSlots;
+	std::array<Ref<Texture2D>, 32> TextureSlots;
 	uint32_t TextureSlotIndex = 1; // 0 = white texture
 };
 
 static Renderer2DData s_Render2DData;
-static std::shared_ptr<UniformBuffer> s_CameraUniformBuffer;
 
 void Renderer2D::Init()
 {
@@ -136,7 +134,7 @@ void Renderer2D::Init()
 		offset += 4;
 	}
 
-	std::shared_ptr<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer::render_data.max_quad_indices);
+	Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, Renderer::render_data.max_quad_indices);
 	s_Render2DData.QuadVertexArray->SetIndexBuffer(quadIB);
 	delete[] quadIndices;
 
@@ -181,7 +179,7 @@ void Renderer2D::Init()
 	s_Render2DData.LineVertexBufferBase = new LineVertex[Renderer::render_data.max_vertices];
 
 	// Set first texture slot to 0
-	s_Render2DData.TextureSlots[0] = Renderer::WhiteTexture;
+	s_Render2DData.TextureSlots[0] = Renderer::white_texture;
 
 	s_Render2DData.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
 	s_Render2DData.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
@@ -199,9 +197,11 @@ void Renderer2D::Shutdown()
 	delete[] s_Render2DData.QuadVertexBufferBase;
 }
 
-void Renderer2D::Begin(Shader *renderShader)
+void Renderer2D::Begin(Shader *render_shader)
 {
-	s_Render2DData.RenderShader = renderShader;
+	if (render_shader)
+		s_Render2DData.RenderShader = render_shader;
+	
 	StartBatch();
 }
 
@@ -331,12 +331,12 @@ void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	DrawQuad(transform, color);
 }
 
-void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
+void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 {
 	DrawQuad({ position.x, position.y, 0.0f }, size, texture, tilingFactor, tintColor);
 }
 
-void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
+void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 {
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 		* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
@@ -368,7 +368,7 @@ void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
 	Renderer::GetStatistics().quad_count++;
 }
 
-void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
+void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 {
 	OGN_CORE_ASSERT(texture, "Renderer2D: Invalid texture");
 
@@ -411,11 +411,11 @@ void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<Text
 	Renderer::GetStatistics().quad_count++;
 }
 
-void Renderer2D::DrawQuad(const glm::mat4& transform, const std::shared_ptr<SubTexture2D>& subTexture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
+void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<SubTexture2D>& subTexture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 {
 	constexpr int QuadVertexCount = 4;
 	const glm::vec2* textureCoords = subTexture->GetTexCoords();
-	const std::shared_ptr<Texture2D> texture = subTexture->GetTexture();
+	const Ref<Texture2D> texture = subTexture->GetTexture();
 
 	if (s_Render2DData.QuadIndexCount >= Renderer::render_data.max_quad_indices)
 		NextBatch();
@@ -467,12 +467,12 @@ void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
 	DrawQuad(transform, color);
 }
 
-void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
+void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 {
 	DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, tintColor);
 }
 
-void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const std::shared_ptr<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
+void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
 {
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 		* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })
@@ -548,7 +548,7 @@ void Renderer2D::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::v
 
 void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src)
 {
-	const std::shared_ptr<Texture2D> &texture = AssetManager::GetAsset<Texture2D>(src.Texture);
+	const Ref<Texture2D> &texture = AssetManager::GetAsset<Texture2D>(src.Texture);
 	if (texture)
 	{
 		constexpr size_t quadVertexCount = 4;
@@ -624,7 +624,7 @@ void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponen
 	}
 }
 
-void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> font, const glm::mat4& transform, const TextParams& textParams, glm::vec2 *size)
+void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm::mat4& transform, const TextParams& textParams, glm::vec2 *size)
 {
 	if (!font)
 		return;
@@ -638,7 +638,7 @@ void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> fon
 	const auto& fontGeometry = font->GetData()->FontGeometry;
 	const auto& metrics = fontGeometry.getMetrics();
 
-	std::shared_ptr<Texture2D> fontAtlas = font->GetAtlasTexture();
+	Ref<Texture2D> fontAtlas = font->GetAtlasTexture();
 
 	float textureIndex = 0;
 	for (uint32_t i = 0; i < s_Render2DData.FontAtlasTextureIndex; i++)
@@ -785,7 +785,7 @@ void Renderer2D::DrawString(const std::string& string, std::shared_ptr<Font> fon
 
 void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, TextComponent& component)
 {
-	std::shared_ptr<Font> font = AssetManager::GetAsset<Font>(component.FontHandle);
+	Ref<Font> font = AssetManager::GetAsset<Font>(component.FontHandle);
 	DrawString(string, font, transform, { component.Color, component.Kerning, component.LineSpacing }, &component.Size);
 }
 }

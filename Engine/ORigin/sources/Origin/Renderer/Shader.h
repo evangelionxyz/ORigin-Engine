@@ -64,12 +64,13 @@ namespace origin
         virtual void SetFloat(const std::string &name, f32 v0, f32 v1) {}
         virtual void SetFloat(const std::string &name, f32 v0, f32 v1, f32 v2) {}
         virtual void SetFloat(const std::string &name, f32 v0, f32 v1, f32 v2, f32 v3) {}
+        virtual void SetFloat(const std::string &name, f32 *values, i32 count = 1) {}
 
         virtual void SetInt(const std::string &name, i32 v0) {}
         virtual void SetInt(const std::string &name, i32 v0, i32 v1) {}
         virtual void SetInt(const std::string &name, i32 v0, i32 v1, i32 v2) {}
         virtual void SetInt(const std::string &name, i32 v0, i32 v1, i32 v2, i32 v3) {}
-        virtual void SetIntArray(const std::string &name, i32 *values, i32 count) {}
+        virtual void SetInt(const std::string &name, i32 *values, i32 count = 1) {}
 
         virtual void SetVector(const std::string &name, const glm::vec2 &vectors, i32 count = 1) {}
         virtual void SetVector(const std::string &name, const glm::vec3 &vectors, i32 count = 1) {}

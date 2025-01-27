@@ -4,10 +4,10 @@
 
 #include "Origin/Core/Base.h"
 #include "Origin/Renderer/UniformBuffer.h"
-
 #include <glm/glm.hpp>
 
 namespace origin {
+
 enum LightingType : u8
 {
     LightingType_Spot        = BIT(0),
@@ -32,12 +32,10 @@ static std::string_view LightingTypeToString(LightingType type)
     return "Invalid";
 }
 
-class Lighting
+struct Lighting
 {
-public:
     virtual ~Lighting() = default;
     Lighting() = default;
-    glm::vec3 color = glm::vec3(1.0f);
 
     template<typename LightType>
     static Ref<Lighting> Create() { return CreateRef<LightType>(); }
@@ -46,20 +44,41 @@ public:
     virtual void Unbind() const = 0;
 };
 
-class DirectionalLight final : public Lighting
+struct DirectionalLight final : public Lighting
 {
-public:
     DirectionalLight();
     ~DirectionalLight() override;
 
     void Bind() const override;
     void Unbind() const override;
+
+    struct Data
+    {
+        glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+        glm::vec4 direction{ 0.0f, 0.0f, 0.0f, 1.0 };
+    };
     
-    glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
-    glm::vec4 direction{ 0.0f, 0.0f, 0.0f, 1.0 };
+    Data data;
 };
 
+struct SpotLight final : public Lighting
+{
+    SpotLight();
+    ~SpotLight() override;
 
+    void Bind() const override;
+    void Unbind() const override;
+
+    struct Data
+    {
+        glm::vec4 position;
+        glm::vec4 direction;
+        glm::vec4 color;
+        glm::vec4 cutt_off;
+    };
+
+    Data data;
+};
 
 }
 

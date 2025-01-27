@@ -4,7 +4,7 @@
 #define KEYFRAME_HPP
 
 #include "Origin/Core/Types.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 
 template<typename T>
 struct KeyFrame

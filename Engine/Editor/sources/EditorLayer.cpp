@@ -48,14 +48,13 @@ void EditorLayer::OnAttach()
     {
         FramebufferTextureFormat::RGBA8,
         FramebufferTextureFormat::DEPTH24STENCIL8
-  };
+    };
 
     fbSpec.Width = 1280;
     fbSpec.Height = 720;
     m_Framebuffer = Framebuffer::Create(fbSpec);
 
-    if (const auto filepath = std::filesystem::current_path() / "Editor.cfg";
-        !EditorSerializer::Deserialize(this, filepath))
+    if (const auto filepath = std::filesystem::current_path() / "Editor.cfg"; !EditorSerializer::Deserialize(this, filepath))
     {
         m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 1000.0f);
         m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
@@ -63,8 +62,7 @@ void EditorLayer::OnAttach()
 
     m_ActiveScene = CreateRef<Scene>();
 
-    if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs;
-        cmdline_args.Count > 1)
+    if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs; cmdline_args.Count > 1)
     {
         m_ProjectDirectoryPath = cmdline_args[1];
         OpenProject(m_ProjectDirectoryPath);

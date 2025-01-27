@@ -4,7 +4,7 @@
 #define MESH_MATERIAL_HPP
 
 #include "Origin/Core/Types.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 #include "Origin/Renderer/TextureType.hpp"
 #include "MaterialBufferData.hpp"
 #include <assimp/scene.h>
@@ -38,11 +38,9 @@ public:
     Ref<Texture2D> diffuse_texture;
     Ref<Texture2D> specular_texture;
     Ref<Texture2D> roughness_texture;
+    MaterialBufferData buffer_data;
 
-    MeshMaterialBufferData buffer_data;
-    
-    Ref<Shader> shader;
-    
+    void Update(Shader *shader);
 };
 
 }

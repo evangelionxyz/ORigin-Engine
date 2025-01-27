@@ -19,7 +19,8 @@ namespace origin
         ApplicationSpecification spec;
         spec.Name = "Sandbox";
         spec.Width = 1280;
-        spec.Height = 640;
+        spec.Height = 720;
+        spec.Maximize = true;
         spec.WorkingDirectory = "../Editor";
         spec.CommandLineArgs = args;
 

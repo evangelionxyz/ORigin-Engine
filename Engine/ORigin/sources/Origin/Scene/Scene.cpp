@@ -129,15 +129,15 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
     OGN_PROFILER_FUNCTION();
 
     // bind lighting
-    Renderer::lighting_manager->Bind();
+    LightingManager::GetInstance()->Bind();
     const auto &directional_light_view = m_Registry.view<DirectionalLightComponent, TransformComponent>();
     for (const auto& [entity, dir_light_comp, transform_comp] : directional_light_view.each())
     {
         const Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
 
         dir_light_comp.direction = glm::vec4(eulerAngles(transform_comp.WorldRotation), 1.0f);
-        dir_light->direction = dir_light_comp.direction;
-        dir_light->color = dir_light_comp.color;
+        dir_light->data.direction = dir_light_comp.direction;
+        dir_light->data.color = dir_light_comp.color;
         dir_light->Bind();
     }
     
@@ -191,7 +191,7 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 
 void Scene::PostRender(const Camera &camera, Timestep ts)
 {
-    Renderer::lighting_manager->Unbind();
+    LightingManager::GetInstance()->Unbind();
 }
 
 void Scene::Update(Timestep ts)
@@ -498,46 +498,26 @@ void Scene::RenderScene(const Camera &camera)
     for (const auto &[e, tc, mesh_component] : mesh_view.each())
     {
         Shader *shader = Renderer::GetShader("SkinnedMesh").get();
-        shader->Enable();
-
         // Render
         if (mesh_component.HModel && tc.Visible)
         {
+            shader->Enable();
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_component.HModel);
             shader->SetBool("uhas_animation", model->HasAnimations());
             shader->SetMatrix("umodel_transform", tc.GetTransform());
-
             if (model->HasAnimations())
             {
                 shader->SetMatrix("ubone_transforms", model->GetBoneTransforms()[0], static_cast<u32>(model->GetBoneTransforms().size()));
             }
-
             for (auto &mesh : model->GetMeshes())
             {
-                Renderer::material_manager->UpdateMeshMaterial(mesh->material_index, mesh->material.buffer_data);
+                MaterialManager::UpdateMaterial(mesh->material_index, mesh->material.buffer_data);
                 shader->SetInt("umaterial_index", mesh->material_index);
-
-                if (mesh->material.diffuse_texture)
-                {
-                    mesh->material.diffuse_texture->Bind(DIFFUSE_TEXTURE_BINDING);
-                    shader->SetInt("udiffuse_texture", DIFFUSE_TEXTURE_BINDING);
-                }
-                if (mesh->material.specular_texture)
-                {
-                    mesh->material.specular_texture->Bind(SPECULAR_TEXTURE_BINDING);
-                    shader->SetInt("uspecular_texture", SPECULAR_TEXTURE_BINDING);
-                }
-                if (mesh->material.roughness_texture)
-                {
-                    mesh->material.roughness_texture->Bind(ROUGHNESS_TEXTURE_BINDING);
-                    shader->SetInt("uroughness_texture", ROUGHNESS_TEXTURE_BINDING);
-                }
-
+                mesh->material.Update(shader);
                 RenderCommand::DrawIndexed(mesh->vertex_array);
             }
+            shader->Disable();
         }
-
-        shader->Disable();
     }
 
     const auto &env_map_view = m_Registry.view<EnvironmentMap, TransformComponent>();
