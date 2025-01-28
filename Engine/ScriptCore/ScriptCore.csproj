@@ -18,8 +18,8 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Build\Bin\Debug\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Build\Bin\Debug\Objs\ScriptCore\</BaseIntermediateOutputPath>
+    <OutputPath>..\Build\Debug\Bin\</OutputPath>
+    <BaseIntermediateOutputPath>..\Build\Debug\Objs\ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -30,8 +30,8 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Build\Bin\Release\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Build\Bin\Release\Objs\ScriptCore\</BaseIntermediateOutputPath>
+    <OutputPath>..\Build\Release\Bin\</OutputPath>
+    <BaseIntermediateOutputPath>..\Build\Release\Objs\ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -42,8 +42,8 @@
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Build\Bin\Dist\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Build\Bin\Dist\Objs\ScriptCore\</BaseIntermediateOutputPath>
+    <OutputPath>..\Build\Dist\Bin\</OutputPath>
+    <BaseIntermediateOutputPath>..\Build\Dist\Objs\ScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>

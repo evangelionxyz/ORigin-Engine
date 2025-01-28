@@ -22,9 +22,9 @@ namespace origin {
 #define SKYBOX_BINDING            (1)
 
 #define MATERIAL_BINDING          (6)
-#define DIFFUSE_TEXTURE_BINDING   (7)
-#define SPECULAR_TEXTURE_BINDING  (8)
-#define ROUGHNESS_TEXTURE_BINDING (9)
+#define DIFFUSE_TEXTURE_BINDING   (0)
+#define SPECULAR_TEXTURE_BINDING  (1)
+#define ROUGHNESS_TEXTURE_BINDING (2)
 
 struct RenderData
 {

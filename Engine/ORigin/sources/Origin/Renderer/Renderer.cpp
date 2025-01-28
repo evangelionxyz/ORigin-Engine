@@ -135,15 +135,12 @@ void Renderer::LoadShaders()
 	s_ShaderLibrary.Load("Circle2D", "Resources/Shaders/SPIR-V/Circle2D.glsl", true);
 	s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true);
 	s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true);
-
-	s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl", false);
 	s_ShaderLibrary.Load("GridShader", "Resources/Shaders/InfiniteGrid.glsl", false);
 	s_ShaderLibrary.Load("SkinnedMesh", "Resources/Shaders/Skinning.glsl", false);
-	s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl", false);
 	s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl", false);
 	s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);
 	s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
-	s_ShaderLibrary.Load("ShadowMap", "Resources/Shaders/ShadowMap.glsl", false);
+	s_ShaderLibrary.Load("CascadedDepthMap", "Resources/Shaders/CascadedDepthMap.glsl", false);
 	s_ShaderLibrary.Load("Lighting", "Resources/Shaders/Lighting.glsl", false);
 }
 }

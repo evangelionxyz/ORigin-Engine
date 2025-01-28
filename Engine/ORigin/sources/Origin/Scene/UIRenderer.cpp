@@ -13,10 +13,10 @@ namespace origin
 	void UIRenderer::CreateFramebuffer(uint32_t vpW, uint32_t vpH, float orthoW, float orthoH)
 	{
 		FramebufferSpecification spec;
-		spec.Attachments = { FramebufferTextureFormat::RGBA8 };
-		spec.Width = vpW;
-		spec.Height = vpH;
-		spec.ReadBuffer = false;
+		spec.attachments = { FramebufferTextureFormat::RGBA8 };
+		spec.width = vpW;
+		spec.height = vpH;
+		spec.read_buffer = false;
 
 		for (auto &ui : m_UIs)
 		{
@@ -97,7 +97,7 @@ namespace origin
 			glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTextureUnit(0, ui.OFramebuffer->GetColorAttachmentRendererID());
+			glBindTextureUnit(0, ui.OFramebuffer->GetColorAttachment());
 			m_ScreenShader->SetInt("uScreenTexture", 0);
 			m_ScreenShader->SetMatrix("uViewProjection", glm::translate(glm::mat4(1.0f), {0.0f, 0.0f, 1.0f}));
 

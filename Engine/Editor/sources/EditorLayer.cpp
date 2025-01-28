@@ -44,14 +44,14 @@ void EditorLayer::OnAttach()
     m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/bw_logo.png");
 
     FramebufferSpecification fbSpec;
-    fbSpec.Attachments =
+    fbSpec.attachments =
     {
         FramebufferTextureFormat::RGBA8,
         FramebufferTextureFormat::DEPTH24STENCIL8
     };
 
-    fbSpec.Width = 1280;
-    fbSpec.Height = 720;
+    fbSpec.width = 1280;
+    fbSpec.height = 720;
     m_Framebuffer = Framebuffer::Create(fbSpec);
 
     if (const auto filepath = std::filesystem::current_path() / "Editor.cfg"; !EditorSerializer::Deserialize(this, filepath))
@@ -131,7 +131,7 @@ void EditorLayer::OnUpdate(const Timestep ts)
     case SceneState::Edit:
     case SceneState::Simulate:
     {
-        if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_viewport_rect.GetSize().x != fb_spec.Width || m_viewport_rect.GetSize().y != fb_spec.Height)
+        if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_viewport_rect.GetSize().x != fb_spec.width || m_viewport_rect.GetSize().y != fb_spec.height)
         {
             if (m_viewport_rect.GetSize().x > 0.0f && m_viewport_rect.GetSize().y > 0.0f)
             {
@@ -805,7 +805,7 @@ void EditorLayer::SceneViewport()
         m_GameViewportSize.y = vpSize.y;
     }
 
-    ImTextureID viewportID = reinterpret_cast<void*>((uintptr_t)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget));
+    ImTextureID viewportID = reinterpret_cast<void*>((uintptr_t)m_Framebuffer->GetColorAttachment(m_RenderTarget));
     ImGui::Image(viewportID, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
     if (ImGui::BeginDragDropTarget())
     {

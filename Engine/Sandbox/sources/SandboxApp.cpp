@@ -20,7 +20,7 @@ namespace origin
         spec.Name = "Sandbox";
         spec.Width = 1280;
         spec.Height = 720;
-        spec.Maximize = true;
+        spec.Maximize = false;
         spec.WorkingDirectory = "../Editor";
         spec.CommandLineArgs = args;
 

@@ -24,13 +24,13 @@ namespace origin
         m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
 
         FramebufferSpecification spec;
-        spec.Attachments =
+        spec.attachments =
         {
             FramebufferTextureFormat::RGBA8,
         };
 
-        spec.Width = 1280;
-        spec.Height = 720;
+        spec.width = 1280;
+        spec.height = 720;
 
         m_Framebuffer = Framebuffer::Create(spec);
     }
@@ -117,7 +117,7 @@ namespace origin
             m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
             // Framebuffer Texture
-            ImTextureID texture = (void *)(uintptr_t)(m_Framebuffer->GetColorAttachmentRendererID());
+            ImTextureID texture = (void *)(uintptr_t)(m_Framebuffer->GetColorAttachment());
             ImGui::Image(texture, { m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
             ImGui::End();
 
@@ -431,7 +431,7 @@ namespace origin
         if (m_UICompHandler != nullptr)
         {
             const auto &vp_size = m_ViewportRect.GetSize();
-            if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification(); vp_size.x > 0.0f && vp_size.y > 0.0f && (vp_size.x != spec.Width || vp_size.y != spec.Height))
+            if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification(); vp_size.x > 0.0f && vp_size.y > 0.0f && (vp_size.x != spec.width || vp_size.y != spec.height))
             {
                 m_Camera.SetViewportSize(vp_size.x, vp_size.y);
                 m_Framebuffer->Resize(static_cast<uint32_t>(vp_size.x), static_cast<uint32_t>(vp_size.y));

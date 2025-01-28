@@ -8,7 +8,7 @@ layout (location = 4) in ivec4 bone_ids;
 layout (location = 5) in vec4 weights;
 
 const int MAX_BONES = 200;
-const int NUM_CASCADES = 3;
+const int NUM_CASCADES = 4;
 
 layout (location = 0) out Vertex
 {
@@ -18,7 +18,7 @@ layout (location = 0) out Vertex
   vec2 texcoord;
   flat ivec4 bone_ids;
   vec4 weights;
-  vec4 light_space[NUM_CASCADES];
+  vec4 light_space_position[NUM_CASCADES];
 } vout;
 
 layout(std140, binding = 0) uniform Camera
@@ -43,7 +43,7 @@ void main()
 
         for (int i = 0; i < NUM_CASCADES; ++i)
         {
-            vout.light_space[i] = ulight_matrices[i] * umodel_transform * bone_transform * vec4(position, 1.0);
+            vout.light_space_position[i] = ulight_matrices[i] * umodel_transform * bone_transform * vec4(position, 1.0);
         }
 
         gl_Position = camera_buffer.view_projection * umodel_transform * bone_transform * vec4(position, 1.0);
@@ -62,7 +62,7 @@ void main()
     {
         for (int i = 0; i < NUM_CASCADES; ++i)
         {
-            vout.light_space[i] = ulight_matrices[i] * umodel_transform * vec4(position, 1.0);
+            vout.light_space_position[i] = ulight_matrices[i] * umodel_transform * vec4(position, 1.0);
         }
 
         gl_Position = camera_buffer.view_projection * umodel_transform * vec4(position, 1.0);
@@ -80,7 +80,7 @@ void main()
 // type fragment
 #version 450 core
 
-const int NUM_CASCADES = 3;
+const int NUM_CASCADES = 4;
 
 struct Material
 {
@@ -106,7 +106,7 @@ layout (location = 0) in Vertex
     vec2 texcoord;
     flat ivec4 bone_ids;
     vec4 weights;
-    vec4 light_space[NUM_CASCADES];
+    vec4 light_space_position[NUM_CASCADES];
 } vin;
 
 /// ====================================
@@ -155,138 +155,120 @@ layout(std140, binding = 4) uniform AreaLight
     vec3 color;
 } area_light_buffer;
 
-layout(binding = 6) uniform sampler2D udiffuse_texture;
-layout(binding = 7) uniform sampler2D uspecular_texture;
-layout(binding = 8) uniform sampler2D uroughness_texture;
-layout(binding = 9) uniform sampler2DArray ushadow_map;
+layout(binding = 0) uniform sampler2D udiffuse_texture;
+layout(binding = 1) uniform sampler2D uspecular_texture;
+layout(binding = 2) uniform sampler2D uroughness_texture;
+layout(binding = 3) uniform sampler2DArrayShadow ushadow_map;
 
 uniform int uspot_light_count;
 uniform int umaterial_index;
 uniform vec4 ucascade_splits;
-uniform int unum_cascades;
+uniform float ucascade_plane_distances[NUM_CASCADES];
+uniform float ushadow_bias[NUM_CASCADES];
 
 Material material = materials[umaterial_index];
 
 /// ====================================
 ///         SHADOW CALCULATION
 /// ====================================
-float calculate_shadow(vec4 light_space, int cascade_index)
+const int pcf_size = 3;
+const float total_samples = (pcf_size * 2.0 + 1.0) * (pcf_size * 2.0 + 1.0);
+int get_cascade_level(float frag_depth)
 {
-    if (light_space.w == 0.0) {
-      return 1.0; // fully lit, as this is invalid
-    }
-
-    vec3 projection_coords = light_space.xyz / light_space.w; // perspective division
-    projection_coords = projection_coords * 0.5 + 0.5; // transform to [0, 1] range
-
-    if (projection_coords.z > 1.0 || projection_coords.x < 0.0 || projection_coords.x > 1.0 || projection_coords.y < 0.0 || projection_coords.y > 1.0)
+    for (int i = 0; i < NUM_CASCADES; ++i)
     {
-      return 1.0; // fully lit
+        if (frag_depth < ucascade_plane_distances[i])
+            return i;
     }
-
-    // sample the shadow map
-    float shadow_depth = texture(ushadow_map, vec3(projection_coords.xy, cascade_index)).r;
-    float current_depth = projection_coords.z;
-
-    float bias = max(0.005 * (1.0 - dot(normalize(dir_light_buffer.direction.xyz), normalize(vin.position))), 0.001);
-
-    return current_depth - bias > shadow_depth ? 0.0 : 1.0;
+    return 3;
 }
-
-/// ====================================
-///        SPOT LIGHT CALCULATION
-/// ====================================
-vec3 calculate_spot_light(SpotLight light, vec3 view_dir, vec3 frag_pos, vec3 normal)
-{
-    vec3 normalized_view_dir = normalize(view_dir);
-    vec3 light_dir = normalize(light.direction.xyz);
+float calculate_shadow(vec3 frag_pos, vec3 normal, int cascade_index) {
     
-    // direction to fragment
-    vec3 to_frag = normalize(frag_pos - light.position.xyz);
-
-    // angel between light direction and fragment direction
-    float theta = dot(-light_dir, to_frag);
-
-    // check if within spotlight cone
-    float epsilon = light.cut_off.x - light.cut_off.y;
-    float intensity = clamp((theta - light.cut_off.y) / epsilon, 0.0, 1.0);
-
-    vec3 ambient_color = 0.1 * light.color.rgb;
-
-    float diffuse = max(dot(normal, -light_dir), 0.0);
-    vec3 diffuse_color = diffuse * light.color.rgb;
-
-    // specular phong
-    vec3 reflect_dir = reflect(light_dir, normal);
-    float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0);
-    vec3 specular_color = specular * light.color.rgb;
-
-    // combine
-    return (ambient_color + intensity * (diffuse_color + specular_color)) * light.color.a;
-}
-
-vec3 calculate_all_spotlights(vec3 view_dir, vec3 frag_pos, vec3 normal)
-{
-    vec3 result = vec3(0.0);
-
-    for (int i = 0; i < uspot_light_count; ++i)
-    {
-        result += calculate_spot_light(spot_lights[i], view_dir, frag_pos, normal);
+    vec4 frag_pos_light_space = vin.light_space_position[cascade_index];
+    vec3 projection_coords = frag_pos_light_space.xyz / frag_pos_light_space.w;
+    
+    projection_coords = projection_coords * 0.5 + 0.5;
+    
+    if(projection_coords.x > 1.0 || projection_coords.x < 0.0 || 
+       projection_coords.y > 1.0 || projection_coords.y < 0.0 ||
+       projection_coords.z > 1.0 || projection_coords.z < 0.0) {
+        return 0.0;
     }
 
-    return result;
+    float bias = max(ushadow_bias[cascade_index] * 
+        (1.0 - dot(normal, normalize(dir_light_buffer.direction.xyz))), 
+        ushadow_bias[cascade_index] * 0.005);
+    
+    float shadow = 0.0;
+    vec2 texel_size = 1.0 / textureSize(ushadow_map, 0).xy;
+    
+    float current_depth = projection_coords.z - bias;
+    
+    const int hw_pcf_size = 2;
+    float total_samples = float((hw_pcf_size * 2 + 1) * (hw_pcf_size * 2 + 1));
+    
+    for(int x = -hw_pcf_size; x <= hw_pcf_size; ++x) {
+        for(int y = -hw_pcf_size; y <= hw_pcf_size; ++y) {
+            shadow += texture(ushadow_map, 
+                vec4(projection_coords.xy + vec2(x, y) * texel_size,
+                     float(cascade_index),
+                     current_depth));
+        }
+    }
+    
+    float fade_start = ucascade_plane_distances[cascade_index] 
+                      - (ucascade_plane_distances[cascade_index] * 0.1);
+    float fade_end = ucascade_plane_distances[cascade_index];
+    float fade_length = fade_end - fade_start;
+    float fade = 1.0 - clamp((projection_coords.z - fade_start) / fade_length, 0.0, 1.0);
+    return (shadow / total_samples) * fade;
 }
 
 /// ====================================
 ///   DIRECTIONAL LIGHT CALCULATION
 /// ====================================
-
-vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord)
+vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord, float shadow)
 {
-  vec3 light_direction = normalize(-dir_light_buffer.direction.xyz); // light direction (inverted for incoming light)
+  vec3 light_direction = normalize(-dir_light_buffer.direction.xyz);
   vec3 normalized_normal = normalize(normal);
   vec3 normalized_view_dir = normalize(view_dir);
-
-  // ambient light contribution
   float ambient_strength = 0.1;
   vec3 ambient_color = ambient_strength * dir_light_buffer.color.rgb;
-
-  // diffuse light contribution
   float diffuse = max(dot(normalized_normal, light_direction), 0.0);
   vec3 diffuse_color = diffuse * dir_light_buffer.color.rgb;
-
-  // specular light contribution (phong)
   float specular_strength = 0.5;
-  vec3 reflect_dir = reflect(-light_direction, normalized_normal); // reflected light vector
-  float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0); // shininess = 16
+  vec3 reflect_dir = reflect(-light_direction, normalized_normal);
+  float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0); 
   vec3 specular_color = specular_strength * specular * dir_light_buffer.color.rgb;
-
-  // combine the contributions
   vec3 base_color = texture(udiffuse_texture, texcoord).rgb;
-  return (ambient_color + diffuse_color + specular_color) * base_color * material.base_color.rgb;
+  return (ambient_color + (1.0 - shadow) * (diffuse_color + specular_color)) * base_color * material.base_color.rgb;
+  //return (ambient_color + diffuse_color + specular_color) * base_color * material.base_color.rgb;
 }
 
 void main()
 {
-    vec3 normal = vin.normals;
-    vec3 view_dir = camera_buffer.position - vin.position;
-    vec3 frag_pos = normalize(vin.position);
+    vec3 normal = normalize(vin.normals);
+    vec3 view_dir = normalize(camera_buffer.position - vin.position);
 
     // shadow
-    float shadow = 1.0;
-    for (int i = 0; i < unum_cascades; ++i)
-    {
-        if (vin.light_space[i].z < ucascade_splits[i])
-        {
-            shadow = calculate_shadow(vin.light_space[i], i);
-            break;
-        }
-    }
+    float view_distance = length(camera_buffer.position - vin.position);
+    int cascade_index = get_cascade_level(view_distance);
+    float shadow = calculate_shadow(vin.position, normal, cascade_index);
 
     // calculate lighting
     vec3 lighting = vec3(0.0);
-    lighting += calculate_all_spotlights(view_dir, frag_pos, normal);
-    lighting += calculate_directional_light(normal, view_dir, vin.texcoord * material.tiling_factor.xy);
+    lighting += calculate_directional_light(normal, view_dir, vin.texcoord * material.tiling_factor.xy, shadow);
 
-    frag_color = vec4(shadow * lighting, 1.0);
+    if(cascade_index == 0)
+        lighting *= vec3(1.0, 0.85, 0.85);
+    else if(cascade_index == 1)
+        lighting *= vec3(0.85, 1.0, 0.85);
+    else if(cascade_index == 2)
+        lighting *= vec3(0.85, 0.85, 1.0);
+    else
+        lighting *= vec3(0.85, 0.85, 1.0);
+
+
+    frag_color = vec4(lighting, 1.0);
+    //frag_color = vec4(vec3(shadow), 1.0);
 }
