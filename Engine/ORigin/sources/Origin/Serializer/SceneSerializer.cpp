@@ -354,6 +354,21 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		out << YAML::EndMap; // !DirectionalLightComponent
 	}
 
+	if (entity.HasComponent<PointLightComponent>())
+	{
+		out << YAML::Key << "PointLightComponent";
+		out << YAML::BeginMap; // PointLightComponent
+
+		const auto &plc = entity.GetComponent<PointLightComponent>();
+		Ref<PointLight> light = std::static_pointer_cast<PointLight>(plc.Light);
+		out << YAML::Key << "Position" << light->data.position;
+		out << YAML::Key << "Color" << light->data.color;
+		out << YAML::Key << "Intensity" << light->data.intensity;
+		out << YAML::Key << "FallOff" << light->data.falloff;
+
+		out << YAML::EndMap; // !PointLightComponent
+	}
+
 	if (entity.HasComponent<CameraComponent>())
 	{
 		out << YAML::Key << "CameraComponent";
@@ -391,9 +406,9 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		out << YAML::EndMap; // !MeshComponent
 	}
 
-	if (entity.HasComponent<EnvironmentMap>())
+	if (entity.HasComponent<EnvironmentMapComponent>())
 	{
-		EnvironmentMap &env_comp = entity.GetComponent<EnvironmentMap>();
+		EnvironmentMapComponent &env_comp = entity.GetComponent<EnvironmentMapComponent>();
 		out << YAML::Key << "EnvironmentMap";
 		out << YAML::BeginMap;
         out << YAML::Key << "TintColor" << env_comp.tint_color;
@@ -799,7 +814,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (YAML::Node env_component = entity["EnvironmentMap"])
 			{
-				EnvironmentMap &env_map_comp = deserialized_entity.AddComponent<EnvironmentMap>();
+				EnvironmentMapComponent &env_map_comp = deserialized_entity.AddComponent<EnvironmentMapComponent>();
 				env_map_comp.tint_color = env_component["TintColor"].as<glm::vec4>();
 				env_map_comp.blur_factor = env_component["BlurFactor"].as<float>();
 			}
@@ -810,6 +825,20 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				Ref<DirectionalLight> light = std::static_pointer_cast<DirectionalLight>(dlc.Light);
 				light->data.color = directional_light_component["Color"].as<glm::vec4>();
 				light->data.direction = directional_light_component["Direction"].as<glm::vec4>();
+			}
+
+			if (YAML::Node pointlight_component = entity["PointLightComponent"])
+			{
+				PointLightComponent &plc = deserialized_entity.AddComponent<PointLightComponent>();
+				Ref<PointLight> light = std::static_pointer_cast<PointLight>(plc.Light);
+				light->data.position = pointlight_component["Position"].as<glm::vec4>();
+				light->data.color = pointlight_component["Color"].as<glm::vec4>();
+				light->data.intensity = pointlight_component["Intensity"].as<glm::vec4>();
+				light->data.falloff = pointlight_component["FallOff"].as<glm::vec4>();
+
+				plc.color = light->data.color;
+				plc.intensity = light->data.intensity;
+				plc.falloff = light->data.falloff;
 			}
 
 			if (YAML::Node particle_component = entity["ParticleComponent"])

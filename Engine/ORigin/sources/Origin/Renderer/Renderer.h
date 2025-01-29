@@ -26,6 +26,10 @@ namespace origin {
 #define SPECULAR_TEXTURE_BINDING  (1)
 #define ROUGHNESS_TEXTURE_BINDING (2)
 
+#define STORAGE_BUFFER_MATERIAL_BINDING   (0)
+#define STORAGE_BUFFER_SPOTLIGHT_BINDING  (1)
+#define STORAGE_BUFFER_POINTLIGHT_BINDING (2)
+
 struct RenderData
 {
 	static constexpr u32 max_triangles = 1024;

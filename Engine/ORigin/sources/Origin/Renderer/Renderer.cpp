@@ -75,8 +75,10 @@ bool Renderer::Init()
 	OGN_CORE_ASSERT(RenderCommand::s_RendererAPI, "[Renderer] Renderer API is null");
 	
 	s_lighting_manager = new LightingManager();
+	s_lighting_manager->CreateStorageBuffer();
+
 	s_material_manager = new MaterialManager();
-	s_material_manager->CreateMaterialStorageBuffer();
+	s_material_manager->CreateStorageBuffer();
 
 	camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
 	skybox_uniform_buffer = UniformBuffer::Create(sizeof(glm::vec4) + sizeof(f32), SKYBOX_BINDING);

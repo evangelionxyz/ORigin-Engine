@@ -163,11 +163,11 @@ public:
     AudioListenerComponent(const AudioListenerComponent &) = default;
 };
 
-class EnvironmentMap
+class EnvironmentMapComponent
 {
 public:
-    EnvironmentMap() = default;
-    EnvironmentMap(const EnvironmentMap &) = default;
+    EnvironmentMapComponent() = default;
+    EnvironmentMapComponent(const EnvironmentMapComponent &) = default;
 
     Ref<Skybox> skybox;
     glm::vec4 tint_color{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -389,6 +389,17 @@ public:
 
     glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
     glm::vec4 direction{ 0.0f, 0.0f, 0.0f, 1.0f };
+};
+
+class PointLightComponent : public LightComponent
+{
+public:
+    PointLightComponent() = default;
+    PointLightComponent(const PointLightComponent &) = default;
+   
+    glm::vec4 intensity{0.8f, 0.8f, 0.8f, 1.0f};
+    glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+    glm::vec4 falloff = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
 
 class SpotLightComponent : public LightComponent
@@ -719,8 +730,9 @@ using AllComponents = ComponentGroup <
 
     DirectionalLightComponent,
     SpotLightComponent,
+    PointLightComponent,
 
-    EnvironmentMap,
+    EnvironmentMapComponent,
 
     SpriteRenderer2DComponent,
     MeshComponent,

@@ -65,7 +65,7 @@ void Gizmos::Draw2DGrid(const Camera &camera)
     Renderer2D::End();
 }
 
-void Gizmos::DrawGrid()
+void Gizmos::DrawGrid(const EditorCamera &camera)
 {
     glEnable(GL_BLEND);
     glDepthFunc(GL_LEQUAL);
@@ -73,7 +73,8 @@ void Gizmos::DrawGrid()
     glDepthMask(GL_FALSE);
 
     m_grid_data.shader->Enable();
-
+    m_grid_data.shader->SetMatrix("uview_projection", camera.GetViewProjection());
+    m_grid_data.shader->SetVector("ucamera_position", camera.GetPosition());
     glBindVertexArray(m_grid_data.vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
@@ -83,7 +84,6 @@ void Gizmos::DrawGrid()
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
     glDepthFunc(GL_LESS);
-
 }
 
 void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
@@ -105,15 +105,17 @@ void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
 void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
 {
     OGN_PROFILER_RENDERING();
+    glDepthMask(GL_TRUE);
+    glEnable(GL_BLEND);
 
     // drawing icons function
-    auto drawIcon = [&](TransformComponent tc, const Ref<Texture2D> &texture)
+    auto drawIcon = [&](TransformComponent tc, const Ref<Texture2D> &texture, const glm::vec4 &color)
     {
         glm::vec3 camera_right = ((EditorCamera *)&camera)->GetRightDirection();
         glm::vec3 camera_up = ((EditorCamera *)&camera)->GetUpDirection();
 
         f32 distance = glm::length(camera.GetPosition() - tc.WorldTranslation);
-        f32 icon_size = std::clamp(0.05f * distance, 1.0f, 3.0f);
+        f32 icon_size = std::clamp(0.05f * distance, 0.3f, 3.0f);
 
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
             * glm::mat4(glm::vec4(camera_right * icon_size, 0.0f),
@@ -122,10 +124,10 @@ void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
                 glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
             );
 
-        Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f));
+        Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), color);
     };
 
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     auto &textures = EditorLayer::Get().m_UITextures;
     Renderer2D::Begin();
     for (auto [e, tc] : scene->GetAllEntitiesWith<TransformComponent>().each())
@@ -136,20 +138,26 @@ void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
             CameraComponent &cc = entity.GetComponent<CameraComponent>();
             if (camera.IsPerspective())
             {
-                drawIcon(tc, textures.at("camera"));
+                drawIcon(tc, textures.at("camera"), glm::vec4(1.0f));
             }
             else if (!camera.IsPerspective() && camera.GetOrthoScale() > 15.0f)
             {
-                drawIcon(tc, textures.at("camera"));
+                drawIcon(tc, textures.at("camera"), glm::vec4(1.0f));
             }
         }
         else if (entity.HasComponent<AudioComponent>())
         {
-            drawIcon(tc, textures.at("audio"));
+            drawIcon(tc, textures.at("audio"), glm::vec4(1.0f));
         }
         else if (entity.HasComponent<DirectionalLightComponent>())
         {
-            drawIcon(tc, textures.at("lighting"));
+            DirectionalLightComponent &dlc = entity.GetComponent<DirectionalLightComponent>();
+            drawIcon(tc, textures.at("lighting"), dlc.color);
+        }
+        else if (entity.HasComponent<PointLightComponent>())
+        {
+            PointLightComponent &plc = entity.GetComponent<PointLightComponent>();
+            drawIcon(tc, textures.at("lighting"), plc.color);
         }
     }
     Renderer2D::End();

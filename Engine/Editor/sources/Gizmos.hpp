@@ -49,7 +49,7 @@ namespace origin {
         GizmoType GetType() const { return m_Type; }
 
         void Draw2DGrid(const Camera &camera);
-        void DrawGrid();
+        void DrawGrid(const EditorCamera &camera);
 
         void DrawIcons(const Camera &camera, Scene *scene);
         void DrawBoundingBox(const Camera &camera, Scene *scene);

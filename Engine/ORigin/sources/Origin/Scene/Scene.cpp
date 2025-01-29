@@ -130,17 +130,35 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 
     // bind lighting
     LightingManager::GetInstance()->Bind();
-    const auto &directional_light_view = m_Registry.view<DirectionalLightComponent, TransformComponent>();
-    for (const auto& [entity, dir_light_comp, transform_comp] : directional_light_view.each())
+    const auto &view = m_Registry.view<TransformComponent>();
+    for (auto &e: view)
     {
-        const Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
+        Entity entity{ e, this };
+        TransformComponent &tc = m_Registry.get<TransformComponent>(e);
 
-        dir_light_comp.direction = glm::vec4(eulerAngles(transform_comp.WorldRotation), 1.0f);
-        dir_light->data.direction = dir_light_comp.direction;
-        dir_light->data.color = dir_light_comp.color;
-        dir_light->Bind();
+        if (entity.HasComponent<DirectionalLightComponent>())
+        {
+            DirectionalLightComponent &dir_light_comp = m_Registry.get<DirectionalLightComponent>(e);
+            Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
+            dir_light_comp.direction = glm::vec4(eulerAngles(tc.WorldRotation), 1.0f);
+            dir_light->data.direction = dir_light_comp.direction;
+            dir_light->data.color = dir_light_comp.color;
+            dir_light->Bind();
+        }
+
+        if (entity.HasComponent<PointLightComponent>())
+        {
+            PointLightComponent &pointlight_comp = m_Registry.get<PointLightComponent>(e);
+            Ref<PointLight> light = std::static_pointer_cast<PointLight>(pointlight_comp.Light);
+            light->data.position = glm::vec4(tc.WorldTranslation, 1.0f);
+            light->data.color = pointlight_comp.color;
+            light->data.intensity = pointlight_comp.intensity;
+            light->data.falloff = pointlight_comp.falloff;
+            LightingManager::GetInstance()->UpdatePointLight(light->index, light->data);
+        }
     }
-    
+
+
     const auto &entity_id_view = m_Registry.view<IDComponent, TransformComponent>();
     for (auto [entity, id_comp, transform_comp] : entity_id_view.each())
     {
@@ -287,7 +305,8 @@ void Scene::OnRuntimeStart()
     m_Running = true;
     ScriptEngine::SetSceneContext(this);
 
-    if (m_Physics) m_Physics->StartSimulation();
+    if (m_Physics) 
+        m_Physics->StartSimulation();
     m_Physics2D->OnSimulationStart();
 
     for (auto [e, sc] : m_Registry.view<ScriptComponent>().each())
@@ -515,34 +534,31 @@ void Scene::RenderScene(const Camera &camera)
             }
             shader->Disable();
         }
-
-        if (entity.HasComponent<EnvironmentMap>())
-        {
-            EnvironmentMap &env_map = m_Registry.get<EnvironmentMap>(e);
-            if (env_map.skybox)
-            {
-                glDepthFunc(GL_LEQUAL);
-
-                Renderer::GetShader("Skybox")->Enable();
-                Renderer::skybox_uniform_buffer->Bind();
-                Renderer::skybox_uniform_buffer->SetData(&env_map.tint_color, sizeof(glm::vec4) + sizeof(f32));
-                Renderer::skybox_uniform_buffer->SetData(&env_map.blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
-
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);
-                Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
-
-                RenderCommand::DrawIndexed(env_map.skybox->vao);
-
-                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                Renderer::GetShader("Skybox")->Disable();
-
-                glDepthFunc(GL_LESS);
-            }
-        }
     }
 
     Renderer2D::End();
+
+    for (const auto &[e, tc, env] : m_Registry.view<TransformComponent, EnvironmentMapComponent>().each())
+    {
+        Entity entity {e, this};
+        EnvironmentMapComponent &env_map = m_Registry.get<EnvironmentMapComponent>(e);
+        if (env_map.skybox)
+        {
+            glDepthFunc(GL_LEQUAL);
+            Renderer::GetShader("Skybox")->Enable();
+            Renderer::skybox_uniform_buffer->Bind();
+            Renderer::skybox_uniform_buffer->SetData(&env_map.tint_color, sizeof(glm::vec4) + sizeof(f32));
+            Renderer::skybox_uniform_buffer->SetData(&env_map.blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);
+            Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
+            RenderCommand::DrawIndexed(env_map.skybox->vao);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            Renderer::GetShader("Skybox")->Disable();
+            Renderer::skybox_uniform_buffer->Unbind();
+            glDepthFunc(GL_LESS);
+        }
+    }
 }
 
 void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
@@ -903,7 +919,16 @@ void Scene::OnComponentAdded(Entity entity, DirectionalLightComponent &component
 }
 
 template<>
-void Scene::OnComponentAdded(Entity entity, EnvironmentMap &component)
+void Scene::OnComponentAdded(Entity entity, PointLightComponent &component)
+{
+    component.Light = Lighting::Create<PointLight>();
+
+    Ref<PointLight> pl = std::static_pointer_cast<PointLight>(component.Light);
+    LightingManager::GetInstance()->AddPointLight(pl->data);
+}
+
+template<>
+void Scene::OnComponentAdded(Entity entity, EnvironmentMapComponent &component)
 {
     component.skybox = Skybox::Create("Resources/Skybox", ".jpg");
 }

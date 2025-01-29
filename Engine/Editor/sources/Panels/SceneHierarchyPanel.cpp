@@ -222,6 +222,9 @@ Entity SceneHierarchyPanel::ShowEntityContextMenu()
     {
         if (ImGui::MenuItem("Directional Light"))
             entity = SetSelectedEntity(EntityManager::CreateDirectionalLighting("Directional Light", m_Scene.get()));
+        if (ImGui::MenuItem("Point Light"))
+            entity = SetSelectedEntity(EntityManager::CreatePointLight("Point Light", m_Scene.get()));
+
         ImGui::EndMenu();
     }
 
@@ -489,7 +492,8 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
         ImGui::Separator();
         DisplayAddComponentEntry<DirectionalLightComponent>("Directional Light");
-        DisplayAddComponentEntry<EnvironmentMap>("Environment Map");
+        DisplayAddComponentEntry<PointLightComponent>("Point Light");
+        DisplayAddComponentEntry<EnvironmentMapComponent>("Environment Map");
         
         DisplayAddComponentEntry<MeshComponent>("Mesh");
         DisplayAddComponentEntry<RigidbodyComponent>("Rigidbody");
@@ -566,13 +570,9 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
                     {
                         ImGui::Text("Material Index: %d", mesh->material_index);
                         ImGui::ColorEdit4("Base Color", &mesh->material.buffer_data.base_color.x);
-                        glm::vec2 tiling_factor{ mesh->material.buffer_data.tiling_factor.x, mesh->material.buffer_data.tiling_factor.y };
-                        if (UI::DrawVec2Control("Tiling", tiling_factor))
-                        {
-                            mesh->material.buffer_data.tiling_factor.x = tiling_factor.x;
-                            mesh->material.buffer_data.tiling_factor.y = tiling_factor.y;
-                        }
-
+                        ImGui::ColorEdit4("Diffuse Color", &mesh->material.buffer_data.diffuse_color.x);
+                        UI::DrawVec2Control("Tiling", mesh->material.buffer_data.tiling_factor);
+                        UI::DrawFloatControl("Roughness", &mesh->material.buffer_data.rougness);
                         ImGui::TreePop();
                     }
                 }
@@ -581,10 +581,10 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         }
     });
 
-    DrawComponent<EnvironmentMap>("Environment Map", entity, [](auto &component)
+    DrawComponent<EnvironmentMapComponent>("Environment Map", entity, [](auto &component)
     {
         ImGui::ColorEdit4("Tint Color", &component.tint_color.x);
-        UI::DrawFloatControl("Blur", &component.blur_factor, 0.0001f, 0.0f, 2.0f);
+        UI::DrawFloatControl("Blur", &component.blur_factor, 0.001f, 0.0f, 2.0f);
     });
 
     DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
@@ -890,7 +890,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         }
     });
 
-    DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto &component)
+    DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent &component)
     {
         glm::vec3 color = { component.color.x, component.color.y, component.color.z };
         if (ImGui::ColorEdit3("Color", &color.x))
@@ -901,7 +901,22 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         }
     });
 
-    DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto &component)
+    DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent &component)
+    {
+        ImGui::ColorEdit4("Color", &component.color.x);
+        ImGui::ColorEdit4("Intensity", &component.intensity.x);
+
+        glm::vec3 fall_off = glm::vec3(component.falloff);
+        if (ImGui::DragFloat3("Fall Off", &fall_off.x, 0.025f, 0.0001f, 1.0f))
+        {
+            component.falloff.x = fall_off.x;
+            component.falloff.y = fall_off.y;
+            component.falloff.z = fall_off.z;
+        }
+
+    });
+
+    DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](CircleRendererComponent &component)
     {
         ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
         ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);

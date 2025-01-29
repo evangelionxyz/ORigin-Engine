@@ -33,7 +33,7 @@ void DirectionalLight::Unbind() const
 // ======================================
 SpotLight::SpotLight()
 {
-    LightingManager::GetInstance()->m_data.spot_light_count++;
+    index = LightingManager::GetInstance()->m_data.spot_light_count++;
 }
 
 SpotLight::~SpotLight()
@@ -41,13 +41,19 @@ SpotLight::~SpotLight()
     LightingManager::GetInstance()->m_data.spot_light_count--;
 }
 
-void SpotLight::Bind() const
+// ======================================
+//             POINT LIGHT
+// ======================================
+PointLight::PointLight()
 {
+    index = LightingManager::GetInstance()->m_data.point_light_count++;
 }
 
-void SpotLight::Unbind() const
+PointLight::~PointLight()
 {
-
+    LightingManager::GetInstance()->m_data.point_light_count--;
+    index = -1;
 }
+
 
 }

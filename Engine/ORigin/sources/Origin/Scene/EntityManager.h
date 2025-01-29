@@ -18,6 +18,7 @@ namespace origin
 		static Entity CreateCircle(const std::string &name, Scene *scene);
 		static Entity CreateCamera(const std::string &name, Scene *scene);
 		static Entity CreateDirectionalLighting(const std::string &name, Scene *scene);
+		static Entity CreatePointLight(const std::string &name, Scene *scene);
 		static Entity CreateEntityWithUUID(UUID uuid, const std::string &name, EntityType type, Scene *scene);
 		static Entity CreateMesh(const std::string &name, Scene *scene);
 		static Entity CreateEnvironmentMap(const std::string &name, Scene *scene);

@@ -12,10 +12,12 @@ struct LightingManager
     /// =========================
     ///        SPOT LIGHT
     /// =========================
-    size_t intial_spotlight_capacity = 10;
-    size_t spotlight_count = 0;
-    size_t spotlight_buffer_size = intial_spotlight_capacity * sizeof(SpotLight::Data);
+    size_t spotlight_capacity = 10;
+    size_t spotlight_buffer_size = spotlight_capacity * sizeof(SpotLight::Data);
     
+    size_t pointlight_capcity = 10;
+    size_t pointlight_buffer_size = pointlight_capcity * sizeof(PointLight::Data);
+
     Ref<UniformBuffer> lighting_uniform_buffer;
     Ref<UniformBuffer> directional_uniform_buffer;
 
@@ -25,7 +27,8 @@ struct LightingManager
     void Unbind() const;
 
     void CreateStorageBuffer();
-    void AddSpotLight();
+    void AddPointLight(const PointLight::Data &buffer_data);
+    void UpdatePointLight(size_t index, const PointLight::Data &updated_buffer);
 
     static LightingManager *GetInstance();
 
@@ -38,13 +41,16 @@ private:
         i32 area_light_count = 0;
     };
     
+    void CreatePointLightStorageBuffer();
     void CreateSpotLightStorageBuffer();
 
     u32 m_spotlight_SSBO;
+    u32 pointlight_ssbo;
     Data m_data;
 
     friend struct DirectionalLight;
     friend struct SpotLight;
+    friend struct PointLight;
 };
 
 }

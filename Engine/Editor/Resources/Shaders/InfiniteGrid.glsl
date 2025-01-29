@@ -10,45 +10,39 @@ const vec3 positions[4] = vec3[4](
 
 const int indices[6] = int[6](0, 1, 2, 0, 2, 3);
 
-layout(std140, binding = 0) uniform Camera
-{
-  mat4 view_projection;
-  vec3 position;
-} camera_buffer;
 
-const float gridSize = 300.0;
+const float grid_size = 300.0;
 
 layout(location = 0) out Vertex
 {
     vec3 position;
+    vec3 camera_position;
     float grid_size;
 } vout;
 
+uniform mat4 uview_projection;
+uniform vec3 ucamera_position;
 
 void main()
 {
     int index = indices[gl_VertexID];
-    vec3 pos = positions[index] * gridSize;
-    pos.x += camera_buffer.position.x;
-    pos.z += camera_buffer.position.z;
-    gl_Position = camera_buffer.view_projection * vec4(pos, 1.0);
+    vec3 pos = positions[index] * grid_size;
+    pos.x += ucamera_position.x;
+    pos.z += ucamera_position.z;
+    gl_Position = uview_projection * vec4(pos, 1.0);
     vout.position = pos;
-    vout.grid_size = gridSize;
+    vout.grid_size = grid_size;
+    vout.camera_position = ucamera_position;
 }
 
 // type fragment
 #version 450 core
 layout(location = 0) out vec4 frag_color;
 
-layout(std140, binding = 0) uniform Camera
-{
-  mat4 view_projection;
-  vec3 position;
-} camera_buffer;
-
 layout(location = 0) in Vertex
 {
     vec3 position;
+    vec3 camera_position;
     float grid_size;
 } vin;
 
@@ -106,10 +100,10 @@ void main()
         }
     }
 
-    float falloff = 1.0 - smoothstep(0.7, 1.0, length(vin.position.xz - camera_buffer.position.xz) / (vin.grid_size * 0.8));
+    float falloff = 1.0 - smoothstep(0.7, 1.0, length(vin.position.xz - vin.camera_position.xz) / (vin.grid_size * 0.8));
 
     color.a *= falloff;
-    if (color.a < 0.1) discard;
+    // if (color.a < 0.1) discard;
 
     frag_color = color;
 }

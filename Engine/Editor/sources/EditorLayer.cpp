@@ -221,7 +221,7 @@ void EditorLayer::Render(Timestep ts)
         Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
         Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
 
-        // update scene
+        //  update scene
         if (m_SceneState == SceneState::Simulate)
             m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
         else
@@ -231,6 +231,7 @@ void EditorLayer::Render(Timestep ts)
         m_gizmo->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
         if (m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
         if (m_VisualizeCollider) m_gizmo->DrawCollider(m_EditorCamera, m_ActiveScene.get());
+        m_gizmo->DrawGrid(m_EditorCamera);
         if (m_Draw2DGrid) m_gizmo->Draw2DGrid(m_EditorCamera);
         m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 
@@ -308,10 +309,8 @@ void EditorLayer::OnGuiRender()
 {
     Dockspace::Begin();
     
-    ImGui::SetNextWindowSizeConstraints(ImVec2(220.0f, 26.0f), ImVec2(FLT_MAX, FLT_MAX));
     SceneViewportToolbar();
 
-    ImGui::SetNextWindowSizeConstraints(ImVec2(220.0f, 100.0f), ImVec2(FLT_MAX, FLT_MAX));
     SceneViewport();
 
     for (PanelBase *p : m_Panels)
@@ -692,7 +691,7 @@ void EditorLayer::SceneViewport()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
-    ImGui::Begin("Scene", nullptr, window_flags);
+    ImGui::Begin("My Scene", nullptr);
 
     IsViewportHovered = ImGui::IsWindowHovered();
     IsViewportFocused = ImGui::IsWindowFocused();

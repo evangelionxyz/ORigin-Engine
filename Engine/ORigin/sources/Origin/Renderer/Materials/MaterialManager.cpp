@@ -15,12 +15,12 @@ MaterialManager::MaterialManager()
     s_material_manager = this;
 }
 
-void MaterialManager::CreateMaterialStorageBuffer()
+void MaterialManager::CreateStorageBuffer()
 {
     glGenBuffers(1, &m_SSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, m_material_buffer_size_allocated, nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_SSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, STORAGE_BUFFER_MATERIAL_BINDING, m_SSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -37,6 +37,7 @@ size_t MaterialManager::AddMaterial(MaterialBufferData &buffer)
         glGenBuffers(1, &new_ssbo);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, new_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, new_buffer_size, nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, STORAGE_BUFFER_MATERIAL_BINDING, new_ssbo);
 
         // copy existing data to the new buffer
         glBindBuffer(GL_COPY_READ_BUFFER, s_material_manager->m_SSBO);
@@ -49,6 +50,7 @@ size_t MaterialManager::AddMaterial(MaterialBufferData &buffer)
     }
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_material_manager->m_SSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, STORAGE_BUFFER_MATERIAL_BINDING, s_material_manager->m_SSBO);
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, s_material_manager->m_material_count * sizeof(MaterialBufferData), sizeof(MaterialBufferData), &buffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
@@ -61,6 +63,7 @@ void MaterialManager::UpdateMaterial(size_t index, const MaterialBufferData &upd
         return;
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_material_manager->m_SSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, STORAGE_BUFFER_MATERIAL_BINDING, s_material_manager->m_SSBO);
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, index * sizeof(MaterialBufferData), sizeof(MaterialBufferData), &updated_buffer);
 }
 

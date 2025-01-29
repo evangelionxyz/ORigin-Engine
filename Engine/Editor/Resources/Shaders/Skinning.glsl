@@ -47,17 +47,16 @@ void main()
         bone_normal_transform     += mat3(ubone_transforms[bone_ids[3]]) * weights[3];
 
         // transform the normal using the combined bone normal transform
-        mat3 normal_matrix = mat3(transpose(inverse(mat3(umodel_transform))));
-        vout.normals = normalize(normal_matrix * bone_normal_transform * normals);
+        vout.normals = mat3(transpose(inverse(umodel_transform))) * bone_normal_transform * normals;
+        vout.position = vec3(umodel_transform * bone_transform * vec4(position, 1.0));
     }
     else
     {
         gl_Position = camera_buffer.view_projection * umodel_transform * vec4(position, 1.0);
-        mat3 normal_matrix = mat3(transpose(inverse(mat3(umodel_transform))));
-        vout.normals = normalize(normal_matrix * normals);
+        vout.normals = mat3(transpose(inverse(umodel_transform))) * normals;
+        vout.position = vec3(umodel_transform * vec4(position, 1.0));
     }
 
-    vout.position = position;
     vout.color = color;
     vout.texcoord = texcoord;
     vout.bone_ids = bone_ids;
@@ -66,10 +65,24 @@ void main()
 
 // type fragment
 #version 450 core
+layout (location = 0) in Vertex
+{
+    vec3 position;
+    vec3 normals;
+    vec3 color;
+    vec2 texcoord;
+    flat ivec4 bone_ids;
+    vec4 weights;
+} vin;
+
 struct Material
 {
     vec4 base_color;
-    vec4 tiling_factor;
+    vec4 diffuse_color;
+    vec4 specular_color;
+    vec2 tiling_factor;
+    float roughness;
+    float padding;
 };
 
 struct SpotLight
@@ -80,17 +93,15 @@ struct SpotLight
     vec2 cut_off;
 };
 
-layout (location = 0) out vec4 frag_color;
-
-layout (location = 0) in Vertex
+struct PointLight
 {
-    vec3 position;
-    vec3 normals;
-    vec3 color;
-    vec2 texcoord;
-    flat ivec4 bone_ids;
-    vec4 weights;
-} vin;
+    vec4 position;
+    vec4 intensity;
+    vec4 color;
+    vec4 falloff;
+};
+
+layout (location = 0) out vec4 frag_color;
 
 /// ====================================
 //          STORAGE BUFFER
@@ -102,7 +113,12 @@ layout(std140, binding = 0) buffer MaterialBuffer
 
 layout(std140, binding = 1) buffer SpotLightBuffer
 {
-    SpotLight spot_lights[];
+    SpotLight spotlights[];
+};
+
+layout(std140, binding = 2) buffer PointLightBuffer
+{
+    PointLight pointlights[];
 };
 
 layout(std140, binding = 0) uniform Camera
@@ -117,26 +133,13 @@ layout(std140, binding = 1) uniform Lighting
     int spotlight_count;
     int point_light_count;
     int area_light_count;
-} LightingBuffer;
+} lighting_buffer;
 
 layout(std140, binding = 2) uniform DirectionalLight
 {
     vec4 color;     // Light light color
     vec4 direction; // light direction (should be normalized)
 } dir_light_buffer;
-
-
-layout(std140, binding = 3) uniform PointLight
-{
-    vec3 position;
-    vec3 color;
-} point_light_buffer;
-
-layout(std140, binding = 4) uniform AreaLight
-{
-    vec3 position;
-    vec3 color;
-} area_light_buffer;
 
 layout(binding = 0) uniform sampler2D udiffuse_texture;
 layout(binding = 1) uniform sampler2D uspecular_texture;
@@ -147,10 +150,78 @@ uniform int umaterial_index;
 
 Material material = materials[umaterial_index];
 
+//subroutine vec3 BRDF(in vec3, in vec3, in vec3, in vec3, in vec3, in vec3, in float);
+//layout(location = 0) subroutine uniform BRDF BRDFUniform;
+
+#define M_RCPPI 0.31830988618379067153776752674503
+#define M_PI 3.1415926535897932384626433832795
+
+vec3 light_falloff(in vec3 light_intensity, in vec3 fall_off, in vec3 light_position, in vec3 position)
+{
+    float dist = distance(light_position, position);
+    float falloff = fall_off.x + (fall_off.y * dist) + (fall_off.z * dist * dist);
+    return light_intensity / falloff;
+}
+
+vec3 schlick_fresnel(in vec3 light_direction, in vec3 normal, in vec3 specular_color)
+{
+    float LH = dot(light_direction, normal);
+    return specular_color + (1.0 - specular_color) * pow(1.0 - LH, 5.0);
+}
+
+float TRDistribution(in vec3 normal, in vec3 half_vector, in float roughness)
+{
+    float NSq = roughness * roughness;
+    float NH = max(dot(normal, half_vector), 0.0);
+    float denom = NH * NH * (NSq - 1.0) + 1.0;
+    return NSq / (M_PI * denom * denom);
+}
+
+float GGXVisibility(in vec3 normal, in vec3 light_direction, in vec3 view_direction, in float roughness)
+{
+    float NL = max(dot(normal, light_direction), 0.0);
+    float NV = max(dot(normal, view_direction), 0.0);
+    float RSq = roughness * roughness;
+    float RMod = 1.0 - RSq;
+    float recip_g1 = NL + sqrt(RSq + (RMod * NL * NL));
+    float recip_g2 = NV + sqrt(RSq + (RMod * NV * NV));
+
+    return 1.0 / (recip_g1 * recip_g2);
+}
+
+/*layout(index = 0) subroutine(BRDF)*/ 
+vec3 blinn_phong(in vec3 normal, in vec3 light_direction, in vec3 view_direction, in vec3 light_irradiance, in vec3 diffuse_color, in vec3 specular_color, in float roughness)
+{
+    vec3 diffuse = diffuse_color;
+    vec3 half_vector = normalize(view_direction + light_direction);
+    float roughness_phong = (2.0 / (roughness * roughness)) - 2.0;
+    vec3 specular = pow(max(dot(normal, half_vector), 0.0), roughness_phong) * specular_color;
+    diffuse *= M_RCPPI;
+    specular *= (roughness_phong + 8.0) / (8.0 * M_PI);
+    vec3 ret_color = diffuse + specular;
+    ret_color *= max(dot(normal, light_direction), 0.0);
+    ret_color *= light_irradiance;
+    return ret_color;
+}
+
+/*layout(index = 1) subroutine(BRDF) */ 
+vec3 GGX(in vec3 normal, in vec3 light_direction, in vec3 view_direction, in vec3 light_irradiance, in vec3 diffuse_color, in vec3 specular_color, in float roughness)
+{
+    vec3 diffuse = diffuse_color * M_RCPPI;
+    vec3 half_vector = normalize(view_direction + light_direction);
+    vec3 F = schlick_fresnel(light_direction, half_vector, specular_color);
+    float D = TRDistribution(normal, half_vector, roughness);
+    float V = GGXVisibility(normal, light_direction, view_direction, roughness);
+    vec3 ret_color = diffuse + (F * D * V);
+    ret_color *= max(dot(normal, light_direction), 0.0);
+    ret_color *= light_irradiance;
+    return ret_color;
+}
+
 /// ====================================
 ///   DIRECTIONAL LIGHT CALCULATION
 /// ====================================
-vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord, float shadow)
+vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec3 diffuse_texture_color, float shadow)
 {
   vec3 light_direction = normalize(-dir_light_buffer.direction.xyz);
   vec3 normalized_normal = normalize(normal);
@@ -163,17 +234,36 @@ vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord, floa
   vec3 reflect_dir = reflect(-light_direction, normalized_normal);
   float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0); 
   vec3 specular_color = specular_strength * specular * dir_light_buffer.color.rgb;
-  vec3 base_color = texture(udiffuse_texture, texcoord).rgb;
-  return (ambient_color + (1.0 - shadow) * (diffuse_color + specular_color)) * base_color * material.base_color.rgb;
+  return (ambient_color + (1.0 - shadow) * (diffuse_color + specular_color)) * diffuse_texture_color * material.base_color.rgb;
 }
 
 void main()
 {
+    vec3 diffuse_texture = texture(udiffuse_texture, vin.texcoord * material.tiling_factor.xy).rgb;
+
     vec3 normal = normalize(vin.normals);
-    vec3 view_dir = normalize(camera_buffer.position - vin.position);
+    vec3 view_direction = normalize(camera_buffer.position - vin.position);
 
     vec3 lighting = vec3(0.0);
-    lighting += calculate_directional_light(normal, view_dir, vin.texcoord * material.tiling_factor.xy, 0.0);
+    for (int i = 0; i < lighting_buffer.point_light_count; ++i)
+    {
+        PointLight p = pointlights[i];
+
+        vec3 p_light_direction = normalize(p.position.xyz - vin.position);
+
+        vec3 p_light_irradiance = light_falloff(p.intensity.rgb, p.falloff.rgb, 
+            p.position.xyz, vin.position) * p.color.rgb;
+
+        vec3 p_light_color = GGX(normal, p_light_direction, view_direction, 
+          p_light_irradiance,
+          material.diffuse_color.rgb * diffuse_texture, 
+          material.specular_color.rgb, 
+          material.roughness);
+
+        lighting += p_light_color;
+    }
+    
+    lighting += calculate_directional_light(normal, view_direction, diffuse_texture, 0.0);
 
     frag_color = vec4(lighting, 1.0);
 }

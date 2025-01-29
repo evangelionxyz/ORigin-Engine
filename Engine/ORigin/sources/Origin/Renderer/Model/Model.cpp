@@ -276,11 +276,10 @@ void Model::LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const
         
     ai_material->Get(AI_MATKEY_BASE_COLOR, base_color);
     ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
-    /*ai_material->Get(AI_MATKEY_METALLIC_FACTOR, material.buffer_data.metallic_factor);
-    ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.roughness_factor);*/
+    ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.rougness);
 
     material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b, 1.0f};
-    //material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b};
+    material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b, 1.0f};
 
     // load textures
     material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);

@@ -9,7 +9,7 @@ namespace origin {
 struct MaterialManager
 {
     MaterialManager();
-    void CreateMaterialStorageBuffer();
+    void CreateStorageBuffer();
     
     static size_t AddMaterial(MaterialBufferData &buffer);
     static void UpdateMaterial(size_t index, const MaterialBufferData &updated_buffer);
