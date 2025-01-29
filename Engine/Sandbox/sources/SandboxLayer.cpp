@@ -52,13 +52,14 @@ f32 target_speed = 0.0f;
 i32 cascade_index = 0;
 f32 sun_yaw = 230.0f;
 f32 sun_pitch = 210.0f;
-i32 cascade_resolution = 1080;
 
-glm::mat4 character_scale = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f));
+glm::mat4 floor_scale = glm::scale(glm::mat4(1.0f), {20.0f, 1.0f, 20.0f});
+glm::mat4 character_transform = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
-    camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+    // fov, aspect ratio, near, far
+    camera.InitPerspective(45.0f, 16.0f / 9.0f, 1.0f, 700.0f);
     camera.SetPosition({ -1.62620163f, 1.37793064f, 2.60992050f });
     camera.SetPitch(0.161835521f);
     camera.SetYaw(0.640095532f);
@@ -77,8 +78,6 @@ SandboxLayer::SandboxLayer() : Layer("Sandbox")
     fbSpec.width = 1280;
     fbSpec.height = 720;
     main_framebuffer = Framebuffer::Create(fbSpec);
-
-    light_center = {0.0f, 0.0f, 0.0f};
 }
 
 void SandboxLayer::OnAttach()
@@ -88,9 +87,6 @@ void SandboxLayer::OnAttach()
 
     shader = Renderer::GetShader("SkinnedMesh");
     skybox_shader = Renderer::GetShader("Skybox");
-    csm.shader = Renderer::GetShader("CascadedDepthMap");
-    debug_r.shader = Shader::Create("Resources/Shaders/DepthMapDebug.glsl", false, false);
-
     ubo = UniformBuffer::Create(sizeof(CamData), 0);
 
     floor_model = Data("Resources/Models/checker_plane.glb");
@@ -120,9 +116,6 @@ void SandboxLayer::OnAttach()
     dir_light = CreateRef<DirectionalLight>();
     dir_light->data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
     dir_light->data.direction = { 20.0f, -20.0f, 0.0f, 1.0f };
-
-    InitCascadeShadow();
-    InitDebugRenderer();
 }
 
 void SandboxLayer::OnUpdate(const Timestep delta_time)
@@ -143,69 +136,8 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
     cam_data.positon = camera.GetPosition();
     ubo->Bind();
     ubo->SetData(&cam_data, sizeof(CamData));
-    RenderShadowMap();
-    RenderDebug(delta_time);
-    
     dir_light->Bind();
     RenderScene(delta_time);
-}
-
-void SandboxLayer::RenderDebug(f32 delta_time)
-{
-    glClearColor(0.0f, 1.0f, 0.0f, 1.0f); // Clear to green
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    debug_r.shader->Enable();
-    debug_r.framebuffer->Bind();
-    debug_r.shader->SetInt("udepth_map", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, csm.framebuffer->GetDepthAttachment());
-    debug_r.shader->SetInt("ucascade_index", cascade_index);
-    glBindVertexArray(debug_r.vao);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
-    debug_r.shader->Disable();
-}
-
-void SandboxLayer::RenderShadowMap()
-{
-    glm::vec3 light_direction = glm::normalize(glm::vec3{
-        std::cos(glm::radians(sun_pitch)) * std::sin(glm::radians(sun_yaw)),
-        std::sin(glm::radians(sun_pitch)),
-        std::cos(glm::radians(sun_pitch)) * std::cos(glm::radians(sun_yaw))
-        });
-    
-    glm::vec3 light_position = -light_direction;
-    glm::mat4 light_view = glm::lookAt(light_position, {0.0f, 0.0f, 0.0f}, { 0.0f, 1.0f, 0.0f });
-    
-    UpdateLightSpaceMatrices(light_view, camera.GetProjectionMatrix(), camera.GetViewMatrix(), cascade_splits);
-
-    csm.shader->Enable();
-    csm.framebuffer->Bind();
-    
-    for (i32 i = 0; i < NUM_CASCADES; ++i)
-    {
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, csm.framebuffer->GetDepthAttachment(), 0, i);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, csm.framebuffer->GetWidth(), csm.framebuffer->GetHeight());
-        
-        csm.shader->SetMatrix("ulight_matrix", light_space_matrices[i]);
-        csm.shader->SetBool("uhas_animation", floor_model.model->HasAnimations());
-        csm.shader->SetMatrix("umodel_transform", glm::scale(glm::mat4(1.0f), glm::vec3(30.0f)));
-        for (auto &mesh : floor_model.model->GetMeshes())
-        {
-            RenderCommand::DrawIndexed(mesh->vertex_array);
-        }
-        csm.shader->SetBool("uhas_animation", character_model.model->HasAnimations());
-        csm.shader->SetMatrix("ubone_transforms", character_model.model->GetBoneTransforms()[0], character_model.model->GetBoneTransforms().size());
-        csm.shader->SetMatrix("umodel_transform", character_scale);
-        for (auto &mesh : character_model.model->GetMeshes())
-        {
-            RenderCommand::DrawIndexed(mesh->vertex_array);
-        }
-    }
-    csm.framebuffer->Unbind();
-    
-    csm.shader->Disable();
 }
 
 void SandboxLayer::UpdateCamera(f32 delta_time)
@@ -225,17 +157,9 @@ void SandboxLayer::RenderScene(f32 delta_time)
     
     shader->Enable();
 
-    glActiveTexture(GL_TEXTURE0 + 3);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, csm.framebuffer->GetDepthAttachment());
-    shader->SetInt("ushadow_map", 3);
-
-    shader->SetFloat("ucascade_plane_distances", cascade_splits.data(), cascade_splits.size());
-    shader->SetFloat("ushadow_bias", csm.shadow_bias.data(), csm.shadow_bias.size());
-    shader->SetMatrix("ulight_matrices", light_space_matrices[0], light_space_matrices.size());
-
     // floor
     shader->SetBool("uhas_animation", floor_model.model->HasAnimations());
-    shader->SetMatrix("umodel_transform", glm::scale(glm::mat4(1.0f), glm::vec3(30.0f)));
+    shader->SetMatrix("umodel_transform", floor_scale);
 
     for (auto &mesh : floor_model.model->GetMeshes())
     {
@@ -248,8 +172,9 @@ void SandboxLayer::RenderScene(f32 delta_time)
     // CHARACTER
     character_model.blender.BlendAnimations(character_model.blending_position, delta_time, animation_speed_playback);
     shader->SetBool("uhas_animation", character_model.model->HasAnimations());
-    shader->SetMatrix("ubone_transforms", character_model.model->GetBoneTransforms()[0], character_model.model->GetBoneTransforms().size());
-    shader->SetMatrix("umodel_transform", character_scale);
+    shader->SetMatrix("ubone_transforms", character_model.model->GetBoneTransforms()[0], 
+        (i32)character_model.model->GetBoneTransforms().size());
+    shader->SetMatrix("umodel_transform", character_transform);
 
     for (auto &mesh : character_model.model->GetMeshes())
     {
@@ -374,19 +299,12 @@ void SandboxLayer::OnGuiRender()
     }
     
     
-    ImGui::SliderInt("Cascade Index", &cascade_index, 0, NUM_CASCADES - 1);
-    for (i32 i = 0; i < NUM_CASCADES; ++i)
-    {
-        ImGui::Text("cascade %d: %.2f",i, cascade_splits[i]);
-    }
-
     ImGui::Separator();
 
     if (ImGui::Button("Play Sound"))
     {
         roar_sound->Play();
     }
-    ImGui::SameLine();
 
     if (ImGui::TreeNode("Shader"))
     {
@@ -399,27 +317,9 @@ void SandboxLayer::OnGuiRender()
         {
             Renderer::GetShader("GridShader")->Reload();
         }
-
         ImGui::TreePop();
     }
-    
-
     ImGui::End();
-
-    ImGui::Begin("Cascade Shadows");
-    ImGui::Text("Camera distance %.2f", glm::length(camera.GetPosition()));
-
-    std::string cascade_label = "Cascade";
-    if (ImGui::TreeNodeEx(cascade_label.c_str(), ImGuiTreeNodeFlags_DefaultOpen, cascade_label.c_str()))
-    {
-        ImGui::Image((void *)(intptr_t)debug_r.framebuffer->GetColorAttachment(0),
-            ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().x / 16.0f * 9.0f), 
-            ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::TreePop();
-    }
-
-    ImGui::End();
-
     Dockspace::End();
 }
 
@@ -564,161 +464,3 @@ void SandboxLayer::InitSounds()
     roar_sound->SetVolume(0.5f);
     // roar_sound->Play();
 }
-
-std::vector<f32> SandboxLayer::CalculateCascadeSplits(f32 near_plane, f32 far_plane, f32 lambda)
-{
-    std::vector<f32> splits(NUM_CASCADES);
-
-    f32 range = far_plane - near_plane;
-    f32 ratio = far_plane / near_plane;
-
-    for (i32 i = 0; i < NUM_CASCADES; ++i)
-    {
-        f32 p = (i + 1) / static_cast<f32>(NUM_CASCADES);
-        f32 log = near_plane * std::pow(ratio, p);
-        f32 uniform_split = near_plane + (far_plane - near_plane) * p;
-        splits[i] = lambda * (log - uniform_split) + uniform_split;
-    }
-
-    return splits;
-}
-
-void SandboxLayer::InitCascadeShadow()
-{
-    cascade_splits = CalculateCascadeSplits(10.0f, 100.0f);
-    csm.shadow_bias.resize(NUM_CASCADES);
-    csm.shadow_bias[0] = 0.000025f;
-    csm.shadow_bias[1] = 0.000075f;
-    csm.shadow_bias[2] = 0.00025f;
-    csm.shadow_bias[3] = 0.0005f;
-
-    FramebufferSpecification spec;
-    spec.attachments = {
-        FramebufferTextureFormat::DEPTH24STENCIL8_ARRAY
-    };
-    spec.width = cascade_resolution;
-    spec.height = cascade_resolution;
-    spec.depth_array_count = NUM_CASCADES;
-    csm.framebuffer = Framebuffer::Create(spec);
-}
-
-void SandboxLayer::InitDebugRenderer()
-{
-    FramebufferSpecification spec;
-    spec.attachments = {
-        FramebufferTextureFormat::RGBA8
-    };
-    spec.width = 512;
-    spec.height = spec.width / 16.0f * 9.0f;
-    debug_r.framebuffer = Framebuffer::Create(spec);
-    
-    u32 quad_vbo;
-    f32 quad_vertices[] = {
-        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-         1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-         1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-    };
-
-    glGenVertexArrays(1, &debug_r.vao);
-    glGenBuffers(1, &quad_vbo);
-    glBindVertexArray(debug_r.vao);
-    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), &quad_vertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-
-    glGenVertexArrays(1, &m_GridVAO);
-    glGenBuffers(1, &m_GridVBO);
-    glBindVertexArray(m_GridVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_GridVBO);
-}
-
-std::array<glm::vec4, 8> SandboxLayer::TransformToLightSpace(const std::array<glm::vec4, 8> &corners, const glm::mat4 &light_view)
-{
-    std::array<glm::vec4, 8> light_space_corners{};
-    for (size_t i = 0; i < corners.size(); ++i)
-        light_space_corners[i] = light_view * corners[i];
-    return light_space_corners;
-}
-
-void SandboxLayer::UpdateLightSpaceMatrices(const glm::mat4 &light_view, const glm::mat4 &camera_projection, const glm::mat4 &camera_view, const std::vector<f32> &cascade_splits)
-{
-    for (size_t i = 0; i < cascade_splits.size(); ++i)
-    {
-        f32 prev_split = (i == 0) ? camera_projection[3][2] : cascade_splits[i - 1];
-        f32 current_split = cascade_splits[i];
-
-        // 1. get frustum corners in world space
-        auto frustum_corners = GetFrustumCorners(camera_projection, camera_view, prev_split, current_split);
-
-        // 2. transform corners to light space
-        auto light_space_corners = TransformToLightSpace(frustum_corners, light_view);
-
-        // 3. calculate tight orthographic projection
-        auto light_projection = CalculateLightProjection(light_space_corners);
-
-        light_space_matrices[i] = light_projection * light_view;
-    }
-}
-
-std::array<glm::vec4, 8> SandboxLayer::GetFrustumCorners(const glm::mat4 &projection, const glm::mat4 &view, f32 near_plane, f32 far_plane)
-{
-    glm::mat4 inverse_matrix = glm::inverse(projection * view);
-
-    std::array<glm::vec4, 8> corners = {
-        glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), // Near bottom-left
-        glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), // Near bottom-right
-        glm::vec4(1.0f,  1.0f, -1.0f, 1.0f), // Near top-right
-        glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), // Near top-left
-        glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f), // Far bottom-left
-        glm::vec4(1.0f, -1.0f,  1.0f, 1.0f), // Far bottom-right
-        glm::vec4(1.0f,  1.0f,  1.0f, 1.0f), // Far top-right
-        glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f)  // Far top-left
-    };
-
-    for (auto &corner : corners)
-    {
-        corner = inverse_matrix * corner;
-        corner /= corner.w;
-    }
-
-    return corners;
-}
-
-glm::mat4 SandboxLayer::CalculateLightProjection(const std::array<glm::vec4, 8> &light_space_corners)
-{
-    glm::vec3 min_corner(std::numeric_limits<f32>::max());
-    glm::vec3 max_corner(std::numeric_limits<f32>::lowest());
-
-    for (const auto &corner : light_space_corners)
-    {
-        glm::vec3 corner_3 = glm::vec3(corner);
-        min_corner = glm::min(min_corner, corner_3);
-        max_corner = glm::max(max_corner, corner_3);
-    }
-
-    return glm::ortho(
-        min_corner.x, max_corner.x,
-        min_corner.y, max_corner.y,
-        min_corner.z, max_corner.z
-    );
-}
-
-glm::mat4 SandboxLayer::SnapToGrid(const glm::mat4 &light_projection, const glm::mat4 &light_view, f32 shadow_map_size)
-{
-    glm::mat4 light_vp = light_projection * light_view;
-
-    glm::vec4 origin = light_vp * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    origin /= origin.w;
-
-    f32 texel_size = (light_projection[1][1] - light_projection[0][0]) / shadow_map_size;
-
-    origin.x = std::floor(origin.x / texel_size) * texel_size;
-    origin.y = std::floor(origin.y / texel_size) * texel_size;
-
-    return light_projection;
-}
-

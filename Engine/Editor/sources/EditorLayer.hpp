@@ -109,9 +109,6 @@ namespace origin
         Scope<ContentBrowserPanel> m_ContentBrowser;
         Scope<Gizmos> m_gizmo;
         std::vector<PanelBase *> m_Panels;
-        // ==========================================
-        // ==========================================
-        
 
         std::unordered_map<std::string, Ref<Texture2D>> m_UITextures;
         Ref<Texture2D> m_OriginEngineTex;

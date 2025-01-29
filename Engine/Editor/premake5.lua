@@ -22,6 +22,7 @@ project "Editor"
         "sources/**.cpp",
         "sources/**.h",
         "sources/**.hpp",
+        "Resouces/Shaders/**.glsl",
         "**.h",
     }
 

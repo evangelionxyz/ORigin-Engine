@@ -218,20 +218,19 @@ void OpenGLFramebuffer::Invalidate()
 		{
 			glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_DepthAttachment);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, m_DepthAttachment);
-			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F,
-				m_Spec.width, m_Spec.height, m_Spec.depth_array_count, 0,
-				GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+			glTexStorage3D(GL_TEXTURE_2D_ARRAY, 
+				1,                             // Mip Levels         
+				GL_DEPTH_COMPONENT32F,         // Internal format
+				m_Spec.width, m_Spec.height,   // Width/Height (fixed per layer)
+				m_Spec.depth_array_count       // Number of cascades
+			);
 
-			f32 border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border_color);
-			
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-			glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthAttachment, 0);
 			break;
 		}
 		case FramebufferTextureFormat::DEPTH_CUBE:

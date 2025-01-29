@@ -160,7 +160,7 @@ void EditorLayer::OnUpdate(const Timestep ts)
     RenderCommand::Clear();
     Render(ts);
 
-    // m_ActiveScene->GetUIRenderer()->Render();
+    m_ActiveScene->GetUIRenderer()->Render();
     m_Framebuffer->Unbind();
     m_ActiveScene->PostRender(m_EditorCamera, ts);
 
@@ -199,13 +199,9 @@ void EditorLayer::Render(Timestep ts)
             glm::vec3 cam_position = cc.Camera.GetPosition();
             Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
             Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
-
             m_ActiveScene->OnUpdateRuntime(ts);
-
-            if(m_VisualizeBoundingBox) 
-                m_gizmo->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
-            if(m_VisualizeCollider) 
-                m_gizmo->DrawCollider(cc.Camera, m_ActiveScene.get());
+            if(m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
+            if(m_VisualizeCollider) m_gizmo->DrawCollider(cc.Camera, m_ActiveScene.get());
         }
         break;
     }

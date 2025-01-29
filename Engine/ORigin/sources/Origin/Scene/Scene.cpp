@@ -393,12 +393,10 @@ void Scene::RenderScene(const Camera &camera)
     for (auto e : view)
     {
         Entity entity{ e, this };
-        auto &tc = view.get<TransformComponent>(e);
+        TransformComponent &transform_comp = view.get<TransformComponent>(e);
 
-        if (!tc.Visible)
-        {
+        if (!transform_comp.Visible)
             continue;
-        }
 
         // 2D Quads
         if (entity.HasComponent<SpriteRenderer2DComponent>())
@@ -418,24 +416,24 @@ void Scene::RenderScene(const Camera &camera)
                     }
                 }
             }
-            Renderer2D::DrawSprite(tc.GetTransform(), src);
+            Renderer2D::DrawSprite(transform_comp.GetTransform(), src);
         }
 
         if (entity.HasComponent<CircleRendererComponent>())
         {
-            auto &cc = entity.GetComponent<CircleRendererComponent>();
-            Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade);
+            auto &cc = m_Registry.get<CircleRendererComponent>(e);
+            Renderer2D::DrawCircle(transform_comp.GetTransform(), cc.Color, cc.Thickness, cc.Fade);
         }
 
         // Particles
         if (entity.HasComponent<ParticleComponent>())
         {
-            auto &pc = entity.GetComponent<ParticleComponent>();
+            auto &pc = m_Registry.get<ParticleComponent>(e);
             for (int i = 0; i < 5; i++)
             {
                 pc.Particle.Emit(pc,
-                    { tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z + pc.ZAxis },
-                    tc.WorldScale, pc.Rotation);
+                    { transform_comp.WorldTranslation.x, transform_comp.WorldTranslation.y, transform_comp.WorldTranslation.z + pc.ZAxis },
+                    transform_comp.WorldScale, pc.Rotation);
             }
 
             pc.Particle.OnRender();
@@ -444,7 +442,7 @@ void Scene::RenderScene(const Camera &camera)
         // Text
         if (entity.HasComponent<TextComponent>())
         {
-            auto &text = entity.GetComponent<TextComponent>();
+            auto &text = m_Registry.get<TextComponent>(e);
             glm::mat4 transform = glm::mat4(1.0f);
             glm::mat4 invertedCamTransform = glm::mat4(1.0f);
 
@@ -457,10 +455,10 @@ void Scene::RenderScene(const Camera &camera)
                         const auto &cc = primary_cam.GetComponent<CameraComponent>().Camera;
                         const auto &ccTC = primary_cam.GetComponent<TransformComponent>();
                         const float ratio = cc.GetAspectRatio();
-                        glm::vec2 scale = glm::vec2(tc.WorldScale.x, tc.WorldScale.y * ratio);
-                        transform = glm::translate(glm::mat4(1.0f), { tc.WorldTranslation.x, tc.WorldTranslation.y, 0.0f })
+                        glm::vec2 scale = glm::vec2(transform_comp.WorldScale.x, transform_comp.WorldScale.y * ratio);
+                        transform = glm::translate(glm::mat4(1.0f), { transform_comp.WorldTranslation.x, transform_comp.WorldTranslation.y, 0.0f })
                             * glm::toMat4(ccTC.Rotation)
-                            * glm::scale(glm::mat4(1.0f), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
+                            * glm::scale(glm::mat4(1.0f), { transform_comp.WorldScale.x, transform_comp.WorldScale.y * ratio, 0.0 });
 
                         invertedCamTransform = glm::inverse(cc.GetViewProjection());
                     }
@@ -468,7 +466,7 @@ void Scene::RenderScene(const Camera &camera)
                 else
                 {
                     const float ratio = camera.GetAspectRatio();
-                    transform = glm::scale(tc.GetTransform(), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
+                    transform = glm::scale(transform_comp.GetTransform(), { transform_comp.WorldScale.x, transform_comp.WorldScale.y * ratio, 0.0 });
                     invertedCamTransform = glm::inverse(camera.GetViewProjection());
                 }
 
@@ -477,14 +475,14 @@ void Scene::RenderScene(const Camera &camera)
             else
             {
                 glm::vec3 center_offset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
-                glm::vec3 scaled_offset = tc.WorldScale * center_offset;
-                glm::vec3 rotated_offset = glm::toMat3(tc.WorldRotation) * scaled_offset;
+                glm::vec3 scaled_offset = transform_comp.WorldScale * center_offset;
+                glm::vec3 rotated_offset = glm::toMat3(transform_comp.WorldRotation) * scaled_offset;
 
-                text.Position = tc.WorldTranslation - rotated_offset;
+                text.Position = transform_comp.WorldTranslation - rotated_offset;
 
                 transform = glm::translate(glm::mat4(1.0f), text.Position)
-                    * glm::toMat4(tc.WorldRotation)
-                    * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+                    * glm::toMat4(transform_comp.WorldRotation)
+                    * glm::scale(glm::mat4(1.0f), transform_comp.WorldScale);
             }
 
             if (text.FontHandle != 0)
@@ -492,21 +490,18 @@ void Scene::RenderScene(const Camera &camera)
                 Renderer2D::DrawString(text.TextString, transform, text);
             }
         }
-    }
 
-    Renderer2D::End();
-
-    const auto mesh_view = m_Registry.view<TransformComponent, MeshComponent>();
-    for (const auto &[e, tc, mesh_component] : mesh_view.each())
-    {
-        Shader *shader = Renderer::GetShader("SkinnedMesh").get();
-        // Render
-        if (mesh_component.HModel && tc.Visible)
+        if (entity.HasComponent<MeshComponent>())
         {
+            MeshComponent &mesh_component = m_Registry.get<MeshComponent>(e);
+            if (mesh_component.HModel == 0)
+                continue;
+
+            Shader *shader = Renderer::GetShader("SkinnedMesh").get();
             shader->Enable();
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_component.HModel);
             shader->SetBool("uhas_animation", model->HasAnimations());
-            shader->SetMatrix("umodel_transform", tc.GetTransform());
+            shader->SetMatrix("umodel_transform", transform_comp.GetTransform());
             if (model->HasAnimations())
             {
                 shader->SetMatrix("ubone_transforms", model->GetBoneTransforms()[0], static_cast<u32>(model->GetBoneTransforms().size()));
@@ -520,32 +515,34 @@ void Scene::RenderScene(const Camera &camera)
             }
             shader->Disable();
         }
-    }
 
-    const auto &env_map_view = m_Registry.view<EnvironmentMap, TransformComponent>();
-    for (const auto &[entity, env_map, transform_comp] : env_map_view.each())
-    {
-        if (env_map.skybox)
+        if (entity.HasComponent<EnvironmentMap>())
         {
-            glDepthFunc(GL_LEQUAL);
+            EnvironmentMap &env_map = m_Registry.get<EnvironmentMap>(e);
+            if (env_map.skybox)
+            {
+                glDepthFunc(GL_LEQUAL);
 
-            Renderer::GetShader("Skybox")->Enable();
-            Renderer::skybox_uniform_buffer->Bind();
-            Renderer::skybox_uniform_buffer->SetData(&env_map.tint_color, sizeof(glm::vec4) + sizeof(f32));
-            Renderer::skybox_uniform_buffer->SetData(&env_map.blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
+                Renderer::GetShader("Skybox")->Enable();
+                Renderer::skybox_uniform_buffer->Bind();
+                Renderer::skybox_uniform_buffer->SetData(&env_map.tint_color, sizeof(glm::vec4) + sizeof(f32));
+                Renderer::skybox_uniform_buffer->SetData(&env_map.blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);
-            Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);
+                Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
 
-            RenderCommand::DrawIndexed(env_map.skybox->vao);
+                RenderCommand::DrawIndexed(env_map.skybox->vao);
 
-            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-            Renderer::GetShader("Skybox")->Disable();
+                glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                Renderer::GetShader("Skybox")->Disable();
 
-            glDepthFunc(GL_LESS);
+                glDepthFunc(GL_LESS);
+            }
         }
     }
+
+    Renderer2D::End();
 }
 
 void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
