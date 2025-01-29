@@ -11,6 +11,17 @@
 
 namespace origin {
 
+Gizmos::Gizmos()
+{
+    m_grid_data.shader = Renderer::GetShader("GridShader").get();
+
+    glGenVertexArrays(1, &m_grid_data.vao);
+    glGenBuffers(1, &m_grid_data.vbo);
+
+    glBindVertexArray(m_grid_data.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_grid_data.vbo);
+}
+
 void Gizmos::Draw2DGrid(const Camera &camera)
 {
     OGN_PROFILER_RENDERING();
@@ -54,11 +65,30 @@ void Gizmos::Draw2DGrid(const Camera &camera)
     Renderer2D::End();
 }
 
+void Gizmos::DrawGrid()
+{
+    glEnable(GL_BLEND);
+    glDepthFunc(GL_LEQUAL);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+
+    m_grid_data.shader->Enable();
+
+    glBindVertexArray(m_grid_data.vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    m_grid_data.shader->Disable();
+
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+    glDepthFunc(GL_LESS);
+
+}
+
 void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
 {
-    glEnable(GL_DEPTH_TEST);
     Renderer2D::Begin();
-
     // Camera
     for (auto [e, tc, cc] : scene->m_Registry.view<TransformComponent, CameraComponent>().each())
     {
@@ -75,99 +105,62 @@ void Gizmos::DrawFrustum(const Camera &camera, Scene *scene)
 void Gizmos::DrawIcons(const Camera &camera, Scene *scene)
 {
     OGN_PROFILER_RENDERING();
-    auto drawIcon = [&](TransformComponent tc, const std::shared_ptr<Texture2D> &texture)
+
+    // drawing icons function
+    auto drawIcon = [&](TransformComponent tc, const Ref<Texture2D> &texture)
     {
-        glm::mat4 transform = glm::mat4(1.0f);
-        switch (camera.GetProjectionType())
-        {
-        case ProjectionType::Perspective:
-            transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
-                * glm::rotate(glm::mat4(1.0f), -camera.GetYaw(), glm::vec3(0, 1, 0))
-                * glm::rotate(glm::mat4(1.0f), -camera.GetPitch(), glm::vec3(1, 0, 0))
-                * glm::scale(glm::mat4(1.0f), tc.WorldScale);
-            break;
-        case ProjectionType::Orthographic:
-            transform = translate(glm::mat4(1.0f), tc.WorldTranslation);
-            break;
-        }
+        glm::vec3 camera_right = ((EditorCamera *)&camera)->GetRightDirection();
+        glm::vec3 camera_up = ((EditorCamera *)&camera)->GetUpDirection();
+
+        f32 distance = glm::length(camera.GetPosition() - tc.WorldTranslation);
+        f32 icon_size = std::clamp(0.05f * distance, 1.0f, 3.0f);
+
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), tc.WorldTranslation)
+            * glm::mat4(glm::vec4(camera_right * icon_size, 0.0f),
+                glm::vec4(camera_up * icon_size, 0.0f),
+                glm::vec4(0.0f, 0.0f, 1.0f, 0.0f), // keep z forward for correct rendering
+                glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+            );
 
         Renderer2D::DrawQuad(transform, texture, glm::vec2(1.0f), glm::vec4(1.0f));
     };
 
-    // Draw ICONS
+    glDisable(GL_DEPTH_TEST);
+    auto &textures = EditorLayer::Get().m_UITextures;
+    Renderer2D::Begin();
+    for (auto [e, tc] : scene->GetAllEntitiesWith<TransformComponent>().each())
     {
-        auto &textures = EditorLayer::Get().m_UITextures;
-        glEnable(GL_DEPTH_TEST);
-        Renderer2D::Begin();
-        for (auto [e, tc] : scene->GetAllEntitiesWith<TransformComponent>().each())
+        Entity entity = { e, scene };
+        if (entity.HasComponent<CameraComponent>())
         {
-            Entity entity = { e, scene };
-            if (entity.HasComponent<CameraComponent>())
+            CameraComponent &cc = entity.GetComponent<CameraComponent>();
+            if (camera.IsPerspective())
             {
-                CameraComponent &cc = entity.GetComponent<CameraComponent>();
-                if (camera.IsPerspective())
-                {
-                    drawIcon(tc, textures.at("camera"));
-                }
-                else if (!camera.IsPerspective() && camera.GetOrthoScale() > 15.0f)
-                {
-                    drawIcon(tc, textures.at("camera"));
-                }
+                drawIcon(tc, textures.at("camera"));
             }
-            else if (entity.HasComponent<AudioComponent>())
+            else if (!camera.IsPerspective() && camera.GetOrthoScale() > 15.0f)
             {
-                drawIcon(tc, textures.at("audio"));
-            }
-            else if (entity.HasComponent<LightComponent>())
-            {
-                drawIcon(tc, textures.at("lighting"));
+                drawIcon(tc, textures.at("camera"));
             }
         }
-        Renderer2D::End();
+        else if (entity.HasComponent<AudioComponent>())
+        {
+            drawIcon(tc, textures.at("audio"));
+        }
+        else if (entity.HasComponent<DirectionalLightComponent>())
+        {
+            drawIcon(tc, textures.at("lighting"));
+        }
     }
+    Renderer2D::End();
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Gizmos::DrawBoundingBox(const Camera &camera, Scene *scene)
 {
     glEnable(GL_DEPTH_TEST);
     Renderer2D::Begin();
-#if 0
-    // AABB
-    for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
-    {
-        AABB aabb = AABB(tc.WorldTranslation, tc.WorldScale);
-        const glm::vec3 &min = aabb.Min;
-        const glm::vec3 &max = aabb.Max;
-        glm::vec4 color = { 1.0f, 0.7f, 0.0f, 1.0f }; // Orange color
 
-        // Define the 8 corners of the AABB
-        glm::vec3 corners[8] = {
-            {min.x, min.y, min.z}, {max.x, min.y, min.z},
-            {min.x, max.y, min.z}, {max.x, max.y, min.z},
-            {min.x, min.y, max.z}, {max.x, min.y, max.z},
-            {min.x, max.y, max.z}, {max.x, max.y, max.z}
-        };
-
-        // Draw 12 lines connecting the corners
-        // Bottom face
-        Renderer2D::DrawLine(corners[0], corners[1], color);
-        Renderer2D::DrawLine(corners[1], corners[3], color);
-        Renderer2D::DrawLine(corners[3], corners[2], color);
-        Renderer2D::DrawLine(corners[2], corners[0], color);
-
-        // Top face
-        Renderer2D::DrawLine(corners[4], corners[5], color);
-        Renderer2D::DrawLine(corners[5], corners[7], color);
-        Renderer2D::DrawLine(corners[7], corners[6], color);
-        Renderer2D::DrawLine(corners[6], corners[4], color);
-
-        // Connecting edges
-        Renderer2D::DrawLine(corners[0], corners[4], color);
-        Renderer2D::DrawLine(corners[1], corners[5], color);
-        Renderer2D::DrawLine(corners[2], corners[6], color);
-        Renderer2D::DrawLine(corners[3], corners[7], color);
-    }
-#endif
     // OBB
     for (auto [e, tc] : scene->m_Registry.view<TransformComponent>().each())
     {
@@ -210,9 +203,7 @@ void Gizmos::DrawCollider(const Camera &camera, Scene *scene)
 {
     OGN_PROFILER_RENDERING();
 
-    glEnable(GL_DEPTH_TEST);
     Renderer2D::Begin();
-
     Entity selectedEntity = SceneHierarchyPanel::GetInstance()->GetSelectedEntity();
 
     const auto view = scene->GetAllEntitiesWith<TransformComponent>();

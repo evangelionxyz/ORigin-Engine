@@ -49,12 +49,12 @@ f32 increment_speed = 300.0f;
 f32 decrement_speed = 800.0f;
 f32 target_direction = 180.0f;
 f32 target_speed = 0.0f;
-const f32 SUN_DISTANCE = 10.0f;
 i32 cascade_index = 0;
-f32 sun_yaw = 180.0f;
-f32 sun_pitch = 20.0f;
-f32 padding = 5.0f; // Adjust this value based on your needs
+f32 sun_yaw = 230.0f;
+f32 sun_pitch = 210.0f;
+i32 cascade_resolution = 1080;
 
+glm::mat4 character_scale = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f));
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
@@ -120,6 +120,7 @@ void SandboxLayer::OnAttach()
     dir_light = CreateRef<DirectionalLight>();
     dir_light->data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
     dir_light->data.direction = { 20.0f, -20.0f, 0.0f, 1.0f };
+
     InitCascadeShadow();
     InitDebugRenderer();
 }
@@ -167,38 +168,25 @@ void SandboxLayer::RenderDebug(f32 delta_time)
 
 void SandboxLayer::RenderShadowMap()
 {
-    glm::vec3 light_dir = glm::normalize(glm::vec3(
+    glm::vec3 light_direction = glm::normalize(glm::vec3{
         std::cos(glm::radians(sun_pitch)) * std::sin(glm::radians(sun_yaw)),
         std::sin(glm::radians(sun_pitch)),
         std::cos(glm::radians(sun_pitch)) * std::cos(glm::radians(sun_yaw))
-    ));
+        });
     
-    glm::vec3 normalized_light_dir = glm::normalize(-light_dir);
-    glm::vec3 light_position = normalized_light_dir * SUN_DISTANCE;
-        
-    glm::vec3 right = glm::cross(normalized_light_dir, glm::vec3(0.0f, 1.0f, 0.0f));
-    if (glm::length(right) < 0.001f) {
-        right = glm::cross(normalized_light_dir, glm::vec3(1.0f, 0.0f, 0.0f));
-    }
-    right = glm::normalize(right);
-    glm::vec3 up = glm::normalize(glm::cross(right, normalized_light_dir));
-        
-    // Create view matrix
-    glm::mat4 light_view = glm::lookAt(light_position, normalized_light_dir, up);
+    glm::vec3 light_position = -light_direction;
+    glm::mat4 light_view = glm::lookAt(light_position, {0.0f, 0.0f, 0.0f}, { 0.0f, 1.0f, 0.0f });
     
-    UpdateLightSpaceMatrices(light_position, light_view, 45.0f, 1280.0f / 720.0f, 0.1f);
+    UpdateLightSpaceMatrices(light_view, camera.GetProjectionMatrix(), camera.GetViewMatrix(), cascade_splits);
+
     csm.shader->Enable();
-    glViewport(0, 0, csm.framebuffer->GetWidth(), csm.framebuffer->GetHeight());
+    csm.framebuffer->Bind();
+    
     for (i32 i = 0; i < NUM_CASCADES; ++i)
     {
-        csm.framebuffer->Bind();
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, csm.framebuffer->GetDepthAttachment(), 0, i);
         glClear(GL_DEPTH_BUFFER_BIT);
-        
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-            csm.framebuffer->GetDepthAttachment(), 0, i);
-
-        OGN_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE,
-            "Framebuffer incomplete for cascade");
+        glViewport(0, 0, csm.framebuffer->GetWidth(), csm.framebuffer->GetHeight());
         
         csm.shader->SetMatrix("ulight_matrix", light_space_matrices[i]);
         csm.shader->SetBool("uhas_animation", floor_model.model->HasAnimations());
@@ -209,7 +197,7 @@ void SandboxLayer::RenderShadowMap()
         }
         csm.shader->SetBool("uhas_animation", character_model.model->HasAnimations());
         csm.shader->SetMatrix("ubone_transforms", character_model.model->GetBoneTransforms()[0], character_model.model->GetBoneTransforms().size());
-        csm.shader->SetMatrix("umodel_transform", glm::scale(glm::mat4(1.0f), glm::vec3(20.0f)));
+        csm.shader->SetMatrix("umodel_transform", character_scale);
         for (auto &mesh : character_model.model->GetMeshes())
         {
             RenderCommand::DrawIndexed(mesh->vertex_array);
@@ -261,7 +249,7 @@ void SandboxLayer::RenderScene(f32 delta_time)
     character_model.blender.BlendAnimations(character_model.blending_position, delta_time, animation_speed_playback);
     shader->SetBool("uhas_animation", character_model.model->HasAnimations());
     shader->SetMatrix("ubone_transforms", character_model.model->GetBoneTransforms()[0], character_model.model->GetBoneTransforms().size());
-    shader->SetMatrix("umodel_transform", glm::scale(glm::mat4(1.0f), glm::vec3(20.0f)));
+    shader->SetMatrix("umodel_transform", character_scale);
 
     for (auto &mesh : character_model.model->GetMeshes())
     {
@@ -274,6 +262,24 @@ void SandboxLayer::RenderScene(f32 delta_time)
     shader->Disable();
 
     RenderSkybox(delta_time);
+
+    // render infinity grid
+    glEnable(GL_BLEND);
+    glDepthFunc(GL_LEQUAL);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+
+    Renderer::GetShader("GridShader")->Enable();
+
+    glBindVertexArray(m_GridVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    Renderer::GetShader("GridShader")->Disable();
+
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+    glDepthFunc(GL_LESS);
 
     main_framebuffer->Unbind();
 }
@@ -339,8 +345,6 @@ void SandboxLayer::OnGuiRender()
 
     ImGui::Separator();
 
-    ImGui::DragFloat("Padding", &padding, 1.0f, 0.0f, 200.0f);
-
     bool dragged = ImGui::DragFloat("Sun Yaw", &sun_yaw, 1.0f, 0.0f, 360.0f);
     dragged |= ImGui::DragFloat("Sun Pitch", &sun_pitch, 1.0f, 0.0f, 360.0f);
     if (dragged)
@@ -359,11 +363,16 @@ void SandboxLayer::OnGuiRender()
 
     ImGui::ColorEdit4("Light Color", glm::value_ptr(dir_light->data.color));
 
-    ImGui::Separator();
-    for (auto &state : character_model.blender.GetStates())
+
+    if (ImGui::TreeNode("Animation States"))
     {
-        ImGui::Text("%s\t%d: %.5f", state.name.c_str(), state.anim_index, state.weight);
+        for (auto &state : character_model.blender.GetStates())
+        {
+            ImGui::Text("%s\t%d: %.5f", state.name.c_str(), state.anim_index, state.weight);
+        }
+        ImGui::TreePop();
     }
+    
     
     ImGui::SliderInt("Cascade Index", &cascade_index, 0, NUM_CASCADES - 1);
     for (i32 i = 0; i < NUM_CASCADES; ++i)
@@ -379,10 +388,21 @@ void SandboxLayer::OnGuiRender()
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("Reload Skinning Shader"))
+    if (ImGui::TreeNode("Shader"))
     {
-        shader->Reload();
+        if (ImGui::Button("Reload Skinning Shader"))
+        {
+            shader->Reload();
+        }
+
+        if (ImGui::Button("Reload Grid Shader"))
+        {
+            Renderer::GetShader("GridShader")->Reload();
+        }
+
+        ImGui::TreePop();
     }
+    
 
     ImGui::End();
 
@@ -393,7 +413,8 @@ void SandboxLayer::OnGuiRender()
     if (ImGui::TreeNodeEx(cascade_label.c_str(), ImGuiTreeNodeFlags_DefaultOpen, cascade_label.c_str()))
     {
         ImGui::Image((void *)(intptr_t)debug_r.framebuffer->GetColorAttachment(0),
-            ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().x / 16.0f * 9.0f), ImVec2(0, 1), ImVec2(1, 0));
+            ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().x / 16.0f * 9.0f), 
+            ImVec2(0, 1), ImVec2(1, 0));
         ImGui::TreePop();
     }
 
@@ -523,7 +544,6 @@ void SandboxLayer::UpdateCharacterMovement(f32 delta_time)
 
 void SandboxLayer::OnDetach()
 {
-    CleanupFramebuffers();
     Physics::Shutdown();
 }
 
@@ -545,83 +565,22 @@ void SandboxLayer::InitSounds()
     // roar_sound->Play();
 }
 
-std::vector<f32> SandboxLayer::CalculateCascadeSplits(f32 near_plane, f32 far_plane)
+std::vector<f32> SandboxLayer::CalculateCascadeSplits(f32 near_plane, f32 far_plane, f32 lambda)
 {
     std::vector<f32> splits(NUM_CASCADES);
-    f32 lambda = 0.5; // balance between uniform and logarithmic splitting
+
+    f32 range = far_plane - near_plane;
     f32 ratio = far_plane / near_plane;
 
     for (i32 i = 0; i < NUM_CASCADES; ++i)
     {
         f32 p = (i + 1) / static_cast<f32>(NUM_CASCADES);
         f32 log = near_plane * std::pow(ratio, p);
-        f32 uniform = near_plane + (far_plane - near_plane) * p;
-        f32 d = lambda * (log - uniform) + uniform;
-        splits[i] = d;
+        f32 uniform_split = near_plane + (far_plane - near_plane) * p;
+        splits[i] = lambda * (log - uniform_split) + uniform_split;
     }
 
     return splits;
-}
-
-void SandboxLayer::UpdateLightSpaceMatrices(const glm::vec3 &light_dir, const glm::mat4 &light_view, f32 fov, f32 aspect, f32 near_plane)
-{
-    light_space_matrices.clear();
-
-    for (int i = 0; i < NUM_CASCADES; ++i) {
-        float prev_split = (i == 0) ? near_plane : cascade_splits[i - 1];
-        float current_split = cascade_splits[i];
-
-        // Get frustum corners in world space
-        std::vector<glm::vec4> frustum_corners = GetFrustumCorners(fov, aspect, prev_split, current_split);
-
-        // Transform corners to light space
-        glm::vec3 min_corner(std::numeric_limits<float>::max());
-        glm::vec3 max_corner(std::numeric_limits<float>::lowest());  // Note: Changed from min()
-
-        for (const auto& corner : frustum_corners) {
-            glm::vec4 light_space_corner = light_view * corner;
-            min_corner = glm::min(min_corner, glm::vec3(light_space_corner));
-            max_corner = glm::max(max_corner, glm::vec3(light_space_corner));
-        }
-
-        min_corner -= glm::vec3(padding);
-        max_corner += glm::vec3(padding);
-
-        // Create the light projection matrix
-        glm::mat4 light_projection = glm::ortho(
-            min_corner.x, max_corner.x,
-            min_corner.y, max_corner.y,
-            min_corner.z, max_corner.z
-        );
-
-        // Store the combined matrix
-        light_space_matrices.push_back(light_projection * light_view);
-    }
-}
-
-std::vector<glm::vec4> SandboxLayer::GetFrustumCorners(f32 fov, f32 aspect, f32 near_plane, f32 far_plane)
-{
-    std::vector<glm::vec4> corners;
-    corners.reserve(8);
-        
-    float tan_half_fov = std::tan(glm::radians(fov * 0.5f));
-        
-    for (int x = 0; x < 2; ++x) {
-        for (int y = 0; y < 2; ++y) {
-            for (int z = 0; z < 2; ++z) {
-                float z_value = (z == 0) ? near_plane : far_plane;
-                glm::vec4 corner(
-                    (x == 0 ? -1.0f : 1.0f) * z_value * tan_half_fov * aspect,
-                    (y == 0 ? -1.0f : 1.0f) * z_value * tan_half_fov,
-                    -z_value,
-                    1.0f
-                );
-                corners.push_back(corner);
-            }
-        }
-    }
-        
-    return corners;
 }
 
 void SandboxLayer::InitCascadeShadow()
@@ -630,15 +589,15 @@ void SandboxLayer::InitCascadeShadow()
     csm.shadow_bias.resize(NUM_CASCADES);
     csm.shadow_bias[0] = 0.000025f;
     csm.shadow_bias[1] = 0.000075f;
-    csm.shadow_bias[2] = 0.00025f; 
+    csm.shadow_bias[2] = 0.00025f;
     csm.shadow_bias[3] = 0.0005f;
 
     FramebufferSpecification spec;
     spec.attachments = {
         FramebufferTextureFormat::DEPTH24STENCIL8_ARRAY
     };
-    spec.width = 1280;
-    spec.height = 720;
+    spec.width = cascade_resolution;
+    spec.height = cascade_resolution;
     spec.depth_array_count = NUM_CASCADES;
     csm.framebuffer = Framebuffer::Create(spec);
 }
@@ -649,8 +608,8 @@ void SandboxLayer::InitDebugRenderer()
     spec.attachments = {
         FramebufferTextureFormat::RGBA8
     };
-    spec.width = 1280;
-    spec.height = 720;
+    spec.width = 512;
+    spec.height = spec.width / 16.0f * 9.0f;
     debug_r.framebuffer = Framebuffer::Create(spec);
     
     u32 quad_vbo;
@@ -670,9 +629,96 @@ void SandboxLayer::InitDebugRenderer()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+
+    glGenVertexArrays(1, &m_GridVAO);
+    glGenBuffers(1, &m_GridVBO);
+    glBindVertexArray(m_GridVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_GridVBO);
 }
 
-void SandboxLayer::CleanupFramebuffers()
+std::array<glm::vec4, 8> SandboxLayer::TransformToLightSpace(const std::array<glm::vec4, 8> &corners, const glm::mat4 &light_view)
 {
+    std::array<glm::vec4, 8> light_space_corners{};
+    for (size_t i = 0; i < corners.size(); ++i)
+        light_space_corners[i] = light_view * corners[i];
+    return light_space_corners;
+}
+
+void SandboxLayer::UpdateLightSpaceMatrices(const glm::mat4 &light_view, const glm::mat4 &camera_projection, const glm::mat4 &camera_view, const std::vector<f32> &cascade_splits)
+{
+    for (size_t i = 0; i < cascade_splits.size(); ++i)
+    {
+        f32 prev_split = (i == 0) ? camera_projection[3][2] : cascade_splits[i - 1];
+        f32 current_split = cascade_splits[i];
+
+        // 1. get frustum corners in world space
+        auto frustum_corners = GetFrustumCorners(camera_projection, camera_view, prev_split, current_split);
+
+        // 2. transform corners to light space
+        auto light_space_corners = TransformToLightSpace(frustum_corners, light_view);
+
+        // 3. calculate tight orthographic projection
+        auto light_projection = CalculateLightProjection(light_space_corners);
+
+        light_space_matrices[i] = light_projection * light_view;
+    }
+}
+
+std::array<glm::vec4, 8> SandboxLayer::GetFrustumCorners(const glm::mat4 &projection, const glm::mat4 &view, f32 near_plane, f32 far_plane)
+{
+    glm::mat4 inverse_matrix = glm::inverse(projection * view);
+
+    std::array<glm::vec4, 8> corners = {
+        glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), // Near bottom-left
+        glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), // Near bottom-right
+        glm::vec4(1.0f,  1.0f, -1.0f, 1.0f), // Near top-right
+        glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), // Near top-left
+        glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f), // Far bottom-left
+        glm::vec4(1.0f, -1.0f,  1.0f, 1.0f), // Far bottom-right
+        glm::vec4(1.0f,  1.0f,  1.0f, 1.0f), // Far top-right
+        glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f)  // Far top-left
+    };
+
+    for (auto &corner : corners)
+    {
+        corner = inverse_matrix * corner;
+        corner /= corner.w;
+    }
+
+    return corners;
+}
+
+glm::mat4 SandboxLayer::CalculateLightProjection(const std::array<glm::vec4, 8> &light_space_corners)
+{
+    glm::vec3 min_corner(std::numeric_limits<f32>::max());
+    glm::vec3 max_corner(std::numeric_limits<f32>::lowest());
+
+    for (const auto &corner : light_space_corners)
+    {
+        glm::vec3 corner_3 = glm::vec3(corner);
+        min_corner = glm::min(min_corner, corner_3);
+        max_corner = glm::max(max_corner, corner_3);
+    }
+
+    return glm::ortho(
+        min_corner.x, max_corner.x,
+        min_corner.y, max_corner.y,
+        min_corner.z, max_corner.z
+    );
+}
+
+glm::mat4 SandboxLayer::SnapToGrid(const glm::mat4 &light_projection, const glm::mat4 &light_view, f32 shadow_map_size)
+{
+    glm::mat4 light_vp = light_projection * light_view;
+
+    glm::vec4 origin = light_vp * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    origin /= origin.w;
+
+    f32 texel_size = (light_projection[1][1] - light_projection[0][0]) / shadow_map_size;
+
+    origin.x = std::floor(origin.x / texel_size) * texel_size;
+    origin.y = std::floor(origin.y / texel_size) * texel_size;
+
+    return light_projection;
 }
 

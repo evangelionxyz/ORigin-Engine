@@ -176,10 +176,10 @@ glm::vec3 Math::WorldToScreen(const glm::vec3 &world_position, const glm::mat4 &
 	return screenSpacePos;
 }
 
-glm::vec2 Math::GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
+glm::vec2 Math::GetNormalizedDeviceCoord(const glm::vec2 &position, const glm::vec2 &screen)
 {
-	float x = (2.0f * mouse.x) / screen.x - 1.0f;
-	float y = 1.0f - (2.0f * mouse.y) / screen.y;
+	float x = (2.0f * position.x) / screen.x - 1.0f;
+	float y = 1.0f - (2.0f * position.y) / screen.y;
 	return { x, y };
 }
 
@@ -190,7 +190,7 @@ glm::vec4 Math::GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMat
 	return { eyeCoords.x, eyeCoords.y, -1.0f, 0.0f };
 }
 
-glm::vec3 Math::GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
+glm::vec3 Math::GetWorldPosition(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
 {
 	glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
 	return glm::normalize(glm::vec3(worldCoords));
@@ -199,13 +199,13 @@ glm::vec3 Math::GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewM
 glm::vec3 Math::GetRayFromScreenCoords(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, bool isPerspective, glm::vec3 &outRayOrigin)
 {
 	glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
-	glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f); // Homogeneous Clip Coord
+	glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
 
 	if (isPerspective)
 	{
 		glm::vec4 eye = GetEyeCoord(hmc, projection);
-		outRayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1)); // Camera position
-		return GetWorldCoord(eye, view);
+		outRayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
+		return GetWorldPosition(eye, view);
 	}
 	else
 	{

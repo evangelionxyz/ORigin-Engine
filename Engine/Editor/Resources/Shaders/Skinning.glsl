@@ -79,7 +79,6 @@ void main()
 
 // type fragment
 #version 450 core
-
 const int NUM_CASCADES = 4;
 
 struct Material
@@ -173,6 +172,7 @@ Material material = materials[umaterial_index];
 /// ====================================
 const int pcf_size = 3;
 const float total_samples = (pcf_size * 2.0 + 1.0) * (pcf_size * 2.0 + 1.0);
+
 int get_cascade_level(float frag_depth)
 {
     for (int i = 0; i < NUM_CASCADES; ++i)
@@ -182,11 +182,11 @@ int get_cascade_level(float frag_depth)
     }
     return 3;
 }
+
 float calculate_shadow(vec3 frag_pos, vec3 normal, int cascade_index) {
     
     vec4 frag_pos_light_space = vin.light_space_position[cascade_index];
     vec3 projection_coords = frag_pos_light_space.xyz / frag_pos_light_space.w;
-    
     projection_coords = projection_coords * 0.5 + 0.5;
     
     if(projection_coords.x > 1.0 || projection_coords.x < 0.0 || 
@@ -195,29 +195,20 @@ float calculate_shadow(vec3 frag_pos, vec3 normal, int cascade_index) {
         return 0.0;
     }
 
-    float bias = max(ushadow_bias[cascade_index] * 
-        (1.0 - dot(normal, normalize(dir_light_buffer.direction.xyz))), 
-        ushadow_bias[cascade_index] * 0.005);
+    float bias = max(ushadow_bias[cascade_index] * (1.0 - dot(normal, normalize(dir_light_buffer.direction.xyz))), ushadow_bias[cascade_index] * 0.0005);
     
+    const int hw_pcf_size = 4;
     float shadow = 0.0;
     vec2 texel_size = 1.0 / textureSize(ushadow_map, 0).xy;
-    
     float current_depth = projection_coords.z - bias;
-    
-    const int hw_pcf_size = 2;
     float total_samples = float((hw_pcf_size * 2 + 1) * (hw_pcf_size * 2 + 1));
-    
     for(int x = -hw_pcf_size; x <= hw_pcf_size; ++x) {
         for(int y = -hw_pcf_size; y <= hw_pcf_size; ++y) {
-            shadow += texture(ushadow_map, 
-                vec4(projection_coords.xy + vec2(x, y) * texel_size,
-                     float(cascade_index),
-                     current_depth));
+            shadow += texture(ushadow_map, vec4(projection_coords.xy + vec2(x, y) * texel_size, float(cascade_index), current_depth));
         }
     }
-    
-    float fade_start = ucascade_plane_distances[cascade_index] 
-                      - (ucascade_plane_distances[cascade_index] * 0.1);
+
+    float fade_start = ucascade_plane_distances[cascade_index] - (ucascade_plane_distances[cascade_index] * 0.1);
     float fade_end = ucascade_plane_distances[cascade_index];
     float fade_length = fade_end - fade_start;
     float fade = 1.0 - clamp((projection_coords.z - fade_start) / fade_length, 0.0, 1.0);
@@ -242,7 +233,6 @@ vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec2 texcoord, floa
   vec3 specular_color = specular_strength * specular * dir_light_buffer.color.rgb;
   vec3 base_color = texture(udiffuse_texture, texcoord).rgb;
   return (ambient_color + (1.0 - shadow) * (diffuse_color + specular_color)) * base_color * material.base_color.rgb;
-  //return (ambient_color + diffuse_color + specular_color) * base_color * material.base_color.rgb;
 }
 
 void main()
@@ -260,15 +250,14 @@ void main()
     lighting += calculate_directional_light(normal, view_dir, vin.texcoord * material.tiling_factor.xy, shadow);
 
     if(cascade_index == 0)
-        lighting *= vec3(1.0, 0.85, 0.85);
+        lighting *= vec3(1.0, 0.6, 0.6);
     else if(cascade_index == 1)
-        lighting *= vec3(0.85, 1.0, 0.85);
+        lighting *= vec3(0.6, 1.0, 0.6);
     else if(cascade_index == 2)
-        lighting *= vec3(0.85, 0.85, 1.0);
+        lighting *= vec3(0.6, 0.6, 1.0);
     else
-        lighting *= vec3(0.85, 0.85, 1.0);
+        lighting *= vec3(0.6, 0.6, 1.0);
 
 
     frag_color = vec4(lighting, 1.0);
-    //frag_color = vec4(vec3(shadow), 1.0);
 }

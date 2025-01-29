@@ -64,8 +64,8 @@ namespace origin
         const Ref<PhysicsSceneBase> &GetPhysics() const { return m_Physics; }
         const Ref<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
         
-        u32 GetWidth() { return m_ViewportWidth; }
-        u32 GetHeight() { return m_ViewportHeight; }
+        u32 GetViewportWidth() { return m_ViewportWidth; }
+        u32 GetViewportHeight() { return m_ViewportHeight; }
 
         static AssetType GetStaticType() { return AssetType::Scene; }
         AssetType GetType() const override { return GetStaticType(); }

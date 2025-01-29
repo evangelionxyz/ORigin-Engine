@@ -39,7 +39,7 @@ namespace origin {
     class Gizmos
     {
     public:
-        Gizmos() = default;
+        Gizmos();
 
         void DrawCollider(const Camera &camera, Scene *scene);
         void OnEvent(Event &e);
@@ -49,6 +49,8 @@ namespace origin {
         GizmoType GetType() const { return m_Type; }
 
         void Draw2DGrid(const Camera &camera);
+        void DrawGrid();
+
         void DrawIcons(const Camera &camera, Scene *scene);
         void DrawBoundingBox(const Camera &camera, Scene *scene);
         void DrawFrustum(const Camera &camera, Scene *scene);
@@ -62,6 +64,14 @@ namespace origin {
         Boundary2DCorner m_Boundary2DCorner = Boundary2DCorner::NONE;
         GizmoType m_Type = GizmoType::NONE;
         float m_SnapValue = 0.0f;
+
+        struct GridData
+        {
+            u32 vao;
+            u32 vbo;
+            Shader *shader;
+
+        } m_grid_data;
     };
 
 }

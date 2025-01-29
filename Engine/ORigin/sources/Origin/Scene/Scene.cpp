@@ -385,7 +385,9 @@ void Scene::RenderScene(const Camera &camera)
     OGN_PROFILER_RENDERING();
 
     glEnable(GL_DEPTH_TEST);
-
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
+    
     Renderer2D::Begin();
     const auto &view = m_Registry.view<TransformComponent>();
     for (auto e : view)
