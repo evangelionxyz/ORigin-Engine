@@ -520,7 +520,6 @@ void Scene::RenderScene(const Camera &camera)
             shader->Enable();
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_component.HModel);
             shader->SetBool("uhas_animation", model->HasAnimations());
-            shader->SetMatrix("umodel_transform", transform_comp.GetTransform());
             if (model->HasAnimations())
             {
                 shader->SetMatrix("ubone_transforms", model->GetBoneTransforms()[0], static_cast<u32>(model->GetBoneTransforms().size()));
@@ -528,6 +527,7 @@ void Scene::RenderScene(const Camera &camera)
             for (auto &mesh : model->GetMeshes())
             {
                 MaterialManager::UpdateMaterial(mesh->material_index, mesh->material.buffer_data);
+                shader->SetMatrix("umodel_transform", transform_comp.GetTransform() * mesh->transform);
                 shader->SetInt("umaterial_index", mesh->material_index);
                 mesh->material.Update(shader);
                 RenderCommand::DrawIndexed(mesh->vertex_array);

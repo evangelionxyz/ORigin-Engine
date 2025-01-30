@@ -43,17 +43,16 @@ public:
 	Model() = default;
 	Model(const std::string &filepath);
 
+    void ProcessNode(aiNode *node, const glm::mat4 &trasnform, const std::string &filepath);
+
 	void UpdateAnimation(f32 delta_time, const u32 anim_index = 0);
-	void LoadMeshes(const aiScene *scene, const std::string &filepath);
-	void LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string &filepath);
+	void LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const glm::mat4 &transform, const std::string &filepath);
     void LoadAnimations();
 	void LoadVertexBones(const u32 mesh_index, Ref<Mesh> &data, aiMesh *mesh);
 	void LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone);
 	void LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath);
     void CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
     void CalculateAnimationTransforms(const aiNode *node, const u32 anim_index, std::unordered_map<std::string, AnimationNode> &anim_nodes, const glm::mat4 &parent_transform = glm::mat4(1.0f));
-
-    void SetMeshTransform(const aiNode *node);
 
 	Ref<Texture2D> LoadTexture(const aiScene *scene, aiMaterial *material, const std::string &filepath, TextureType type);
 	void CreateVertex(Ref<Mesh> &mesh_data);

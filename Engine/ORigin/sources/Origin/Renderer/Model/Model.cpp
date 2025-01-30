@@ -31,22 +31,57 @@ Model::Model(const std::string &filepath)
     }
 
     LoadAnimations();
-	LoadMeshes(m_Scene, filepath);
 
-    SetMeshTransform(m_Scene->mRootNode);
+    m_Meshes.resize(m_Scene->mNumMeshes);
+
+    // count vertices and indices
+    u32 num_vertices = 0;
+    u32 num_indices = 0;
+
+    for (size_t i = 0; i < m_Meshes.size(); ++i)
+    {
+        num_vertices += m_Scene->mMeshes[i]->mNumVertices;
+        num_indices += m_Scene->mMeshes[i]->mNumFaces * 3;
+    }
+
+    // reserve space
+    for (size_t i = 0; i < m_Meshes.size(); ++i)
+    {
+        m_Meshes[i] = CreateRef<Mesh>();
+        m_Meshes[i]->vertices.reserve(num_vertices);
+        m_Meshes[i]->indices.reserve(num_indices);
+    }
+
+    ProcessNode(m_Scene->mRootNode, glm::mat4(1.0f), filepath);
+}
+
+void Model::ProcessNode(aiNode *node, const glm::mat4 &transform, const std::string &filepath)
+{
+    glm::mat4 current_transform = m_Scene->mNumAnimations == 0 ? Math::AssimpToGlmMatrix(node->mTransformation) * transform : glm::mat4(1.0f);
+
+    for (u32 i = 0; i < node->mNumMeshes; ++i)
+    {
+        i32 mesh_index = node->mMeshes[i];
+        aiMesh *mesh = m_Scene->mMeshes[mesh_index];
+        LoadSingleMesh(mesh_index, mesh, current_transform, filepath);
+    }
+
+    for (u32 i = 0; i < node->mNumChildren; ++i)
+    {
+        ProcessNode(node->mChildren[i], current_transform, filepath);
+    }
 }
 
 void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
 {
     if (!HasAnimations())
+    {
         return;
-
-    glm::mat4 identity(1.0f);
+    }
 
     SkeletalAnimation &current_anim = m_Animations[anim_index];
     current_anim.UpdateTime(delta_time);
-
-    CalculateBoneTransforms(m_Scene->mRootNode, identity, anim_index);
+    CalculateBoneTransforms(m_Scene->mRootNode, glm::mat4(1.0f), anim_index);
 
     m_FinalBoneTransforms.resize(m_BoneInfo.size(), glm::mat4(1.0f));
     for (size_t i = 0; i < m_BoneInfo.size(); ++i)
@@ -60,40 +95,11 @@ const std::vector<glm::mat4> &Model::GetBoneTransforms() const
     return m_FinalBoneTransforms;
 }
 
-void Model::LoadMeshes(const aiScene *scene, const std::string &filepath)
-{
-    m_Meshes.resize(scene->mNumMeshes);
-
-    // count vertices and indices
-    u32 num_vertices = 0;
-    u32 num_indices = 0;
-
-    for (size_t i = 0; i < m_Meshes.size(); ++i)
-    {
-        num_vertices += scene->mMeshes[i]->mNumVertices;
-        num_indices += scene->mMeshes[i]->mNumFaces * 3;
-    }
-
-    // reserve space
-    for (size_t i = 0; i < m_Meshes.size(); ++i)
-    {
-        m_Meshes[i] = CreateRef<Mesh>();
-        m_Meshes[i]->vertices.reserve(num_vertices);
-        m_Meshes[i]->indices.reserve(num_indices);
-    }
-
-    // load meshes
-    for (u32 mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index)
-    {
-        aiMesh *mesh = scene->mMeshes[mesh_index];
-        LoadSingleMesh(mesh_index, mesh, filepath);
-    }
-}
-
-void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string &filepath)
+void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const glm::mat4 &transform, const std::string &filepath)
 {
     m_Meshes[mesh_index]->name = mesh->mName.C_Str();
     m_Meshes[mesh_index]->bone_transforms.resize(100, glm::mat4(1.0f));
+    m_Meshes[mesh_index]->transform = transform;
 
     // Vertices
     MeshVertexData vertex;
@@ -160,28 +166,30 @@ void Model::LoadAnimations()
     }
 }
 
-void Model::CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index)
+void Model::CalculateBoneTransforms(const aiNode *node, const glm::mat4 &transform, const u32 anim_index)
 {
     std::string node_name(node->mName.C_Str());
-    glm::mat4 node_transform = Math::AssimpToGlmMatrix(node->mTransformation);
+
+    glm::mat4 current_transform = Math::AssimpToGlmMatrix(node->mTransformation);
 
     SkeletalAnimation &anim = m_Animations[anim_index];
     auto &channel_map = anim.GetChannelMap();
     if (channel_map.contains(node_name))
     {
-        // Updating animation's node transformation
         AnimationNode &anim_node = channel_map[node_name];
         anim_node.CalculateTransform(anim.GetTimeInTicks());
-        node_transform = anim_node.transform;
+        current_transform = anim_node.transform; // use animated local transform
     }
+
+    glm::mat4 global_transform = transform * current_transform;
 
     if (m_BoneNameToIndexMap.contains(node_name))
     {
         const u32 bone_index = m_BoneNameToIndexMap[node_name];
-        m_BoneInfo[bone_index].transform = parent_transform * node_transform * m_BoneInfo[bone_index].offset_matrix;
+        // Final bone transform: global_transform * offset_matrix
+        m_BoneInfo[bone_index].transform = global_transform * m_BoneInfo[bone_index].offset_matrix;
     }
 
-    glm::mat4 global_transform = parent_transform * node_transform;
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
         CalculateBoneTransforms(node->mChildren[i], global_transform, anim_index);
@@ -214,25 +222,6 @@ void Model::CalculateAnimationTransforms(const aiNode *node, const u32 anim_inde
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
         CalculateAnimationTransforms(node->mChildren[i], anim_index, anim_nodes, global_transform);
-    }
-}
-
-void Model::SetMeshTransform(const aiNode *node)
-{
-    std::string node_name(node->mName.data);
-
-    for (auto &mesh : m_Meshes)
-    {
-        if (mesh->name == node_name)
-        {
-            mesh->transform = Math::AssimpToGlmMatrix(node->mTransformation);
-            break;
-        }
-    }
-
-    for (u32 i = 0; i < node->mNumChildren; ++i)
-    {
-        SetMeshTransform(node->mChildren[i]);
     }
 }
 
@@ -284,7 +273,9 @@ void Model::LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const
     // load textures
     material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);
     if (!material.diffuse_texture)
+    {
         material.diffuse_texture = Renderer::white_texture;
+    }
 }
 
 i32 Model::GetBoneID(const aiBone *bone)

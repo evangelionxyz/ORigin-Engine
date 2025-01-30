@@ -34,7 +34,7 @@ class MeshMaterial : public Material
 {
 public:
     MeshMaterial();
-    
+
     Ref<Texture2D> diffuse_texture;
     Ref<Texture2D> specular_texture;
     Ref<Texture2D> roughness_texture;

@@ -9,15 +9,14 @@
 
 #include "stb_image.h"
 
-namespace origin
+namespace origin {
+Ref<Skybox> Skybox::Create(const std::string &filepath, const std::string &format)
 {
-	Ref<Skybox> Skybox::Create(const std::string& filepath, const std::string& format)
+	switch (RendererAPI::GetAPI())
 	{
-		switch (RendererAPI::GetAPI())
-		{
-			case RendererAPI::API::None:		return nullptr;
-			case RendererAPI::API::OpenGL:		return CreateRef<OpenGLSkybox>(filepath, format);
-		}
-		return nullptr;
+	case RendererAPI::API::None:		return nullptr;
+	case RendererAPI::API::OpenGL:		return CreateRef<OpenGLSkybox>(filepath, format);
 	}
+	return nullptr;
+}
 }

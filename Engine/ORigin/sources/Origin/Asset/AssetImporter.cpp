@@ -197,19 +197,19 @@ namespace origin {
         data.Size = width * height * channels;
 
         TextureSpecification spec;
-        spec.Width = width;
-        spec.Height = height;
-        spec.MinFilter = ImageFilter::LinearMipmapLinear;
-        spec.MagFilter = ImageFilter::NearestMipmapNearest;
+        spec.width = width;
+        spec.height = height;
+        spec.min_filter = ImageFilter::LinearMipmapLinear;
+        spec.mag_filter = ImageFilter::NearestMipmapNearest;
 
         switch (channels)
         {
         default:
         case 3:
-            spec.Format = ImageFormat::RGB8;
+            spec.format = ImageFormat::RGB8;
             break;
         case 4:
-            spec.Format = ImageFormat::RGBA8;
+            spec.format = ImageFormat::RGBA8;
             break;
         }
 

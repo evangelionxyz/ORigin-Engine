@@ -25,12 +25,14 @@ IncludeDir["MSDFGEN"]                  = "%{THIRD_PARTY_DIR}/MSDFATLASGEN/msdfge
 IncludeDir["JOLT"]                     = "%{THIRD_PARTY_DIR}/JOLTPHYSICS"
 IncludeDir["FMOD"]                     = "%{THIRD_PARTY_DIR}/FMOD/include"
 IncludeDir["PhysX"]                    = "%{THIRD_PARTY_DIR}/nvphysx/physx/include"
-IncludeDir["OPTICK"]                    = "%{THIRD_PARTY_DIR}/OPTICK/src"
+IncludeDir["OPTICK"]                   = "%{THIRD_PARTY_DIR}/OPTICK/src"
+IncludeDir["KTX"]                      = "%{THIRD_PARTY_DIR}/KTX/include"
 
 -- Windows
 EDITOR_LIB_DIR                         = "%{wks.location}Engine/Editor/Lib/"
 Library["MONO"]                        = "%{EDITOR_LIB_DIR}/Mono/Win32/libmono-static-sgen.lib"
 Library["FMOD"]                        = "%{THIRD_PARTY_DIR}/FMOD/lib/win32/x64/fmod_vc.lib"
+Library["KTXLib"]                      = "%{THIRD_PARTY_DIR}/KTX/lib/windows/ktx.lib"
 
 Library["WinSock"]                     = "Ws2_32.lib"
 Library["WinMM"]                       = "Winmm.lib"
