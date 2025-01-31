@@ -44,6 +44,8 @@ namespace origin
         void SetMatrix(const std::string &name, const glm::mat4 &matrices, i32 count) override;
         i32 GetUniformLocation(const std::string &name) override;
 
+        u32 GetProgram() const { return m_RendererID; }
+
     private:
         void SetUniformBool(const std::string &name, bool boolean);
         void SetUniformFloat(const std::string &name, float v0);

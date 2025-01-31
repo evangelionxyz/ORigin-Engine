@@ -15,7 +15,7 @@ static std::map<std::filesystem::path, AssetType> s_AssetExtensionMap =
     { ".org", AssetType::Scene },
     { ".jpg", AssetType::Texture },
     { ".jpeg", AssetType::Texture },
-    { ".ktx", AssetType::Texture },
+    //{ ".ktx", AssetType::Texture },
     { ".png", AssetType::Texture },
     { ".ttf", AssetType::Font },
     { ".otf", AssetType::Font },

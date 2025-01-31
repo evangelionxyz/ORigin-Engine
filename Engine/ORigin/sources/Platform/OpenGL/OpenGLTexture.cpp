@@ -124,6 +124,8 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path &filepath, const Te
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
 
+        ktxTexture_Destroy(ktexture);
+
         return;
     }
 

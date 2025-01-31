@@ -1,4 +1,4 @@
--- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "Sandbox"
     language "C++"
@@ -9,7 +9,7 @@ project "Sandbox"
 
     links {"ORigin"}
 
-    targetdir (outputDir)
+    targetdir ("%{outputDir}/%{prj.name}")
     objdir (intOutputDir)
 
     files {

@@ -53,6 +53,8 @@ Model::Model(const std::string &filepath)
     }
 
     ProcessNode(m_Scene->mRootNode, glm::mat4(1.0f), filepath);
+
+    loaded_textures_cache.clear();
 }
 
 void Model::ProcessNode(aiNode *node, const glm::mat4 &transform, const std::string &filepath)
@@ -262,20 +264,21 @@ void Model::LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const
 {
     aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
     aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
+    aiColor4D emmisive_color(0.0f, 0.0f, 0.0f, 0.0f);
         
     ai_material->Get(AI_MATKEY_BASE_COLOR, base_color);
     ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
     ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.rougness);
+    ai_material->Get(AI_MATKEY_COLOR_EMISSIVE, emmisive_color);
 
     material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b, 1.0f};
     material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b, 1.0f};
+    material.buffer_data.emissive = emmisive_color.r / diffuse_color.r;
 
     // load textures
     material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);
-    if (!material.diffuse_texture)
-    {
-        material.diffuse_texture = Renderer::white_texture;
-    }
+    material.specular_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::SPECULAR);
+    material.roughness_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE_ROUGHNESS);
 }
 
 i32 Model::GetBoneID(const aiBone *bone)
@@ -337,6 +340,8 @@ Ref<Texture2D> Model::LoadTexture(const aiScene *scene, aiMaterial *material, co
         }
     }
 
+    if (!texture)
+        texture = Renderer::white_texture;
     return texture;
 }
 

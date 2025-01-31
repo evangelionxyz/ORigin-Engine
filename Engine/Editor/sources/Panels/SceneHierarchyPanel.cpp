@@ -349,11 +349,16 @@ void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
         ImGui::PushID(reinterpret_cast<void*>(static_cast<uint64_t>(static_cast<uint32_t>(entity))));
         if (ImGui::BeginPopupContextItem(entity.GetTag().c_str()))
         {
-            if (const Entity e = EntityContextMenu(); e.GetScene())
+            if (ImGui::BeginMenu("Create"))
             {
-                EntityManager::AddChild(entity, e, m_Scene.get());
-                SetSelectedEntity(e);
+                if (const Entity e = ShowEntityContextMenu())
+                {
+                    EntityManager::AddChild(entity, e, m_Scene.get());
+                    SetSelectedEntity(e);
+                }
+                ImGui::EndMenu();
             }
+            
             if (ImGui::MenuItem("Delete"))
             {
                 DestroyEntity(entity);
@@ -1462,16 +1467,6 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         {
             UI::DrawCheckbox("Enable", &component.Enable);
         });
-}
-
-Entity SceneHierarchyPanel::EntityContextMenu()
-{
-    Entity entity = {};
-
-    if (ImGui::BeginMenu("CREATE"))
-        entity = ShowEntityContextMenu();
-    
-    return entity;
 }
 
 template<typename T>

@@ -62,12 +62,6 @@ void EditorLayer::OnAttach()
 
     m_ActiveScene = CreateRef<Scene>();
 
-    if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs; cmdline_args.Count > 1)
-    {
-        m_ProjectDirectoryPath = cmdline_args[1];
-        OpenProject(m_ProjectDirectoryPath);
-    }
-
     CreatePanels();
     m_gizmo = CreateScope<Gizmos>();
 
@@ -1154,7 +1148,7 @@ void EditorLayer::GUIRender()
                 UI::DrawCheckbox("Visualize Collider", &m_VisualizeCollider);
                 UI::DrawCheckbox("Visualize Bounding Box", &m_VisualizeBoundingBox);
 
-                if (ImGui::TreeNode("Shaders"))
+                if (ImGui::TreeNodeEx("Shaders"))
                 {
                     if (ImGui::BeginTable("SHADERS_TABLE", 3))
                     {
@@ -1204,8 +1198,7 @@ void EditorLayer::GUIRender()
                             } if (isSelected) ImGui::SetItemDefaultFocus();
                         } ImGui::EndCombo();
                     }
-
-
+                    
                     // Projection settings
                     switch (m_EditorCamera.GetProjectionType())
                     {
@@ -1270,10 +1263,10 @@ void EditorLayer::GUIRender()
                     ImGui::Text(label, r.Duration);
                 }
 
-                m_ProfilerResults.clear();
-
                 ImGui::EndTabItem();
             }
+
+            m_ProfilerResults.clear();
 
             ImGui::EndTabBar();
         }

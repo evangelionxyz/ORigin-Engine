@@ -21,6 +21,20 @@ void ProjectBrowser::OnDetach()
 
 void ProjectBrowser::OnUpdate(Timestep ts)
 {
+    if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs; cmdline_args.Count > 1)
+    {
+        Application::GetInstance().SubmitToMainThread([this, cmdline_args]()
+        {
+            EditorLayer *editor_layer = new EditorLayer();
+            Application::GetInstance().PushLayer(editor_layer);
+
+            editor_layer->OpenProject(cmdline_args[1]);
+
+            Application::GetInstance().GetWindow().Maximize();
+            Application::GetInstance().PopLayer(this);
+        });
+    }
+
     RenderCommand::Clear();
 }
 

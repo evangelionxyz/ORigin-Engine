@@ -40,6 +40,9 @@ public:
     Ref<Texture2D> roughness_texture;
     MaterialBufferData buffer_data;
 
+    u32 subroutine = 1;
+    bool transparent = false;
+
     void Update(Shader *shader);
 };
 

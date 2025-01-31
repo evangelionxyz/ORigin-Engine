@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "Material.hpp"
 #include "Origin/Renderer/Renderer.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 
 #include <glad/glad.h>
 
@@ -16,6 +17,11 @@ MeshMaterial::MeshMaterial()
 
 void MeshMaterial::Update(Shader* shader)
 {
+    OpenGLShader *s = (OpenGLShader *)shader;
+    glUseProgram(s->GetProgram());
+    u32 subroutines[]{ subroutine };
+    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &subroutines[0]);
+
     if (diffuse_texture)
     {
         diffuse_texture->Bind(DIFFUSE_TEXTURE_BINDING);

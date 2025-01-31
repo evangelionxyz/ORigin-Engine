@@ -52,8 +52,6 @@ namespace origin {
         void DrawEntityNode(Entity entity, int index = 0);
         void DrawComponents(Entity entity);
 
-        Entity EntityContextMenu();
-
         Ref<Scene> m_Scene;
         Ref<Texture2D> m_NoTextureButton;
         bool m_BlendSpacePopUp = false;

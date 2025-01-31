@@ -1,4 +1,4 @@
--- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "ORigin"
     kind "StaticLib"
@@ -97,12 +97,12 @@ project "ORigin"
         }
 
         filter "action:vs*"
-             linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
+            linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
 
         postbuildcommands {
-		         '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
-		         '{COPYFILE} "%{wks.location}/Engine/ThirdParty/KTX/lib/windows/ktx.dll" "%{cfg.targetdir}"',
-	      }
+            '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
+            '{COPYFILE} "%{wks.location}/Engine/ThirdParty/KTX/lib/windows/ktx.dll" "%{cfg.targetdir}"',
+        }
 
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
@@ -183,4 +183,3 @@ project "ORigin"
             runtime "Release"
             optimize "on"
             defines { "OGN_DISTRIBUTION", "NDEBUG" }
-  
