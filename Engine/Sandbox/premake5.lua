@@ -9,7 +9,7 @@ project "Sandbox"
 
     links {"ORigin"}
 
-    targetdir ("%{outputDir}/%{prj.name}")
+    targetdir (outputDir)
     objdir (intOutputDir)
 
     files {

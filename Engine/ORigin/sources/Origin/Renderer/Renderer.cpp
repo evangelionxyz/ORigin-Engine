@@ -57,6 +57,15 @@ bool Renderer::Init()
 		LoadShaders();
 		Renderer2D::Init();
 
+        s_lighting_manager = new LightingManager();
+        s_lighting_manager->CreateStorageBuffer();
+
+        s_material_manager = new MaterialManager();
+        s_material_manager->CreateStorageBuffer();
+
+        camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), UNIFORM_CAMERA_BINDING);
+        skybox_uniform_buffer = UniformBuffer::Create(sizeof(glm::vec4) + sizeof(f32), SKYBOX_BINDING);
+
 		break;
 	}
 	case RendererAPI::API::Vulkan:
@@ -74,15 +83,6 @@ bool Renderer::Init()
 	}
 	OGN_CORE_ASSERT(RenderCommand::s_RendererAPI, "[Renderer] Renderer API is null");
 	
-	s_lighting_manager = new LightingManager();
-	s_lighting_manager->CreateStorageBuffer();
-
-	s_material_manager = new MaterialManager();
-	s_material_manager->CreateStorageBuffer();
-
-	camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), UNIFORM_CAMERA_BINDING);
-	skybox_uniform_buffer = UniformBuffer::Create(sizeof(glm::vec4) + sizeof(f32), SKYBOX_BINDING);
-	
 	RenderCommand::Init();
 	OGN_CORE_TRACE("[Renderer] Initialized");
 	return true;
@@ -95,8 +95,10 @@ void Renderer::Shutdown()
 	skybox_uniform_buffer.reset();
 	camera_uniform_buffer.reset();
 
-	delete s_material_manager;
-	delete s_lighting_manager;
+	if (s_material_manager)
+		delete s_material_manager;
+	if (s_lighting_manager)
+		delete s_lighting_manager;
 	
 	Renderer2D::Shutdown();
 

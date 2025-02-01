@@ -23,6 +23,7 @@ namespace origin
         spec.Maximize = false;
         spec.WorkingDirectory = "../Editor";
         spec.CommandLineArgs = args;
+        spec.RenderAPI = RendererAPI::API::Vulkan;
 
         OGN_CORE_INFO(spec.Name.c_str());
         return new SandboxApp(spec);
