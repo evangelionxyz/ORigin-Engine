@@ -27,12 +27,13 @@ namespace origin
         void SetFloat(const std::string &name, float v0, float v1) override;
         void SetFloat(const std::string &name, float v0, float v1, float v2) override;
         void SetFloat(const std::string &name, float v0, float v1, float v2, float v3) override;
+        void SetFloat(const std::string &name, f32 *values, i32 count);
 
         void SetInt(const std::string &name, i32 v0) override;
         void SetInt(const std::string &name, i32 v0, i32 v1) override;
         void SetInt(const std::string &name, i32 v0, i32 v1, i32 v2) override;
         void SetInt(const std::string &name, i32 v0, i32 v1, i32 v2, i32 v3) override;
-        void SetIntArray(const std::string &name, i32 *values, i32 count) override;
+        void SetInt(const std::string &name, i32 *values, i32 count) override;
 
         void SetVector(const std::string &name, const glm::vec2 &vectors, i32 count) override;
         void SetVector(const std::string &name, const glm::vec3 &vectors, i32 count) override;
@@ -43,17 +44,22 @@ namespace origin
         void SetMatrix(const std::string &name, const glm::mat4 &matrices, i32 count) override;
         i32 GetUniformLocation(const std::string &name) override;
 
+        u32 GetProgram() const { return m_RendererID; }
+
     private:
         void SetUniformBool(const std::string &name, bool boolean);
         void SetUniformFloat(const std::string &name, float v0);
         void SetUniformFloat(const std::string &name, float v0, float v1);
         void SetUniformFloat(const std::string &name, float v0, float v1, float v2);
         void SetUniformFloat(const std::string &name, float v0, float v1, float v2, float v3);
+        void SetUniformFloat(const std::string &name, f32 *values, i32 count);
+
         void SetUniformInt(const std::string &name, i32 v0);
         void SetUniformInt(const std::string &name, i32 v0, i32 v1);
         void SetUniformInt(const std::string &name, i32 v0, i32 v1, i32 v2);
         void SetUniformInt(const std::string &name, i32 v0, i32 v1, i32 v2, i32 v3);
-        void SetUniformIntArray(const std::string &name, i32 *values, i32 count);
+        void SetUniformInt(const std::string &name, i32 *values, i32 count);
+
         void SetUniformVector(const std::string &name, const glm::vec2 &vectors, i32 count);
         void SetUniformVector(const std::string &name, const glm::vec3 &vectors, i32 count);
         void SetUniformVector(const std::string &name, const glm::vec4 &vectors, i32 count);

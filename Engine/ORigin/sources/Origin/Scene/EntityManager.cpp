@@ -47,12 +47,18 @@ namespace origin
 	Entity EntityManager::CreateDirectionalLighting(const std::string &name, Scene *scene)
 	{
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Lighting, scene);
-		entity.AddComponent<DirectionalLightComponent>().Light = Lighting::Create<DirectionalLight>();
-        entity.GetComponent<TransformComponent>().Clickable = true;
+		entity.AddComponent<DirectionalLightComponent>();
 		return entity;
 	}
 
-	Entity EntityManager::CreateEntityWithUUID(UUID uuid, const std::string &name, const EntityType type, Scene *scene)
+    Entity EntityManager::CreatePointLight(const std::string &name, Scene *scene)
+    {
+		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Lighting, scene);
+		entity.AddComponent<PointLightComponent>();
+		return entity;
+    }
+
+    Entity EntityManager::CreateEntityWithUUID(UUID uuid, const std::string &name, const EntityType type, Scene *scene)
 	{
 		Entity entity = { scene->m_Registry.create(), scene};
 		entity.AddComponent<IDComponent>(uuid).Type = type;
@@ -73,7 +79,7 @@ namespace origin
     Entity EntityManager::CreateEnvironmentMap(const std::string &name, Scene *scene)
     {
 		Entity entity = CreateEntityWithUUID(UUID(), name, EntityType::Entity, scene);
-		entity.AddComponent<EnvironmentMap>();
+		entity.AddComponent<EnvironmentMapComponent>();
 		entity.GetComponent<TransformComponent>().Clickable = false;
 		return entity;
     }

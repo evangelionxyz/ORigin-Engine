@@ -11,93 +11,102 @@
 
 namespace origin {
 
-	class Entity
+class Entity
+{
+public:
+	Entity()
+		:m_handle(entt::null), m_scene(nullptr)
 	{
-	public:
-		Entity();
-		Entity(entt::entity handle, Scene* scene);
-		Entity(const Entity& other) = default;
+	}
 
-		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args)
+	Entity(entt::entity handle, Scene *scene)
+		: m_handle(handle), m_scene(scene)
+	{
+	}
+
+	Entity(const Entity &other) = default;
+
+	template<typename T, typename... Args>
+	T &AddComponent(Args&&... args)
+	{
+		OGN_CORE_ASSERT(!HasComponent<T>(), "[Entity - AddComponent] Entity already has component!");
+		T &component = m_scene->m_Registry.emplace<T>(m_handle, std::forward<Args>(args)...);
+		m_scene->OnComponentAdded<T>(*this, component);
+		return component;
+	}
+
+	template<typename T, typename... Args>
+	T &AddOrReplaceComponent(Args&&... args)
+	{
+		T &component = m_scene->m_Registry.emplace_or_replace<T>(m_handle, std::forward<Args>(args)...);
+		m_scene->OnComponentAdded<T>(*this, component);
+		return component;
+	}
+
+	template<typename T>
+	T &GetComponent()
+	{
+		OGN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+		return m_scene->m_Registry.get<T>(m_handle);
+	}
+
+	template<typename T>
+	bool HasComponent()
+	{
+		return m_scene->m_Registry.all_of<T>(m_handle);
+	}
+
+	template<typename T>
+	void RemoveComponent()
+	{
+		OGN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+		m_scene->m_Registry.remove<T>(m_handle);
+	}
+
+	UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+
+	UUID GetParentUUID() { return GetComponent<IDComponent>().Parent; }
+	bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
+
+	EntityType GetType() { return GetComponent<IDComponent>().Type; }
+	std::string &GetTag() { return GetComponent<TagComponent>().Tag; }
+	Scene *GetScene() const { return m_scene; }
+	entt::entity GetHandle() { return m_handle; }
+
+	bool IsValid() const
+	{
+		bool isValid = true;
+		if (m_scene)
 		{
-			OGN_CORE_ASSERT(!HasComponent<T>(), "[Entity - AddComponent] Entity already has component!");
-			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
-			m_Scene->OnComponentAdded<T>(*this, component);
-			return component;
-		}
-
-		template<typename T, typename... Args>
-		T& AddOrReplaceComponent(Args&&... args)
-		{
-			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
-			m_Scene->OnComponentAdded<T>(*this, component);
-			return component;
-		}
-
-		template<typename T>
-		T& GetComponent()
-		{
-			OGN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
-			return m_Scene->m_Registry.get<T>(m_EntityHandle);
-		}
-
-		template<typename T>
-		bool HasComponent()
-		{
-			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
-		}
-
-		template<typename T>
-		void RemoveComponent()
-		{
-			OGN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
-			m_Scene->m_Registry.remove<T>(m_EntityHandle);
-		}
-
-		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
-
-		UUID GetParentUUID() { return GetComponent<IDComponent>().Parent; }
-		bool HasParent() { return GetComponent<IDComponent>().Parent != 0; }
-
-		EntityType GetType() { return GetComponent<IDComponent>().Type; }
-		std::string& GetTag() { return GetComponent<TagComponent>().Tag; }
-		Scene *GetScene() const { return m_Scene; }
-		entt::entity GetHandle() { return m_EntityHandle; }
-
-		bool IsValid() const
-		{
-			bool isValid = true;
-			if (m_Scene)
+			if (m_scene->m_Name.empty())
 			{
-				if (m_Scene->m_Name.empty())
-				{
-					isValid = false;
-				}
-				else
-				{
-					isValid = m_Scene->m_Registry.valid(m_EntityHandle);
-				}
+				isValid = false;
 			}
 			else
 			{
-				isValid = m_Scene != nullptr && m_EntityHandle != entt::null;
+				isValid = m_scene->m_Registry.valid(m_handle);
 			}
-
-			return isValid;
+		}
+		else
+		{
+			isValid = m_scene != nullptr && m_handle != entt::null;
 		}
 
-		operator bool() const { return IsValid(); }
-		operator entt::entity() const { return m_EntityHandle; }
-		operator int() const { return static_cast<int>(m_EntityHandle); }
-		operator uint32_t() const { return static_cast<uint32_t>(m_EntityHandle); }
-		operator uintptr_t() const { return static_cast<uintptr_t>(m_EntityHandle); }
-		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
-		bool operator!=(const Entity& other) const { return !(*this == other); }
-	private:
-		entt::entity m_EntityHandle{entt::null};
-		Scene* m_Scene = nullptr;
-	};
+		return isValid;
+	}
+
+	operator bool() const { return IsValid(); }
+	operator entt::entity() const { return m_handle; }
+	operator int() const { return static_cast<int>(m_handle); }
+	operator uint32_t() const { return static_cast<uint32_t>(m_handle); }
+	operator uintptr_t() const { return static_cast<uintptr_t>(m_handle); }
+	bool operator==(const Entity &other) const { return m_handle == other.m_handle && m_scene == other.m_scene; }
+	bool operator!=(const Entity &other) const { return !(*this == other); }
+
+private:
+	entt::entity m_handle{ entt::null };
+	Scene *m_scene = nullptr;
+};
 }
 
 #endif

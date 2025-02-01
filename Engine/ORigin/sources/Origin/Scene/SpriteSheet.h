@@ -5,7 +5,7 @@
 
 #include "Origin/Asset/Asset.h"
 
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 
 #include <filesystem>
 #include <glm/glm.hpp>

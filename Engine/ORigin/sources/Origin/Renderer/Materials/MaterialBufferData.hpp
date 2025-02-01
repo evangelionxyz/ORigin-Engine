@@ -3,14 +3,14 @@
 #include "Origin/Core/Types.h"
 namespace origin {
 
-struct MeshMaterialBufferData
+struct MaterialBufferData
 {
-    f32 metallic_factor;
-    f32 roughness_factor;
-    glm::vec2 tiling_factor;
-    glm::vec3 diffuse_color;
-    glm::vec3 base_color;
+    glm::vec4 base_color;
+    glm::vec4 diffuse_color;
+    glm::vec4 specular_color;
+    glm::vec2 tiling_factor{1.0f, 1.0f};
+    float rougness = 1.0f;
+    float emissive = 0.5f;
 };
-
 
 }

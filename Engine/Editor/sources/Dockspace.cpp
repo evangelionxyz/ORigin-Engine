@@ -19,22 +19,14 @@ void Dockspace::Begin()
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
     
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 2));
-    
     ImGui::Begin("Origin", nullptr, window_flags);
 
     ImGuiStyle &style = ImGui::GetStyle();
-
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable)
     {
         const ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-    }
-    
-    ImGui::PopStyleVar();
-    ImGui::PopStyleVar(2);
+    }   
 }
 
 void Dockspace::End()

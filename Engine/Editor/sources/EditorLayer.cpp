@@ -44,31 +44,23 @@ void EditorLayer::OnAttach()
     m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/bw_logo.png");
 
     FramebufferSpecification fbSpec;
-    fbSpec.Attachments =
+    fbSpec.attachments =
     {
         FramebufferTextureFormat::RGBA8,
         FramebufferTextureFormat::DEPTH24STENCIL8
-  };
+    };
 
-    fbSpec.Width = 1280;
-    fbSpec.Height = 720;
+    fbSpec.width = 1280;
+    fbSpec.height = 720;
     m_Framebuffer = Framebuffer::Create(fbSpec);
 
-    if (const auto filepath = std::filesystem::current_path() / "Editor.cfg";
-        !EditorSerializer::Deserialize(this, filepath))
+    if (const auto filepath = std::filesystem::current_path() / "Editor.cfg"; !EditorSerializer::Deserialize(this, filepath))
     {
         m_EditorCamera.InitPerspective(45.0f, 1.776f, 0.1f, 1000.0f);
         m_EditorCamera.InitOrthographic(10.0f, 0.1f, 100.0f);
     }
 
     m_ActiveScene = CreateRef<Scene>();
-
-    if (const auto &cmdline_args = Application::GetInstance().GetSpecification().CommandLineArgs;
-        cmdline_args.Count > 1)
-    {
-        m_ProjectDirectoryPath = cmdline_args[1];
-        OpenProject(m_ProjectDirectoryPath);
-    }
 
     CreatePanels();
     m_gizmo = CreateScope<Gizmos>();
@@ -79,7 +71,6 @@ void EditorLayer::OnAttach()
         AddPanel(m_UIEditorPanel);
     }
 
-    InitGrid();
     m_GuiWindowSceneStats = GuiWindow("Scene Stats", UI::EWindowFlags::NoBackground);
 }
 
@@ -133,7 +124,7 @@ void EditorLayer::OnUpdate(const Timestep ts)
     case SceneState::Edit:
     case SceneState::Simulate:
     {
-        if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_viewport_rect.GetSize().x != fb_spec.Width || m_viewport_rect.GetSize().y != fb_spec.Height)
+        if (const auto &fb_spec = m_Framebuffer->GetSpecification(); m_viewport_rect.GetSize().x != fb_spec.width || m_viewport_rect.GetSize().y != fb_spec.height)
         {
             if (m_viewport_rect.GetSize().x > 0.0f && m_viewport_rect.GetSize().y > 0.0f)
             {
@@ -145,8 +136,8 @@ void EditorLayer::OnUpdate(const Timestep ts)
         break;
     }
     case SceneState::Play:
-        const u32 width = m_ActiveScene->GetWidth();
-        const u32 height = m_ActiveScene->GetHeight();
+        const u32 width = m_ActiveScene->GetViewportWidth();
+        const u32 height = m_ActiveScene->GetViewportHeight();
         if (m_viewport_rect.GetSize().x != static_cast<f32>(width) && m_viewport_rect.GetSize().y != static_cast<f32>(height) && m_viewport_rect.GetSize().x > 0.0f && m_viewport_rect.GetSize().y > 0.0f)
         {
             m_ActiveScene->OnViewportResize(static_cast<u32>(m_viewport_rect.GetSize().x),  static_cast<u32>(m_viewport_rect.GetSize().y));
@@ -192,17 +183,23 @@ void EditorLayer::Render(Timestep ts)
             Input::SetMouseToCenter();
         }
 
-        m_gizmo->SetType(GizmoType::NONE);
-        m_ActiveScene->OnUpdateRuntime(ts);
         if (Entity cam = m_ActiveScene->GetPrimaryCameraEntity())
         {
             CameraComponent cc = cam.GetComponent<CameraComponent>();
+
+            Renderer::camera_uniform_buffer->Bind();
+            glm::mat4 view_projection = cc.Camera.GetViewProjection();
+            glm::vec3 cam_position = cc.Camera.GetPosition();
+            Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
+            Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
+            m_ActiveScene->OnUpdateRuntime(ts);
             if(m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(cc.Camera, m_ActiveScene.get());
             if(m_VisualizeCollider) m_gizmo->DrawCollider(cc.Camera, m_ActiveScene.get());
         }
         break;
     }
 
+    case SceneState::Simulate:
     case SceneState::Edit:
     {
         if (IsViewportFocused && IsViewportHovered && !ImGui::GetIO().WantTextInput)
@@ -210,35 +207,25 @@ void EditorLayer::Render(Timestep ts)
 
         m_EditorCamera.UpdateView();
         m_EditorCamera.UpdateProjection();
-                
-        // draw gizmo
-        m_gizmo->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
-        if(m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
-        if (m_VisualizeCollider) m_gizmo->DrawCollider(m_EditorCamera, m_ActiveScene.get());
-        if (m_Draw2DGrid) m_gizmo->Draw2DGrid(m_EditorCamera);
 
-        // update scene
-        m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
-        m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
-        break;
-    }
+        Renderer::camera_uniform_buffer->Bind();
+        glm::mat4 view_projection = m_EditorCamera.GetViewProjection();
+        glm::vec3 cam_position = m_EditorCamera.GetPosition();
+        Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
+        Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
 
-    case SceneState::Simulate:
-    {
-        if (IsViewportFocused && IsViewportFocused && !ImGui::GetIO().WantTextInput)
-            m_EditorCamera.OnUpdate(ts);
-
-        m_EditorCamera.UpdateView();
-        m_EditorCamera.UpdateProjection();
+        //  update scene
+        if (m_SceneState == SceneState::Simulate)
+            m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
+        else
+            m_ActiveScene->OnUpdateEditor(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
 
         // draw gizmo
         m_gizmo->DrawFrustum(m_EditorCamera, m_ActiveScene.get());
         if (m_VisualizeBoundingBox) m_gizmo->DrawBoundingBox(m_EditorCamera, m_ActiveScene.get());
-        if (m_VisualizeCollider)m_gizmo->DrawCollider(m_EditorCamera, m_ActiveScene.get());
+        if (m_VisualizeCollider) m_gizmo->DrawCollider(m_EditorCamera, m_ActiveScene.get());
+        m_gizmo->DrawGrid(m_EditorCamera);
         if (m_Draw2DGrid) m_gizmo->Draw2DGrid(m_EditorCamera);
-
-        // update scene
-        m_ActiveScene->OnUpdateSimulation(m_EditorCamera, ts, m_SceneHierarchyPanel->GetSelectedEntity());
         m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
 
         break;
@@ -315,10 +302,8 @@ void EditorLayer::OnGuiRender()
 {
     Dockspace::Begin();
     
-    ImGui::SetNextWindowSizeConstraints(ImVec2(220.0f, 26.0f), ImVec2(FLT_MAX, FLT_MAX));
     SceneViewportToolbar();
 
-    ImGui::SetNextWindowSizeConstraints(ImVec2(220.0f, 100.0f), ImVec2(FLT_MAX, FLT_MAX));
     SceneViewport();
 
     for (PanelBase *p : m_Panels)
@@ -334,6 +319,8 @@ void EditorLayer::OnGuiRender()
     {
         m_ContentBrowser->OnImGuiRender();
     }
+
+    m_ActiveScene->OnGuiRender();
     
     Dockspace::End();
 }
@@ -347,6 +334,7 @@ void EditorLayer::OnScenePlay()
         OnSceneStop();
     }
 
+    m_gizmo->SetType(GizmoType::NONE);
     m_SceneState = SceneState::Play;
     m_ActiveScene = Scene::Copy(m_EditorScene);
     m_ActiveScene->OnRuntimeStart();
@@ -698,7 +686,7 @@ void EditorLayer::SceneViewport()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
-    ImGui::Begin("Scene", nullptr, window_flags);
+    ImGui::Begin("My Scene", nullptr);
 
     IsViewportHovered = ImGui::IsWindowHovered();
     IsViewportFocused = ImGui::IsWindowFocused();
@@ -778,7 +766,7 @@ void EditorLayer::SceneViewport()
         m_GameViewportSize.y = vpSize.y;
     }
 
-    ImTextureID viewportID = reinterpret_cast<void*>((uintptr_t)m_Framebuffer->GetColorAttachmentRendererID(m_RenderTarget));
+    ImTextureID viewportID = reinterpret_cast<void*>((uintptr_t)m_Framebuffer->GetColorAttachment(m_RenderTarget));
     ImGui::Image(viewportID, ImVec2(m_GameViewportSize.x, m_GameViewportSize.y), ImVec2(0, 1), ImVec2(1, 0));
     if (ImGui::BeginDragDropTarget())
     {
@@ -1161,7 +1149,7 @@ void EditorLayer::GUIRender()
                 UI::DrawCheckbox("Visualize Collider", &m_VisualizeCollider);
                 UI::DrawCheckbox("Visualize Bounding Box", &m_VisualizeBoundingBox);
 
-                if (ImGui::TreeNodeEx("Shaders", treeFlags | ImGuiTreeNodeFlags_DefaultOpen))
+                if (ImGui::TreeNodeEx("Shaders"))
                 {
                     if (ImGui::BeginTable("SHADERS_TABLE", 3))
                     {
@@ -1211,8 +1199,7 @@ void EditorLayer::GUIRender()
                             } if (isSelected) ImGui::SetItemDefaultFocus();
                         } ImGui::EndCombo();
                     }
-
-
+                    
                     // Projection settings
                     switch (m_EditorCamera.GetProjectionType())
                     {
@@ -1277,10 +1264,10 @@ void EditorLayer::GUIRender()
                     ImGui::Text(label, r.Duration);
                 }
 
-                m_ProfilerResults.clear();
-
                 ImGui::EndTabItem();
             }
+
+            m_ProfilerResults.clear();
 
             ImGui::EndTabBar();
         }
@@ -1437,32 +1424,6 @@ void EditorLayer::DisplayCPUUsageGraph()
         current_index, "CPU Usage", 0.0f,
         *std::max_element(cpu_usage_history.begin(), cpu_usage_history.end()),
         {0, 50.0f});
-}
-
-void EditorLayer::InitGrid()
-{
-    glGenVertexArrays(1, &m_GridVAO);
-    glGenBuffers(1, &m_GridVBO);
-    glBindVertexArray(m_GridVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_GridVBO);
-}
-
-void EditorLayer::ShowGrid()
-{
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    Renderer::GetShader("GridShader")->Enable();
-    Renderer::GetShader("GridShader")->SetMatrix("viewProjection", m_EditorCamera.GetViewProjection());
-    Renderer::GetShader("GridShader")->SetVector("cameraPosition", m_EditorCamera.GetPosition());
-    Renderer::GetShader("GridShader")->SetVector("thinColor", m_GridThinColor);
-    Renderer::GetShader("GridShader")->SetVector("thickColor", m_GridThickColor);
-
-    glBindVertexArray(m_GridVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-
-    Renderer::GetShader("GridShader")->Disable();
 }
 
 bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &e)

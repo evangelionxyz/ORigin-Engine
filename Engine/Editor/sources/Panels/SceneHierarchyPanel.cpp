@@ -222,6 +222,9 @@ Entity SceneHierarchyPanel::ShowEntityContextMenu()
     {
         if (ImGui::MenuItem("Directional Light"))
             entity = SetSelectedEntity(EntityManager::CreateDirectionalLighting("Directional Light", m_Scene.get()));
+        if (ImGui::MenuItem("Point Light"))
+            entity = SetSelectedEntity(EntityManager::CreatePointLight("Point Light", m_Scene.get()));
+
         ImGui::EndMenu();
     }
 
@@ -346,11 +349,16 @@ void SceneHierarchyPanel::DrawEntityNode(Entity entity, int index)
         ImGui::PushID(reinterpret_cast<void*>(static_cast<uint64_t>(static_cast<uint32_t>(entity))));
         if (ImGui::BeginPopupContextItem(entity.GetTag().c_str()))
         {
-            if (const Entity e = EntityContextMenu(); e.GetScene())
+            if (ImGui::BeginMenu("Create"))
             {
-                EntityManager::AddChild(entity, e, m_Scene.get());
-                SetSelectedEntity(e);
+                if (const Entity e = ShowEntityContextMenu())
+                {
+                    EntityManager::AddChild(entity, e, m_Scene.get());
+                    SetSelectedEntity(e);
+                }
+                ImGui::EndMenu();
             }
+            
             if (ImGui::MenuItem("Delete"))
             {
                 DestroyEntity(entity);
@@ -489,7 +497,8 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
         ImGui::Separator();
         DisplayAddComponentEntry<DirectionalLightComponent>("Directional Light");
-        DisplayAddComponentEntry<EnvironmentMap>("Environment Map");
+        DisplayAddComponentEntry<PointLightComponent>("Point Light");
+        DisplayAddComponentEntry<EnvironmentMapComponent>("Environment Map");
         
         DisplayAddComponentEntry<MeshComponent>("Mesh");
         DisplayAddComponentEntry<RigidbodyComponent>("Rigidbody");
@@ -544,7 +553,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
             Ref<Model> model = AssetManager::GetAsset<Model>(component.HModel);
 
             ImGui::SameLine();
-            if (ImGui::Button("Open Blend Space", buttonSize))
+            if (ImGui::Button("Blend Space", { 0.0f, buttonSize.y }))
             {
                 m_SendData = (void *)&component;
                 m_BlendSpacePopUp = true;
@@ -564,9 +573,11 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
                 {
                     if (ImGui::TreeNode(mesh->name.c_str()))
                     {
-                        ImGui::ColorEdit3("Base Color", &mesh->material.buffer_data.base_color.x);
+                        ImGui::Text("Material Index: %d", mesh->material_index);
+                        ImGui::ColorEdit4("Base Color", &mesh->material.buffer_data.base_color.x);
+                        ImGui::ColorEdit4("Diffuse Color", &mesh->material.buffer_data.diffuse_color.x);
                         UI::DrawVec2Control("Tiling", mesh->material.buffer_data.tiling_factor);
-
+                        UI::DrawFloatControl("Roughness", &mesh->material.buffer_data.rougness);
                         ImGui::TreePop();
                     }
                 }
@@ -575,9 +586,10 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         }
     });
 
-    DrawComponent<EnvironmentMap>("Environment Map", entity, [](auto &component)
+    DrawComponent<EnvironmentMapComponent>("Environment Map", entity, [](auto &component)
     {
-        UI::DrawFloatControl("Blur", &component.blur_factor, 0.0001f, 0.0f, 100.0f);
+        ImGui::ColorEdit4("Tint Color", &component.tint_color.x);
+        UI::DrawFloatControl("Blur", &component.blur_factor, 0.001f, 0.0f, 2.0f);
     });
 
     DrawComponent<UIComponent>("UI", entity, [](UIComponent &component)
@@ -883,12 +895,33 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         }
     });
 
-    DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto &component)
+    DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent &component)
     {
-        ImGui::ColorEdit3("Color", glm::value_ptr(component.Light->color));
+        glm::vec3 color = { component.color.x, component.color.y, component.color.z };
+        if (ImGui::ColorEdit3("Color", &color.x))
+        {
+            component.color.x = color.x;
+            component.color.y = color.y;
+            component.color.z = color.z;
+        }
     });
 
-    DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](auto &component)
+    DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent &component)
+    {
+        ImGui::ColorEdit4("Color", &component.color.x);
+        ImGui::ColorEdit4("Intensity", &component.intensity.x);
+
+        glm::vec3 fall_off = glm::vec3(component.falloff);
+        if (ImGui::DragFloat3("Fall Off", &fall_off.x, 0.025f, 0.0001f, 1.0f))
+        {
+            component.falloff.x = fall_off.x;
+            component.falloff.y = fall_off.y;
+            component.falloff.z = fall_off.z;
+        }
+
+    });
+
+    DrawComponent<CircleRendererComponent>("Circle Renderer", entity, [](CircleRendererComponent &component)
     {
         ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
         ImGui::DragFloat("Thickness", &component.Thickness, 0.025f, 0.0f, 1.0f);
@@ -1044,7 +1077,7 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
 
         UI::DrawCheckbox("Static", &component.IsStatic);
         UI::DrawCheckbox("Allow Sleeping", &component.AllowSleeping);
-        if (UI::DrawFloatControl("Gravity Factor", &component.GravityFactor, 0.05f, 0.0f, 1000.0f, 0.0f))
+        if (UI::DrawFloatControl("Gravity Factor", &component.GravityFactor, 0.05f, 0.0f, 1000.0f, 1.0f))
         {
             if (scene->IsRunning())
             {
@@ -1052,21 +1085,21 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
             }
         }
             
-        if (UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 0.0f))
+        if (UI::DrawFloatControl("Mass", &component.Mass, 0.05f, 0.0f, 1000.0f, 1.0f))
         {
             if (scene->IsRunning())
             {
                 component.SetMass(component.Mass);
             }
         }
-        if (UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.5f))
+        if (UI::DrawVec3Control("Offset", component.Offset, 0.025f, 0.0f))
         {
             if (scene->IsRunning())
             {
                 component.SetOffset(component.Offset);
             }
         }
-        if (UI::DrawVec3Control("Center Mass", component.CenterMass))
+        if (UI::DrawVec3Control("Center Mass", component.CenterMass, 0.025f, 0.0f))
         {
             if (scene->IsRunning())
             {
@@ -1078,8 +1111,8 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
     DrawComponent<BoxColliderComponent>("Box Collider", entity, [](auto &component)
     {
         UI::DrawVec3Control("Scale", component.Scale, 0.025f, 1.0f);
-        UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.5f);
-        UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.0f);
+        UI::DrawFloatControl("Friction", &component.Friction, 0.025f, 0.0f, 1000.0f, 0.6f);
+        UI::DrawFloatControl("Restitution", &component.Restitution, 0.025f, 0.0f, 1000.0f, 0.6f);
     });
 
     DrawComponent<SphereColliderComponent>("Sphere Collider", entity, [](auto &component)
@@ -1434,16 +1467,6 @@ void SceneHierarchyPanel::DrawComponents(Entity entity)
         {
             UI::DrawCheckbox("Enable", &component.Enable);
         });
-}
-
-Entity SceneHierarchyPanel::EntityContextMenu()
-{
-    Entity entity = {};
-
-    if (ImGui::BeginMenu("CREATE"))
-        entity = ShowEntityContextMenu();
-    
-    return entity;
 }
 
 template<typename T>

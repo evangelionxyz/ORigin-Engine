@@ -1,4 +1,4 @@
--- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "Sandbox"
     language "C++"

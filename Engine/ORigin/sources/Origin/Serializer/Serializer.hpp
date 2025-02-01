@@ -4,7 +4,7 @@
 #define SERIALIZER_HPP
 
 #include "Origin/Core/UUID.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include <glm/glm.hpp>

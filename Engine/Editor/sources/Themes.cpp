@@ -76,7 +76,7 @@ void Themes::SetDefaultDark()
     colors[ImGuiCol_ResizeGripActive] = ImVec4(0.80f, 0.80f, 0.80f, 1.00f);
     colors[ImGuiCol_TabHovered] = ImVec4(0.29f, 0.29f, 0.29f, 1.00f);
     colors[ImGuiCol_Tab] = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
-    colors[ImGuiCol_TabSelected] = ImVec4(0.48f, 0.48f, 0.48f, 1.00f);
+    colors[ImGuiCol_TabSelected] = ImVec4(116.0f / 255.0f, 0.0f, 0.0f, 1.00f);
     colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
     colors[ImGuiCol_TabDimmed] = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
     colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);

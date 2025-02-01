@@ -28,10 +28,10 @@ namespace origin {
 		Buffer b = Buffer((void *)bitmap.pixels, bitmap.width * bitmap.height * 3);
 		data->BufferData = Buffer::Copy(b);
 
-		data->TexSpec.Format = ImageFormat::RGB8;
-		data->TexSpec.Width = bitmap.width;
-		data->TexSpec.Height = bitmap.height;
-		data->TexSpec.GenerateMips = false;
+		data->TexSpec.format = ImageFormat::RGB8;
+		data->TexSpec.width = bitmap.width;
+		data->TexSpec.height = bitmap.height;
+		data->TexSpec.generate_mips = false;
 	};
 
 	Font::Font(FontData *data)

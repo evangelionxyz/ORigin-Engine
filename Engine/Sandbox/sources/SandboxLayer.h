@@ -4,25 +4,23 @@
 #include <random>
 #include <chrono>
 
-namespace origin
+#include "Dockspace.hpp"
+
+namespace origin {
+class SandboxLayer : public Layer
 {
-    class SandboxLayer : public Layer
-    {
-    public:
-        SandboxLayer();
-        void OnAttach() override;
-        void OnDetach() override;
-        void OnUpdate(Timestep ts) override;
-        void OnGuiRender() override;
-        void OnEvent(Event &event) override;
-        bool OnWindowResize(FramebufferResizeEvent &e);
-        bool OnKeyPressed(KeyPressedEvent &e);
-        bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
-        bool OnMouseMove(MouseMovedEvent &e);
-        bool OnMouseScroll(MouseScrolledEvent &e);
+public:
+    SandboxLayer();
+    void OnAttach() override;
+    void OnDetach() override;
+    void OnUpdate(Timestep ts) override;
+    void OnGuiRender() override;
+    void OnEvent(Event &event) override;
+    bool OnWindowResize(FramebufferResizeEvent &e);
+    bool OnMouseScroll(MouseScrolledEvent &e);
 
-        void InitSounds();
+private:
+    void UpdateCamera(f32 delta_time);
+};
 
-        EditorCamera camera;
-    };
 }

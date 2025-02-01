@@ -22,13 +22,16 @@ static ShaderLibrary s_ShaderLibrary;
 static MaterialLibrary s_MaterialLibrary;
 
 RenderData Renderer::render_data;
-Ref<Shader> Renderer::s_GlobalShader;
-Ref<Texture2D> Renderer::WhiteTexture;
-Ref<Texture2D> Renderer::BlackTexture;
+Ref<Shader> Renderer::global_shader;
+Ref<Texture2D> Renderer::white_texture;
+Ref<Texture2D> Renderer::black_texture;
 
 RendererAPI *RenderCommand::s_RendererAPI = nullptr;
-LightingManager *Renderer::lighting_manager = nullptr;
-MaterialManager *Renderer::material_manager = nullptr;
+LightingManager *s_lighting_manager = nullptr;
+MaterialManager *s_material_manager = nullptr;
+
+Ref<UniformBuffer> Renderer::camera_uniform_buffer;
+Ref<UniformBuffer> Renderer::skybox_uniform_buffer;
 
 Statistics &Renderer::GetStatistics()
 {
@@ -47,12 +50,21 @@ bool Renderer::Init()
 	case RendererAPI::API::OpenGL:
 	{
 		RenderCommand::s_RendererAPI = new OpenGLRendererAPI;
-		WhiteTexture = Texture2D::Create(TextureSpecification());
-		WhiteTexture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
-		BlackTexture = Texture2D::Create(TextureSpecification());
-		BlackTexture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
+		white_texture = Texture2D::Create(TextureSpecification());
+		white_texture->SetData(Buffer(&whiteTextureData, sizeof(uint32_t)));
+		black_texture = Texture2D::Create(TextureSpecification());
+		black_texture->SetData(Buffer(&blackTextureData, sizeof(uint32_t)));
 		LoadShaders();
 		Renderer2D::Init();
+
+        s_lighting_manager = new LightingManager();
+        s_lighting_manager->CreateStorageBuffer();
+
+        s_material_manager = new MaterialManager();
+        s_material_manager->CreateStorageBuffer();
+
+        camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), UNIFORM_CAMERA_BINDING);
+        skybox_uniform_buffer = UniformBuffer::Create(sizeof(glm::vec4) + sizeof(f32), SKYBOX_BINDING);
 
 		break;
 	}
@@ -71,9 +83,6 @@ bool Renderer::Init()
 	}
 	OGN_CORE_ASSERT(RenderCommand::s_RendererAPI, "[Renderer] Renderer API is null");
 	
-	lighting_manager = new LightingManager();
-	material_manager = new MaterialManager();
-	
 	RenderCommand::Init();
 	OGN_CORE_TRACE("[Renderer] Initialized");
 	return true;
@@ -83,8 +92,13 @@ void Renderer::Shutdown()
 {
 	OGN_PROFILER_FUNCTION();
 
-	delete material_manager;
-	delete lighting_manager;
+	skybox_uniform_buffer.reset();
+	camera_uniform_buffer.reset();
+
+	if (s_material_manager)
+		delete s_material_manager;
+	if (s_lighting_manager)
+		delete s_lighting_manager;
 	
 	Renderer2D::Shutdown();
 
@@ -98,8 +112,8 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 
 void Renderer::SetCurrentShader(const Ref<Shader> &shader)
 {
-	s_GlobalShader = shader;
-	s_GlobalShader->Enable();
+	global_shader = shader;
+	global_shader->Enable();
 }
 
 Ref<Shader> Renderer::GetShader(const std::string &name)
@@ -125,13 +139,12 @@ void Renderer::LoadShaders()
 	s_ShaderLibrary.Load("Circle2D", "Resources/Shaders/SPIR-V/Circle2D.glsl", true);
 	s_ShaderLibrary.Load("Quad2D", "Resources/Shaders/SPIR-V/Quad2D.glsl", true);
 	s_ShaderLibrary.Load("Text", "Resources/Shaders/SPIR-V/TextRenderer.glsl", true);
-
-	s_ShaderLibrary.Load("TestShader", "Resources/Shaders/TestShader.glsl", false);
 	s_ShaderLibrary.Load("GridShader", "Resources/Shaders/InfiniteGrid.glsl", false);
 	s_ShaderLibrary.Load("SkinnedMesh", "Resources/Shaders/Skinning.glsl", false);
-	s_ShaderLibrary.Load("DepthMap", "Resources/Shaders/DepthMap.glsl", false);
 	s_ShaderLibrary.Load("Outline", "Resources/Shaders/Outline.glsl", false);
 	s_ShaderLibrary.Load("Screen", "Resources/Shaders/Screen.glsl", false);
 	s_ShaderLibrary.Load("Skybox", "Resources/Shaders/Skybox.glsl", false);
+	s_ShaderLibrary.Load("CascadedDepthMap", "Resources/Shaders/CascadedDepthMap.glsl", false);
+	s_ShaderLibrary.Load("Lighting", "Resources/Shaders/Lighting.glsl", false);
 }
 }

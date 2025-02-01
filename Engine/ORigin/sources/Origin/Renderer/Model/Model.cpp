@@ -7,8 +7,10 @@
 #include "Origin/Renderer/Renderer.h"
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Texture.h"
-
+#include "Origin/Renderer/Materials/MaterialManager.hpp"
 #include "Origin/Renderer/TextureType.hpp"
+
+#include <glad/glad.h>
 
 #include <assimp/Importer.hpp>
 #include <stb_image.h>
@@ -31,22 +33,59 @@ Model::Model(const std::string &filepath)
     }
 
     LoadAnimations();
-	LoadMeshes(m_Scene, filepath);
 
-    SetMeshTransform(m_Scene->mRootNode);
+    m_Meshes.resize(m_Scene->mNumMeshes);
+
+    // count vertices and indices
+    u32 num_vertices = 0;
+    u32 num_indices = 0;
+
+    for (size_t i = 0; i < m_Meshes.size(); ++i)
+    {
+        num_vertices += m_Scene->mMeshes[i]->mNumVertices;
+        num_indices += m_Scene->mMeshes[i]->mNumFaces * 3;
+    }
+
+    // reserve space
+    for (size_t i = 0; i < m_Meshes.size(); ++i)
+    {
+        m_Meshes[i] = CreateRef<Mesh>();
+        m_Meshes[i]->vertices.reserve(num_vertices);
+        m_Meshes[i]->indices.reserve(num_indices);
+    }
+
+    ProcessNode(m_Scene->mRootNode, glm::mat4(1.0f), filepath);
+
+    loaded_textures_cache.clear();
+}
+
+void Model::ProcessNode(aiNode *node, const glm::mat4 &transform, const std::string &filepath)
+{
+    glm::mat4 current_transform = m_Scene->mNumAnimations == 0 ? Math::AssimpToGlmMatrix(node->mTransformation) * transform : glm::mat4(1.0f);
+
+    for (u32 i = 0; i < node->mNumMeshes; ++i)
+    {
+        i32 mesh_index = node->mMeshes[i];
+        aiMesh *mesh = m_Scene->mMeshes[mesh_index];
+        LoadSingleMesh(mesh_index, mesh, current_transform, filepath);
+    }
+
+    for (u32 i = 0; i < node->mNumChildren; ++i)
+    {
+        ProcessNode(node->mChildren[i], current_transform, filepath);
+    }
 }
 
 void Model::UpdateAnimation(f32 delta_time, const u32 anim_index)
 {
     if (!HasAnimations())
+    {
         return;
-
-    glm::mat4 identity(1.0f);
+    }
 
     SkeletalAnimation &current_anim = m_Animations[anim_index];
     current_anim.UpdateTime(delta_time);
-
-    CalculateBoneTransforms(m_Scene->mRootNode, identity, anim_index);
+    CalculateBoneTransforms(m_Scene->mRootNode, glm::mat4(1.0f), anim_index);
 
     m_FinalBoneTransforms.resize(m_BoneInfo.size(), glm::mat4(1.0f));
     for (size_t i = 0; i < m_BoneInfo.size(); ++i)
@@ -60,48 +99,30 @@ const std::vector<glm::mat4> &Model::GetBoneTransforms() const
     return m_FinalBoneTransforms;
 }
 
-void Model::LoadMeshes(const aiScene *scene, const std::string &filepath)
-{
-    m_Meshes.resize(scene->mNumMeshes);
-
-    // count vertices and indices
-    u32 num_vertices = 0;
-    u32 num_indices = 0;
-
-    for (size_t i = 0; i < m_Meshes.size(); ++i)
-    {
-        num_vertices += scene->mMeshes[i]->mNumVertices;
-        num_indices += scene->mMeshes[i]->mNumFaces * 3;
-    }
-
-    // reserve space
-    for (size_t i = 0; i < m_Meshes.size(); ++i)
-    {
-        m_Meshes[i] = CreateRef<Mesh>();
-        m_Meshes[i]->vertices.reserve(num_vertices);
-        m_Meshes[i]->indices.reserve(num_indices);
-    }
-
-    // load meshes
-    for (u32 mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index)
-    {
-        aiMesh *mesh = scene->mMeshes[mesh_index];
-        LoadSingleMesh(mesh_index, mesh, filepath);
-    }
-}
-
-void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string &filepath)
+void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const glm::mat4 &transform, const std::string &filepath)
 {
     m_Meshes[mesh_index]->name = mesh->mName.C_Str();
     m_Meshes[mesh_index]->bone_transforms.resize(100, glm::mat4(1.0f));
+    m_Meshes[mesh_index]->transform = transform;
 
     // Vertices
     MeshVertexData vertex;
     m_Meshes[mesh_index]->vertices.resize(mesh->mNumVertices);
+
+    glm::vec3 aabb_min = glm::vec3(std::numeric_limits<f32>::max());
+    glm::vec3 aabb_max = glm::vec3(std::numeric_limits<f32>::lowest());
+
     for (u32 i = 0; i < mesh->mNumVertices; ++i)
     {
         vertex.color = { 1.0f, 1.0f, 1.0f };
         vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+
+        aabb_min = vertex.position;
+        aabb_max = vertex.position;
+
+        aabb.Min = glm::min(aabb.Min, aabb_min);
+        aabb.Max = glm::max(aabb.Max, aabb_max);
+
         if (mesh->HasNormals())
         {
             vertex.normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
@@ -132,9 +153,19 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const std::string
     }
 
     if (m_Scene->HasAnimations())
+    {
         LoadVertexBones(mesh_index, m_Meshes[mesh_index], mesh);
+    }
+    
     if (mesh->mMaterialIndex >= 0)
-        LoadMaterials(m_Meshes[mesh_index]->material, mesh, filepath);
+    {
+        aiMaterial *ai_material = m_Scene->mMaterials[mesh->mMaterialIndex];
+        std::string mat_name(ai_material->GetName().C_Str());
+
+        LoadMaterials(mesh_index, m_Meshes[mesh_index]->material, ai_material, filepath);
+        m_Meshes[mesh_index]->material_index = static_cast<i32>(MaterialManager::AddMaterial(m_Meshes[mesh_index]->material.buffer_data));
+        MaterialManager::UpdateMaterial(m_Meshes[mesh_index]->material_index, m_Meshes[mesh_index]->material.buffer_data);
+    }
     
     CreateVertex(m_Meshes[mesh_index]);
 }
@@ -150,28 +181,30 @@ void Model::LoadAnimations()
     }
 }
 
-void Model::CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index)
+void Model::CalculateBoneTransforms(const aiNode *node, const glm::mat4 &transform, const u32 anim_index)
 {
     std::string node_name(node->mName.C_Str());
-    glm::mat4 node_transform = Math::AssimpToGlmMatrix(node->mTransformation);
+
+    glm::mat4 current_transform = Math::AssimpToGlmMatrix(node->mTransformation);
 
     SkeletalAnimation &anim = m_Animations[anim_index];
     auto &channel_map = anim.GetChannelMap();
     if (channel_map.contains(node_name))
     {
-        // Updating animation's node transformation
         AnimationNode &anim_node = channel_map[node_name];
         anim_node.CalculateTransform(anim.GetTimeInTicks());
-        node_transform = anim_node.transform;
+        current_transform = anim_node.transform; // use animated local transform
     }
+
+    glm::mat4 global_transform = transform * current_transform;
 
     if (m_BoneNameToIndexMap.contains(node_name))
     {
         const u32 bone_index = m_BoneNameToIndexMap[node_name];
-        m_BoneInfo[bone_index].transform = parent_transform * node_transform * m_BoneInfo[bone_index].offset_matrix;
+        // Final bone transform: global_transform * offset_matrix
+        m_BoneInfo[bone_index].transform = global_transform * m_BoneInfo[bone_index].offset_matrix;
     }
 
-    glm::mat4 global_transform = parent_transform * node_transform;
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
         CalculateBoneTransforms(node->mChildren[i], global_transform, anim_index);
@@ -204,25 +237,6 @@ void Model::CalculateAnimationTransforms(const aiNode *node, const u32 anim_inde
     for (u32 i = 0; i < node->mNumChildren; ++i)
     {
         CalculateAnimationTransforms(node->mChildren[i], anim_index, anim_nodes, global_transform);
-    }
-}
-
-void Model::SetMeshTransform(const aiNode *node)
-{
-    std::string node_name(node->mName.data);
-
-    for (auto &mesh : m_Meshes)
-    {
-        if (mesh->name == node_name)
-        {
-            mesh->transform = Math::AssimpToGlmMatrix(node->mTransformation);
-            break;
-        }
-    }
-
-    for (u32 i = 0; i < node->mNumChildren; ++i)
-    {
-        SetMeshTransform(node->mChildren[i]);
     }
 }
 
@@ -259,25 +273,31 @@ void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const ai
     }
 }
 
-void Model::LoadMaterials(MeshMaterial &material, const aiMesh *mesh, const std::string &filepath)
+void Model::LoadMaterials(u32 mesh_index, MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath)
 {
-    aiMaterial *ai_material = m_Scene->mMaterials[mesh->mMaterialIndex];
-        
     aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
     aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
+    aiColor4D emmisive_color(0.0f, 0.0f, 0.0f, 0.0f);
+    f32 reflectivity = 0.0f;
         
     ai_material->Get(AI_MATKEY_BASE_COLOR, base_color);
     ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
-    ai_material->Get(AI_MATKEY_METALLIC_FACTOR, material.buffer_data.metallic_factor);
-    ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.roughness_factor);
+    ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.rougness);
+    ai_material->Get(AI_MATKEY_COLOR_EMISSIVE, emmisive_color);
+    ai_material->Get(AI_MATKEY_REFLECTIVITY, reflectivity);
 
-    material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b};
-    material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b};
+    material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b, 1.0f};
+    material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b, 1.0f};
+    material.buffer_data.emissive = emmisive_color.r / diffuse_color.r;
 
     // load textures
     material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);
-    if (!material.diffuse_texture)
-        material.diffuse_texture = Renderer::WhiteTexture;
+    material.specular_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::SPECULAR);
+    material.roughness_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE_ROUGHNESS);
+
+    // set transparent and reflectivity
+    material.transparent = material.diffuse_texture->IsTransparent();
+    material.reflective = reflectivity > 0.0f;
 }
 
 i32 Model::GetBoneID(const aiBone *bone)
@@ -339,6 +359,8 @@ Ref<Texture2D> Model::LoadTexture(const aiScene *scene, aiMaterial *material, co
         }
     }
 
+    if (!texture)
+        texture = Renderer::white_texture;
     return texture;
 }
 

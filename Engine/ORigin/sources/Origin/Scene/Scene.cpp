@@ -19,6 +19,7 @@
 #include "Origin/Core/Log.h"
 #include "Origin/Core/Input.h"
 #include "EntityManager.h"
+#include "Origin/Math/Math.hpp"
 #include "Entity.h"
 #include "ScriptableEntity.h"
 
@@ -28,8 +29,8 @@
 
 #include <glad/glad.h>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
+#include <ktx.h>
+
 #include <glm/glm.hpp>
 
 namespace origin {
@@ -128,23 +129,35 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 {
     OGN_PROFILER_FUNCTION();
 
-    // bind materials
-    Renderer::material_manager->Bind();
-    
-
     // bind lighting
-    Renderer::lighting_manager->Bind();
-    const auto &directional_light_view = m_Registry.view<DirectionalLightComponent, TransformComponent>();
-    for (const auto& [entity, dir_light_comp, transform_comp] : directional_light_view.each())
+    LightingManager::GetInstance()->Bind();
+    for (auto &e: m_Registry.view<TransformComponent>())
     {
-        const Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
-        dir_light->direction = eulerAngles(transform_comp.WorldRotation);
-        dir_light->Bind();
-    }
-    
-    const auto &entity_id_view = m_Registry.view<IDComponent, TransformComponent>();
-    for (auto [entity, id_comp, transform_comp] : entity_id_view.each())
-    {
+        Entity entity{ e, this };
+        TransformComponent &transform_comp = m_Registry.get<TransformComponent>(e);
+        IDComponent &id_comp = m_Registry.get<IDComponent>(e);
+
+        if (entity.HasComponent<DirectionalLightComponent>())
+        {
+            DirectionalLightComponent &dir_light_comp = m_Registry.get<DirectionalLightComponent>(e);
+            Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
+            dir_light_comp.direction = glm::vec4(eulerAngles(transform_comp.WorldRotation), 1.0f);
+            dir_light->data.direction = dir_light_comp.direction;
+            dir_light->data.color = dir_light_comp.color;
+            dir_light->Bind();
+        }
+
+        if (entity.HasComponent<PointLightComponent>())
+        {
+            PointLightComponent &pointlight_comp = m_Registry.get<PointLightComponent>(e);
+            Ref<PointLight> light = std::static_pointer_cast<PointLight>(pointlight_comp.Light);
+            light->data.position = glm::vec4(transform_comp.WorldTranslation, 1.0f);
+            light->data.color = pointlight_comp.color;
+            light->data.intensity = pointlight_comp.intensity;
+            light->data.falloff = pointlight_comp.falloff;
+            LightingManager::GetInstance()->UpdatePointLight(light->index, light->data);
+        }
+
         if (id_comp.Parent)
         {
             if (auto parent = GetEntityWithUUID(id_comp.Parent))
@@ -165,15 +178,26 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
     }
 
     std::unordered_set<UUID> updated_models;
-    const auto &mesh_view = m_Registry.view<TransformComponent, MeshComponent>();
-    for (auto [entity, transform_comp, mesh_comp] : mesh_view.each())
+    const auto &view = m_Registry.view<TransformComponent>();
+    for (auto e : view)
     {
-        if (mesh_comp.HModel && !updated_models.contains(mesh_comp.HModel))
-        {
-            updated_models.insert(mesh_comp.HModel);
+        Entity entity{ e, this };
+        TransformComponent &transform_comp = view.get<TransformComponent>(e);
 
+        if (!transform_comp.Visible)
+            continue;
+
+        if (entity.HasComponent<MeshComponent>())
+        {
+            MeshComponent &mesh_comp = m_Registry.get<MeshComponent>(e);
+            if (mesh_comp.HModel == 0)
+                continue;
+
+            Shader *shader = Renderer::GetShader("SkinnedMesh").get();
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_comp.HModel);
-            if (model->HasAnimations())
+
+            // UPDATING ANIMATION
+            if (model->HasAnimations() && !updated_models.contains(mesh_comp.HModel))
             {
                 if (!mesh_comp.blend_space.GetStates().empty())
                 {
@@ -184,7 +208,6 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
                     model->UpdateAnimation(ts, mesh_comp.AnimationIndex);
                 }
             }
-            
         }
     }
 
@@ -193,9 +216,11 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 
 void Scene::PostRender(const Camera &camera, Timestep ts)
 {
-    Renderer::lighting_manager->Unbind();
+    LightingManager::GetInstance()->Unbind();
+}
 
-    Renderer::material_manager->Unbind();
+void Scene::OnGuiRender()
+{
 }
 
 void Scene::Update(Timestep ts)
@@ -291,7 +316,8 @@ void Scene::OnRuntimeStart()
     m_Running = true;
     ScriptEngine::SetSceneContext(this);
 
-    if (m_Physics) m_Physics->StartSimulation();
+    if (m_Physics) 
+        m_Physics->StartSimulation();
     m_Physics2D->OnSimulationStart();
 
     for (auto [e, sc] : m_Registry.view<ScriptComponent>().each())
@@ -368,7 +394,6 @@ void Scene::OnUpdateEditor(const Camera &camera, Timestep ts, entt::entity selec
 {
     Update(ts);
     RenderScene(camera);
-    //RenderStencilScene(camera, selectedID);
 }
 
 void Scene::OnUpdateSimulation(const Camera &camera, Timestep ts, entt::entity selectedID)
@@ -381,24 +406,25 @@ void Scene::OnUpdateSimulation(const Camera &camera, Timestep ts, entt::entity s
     }
 
     RenderScene(camera);
-    //RenderStencilScene(camera, selectedID);
 }
 
 void Scene::RenderScene(const Camera &camera)
 {
     OGN_PROFILER_RENDERING();
 
-    Renderer2D::Begin(camera);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
+    
+    Renderer2D::Begin();
     const auto &view = m_Registry.view<TransformComponent>();
     for (auto e : view)
     {
         Entity entity{ e, this };
-        auto &tc = view.get<TransformComponent>(e);
+        TransformComponent &transform_comp = view.get<TransformComponent>(e);
 
-        if (!tc.Visible)
-        {
+        if (!transform_comp.Visible)
             continue;
-        }
 
         // 2D Quads
         if (entity.HasComponent<SpriteRenderer2DComponent>())
@@ -418,24 +444,24 @@ void Scene::RenderScene(const Camera &camera)
                     }
                 }
             }
-            Renderer2D::DrawSprite(tc.GetTransform(), src);
+            Renderer2D::DrawSprite(transform_comp.GetTransform(), src);
         }
 
         if (entity.HasComponent<CircleRendererComponent>())
         {
-            auto &cc = entity.GetComponent<CircleRendererComponent>();
-            Renderer2D::DrawCircle(tc.GetTransform(), cc.Color, cc.Thickness, cc.Fade);
+            auto &cc = m_Registry.get<CircleRendererComponent>(e);
+            Renderer2D::DrawCircle(transform_comp.GetTransform(), cc.Color, cc.Thickness, cc.Fade);
         }
 
         // Particles
         if (entity.HasComponent<ParticleComponent>())
         {
-            auto &pc = entity.GetComponent<ParticleComponent>();
+            auto &pc = m_Registry.get<ParticleComponent>(e);
             for (int i = 0; i < 5; i++)
             {
                 pc.Particle.Emit(pc,
-                    { tc.WorldTranslation.x, tc.WorldTranslation.y, tc.WorldTranslation.z + pc.ZAxis },
-                    tc.WorldScale, pc.Rotation);
+                    { transform_comp.WorldTranslation.x, transform_comp.WorldTranslation.y, transform_comp.WorldTranslation.z + pc.ZAxis },
+                    transform_comp.WorldScale, pc.Rotation);
             }
 
             pc.Particle.OnRender();
@@ -444,7 +470,7 @@ void Scene::RenderScene(const Camera &camera)
         // Text
         if (entity.HasComponent<TextComponent>())
         {
-            auto &text = entity.GetComponent<TextComponent>();
+            auto &text = m_Registry.get<TextComponent>(e);
             glm::mat4 transform = glm::mat4(1.0f);
             glm::mat4 invertedCamTransform = glm::mat4(1.0f);
 
@@ -457,10 +483,10 @@ void Scene::RenderScene(const Camera &camera)
                         const auto &cc = primary_cam.GetComponent<CameraComponent>().Camera;
                         const auto &ccTC = primary_cam.GetComponent<TransformComponent>();
                         const float ratio = cc.GetAspectRatio();
-                        glm::vec2 scale = glm::vec2(tc.WorldScale.x, tc.WorldScale.y * ratio);
-                        transform = glm::translate(glm::mat4(1.0f), { tc.WorldTranslation.x, tc.WorldTranslation.y, 0.0f })
+                        glm::vec2 scale = glm::vec2(transform_comp.WorldScale.x, transform_comp.WorldScale.y * ratio);
+                        transform = glm::translate(glm::mat4(1.0f), { transform_comp.WorldTranslation.x, transform_comp.WorldTranslation.y, 0.0f })
                             * glm::toMat4(ccTC.Rotation)
-                            * glm::scale(glm::mat4(1.0f), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
+                            * glm::scale(glm::mat4(1.0f), { transform_comp.WorldScale.x, transform_comp.WorldScale.y * ratio, 0.0 });
 
                         invertedCamTransform = glm::inverse(cc.GetViewProjection());
                     }
@@ -468,7 +494,7 @@ void Scene::RenderScene(const Camera &camera)
                 else
                 {
                     const float ratio = camera.GetAspectRatio();
-                    transform = glm::scale(tc.GetTransform(), { tc.WorldScale.x, tc.WorldScale.y * ratio, 0.0 });
+                    transform = glm::scale(transform_comp.GetTransform(), { transform_comp.WorldScale.x, transform_comp.WorldScale.y * ratio, 0.0 });
                     invertedCamTransform = glm::inverse(camera.GetViewProjection());
                 }
 
@@ -477,14 +503,14 @@ void Scene::RenderScene(const Camera &camera)
             else
             {
                 glm::vec3 center_offset = glm::vec3(text.Size.x / 2.0f, -text.Size.y / 2.0f + 1.0f, 0.0f);
-                glm::vec3 scaled_offset = tc.WorldScale * center_offset;
-                glm::vec3 rotated_offset = glm::toMat3(tc.WorldRotation) * scaled_offset;
+                glm::vec3 scaled_offset = transform_comp.WorldScale * center_offset;
+                glm::vec3 rotated_offset = glm::toMat3(transform_comp.WorldRotation) * scaled_offset;
 
-                text.Position = tc.WorldTranslation - rotated_offset;
+                text.Position = transform_comp.WorldTranslation - rotated_offset;
 
                 transform = glm::translate(glm::mat4(1.0f), text.Position)
-                    * glm::toMat4(tc.WorldRotation)
-                    * glm::scale(glm::mat4(1.0f), tc.WorldScale);
+                    * glm::toMat4(transform_comp.WorldRotation)
+                    * glm::scale(glm::mat4(1.0f), transform_comp.WorldScale);
             }
 
             if (text.FontHandle != 0)
@@ -492,75 +518,63 @@ void Scene::RenderScene(const Camera &camera)
                 Renderer2D::DrawString(text.TextString, transform, text);
             }
         }
-    }
 
-    Renderer2D::End();
-
-    const auto mesh_view = m_Registry.view<TransformComponent, MeshComponent>();
-    for (const auto &[e, tc, mesh_component] : mesh_view.each())
-    {
-        Shader *shader = Renderer::GetShader("SkinnedMesh").get();
-        shader->Enable();
-
-        // Render
-        if (mesh_component.HModel && tc.Visible)
+        if (entity.HasComponent<MeshComponent>())
         {
+            MeshComponent &mesh_component = m_Registry.get<MeshComponent>(e);
+            if (mesh_component.HModel == 0)
+                continue;
+
+            Shader *shader = Renderer::GetShader("SkinnedMesh").get();
+            shader->Enable();
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_component.HModel);
             shader->SetBool("uhas_animation", model->HasAnimations());
-            shader->SetMatrix("umodel_transform", tc.GetTransform());
-
             if (model->HasAnimations())
             {
                 shader->SetMatrix("ubone_transforms", model->GetBoneTransforms()[0], static_cast<u32>(model->GetBoneTransforms().size()));
             }
-
             for (auto &mesh : model->GetMeshes())
             {
-                mesh->material.Bind();
+                MaterialManager::UpdateMaterial(mesh->material_index, mesh->material.buffer_data);
 
-                if (mesh->material.diffuse_texture)
+                if (mesh->material.transparent)
                 {
-                    mesh->material.diffuse_texture->Bind(DIFFUSE_TEXTURE_BINDING);
-                    shader->SetInt("udiffuse_texture", DIFFUSE_TEXTURE_BINDING);
+                    glBindTextureUnit(3, m_SkyboxTexture); // bind texture index to renderID
+                    shader->SetInt("urefract_map_cube_texture", 3);
                 }
-                if (mesh->material.specular_texture)
-                {
-                    mesh->material.specular_texture->Bind(SPECULAR_TEXTURE_BINDING);
-                    shader->SetInt("uspecular_texture", SPECULAR_TEXTURE_BINDING);
-                }
-                if (mesh->material.roughness_texture)
-                {
-                    mesh->material.roughness_texture->Bind(ROUGHNESS_TEXTURE_BINDING);
-                    shader->SetInt("uroughness_texture", ROUGHNESS_TEXTURE_BINDING);
-                }
-
+                
+                shader->SetMatrix("umodel_transform", transform_comp.GetTransform() *mesh->transform);
+                shader->SetInt("umaterial_index", mesh->material_index);
+                mesh->material.Update(shader);
                 RenderCommand::DrawIndexed(mesh->vertex_array);
-                mesh->material.Unbind();
             }
-        }
 
-        shader->Disable();
+            shader->Disable();
+        }
     }
 
-    const auto &env_map_view = m_Registry.view<EnvironmentMap, TransformComponent>();
-    for (const auto &[entity, env_map, transform_comp] : env_map_view.each())
+    Renderer2D::End();
+
+    for (const auto &[e, tc, env] : m_Registry.view<TransformComponent, EnvironmentMapComponent>().each())
     {
+        Entity entity {e, this};
+        EnvironmentMapComponent &env_map = m_Registry.get<EnvironmentMapComponent>(e);
         if (env_map.skybox)
         {
             glDepthFunc(GL_LEQUAL);
             Renderer::GetShader("Skybox")->Enable();
-
-            Renderer::GetShader("Skybox")->SetFloat("ublur_factor", env_map.blur_factor);
-
+            Renderer::skybox_uniform_buffer->Bind();
+            Renderer::skybox_uniform_buffer->SetData(&env_map.tint_color, sizeof(glm::vec4) + sizeof(f32));
+            Renderer::skybox_uniform_buffer->SetData(&env_map.blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);
+
+            m_SkyboxTexture = env_map.skybox->texture_id;
             Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
-
             RenderCommand::DrawIndexed(env_map.skybox->vao);
-
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             Renderer::GetShader("Skybox")->Disable();
-
+            Renderer::skybox_uniform_buffer->Unbind();
             glDepthFunc(GL_LESS);
         }
     }
@@ -588,7 +602,7 @@ void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
         glStencilMask(0xFF);
 
         // 2D Objects
-        Renderer2D::Begin(camera);
+        Renderer2D::Begin();
         if (entity.HasComponent<SpriteRenderer2DComponent>())
         {
             SpriteRenderer2DComponent &src = entity.GetComponent<SpriteRenderer2DComponent>();
@@ -668,7 +682,7 @@ void Scene::RenderStencilScene(const Camera &camera, entt::entity selectedId)
         outlineShader->SetMatrix("viewProjection", camera.GetViewProjection());
 
         // 2D Objects
-        Renderer2D::Begin(camera, outlineShader);
+        Renderer2D::Begin(outlineShader);
         if (entity.HasComponent<SpriteRenderer2DComponent>())
         {
             SpriteRenderer2DComponent &src = entity.GetComponent<SpriteRenderer2DComponent>();
@@ -833,7 +847,7 @@ void Scene::UnlockMouse()
     Input::SetCursoreMode(CursorMode::Default);
 }
 
-void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
+void Scene::OnViewportResize(const u32 width, const u32 height)
 {
     OGN_PROFILER_SCENE();
 
@@ -924,7 +938,16 @@ void Scene::OnComponentAdded(Entity entity, DirectionalLightComponent &component
 }
 
 template<>
-void Scene::OnComponentAdded(Entity entity, EnvironmentMap &component)
+void Scene::OnComponentAdded(Entity entity, PointLightComponent &component)
+{
+    component.Light = Lighting::Create<PointLight>();
+
+    Ref<PointLight> pl = std::static_pointer_cast<PointLight>(component.Light);
+    LightingManager::GetInstance()->AddPointLight(pl->data);
+}
+
+template<>
+void Scene::OnComponentAdded(Entity entity, EnvironmentMapComponent &component)
 {
     component.skybox = Skybox::Create("Resources/Skybox", ".jpg");
 }

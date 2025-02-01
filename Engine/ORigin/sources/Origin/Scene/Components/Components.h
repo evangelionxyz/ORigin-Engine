@@ -8,7 +8,7 @@
 #include "Origin/Animation/SpriteAnimation.h"
 
 #include "Origin/Audio/AudioListener.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 #include "Origin/Core/UUID.h"
 #include "Origin/Renderer/Texture.h"
 #include "Origin/Renderer/Font.h"
@@ -19,6 +19,7 @@
 #include "Origin/Renderer/VertexArray.h"
 #include "Origin/Renderer/Buffer.h"
 #include "Origin/Scene/Skybox.h"
+#include "Origin/Renderer/Renderer.h"
 
 #include "Origin/Scene/Camera/SceneCamera.h"
 #include "Origin/Scene/SpriteSheet.h"
@@ -33,7 +34,7 @@
 #include <box2d/types.h>
 
 namespace origin {
-class Lighting;
+struct Lighting;
 class AudioSource;
 class SpriteAnimation;
 class ScriptableEntity;
@@ -162,14 +163,15 @@ public:
     AudioListenerComponent(const AudioListenerComponent &) = default;
 };
 
-class EnvironmentMap
+class EnvironmentMapComponent
 {
 public:
-    EnvironmentMap() = default;
-    EnvironmentMap(const EnvironmentMap &) = default;
+    EnvironmentMapComponent() = default;
+    EnvironmentMapComponent(const EnvironmentMapComponent &) = default;
 
     Ref<Skybox> skybox;
-    f32 blur_factor = 0.0005f;
+    glm::vec4 tint_color{ 1.0f, 1.0f, 1.0f, 1.0f };
+    f32 blur_factor{ 0.0005f };
 };
 
 class AudioComponent
@@ -384,6 +386,20 @@ class DirectionalLightComponent : public LightComponent
 public:
     DirectionalLightComponent() = default;
     DirectionalLightComponent(const DirectionalLightComponent &) = default;
+
+    glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+    glm::vec4 direction{ 0.0f, 0.0f, 0.0f, 1.0f };
+};
+
+class PointLightComponent : public LightComponent
+{
+public:
+    PointLightComponent() = default;
+    PointLightComponent(const PointLightComponent &) = default;
+   
+    glm::vec4 intensity{0.8f, 0.8f, 0.8f, 1.0f};
+    glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+    glm::vec4 falloff = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
 
 class SpotLightComponent : public LightComponent
@@ -714,8 +730,9 @@ using AllComponents = ComponentGroup <
 
     DirectionalLightComponent,
     SpotLightComponent,
+    PointLightComponent,
 
-    EnvironmentMap,
+    EnvironmentMapComponent,
 
     SpriteRenderer2DComponent,
     MeshComponent,

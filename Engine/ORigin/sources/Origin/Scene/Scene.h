@@ -39,6 +39,8 @@ namespace origin
 
         void PreRender(const Camera &camera, Timestep ts);
         void PostRender(const Camera &camera, Timestep ts);
+
+        void OnGuiRender();
         
         void OnRuntimeStart();
         void OnRuntimeStop();
@@ -64,8 +66,8 @@ namespace origin
         const Ref<PhysicsSceneBase> &GetPhysics() const { return m_Physics; }
         const Ref<Physics2D> &GetPhysics2D() const { return m_Physics2D; }
         
-        u32 GetWidth() { return m_ViewportWidth; }
-        u32 GetHeight() { return m_ViewportHeight; }
+        u32 GetViewportWidth() { return m_ViewportWidth; }
+        u32 GetViewportHeight() { return m_ViewportHeight; }
 
         static AssetType GetStaticType() { return AssetType::Scene; }
         AssetType GetType() const override { return GetStaticType(); }
@@ -97,6 +99,7 @@ namespace origin
         std::vector<std::pair<UUID, entt::entity>> m_EntityStorage;
         u32 m_ViewportWidth = 0, m_ViewportHeight = 0;
         u32 m_GameViewportWidth = 0, m_GameViewportHeight = 0;
+        u32 m_SkyboxTexture = 0;
 
         bool m_Running = false;
         bool m_Paused = false;

@@ -21,8 +21,8 @@ project "ASSIMP"
         "%{THIRD_PARTY_DIR}/Assimp/code/Material/MaterialSystem.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/Geometry/GeometryUtils.cpp",
 
-        --"%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
         --"%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/Ply/**.cpp",
+        "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/FBX/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/M3D/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/MD5/**.cpp",
         "%{THIRD_PARTY_DIR}/Assimp/code/AssetLib/IQM/**.cpp",
@@ -74,7 +74,7 @@ project "ASSIMP"
       -- "ASSIMP_BUILD_NO_OBJ_IMPORTER",
       -- "ASSIMP_BUILD_NO_GLTF_IMPORTER",
       -- "ASSIMP_BUILD_NO_MD5_IMPORTER",
-      "ASSIMP_BUILD_NO_FBX_IMPORTER",
+      -- "ASSIMP_BUILD_NO_FBX_IMPORTER",
       "ASSIMP_BUILD_NO_X_IMPORTER",
       "ASSIMP_BUILD_NO_3DS_IMPORTER",
       "ASSIMP_BUILD_NO_MD3_IMPORTER",

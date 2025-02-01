@@ -532,7 +532,7 @@ namespace origin
                     if (!std::filesystem::is_directory(path))
                     {
                         std::string relative_asset_path = std::filesystem::relative(entry.path(), asset_path).generic_string();
-                        asset_handle_id = Project::GetActive()->GetEditorAssetManager()->ImportAsset(relative_asset_path, false);
+                        asset_handle_id = Project::GetActive()->GetEditorAssetManager()->ImportAsset(relative_asset_path);
                     }
 
                     TreeNode new_node(path, asset_handle_id);

@@ -19,9 +19,11 @@ namespace origin
         ApplicationSpecification spec;
         spec.Name = "Sandbox";
         spec.Width = 1280;
-        spec.Height = 640;
+        spec.Height = 720;
+        spec.Maximize = false;
         spec.WorkingDirectory = "../Editor";
         spec.CommandLineArgs = args;
+        spec.RenderAPI = RendererAPI::API::Vulkan;
 
         OGN_CORE_INFO(spec.Name.c_str());
         return new SandboxApp(spec);

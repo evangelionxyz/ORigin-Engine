@@ -15,8 +15,7 @@ public:
 	static void Init();
 	static void Shutdown();
 
-	static void Begin(const glm::mat4 &viewProjection, glm::vec3 pos = glm::vec3(0.0f));
-	static void Begin(const Camera &camera, Shader *renderShader = nullptr);
+	static void Begin(Shader *render_shader = nullptr);
 	static void End();
 	static void Flush();
 

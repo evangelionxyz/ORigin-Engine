@@ -42,6 +42,7 @@ OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t buffer_size, uint32_t binding_
 	{
 		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	uint32_t OpenGLUniformBuffer::Get()

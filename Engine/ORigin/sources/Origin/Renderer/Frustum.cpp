@@ -6,22 +6,22 @@
 namespace origin
 {
 
-    Frustum::Frustum(const glm::mat4 &viewProjection)
+    Frustum::Frustum(const glm::mat4 &view_projection)
     {
-        Update(viewProjection);
+        Update(view_projection);
     }
 
-    void Frustum::Update(const glm::mat4 &viewProjection)
+    void Frustum::Update(const glm::mat4 &view_projection)
     {
         // Extract frustum planes from the view-projection matrix
         for (int i = 0; i < 4; ++i)
         {
-            m_Planes[Plane::Left][i] = viewProjection[i][3] + viewProjection[i][0];
-            m_Planes[Plane::Right][i] = viewProjection[i][3] - viewProjection[i][0];
-            m_Planes[Plane::Bottom][i] = viewProjection[i][3] + viewProjection[i][1];
-            m_Planes[Plane::Top][i] = viewProjection[i][3] - viewProjection[i][1];
-            m_Planes[Plane::Near][i] = viewProjection[i][3] + viewProjection[i][2];
-            m_Planes[Plane::Far][i] = viewProjection[i][3] - viewProjection[i][2];
+            m_Planes[Plane_Left][i] = view_projection[i][3] + view_projection[i][0];
+            m_Planes[Plane_Right][i] = view_projection[i][3] - view_projection[i][0];
+            m_Planes[Plane_Bottom][i] = view_projection[i][3] + view_projection[i][1];
+            m_Planes[Plane_Top][i] = view_projection[i][3] - view_projection[i][1];
+            m_Planes[Plane_Near][i] = view_projection[i][3] + view_projection[i][2];
+            m_Planes[Plane_Far][i] = view_projection[i][3] - view_projection[i][2];
         }
 
         // Normalize the planes
@@ -31,7 +31,7 @@ namespace origin
             plane /= length;
         }
 
-        m_ViewProjectionInverse = glm::inverse(viewProjection);
+        m_ViewProjectionInverse = glm::inverse(view_projection);
         const glm::vec4 corners[8] = {
             {-1, -1, -1, 1}, {1, -1, -1, 1}, {1, 1, -1, 1}, {-1, 1, -1, 1},
             {-1, -1,  1, 1}, {1, -1,  1, 1}, {1, 1,  1, 1}, {-1, 1,  1, 1}

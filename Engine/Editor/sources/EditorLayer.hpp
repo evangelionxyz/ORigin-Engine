@@ -90,9 +90,6 @@ namespace origin
         void DisplayMemoryGraphUsage();
         void DisplayCPUUsageGraph();
 
-        void InitGrid();
-        void ShowGrid();
-
         enum class SceneState : u8
         {
             Edit = 0,
@@ -112,9 +109,6 @@ namespace origin
         Scope<ContentBrowserPanel> m_ContentBrowser;
         Scope<Gizmos> m_gizmo;
         std::vector<PanelBase *> m_Panels;
-        // ==========================================
-        // ==========================================
-        
 
         std::unordered_map<std::string, Ref<Texture2D>> m_UITextures;
         Ref<Texture2D> m_OriginEngineTex;
@@ -123,8 +117,6 @@ namespace origin
         GuiWindow m_GuiWindowSceneStats;
 
         std::filesystem::path m_ScenePath, m_ProjectDirectoryPath;
-        glm::vec4 m_GridThinColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-        glm::vec4 m_GridThickColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
         glm::vec4 m_ClearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
         glm::vec2 m_GameViewportSize = { 0.0f, 0.0f };
         glm::vec2 m_ViewportMousePos = { 0.0f, 0.0f };
@@ -135,7 +127,6 @@ namespace origin
         i32 m_gizmo_mode = 0;
         i32 m_RenderTarget = 0;
         f32 m_Time = 0.0f;
-        u32 m_GridVAO, m_GridVBO;
         bool m_Draw2DGrid = true;
         bool m_DrawLineModeActive = false;
         bool m_VisualizeCollider = false;

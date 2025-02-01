@@ -4,7 +4,7 @@
 #define ANIMATION_H
 
 #include "Origin/Core/Base.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 #include "KeyFrame.hpp"
 
 #include <assimp/scene.h>

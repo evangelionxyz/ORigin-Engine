@@ -13,15 +13,16 @@ workspace "OR1"
     flags{ "MultiProcessorCompile" }
 
     startproject "Editor"
-    BUILD_DIR              = "%{wks.location}/Engine/Build/VS2022"
+
+    BUILD_DIR              = "%{wks.location}/Engine/Build"
     THIRD_PARTY_DIR        = "%{wks.location}/Engine/ThirdParty"
 
-    outputDir              = "%{BUILD_DIR}/%{cfg.buildcfg}/Binaries"
+    outputDir              = "%{BUILD_DIR}/%{cfg.buildcfg}/Bin"
     intOutputDir           = "%{BUILD_DIR}/%{cfg.buildcfg}/Objs/%{prj.name}"
 
-    ThirdPartyProjectFiles = "%{THIRD_PARTY_DIR}/ProjectFiles"
-    ThirdPartyOutputdir    = "%{BUILD_DIR}/%{cfg.buildcfg}/Binaries/ThirdParty"
-    ThirdPartyIntOutputdir = "%{BUILD_DIR}/%{cfg.buildcfg}/Objs/ThirdParty/%{prj.name}"
+    ThirdPartyProjectFiles = "%{THIRD_PARTY_DIR}/Project Files"
+    ThirdPartyOutputdir    = "%{ThirdPartyProjectFiles}/Build/%{cfg.buildcfg}/Bin"
+    ThirdPartyIntOutputdir = "%{ThirdPartyProjectFiles}/Build/%{cfg.buildcfg}/Objs/%{prj.name}"
     PhysXDir               = "%{THIRD_PARTY_DIR}/nvphysx"
     
     include "dependencies/dependencies.lua"

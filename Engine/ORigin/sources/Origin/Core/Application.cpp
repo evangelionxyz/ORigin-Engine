@@ -31,7 +31,7 @@ namespace origin {
             std::filesystem::current_path(m_Spec.WorkingDirectory);
         }
 
-        RendererAPI::SetAPI(RendererAPI::API::OpenGL);
+        RendererAPI::SetAPI(m_Spec.RenderAPI);
 
         Window::GLFWInit();
         m_ConsoleManager = std::make_unique<ConsoleManager>();

@@ -1,20 +1,20 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Math.h"
+#include "Math.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace origin {
-bool Math::DecomposeTransform(const glm::mat4 &transform, glm::vec3 &translation, glm::quat &rotation, glm::vec3 &scale)
+bool Math::DecomposeTransform(const glm::mat4 &in_transform, glm::vec3 &translation, glm::quat &out_orientation, glm::vec3 &out_scale)
 {
 	// From glm::decompose in matrix_decompose.inl
 
 	using namespace glm;
 	using T = float;
 
-	mat4 LocalMatrix(transform);
+	mat4 LocalMatrix(in_transform);
 
 	// Normalize the matrix.
 	if (epsilonEqual(LocalMatrix[3][3], static_cast<float>(0), epsilon<T>()))
@@ -43,11 +43,11 @@ bool Math::DecomposeTransform(const glm::mat4 &transform, glm::vec3 &translation
 			Row[i][j] = LocalMatrix[i][j];
 
 	// Compute X scale factor and normalize first row.
-	scale.x = length(Row[0]);
+	out_scale.x = length(Row[0]);
 	Row[0] = detail::scale(Row[0], static_cast<T>(1));
-	scale.y = length(Row[1]);
+	out_scale.y = length(Row[1]);
 	Row[1] = detail::scale(Row[1], static_cast<T>(1));
-	scale.z = length(Row[2]);
+	out_scale.z = length(Row[2]);
 	Row[2] = detail::scale(Row[2], static_cast<T>(1));
 
 	// At this point, the matrix (in rows[]) is orthonormal.
@@ -65,23 +65,23 @@ bool Math::DecomposeTransform(const glm::mat4 &transform, glm::vec3 &translation
 	}
 #endif
 
-	rotation.y = asin(-Row[0][2]);
-	if (cos(rotation.y) != 0)
+	out_orientation.y = asin(-Row[0][2]);
+	if (cos(out_orientation.y) != 0)
 	{
-		rotation.x = atan2(Row[1][2], Row[2][2]);
-		rotation.z = atan2(Row[0][1], Row[0][0]);
+		out_orientation.x = atan2(Row[1][2], Row[2][2]);
+		out_orientation.z = atan2(Row[0][1], Row[0][0]);
 	}
 	else
 	{
-		rotation.x = atan2(-Row[2][0], Row[1][1]);
-		rotation.z = 0;
+		out_orientation.x = atan2(-Row[2][0], Row[1][1]);
+		out_orientation.z = 0;
 	}
 
 
 	return true;
 }
 
-bool Math::DecomposeTransformEuler(const glm::mat4 &transform, glm::vec3 &translation, glm::vec3 &rotation, glm::vec3 &scale)
+bool Math::DecomposeTransformEuler(const glm::mat4 &transform, glm::vec3 &out_translation, glm::vec3 &out_rotation, glm::vec3 &out_scale)
 {
 	// From glm::decompose in matrix_decompose.inl
 
@@ -106,7 +106,7 @@ bool Math::DecomposeTransformEuler(const glm::mat4 &transform, glm::vec3 &transl
 	}
 
 	// Next take care of translation (easy).
-	translation = vec3(LocalMatrix[3]);
+	out_translation = vec3(LocalMatrix[3]);
 	LocalMatrix[3] = vec4(0, 0, 0, LocalMatrix[3].w);
 
 	vec3 Row[3];
@@ -117,11 +117,11 @@ bool Math::DecomposeTransformEuler(const glm::mat4 &transform, glm::vec3 &transl
 			Row[i][j] = LocalMatrix[i][j];
 
 	// Compute X scale factor and normalize first row.
-	scale.x = length(Row[0]);
+	out_scale.x = length(Row[0]);
 	Row[0] = detail::scale(Row[0], static_cast<T>(1));
-	scale.y = length(Row[1]);
+	out_scale.y = length(Row[1]);
 	Row[1] = detail::scale(Row[1], static_cast<T>(1));
-	scale.z = length(Row[2]);
+	out_scale.z = length(Row[2]);
 	Row[2] = detail::scale(Row[2], static_cast<T>(1));
 
 	// At this point, the matrix (in rows[]) is orthonormal.
@@ -139,16 +139,16 @@ bool Math::DecomposeTransformEuler(const glm::mat4 &transform, glm::vec3 &transl
 	}
 #endif
 
-	rotation.y = asin(-Row[0][2]);
-	if (cos(rotation.y) != 0)
+	out_rotation.y = asin(-Row[0][2]);
+	if (cos(out_rotation.y) != 0)
 	{
-		rotation.x = atan2(Row[1][2], Row[2][2]);
-		rotation.z = atan2(Row[0][1], Row[0][0]);
+		out_rotation.x = atan2(Row[1][2], Row[2][2]);
+		out_rotation.z = atan2(Row[0][1], Row[0][0]);
 	}
 	else
 	{
-		rotation.x = atan2(-Row[2][0], Row[1][1]);
-		rotation.z = 0;
+		out_rotation.x = atan2(-Row[2][0], Row[1][1]);
+		out_rotation.z = 0;
 	}
 
 	return true;
@@ -162,24 +162,24 @@ glm::vec3 Math::Normalize(const glm::vec3 &v)
 	return v;
 }
 
-glm::vec3 Math::WorldToScreen(const glm::vec3 &worldPos, const glm::mat4 &modelTransform, const glm::mat4 &viewProjection, const glm::vec2 &screen)
+glm::vec3 Math::WorldToScreen(const glm::vec3 &world_position, const glm::mat4 &model_transform, const glm::mat4 &view_projection, const glm::vec2 &screen_size)
 {
-	glm::vec4 modelPos = modelTransform * glm::vec4(worldPos, 1.0f);
-	glm::vec4 clipPos = viewProjection * modelPos;
+	glm::vec4 modelPos = model_transform * glm::vec4(world_position, 1.0f);
+	glm::vec4 clipPos = view_projection * modelPos;
 
 	glm::vec3 ndcPos = glm::vec3(clipPos) / clipPos.w;
 
 	glm::vec3 screenSpacePos;
-	screenSpacePos.x = (ndcPos.x + 1.0f) * 0.5f * screen.x;
-	screenSpacePos.y = (1.0f - ndcPos.y) * 0.5f * screen.y;
+	screenSpacePos.x = (ndcPos.x + 1.0f) * 0.5f * screen_size.x;
+	screenSpacePos.y = (1.0f - ndcPos.y) * 0.5f * screen_size.y;
 	screenSpacePos.z = ndcPos.z;
 	return screenSpacePos;
 }
 
-glm::vec2 Math::GetNormalizedDeviceCoord(const glm::vec2 &mouse, const glm::vec2 &screen)
+glm::vec2 Math::GetNormalizedDeviceCoord(const glm::vec2 &position, const glm::vec2 &screen)
 {
-	float x = (2.0f * mouse.x) / screen.x - 1.0f;
-	float y = 1.0f - (2.0f * mouse.y) / screen.y;
+	float x = (2.0f * position.x) / screen.x - 1.0f;
+	float y = 1.0f - (2.0f * position.y) / screen.y;
 	return { x, y };
 }
 
@@ -190,7 +190,7 @@ glm::vec4 Math::GetEyeCoord(glm::vec4 clipCoords, const glm::mat4 &projectionMat
 	return { eyeCoords.x, eyeCoords.y, -1.0f, 0.0f };
 }
 
-glm::vec3 Math::GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
+glm::vec3 Math::GetWorldPosition(const glm::vec4 &eyeCoords, const glm::mat4 &viewMatrix)
 {
 	glm::vec4 worldCoords = glm::inverse(viewMatrix) * eyeCoords;
 	return glm::normalize(glm::vec3(worldCoords));
@@ -199,13 +199,13 @@ glm::vec3 Math::GetWorldCoord(const glm::vec4 &eyeCoords, const glm::mat4 &viewM
 glm::vec3 Math::GetRayFromScreenCoords(const glm::vec2 &coord, const glm::vec2 &screen, const glm::mat4 &projection, const glm::mat4 &view, bool isPerspective, glm::vec3 &outRayOrigin)
 {
 	glm::vec2 ndc = GetNormalizedDeviceCoord(coord, screen);
-	glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f); // Homogeneous Clip Coord
+	glm::vec4 hmc = glm::vec4(ndc.x, -ndc.y, -1.0f, 1.0f);
 
 	if (isPerspective)
 	{
 		glm::vec4 eye = GetEyeCoord(hmc, projection);
-		outRayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1)); // Camera position
-		return GetWorldCoord(eye, view);
+		outRayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
+		return GetWorldPosition(eye, view);
 	}
 	else
 	{
@@ -337,6 +337,59 @@ glm::mat4 Math::RemoveScale(const glm::mat4 &matrix)
 	result[2] /= scale.z;  // normalize Z axis
 
 	return result;
+}
+
+float Math::CascadeSplit(i32 index, i32 cascade_count, f32 near_plane, f32 far_plane, f32 lambda)
+{
+	f32 linear_split = near_plane + (far_plane - near_plane) * (index / cascade_count);
+	f32 log_split = near_plane * static_cast<f32>(pow(far_plane / near_plane, index / cascade_count));
+	return lambda * log_split + (1.0f - lambda) * linear_split;
+}
+
+void Math::ComputeCascadeMatrices(const glm::vec3 &camera_pos, const glm::mat4 &camera_view, const glm::mat4 &camera_projection, const glm::vec3 light_direction, i32 cascade_count, const std::vector<f32> &cascade_splits, std::vector<glm::mat4> &cascade_light_matrices)
+{
+	glm::mat4 light_view_matrix = glm::lookAt(-light_direction * 1000.0f, glm::vec3(0.0f), glm::vec3(0, 1, 0));
+
+	for (i32 i = 0; i < cascade_count; ++i)
+	{
+		glm::vec4 frustum_corners[8];
+		ExtractFrustumCorners(camera_view, camera_projection, cascade_splits[i - 1], cascade_splits[i], frustum_corners);
+
+		glm::vec3 min_bounds = glm::vec3(FLT_MAX);
+		glm::vec3 max_bounds = glm::vec3(-FLT_MAX);
+
+		for (i32 j = 0; j < 8; ++j)
+		{
+			glm::vec3 corner_light_space = glm::vec3(light_view_matrix * frustum_corners[j]);
+			min_bounds = glm::min(min_bounds, corner_light_space);
+			max_bounds = glm::min(max_bounds, corner_light_space);
+		}
+
+		glm::mat4 light_projection_matrix = glm::ortho(min_bounds.x, max_bounds.x, min_bounds.y, max_bounds.y, min_bounds.z, max_bounds.z);
+		cascade_light_matrices[i] = light_projection_matrix * light_view_matrix;
+	}
+}
+
+void Math::ExtractFrustumCorners(const glm::mat4 &view, const glm::mat4 &projection, f32 near_plane, f32 far_plane, glm::vec4 out_corners[8])
+{
+	glm::mat4 inverse_view_projection = glm::inverse(projection * view);
+
+    glm::vec4 ndc_corners[8] = {
+        {-1, -1, 0, 1}, {1, -1, 0, 1}, {-1, 1, 0, 1}, {1, 1, 0, 1},
+        {-1, -1, 1, 1}, {1, -1, 1, 1}, {-1, 1, 1, 1}, {1, 1, 1, 1},
+    };
+
+    for (int i = 0; i < 8; i++)
+    {
+        glm::vec4 world_corner = inverse_view_projection * ndc_corners[i];
+        world_corner /= world_corner.w;
+        out_corners[i] = world_corner;
+    }
+}
+
+glm::vec3 Math::SnapToGrid(glm::vec3 position, f32 texel_size)
+{
+	return glm::floor(position / texel_size) * texel_size;
 }
 
 }

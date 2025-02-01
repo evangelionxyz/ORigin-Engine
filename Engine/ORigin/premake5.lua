@@ -1,4 +1,4 @@
--- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+-- Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 project "ORigin"
     kind "StaticLib"
@@ -16,6 +16,7 @@ project "ORigin"
     files {
         "sources/pch.cpp",
         "sources/pch.h",
+        "sources/Origin.hpp",
         "sources/Origin/**.cpp",
         "sources/Origin/**.hpp",
         "sources/Origin/**.h",
@@ -47,6 +48,7 @@ project "ORigin"
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
         "%{IncludeDir.OPTICK}",
+        "%{IncludeDir.KTX}",
     }
 
     links {
@@ -77,6 +79,7 @@ project "ORigin"
         links {
             "opengl32.lib",
             "%{Library.Vulkan1Lib}",
+            "%{Library.KTXLib}",
             "%{Library.FMOD}",
             "%{Library.MONO}",
             "%{Library.WinSock}",
@@ -87,16 +90,19 @@ project "ORigin"
         files {
             "sources/Platform/DX11/**.cpp",
             "sources/Platform/DX11/**.h",
+            "sources/Platform/DX11/**.hpp",
             "sources/Platform/Win32/**.cpp",
             "sources/Platform/Win32/**.h",
+            "sources/Platform/Win32/**.hpp",
         }
 
         filter "action:vs*"
-          linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
+            linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
 
         postbuildcommands {
-		      '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
-	      }
+            '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
+            '{COPYFILE} "%{wks.location}/Engine/ThirdParty/KTX/lib/windows/ktx.dll" "%{cfg.targetdir}"',
+        }
 
         includedirs { "%{IncludeDir.VulkanSDK}" }
 
@@ -177,4 +183,3 @@ project "ORigin"
             runtime "Release"
             optimize "on"
             defines { "OGN_DISTRIBUTION", "NDEBUG" }
-  

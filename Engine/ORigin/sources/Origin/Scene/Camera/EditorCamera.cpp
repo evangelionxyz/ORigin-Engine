@@ -22,6 +22,8 @@ void EditorCamera::InitPerspective(const f32 fovy, const f32 aspect_ratio, const
 
     UpdateView();
     UpdateProjection();
+
+    m_Frustum.Update(GetViewProjection());
 }
 
 void EditorCamera::InitOrthographic(f32 size, f32 nearClip, f32 farClip)
@@ -33,6 +35,8 @@ void EditorCamera::InitOrthographic(f32 size, f32 nearClip, f32 farClip)
 
     UpdateView();
     UpdateProjection();
+
+    m_Frustum.Update(GetViewProjection());
 }
 
 void EditorCamera::SetProjectionType(ProjectionType type)
@@ -41,12 +45,13 @@ void EditorCamera::SetProjectionType(ProjectionType type)
 
     UpdateView();
     UpdateProjection();
+
+    m_Frustum.Update(GetViewProjection());
 }
 
 void EditorCamera::OnUpdate(Timestep ts)
 {
     glm::vec3 movement_direction(0.0f);
-
     if (m_ProjectionType == ProjectionType::Perspective)
     {
         switch (m_camera_style)
@@ -153,6 +158,7 @@ void EditorCamera::SetViewportSize(u32 width, u32 height)
     m_ViewportHeight = height;
 
     UpdateProjection();
+    m_Frustum.Update(GetViewProjection());
 }
 
 void EditorCamera::SetFov(f32 fovy)
@@ -173,8 +179,10 @@ void EditorCamera::SetFar(f32 farClip)
 void EditorCamera::SetPosition(const glm::vec3 &position)
 {
     m_Position = position;
+    
     UpdateProjection();
     UpdateView();
+    m_Frustum.Update(GetViewProjection());
 }
 
 void EditorCamera::SetFocalPoint(const glm::vec3 &position)
@@ -349,6 +357,8 @@ void EditorCamera::MouseZoom(const f32 delta)
 
     UpdateView();
     UpdateProjection();
+
+    m_Frustum.Update(GetViewProjection());
 }
 
 glm::vec3 EditorCamera::GetPosition() const

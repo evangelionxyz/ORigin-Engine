@@ -73,14 +73,16 @@ public:
     virtual f32 GetOrthoNear() const { return 0.0f; }
     virtual f32 GetOrthoFar() const { return 0.0f; }
     virtual ProjectionType GetProjectionType() const { return ProjectionType::Perspective; }
+    Frustum GetFrustum() const { return m_Frustum; }
 
 protected:
-    virtual void UpdateProjection() { };
-    virtual void UpdateView() { };
-
+    virtual void UpdateProjection() { }
+    virtual void UpdateView() { }
     AudioListener m_AudioListener;
     ProjectionType m_ProjectionType = ProjectionType::Perspective;
     AspectRatioType m_AspectRatioType = AspectRatioType::Free;
+    Frustum m_Frustum;
+    
     glm::vec3 m_Position = glm::vec3(0.0f);
     glm::vec3 m_FocalPoint = glm::vec3(0.0f);
     glm::mat4 m_Projection = glm::mat4(1.0f);

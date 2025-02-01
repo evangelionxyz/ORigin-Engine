@@ -4,7 +4,7 @@
 #define MESH_MATERIAL_HPP
 
 #include "Origin/Core/Types.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 #include "Origin/Renderer/TextureType.hpp"
 #include "MaterialBufferData.hpp"
 #include <assimp/scene.h>
@@ -20,9 +20,6 @@ class Material : public Asset
 public:
     virtual ~Material();
     
-    virtual void Bind() const = 0;
-    virtual void Unbind() const = 0;
-
     template<typename MaterialType>
     static Ref<Material> Create()
     {
@@ -37,18 +34,23 @@ class MeshMaterial : public Material
 {
 public:
     MeshMaterial();
-    
+
     Ref<Texture2D> diffuse_texture;
     Ref<Texture2D> specular_texture;
     Ref<Texture2D> roughness_texture;
+    MaterialBufferData buffer_data;
 
-    MeshMaterialBufferData buffer_data;
-    
-    Ref<Shader> shader;
+    u32 subroutine = 1;
+    u32 reflective_texture;
 
-    void Bind() const override;
-    void Unbind() const override;
-    
+    // 1 planar, 2 cube reflection
+    i32 reflective_type = 0;
+    glm::vec4 plane_or_position;
+
+    bool reflective = false;
+    bool transparent = false;
+
+    void Update(Shader *shader);
 };
 
 }

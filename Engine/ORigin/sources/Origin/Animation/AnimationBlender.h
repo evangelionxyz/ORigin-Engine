@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Origin/Core/Types.h"
-#include "Origin/Math/Math.h"
+#include "Origin/Math/Math.hpp"
 #include "Animation.h"
 
 #include <glm/glm.hpp>

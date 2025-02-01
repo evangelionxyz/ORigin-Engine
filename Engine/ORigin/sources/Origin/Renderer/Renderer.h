@@ -12,17 +12,25 @@
 
 namespace origin {
 
-#define CAMERA_BINDING            (0)
-#define LIGHTING_BINDING          (1)
-#define DIRECTIONAL_LIGHT_BINDING (2)
+#define UNIFORM_CAMERA_BINDING            (0)
+#define UNIFORM_LIGHTING_BINDING          (1)
+#define UNIFORM_DIRECTIONAL_LIGHT_BINDING (2)
+#define UNIFORM_REFLECTION_BINDING        (3)
+
 #define SPOT_LIGHT_BINDING        (3)
 #define POINT_LIGHT_BINDING       (4)
 #define AREA_LIGHT_BINDING        (5)
 
+#define SKYBOX_BINDING            (1)
+
 #define MATERIAL_BINDING          (6)
-#define DIFFUSE_TEXTURE_BINDING   (7)
-#define SPECULAR_TEXTURE_BINDING  (8)
-#define ROUGHNESS_TEXTURE_BINDING (9)
+#define DIFFUSE_TEXTURE_BINDING   (0)
+#define SPECULAR_TEXTURE_BINDING  (1)
+#define ROUGHNESS_TEXTURE_BINDING (2)
+
+#define STORAGE_BUFFER_MATERIAL_BINDING   (0)
+#define STORAGE_BUFFER_SPOTLIGHT_BINDING  (1)
+#define STORAGE_BUFFER_POINTLIGHT_BINDING (2)
 
 struct RenderData
 {
@@ -30,6 +38,12 @@ struct RenderData
 	static constexpr u32 max_vertices = max_triangles * 24;
 	static constexpr u32 max_quad_indices = max_triangles * 6;
 	static constexpr u32 max_texture_slots = 32;
+};
+
+struct CameraBufferData
+{
+    glm::mat4 view_projection;
+    glm::vec3 position;
 };
 
 struct Statistics
@@ -62,27 +76,24 @@ public:
 
 	static void OnWindowResize(u32 width, u32 height);
 	static void SetCurrentShader(const Ref<Shader> &shader);
-
-
-	const static Ref<Shader>& GetCurrentShader() { return s_GlobalShader; }
+	
 	static Ref<Shader> GetShader(const std::string &name);
 	static ShaderLibrary &GetShaderLibrary();
-
 	static Ref<Material> GetMaterial(const std::string &name);
-
-	static Ref<Texture2D> WhiteTexture;
-	static Ref<Texture2D> BlackTexture;
-
 	static Statistics &GetStatistics();
+	const static Ref<Shader>& GetCurrentShader() { return global_shader; }
 	
-	static LightingManager *lighting_manager;
-	static MaterialManager *material_manager;
+	static Ref<Texture2D> white_texture;
+	static Ref<Texture2D> black_texture;
+	static Ref<UniformBuffer> camera_uniform_buffer;
+	static Ref<UniformBuffer> skybox_uniform_buffer;
 	static RenderData render_data;
 
 private:
 	static void LoadShaders();
-	static Ref<Shader> s_GlobalShader;
+	static Ref<Shader> global_shader;
 };
+
 }
 
 #endif
