@@ -41,6 +41,13 @@ public:
     MaterialBufferData buffer_data;
 
     u32 subroutine = 1;
+    u32 reflective_texture;
+
+    // 1 planar, 2 cube reflection
+    i32 reflective_type = 0;
+    glm::vec4 plane_or_position;
+
+    bool reflective = false;
     bool transparent = false;
 
     void Update(Shader *shader);

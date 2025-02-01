@@ -141,10 +141,16 @@ layout(std140, binding = 2) uniform DirectionalLight
     vec4 direction; // light direction (should be normalized)
 } dir_light_buffer;
 
+layout(std140, binding = 3) uniform ReflectPlane
+{
+    mat4 view_projection;
+} reflect_plane_buffer;
+
 layout(binding = 0) uniform sampler2D udiffuse_texture;
 layout(binding = 1) uniform sampler2D uspecular_texture;
 layout(binding = 2) uniform sampler2D uroughness_texture;
 layout(binding = 3) uniform samplerCube urefract_map_cube_texture;
+layout(binding = 4) uniform sampler2D ureflect_texture;
 
 uniform int uspot_light_count;
 uniform int umaterial_index;
@@ -170,14 +176,6 @@ vec3 schlick_fresnel(in vec3 light_direction, in vec3 normal, in vec3 specular_c
     return specular_color + (1.0 - specular_color) * pow(1.0 - LH, 5.0);
 }
 
-float TRDistribution(in vec3 normal, in vec3 half_vector, in float roughness)
-{
-    float NSq = roughness * roughness;
-    float NH = max(dot(normal, half_vector), 0.0);
-    float denom = NH * NH * (NSq - 1.0) + 1.0;
-    return NSq / (M_PI * denom * denom);
-}
-
 vec3 specular_transmit(in vec3 normal, in vec3 view_direction, in vec3 diffuse_color, in vec3 specular_color)
 {
     float root_F0 = sqrt(specular_color.x);
@@ -187,6 +185,40 @@ vec3 specular_transmit(in vec3 normal, in vec3 view_direction, in vec3 diffuse_c
     vec3 ret_color = IOR * (1.0 - schlick_fresnel(refract_direction, -normal, specular_color));
     ret_color *= diffuse_color;
     ret_color *= refract_color;
+    return ret_color;
+}
+
+float TRDistribution(in vec3 normal, in vec3 half_vector, in float roughness)
+{
+    float NSq = roughness * roughness;
+    float NH = max(dot(normal, half_vector), 0.0);
+    float denom = NH * NH * (NSq - 1.0) + 1.0;
+    return NSq / (M_PI * denom * denom);
+}
+
+float GGXVisibility(in vec3 normal, in vec3 light_direction, in vec3 view_direction, in float roughness)
+{
+    float NL = max(dot(normal, light_direction), 0.0);
+    float NV = max(dot(normal, view_direction), 0.0);
+    float RSq = roughness * roughness;
+    float RMod = 1.0 - RSq;
+    float recip_g1 = NL + sqrt(RSq + (RMod * NL * NL));
+    float recip_g2 = NV + sqrt(RSq + (RMod * NV * NV));
+    return 1.0 / (recip_g1 * recip_g2);
+}
+
+vec3 GGXReflect(in vec3 normal, in vec3 reflect_direction, in vec3 view_direction, in vec3 reflect_radiance, in vec3 specular_color, in float roughness)
+{
+    vec3 F = schlick_fresnel(reflect_direction, normal, specular_color);
+    float V = GGXVisibility(normal, reflect_direction, view_direction, roughness);
+
+    vec3 ret_color = F * V;
+
+    ret_color *= (4.0 * dot(view_direction, normal));
+
+    ret_color *= max(dot(normal, reflect_direction), 0.0);
+
+    ret_color *= reflect_radiance;
     return ret_color;
 }
 
@@ -201,15 +233,21 @@ vec3 texture_refract_map(vec3 color_out, vec3 normal, vec3 view_direction, vec4 
     return mix(transmit, color_out, diffuse_color.w);
 }
 
-float GGXVisibility(in vec3 normal, in vec3 light_direction, in vec3 view_direction, in float roughness)
+vec3 texture_reflect_plane(vec3 normal, vec3 view_direction, vec3 specular_color, float roughness)
 {
-    float NL = max(dot(normal, light_direction), 0.0);
-    float NV = max(dot(normal, view_direction), 0.0);
-    float RSq = roughness * roughness;
-    float RMod = 1.0 - RSq;
-    float recip_g1 = NL + sqrt(RSq + (RMod * NL * NL));
-    float recip_g2 = NV + sqrt(RSq + (RMod * NV * NV));
-    return 1.0 / (recip_g1 * recip_g2);
+    vec4 RVVP_position = reflect_plane_buffer.view_projection * vec4(vin.position, 1.0);
+    vec2 reflect_uv = RVVP_position.xy / RVVP_position.w;
+    reflect_uv = (reflect_uv + 1.0) * 0.5;
+
+    float LOD = textureQueryLod(ureflect_texture, reflect_uv).y;
+    float gloss = 1.0 - roughness;
+    LOD += ((2.0 / (gloss * gloss)) - 1.0);
+
+    vec3 reflect_radiance = textureLod(ureflect_texture, reflect_uv, LOD).rgb;
+
+    vec3 reflect_direction = normalize(reflect(-view_direction, normal));
+
+    return GGXReflect(normal, reflect_direction, view_direction, reflect_radiance, specular_color, roughness);
 }
 
 layout(index = 0) subroutine(BRDF) 
@@ -246,18 +284,18 @@ vec3 GGX(in vec3 normal, in vec3 light_direction, in vec3 view_direction, in vec
 /// ====================================
 vec3 calculate_directional_light(vec3 normal, vec3 view_dir, vec3 diffuse_texture_color, float shadow)
 {
-  vec3 light_direction = normalize(-dir_light_buffer.direction.xyz);
-  vec3 normalized_normal = normalize(normal);
-  vec3 normalized_view_dir = normalize(view_dir);
-  float ambient_strength = 0.1;
-  vec3 ambient_color = ambient_strength * dir_light_buffer.color.rgb;
-  float diffuse = max(dot(normalized_normal, light_direction), 0.0);
-  vec3 diffuse_color = diffuse * dir_light_buffer.color.rgb;
-  float specular_strength = 0.5;
-  vec3 reflect_dir = reflect(-light_direction, normalized_normal);
-  float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0); 
-  vec3 specular_color = specular_strength * specular * dir_light_buffer.color.rgb;
-  return (ambient_color + (1.0 - shadow) * (diffuse_color + specular_color)) * diffuse_texture_color * material.base_color.rgb;
+    vec3 light_direction = normalize(-dir_light_buffer.direction.xyz);
+    vec3 normalized_normal = normalize(normal);
+    vec3 normalized_view_dir = normalize(view_dir);
+    float ambient_strength = 0.1;
+    vec3 ambient_color = ambient_strength * dir_light_buffer.color.rgb;
+    float diffuse = max(dot(normalized_normal, light_direction), 0.0);
+    vec3 diffuse_color = diffuse * dir_light_buffer.color.rgb;
+    float specular_strength = 0.5;
+    vec3 reflect_dir = reflect(-light_direction, normalized_normal);
+    float specular = pow(max(dot(normalized_view_dir, reflect_dir), 0.0), 32.0); 
+    vec3 specular_color = specular_strength * specular * dir_light_buffer.color.rgb;
+    return (ambient_color + (1.0 - shadow) * (diffuse_color + specular_color)) * diffuse_texture_color * material.base_color.rgb;
 }
 
 void main()
@@ -289,7 +327,8 @@ void main()
     
     lighting += calculate_directional_light(normal, view_direction, diffuse_texture, 0.0);
     lighting += texture_emisive(diffuse_color);
-    //lighting = texture_refract_map(lighting, normal, view_direction, v4_diffuse_color, specular_color);
+    //lighting += texture_reflect_plane(normal, view_direction, specular_color, material.roughness);
+    lighting = texture_refract_map(lighting, normal, view_direction, v4_diffuse_color, specular_color);
 
     frag_color = vec4(lighting, 1.0);
 }

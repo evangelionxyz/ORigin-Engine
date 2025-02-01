@@ -19,11 +19,11 @@ namespace origin
         {
         }
 
-        bool RayIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection)
+        bool RayIntersection(const glm::vec3 &ray_origin, const glm::vec3 &ray_direction)
         {
-            glm::vec3 invDir = 1.0f / rayDirection;
-            glm::vec3 tMin = (Min - rayOrigin) * invDir;
-            glm::vec3 tMax = (Max - rayOrigin) * invDir;
+            glm::vec3 invDir = 1.0f / ray_direction;
+            glm::vec3 tMin = (Min - ray_origin) * invDir;
+            glm::vec3 tMax = (Max - ray_origin) * invDir;
             glm::vec3 t1 = glm::min(tMin, tMax);
             glm::vec3 t2 = glm::max(tMin, tMax);
             float tNear = glm::max(glm::max(t1.x, t1.y), t1.z);

@@ -80,7 +80,7 @@ bool Renderer::Init()
 	s_material_manager = new MaterialManager();
 	s_material_manager->CreateStorageBuffer();
 
-	camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), CAMERA_BINDING);
+	camera_uniform_buffer = UniformBuffer::Create(sizeof(CameraBufferData), UNIFORM_CAMERA_BINDING);
 	skybox_uniform_buffer = UniformBuffer::Create(sizeof(glm::vec4) + sizeof(f32), SKYBOX_BINDING);
 	
 	RenderCommand::Init();

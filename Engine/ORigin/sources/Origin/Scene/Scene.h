@@ -39,6 +39,8 @@ namespace origin
 
         void PreRender(const Camera &camera, Timestep ts);
         void PostRender(const Camera &camera, Timestep ts);
+
+        void OnGuiRender();
         
         void OnRuntimeStart();
         void OnRuntimeStop();
@@ -97,6 +99,7 @@ namespace origin
         std::vector<std::pair<UUID, entt::entity>> m_EntityStorage;
         u32 m_ViewportWidth = 0, m_ViewportHeight = 0;
         u32 m_GameViewportWidth = 0, m_GameViewportHeight = 0;
+        u32 m_SkyboxTexture = 0;
 
         bool m_Running = false;
         bool m_Paused = false;

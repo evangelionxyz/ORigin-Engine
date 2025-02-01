@@ -27,8 +27,8 @@ namespace origin {
     class Asset;
     struct AssetInfo
     {
-        Ref<Asset> Asset;
-        bool IsLoadingAsync = false;
+        Ref<Asset> asset;
+        bool is_async_load = false;
     };
 
     const char *AssetTypeToString(AssetType type);
@@ -39,8 +39,7 @@ namespace origin {
     public:
         virtual ~Asset() = default;
         AssetHandle Handle;
-
-        [[nodiscard]] virtual AssetType GetType() const = 0;
+        virtual AssetType GetType() const = 0;
     };
 }
 

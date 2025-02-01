@@ -204,23 +204,33 @@ u32 OpenGLShader::CreateProgram(const std::string &vertex_source, const std::str
     // Create Program
     const u32 shader_program = glCreateProgram();
     const u32 vertex_shader = CompileShader(GL_VERTEX_SHADER, vertex_source);
-    const u32 fragment_shader = CompileShader(GL_FRAGMENT_SHADER, fragment_source);
+
+    u32 fragment_shader = 0;
+    u32 geometry_shader = 0;
+    if (!fragment_source.empty())
+    {
+        fragment_shader = CompileShader(GL_FRAGMENT_SHADER, fragment_source);
+        glAttachShader(shader_program, fragment_shader);
+    }
 
     if (!geometry_source.empty())
     {
-        const u32 geometry_shader = CompileShader(GL_GEOMETRY_SHADER, geometry_source);
+        geometry_shader = CompileShader(GL_GEOMETRY_SHADER, geometry_source);
         glAttachShader(shader_program, geometry_shader);
     }
 
     // Attach and Link Shader->Program
     glAttachShader(shader_program, vertex_shader);
-    glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
     glValidateProgram(shader_program);
 
     glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
+
+    if (fragment_shader != 0)
+        glDeleteShader(fragment_shader);
+    if (geometry_shader != 0)
+        glDeleteShader(geometry_shader);
 
     return shader_program;
 }

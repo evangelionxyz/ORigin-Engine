@@ -79,9 +79,11 @@ public:
 
 	operator ImTextureID() { return reinterpret_cast<ImTextureID>((uintptr_t)m_id); }
 	[[nodiscard]] u32 GetID() const { return m_id; }
+	[[nodiscard]] bool IsTransparent() const { return m_is_transparent; }
 
 protected:
     bool m_is_loaded = false;
+	bool m_is_transparent = false;
 	u32 m_id = 0;
     u32 m_width, m_height, m_channels, m_index;
 };

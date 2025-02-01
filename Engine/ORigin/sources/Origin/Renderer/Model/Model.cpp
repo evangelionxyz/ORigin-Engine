@@ -10,6 +10,8 @@
 #include "Origin/Renderer/Materials/MaterialManager.hpp"
 #include "Origin/Renderer/TextureType.hpp"
 
+#include <glad/glad.h>
+
 #include <assimp/Importer.hpp>
 #include <stb_image.h>
 
@@ -106,10 +108,21 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const glm::mat4 &
     // Vertices
     MeshVertexData vertex;
     m_Meshes[mesh_index]->vertices.resize(mesh->mNumVertices);
+
+    glm::vec3 aabb_min = glm::vec3(std::numeric_limits<f32>::max());
+    glm::vec3 aabb_max = glm::vec3(std::numeric_limits<f32>::lowest());
+
     for (u32 i = 0; i < mesh->mNumVertices; ++i)
     {
         vertex.color = { 1.0f, 1.0f, 1.0f };
         vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+
+        aabb_min = vertex.position;
+        aabb_max = vertex.position;
+
+        aabb.Min = glm::min(aabb.Min, aabb_min);
+        aabb.Max = glm::max(aabb.Max, aabb_max);
+
         if (mesh->HasNormals())
         {
             vertex.normals = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
@@ -149,7 +162,7 @@ void Model::LoadSingleMesh(const u32 mesh_index, aiMesh *mesh, const glm::mat4 &
         aiMaterial *ai_material = m_Scene->mMaterials[mesh->mMaterialIndex];
         std::string mat_name(ai_material->GetName().C_Str());
 
-        LoadMaterials(m_Meshes[mesh_index]->material, ai_material, filepath);
+        LoadMaterials(mesh_index, m_Meshes[mesh_index]->material, ai_material, filepath);
         m_Meshes[mesh_index]->material_index = static_cast<i32>(MaterialManager::AddMaterial(m_Meshes[mesh_index]->material.buffer_data));
         MaterialManager::UpdateMaterial(m_Meshes[mesh_index]->material_index, m_Meshes[mesh_index]->material.buffer_data);
     }
@@ -260,16 +273,18 @@ void Model::LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const ai
     }
 }
 
-void Model::LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath)
+void Model::LoadMaterials(u32 mesh_index, MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath)
 {
     aiColor4D base_color(1.0f, 1.0f, 1.0f, 1.0f);
     aiColor4D diffuse_color(1.0f, 1.0f, 1.0f, 1.0f);
     aiColor4D emmisive_color(0.0f, 0.0f, 0.0f, 0.0f);
+    f32 reflectivity = 0.0f;
         
     ai_material->Get(AI_MATKEY_BASE_COLOR, base_color);
     ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
     ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.buffer_data.rougness);
     ai_material->Get(AI_MATKEY_COLOR_EMISSIVE, emmisive_color);
+    ai_material->Get(AI_MATKEY_REFLECTIVITY, reflectivity);
 
     material.buffer_data.base_color = {base_color.r, base_color.g, base_color.b, 1.0f};
     material.buffer_data.diffuse_color = {diffuse_color.r, diffuse_color.g, diffuse_color.b, 1.0f};
@@ -279,6 +294,10 @@ void Model::LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const
     material.diffuse_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE);
     material.specular_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::SPECULAR);
     material.roughness_texture = LoadTexture(m_Scene, ai_material, filepath, TextureType::DIFFUSE_ROUGHNESS);
+
+    // set transparent and reflectivity
+    material.transparent = material.diffuse_texture->IsTransparent();
+    material.reflective = reflectivity > 0.0f;
 }
 
 i32 Model::GetBoneID(const aiBone *bone)

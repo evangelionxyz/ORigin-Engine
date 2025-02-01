@@ -12,9 +12,11 @@
 
 namespace origin {
 
-#define CAMERA_BINDING            (0)
-#define LIGHTING_BINDING          (1)
-#define DIRECTIONAL_LIGHT_BINDING (2)
+#define UNIFORM_CAMERA_BINDING            (0)
+#define UNIFORM_LIGHTING_BINDING          (1)
+#define UNIFORM_DIRECTIONAL_LIGHT_BINDING (2)
+#define UNIFORM_REFLECTION_BINDING        (3)
+
 #define SPOT_LIGHT_BINDING        (3)
 #define POINT_LIGHT_BINDING       (4)
 #define AREA_LIGHT_BINDING        (5)

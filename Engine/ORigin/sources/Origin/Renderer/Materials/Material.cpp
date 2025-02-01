@@ -17,10 +17,6 @@ MeshMaterial::MeshMaterial()
 
 void MeshMaterial::Update(Shader* shader)
 {
-    OpenGLShader *s = (OpenGLShader *)shader;
-    glUseProgram(s->GetProgram());
-    u32 subroutines[]{ subroutine };
-    glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &subroutines[0]);
 
     if (diffuse_texture)
     {

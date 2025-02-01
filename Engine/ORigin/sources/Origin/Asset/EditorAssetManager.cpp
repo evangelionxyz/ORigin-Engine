@@ -58,14 +58,14 @@ Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
     if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
     {
         AssetInfo asset_info = m_LoadedAssets.at(handle);
-        if (asset_info.IsLoadingAsync)
+        if (asset_info.is_async_load)
         {
-            return asset_info.Asset;
+            return asset_info.asset;
         }
 
-        if (asset_info.Asset)
+        if (asset_info.asset)
         {
-            return asset_info.Asset;
+            return asset_info.asset;
         }
     }
 
@@ -78,7 +78,7 @@ Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
     {
         const auto filepath = Project::GetActiveAssetDirectory() / metadata.Filepath;
         m_LoadedAssets[handle] = { asset, true };
-        FontImporter::LoadAsync(&m_LoadedAssets[handle].Asset, filepath);
+        FontImporter::LoadAsync(&m_LoadedAssets[handle].asset, filepath);
         
         return nullptr;
     }
@@ -135,7 +135,7 @@ AssetType EditorAssetManager::GetAssetType(AssetHandle handle) const
     return m_AssetRegistry.at(handle).Type;
 }
 
-AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepath, bool load_to_scene)
+AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepath)
 {
     AssetHandle handle;
     AssetMetadata metadata;
@@ -160,32 +160,13 @@ AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepat
         }
     }
 
-    Ref<Asset> asset;
-    if (metadata.Type == AssetType::Font)
+    Ref<Asset> asset = GetAsset(handle);
+    if (!asset)
     {
-        OGN_CORE_TRACE("{}", handle);
         m_LoadedAssets[handle] = { asset, false };
         m_AssetRegistry[handle] = metadata;
-
-        const auto asset_to_path = Project::GetActiveAssetDirectory() / metadata.Filepath;
-        if (load_to_scene)
-        {
-            m_LoadedAssets[handle].IsLoadingAsync = true;
-            FontImporter::LoadAsync(&m_LoadedAssets[handle].Asset, asset_to_path);
-        }
-        
         SerializeAssetRegistry();
-        return handle;
     }
-
-    if (load_to_scene)
-    {
-        asset = AssetImporter::ImportAsset(handle, metadata);
-    }
-    
-    m_LoadedAssets[handle] = { asset, false };
-    m_AssetRegistry[handle] = metadata;
-    SerializeAssetRegistry();
     
     return handle;
 }
@@ -195,7 +176,7 @@ void EditorAssetManager::InsertAsset(AssetHandle handle, const AssetMetadata &me
     Ref<Asset> asset;
     if (IsAssetLoaded(handle) && GetAssetType(handle) != AssetType::Scene)
     {
-        asset = m_LoadedAssets.at(handle).Asset;
+        asset = m_LoadedAssets.at(handle).asset;
         return;
     }
 

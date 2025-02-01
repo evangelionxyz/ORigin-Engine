@@ -124,6 +124,10 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path &filepath, const Te
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE, GL_TEXTURE_MAX_ANISOTROPY, 4.0f);
 
+        i32 alpha = 0;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &alpha);
+        m_is_transparent = alpha > 0;
+
         ktxTexture_Destroy(ktexture);
 
         return;
@@ -172,6 +176,10 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path &filepath, const Te
     glTexParameteri(m_id, GL_TEXTURE_MAG_FILTER, m_MagFilter);
     glTexParameteri(m_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(m_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    i32 alpha = 0;
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &alpha);
+    m_is_transparent = alpha > 0;
 
     if (data)
     {
@@ -236,6 +244,10 @@ OpenGLTexture2D::OpenGLTexture2D(const aiTexture *embedded_texture)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    i32 alpha = 0;
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &alpha);
+    m_is_transparent = alpha > 0;
 }
 
 OpenGLTexture2D::~OpenGLTexture2D()

@@ -19,6 +19,7 @@
 #include "Origin/Core/Log.h"
 #include "Origin/Core/Input.h"
 #include "EntityManager.h"
+#include "Origin/Math/Math.hpp"
 #include "Entity.h"
 #include "ScriptableEntity.h"
 
@@ -28,8 +29,8 @@
 
 #include <glad/glad.h>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
+#include <ktx.h>
+
 #include <glm/glm.hpp>
 
 namespace origin {
@@ -130,17 +131,17 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 
     // bind lighting
     LightingManager::GetInstance()->Bind();
-    const auto &view = m_Registry.view<TransformComponent>();
-    for (auto &e: view)
+    for (auto &e: m_Registry.view<TransformComponent>())
     {
         Entity entity{ e, this };
-        TransformComponent &tc = m_Registry.get<TransformComponent>(e);
+        TransformComponent &transform_comp = m_Registry.get<TransformComponent>(e);
+        IDComponent &id_comp = m_Registry.get<IDComponent>(e);
 
         if (entity.HasComponent<DirectionalLightComponent>())
         {
             DirectionalLightComponent &dir_light_comp = m_Registry.get<DirectionalLightComponent>(e);
             Ref<DirectionalLight> dir_light = std::static_pointer_cast<DirectionalLight>(dir_light_comp.Light);
-            dir_light_comp.direction = glm::vec4(eulerAngles(tc.WorldRotation), 1.0f);
+            dir_light_comp.direction = glm::vec4(eulerAngles(transform_comp.WorldRotation), 1.0f);
             dir_light->data.direction = dir_light_comp.direction;
             dir_light->data.color = dir_light_comp.color;
             dir_light->Bind();
@@ -150,18 +151,13 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
         {
             PointLightComponent &pointlight_comp = m_Registry.get<PointLightComponent>(e);
             Ref<PointLight> light = std::static_pointer_cast<PointLight>(pointlight_comp.Light);
-            light->data.position = glm::vec4(tc.WorldTranslation, 1.0f);
+            light->data.position = glm::vec4(transform_comp.WorldTranslation, 1.0f);
             light->data.color = pointlight_comp.color;
             light->data.intensity = pointlight_comp.intensity;
             light->data.falloff = pointlight_comp.falloff;
             LightingManager::GetInstance()->UpdatePointLight(light->index, light->data);
         }
-    }
 
-
-    const auto &entity_id_view = m_Registry.view<IDComponent, TransformComponent>();
-    for (auto [entity, id_comp, transform_comp] : entity_id_view.each())
-    {
         if (id_comp.Parent)
         {
             if (auto parent = GetEntityWithUUID(id_comp.Parent))
@@ -182,15 +178,26 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
     }
 
     std::unordered_set<UUID> updated_models;
-    const auto &mesh_view = m_Registry.view<TransformComponent, MeshComponent>();
-    for (auto [entity, transform_comp, mesh_comp] : mesh_view.each())
+    const auto &view = m_Registry.view<TransformComponent>();
+    for (auto e : view)
     {
-        if (mesh_comp.HModel && !updated_models.contains(mesh_comp.HModel))
-        {
-            updated_models.insert(mesh_comp.HModel);
+        Entity entity{ e, this };
+        TransformComponent &transform_comp = view.get<TransformComponent>(e);
 
+        if (!transform_comp.Visible)
+            continue;
+
+        if (entity.HasComponent<MeshComponent>())
+        {
+            MeshComponent &mesh_comp = m_Registry.get<MeshComponent>(e);
+            if (mesh_comp.HModel == 0)
+                continue;
+
+            Shader *shader = Renderer::GetShader("SkinnedMesh").get();
             Ref<Model> model = AssetManager::GetAsset<Model>(mesh_comp.HModel);
-            if (model->HasAnimations())
+
+            // UPDATING ANIMATION
+            if (model->HasAnimations() && !updated_models.contains(mesh_comp.HModel))
             {
                 if (!mesh_comp.blend_space.GetStates().empty())
                 {
@@ -210,6 +217,10 @@ void Scene::PreRender(const Camera &camera, Timestep ts)
 void Scene::PostRender(const Camera &camera, Timestep ts)
 {
     LightingManager::GetInstance()->Unbind();
+}
+
+void Scene::OnGuiRender()
+{
 }
 
 void Scene::Update(Timestep ts)
@@ -383,7 +394,6 @@ void Scene::OnUpdateEditor(const Camera &camera, Timestep ts, entt::entity selec
 {
     Update(ts);
     RenderScene(camera);
-    //RenderStencilScene(camera, selectedID);
 }
 
 void Scene::OnUpdateSimulation(const Camera &camera, Timestep ts, entt::entity selectedID)
@@ -396,7 +406,6 @@ void Scene::OnUpdateSimulation(const Camera &camera, Timestep ts, entt::entity s
     }
 
     RenderScene(camera);
-    //RenderStencilScene(camera, selectedID);
 }
 
 void Scene::RenderScene(const Camera &camera)
@@ -527,11 +536,19 @@ void Scene::RenderScene(const Camera &camera)
             for (auto &mesh : model->GetMeshes())
             {
                 MaterialManager::UpdateMaterial(mesh->material_index, mesh->material.buffer_data);
-                shader->SetMatrix("umodel_transform", transform_comp.GetTransform() * mesh->transform);
+
+                if (mesh->material.transparent)
+                {
+                    glBindTextureUnit(3, m_SkyboxTexture); // bind texture index to renderID
+                    shader->SetInt("urefract_map_cube_texture", 3);
+                }
+                
+                shader->SetMatrix("umodel_transform", transform_comp.GetTransform() *mesh->transform);
                 shader->SetInt("umaterial_index", mesh->material_index);
                 mesh->material.Update(shader);
                 RenderCommand::DrawIndexed(mesh->vertex_array);
             }
+
             shader->Disable();
         }
     }
@@ -551,6 +568,8 @@ void Scene::RenderScene(const Camera &camera)
             Renderer::skybox_uniform_buffer->SetData(&env_map.blur_factor, sizeof(glm::vec4) + sizeof(f32), sizeof(glm::vec4));
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_CUBE_MAP, env_map.skybox->texture_id);
+
+            m_SkyboxTexture = env_map.skybox->texture_id;
             Renderer::GetShader("Skybox")->SetInt("uskybox_cube", 0);
             RenderCommand::DrawIndexed(env_map.skybox->vao);
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -828,7 +847,7 @@ void Scene::UnlockMouse()
     Input::SetCursoreMode(CursorMode::Default);
 }
 
-void Scene::OnViewportResize(const uint32_t width, const uint32_t height)
+void Scene::OnViewportResize(const u32 width, const u32 height)
 {
     OGN_PROFILER_SCENE();
 

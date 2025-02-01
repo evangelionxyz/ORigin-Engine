@@ -12,8 +12,8 @@ LightingManager::LightingManager()
 {
     s_instance = this;
     
-    lighting_uniform_buffer = UniformBuffer::Create(sizeof(LightingManager::Data), LIGHTING_BINDING);
-    directional_uniform_buffer = UniformBuffer::Create(sizeof(DirectionalLight::Data), DIRECTIONAL_LIGHT_BINDING);
+    lighting_uniform_buffer = UniformBuffer::Create(sizeof(LightingManager::Data), UNIFORM_LIGHTING_BINDING);
+    directional_uniform_buffer = UniformBuffer::Create(sizeof(DirectionalLight::Data), UNIFORM_DIRECTIONAL_LIGHT_BINDING);
 }
 
 void LightingManager::Bind() const

@@ -4,6 +4,7 @@
 #define MODEL_HPP
 
 #include "Mesh.hpp"
+#include "Origin/Math/AABB.h"
 #include "Origin/Renderer/Materials/Material.hpp"
 #include "Origin/Animation/Animation.h"
 #include "Origin/Animation/AnimationBlender.h"
@@ -50,7 +51,7 @@ public:
     void LoadAnimations();
 	void LoadVertexBones(const u32 mesh_index, Ref<Mesh> &data, aiMesh *mesh);
 	void LoadSingleVertexBone(const u32 mesh_index, Ref<Mesh> &data, const aiBone *bone);
-	void LoadMaterials(MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath);
+	void LoadMaterials(u32 mesh_index, MeshMaterial &material, aiMaterial *ai_material, const std::string &filepath);
     void CalculateBoneTransforms(const aiNode *node, const glm::mat4 &parent_transform, const u32 anim_index);
     void CalculateAnimationTransforms(const aiNode *node, const u32 anim_index, std::unordered_map<std::string, AnimationNode> &anim_nodes, const glm::mat4 &parent_transform = glm::mat4(1.0f));
 
@@ -64,8 +65,11 @@ public:
     const std::vector<glm::mat4> &GetBoneTransforms() const;
 
 	static Ref<Model> Create(const std::string &filepath);
+
     static AssetType GetStaticType() { return AssetType::Mesh; }
     AssetType GetType() const override { return GetStaticType(); }
+
+    AABB aabb;
 
 private:
 	Assimp::Importer m_Importer;

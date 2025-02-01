@@ -21,7 +21,7 @@ namespace origin {
         bool IsAssetLoaded(const std::string &filepath) const override;
         AssetType GetAssetType(AssetHandle handle) const override;
 
-        AssetHandle ImportAsset(const std::filesystem::path& filepath, bool load_to_scene = true);
+        AssetHandle ImportAsset(const std::filesystem::path& filepath);
         void InsertAsset(AssetHandle handle, const AssetMetadata &metadata, const std::function<Ref<Asset>()> &loader);
 
         void RemoveAsset(AssetHandle handle);

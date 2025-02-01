@@ -153,7 +153,6 @@ void EditorLayer::OnUpdate(const Timestep ts)
     RenderCommand::ClearColor(m_ClearColor);
     RenderCommand::Clear();
     Render(ts);
-
     m_ActiveScene->GetUIRenderer()->Render();
     m_Framebuffer->Unbind();
     m_ActiveScene->PostRender(m_EditorCamera, ts);
@@ -320,6 +319,8 @@ void EditorLayer::OnGuiRender()
     {
         m_ContentBrowser->OnImGuiRender();
     }
+
+    m_ActiveScene->OnGuiRender();
     
     Dockspace::End();
 }
