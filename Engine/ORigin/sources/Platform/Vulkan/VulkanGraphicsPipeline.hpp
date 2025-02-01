@@ -13,7 +13,7 @@ class VulkanGraphicsPipeline
 {
 public:
     VulkanGraphicsPipeline();
-    VulkanGraphicsPipeline(VkDevice device, VkRenderPass render_pass, VkAllocationCallbacks *allocator);
+    VulkanGraphicsPipeline(VkDevice device);
     ~VulkanGraphicsPipeline();
     
     void Create(
@@ -22,37 +22,21 @@ public:
         const VkPipelineInputAssemblyStateCreateInfo &inputAssemblyInfo,
         const VkViewport &viewport,
         const VkRect2D &scissor,
+        const VkRenderPass &render_pass,
         const VkPipelineRasterizationStateCreateInfo &rasterizationInfo,
         const VkPipelineMultisampleStateCreateInfo &multisampleInfo,
         const VkPipelineColorBlendStateCreateInfo &colorBlendInfo,
         const VkPipelineLayoutCreateInfo &layoutInfo
     );
 
-    void Cleanup();
-
-    void Resize(u32 width, u32 height);
-
-    void BeginRenderPass(VkCommandBuffer command_buffer, VkFramebuffer framebuffer, VkClearValue clear_value, u32 width, u32 height);
-    void EndRenderPass(VkCommandBuffer command_buffer);
-
-    VkPipeline GetPipeline() const { return m_GraphicsPipeline; }
-    VkPipelineLayout GetPipelineLayout() const { return m_PipelineLayout; }
-    VkRect2D GetScissor() const { return m_Scissor; }
-    VkViewport GetViewport() const { return m_Viewport; }
-
+    void Destroy();
+    VkPipeline GetPipeline() const { return m_pipeline; }
+    VkPipelineLayout GetPipelineLayout() const { return m_pipeline_layout; }
 private:
-    VkDevice m_Device;
-    VkRenderPass m_RenderPass;
-    VkPipelineLayout m_PipelineLayout;
-    VkPipeline m_GraphicsPipeline;
-    VkAllocationCallbacks *m_Allocator;
-
-    VkViewport m_Viewport;
-    VkRect2D m_Scissor;
+    VkDevice m_device;
+    VkPipelineLayout m_pipeline_layout;
+    VkPipeline m_pipeline;
 };
-
-
-
 }
 
 #endif

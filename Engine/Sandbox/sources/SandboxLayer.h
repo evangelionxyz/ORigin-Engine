@@ -21,6 +21,10 @@ public:
 
 private:
     void UpdateCamera(f32 delta_time);
+
+    VulkanContext *vk = nullptr;
+
+    Ref<VulkanShader> shader;
 };
 
 }

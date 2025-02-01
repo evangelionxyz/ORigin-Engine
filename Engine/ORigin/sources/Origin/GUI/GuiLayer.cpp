@@ -108,7 +108,7 @@ void GuiLayer::Init()
         init_info.MinImageCount = vk_context->GetVkMinImageCount();
         init_info.ImageCount = vk_context->GetSwapchain()->GetVkImageCount();
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-        init_info.Allocator = vk_context->GetVkAllocator();
+        init_info.Allocator = nullptr;
         init_info.CheckVkResultFn = VK_NULL_HANDLE;
 
         ImGui_ImplVulkan_Init(&init_info);

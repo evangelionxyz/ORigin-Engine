@@ -21,7 +21,6 @@ namespace origin
         spec.Width = 1280;
         spec.Height = 720;
         spec.Maximize = false;
-        spec.WorkingDirectory = "../Editor";
         spec.CommandLineArgs = args;
         spec.RenderAPI = RendererAPI::API::Vulkan;
 

@@ -10,8 +10,7 @@ class VulkanQueue
 {
 public:
     VulkanQueue() = default;
-    explicit VulkanQueue(VkDevice device, VkAllocationCallbacks *allocator, 
-        u32 queueFamilyIndex, u32 queueIndex);
+    explicit VulkanQueue(VkDevice device, u32 queueFamilyIndex, u32 queueIndex);
 
     void SubmitSync(VkCommandBuffer cmd) const;
     void SubmitAsync(VkCommandBuffer cmd) const;
@@ -32,7 +31,6 @@ private:
     VkSemaphore m_ImageAvailableSemaphore = VK_NULL_HANDLE;
     VkSemaphore m_RenderFinishedSemaphore = VK_NULL_HANDLE;
     VkFence m_InFlightFence = VK_NULL_HANDLE;
-    VkAllocationCallbacks *m_Allocator = VK_NULL_HANDLE;
     mutable u32 m_ImageIndex = 0;
 };
 }

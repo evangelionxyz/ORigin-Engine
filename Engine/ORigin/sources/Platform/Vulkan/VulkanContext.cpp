@@ -38,16 +38,13 @@ void VulkanContext::Shutdown()
     ResetCommandPool();
 
     // destroy render pass
-    vkDestroyRenderPass(m_LogicalDevice, m_RenderPass, m_Allocator);
-
-    // destroy pipeline
-    m_GraphicsPipeline.Cleanup();
+    vkDestroyRenderPass(m_LogicalDevice, m_default_render_pass, nullptr);
 
     // destroy descriptor pool
-    vkDestroyDescriptorPool(m_LogicalDevice, m_DescriptorPool, m_Allocator);
+    vkDestroyDescriptorPool(m_LogicalDevice, m_DescriptorPool, nullptr);
 
     // destroy command pool
-    vkDestroyCommandPool(m_LogicalDevice, m_CommandPool, m_Allocator);
+    vkDestroyCommandPool(m_LogicalDevice, m_CommandPool, nullptr);
 
     // destroy semaphores
     m_Queue.Destroy();
@@ -56,21 +53,21 @@ void VulkanContext::Shutdown()
     m_Swapchain.Destroy();
 
     // destroy surface
-    vkDestroySurfaceKHR(m_Instance, m_Surface, m_Allocator);
+    vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 
 #ifdef OGN_DEBUG
     // destroy messenger
     const auto dbg_messenger_func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
         vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT"));
     OGN_CORE_ASSERT(dbg_messenger_func, "[Vulkan] Could not find address of 'vkDestroyDebugUtilsMessengerEXT'");
-    dbg_messenger_func(m_Instance, m_DebugMessenger, m_Allocator);
+    dbg_messenger_func(m_Instance, m_DebugMessenger, nullptr);
 #endif
 
     // destroy device
-    vkDestroyDevice(m_LogicalDevice, m_Allocator);
+    vkDestroyDevice(m_LogicalDevice, nullptr);
 
     // destroy instance
-    vkDestroyInstance(m_Instance, m_Allocator);
+    vkDestroyInstance(m_Instance, nullptr);
 }
 
 void VulkanContext::Init(Window *window)
@@ -95,7 +92,7 @@ void VulkanContext::Init(Window *window)
     CreateRenderPass();
     CreateCommandPool();
 
-    m_Queue = VulkanQueue(m_LogicalDevice, m_Allocator, m_QueueFamily, 0);
+    m_Queue = VulkanQueue(m_LogicalDevice, m_QueueFamily, 0);
     CreateDescriptorPool();
 
     // Print info
@@ -117,11 +114,7 @@ void VulkanContext::Init(Window *window)
         OGN_CORE_INFO(" Driver Version: {}", device_properties.driverVersion);
     }
 
-    m_GraphicsPipeline = VulkanGraphicsPipeline(m_LogicalDevice, m_RenderPass, m_Allocator);
-
-    CreateGraphicsPipeline();
     CreateFramebuffers();
-
     CreateCommandBuffers();
 }
 
@@ -167,7 +160,7 @@ void VulkanContext::CreateInstance()
     create_info.enabledLayerCount = std::size(layers);
     create_info.ppEnabledLayerNames = layers;
 
-    const VkResult res = vkCreateInstance(&create_info, m_Allocator, &m_Instance);
+    const VkResult res = vkCreateInstance(&create_info, nullptr, &m_Instance);
     VK_ERROR_CHECK(res, "[Vulkan] Failed to create instance");
     OGN_CORE_INFO("[Vulkan] Vulkan instance created");
 
@@ -189,14 +182,14 @@ void VulkanContext::CreateDebugCallback()
     const auto dbg_messasger_func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT"));
     OGN_CORE_ASSERT(dbg_messasger_func, "[Vulkan] Cannot find address of vkCreateDebugUtilsMessengerEXT");
 
-    const VkResult result = dbg_messasger_func(m_Instance, &msg_create_info, m_Allocator, &m_DebugMessenger);
+    const VkResult result = dbg_messasger_func(m_Instance, &msg_create_info, nullptr, &m_DebugMessenger);
     VK_ERROR_CHECK(result, "[Vulkan] Failed to create debug messenger");
 
 }
 
 void VulkanContext::CreateWindowSurface()
 {
-    VK_ERROR_CHECK(glfwCreateWindowSurface(m_Instance, m_WindowHandle, m_Allocator, &m_Surface), "[Vulkan] Failed to crreate window surface");
+    VK_ERROR_CHECK(glfwCreateWindowSurface(m_Instance, m_WindowHandle, nullptr, &m_Surface), "[Vulkan] Failed to crreate window surface");
 }
 
 void VulkanContext::CreateDevice()
@@ -236,7 +229,7 @@ void VulkanContext::CreateDevice()
     create_info.ppEnabledExtensionNames = device_extensions;
     create_info.pEnabledFeatures = &device_features;
 
-    const VkResult result = vkCreateDevice(m_PhysicalDevice.GetSelectedDevice().Device, &create_info, m_Allocator, &m_LogicalDevice);
+    const VkResult result = vkCreateDevice(m_PhysicalDevice.GetSelectedDevice().Device, &create_info, nullptr, &m_LogicalDevice);
     VK_ERROR_CHECK(result, "[Vulkan] Failed to create logical device");
     OGN_CORE_INFO("[Vulkan Context] Physical device created successfully");
 }
@@ -271,9 +264,7 @@ void VulkanContext::CreateSwapchain()
 
     VkSurfaceFormatKHR format = VkChooseSurfaceFormat(m_PhysicalDevice.GetSelectedDevice().SurfaceFormats);
     VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-    m_Swapchain = VulkanSwapchain(m_LogicalDevice, m_Allocator, m_Surface,
-        format, capabilities, present_mode, image_usage, m_QueueFamily);
+    m_Swapchain = VulkanSwapchain(m_LogicalDevice, m_Surface, format, capabilities, present_mode, image_usage, m_QueueFamily);
 }
 
 void VulkanContext::CreateCommandPool()
@@ -283,7 +274,7 @@ void VulkanContext::CreateCommandPool()
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     pool_create_info.queueFamilyIndex = m_QueueFamily;
 
-    VK_ERROR_CHECK(vkCreateCommandPool(m_LogicalDevice, &pool_create_info, m_Allocator, &m_CommandPool),
+    VK_ERROR_CHECK(vkCreateCommandPool(m_LogicalDevice, &pool_create_info, nullptr, &m_CommandPool),
         "[Vulkan] Failed to create command pool");
 }
 
@@ -311,70 +302,8 @@ void VulkanContext::CreateDescriptorPool()
     pool_info.poolSizeCount = std::size(pool_sizes);
     pool_info.pPoolSizes = pool_sizes;
 
-    VK_ERROR_CHECK(vkCreateDescriptorPool(m_LogicalDevice, &pool_info, m_Allocator, &m_DescriptorPool),
+    VK_ERROR_CHECK(vkCreateDescriptorPool(m_LogicalDevice, &pool_info, nullptr, &m_DescriptorPool),
         "[Vulkan] Failed to create command pool");
-}
-
-void VulkanContext::CreateGraphicsPipeline()
-{
-    Ref<VulkanShader> shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", true);
-
-    VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
-    vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertex_input_info.vertexAttributeDescriptionCount = 0;
-    vertex_input_info.vertexBindingDescriptionCount = 0;
-
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_info = {};
-    input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    input_assembly_info.primitiveRestartEnable = VK_FALSE;
-
-    VkPipelineRasterizationStateCreateInfo rasterization_info = {};
-    rasterization_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterization_info.depthClampEnable = VK_FALSE;
-    rasterization_info.rasterizerDiscardEnable = VK_FALSE;
-    rasterization_info.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterization_info.lineWidth = 1.0f;
-    rasterization_info.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterization_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rasterization_info.depthBiasEnable = VK_FALSE;
-
-    VkPipelineMultisampleStateCreateInfo multisample_info = {};
-    multisample_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisample_info.sampleShadingEnable = VK_FALSE;
-    multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-    VkPipelineColorBlendAttachmentState color_blend_attachment = {};
-    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    color_blend_attachment.blendEnable = VK_FALSE;
-
-    VkPipelineColorBlendStateCreateInfo color_blend_info = {};
-    color_blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    color_blend_info.logicOpEnable = VK_FALSE;
-    color_blend_info.logicOp = VK_LOGIC_OP_COPY;
-    color_blend_info.attachmentCount = 1;
-    color_blend_info.pAttachments = &color_blend_attachment;
-    color_blend_info.blendConstants[0] = 0.0f;
-    color_blend_info.blendConstants[1] = 0.0f;
-    color_blend_info.blendConstants[2] = 0.0f;
-    color_blend_info.blendConstants[3] = 0.0f;
-
-    VkPipelineLayoutCreateInfo pipeline_layout_info = {};
-    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_info.setLayoutCount = 0;
-    pipeline_layout_info.pushConstantRangeCount = 0;
-
-    VkViewport viewport = { 0.0f, 0.0f,
-        static_cast<float>(m_Swapchain.GetVkExtent2D().width),
-        static_cast<float>(m_Swapchain.GetVkExtent2D().height),
-        0.0f, 1.0f
-    };
-    VkRect2D scissor = { {0, 0}, m_Swapchain.GetVkExtent2D() };
-
-    m_GraphicsPipeline.Create(shader->GetShaderStages(),
-        vertex_input_info, input_assembly_info, viewport, scissor,
-        rasterization_info, multisample_info, color_blend_info,
-        pipeline_layout_info);
 }
 
 void VulkanContext::CreateRenderPass()
@@ -421,7 +350,7 @@ void VulkanContext::CreateRenderPass()
     render_pass_info.dependencyCount = 1;
     render_pass_info.pDependencies = &subpass_dependency;
 
-    VK_ERROR_CHECK(vkCreateRenderPass(m_LogicalDevice, &render_pass_info, m_Allocator, &m_RenderPass),
+    VK_ERROR_CHECK(vkCreateRenderPass(m_LogicalDevice, &render_pass_info, nullptr, &m_default_render_pass),
         "[Vulkan] Failed to create render pass");
 }
 
@@ -438,14 +367,14 @@ void VulkanContext::CreateFramebuffers()
         VkImageView attachments[] = { m_Swapchain.GetVkImageView(i) };
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass      = m_RenderPass;
+        framebuffer_create_info.renderPass      = m_default_render_pass;
         framebuffer_create_info.width           = width;
         framebuffer_create_info.height          = height;
         framebuffer_create_info.layers          = 1;
         framebuffer_create_info.pAttachments    = attachments;
         framebuffer_create_info.attachmentCount = std::size(attachments);
 
-        VkResult res = vkCreateFramebuffer(m_LogicalDevice, &framebuffer_create_info, m_Allocator, &m_Framebuffers[i]);
+        VkResult res = vkCreateFramebuffer(m_LogicalDevice, &framebuffer_create_info, nullptr, &m_Framebuffers[i]);
         VK_ERROR_CHECK(res, "[Vulkan] Failed to create framebuffer");
     }
 }
@@ -476,7 +405,7 @@ void VulkanContext::FreeCommandBuffers()
 void VulkanContext::DestroyFramebuffers()
 {
     for (const auto fb : m_Framebuffers)
-        vkDestroyFramebuffer(m_LogicalDevice, fb, m_Allocator);
+        vkDestroyFramebuffer(m_LogicalDevice, fb, nullptr);
 }
 
 void VulkanContext::RecreateSwapchain()
@@ -491,17 +420,21 @@ void VulkanContext::RecreateSwapchain()
 
     const u32 width = m_Swapchain.GetVkExtent2D().width;
     const u32 height = m_Swapchain.GetVkExtent2D().height;
-    m_GraphicsPipeline.Resize(width, height);
 
     CreateFramebuffers();
 }
 
 void VulkanContext::Present()
 {
-    m_Queue.WaitIdle();
+    BeginFrame();
+    EndFrame();
+}
 
-    u32 image_index = 0;
-    VkResult result = vkAcquireNextImageKHR(m_LogicalDevice, m_Swapchain.GetVkSwapchain(), UINT64_MAX, m_Queue.GetSemaphore(), VK_NULL_HANDLE, &image_index);
+void VulkanContext::BeginFrame()
+{
+    m_Queue.WaitIdle();
+    VkResult result = vkAcquireNextImageKHR(m_LogicalDevice, m_Swapchain.GetVkSwapchain(), 
+        UINT64_MAX, m_Queue.GetSemaphore(), VK_NULL_HANDLE, &m_current_image_index);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
@@ -515,48 +448,74 @@ void VulkanContext::Present()
 
     m_Queue.WaitAndResetFences();
 
-    vkResetCommandBuffer(m_CommandBuffers[image_index], 0);
-    RecordCommandBuffer(m_CommandBuffers[image_index], image_index);
+    vkResetCommandBuffer(m_CommandBuffers[m_current_image_index], 0);
+    RecordCommandBuffer(m_CommandBuffers[m_current_image_index], m_current_image_index);
+}
 
-    m_Queue.SubmitAsync(m_CommandBuffers[image_index]);
+void VulkanContext::EndFrame()
+{
+    m_Queue.SubmitAsync(m_CommandBuffers[m_current_image_index]);
 
-    result = m_Queue.Present(image_index, m_Swapchain.GetVkSwapchain());
+    VkResult result = m_Queue.Present(m_current_image_index, m_Swapchain.GetVkSwapchain());
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
         RecreateSwapchain();
     }
 }
 
-void VulkanContext::RecordCommandBuffer(VkCommandBuffer command_buffer, u32 image_index)
+void VulkanContext::RecordCommandBuffer(VkCommandBuffer cmd, u32 image_index)
 {
     const u32 width = m_Swapchain.GetVkExtent2D().width;
     const u32 height = m_Swapchain.GetVkExtent2D().height;
 
-    VkCommandBufferBeginInfo begin_info = {};
-    begin_info.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
     begin_info.flags            = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     begin_info.pNext            = VK_NULL_HANDLE;
     begin_info.pInheritanceInfo = VK_NULL_HANDLE;
-    vkBeginCommandBuffer(command_buffer, &begin_info);
+    vkBeginCommandBuffer(cmd, &begin_info);
 
-    m_GraphicsPipeline.BeginRenderPass(command_buffer, m_Framebuffers[image_index], m_ClearValue, width, height);
+    VkClearValue clear_value = { 0.2f, 0.0, 0.2f, 1.0f };
 
-    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline.GetPipeline());
+    const VkRect2D render_area = { { 0, 0 },{ width, height } };
+    VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
+    render_pass_begin_info.pNext = VK_NULL_HANDLE;
+    render_pass_begin_info.renderPass = m_default_render_pass;
+    render_pass_begin_info.renderArea = render_area;
+    render_pass_begin_info.framebuffer = m_Framebuffers[image_index];
+    render_pass_begin_info.clearValueCount = 1;
+    render_pass_begin_info.pClearValues = &clear_value;
 
-    VkViewport vp = m_GraphicsPipeline.GetViewport();
-    VkRect2D scissor = m_GraphicsPipeline.GetScissor();
+    VkRect2D scissor;
+    scissor.offset = { 0, 0 };
+    scissor.extent = m_Swapchain.GetVkExtent2D();
+    
+    VkViewport viewport;
+    viewport.x = 0;
+    viewport.y = 0;
+    viewport.width = static_cast<f32>(width);
+    viewport.height = static_cast<f32>(height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
 
-    vkCmdSetViewport(command_buffer, 0, 1, &vp);
-    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+    vkCmdSetViewport(cmd, 0, 1, &viewport);
+    vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-    vkCmdDraw(command_buffer, 3, 1, 0, 0);
+    vkCmdBeginRenderPass(cmd, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
-    // record dear imgui primitives into command buffer
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer);
+    for (auto &command : m_CommandCallbacks)
+    {
+        command(cmd, image_index);
+    }
+    m_CommandCallbacks.clear();
 
-    m_GraphicsPipeline.EndRenderPass(command_buffer);
+    vkCmdEndRenderPass(cmd);
 
-    vkEndCommandBuffer(command_buffer); // !command buffer
+    vkEndCommandBuffer(cmd); // !command buffer
+}
+
+void VulkanContext::Submit(CommandCallback callback)
+{
+    m_CommandCallbacks.push_back(callback);
 }
 
 }

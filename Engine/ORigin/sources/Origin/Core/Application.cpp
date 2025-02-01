@@ -34,7 +34,7 @@ namespace origin {
         RendererAPI::SetAPI(m_Spec.RenderAPI);
 
         Window::GLFWInit();
-        m_ConsoleManager = std::make_unique<ConsoleManager>();
+        m_ConsoleManager = CreateScope<ConsoleManager>();
 
         switch (RendererAPI::GetAPI())
         {
@@ -85,7 +85,7 @@ namespace origin {
             OGN_PROFILER_BEGIN_FRAME("MainThread");
             m_Window->UpdateEvents();
             
-            float time = static_cast<float>(glfwGetTime());
+            f32 time = static_cast<float>(glfwGetTime());
             Timestep ts = time - m_LastFrame;
             m_LastFrame = time;
 

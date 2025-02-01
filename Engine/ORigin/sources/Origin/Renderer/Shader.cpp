@@ -144,6 +144,21 @@ Ref<Shader> Shader::Create(const std::filesystem::path &filepath, bool isSpirv, 
     }
 }
 
+Shader *Shader::CreateNew(const std::filesystem::path &filepath, bool is_spirv, bool recompile)
+{
+    switch (RendererAPI::GetAPI())
+    {
+    case RendererAPI::API::None:
+        return nullptr;
+    case RendererAPI::API::OpenGL:
+        return new OpenGLShader(filepath, is_spirv, recompile);
+    case RendererAPI::API::Vulkan:
+        return new VulkanShader(filepath, recompile);
+    default: OGN_CORE_ASSERT(false, "Unknown RendererAPI");
+        return nullptr;
+    }
+}
+
 ShaderProgramSources Shader::ParseShader(const std::string &filepath)
 {
     OGN_PROFILER_RENDERING();
@@ -259,7 +274,7 @@ ShaderSource Shader::PreProcess(const std::string &source, const std::string &fi
     return shader_sources;
 }
 
-ShaderData Shader::CompileOrGetVulkanBinaries(const ShaderSource &shaderSources, const std::string &filepath)
+ShaderData Shader::CompileOrGetVulkanBinaries(const ShaderSource &shader_source, const std::string &filepath, bool recompile)
 {
     ShaderData shaderData;
     shaderc::CompileOptions options;
@@ -268,11 +283,11 @@ ShaderData Shader::CompileOrGetVulkanBinaries(const ShaderSource &shaderSources,
     options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-    for (auto &&[stage, source] : shaderSources)
+    for (auto &&[stage, source] : shader_source)
     {
         std::filesystem::path shaderFilepath = filepath;
         std::filesystem::path cachedPath = cacheDirectory / (shaderFilepath.filename().string() + GLShaderStageCachedVulkanFileExtension(stage));
-        if (std::ifstream infile(cachedPath, std::ios::in | std::ios::binary); infile.is_open())
+        if (std::ifstream infile(cachedPath, std::ios::in | std::ios::binary); infile.is_open() && !recompile)
         {
             infile.seekg(0, std::ios::end);
             auto size = infile.tellg();
@@ -287,7 +302,6 @@ ShaderData Shader::CompileOrGetVulkanBinaries(const ShaderSource &shaderSources,
         else
         {
             shaderc::Compiler compiler;
-
             shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, (shaderc_shader_kind)GLShaderStageToShaderC(stage), filepath.c_str());
             bool  success = module.GetCompilationStatus() == shaderc_compilation_status_success;
 

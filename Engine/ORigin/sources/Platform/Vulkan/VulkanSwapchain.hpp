@@ -16,7 +16,7 @@ public:
 
     VulkanSwapchain() = default;
 
-    VulkanSwapchain(VkDevice device, VkAllocationCallbacks *allocator, VkSurfaceKHR surface,
+    VulkanSwapchain(VkDevice device, VkSurfaceKHR surface,
         VkSurfaceFormatKHR surfaceFormat, VkSurfaceCapabilitiesKHR capabilities,
         VkPresentModeKHR presentMode, VkImageUsageFlags imageUsageFlags, 
         u32 queueFamilyIndex
@@ -34,14 +34,13 @@ public:
     u32 GkVkMinImageCount() const;
 
 private:
-    void CreateImageViews(VkDevice device, VkAllocationCallbacks *allocator, u32 imageCount);
+    void CreateImageViews(VkDevice device, u32 imageCount);
 
     VkSwapchainKHR m_Swapchain;
     VkSurfaceFormatKHR m_Format;
     VkImages m_Images;
     VkImageViews m_ImageViews;
     VkDevice m_Device;
-    VkAllocationCallbacks *m_Allocator;
     u32 m_MinImageCount = 0;
     VkExtent2D m_ImageExtent;
 };

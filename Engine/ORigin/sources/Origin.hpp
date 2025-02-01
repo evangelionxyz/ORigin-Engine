@@ -74,4 +74,13 @@
 #include "Platform/OpenGL/OpenGLUniformBuffer.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
 
+#include "Platform/Vulkan/VulkanContext.hpp"
+#include "Platform/Vulkan/VulkanGraphicsPipeline.hpp"
+#include "Platform/Vulkan/VulkanWrapper.hpp"
+#include "Platform/Vulkan/VulkanSwapchain.hpp"
+#include "Platform/Vulkan/VulkanShader.hpp"
+#include "Platform/Vulkan/VulkanQueue.hpp"
+#include "Platform/Vulkan/VulkanBuffer.hpp"
+#include "Platform/Vulkan/VulkanPhysicalDevice.hpp"
+
 #endif
