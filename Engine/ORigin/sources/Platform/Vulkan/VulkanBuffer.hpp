@@ -42,8 +42,6 @@ public:
     VkDeviceMemory GetBufferMemory() const { return m_buffer_memory; }
     VkBuffer GetBuffer() const { return m_buffer; }
 
-    void Bind(VkCommandBuffer cmd);
-
     void Destroy();
 
 private:

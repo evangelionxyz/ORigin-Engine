@@ -49,13 +49,17 @@ struct TVertex
 };
 
 std::vector<TVertex> vertices = {
-       {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}}, // Position, Color
-       {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
-       {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
+       {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}}, // Position, Color
+       {{-0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+       {{ 0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}},
+       {{ 0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}}
 };
+
+std::vector<u32> indices = { 0, 1, 2, 2, 3, 0 };
 
 Ref<VulkanGraphicsPipeline> pipeline;
 Ref<VulkanBuffer> vertex_buffer;
+Ref<VulkanBuffer> index_buffer;
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
@@ -69,9 +73,13 @@ void SandboxLayer::OnAttach()
     shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", true);
 
     // CREATING VERTEX BUFFER
-    VkDeviceSize buffer_size = sizeof(vertices[0]) * vertices.size();
-    vertex_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, buffer_size);
-    CopyDataToBuffer(vk->GetVkDevice(), vertex_buffer->GetBufferMemory(), vertices.data(), buffer_size);
+    VkDeviceSize vertex_buffer_size = sizeof(vertices[0]) * vertices.size();
+    vertex_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vertex_buffer_size);
+    CopyDataToBuffer(vk->GetVkDevice(), vertex_buffer->GetBufferMemory(), vertices.data(), vertex_buffer_size);
+
+    VkDeviceSize indices_buffer_size = sizeof(u32) * indices.size();
+    index_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, indices_buffer_size);
+    CopyDataToBuffer(vk->GetVkDevice(), index_buffer->GetBufferMemory(), indices.data(), indices_buffer_size);
 
     auto binding_desc = TVertex::GetVkBindingDesc();
     auto attr_desc = TVertex::GetVkAttributeDesc();
@@ -91,7 +99,7 @@ void SandboxLayer::OnAttach()
     rst_info.rasterizerDiscardEnable = VK_FALSE;
     rst_info.polygonMode = VK_POLYGON_MODE_FILL;
     rst_info.lineWidth = 1.0f;
-    rst_info.cullMode = VK_CULL_MODE_NONE;
+    rst_info.cullMode = VK_CULL_MODE_FRONT_BIT;
     rst_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rst_info.depthBiasEnable = VK_FALSE;
 
@@ -156,9 +164,15 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetPipeline());
 
         // bind vertex buffer
-        vertex_buffer->Bind(cmd);
-        // render
-        vkCmdDraw(cmd, 3, 1, 0, 0);
+        VkBuffer buffers[] = { vertex_buffer->GetBuffer() };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(cmd, 0, 1, buffers, offsets);
+
+        // bind index buffer
+        vkCmdBindIndexBuffer(cmd, index_buffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+        // render (6 indices, 1 instance)
+        vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
 
         // record dear imgui primitives into command buffer
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);

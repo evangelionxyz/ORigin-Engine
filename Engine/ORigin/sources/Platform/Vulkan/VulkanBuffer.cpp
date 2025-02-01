@@ -39,13 +39,6 @@ VulkanBuffer::~VulkanBuffer()
 {
 }
 
-void VulkanBuffer::Bind(VkCommandBuffer cmd)
-{
-    VkBuffer buffers[] = { m_buffer };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(cmd, 0, 1, buffers, offsets);
-}
-
 void VulkanBuffer::Destroy()
 {
     VulkanContext *vk = VulkanContext::GetInstance();
