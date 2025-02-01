@@ -39,7 +39,7 @@ public:
     VkRenderPass GetVkRenderPass() { return m_default_render_pass; }
     VkClearValue *GetClearValue() { return &m_ClearValue; }
     VkFramebuffer GetFramebuffer(u32 index) { return m_Framebuffers[index]; }
-
+    VkCommandPool GetVkCommandPool() { return m_CommandPool; }
     void ResetCommandPool();
 
     void CreateInstance();

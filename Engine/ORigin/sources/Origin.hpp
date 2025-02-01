@@ -75,6 +75,7 @@
 #include "Platform/OpenGL/OpenGLVertexArray.h"
 
 #include "Platform/Vulkan/VulkanContext.hpp"
+#include "Platform/Vulkan/VulkanImage.hpp"
 #include "Platform/Vulkan/VulkanGraphicsPipeline.hpp"
 #include "Platform/Vulkan/VulkanWrapper.hpp"
 #include "Platform/Vulkan/VulkanSwapchain.hpp"

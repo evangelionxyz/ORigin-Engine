@@ -282,17 +282,17 @@ void VulkanContext::CreateDescriptorPool()
 {
     const VkDescriptorPoolSize pool_sizes[] =
     {
-    { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-    { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-    { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-    { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-    { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-    { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-    { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-    { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-    { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-    { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-    { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+    { VK_DESCRIPTOR_TYPE_SAMPLER, 100 },
+    { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100 },
+    { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100 },
+    { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100 },
+    { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100 },
+    { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100 },
+    { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100 },
+    { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100 },
+    { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100 },
+    { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100 },
+    { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100 }
     };
 
     VkDescriptorPoolCreateInfo pool_info = {};
@@ -474,7 +474,7 @@ void VulkanContext::RecordCommandBuffer(VkCommandBuffer cmd, u32 image_index)
     begin_info.pInheritanceInfo = VK_NULL_HANDLE;
     vkBeginCommandBuffer(cmd, &begin_info);
 
-    VkClearValue clear_value = { 0.2f, 0.0, 0.2f, 1.0f };
+    VkClearValue clear_value = { 0.1f, 0.1f, 0.1f, 1.0f };
 
     const VkRect2D render_area = { { 0, 0 },{ width, height } };
     VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };

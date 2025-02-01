@@ -5,12 +5,12 @@
 
 namespace origin {
 
-    class Dockspace
-    {
-    public:
-        static void Begin();
-        static void End();
-    };
+class Dockspace
+{
+public:
+    static void Begin();
+    static void End();
+};
 }
 
 #endif

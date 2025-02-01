@@ -24,26 +24,23 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags usage, VkDeviceSize buffer_size)
     // allocate memory
     VkMemoryAllocateInfo alloc_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
     alloc_info.allocationSize = mem_requirements.size;
-    alloc_info.memoryTypeIndex = FindMemoryType(
+    alloc_info.memoryTypeIndex = VkFindMemoryType(
         vk->GetVkPhysicalDevice(),
         mem_requirements.memoryTypeBits,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
     );
 
-    result = vkAllocateMemory(vk->GetVkDevice(), &alloc_info, nullptr, &m_buffer_memory);
-    vkBindBufferMemory(vk->GetVkDevice(), m_buffer, m_buffer_memory, 0);
+    result = vkAllocateMemory(vk->GetVkDevice(), &alloc_info, nullptr, &m_memory);
+    vkBindBufferMemory(vk->GetVkDevice(), m_buffer, m_memory, 0);
 
-}
-
-VulkanBuffer::~VulkanBuffer()
-{
 }
 
 void VulkanBuffer::Destroy()
 {
-    VulkanContext *vk = VulkanContext::GetInstance();
-    vkDestroyBuffer(vk->GetVkDevice(), m_buffer, nullptr);
-    vkFreeMemory(vk->GetVkDevice(), m_buffer_memory, nullptr);
+    vkDestroyBuffer(VulkanContext::GetInstance()->GetVkDevice(), m_buffer, nullptr);
+    vkFreeMemory(VulkanContext::GetInstance()->GetVkDevice(), m_memory, nullptr);
+
+    m_buffer_size = 0;
 }
 
 }
