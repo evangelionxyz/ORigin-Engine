@@ -1,6 +1,6 @@
 # ORigin Game Engine
 
-#### Clone the repository recursively `git clone --recursive https://github.com/evangelionmanuhutu/ORigin-Engine.git`
+#### Clone the repository recursively `git clone --recursive https://github.com/evangelionxyz/ORigin-Engine.git`
 
 ## Build on Windows
 #### Please Install `pip install requests`
