@@ -128,9 +128,9 @@ Ref<Project> Project::New()
 		
 #elif defined(OGN_PLATFORM_LINUX)
 	// Copying the build.sh
-	std::string buildScriptPath = std::filesystem::absolute("Resources/ScriptProjectGen/build.sh").generic_string();
-	std::string projectBuildScriptPath = filepath.generic_string() + "/build.sh";
-	Utils::CopyFile(buildScriptPath, projectBuildScriptPath);
+	std::string build_script_path = std::filesystem::absolute("Resources/ScriptProjectGen/build.sh").generic_string();
+	std::string project_build_script_path = filepath.generic_string() + "/build.sh";
+	Utils::CopyFile(build_script_path, project_build_script_path);
 #endif
 	Utils::ExecuteScript(project_build_script_path);
 

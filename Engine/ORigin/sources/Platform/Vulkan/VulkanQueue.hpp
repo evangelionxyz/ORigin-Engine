@@ -2,7 +2,7 @@
 #define VULKAN_QUEUE_H
 
 #include <vulkan/vulkan.h>
-#include "ORigin/Core/Types.h"
+#include "Origin/Core/Types.h"
 
 namespace origin {
 

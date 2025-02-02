@@ -32,6 +32,7 @@ objdir (ThirdPartyIntOutputdir)
 		"%{PhysXDir}/physx/source/physx/src",
 		"%{PhysXDir}/physx/source/physx/src/buffering",
 		"%{PhysXDir}/physx/source/pvd/include",
+		"%{PhysXDir}/physx/source/lowlevel/api/include"
 	}
 	files { 
 		"%{PhysXDir}/physx/source/scenequery/**.cpp",

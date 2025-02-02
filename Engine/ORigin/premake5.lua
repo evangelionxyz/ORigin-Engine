@@ -7,9 +7,6 @@ project "ORigin"
     staticruntime "off"
     location "%{wks.location}/Engine/ORigin"
 
-    pchheader "pch.h"
-    pchsource "sources/pch.cpp"
-
     targetdir (outputDir)
     objdir (intOutputDir)
 
@@ -24,6 +21,7 @@ project "ORigin"
         "sources/Platform/Vulkan/**.cpp",
         "sources/Platform/**.hpp",
         "sources/Platform/**.h",
+        "sources/Platform/Win32Window.cpp",
     }
 
     includedirs {
@@ -70,12 +68,12 @@ project "ORigin"
     }
     
     defines { "_CRT_SECURE_NO_WARNINGS" }
-    buildoptions { "/utf-8" }
-
+    
     -- ////////////////////////////////
     -- Windows
     filter "system:windows"
         systemversion "latest"
+        buildoptions { "/utf-8" }
         links {
             "opengl32.lib",
             "%{Library.Vulkan1Lib}",
@@ -88,16 +86,13 @@ project "ORigin"
             "%{Library.BCrypt}"
         }
         files {
-            "sources/Platform/DX11/**.cpp",
-            "sources/Platform/DX11/**.h",
-            "sources/Platform/DX11/**.hpp",
-            "sources/Platform/Win32/**.cpp",
-            "sources/Platform/Win32/**.h",
-            "sources/Platform/Win32/**.hpp",
+            "sources/Platform/Win32/Win32Utils.hpp",
         }
-
+        
         filter "action:vs*"
             linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
+            pchheader "pch.h"
+            pchsource "sources/pch.cpp"
 
         postbuildcommands {
             '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
@@ -159,7 +154,7 @@ project "ORigin"
             "_GLFW_X11"
         }
         pic "On"
-        files { "%{prj.location}/sources/Platform/Linux/**.cpp" }
+        files { "%{prj.location}/sources/Platform/Linux/LinuxUtils.cpp" }
         libdirs { "/usr/lib" }
         includedirs { 
             "/usr/include/",

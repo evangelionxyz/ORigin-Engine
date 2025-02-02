@@ -46,11 +46,9 @@ project "Sandbox"
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
 
-    buildoptions { "/utf-8" }
-
     filter "system:windows"
         includedirs { "%{IncludeDir.VulkanSDK}" }
-
+        buildoptions { "/utf-8" }
         systemversion "latest"
         defines {
             "NV_USE_STATIC_WINCRT",

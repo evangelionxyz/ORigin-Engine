@@ -53,8 +53,6 @@ project "Editor"
         "_CRT_SECURE_NO_WARNINGS",
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
-
-    buildoptions { "/utf-8" }
     
     -- ///////////////////////////////////////////
     -- Windows
@@ -63,6 +61,7 @@ project "Editor"
         files {
           "%{prj.location}/Editor.rc",
         }
+        buildoptions { "/utf-8" }
         defines {
             "NOMINMAX",
             "NV_USE_STATIC_WINCRT",
@@ -70,7 +69,7 @@ project "Editor"
         }
 
         filter "action:vs*"
-          linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
+            linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }
 
         includedirs { "%{IncludeDir.VulkanSDK}" }
 

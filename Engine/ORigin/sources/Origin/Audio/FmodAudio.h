@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-#define FMOD_CHECK(x) if ((x) != FMOD_OK) __debugbreak();
+#define FMOD_CHECK(x) if ((x) != FMOD_OK) OGN_DEBUGBREAK();
 
 namespace origin {
 

@@ -1,8 +1,8 @@
-#ifndef VULKAN_WRAPPER_H
-#define VULKAN_WRAPPER_H
+#ifndef VULKAN_WRAPPER_HPP
+#define VULKAN_WRAPPER_HPP
 
-#include "ORigin/Core/Assert.h"
-#include "ORigin/Core/Log.h"
+#include "Origin/Core/Assert.h"
+#include "Origin/Core/Log.h"
 
 #include "VulkanContext.hpp"
 

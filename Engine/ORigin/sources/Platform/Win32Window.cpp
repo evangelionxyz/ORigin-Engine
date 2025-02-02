@@ -70,7 +70,7 @@ Win32Window::Win32Window(const char* title, uint32_t width, uint32_t height, boo
 
     glfwHideWindow(m_MainWindow);
 
-    int monitor_width, monitor_height;
+    i32 monitor_width, monitor_height;
     glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), nullptr, nullptr, &monitor_width, &monitor_height);
 
     m_Data.xPos = (monitor_width / 2) - (width / 2);

@@ -3,7 +3,7 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "ORigin/Utils/StringUtils.h"
+#include "Origin/Utils/StringUtils.h"
 #include <iostream>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -64,10 +64,18 @@ OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion)
 	return os << glm::to_string(quaternion);
 }
 
+#ifdef OGN_PLATFORM_WINDOWS
 #define OGN_CORE_ERROR(format, ...)     Log::GetInstance()->PrintMessage(LogLevel::Error, format, __VA_ARGS__)
 #define OGN_CORE_WARN(format, ...)      Log::GetInstance()->PrintMessage(LogLevel::Warning, format, __VA_ARGS__)
 #define OGN_CORE_INFO(format, ...)      Log::GetInstance()->PrintMessage(LogLevel::Info, format, __VA_ARGS__)
 #define OGN_CORE_TRACE(format, ...)     Log::GetInstance()->PrintMessage(LogLevel::Trace, format, __VA_ARGS__)
 #define OGN_CORE_CRITICAL(format, ...)	Log::GetInstance()->PrintMessage(LogLevel::Critical, format, __VA_ARGS__)
+#else
+#define OGN_CORE_ERROR(format, ...)
+#define OGN_CORE_WARN(format, ...)
+#define OGN_CORE_INFO(format, ...)
+#define OGN_CORE_TRACE(format, ...)
+#define OGN_CORE_CRITICAL(format, ...)
+#endif
 
 #endif

@@ -45,11 +45,11 @@ project "MeshTest"
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
 
-    buildoptions { "/utf-8" }
-
+    
     -- ///////////////////////////////////////////
     -- Windows
     filter "system:windows"
+        buildoptions { "/utf-8" }
         systemversion "latest"
         defines {
             "NOMINMAX",
