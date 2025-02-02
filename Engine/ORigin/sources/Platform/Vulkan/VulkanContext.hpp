@@ -8,6 +8,7 @@
 #include "VulkanGraphicsPipeline.hpp"
 #include "VulkanPhysicalDevice.hpp"
 #include "VulkanQueue.hpp"
+#include "VulkanRenderPass.hpp"
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
@@ -25,8 +26,8 @@ public:
 
     void SetRebuildSwapchain(bool enable) { m_RebuildSwapchain = enable; }
     bool IsRebuildSwapcahin() { return m_RebuildSwapchain; }
-    int GetVkMinImageCount() { return m_MinImageCount; }
     u32 GetVkQueueFamily() { return m_QueueFamily; }
+    const u32 GetMinImageCount() const { return m_MinImageCount; }
     VulkanSwapchain *GetSwapchain() { return &m_Swapchain; }
     VkDevice GetVkDevice() { return m_LogicalDevice; }
     VkInstance GetVkInstance() { return m_Instance; }
@@ -36,7 +37,11 @@ public:
     VkSurfaceKHR GetVkSurface() { return m_Surface; }
     VkDescriptorPool GetVkDescriptorPool() { return m_DescriptorPool; }
     VkPipelineCache GetVkPipelineCache() { return m_PipelineCache; }
-    VkRenderPass GetVkRenderPass() { return m_default_render_pass; }
+    VkRenderPass GetVkRenderPass() const 
+    { 
+        return m_render_pass->GetRenderPass(); 
+    }
+
     VkClearValue *GetClearValue() { return &m_ClearValue; }
     VkFramebuffer GetFramebuffer(u32 index) { return m_Framebuffers[index]; }
     VkCommandPool GetVkCommandPool() { return m_CommandPool; }
@@ -64,7 +69,7 @@ public:
     void EndFrame();
     void RecordCommandBuffer(VkCommandBuffer command_buffer, u32 image_index);
 
-    using CommandCallback = std::function<void(VkCommandBuffer, u32)>;
+    using CommandCallback = std::function<void(VkCommandBuffer, VkFramebuffer, u32)>;
 
     void Submit(CommandCallback callback);
 
@@ -80,9 +85,8 @@ private:
     VkDescriptorPool       m_DescriptorPool = VK_NULL_HANDLE;
     VkPipelineLayout       m_PipelineLayout = VK_NULL_HANDLE;
     VkPipelineCache        m_PipelineCache = VK_NULL_HANDLE;
-    VkRenderPass           m_default_render_pass = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
-    GLFWwindow *m_WindowHandle = nullptr;
+    GLFWwindow            *m_WindowHandle = nullptr;
     VkComponentMapping     m_SwapchainComponentsMapping{};
     VulkanPhysicalDevice   m_PhysicalDevice;
     VulkanQueue            m_Queue;
@@ -90,8 +94,9 @@ private:
     VulkanSwapchain        m_Swapchain;
     u32                    m_QueueFamily = static_cast<u32>(-1);
     u32                    m_SwapchainBuffering = 0;
-    int                    m_MinImageCount = 2;
+    const u32              m_MinImageCount = 2;
     bool                   m_RebuildSwapchain = false;
+    Ref<VulkanRenderPass>  m_render_pass;
 
     std::vector<VkFramebuffer> m_Framebuffers;
     std::vector<VkCommandBuffer> m_CommandBuffers;

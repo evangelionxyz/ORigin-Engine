@@ -241,7 +241,7 @@ void SandboxLayer::OnAttach()
     pipeline = CreateRef<VulkanGraphicsPipeline>(pipeline_ci);
 
     // Submit to Vulkan command buffer
-    vk->Submit([this](VkCommandBuffer cmd, u32 image_index)
+    vk->Submit([this](VkCommandBuffer cmd, VkFramebuffer framebuffer, u32 image_index)
     {
         // bind the pipeline
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetPipeline());
@@ -260,9 +260,6 @@ void SandboxLayer::OnAttach()
 
         // render (6 indices, 1 instance)
         vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
-
-        // record dear imgui primitives into command buffer
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
     });
 
 }

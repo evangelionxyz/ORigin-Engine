@@ -38,7 +38,7 @@ void VulkanContext::Shutdown()
     ResetCommandPool();
 
     // destroy render pass
-    vkDestroyRenderPass(m_LogicalDevice, m_default_render_pass, nullptr);
+    m_render_pass->Destroy();
 
     // destroy descriptor pool
     vkDestroyDescriptorPool(m_LogicalDevice, m_DescriptorPool, nullptr);
@@ -309,15 +309,18 @@ void VulkanContext::CreateDescriptorPool()
 
 void VulkanContext::CreateRenderPass()
 {
-    VkAttachmentDescription color_attachment = {};
-    color_attachment.format = m_Swapchain.GetVkFormat().format;
-    color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    VkAttachmentDescription attachment = {};
+    attachment.flags = 0;
+    attachment.format = m_Swapchain.GetVkFormat().format;
+    attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    std::vector<VkAttachmentDescription> attachments = { attachment };
 
     VkAttachmentReference color_attachment_ref = {};
     color_attachment_ref.attachment = 0;
@@ -327,32 +330,32 @@ void VulkanContext::CreateRenderPass()
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &color_attachment_ref;
-    subpass.pInputAttachments = VK_NULL_HANDLE;
     subpass.preserveAttachmentCount = 0;
+    subpass.pInputAttachments = VK_NULL_HANDLE;
     subpass.pPreserveAttachments = VK_NULL_HANDLE;
     subpass.pResolveAttachments = VK_NULL_HANDLE;
     subpass.pDepthStencilAttachment = VK_NULL_HANDLE;
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
-    VkSubpassDependency subpass_dependency = {};
-    subpass_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpass_dependency.dstSubpass = 0;
-    subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpass_dependency.srcAccessMask = 0;
-    subpass_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpass_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    std::vector<VkSubpassDescription> subpasses = { subpass };
 
-    VkRenderPassCreateInfo render_pass_info = {};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    render_pass_info.attachmentCount = 1;
-    render_pass_info.pAttachments = &color_attachment;
-    render_pass_info.subpassCount = 1;
-    render_pass_info.pSubpasses = &subpass;
-    render_pass_info.dependencyCount = 1;
-    render_pass_info.pDependencies = &subpass_dependency;
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    std::vector<VkSubpassDependency> dependencies = { dependency };
+   
+    VkRenderPassCreateInfo render_pass_ci = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
+    render_pass_ci.pAttachments = attachments.data();
+    render_pass_ci.attachmentCount = static_cast<u32>(attachments.size());
+    render_pass_ci.pSubpasses = subpasses.data();
+    render_pass_ci.subpassCount = static_cast<u32>(subpasses.size());
+    render_pass_ci.pDependencies = dependencies.data();
+    render_pass_ci.dependencyCount = static_cast<u32>(dependencies.size());
 
-    VK_ERROR_CHECK(vkCreateRenderPass(m_LogicalDevice, &render_pass_info, nullptr, &m_default_render_pass),
-        "[Vulkan] Failed to create render pass");
+    m_render_pass = CreateRef<VulkanRenderPass>(attachments, subpasses, dependencies);
 }
 
 void VulkanContext::CreateFramebuffers()
@@ -365,7 +368,7 @@ void VulkanContext::CreateFramebuffers()
         VkImageView attachments[] = { m_Swapchain.GetVkImageView(i) };
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass      = m_default_render_pass;
+        framebuffer_create_info.renderPass      = m_render_pass->GetRenderPass();
         framebuffer_create_info.width           = m_Swapchain.GetVkExtent2D().width;
         framebuffer_create_info.height          = m_Swapchain.GetVkExtent2D().height;
         framebuffer_create_info.layers          = 1;
@@ -465,17 +468,6 @@ void VulkanContext::RecordCommandBuffer(VkCommandBuffer cmd, u32 image_index)
     begin_info.pInheritanceInfo = VK_NULL_HANDLE;
     vkBeginCommandBuffer(cmd, &begin_info);
 
-    VkClearValue clear_value = { 0.1f, 0.1f, 0.1f, 1.0f };
-
-    const VkRect2D render_area = { { 0, 0 },{ width, height } };
-    VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
-    render_pass_begin_info.pNext = VK_NULL_HANDLE;
-    render_pass_begin_info.renderPass = m_default_render_pass;
-    render_pass_begin_info.renderArea = render_area;
-    render_pass_begin_info.framebuffer = m_Framebuffers[image_index];
-    render_pass_begin_info.clearValueCount = 1;
-    render_pass_begin_info.pClearValues = &clear_value;
-
     VkRect2D scissor;
     scissor.offset = { 0, 0 };
     scissor.extent = m_Swapchain.GetVkExtent2D();
@@ -491,15 +483,18 @@ void VulkanContext::RecordCommandBuffer(VkCommandBuffer cmd, u32 image_index)
     vkCmdSetViewport(cmd, 0, 1, &viewport);
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-    vkCmdBeginRenderPass(cmd, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+    const VkRect2D render_area = { { 0, 0 },{ width, height } };
+    m_render_pass->Begin(cmd, render_area, m_Framebuffers[image_index]);
 
     for (auto &command : m_CommandCallbacks)
     {
-        command(cmd, image_index);
+        command(cmd, m_Framebuffers[image_index], image_index);
     }
     //m_CommandCallbacks.clear();
 
-    vkCmdEndRenderPass(cmd);
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+
+    m_render_pass->End(cmd);
 
     vkEndCommandBuffer(cmd); // !command buffer
 }

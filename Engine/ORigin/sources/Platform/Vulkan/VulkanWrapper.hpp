@@ -85,13 +85,12 @@ static VkBool32 VkDebugMessengerCallback(
     OGN_CORE_INFO("[Vulkan Message]: ");
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
-        OGN_CORE_ERROR("\tVulkan: {}", pCallbackData->pMessage);
+        OGN_CORE_ASSERT(false, "\tVulkan: {}", pCallbackData->pMessage);
     }
     else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
         OGN_CORE_WARN("\tVulkan: {}", pCallbackData->pMessage);
     }
-
     if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
     {
         OGN_CORE_INFO("\tGeneral: {}", pCallbackData->pMessageIdName);
