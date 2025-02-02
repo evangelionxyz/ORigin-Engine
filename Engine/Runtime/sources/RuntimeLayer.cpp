@@ -54,7 +54,7 @@ bool RuntimeLayer::OnKeyPressed(origin::KeyPressedEvent &e)
     return false;
 }
 
-void RuntimeLayer::Resize(uint32_t width, uint32_t height)
+void RuntimeLayer::Resize(u32 width, u32 height)
 {
     if (m_ActiveScene)
     {
@@ -62,13 +62,13 @@ void RuntimeLayer::Resize(uint32_t width, uint32_t height)
         if (cam.IsValid())
         {
             auto &cc = cam.GetComponent<CameraComponent>().Camera;
-            float desiredRatio = cc.GetAspectRatio();
-            float aspectRatio = (float)width / (float)height;
+            f32 desiredRatio = cc.GetAspectRatio();
+            f32 aspectRatio = (f32)width / (f32)height;
 
             // max out the height
             if (aspectRatio > desiredRatio)
             {
-                Height = (float)height;
+                Height = (f32)height;
                 Width = Height * desiredRatio;
                 Y = 0.0f;
                 X = (width - Width) / 2.0f;
@@ -76,7 +76,7 @@ void RuntimeLayer::Resize(uint32_t width, uint32_t height)
             else
             {
                 // max out the width
-                Width = (float)width;
+                Width = (f32)width;
                 Height = Width / desiredRatio;
                 X = 0.0f;
                 Y = (height - Height) / 2.0f;;
@@ -87,7 +87,7 @@ void RuntimeLayer::Resize(uint32_t width, uint32_t height)
     }
 }
 
-void RuntimeLayer::OnLoadingScreen(float endTime)
+void RuntimeLayer::OnLoadingScreen(f32 endTime)
 {
     AudioListener listener(glm::vec3(0.0f), glm::vec3(0.0f), { 0.0f, 0.0f, -1.0f }, { 0.0f, 1.0f, 0.0f });
     m_LoadingSound = AudioSource::Create();
@@ -98,9 +98,9 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
     m_ScreenTexture = TextureImporter::LoadTexture2D("Resources/UITextures/runtime_loading_screen.png");
     auto &app = Application::GetInstance();
     app.GetWindow().ToggleFullScreen();
-    float elapsedTime = 0.0f;
+    f32 elapsedTime = 0.0f;
     auto start = std::chrono::high_resolution_clock::now();
-    float lastFrame = 0.0f;
+    f32 lastFrame = 0.0f;
 
     bool isLoaded = false;
     while (elapsedTime < endTime && app.GetWindow().IsLooping())
@@ -114,14 +114,14 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
                 isLoaded = OpenProject("Game/Game.oxproj");
         }
 
-        float time = app.GetTime();
+        f32 time = app.GetTime();
         Timestep timestep = time - lastFrame;
         lastFrame = time;
 
-        float fadeTime = 0.0f;
+        f32 fadeTime = 0.0f;
         if (elapsedTime <= endTime)
         {
-            float t = elapsedTime / endTime;
+            f32 t = elapsedTime / endTime;
             //fadeTime = t * t * (3.0f - 2.0f * t); // Smoothstep function
             fadeTime = sin(t * 3.14159f); // Using sine function to create an ease-in and ease-out effect
         }
@@ -129,12 +129,12 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
         m_LoadingSound->SetVolume(fadeTime * 5.0f);
         RenderCommand::Clear();
         RenderCommand::ClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
-        uint32_t ww = app.GetWindow().GetWidth();
-        uint32_t wh = app.GetWindow().GetHeight();
-        float desiredAspectRatio = 16.0f / 9.0f;
-        float aspectRatio = (float)ww / (float)wh;
-        Width = (float)ww;
-        Height = (float)wh;
+        u32 ww = app.GetWindow().GetWidth();
+        u32 wh = app.GetWindow().GetHeight();
+        f32 desiredAspectRatio = 16.0f / 9.0f;
+        f32 aspectRatio = (f32)ww / (f32)wh;
+        Width = (f32)ww;
+        Height = (f32)wh;
         X = 0;
         Y = 0;
 
@@ -154,7 +154,7 @@ void RuntimeLayer::OnLoadingScreen(float endTime)
         Renderer2D::DrawQuad(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f)), m_ScreenTexture, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, fadeTime });
         Renderer2D::End();
         m_LoadingSound->Play();
-        app.GetWindow().OnUpdate();
+        app.GetWindow().SwapBuffers();
 
         elapsedTime += timestep;
     }

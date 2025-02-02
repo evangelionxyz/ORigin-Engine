@@ -4,6 +4,8 @@
 #include "ORigin/Core/Assert.h"
 #include "ORigin/Core/Log.h"
 
+#include "VulkanContext.hpp"
+
 #define VK_ERROR_CHECK(result, ...)\
 {\
     if (result != VK_SUCCESS){\
@@ -15,6 +17,64 @@
 
 namespace origin {
 
+static VkCommandBuffer VkBeginSingleTimeCommands()
+{
+    VulkanContext *vk = VulkanContext::GetInstance();
+
+    VkCommandBufferAllocateInfo alloc_info{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandPool = vk->GetVkCommandPool();
+    alloc_info.commandBufferCount = 1;
+
+    VkCommandBuffer cmd;
+    vkAllocateCommandBuffers(vk->GetVkDevice(), &alloc_info, &cmd);
+
+    VkCommandBufferBeginInfo begin_info{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(cmd, &begin_info);
+    return cmd;
+}
+
+static void VkEndSingleTimeCommands(VkCommandBuffer cmd)
+{
+    VulkanContext *vk = VulkanContext::GetInstance();
+
+    vkEndCommandBuffer(cmd);
+
+    VkSubmitInfo submit_info{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &cmd;
+
+    vkQueueSubmit(vk->GetVkQueue(), 1, &submit_info, VK_NULL_HANDLE);
+    vkQueueWaitIdle(vk->GetVkQueue());
+
+    vkFreeCommandBuffers(vk->GetVkDevice(), vk->GetVkCommandPool(), 1, &cmd);
+}
+
+static u32 VkFindMemoryType(VkPhysicalDevice physical_device, u32 type_filter,
+    VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties mem_prop;
+    vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_prop);
+    for (u32 i = 0; i < mem_prop.memoryHeapCount; ++i)
+    {
+        if ((type_filter & (1 << i)) && (mem_prop.memoryTypes[i].propertyFlags & properties) == properties)
+            return i;
+    }
+
+    throw std::runtime_error("[Vulkan] Failed to find suitable memory type!");
+}
+
+static void VkCopyDataToBuffer(VkDevice device, VkDeviceMemory buffer_memory, void *data, VkDeviceSize size)
+{
+    void *mapped_data;
+    vkMapMemory(device, buffer_memory, 0, size, 0, &mapped_data);
+    memcpy(mapped_data, data, (size_t)size);
+    vkUnmapMemory(device, buffer_memory);
+}
+
+
 static VkBool32 VkDebugMessengerCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT             messageTypes,
@@ -25,13 +85,12 @@ static VkBool32 VkDebugMessengerCallback(
     OGN_CORE_INFO("[Vulkan Message]: ");
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
-        OGN_CORE_ERROR("\tVulkan: {}", pCallbackData->pMessage);
+        OGN_CORE_ASSERT(false, "\tVulkan: {}", pCallbackData->pMessage);
     }
     else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
         OGN_CORE_WARN("\tVulkan: {}", pCallbackData->pMessage);
     }
-
     if (messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
     {
         OGN_CORE_INFO("\tGeneral: {}", pCallbackData->pMessageIdName);

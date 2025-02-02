@@ -34,13 +34,10 @@ namespace origin {
         RendererAPI::SetAPI(m_Spec.RenderAPI);
 
         Window::GLFWInit();
-        m_ConsoleManager = std::make_unique<ConsoleManager>();
+        m_ConsoleManager = CreateScope<ConsoleManager>();
 
         switch (RendererAPI::GetAPI())
         {
-        case RendererAPI::API::DX11:
-            spec.Name.insert(spec.Name.size(), " - DX11");
-            break;
         case RendererAPI::API::OpenGL:
             spec.Name.insert(spec.Name.size(), " - OpenGL");
             break;
@@ -85,7 +82,7 @@ namespace origin {
             OGN_PROFILER_BEGIN_FRAME("MainThread");
             m_Window->UpdateEvents();
             
-            float time = static_cast<float>(glfwGetTime());
+            f32 time = static_cast<float>(glfwGetTime());
             Timestep ts = time - m_LastFrame;
             m_LastFrame = time;
 
@@ -108,7 +105,7 @@ namespace origin {
                 m_GuiLayer->End();
             }
 
-            m_Window->OnUpdate();
+            m_Window->SwapBuffers();
         }
 
         if (m_GuiLayer)

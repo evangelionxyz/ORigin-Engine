@@ -25,7 +25,9 @@ enum class ImageWrapMode
 
 enum class ImageFormat
 {
+	Invalid,
 	R8, 
+	RG8, 
 	RGB8, 
 	RGBA8, 
 	RGBA32F
@@ -50,42 +52,56 @@ struct TextureSpecification
 	TextureSpecification() = default;
 };
 
+static ImageFormat GetImageFormat(i32 channels)
+{
+    switch (channels)
+    {
+    case 1: return ImageFormat::R8;
+    case 2: return ImageFormat::RG8;
+    case 3: return ImageFormat::RGB8;
+    case 4: return ImageFormat::RGBA8;
+    }
+	return ImageFormat::Invalid;
+}
+
 class Texture : public Asset
 {
 public:
 	Texture() = default;
 	virtual ~Texture() {};
 
-	virtual void SetData(Buffer data) = 0;
+	virtual void SetData(Buffer data) {}
 
-	virtual std::string GetFilepath() = 0;
-	virtual void Bind(u32 bindingPoint, u32 index, u32 arrayCount) = 0;
-	virtual void Bind(u32 slot = 0) = 0;
-	virtual void Unbind() = 0;
-	virtual void Delete() = 0;
+	virtual void Bind(u32 binding_point, u32 index, u32 array_count) {}
+	virtual void Bind(u32 slot = 0) {}
+	virtual void Unbind() {}
+	virtual void Destroy() {}
 
-	[[nodiscard]] virtual std::string GetName() const = 0;
-	u32 GetWidth() const { return m_width; }
-	u32 GetHeight() const { return m_height; }
-	u32 GetIndex() const { return m_index; }
+    u32 GetWidth() const { return m_width; }
+    u32 GetHeight() const { return m_height; }
 
-    [[nodiscard]] bool IsLoaded() const { return m_is_loaded; }
-	[[nodiscard]] virtual const TextureSpecification &GetSpecification() const = 0;
+	std::filesystem::path GetFilepath() const { return m_filepath; };
+	std::string GetName() const { return m_filepath.filename().string(); }
+	
+    bool IsLoaded() const { return m_is_loaded; }
+    const TextureSpecification &GetSpecification() const { return m_spec; }
 
-	[[nodiscard]] virtual u64 GetEstimatedSize() const = 0;
-	virtual void ChangeSize(const i32 width, const i32 height) = 0;
-
+	virtual void ChangeSize(const i32 width, const i32 height) {}
 	virtual bool operator==(const Texture &other) const = 0;
 
-	operator ImTextureID() { return reinterpret_cast<ImTextureID>((uintptr_t)m_id); }
-	[[nodiscard]] u32 GetID() const { return m_id; }
-	[[nodiscard]] bool IsTransparent() const { return m_is_transparent; }
+    u64 GetEstimatedSize() const { return m_width * m_height * m_channels; }
+	u32 GetID() const { return m_id; }
+	bool IsTransparent() const { return m_is_transparent; }
 
 protected:
     bool m_is_loaded = false;
 	bool m_is_transparent = false;
+
 	u32 m_id = 0;
-    u32 m_width, m_height, m_channels, m_index;
+    u32 m_width, m_height, m_channels;
+	TextureSpecification m_spec;
+
+	std::filesystem::path m_filepath;
 };
 
 class Texture2D : public Texture
@@ -98,25 +114,9 @@ public:
 	static Ref<Texture2D> Create(const aiTexture *embedded_texture);
 
 	static AssetType GetStaticType() { return AssetType::Texture; }
-	[[nodiscard]] AssetType GetType() const override { return GetStaticType(); }
+	AssetType GetType() const override { return GetStaticType(); }
 };
 
-class TextureCube : public Texture
-{
-public:
-	enum Faces
-	{
-		RIGHT = 0, LEFT,
-		TOP, BOTTOM,
-		BACK, FRONT
-	};
-
-	static Ref<TextureCube> Create(u32 width, u32 height);
-	static Ref<TextureCube> Create(const std::string &filepath);
-
-	static AssetType GetStaticType() { return AssetType::Texture; }
-	[[nodiscard]] AssetType GetType() const override { return GetStaticType(); }
-};
 }
 
 #endif

@@ -4,7 +4,7 @@
 #include "Origin/GUI/UI.h"
 #include "SpriteSheetEditorPanel.hpp"
 #include "Origin/Renderer/Renderer.h"
-#include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Renderer/2D/Renderer2D.hpp"
 #include "Origin/Serializer/SpriteSheetSerializer.h"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Core/Input.h"

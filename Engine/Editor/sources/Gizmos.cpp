@@ -3,7 +3,7 @@
 #include "Gizmos.hpp"
 #include "EditorLayer.hpp"
 #include "Origin/Scene/Components/Components.h"
-#include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Renderer/2D/Renderer2D.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 

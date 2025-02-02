@@ -4,11 +4,11 @@
 
 namespace origin {
 
-VulkanSwapchain::VulkanSwapchain(VkDevice device, VkAllocationCallbacks *allocator,
+VulkanSwapchain::VulkanSwapchain(VkDevice device,
     VkSurfaceKHR surface, VkSurfaceFormatKHR surfaceFormat,
     VkSurfaceCapabilitiesKHR capabilities, VkPresentModeKHR presentMode,
     VkImageUsageFlags imageUsageFlags, u32 queueFamilyIndex)
-    : m_Format(surfaceFormat), m_Device(device), m_Allocator(allocator)
+    : m_Format(surfaceFormat), m_Device(device)
 {
     m_MinImageCount = VkChooseImagesCount(capabilities);
 
@@ -32,7 +32,7 @@ VulkanSwapchain::VulkanSwapchain(VkDevice device, VkAllocationCallbacks *allocat
     create_info.clipped = VK_TRUE;
     create_info.oldSwapchain = VK_NULL_HANDLE;
 
-    VkResult result = vkCreateSwapchainKHR(m_Device, &create_info, m_Allocator, &m_Swapchain);
+    VkResult result = vkCreateSwapchainKHR(m_Device, &create_info, nullptr, &m_Swapchain);
     VK_ERROR_CHECK(result, "[Vulkan] Failed to create swapchain");
     OGN_CORE_INFO("[Vulkan] Swapchain created");
 
@@ -43,16 +43,16 @@ VulkanSwapchain::VulkanSwapchain(VkDevice device, VkAllocationCallbacks *allocat
     OGN_CORE_ASSERT(m_MinImageCount <= swapchainImageCount, "[Vulkan] Swapchain image count exceeds maximum number of images");
     OGN_CORE_INFO("[Vulkan] Requested {} images, created {} images ", m_MinImageCount, swapchainImageCount);
 
-    CreateImageViews(m_Device, m_Allocator, swapchainImageCount);
+    CreateImageViews(m_Device, swapchainImageCount);
 }
 
 void VulkanSwapchain::Destroy()
 {
     for (const auto imageView : m_ImageViews)
-        vkDestroyImageView(m_Device, imageView, m_Allocator);
+        vkDestroyImageView(m_Device, imageView, nullptr);
 
     OGN_CORE_INFO("[Vulkan] Swapchain image view destroyed");
-    vkDestroySwapchainKHR(m_Device, m_Swapchain, m_Allocator);
+    vkDestroySwapchainKHR(m_Device, m_Swapchain, nullptr);
     OGN_CORE_INFO("[Vulkan] Swapchain destroyed");
 }
 
@@ -101,8 +101,7 @@ u32 VulkanSwapchain::GkVkMinImageCount() const
     return m_MinImageCount;
 }
 
-void VulkanSwapchain::CreateImageViews(VkDevice device, 
-    VkAllocationCallbacks *allocator, u32 image_count)
+void VulkanSwapchain::CreateImageViews(VkDevice device, u32 image_count)
 {
     m_Images.resize(image_count);
     m_ImageViews.resize(image_count);
@@ -116,7 +115,7 @@ void VulkanSwapchain::CreateImageViews(VkDevice device,
     {
         constexpr i32 mip_levels = 1;
         constexpr i32 layer_count = 1;
-        m_ImageViews[i] = VkCreateImageView(device, m_Images[i], allocator,
+        m_ImageViews[i] = VkCreateImageView(device, m_Images[i], nullptr,
             m_Format.format, VK_IMAGE_ASPECT_COLOR_BIT, 
             VK_IMAGE_VIEW_TYPE_2D, layer_count, mip_levels);
     }

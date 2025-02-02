@@ -178,45 +178,7 @@ namespace origin {
             OGN_CORE_ASSERT(false, "[Texture Importer] File '{}' does not exist", filepath.string().c_str());
             return nullptr;
         }
-
-        int width, height, channels;
-
-        stbi_set_flip_vertically_on_load(1);
-
-        Buffer data;
-        data.Data = stbi_load(filepath.string().c_str(), &width, &height, &channels, 0);
-
-        if (!data || channels < 3)
-        {
-            data.Release();
-
-            OGN_CORE_ERROR("[ImportTexture2D] Could not load texture from filepath: {}", filepath.string());
-            return nullptr;
-        }
-
-        data.Size = width * height * channels;
-
-        TextureSpecification spec;
-        spec.width = width;
-        spec.height = height;
-        spec.min_filter = ImageFilter::LinearMipmapLinear;
-        spec.mag_filter = ImageFilter::NearestMipmapNearest;
-
-        switch (channels)
-        {
-        default:
-        case 3:
-            spec.format = ImageFormat::RGB8;
-            break;
-        case 4:
-            spec.format = ImageFormat::RGBA8;
-            break;
-        }
-
-        Ref<Texture2D> texture = Texture2D::Create(spec, data);
-        data.Release();
-
-        return texture;
+        return Texture2D::Create(filepath);;
     }
 
     Ref<Model> ModelImporter::Import(AssetHandle handle, const AssetMetadata& metadata)

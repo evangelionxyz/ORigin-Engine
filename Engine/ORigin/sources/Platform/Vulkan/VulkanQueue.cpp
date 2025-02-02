@@ -4,8 +4,8 @@
 
 namespace origin {
 
-VulkanQueue::VulkanQueue(VkDevice device, VkAllocationCallbacks *allocator, u32 queueFamilyIndex, u32 queueIndex)
-    : m_Device(device), m_Allocator(allocator)
+VulkanQueue::VulkanQueue(VkDevice device, u32 queueFamilyIndex, u32 queueIndex)
+    : m_Device(device)
 {
     vkGetDeviceQueue(m_Device, queueFamilyIndex, queueIndex, &m_Queue);
     OGN_CORE_INFO("[Vulkan] Queue Acquired");
@@ -70,9 +70,9 @@ void VulkanQueue::WaitIdle() const
 
 void VulkanQueue::Destroy() const
 {
-    vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, m_Allocator);
-    vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, m_Allocator);
-    vkDestroyFence(m_Device, m_InFlightFence, m_Allocator);
+    vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
+    vkDestroyFence(m_Device, m_InFlightFence, nullptr);
 }
 
 void VulkanQueue::WaitAndResetFences() const

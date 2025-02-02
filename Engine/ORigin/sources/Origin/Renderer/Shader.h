@@ -90,11 +90,13 @@ public:
     static Ref<Shader> Create(const std::filesystem::path &filepath, bool isSpirv, bool recompile = false);
     static Ref<Shader> Create(const std::filesystem::path &filepath, bool recompile = false);
 
+    static Shader *CreateNew(const std::filesystem::path &filepath, bool isSpirv, bool recompile);
+
     static ShaderProgramSources ParseShader(const std::string &filepath);
     static std::string ReadFile(const std::string &filepath);
     static ShaderSource PreProcess(const std::string &source, const std::string &filepath);
 
-    static ShaderData CompileOrGetVulkanBinaries(const ShaderSource &shaderSources, const std::string &filepath);
+    static ShaderData CompileOrGetVulkanBinaries(const ShaderSource &shaderSources, const std::string &filepath, bool recompile = false);
     static ShaderData CompileOrGetOpenGLBinaries(ShaderSource &openglCode, const ShaderData &vulkanSpirv, const std::string &filepath);
     static void Reflect(uint32_t stage, const std::vector<uint32_t> &code);
 

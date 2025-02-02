@@ -15,9 +15,7 @@ public:
 	{
 		None = 0,
 		OpenGL,
-		Vulkan,
-		DX11,
-		Metal
+		Vulkan
 	};
 
 	virtual void Init() = 0;

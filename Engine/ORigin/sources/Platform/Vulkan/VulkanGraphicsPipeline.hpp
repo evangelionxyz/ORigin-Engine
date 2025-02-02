@@ -9,50 +9,34 @@
 
 namespace origin {
 
+struct PipelineCreateInfo
+{
+    VkRenderPass render_pass;
+    VkPipelineVertexInputStateCreateInfo vertex_input_state;
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state;
+    std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
+    VkViewport viewport;
+    VkRect2D scissor;
+    VkPipelineRasterizationStateCreateInfo rasterization_state;
+    VkPipelineMultisampleStateCreateInfo multisample_state;
+    VkPipelineColorBlendStateCreateInfo color_blend_state;
+    VkPipelineLayoutCreateInfo layout;
+};
+
 class VulkanGraphicsPipeline
 {
 public:
-    VulkanGraphicsPipeline();
-    VulkanGraphicsPipeline(VkDevice device, VkRenderPass render_pass, VkAllocationCallbacks *allocator);
-    ~VulkanGraphicsPipeline();
+    VulkanGraphicsPipeline() = default;
+    VulkanGraphicsPipeline(const PipelineCreateInfo &create_info);
     
-    void Create(
-        const std::vector<VkPipelineShaderStageCreateInfo> &shaderStages,
-        const VkPipelineVertexInputStateCreateInfo &vertexInputInfo,
-        const VkPipelineInputAssemblyStateCreateInfo &inputAssemblyInfo,
-        const VkViewport &viewport,
-        const VkRect2D &scissor,
-        const VkPipelineRasterizationStateCreateInfo &rasterizationInfo,
-        const VkPipelineMultisampleStateCreateInfo &multisampleInfo,
-        const VkPipelineColorBlendStateCreateInfo &colorBlendInfo,
-        const VkPipelineLayoutCreateInfo &layoutInfo
-    );
-
-    void Cleanup();
-
-    void Resize(u32 width, u32 height);
-
-    void BeginRenderPass(VkCommandBuffer command_buffer, VkFramebuffer framebuffer, VkClearValue clear_value, u32 width, u32 height);
-    void EndRenderPass(VkCommandBuffer command_buffer);
-
-    VkPipeline GetPipeline() const { return m_GraphicsPipeline; }
-    VkPipelineLayout GetPipelineLayout() const { return m_PipelineLayout; }
-    VkRect2D GetScissor() const { return m_Scissor; }
-    VkViewport GetViewport() const { return m_Viewport; }
-
+    void Destroy();
+    VkPipeline GetPipeline() const { return m_pipeline; }
+    VkPipelineLayout GetLayout() const { return m_pipeline_layout; }
 private:
-    VkDevice m_Device;
-    VkRenderPass m_RenderPass;
-    VkPipelineLayout m_PipelineLayout;
-    VkPipeline m_GraphicsPipeline;
-    VkAllocationCallbacks *m_Allocator;
-
-    VkViewport m_Viewport;
-    VkRect2D m_Scissor;
+    VkPipeline m_pipeline;
+    VkPipelineLayout m_pipeline_layout;
+    PipelineCreateInfo m_create_info;
 };
-
-
-
 }
 
 #endif

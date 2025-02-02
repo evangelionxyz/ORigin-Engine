@@ -11,7 +11,7 @@
 #include "Origin/Animation/Animation.h"
 #include "Origin/Physics/2D/Physics2D.h"
 #include "Origin/Renderer/Renderer.h"
-#include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Renderer/2D/Renderer2D.hpp"
 #include "Origin/Renderer/Model/Model.hpp"
 #include "Origin/Renderer/Lighting/Lighting.hpp"
 #include "Origin/Scripting/ScriptEngine.h"
