@@ -2,31 +2,38 @@
 
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "Origin/Renderer/Texture.h"
 #include "VulkanBuffer.hpp"
 #include "VulkanWrapper.hpp"
 
+#include <vulkan/vulkan.h>
+#include <filesystem>
+
 namespace origin {
 
-class VulkanImage
+class VulkanImage final : public Texture2D
 {
 public:
-
     VulkanImage() = default;
-    VulkanImage(const std::string &filepath);
+    VulkanImage(const std::filesystem::path &filepath, const TextureSpecification &spec = TextureSpecification());
 
     VkImage GetImage() const { return m_image; }
     VkDeviceMemory GetMemory() const { return m_memory; }
     VkImageView GetImageView() const { return m_image_view; }
     VkSampler GetSampler() const { return m_sampler; }
 
-    void Destroy();
+    void Destroy() override;
+
+    bool operator==(const Texture &other) const override
+    {
+        return m_image == ((VulkanImage &)other).m_image;
+    }
 
 private:
     void CreateImageView(VkFormat format);
-    void CreateSampler(VkDevice device, VkPhysicalDevice physical_device);
-    void CreateImage(u32 width, u32 height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
-    void CopyBufferToImage(u32 width, u32 height);
+    void CreateSampler(VkFilter filter, VkSamplerAddressMode address_mode);
+    void CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+    void CopyBufferToImage(VkFormat format);
     void TransitionImageLayout(VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout);
 
     VkImage m_image;

@@ -5,16 +5,16 @@
 #include "VulkanImage.hpp"
 #include "VulkanContext.hpp"
 
-#include "stb_image.h"
+#include <stb_image.h>
 
 namespace origin {
 
-VulkanImage::VulkanImage(const std::string &filepath)
+VulkanImage::VulkanImage(const std::filesystem::path &filepath, const TextureSpecification &spec)
 {
     i32 width, height, channels;
     Buffer buffer;
 
-    buffer.Data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+    buffer.Data = stbi_load(filepath.generic_string().c_str(), &width, &height, &channels, 0);
     if (!buffer.Data)
     {
         buffer.Release();
@@ -23,25 +23,27 @@ VulkanImage::VulkanImage(const std::string &filepath)
 
     buffer.Size = width * height * channels;
 
-    // CREATE IMAGE
-    CreateImage(width, height, VK_FORMAT_R8G8B8A8_SRGB,
-        VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    m_width = static_cast<u32>(width);
+    m_height = static_cast<u32>(height);
+    m_channels = static_cast<u32>(channels);
 
-    VulkanContext *vk = VulkanContext::GetInstance();
+    VkFormat format = channels == 4 ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8_SRGB;
+    VkFilter filter = VK_FILTER_LINEAR;
+    VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+
+    // CREATE IMAGE
+    CreateImage(format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     // CREATE BUFFER
-    VkDeviceSize buffer_size = buffer.Size;
-    m_buffer = VulkanBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, buffer_size);
-    VkCopyDataToBuffer(vk->GetVkDevice(), m_buffer.GetMemory(), buffer.Data, buffer_size);
+    m_buffer = VulkanBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, buffer.Size);
+    m_buffer.SetData(buffer.Data, buffer.Size);
 
     // COPY BUFFER TO IMAGE
-    CopyBufferToImage(width, height);
+    CopyBufferToImage(format);
 
-    CreateImageView(VK_FORMAT_R8G8B8A8_SRGB);
+    CreateImageView(format);
 
-    CreateSampler(vk->GetVkDevice(), vk->GetVkPhysicalDevice());
+    CreateSampler(filter, address_mode);
 
     buffer.Release();
 }
@@ -71,22 +73,21 @@ void VulkanImage::CreateImageView(VkFormat format)
     view_info.subresourceRange.baseArrayLayer = 0;
     view_info.subresourceRange.layerCount = 1;
 
-    vkCreateImageView(VulkanContext::GetInstance()->GetVkDevice(),
-        &view_info, nullptr, &m_image_view);
+    vkCreateImageView(VulkanContext::GetInstance()->GetVkDevice(), &view_info, nullptr, &m_image_view);
 }
 
-void VulkanImage::CreateSampler(VkDevice device, VkPhysicalDevice physical_device)
+void VulkanImage::CreateSampler(VkFilter filter, VkSamplerAddressMode address_mode)
 {
     VkPhysicalDeviceProperties properties{};
-    vkGetPhysicalDeviceProperties(physical_device, &properties);
+    vkGetPhysicalDeviceProperties(VulkanContext::GetInstance()->GetVkPhysicalDevice(), &properties);
 
     VkSamplerCreateInfo sampler_info{ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
-    sampler_info.minFilter = VK_FILTER_LINEAR;
-    sampler_info.magFilter = VK_FILTER_LINEAR;
+    sampler_info.minFilter = filter;
+    sampler_info.magFilter = filter;
 
-    sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_info.addressModeU = address_mode;
+    sampler_info.addressModeV = address_mode;
+    sampler_info.addressModeW = address_mode;
 
     sampler_info.anisotropyEnable = VK_FALSE;
     sampler_info.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
@@ -102,19 +103,19 @@ void VulkanImage::CreateSampler(VkDevice device, VkPhysicalDevice physical_devic
     sampler_info.minLod = 0.0f; // mipmap level
     sampler_info.maxLod = 1.0f;
 
-    VkResult result = vkCreateSampler(device, &sampler_info, nullptr, &m_sampler);
+    VkResult result = vkCreateSampler(VulkanContext::GetInstance()->GetVkDevice(), &sampler_info, nullptr, &m_sampler);
     VK_ERROR_CHECK(result, "[Vulkan] Failed to create sampler");
 }
 
-void VulkanImage::CreateImage(u32 width, u32 height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+void VulkanImage::CreateImage(VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
 {
     VulkanContext *vk = VulkanContext::GetInstance();
 
     // create VkImage
     VkImageCreateInfo image_info = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
     image_info.imageType = VK_IMAGE_TYPE_2D;
-    image_info.extent.width = width;
-    image_info.extent.height = height;
+    image_info.extent.width = m_width;
+    image_info.extent.height = m_height;
     image_info.extent.depth = 1;
     image_info.mipLevels = 1;
     image_info.arrayLayers = 1;
@@ -142,14 +143,12 @@ void VulkanImage::CreateImage(u32 width, u32 height, VkFormat format, VkImageTil
     vkBindImageMemory(vk->GetVkDevice(), m_image, m_memory, 0);
 }
 
-void VulkanImage::CopyBufferToImage(u32 width, u32 height)
+void VulkanImage::CopyBufferToImage(VkFormat format)
 {
     VkCommandBuffer cmd = VkBeginSingleTimeCommands();
 
     // transition the image to a shader-readable layout
-    TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    TransitionImageLayout(format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     // define the region of the buffer to copy
     VkBufferImageCopy region{};
@@ -163,19 +162,15 @@ void VulkanImage::CopyBufferToImage(u32 width, u32 height)
     region.imageSubresource.layerCount = 1;
 
     region.imageOffset = { 0, 0, 0 };
-    region.imageExtent = { width, height, 1 };
+    region.imageExtent = { m_width, m_height, 1 };
 
     // copy the buffer data into the image
-    vkCmdCopyBufferToImage(cmd, m_buffer.GetBuffer(), m_image,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    vkCmdCopyBufferToImage(cmd, m_buffer.GetBuffer(), m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
     VkEndSingleTimeCommands(cmd);
 
     // transition the image to a shader-readable layout
-    TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
+    TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void VulkanImage::TransitionImageLayout(VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout)

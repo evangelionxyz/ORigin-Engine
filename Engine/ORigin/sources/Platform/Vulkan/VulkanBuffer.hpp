@@ -11,6 +11,8 @@ public:
     VulkanBuffer() = default;
     VulkanBuffer(VkBufferUsageFlags usage, VkDeviceSize buffer_size);
 
+    void SetData(void *data, u64 size, u64 offset = 0);
+
     VkDeviceMemory GetMemory() const { return m_memory; }
     VkBuffer GetBuffer() const { return m_buffer; }
 

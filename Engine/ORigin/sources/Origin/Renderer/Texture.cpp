@@ -1,9 +1,14 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include "Texture.h"
 #include "Renderer.h"
 
+#include "Platform/Vulkan/VulkanImage.hpp"
 #include "Platform/OpenGL/OpenGLTexture.h"
 
 namespace origin {
@@ -13,6 +18,7 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath, const Te
 	{
 	case RendererAPI::API::None:   return nullptr;
 	case RendererAPI::API::OpenGL: return CreateRef<OpenGLTexture2D>(filepath, specification);
+	case RendererAPI::API::Vulkan: return CreateRef<VulkanImage>(filepath, specification);
 	}
 
 	return nullptr;
@@ -36,28 +42,6 @@ Ref<Texture2D> Texture2D::Create(const aiTexture *embedded_texture)
     case RendererAPI::API::None:   return nullptr;
     case RendererAPI::API::OpenGL: return CreateRef<OpenGLTexture2D>(embedded_texture);
     }
-	return nullptr;
-}
-
-Ref<TextureCube> TextureCube::Create(uint32_t width, uint32_t height)
-{
-	switch (Renderer::GetAPI())
-	{
-	case RendererAPI::API::None:   return nullptr;
-	case RendererAPI::API::OpenGL: return CreateRef<OpenGLTextureCube>(width, height);
-	}
-
-	return nullptr;
-}
-
-Ref<TextureCube> TextureCube::Create(const std::string& filepath)
-{
-	switch (Renderer::GetAPI())
-	{
-	case RendererAPI::API::None:   return nullptr;
-	case RendererAPI::API::OpenGL: return CreateRef<OpenGLTextureCube>(filepath);
-	}
-
 	return nullptr;
 }
 

@@ -176,6 +176,7 @@ void VulkanContext::CreateDebugCallback()
     msg_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
         | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
         | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+
     msg_create_info.pfnUserCallback = VkDebugMessengerCallback;
     msg_create_info.pUserData = VK_NULL_HANDLE;
 
@@ -356,9 +357,6 @@ void VulkanContext::CreateRenderPass()
 
 void VulkanContext::CreateFramebuffers()
 {
-    const u32 width = m_Swapchain.GetVkExtent2D().width;
-    const u32 height = m_Swapchain.GetVkExtent2D().height;
-
     const u32 image_count = static_cast<u32>(m_Swapchain.GetVkImageCount());
     m_Framebuffers.resize(image_count);
 
@@ -368,8 +366,8 @@ void VulkanContext::CreateFramebuffers()
         VkFramebufferCreateInfo framebuffer_create_info = {};
         framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.renderPass      = m_default_render_pass;
-        framebuffer_create_info.width           = width;
-        framebuffer_create_info.height          = height;
+        framebuffer_create_info.width           = m_Swapchain.GetVkExtent2D().width;
+        framebuffer_create_info.height          = m_Swapchain.GetVkExtent2D().height;
         framebuffer_create_info.layers          = 1;
         framebuffer_create_info.pAttachments    = attachments;
         framebuffer_create_info.attachmentCount = std::size(attachments);
@@ -411,16 +409,9 @@ void VulkanContext::DestroyFramebuffers()
 void VulkanContext::RecreateSwapchain()
 {
     vkDeviceWaitIdle(m_LogicalDevice);
-
     DestroyFramebuffers();
-
     m_Swapchain.Destroy();
-
     CreateSwapchain();
-
-    const u32 width = m_Swapchain.GetVkExtent2D().width;
-    const u32 height = m_Swapchain.GetVkExtent2D().height;
-
     CreateFramebuffers();
 }
 
@@ -506,7 +497,7 @@ void VulkanContext::RecordCommandBuffer(VkCommandBuffer cmd, u32 image_index)
     {
         command(cmd, image_index);
     }
-    m_CommandCallbacks.clear();
+    //m_CommandCallbacks.clear();
 
     vkCmdEndRenderPass(cmd);
 

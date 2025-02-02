@@ -20,7 +20,7 @@ public:
     bool IsSPIRV()     const override { return true; }
     bool IsRecompile() const override { return m_IsRecompile; }
     const std::filesystem::path &GetFilepath() const override;
-    std::vector<VkPipelineShaderStageCreateInfo> GetShaderStages() { return m_Stages; }
+    std::vector<VkPipelineShaderStageCreateInfo> GetStages() { return m_Stages; }
 
 private:
     VkShaderModule CreateModule(const std::vector<u32> &spirv);

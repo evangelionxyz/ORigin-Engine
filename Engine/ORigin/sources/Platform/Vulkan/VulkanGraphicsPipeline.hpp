@@ -9,33 +9,33 @@
 
 namespace origin {
 
+struct PipelineCreateInfo
+{
+    VkRenderPass render_pass;
+    VkPipelineVertexInputStateCreateInfo vertex_input_state;
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state;
+    std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
+    VkViewport viewport;
+    VkRect2D scissor;
+    VkPipelineRasterizationStateCreateInfo rasterization_state;
+    VkPipelineMultisampleStateCreateInfo multisample_state;
+    VkPipelineColorBlendStateCreateInfo color_blend_state;
+    VkPipelineLayoutCreateInfo layout;
+};
+
 class VulkanGraphicsPipeline
 {
 public:
-    VulkanGraphicsPipeline();
-    VulkanGraphicsPipeline(VkDevice device);
-    ~VulkanGraphicsPipeline();
+    VulkanGraphicsPipeline() = default;
+    VulkanGraphicsPipeline(const PipelineCreateInfo &create_info);
     
-    void Create(
-        const std::vector<VkPipelineShaderStageCreateInfo> &shaderStages,
-        const VkPipelineVertexInputStateCreateInfo &vertexInputInfo,
-        const VkPipelineInputAssemblyStateCreateInfo &inputAssemblyInfo,
-        const VkViewport &viewport,
-        const VkRect2D &scissor,
-        const VkRenderPass &render_pass,
-        const VkPipelineRasterizationStateCreateInfo &rasterizationInfo,
-        const VkPipelineMultisampleStateCreateInfo &multisampleInfo,
-        const VkPipelineColorBlendStateCreateInfo &colorBlendInfo,
-        const VkPipelineLayoutCreateInfo &layoutInfo
-    );
-
     void Destroy();
     VkPipeline GetPipeline() const { return m_pipeline; }
-    VkPipelineLayout GetPipelineLayout() const { return m_pipeline_layout; }
+    VkPipelineLayout GetLayout() const { return m_pipeline_layout; }
 private:
-    VkDevice m_device;
-    VkPipelineLayout m_pipeline_layout;
     VkPipeline m_pipeline;
+    VkPipelineLayout m_pipeline_layout;
+    PipelineCreateInfo m_create_info;
 };
 }
 

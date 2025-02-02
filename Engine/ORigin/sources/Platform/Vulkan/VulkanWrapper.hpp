@@ -66,8 +66,7 @@ static u32 VkFindMemoryType(VkPhysicalDevice physical_device, u32 type_filter,
     throw std::runtime_error("[Vulkan] Failed to find suitable memory type!");
 }
 
-static void VkCopyDataToBuffer(VkDevice device, VkDeviceMemory buffer_memory,
-    void *data, VkDeviceSize size)
+static void VkCopyDataToBuffer(VkDevice device, VkDeviceMemory buffer_memory, void *data, VkDeviceSize size)
 {
     void *mapped_data;
     vkMapMemory(device, buffer_memory, 0, size, 0, &mapped_data);

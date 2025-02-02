@@ -61,7 +61,7 @@ struct UniformBufferObject
     glm::mat4 model_transform;
 };
 
-Ref<VulkanImage> image;
+Ref<Texture2D> image;
 Ref<VulkanGraphicsPipeline> pipeline;
 Ref<VulkanBuffer> vertex_buffer;
 Ref<VulkanBuffer> index_buffer;
@@ -123,7 +123,8 @@ void SandboxLayer::OnAttach()
 {
     Physics::Init(PhysicsAPI::Jolt);
 
-    image = CreateRef<VulkanImage>("Resources/icon.png");
+    image = Texture2D::Create("Resources/icon.png");
+    shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", true);
 
     // create descriptor set
     std::array<VkDescriptorSetLayoutBinding, 2> bindings{};
@@ -160,115 +161,84 @@ void SandboxLayer::OnAttach()
 
     VkDeviceSize uniform_buffer_size = sizeof(UniformBufferObject);
     uniform_buffer_obj = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uniform_buffer_size);
-    UpdateDescriptorSet(descriptor_set, uniform_buffer_obj->GetBuffer(), 
-        image->GetImageView(), 
-        image->GetSampler());
-
-
-    shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", true);
+    UpdateDescriptorSet(descriptor_set, 
+        uniform_buffer_obj->GetBuffer(), 
+        ((VulkanImage *)image.get())->GetImageView(), 
+        ((VulkanImage *)image.get())->GetSampler());
 
     // CREATING VERTEX BUFFER
     VkDeviceSize vertex_buffer_size = sizeof(vertices[0]) * vertices.size();
     vertex_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vertex_buffer_size);
-    VkCopyDataToBuffer(vk->GetVkDevice(), vertex_buffer->GetMemory(), vertices.data(), vertex_buffer_size);
+    vertex_buffer->SetData(vertices.data(), vertex_buffer_size);
 
     VkDeviceSize indices_buffer_size = sizeof(u32) * indices.size();
     index_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, indices_buffer_size);
-    VkCopyDataToBuffer(vk->GetVkDevice(), index_buffer->GetMemory(), indices.data(), indices_buffer_size);
+    index_buffer->SetData(indices.data(), indices_buffer_size);
 
     auto binding_desc = TVertex::GetVkBindingDesc();
     auto attr_desc = TVertex::GetVkAttributeDesc();
-    VkPipelineVertexInputStateCreateInfo vertex_info = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
-    vertex_info.vertexBindingDescriptionCount = 1;
-    vertex_info.pVertexBindingDescriptions = &binding_desc;
-    vertex_info.vertexAttributeDescriptionCount = static_cast<u32>(attr_desc.size());
-    vertex_info.pVertexAttributeDescriptions = attr_desc.data();
+    VkPipelineVertexInputStateCreateInfo vertex_input_state = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
+    vertex_input_state.vertexBindingDescriptionCount = 1;
+    vertex_input_state.pVertexBindingDescriptions = &binding_desc;
+    vertex_input_state.vertexAttributeDescriptionCount = static_cast<u32>(attr_desc.size());
+    vertex_input_state.pVertexAttributeDescriptions = attr_desc.data();
 
     // CREATING PIPELINE
-    VkPipelineInputAssemblyStateCreateInfo assm_info = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
-    assm_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    assm_info.primitiveRestartEnable = VK_FALSE;
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
+    input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    input_assembly_state.primitiveRestartEnable = VK_FALSE;
 
-    VkPipelineRasterizationStateCreateInfo rst_info = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
-    rst_info.depthClampEnable = VK_FALSE;
-    rst_info.rasterizerDiscardEnable = VK_FALSE;
-    rst_info.polygonMode = VK_POLYGON_MODE_FILL;
-    rst_info.lineWidth = 1.0f;
-    rst_info.cullMode = VK_CULL_MODE_FRONT_BIT;
-    rst_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rst_info.depthBiasEnable = VK_FALSE;
+    VkPipelineRasterizationStateCreateInfo rasterization_state = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
+    rasterization_state.depthClampEnable = VK_FALSE;
+    rasterization_state.rasterizerDiscardEnable = VK_FALSE;
+    rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterization_state.lineWidth = 1.0f;
+    rasterization_state.cullMode = VK_CULL_MODE_FRONT_BIT;
+    rasterization_state.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterization_state.depthBiasEnable = VK_FALSE;
 
-    VkPipelineMultisampleStateCreateInfo ms_info = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
-    ms_info.sampleShadingEnable = VK_FALSE;
-    ms_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    VkPipelineMultisampleStateCreateInfo multisample_state = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
+    multisample_state.sampleShadingEnable = VK_FALSE;
+    multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-    VkPipelineColorBlendAttachmentState cb_att = {};
-    cb_att.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    cb_att.blendEnable = VK_FALSE;
-    VkPipelineColorBlendStateCreateInfo cb_info = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
-    cb_info.logicOpEnable = VK_FALSE;
-    cb_info.logicOp = VK_LOGIC_OP_COPY;
-    cb_info.attachmentCount = 1;
-    cb_info.pAttachments = &cb_att;
-    cb_info.blendConstants[0] = 0.0f;
-    cb_info.blendConstants[1] = 0.0f;
-    cb_info.blendConstants[2] = 0.0f;
-    cb_info.blendConstants[3] = 0.0f;
+    VkPipelineColorBlendAttachmentState color_blend_attachment = {};
+    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    color_blend_attachment.blendEnable = VK_FALSE;
+    VkPipelineColorBlendStateCreateInfo color_blend_state = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
+    color_blend_state.logicOpEnable = VK_FALSE;
+    color_blend_state.logicOp = VK_LOGIC_OP_COPY;
+    color_blend_state.attachmentCount = 1;
+    color_blend_state.pAttachments = &color_blend_attachment;
+    color_blend_state.blendConstants[0] = 0.0f;
+    color_blend_state.blendConstants[1] = 0.0f;
+    color_blend_state.blendConstants[2] = 0.0f;
+    color_blend_state.blendConstants[3] = 0.0f;
 
-    VkPipelineLayoutCreateInfo pipeline_layout_info = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
-    pipeline_layout_info.setLayoutCount = 1;
-    pipeline_layout_info.pSetLayouts = &descriptor_set_layout;
+    VkPipelineLayoutCreateInfo pipeline_layout_ci = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+    pipeline_layout_ci.setLayoutCount = 1;
+    pipeline_layout_ci.pSetLayouts = &descriptor_set_layout;
 
-    VkViewport viewport = { 
-        0.0f, 0.0f,
+    VkViewport viewport = { 0.0f, 0.0f,
         static_cast<float>(vk->GetSwapchain()->GetVkExtent2D().width),
         static_cast<float>(vk->GetSwapchain()->GetVkExtent2D().height),
         0.0f, 1.0f
     };
+
     VkRect2D scissor = { {0, 0}, vk->GetSwapchain()->GetVkExtent2D() };
 
-    pipeline = CreateRef<VulkanGraphicsPipeline>(vk->GetVkDevice());
-    pipeline->Create(
-        shader->GetShaderStages(),
-        vertex_info, 
-        assm_info, 
-        viewport, 
-        scissor,
-        vk->GetVkRenderPass(),
-        rst_info, 
-        ms_info, 
-        cb_info,
-        pipeline_layout_info
-    );
+    PipelineCreateInfo pipeline_ci{};
+    pipeline_ci.render_pass = vk->GetVkRenderPass();
+    pipeline_ci.shader_stages = shader->GetStages();
+    pipeline_ci.vertex_input_state = vertex_input_state;
+    pipeline_ci.input_assembly_state = input_assembly_state;
+    pipeline_ci.rasterization_state = rasterization_state;
+    pipeline_ci.multisample_state = multisample_state;
+    pipeline_ci.layout = pipeline_layout_ci;
+    pipeline_ci.viewport = viewport;
+    pipeline_ci.scissor = scissor;
+    pipeline_ci.color_blend_state = color_blend_state;
 
-}
-
-void SandboxLayer::OnDetach()
-{
-    Physics::Shutdown();
-
-    vertex_buffer->Destroy();
-    index_buffer->Destroy();
-    uniform_buffer_obj->Destroy();
-
-    vkDestroyDescriptorSetLayout(vk->GetVkDevice(), descriptor_set_layout, nullptr);
-
-    pipeline->Destroy();
-    image->Destroy();
-}
-
-void SandboxLayer::OnUpdate(const Timestep delta_time)
-{
-    UpdateCamera(delta_time);
-
-    UniformBufferObject ubo{};
-    ubo.view_projection = camera.GetViewProjection();
-    ubo.model_transform = glm::translate(glm::mat4(1.0f), obj_position);
-
-    void *data;
-    vkMapMemory(vk->GetVkDevice(), uniform_buffer_obj->GetMemory(), 0, sizeof(ubo), 0, &data);
-    memcpy(data, &ubo, sizeof(ubo));
-    vkUnmapMemory(vk->GetVkDevice(), uniform_buffer_obj->GetMemory());
+    pipeline = CreateRef<VulkanGraphicsPipeline>(pipeline_ci);
 
     // Submit to Vulkan command buffer
     vk->Submit([this](VkCommandBuffer cmd, u32 image_index)
@@ -277,7 +247,7 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetPipeline());
 
         // bind descriptor sets
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetPipelineLayout(),
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetLayout(),
             0, 1, &descriptor_set, 0, nullptr);
 
         // bind vertex buffer
@@ -294,6 +264,36 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
         // record dear imgui primitives into command buffer
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
     });
+
+}
+
+void SandboxLayer::OnDetach()
+{
+    Physics::Shutdown();
+
+    vertex_buffer->Destroy();
+    index_buffer->Destroy();
+    uniform_buffer_obj->Destroy();
+
+    vkDestroyDescriptorSetLayout(vk->GetVkDevice(), descriptor_set_layout, nullptr);
+
+    pipeline->Destroy();
+    image->Destroy();
+
+}
+
+void SandboxLayer::OnUpdate(const Timestep delta_time)
+{
+    UpdateCamera(delta_time);
+
+    UniformBufferObject ubo{};
+    ubo.view_projection = camera.GetViewProjection();
+    ubo.model_transform = glm::translate(glm::mat4(1.0f), obj_position);
+
+    void *data;
+    vkMapMemory(vk->GetVkDevice(), uniform_buffer_obj->GetMemory(), 0, sizeof(ubo), 0, &data);
+    memcpy(data, &ubo, sizeof(ubo));
+    vkUnmapMemory(vk->GetVkDevice(), uniform_buffer_obj->GetMemory());
 }
 
 void SandboxLayer::UpdateCamera(f32 delta_time)

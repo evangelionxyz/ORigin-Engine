@@ -35,6 +35,14 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags usage, VkDeviceSize buffer_size)
 
 }
 
+void VulkanBuffer::SetData(void *data, u64 size, u64 offset)
+{
+    void *mapped_data;
+    vkMapMemory(VulkanContext::GetInstance()->GetVkDevice(), m_memory, offset, size, 0, &mapped_data);
+    memcpy(mapped_data, data, (size_t)size);
+    vkUnmapMemory(VulkanContext::GetInstance()->GetVkDevice(), m_memory);
+}
+
 void VulkanBuffer::Destroy()
 {
     vkDestroyBuffer(VulkanContext::GetInstance()->GetVkDevice(), m_buffer, nullptr);
