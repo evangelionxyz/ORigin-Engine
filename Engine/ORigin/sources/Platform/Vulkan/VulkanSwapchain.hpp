@@ -1,5 +1,5 @@
-#ifndef VULKAN_SWAPCHAIN_H
-#define VULKAN_SWAPCHAIN_H
+#ifndef VULKAN_SWAPCHAIN_HPP
+#define VULKAN_SWAPCHAIN_HPP
 
 #include <vulkan/vulkan_core.h>
 #include <vector>

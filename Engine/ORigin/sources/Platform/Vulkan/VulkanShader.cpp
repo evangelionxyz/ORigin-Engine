@@ -38,7 +38,7 @@ VulkanShader::~VulkanShader()
 {
     const VulkanContext *context = VulkanContext::GetInstance();
     for (auto &module : m_Modules)
-        vkDestroyShaderModule(context->m_LogicalDevice, module, nullptr);
+        vkDestroyShaderModule(context->m_device, module, nullptr);
 }
 
 VkShaderModule VulkanShader::CreateModule(const std::vector<u32> &spirv)
@@ -51,7 +51,7 @@ VkShaderModule VulkanShader::CreateModule(const std::vector<u32> &spirv)
 
     const VulkanContext *vk_context = VulkanContext::GetInstance();
 
-    VkResult result = vkCreateShaderModule(vk_context->m_LogicalDevice, &create_info, nullptr, &module);
+    VkResult result = vkCreateShaderModule(vk_context->m_device, &create_info, nullptr, &module);
     VK_ERROR_CHECK(result, "[Vulkan] Failed to create shader module");
 
     return module;

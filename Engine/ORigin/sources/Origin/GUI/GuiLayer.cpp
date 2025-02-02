@@ -88,7 +88,7 @@ void GuiLayer::Init()
         init_info.Device = vk_context->GetVkDevice();
         init_info.QueueFamily = vk_context->GetVkQueueFamily();
         init_info.Queue = vk_context->GetVkQueue();
-        init_info.PipelineCache = vk_context->GetVkPipelineCache();
+        init_info.PipelineCache = VK_NULL_HANDLE;
         init_info.DescriptorPool = vk_context->GetVkDescriptorPool();
         init_info.RenderPass = vk_context->GetVkRenderPass();
         init_info.Subpass = 0;

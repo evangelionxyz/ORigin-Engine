@@ -1,4 +1,5 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
+
 #include "pch.h"
 #include "VulkanBuffer.hpp"
 #include "VulkanContext.hpp"
@@ -35,7 +36,7 @@ VulkanBuffer::VulkanBuffer(VkBufferUsageFlags usage, VkDeviceSize buffer_size)
 
 }
 
-void VulkanBuffer::SetData(void *data, u64 size, u64 offset)
+void VulkanBuffer::SetData(void *data, u64 size, u64 offset) const
 {
     void *mapped_data;
     vkMapMemory(VulkanContext::GetInstance()->GetVkDevice(), m_memory, offset, size, 0, &mapped_data);

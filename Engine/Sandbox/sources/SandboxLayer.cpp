@@ -55,66 +55,19 @@ std::vector<TVertex> vertices = {
 
 std::vector<u32> indices = { 0, 1, 2, 2, 3, 0 };
 
+
 struct UniformBufferObject
 {
     glm::mat4 view_projection;
     glm::mat4 model_transform;
 };
 
-Ref<Texture2D> image;
-Ref<VulkanGraphicsPipeline> pipeline;
-Ref<VulkanBuffer> vertex_buffer;
-Ref<VulkanBuffer> index_buffer;
-Ref<VulkanBuffer> uniform_buffer_obj;
-VkDescriptorSet descriptor_set;
-VkDescriptorSetLayout descriptor_set_layout;
 glm::vec3 obj_position{ 0.0f, 0.0f, -1.0f };
-
-void UpdateDescriptorSet(VkDescriptorSet decriptor_set, VkBuffer uniform_buffer, VkImageView texture_image_view, VkSampler texture_sampler)
-{
-    // Descriptor for Uniform Buffer (binding 0)
-    VkDescriptorBufferInfo buffer_info{};
-    buffer_info.buffer = uniform_buffer;
-    buffer_info.offset = 0;
-    buffer_info.range = sizeof(UniformBufferObject);
-
-    // Descriptor for image sampler (binding 1)
-    VkDescriptorImageInfo image_info{};
-    image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    image_info.imageView = texture_image_view;
-    image_info.sampler = texture_sampler;
-
-    // descriptor write array
-    std::array< VkWriteDescriptorSet, 2> descriptor_writes{};
-
-    // uniform buffer binding
-    descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[0].dstSet = decriptor_set;
-    descriptor_writes[0].dstArrayElement = 0;
-    descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[0].descriptorCount = 1;
-    descriptor_writes[0].pBufferInfo = &buffer_info;
-
-    // image sampler binding
-    descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].dstSet = decriptor_set;
-    descriptor_writes[1].dstBinding = 1;  // Matches the binding in the shader
-    descriptor_writes[1].dstArrayElement = 0;
-    descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptor_writes[1].descriptorCount = 1;
-    descriptor_writes[1].pImageInfo = &image_info;
-
-    vkUpdateDescriptorSets(VulkanContext::GetInstance()->GetVkDevice(),
-        static_cast<u32>(descriptor_writes.size()), 
-        descriptor_writes.data(), 
-        0, nullptr);
-}
 
 SandboxLayer::SandboxLayer() : Layer("Sandbox")
 {
     camera.InitPerspective(45.0f, 16.0f / 9.0f, 0.1f, 100.0f);
     camera.SetPosition({ 0.0f, 0.0f, 0.0f });
-
 
     vk = VulkanContext::GetInstance();
 }
@@ -126,47 +79,111 @@ void SandboxLayer::OnAttach()
     image = Texture2D::Create("Resources/icon.png");
     shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", true);
 
-    // create descriptor set
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings{};
-    // Uniform buffer binding
-    bindings[0].binding = 0;
-    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    bindings[0].descriptorCount = 1;
-    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    // Image sampler binding
-    bindings[1].binding = 1;
-    bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    bindings[1].descriptorCount = 1;
-    bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    VkDescriptorSetLayoutCreateInfo descriptor_layout_info{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
-    descriptor_layout_info.bindingCount = static_cast<u32>(bindings.size());
-    descriptor_layout_info.pBindings = bindings.data();
-
-    VkResult result = vkCreateDescriptorSetLayout(vk->GetVkDevice(),
-        &descriptor_layout_info,
-        nullptr,
-        &descriptor_set_layout);
-
-    VK_ERROR_CHECK(result, "[Vulkan] Failed to create descriptor set layout");
-
-    VkDescriptorSetAllocateInfo alloc_info{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
-    alloc_info.descriptorPool = vk->GetVkDescriptorPool();
-    alloc_info.descriptorSetCount = 1;
-    alloc_info.pSetLayouts = &descriptor_set_layout;
-
-    result = vkAllocateDescriptorSets(vk->GetVkDevice(), &alloc_info, &descriptor_set);
-    VK_ERROR_CHECK(result, "[Vulkan] Failed to create descriptor");
+    CreateDescriptorSet();
 
     VkDeviceSize uniform_buffer_size = sizeof(UniformBufferObject);
-    uniform_buffer_obj = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uniform_buffer_size);
-    UpdateDescriptorSet(descriptor_set, 
-        uniform_buffer_obj->GetBuffer(), 
-        ((VulkanImage *)image.get())->GetImageView(), 
-        ((VulkanImage *)image.get())->GetSampler());
+    uniform_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uniform_buffer_size);
 
-    // CREATING VERTEX BUFFER
+    std::vector<VkWriteDescriptorSet> descriptor_writes{};
+
+    // Descriptor for Uniform Buffer (binding 0)
+    VkDescriptorBufferInfo buffer_info{};
+    buffer_info.buffer = uniform_buffer->GetBuffer();
+    buffer_info.offset = 0;
+    buffer_info.range = sizeof(UniformBufferObject);
+
+    // uniform buffer binding
+    VkWriteDescriptorSet write_a{};
+    write_a.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write_a.dstSet = *descriptor_set->GetDescriptorSet();
+    write_a.dstArrayElement = 0;
+    write_a.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    write_a.descriptorCount = 1;
+    write_a.pBufferInfo = &buffer_info;
+
+    // Descriptor for image sampler (binding 1)
+    VkDescriptorImageInfo image_info{};
+    image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    image_info.imageView = ((VulkanImage*)image.get())->GetImageView();
+    image_info.sampler = ((VulkanImage*)image.get())->GetSampler();
+
+    // image sampler binding
+    VkWriteDescriptorSet write_b{};
+    write_b.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write_b.dstSet = *descriptor_set->GetDescriptorSet();
+    write_b.dstBinding = 1;
+    write_b.dstArrayElement = 0;
+    write_b.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write_b.descriptorCount = 1;
+    write_b.pImageInfo = &image_info;
+
+    descriptor_writes.push_back(write_a);
+    descriptor_writes.push_back(write_b);
+
+    descriptor_set->Update(descriptor_writes);
+   
+    CreatePipeline();
+
+    // Submit to Vulkan command buffer
+    vk->Submit([this](VkCommandBuffer cmd, VkFramebuffer framebuffer, u32 image_index)
+    {
+        // bind the pipeline
+        pipeline->Bind(cmd);
+
+        // bind descriptor sets
+        descriptor_set->Bind(cmd, pipeline->GetLayout());
+
+        // bind vertex buffer
+        VkBuffer buffers[] = { vertex_buffer->GetBuffer() };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(cmd, 0, 1, buffers, offsets);
+
+        // bind index buffer
+        vkCmdBindIndexBuffer(cmd, index_buffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+        // render (6 indices, 1 instance)
+        vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
+    });
+}
+
+void SandboxLayer::OnDetach()
+{
+    Physics::Shutdown();
+
+    vertex_buffer->Destroy();
+    index_buffer->Destroy();
+    uniform_buffer->Destroy();
+
+    descriptor_set->Destroy();
+
+    pipeline->Destroy();
+    image->Destroy();
+
+}
+
+void SandboxLayer::OnUpdate(const Timestep delta_time)
+{
+    UpdateCamera(delta_time);
+
+    UniformBufferObject ubo{};
+    ubo.view_projection = camera.GetViewProjection();
+    ubo.model_transform = glm::translate(glm::mat4(1.0f), obj_position);
+
+    uniform_buffer->SetData(&ubo, sizeof(ubo));
+}
+
+void SandboxLayer::CreateDescriptorSet()
+{
+    VulkanDescriptorSetLayout layout = {
+        {"position", VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0 },
+        {"image_sampler", VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1 }
+    };
+    descriptor_set = CreateRef<VulkanDescriptorSet>(layout);
+}
+
+void SandboxLayer::CreatePipeline()
+{
+    // CREATING PIPELINE
     VkDeviceSize vertex_buffer_size = sizeof(vertices[0]) * vertices.size();
     vertex_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, vertex_buffer_size);
     vertex_buffer->SetData(vertices.data(), vertex_buffer_size);
@@ -175,7 +192,7 @@ void SandboxLayer::OnAttach()
     index_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, indices_buffer_size);
     index_buffer->SetData(indices.data(), indices_buffer_size);
 
-    auto binding_desc = TVertex::GetVkBindingDesc();
+    VkVertexInputBindingDescription binding_desc = TVertex::GetVkBindingDesc();
     auto attr_desc = TVertex::GetVkAttributeDesc();
     VkPipelineVertexInputStateCreateInfo vertex_input_state = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
     vertex_input_state.vertexBindingDescriptionCount = 1;
@@ -183,7 +200,6 @@ void SandboxLayer::OnAttach()
     vertex_input_state.vertexAttributeDescriptionCount = static_cast<u32>(attr_desc.size());
     vertex_input_state.pVertexAttributeDescriptions = attr_desc.data();
 
-    // CREATING PIPELINE
     VkPipelineInputAssemblyStateCreateInfo input_assembly_state = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
     input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     input_assembly_state.primitiveRestartEnable = VK_FALSE;
@@ -216,7 +232,7 @@ void SandboxLayer::OnAttach()
 
     VkPipelineLayoutCreateInfo pipeline_layout_ci = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
     pipeline_layout_ci.setLayoutCount = 1;
-    pipeline_layout_ci.pSetLayouts = &descriptor_set_layout;
+    pipeline_layout_ci.pSetLayouts = descriptor_set->GetLayout();
 
     VkViewport viewport = { 0.0f, 0.0f,
         static_cast<float>(vk->GetSwapchain()->GetVkExtent2D().width),
@@ -239,58 +255,6 @@ void SandboxLayer::OnAttach()
     pipeline_ci.color_blend_state = color_blend_state;
 
     pipeline = CreateRef<VulkanGraphicsPipeline>(pipeline_ci);
-
-    // Submit to Vulkan command buffer
-    vk->Submit([this](VkCommandBuffer cmd, VkFramebuffer framebuffer, u32 image_index)
-    {
-        // bind the pipeline
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetPipeline());
-
-        // bind descriptor sets
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetLayout(),
-            0, 1, &descriptor_set, 0, nullptr);
-
-        // bind vertex buffer
-        VkBuffer buffers[] = { vertex_buffer->GetBuffer() };
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(cmd, 0, 1, buffers, offsets);
-
-        // bind index buffer
-        vkCmdBindIndexBuffer(cmd, index_buffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
-
-        // render (6 indices, 1 instance)
-        vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
-    });
-
-}
-
-void SandboxLayer::OnDetach()
-{
-    Physics::Shutdown();
-
-    vertex_buffer->Destroy();
-    index_buffer->Destroy();
-    uniform_buffer_obj->Destroy();
-
-    vkDestroyDescriptorSetLayout(vk->GetVkDevice(), descriptor_set_layout, nullptr);
-
-    pipeline->Destroy();
-    image->Destroy();
-
-}
-
-void SandboxLayer::OnUpdate(const Timestep delta_time)
-{
-    UpdateCamera(delta_time);
-
-    UniformBufferObject ubo{};
-    ubo.view_projection = camera.GetViewProjection();
-    ubo.model_transform = glm::translate(glm::mat4(1.0f), obj_position);
-
-    void *data;
-    vkMapMemory(vk->GetVkDevice(), uniform_buffer_obj->GetMemory(), 0, sizeof(ubo), 0, &data);
-    memcpy(data, &ubo, sizeof(ubo));
-    vkUnmapMemory(vk->GetVkDevice(), uniform_buffer_obj->GetMemory());
 }
 
 void SandboxLayer::UpdateCamera(f32 delta_time)
