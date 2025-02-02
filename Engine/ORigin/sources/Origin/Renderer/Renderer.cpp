@@ -4,15 +4,11 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 #include "ShaderLibrary.h"
-#include "Renderer2D.h"
+#include "2D/Renderer2D.hpp"
+#include "2D/Vulkan2D.hpp"
 #include "MaterialLibrary.h"
 #include "Origin/Asset/AssetImporter.h"
 #include "Platform/Vulkan/VulkanRendererAPI.hpp"
-
-#ifdef OGN_PLATFORM_WINDOWS
-#	include "Platform/DX11/DX11RendererAPI.h"
-#endif
-
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 
 namespace origin {
@@ -71,15 +67,9 @@ bool Renderer::Init()
 	case RendererAPI::API::Vulkan:
 	{
 		RenderCommand::s_RendererAPI = new VulkanRendererAPI;
+		Vulkan2D::Init();
 		break;
 	}
-#ifdef OGN_PLATFORM_WINDOWS
-	case RendererAPI::API::DX11:
-	{
-		RenderCommand::s_RendererAPI = new DX11RendererAPI;
-		break;
-	}
-#endif
 	}
 	OGN_CORE_ASSERT(RenderCommand::s_RendererAPI, "[Renderer] Renderer API is null");
 	
@@ -100,7 +90,15 @@ void Renderer::Shutdown()
 	if (s_lighting_manager)
 		delete s_lighting_manager;
 	
-	Renderer2D::Shutdown();
+	switch (RendererAPI::GetAPI())
+	{
+	case RendererAPI::API::OpenGL:
+        Renderer2D::Shutdown();
+		break;
+	case RendererAPI::API::Vulkan:
+		Vulkan2D::Shutdown();
+		break;
+	}
 
 	OGN_CORE_TRACE("[Renderer] Shutdown");
 }

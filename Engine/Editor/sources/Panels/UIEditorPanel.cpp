@@ -1,7 +1,7 @@
 #include "UIEditorPanel.hpp"
 #include "../EditorLayer.hpp"
 #include "Origin/GUI/UI.h"
-#include "Origin/Renderer/Renderer2D.h"
+#include "Origin/Renderer/2D/Renderer2D.hpp"
 #include "Origin/Asset/AssetManager.h"
 #include "Origin/Scene/Components/Components.h"
 

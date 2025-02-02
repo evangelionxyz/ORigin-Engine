@@ -38,9 +38,6 @@ namespace origin {
 
         switch (RendererAPI::GetAPI())
         {
-        case RendererAPI::API::DX11:
-            spec.Name.insert(spec.Name.size(), " - DX11");
-            break;
         case RendererAPI::API::OpenGL:
             spec.Name.insert(spec.Name.size(), " - OpenGL");
             break;
@@ -108,7 +105,7 @@ namespace origin {
                 m_GuiLayer->End();
             }
 
-            m_Window->OnUpdate();
+            m_Window->SwapBuffers();
         }
 
         if (m_GuiLayer)

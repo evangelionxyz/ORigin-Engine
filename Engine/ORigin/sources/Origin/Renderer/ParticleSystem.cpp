@@ -5,7 +5,7 @@
 
 #include "ParticleSystem.h"
 
-#include "Renderer2D.h"
+#include "2D/Renderer2D.hpp"
 #include "Origin/Core/Random.h"
 
 #include <glm/gtc/constants.hpp>

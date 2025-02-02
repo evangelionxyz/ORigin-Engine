@@ -20,7 +20,7 @@ namespace origin
 
         void DestroyWindow() override;
         void UpdateEvents() override;
-        void OnUpdate() override;
+        void SwapBuffers() override;
         bool IsLooping() override;
         void CloseWindow() override;
         void ToggleVSync() override;

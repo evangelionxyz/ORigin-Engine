@@ -40,7 +40,7 @@ namespace origin {
         virtual void Hide() = 0;
         virtual void DestroyWindow() = 0;
         virtual void UpdateEvents() = 0;
-        virtual void OnUpdate() = 0;
+        virtual void SwapBuffers() = 0;
         virtual bool IsLooping() = 0;
         virtual void ToggleVSync() = 0;
         virtual void SetVSync(bool enable) = 0;

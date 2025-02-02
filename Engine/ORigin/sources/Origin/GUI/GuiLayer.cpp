@@ -17,10 +17,6 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
-#ifdef OGN_PLATFORM_WINDOWS
-#include <backends/imgui_impl_dx11.h>
-#include "Platform/DX11/DX11Context.h"
-#endif
 
 #include "Platform/Vulkan/VulkanContext.hpp"
 
@@ -74,15 +70,6 @@ void GuiLayer::Init()
 
     switch (RendererAPI::GetAPI())
     {
-#ifdef OGN_PLATFORM_WINDOWS
-    case RendererAPI::API::DX11:
-    {
-        DX11Context *dx_context = DX11Context::GetInstance();
-        ImGui_ImplGlfw_InitForOther(m_WindowContext->GetNativeWindow(), true);
-        ImGui_ImplDX11_Init(dx_context->GetDevice(), dx_context->GetDeviceContext());
-        break;
-    }
-#endif
     case RendererAPI::API::OpenGL:
     {
         ImGui_ImplGlfw_InitForOpenGL(m_WindowContext->GetNativeWindow(), true);
@@ -121,9 +108,6 @@ void GuiLayer::OnDetach()
 {
     switch (RendererAPI::GetAPI())
     {
-    case RendererAPI::API::DX11:
-        ImGui_ImplDX11_Shutdown();
-        break;
     case RendererAPI::API::OpenGL:
         ImGui_ImplOpenGL3_Shutdown();
         break;
@@ -150,9 +134,6 @@ void GuiLayer::Begin()
 {
     switch (RendererAPI::GetAPI())
     {
-    case RendererAPI::API::DX11:
-        ImGui_ImplDX11_NewFrame();
-        break;
     case RendererAPI::API::OpenGL:
         ImGui_ImplOpenGL3_NewFrame();
         break;
@@ -179,15 +160,6 @@ void GuiLayer::End()
     ImGui::Render();
     switch (RendererAPI::GetAPI())
     {
-    case RendererAPI::API::DX11:
-        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(m_WindowContext->GetNativeWindow());
-        }
-        break;
     case RendererAPI::API::OpenGL:
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

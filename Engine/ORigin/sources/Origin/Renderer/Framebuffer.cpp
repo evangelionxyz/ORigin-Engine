@@ -16,7 +16,6 @@ namespace origin
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::OpenGL: return CreateRef<OpenGLFramebuffer>(specification);
-			case RendererAPI::API::DX11:   OGN_CORE_ASSERT(false, "");
 			case RendererAPI::API::Vulkan: return CreateRef<VulkanFramebuffer>(specification);
 		}
 

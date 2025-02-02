@@ -9,7 +9,6 @@
 #include "Origin/Core/Application.h"
 
 #include "stb_image.h"
-#include "Platform/DX11/DX11Context.h"
 #include "Platform/Vulkan/VulkanContext.hpp"
 
 #include <GLFW/glfw3.h>
@@ -164,26 +163,16 @@ void Win32Window::UpdateEvents()
     glfwPollEvents();
 }
 
-void Win32Window::OnUpdate()
+void Win32Window::SwapBuffers()
 {
     switch (RendererAPI::GetAPI())
     {
-    case RendererAPI::API::DX11:
-    {
-        Ref<DX11Context> dx_context = GraphicsContext::GetContext<DX11Context>();
-        dx_context->GetSwapchain()->Present(1u, 0u);
-        break;
-    }
     case RendererAPI::API::OpenGL:
-    {
         glfwSwapBuffers(m_MainWindow);
         break;
-    }
     case RendererAPI::API::Vulkan:
-    {
         GraphicsContext::GetContext<VulkanContext>()->Present();
         break;
-    }
     }
 }
 
