@@ -3,7 +3,7 @@
 #ifndef CONSOLE_MANAGER_H
 #define CONSOLE_MANAGER_H
 
-#include "ORigin/Utils/StringUtils.h"
+#include "Origin/Utils/StringUtils.h"
 #include <vector>
 
 namespace origin {

@@ -11,6 +11,7 @@ objdir (ThirdPartyIntOutputdir)
 		"%{PhysXDir}/physx/include",
 		"%{PhysXDir}/physx/source/cudamanager/include",
 		"%{PhysXDir}/physx/source/foundation/include",
+		"%{PhysXDir}/physx/source/lowlevel/api/include"
 	}
 	files { 
 		"%{PhysXDir}/physx/source/task/**.cpp",

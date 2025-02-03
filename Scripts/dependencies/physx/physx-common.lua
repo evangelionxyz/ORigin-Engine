@@ -29,7 +29,10 @@ objdir (ThirdPartyIntOutputdir)
 		"%{PhysXDir}/physx/source/foundation/include",
 	}
 	files { 
-		"%{PhysXDir}/physx/source/common/**.cpp",
+		"%{PhysXDir}/physx/source/common/src/CmCollection.cpp",
+		"%{PhysXDir}/physx/source/common/src/CmPtrTable.cpp",
+		"%{PhysXDir}/physx/source/common/src/CmSerialize.cpp",
+		"%{PhysXDir}/physx/source/common/src/CmVisualization.cpp",
 		"%{PhysXDir}/physx/source/geomutils/**.cpp",
 	} 
 	
@@ -51,10 +54,13 @@ objdir (ThirdPartyIntOutputdir)
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		removefiles { "%{PhysXDir}/physx/source/common/src/windows/**.cpp" } 
 		
 	filter "system:windows"
 		systemversion "latest"
+		files {
+			"%{PhysXDir}/physx/source/common/src/windows/CmWindowsDelayHook.cpp",
+			"%{PhysXDir}/physx/source/common/src/windows/CmWindowsModuleUpdateLoader.cpp",
+		}
 
 
 	filter "configurations:Debug"

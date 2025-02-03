@@ -7,7 +7,8 @@ targetdir (ThirdPartyOutputdir)
 objdir (ThirdPartyIntOutputdir)
 
 	includedirs {
-		"%{PhysXDir}/physx/include"
+		"%{PhysXDir}/physx/include",
+		"%{PhysXDir}/physx/source/lowlevel/api/include"
 	}
 	files { 
 		"%{PhysXDir}/physx/source/foundation/FdAllocator.cpp",

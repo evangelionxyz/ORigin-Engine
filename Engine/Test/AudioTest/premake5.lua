@@ -45,12 +45,12 @@ project "AudioTest"
         "_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING",
     }
 
-    buildoptions { "/utf-8" }
-
+    
     -- ///////////////////////////////////////////
     -- Windows
     filter "system:windows"
         systemversion "latest"
+        buildoptions { "/utf-8" }
         defines {
             "NOMINMAX",
             "NV_USE_STATIC_WINCRT",

@@ -41,7 +41,7 @@ objdir (ThirdPartyIntOutputdir)
 		"%{PhysXDir}/physx/source/lowlevelaabb/include",
 	}
 	files { 
-		"%{PhysXDir}/physx/source/simulationcontroller/**.cpp",
+		"%{PhysXDir}/physx/source/simulationcontroller/src/**.cpp",
 	} 
 	
 	defines {

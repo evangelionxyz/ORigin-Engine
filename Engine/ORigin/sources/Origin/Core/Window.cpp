@@ -3,11 +3,7 @@
 #include "pch.h"
 #include "Window.h"
 
-#ifdef OGN_PLATFORM_WINDOWS
-    #include "Platform/Win32/Win32Window.h"
-#elif OGN_PLATFORM_LINUX
-    #include "Platform/Linux/LinuxWindow.h"
-#endif
+#include "Platform/Win32Window.h"
 
 namespace origin
 {
@@ -18,14 +14,7 @@ namespace origin
 
     Ref<Window> Window::Create(const char* title, uint32_t width, uint32_t height, bool maximized)
     {
-#ifdef OGN_PLATFORM_WINDOWS
         return CreateRef<Win32Window>(title, width, height, maximized);
-#elif OGN_PLATFORM_LINUX
-        return CreateRef<LinuxWindow>(title, width, height, maximized);
-#else
-        OGN_CORE_ASSERT(false, "Unkown Platform");
-        return nullptr;
-#endif
     }
 
     void Window::GLFWInit()

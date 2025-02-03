@@ -22,15 +22,14 @@ project "BOX2D"
         "BOX2D_ENABLE_SIMD",
     }
 
-    buildoptions {
-        "/experimental:c11atomics"
-    }
-
     filter "system:linux"
         pic "On"
 
     filter "system:windows"
         systemversion "latest"
+        buildoptions {
+            "/experimental:c11atomics"
+        }
 
     filter "configurations:Debug"
         runtime "Debug"

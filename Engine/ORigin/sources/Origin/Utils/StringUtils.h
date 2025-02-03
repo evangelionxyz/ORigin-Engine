@@ -4,13 +4,14 @@
 #define STRING_UTILS_H
 
 #include "Origin/Core/Log.h"
+#include "Origin/Core/Types.h"
 
 #include <string>
 #include <sstream>
 
 namespace origin::Utils {
 
-std::string BytesToString(uint64_t bytes);
+std::string BytesToString(u64 bytes);
 std::string CapitalizeText(std::string& text);
 std::string CapitalizeWholeText(std::string text);
 

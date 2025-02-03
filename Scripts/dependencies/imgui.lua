@@ -42,6 +42,9 @@ project "IMGUI"
 
   filter "system:linux"
     pic "On"
+    includedirs { 
+      "/usr/include/"
+    }
 
   filter "system:windows"
     systemversion "latest"

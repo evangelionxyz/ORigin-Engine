@@ -69,10 +69,48 @@ links {
 	"NvSimulationController"
 }
 files {
-	"%{PhysXDir}/physx/source/physx/src/**.h",
-	"%{PhysXDir}/physx/source/physx/src/**.cpp",
+	"%{PhysXDir}/physx/source/physx/src/gpu/PxGpu.cpp",
+	"%{PhysXDir}/physx/source/physx/src/gpu/PxPhysXGpuModuleLoader.cpp",
+	"%{PhysXDir}/physx/source/physx/src/omnipvd/**.cpp",
+
+	"%{PhysXDir}/physx/source/physx/src/NpActor.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpAggregate.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpArticulationJointReducedCoordinate.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpArticulationLink.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpArticulationMimicJoint.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpArticulationReducedCoordinate.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpArticulationTendon.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpBounds.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpCheck.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpConstraint.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpDebugViz.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpDirectGPUAPI.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpFactory.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpFEMCloth.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpFEMClothMaterial.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpFEMSoftBodyMaterial.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpHairSystem.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpMaterial.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpMetaData.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpParticleBuffer.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpPBDMaterial.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpPhysics.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpPruningStructure.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpPvdSceneClient.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpPvdSceneQueryCollector.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpRigidDynamic.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpRigidStatic.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpScene.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpSceneFetchResults.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpSceneQueries.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpSerializerAdapter.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpShape.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpShapeManager.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpSoftBody.cpp",
+	"%{PhysXDir}/physx/source/physx/src/PvdMetaDataPvdBinding.cpp",
+	"%{PhysXDir}/physx/source/physx/src/PvdPhysicsClient.cpp",
+
 	"%{PhysXDir}/physx/source/immediatemode/src/**.cpp",
-	"%{PhysXDir}/physx/source/physxmetadata/core/**.h",
 	"%{PhysXDir}/physx/source/physxmetadata/core/**.cpp",
 }
 
@@ -90,10 +128,17 @@ defines {
 filter "system:linux"
 	pic "On"
 	systemversion "latest"
+	files {
+		"%{PhysXDir}/physx/source/physx/src/device/linux/PhysXIndicatorLinux.cpp",
+	}
     
 filter "system:windows"
 	systemversion "latest"
 	characterset "MBCS" -- Multi-Byte Character Set
+	files {
+		"%{PhysXDir}/physx/source/physx/src/device/windows/PhysXIndicatorWindows.cpp",
+		"%{PhysXDir}/physx/source/physx/src/windows/NpWindowsDelayLoadHook.cpp",
+	}
 
 filter "configurations:Debug"
 	runtime "Debug"

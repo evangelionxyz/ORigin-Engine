@@ -53,11 +53,10 @@ project "Runtime"
         "_CRT_SECURE_NO_WARNINGS",
     }
 
-    buildoptions { "/utf-8" }
-
     filter "system:windows"
         includedirs { "%{IncludeDir.VulkanSDK}" }
         systemversion "latest"
+        buildoptions { "/utf-8" }
         defines { "NV_USE_STATIC_WINCRT", "NOMINMAX", "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS" }
         filter "action:vs*"
           linkoptions { "/IGNORE:4099", "/IGNORE:4006", "/IGNORE:4217", "/IGNORE:4098" }

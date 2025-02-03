@@ -38,6 +38,9 @@ includedirs {
 	"%{PhysXDir}/physx/source/lowlevel/common/include/utils",
 	"%{PhysXDir}/physx/source/lowlevel/include/software/include",
 	"%{PhysXDir}/physx/include/lowleveldynamics/include",
+	"%{PhysXDir}/physx/source/lowlevel/api/include",
+	"%{PhysXDir}/physx/source/lowlevel/software/include",
+	"%{PhysXDir}/physx/source/lowleveldynamics/include",
 }
 files { 
 	"%{PhysXDir}/physx/source/lowlevel/**.cpp",
