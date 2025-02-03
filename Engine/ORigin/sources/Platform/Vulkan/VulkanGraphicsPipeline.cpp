@@ -56,4 +56,10 @@ void VulkanGraphicsPipeline::Destroy()
     vkDestroyPipeline(VulkanContext::GetInstance()->GetVkDevice(), m_pipeline, nullptr);
     vkDestroyPipelineLayout(VulkanContext::GetInstance()->GetVkDevice(), m_pipeline_layout, nullptr);
 }
+
+void VulkanGraphicsPipeline::Bind(VkCommandBuffer cmd)
+{
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+}
+
 }

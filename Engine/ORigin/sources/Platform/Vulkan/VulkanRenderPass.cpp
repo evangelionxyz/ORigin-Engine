@@ -24,7 +24,7 @@ VulkanRenderPass::VulkanRenderPass(const std::vector<VkAttachmentDescription> &a
     VK_ERROR_CHECK(result, "[Vulkan] Failed to create render pass");
 }
 
-void VulkanRenderPass::Begin(VkCommandBuffer cmd, const VkRect2D &render_area, VkFramebuffer framebuffer)
+void VulkanRenderPass::Begin(VkCommandBuffer cmd, const VkRect2D &render_area, VkFramebuffer framebuffer, VkClearValue clear_value)
 {
     VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
     render_pass_begin_info.pNext = VK_NULL_HANDLE;
@@ -32,7 +32,7 @@ void VulkanRenderPass::Begin(VkCommandBuffer cmd, const VkRect2D &render_area, V
     render_pass_begin_info.renderArea = render_area;
     render_pass_begin_info.framebuffer = framebuffer;
     render_pass_begin_info.clearValueCount = 1;
-    render_pass_begin_info.pClearValues = &m_clear_value;
+    render_pass_begin_info.pClearValues = &clear_value;
 
     vkCmdBeginRenderPass(cmd, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }

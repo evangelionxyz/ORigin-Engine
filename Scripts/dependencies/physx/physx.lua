@@ -94,6 +94,7 @@ files {
 	"%{PhysXDir}/physx/source/physx/src/NpMetaData.cpp",
 	"%{PhysXDir}/physx/source/physx/src/NpParticleBuffer.cpp",
 	"%{PhysXDir}/physx/source/physx/src/NpPBDMaterial.cpp",
+	"%{PhysXDir}/physx/source/physx/src/NpPBDParticleSystem.cpp",
 	"%{PhysXDir}/physx/source/physx/src/NpPhysics.cpp",
 	"%{PhysXDir}/physx/source/physx/src/NpPruningStructure.cpp",
 	"%{PhysXDir}/physx/source/physx/src/NpPvdSceneClient.cpp",

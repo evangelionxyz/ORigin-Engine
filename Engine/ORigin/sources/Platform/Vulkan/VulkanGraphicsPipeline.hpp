@@ -30,8 +30,12 @@ public:
     VulkanGraphicsPipeline(const PipelineCreateInfo &create_info);
     
     void Destroy();
+    void Bind(VkCommandBuffer cmd);
+
     VkPipeline GetPipeline() const { return m_pipeline; }
     VkPipelineLayout GetLayout() const { return m_pipeline_layout; }
+
+
 private:
     VkPipeline m_pipeline;
     VkPipelineLayout m_pipeline_layout;

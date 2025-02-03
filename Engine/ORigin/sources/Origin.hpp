@@ -83,6 +83,7 @@
 #include "Platform/Vulkan/VulkanShader.hpp"
 #include "Platform/Vulkan/VulkanQueue.hpp"
 #include "Platform/Vulkan/VulkanBuffer.hpp"
+#include "Platform/Vulkan/VulkanDescriptorSet.hpp"
 #include "Platform/Vulkan/VulkanPhysicalDevice.hpp"
 
 #endif

@@ -16,11 +16,6 @@ namespace origin
 
     void VulkanRendererAPI::ClearColor(const glm::vec4 &color)
     {
-        VulkanContext *vk_context = VulkanContext::GetInstance();
-        vk_context->m_ClearValue.color.float32[0] = color.r * color.a;
-        vk_context->m_ClearValue.color.float32[1] = color.g * color.a;
-        vk_context->m_ClearValue.color.float32[2] = color.b * color.a;
-        vk_context->m_ClearValue.color.float32[3] = color.a;
     }
 
     void VulkanRendererAPI::ClearColor(float r, float g, float b, float a)

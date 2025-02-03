@@ -6,10 +6,6 @@
 
 namespace origin {
 
-struct VulkanRenderPassCreateInfo
-{
-};
-
 class VulkanRenderPass
 {
 public:
@@ -18,20 +14,15 @@ public:
         const std::vector<VkSubpassDescription> &subpasses, 
         const std::vector<VkSubpassDependency> &dependencies);
 
-    void Begin(VkCommandBuffer cmd, const VkRect2D &render_area, VkFramebuffer framebuffer);
+    void Begin(VkCommandBuffer cmd, const VkRect2D &render_area, VkFramebuffer framebuffer, VkClearValue clear_value);
     void End(VkCommandBuffer cmd);
 
     void Destroy();
 
-    VkRenderPass GetRenderPass() const
-    {
-        return m_render_pass;
-    }
+    VkRenderPass GetRenderPass() const { return m_render_pass; }
 
 private:
-    VkClearValue m_clear_value;
     VkRenderPass  m_render_pass = VK_NULL_HANDLE;
-
 };
 
 }

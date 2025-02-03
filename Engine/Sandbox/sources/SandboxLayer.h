@@ -20,11 +20,21 @@ public:
     bool OnMouseScroll(MouseScrolledEvent &e);
 
 private:
+    void CreatePipeline();
+
     void UpdateCamera(f32 delta_time);
 
     EditorCamera camera;
     VulkanContext *vk = nullptr;
     Ref<VulkanShader> shader;
+    Ref<Texture2D> image;
+    Ref<VulkanBuffer> vertex_buffer;
+    Ref<VulkanBuffer> index_buffer;
+    Ref<VulkanBuffer> uniform_buffer;
+    Ref<VulkanGraphicsPipeline> pipeline;
+    Ref<VulkanDescriptorSet> descriptor_set;
+
+
 };
 
 }

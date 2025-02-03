@@ -15,7 +15,7 @@ enum class ShaderDataType
 	Boolean
 };
 
-static uint32_t ShaderDataTypeSize(ShaderDataType type)
+static u32 ShaderDataTypeSize(ShaderDataType type)
 {
 	switch (type)
 	{
@@ -41,8 +41,8 @@ struct BufferElement
 {
 	std::string Name;
 	ShaderDataType Type = ShaderDataType::None;
-	uint32_t Size = 0;
-	uint32_t Offset = 0;
+	u32 Size = 0;
+	u32 Offset = 0;
 	bool Normalized = false;
 
 	BufferElement()
@@ -88,7 +88,7 @@ public:
 		CalculateOffsetAndStride();
 	}
 
-	uint32_t GetStride() const { return m_Stride; }
+	u32 GetStride() const { return m_Stride; }
 	const std::vector<BufferElement> &GetElements() { return m_Elements; }
 
 	std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
@@ -97,7 +97,7 @@ public:
 private:
 	void CalculateOffsetAndStride()
 	{
-		uint32_t offset = 0;
+		u32 offset = 0;
 		m_Stride = 0;
 
 		for (auto &element : m_Elements)
@@ -109,7 +109,7 @@ private:
 	}
 
 	std::vector<BufferElement> m_Elements;
-	uint32_t m_Stride = 0;
+	u32 m_Stride = 0;
 };
 
 class VertexBuffer
@@ -119,12 +119,12 @@ public:
 
 	virtual void Bind() const = 0;
 	virtual void Unbind() const = 0;
-	virtual void SetData(const void *data, uint32_t size, uint32_t offset = 0) = 0;
+	virtual void SetData(const void *data, u32 size, u32 offset = 0) = 0;
 	virtual void SetLayout(const BufferLayout &layout) = 0;
 	virtual const BufferLayout &GetLayout() const = 0;
 
-	static Ref<VertexBuffer> Create(uint32_t size);
-	static Ref<VertexBuffer> Create(void *vertices, uint32_t size);
+	static Ref<VertexBuffer> Create(u32 size);
+	static Ref<VertexBuffer> Create(void *vertices, u32 size);
 };
 
 class IndexBuffer
@@ -134,11 +134,11 @@ public:
 
 	virtual void Bind() const = 0;
 	virtual void Unbind() const = 0;
-	virtual uint32_t GetCount() const = 0;
-	virtual uint32_t GetBufferID() const = 0;
+	virtual u32 GetCount() const = 0;
+	virtual u32 GetBufferID() const = 0;
 
-	static Ref<IndexBuffer> Create(uint32_t size);
-	static Ref<IndexBuffer> Create(void *indices, uint32_t count);
+	static Ref<IndexBuffer> Create(u32 size);
+	static Ref<IndexBuffer> Create(void *indices, u32 count);
 };
 }
 
