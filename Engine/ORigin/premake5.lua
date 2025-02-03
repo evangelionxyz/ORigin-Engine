@@ -21,7 +21,6 @@ project "ORigin"
         "sources/Platform/Vulkan/**.cpp",
         "sources/Platform/**.hpp",
         "sources/Platform/**.h",
-        "sources/Platform/Win32Window.cpp",
     }
 
     includedirs {

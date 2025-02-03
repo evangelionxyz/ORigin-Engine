@@ -11,10 +11,6 @@
 #include "EmbeddedImages.h"
 #include <stb_image.h>
 
-#ifdef OGN_PLATFORM_WINDOWS
-    #include "Platform/Win32/Win32Window.h"
-#endif
-
 namespace origin {
 
     Application* Application::s_Instance = nullptr;
@@ -33,7 +29,6 @@ namespace origin {
 
         RendererAPI::SetAPI(m_Spec.RenderAPI);
 
-        Window::GLFWInit();
         m_ConsoleManager = CreateScope<ConsoleManager>();
 
         switch (RendererAPI::GetAPI())
@@ -46,7 +41,7 @@ namespace origin {
             break;
         }
 
-        m_Window = Window::Create(spec.Name.c_str(), spec.Width, spec.Height, spec.Maximize);
+        m_Window = CreateRef<Window>(spec.Name.c_str(), spec.Width, spec.Height, spec.Maximize);
         m_Window->SetIcon(logo_black_data, logo_black_width, logo_black_height);
         
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
@@ -66,13 +61,9 @@ namespace origin {
     {
         m_LayerStack.Shutdown();
 
-        m_Window->DestroyWindow();
-
         Renderer::Shutdown();
         FmodAudio::Shutdown();
         AudioEngine::Shutdown();
-
-        Window::GLFWShutdown();
     }
 
     void Application::Run()

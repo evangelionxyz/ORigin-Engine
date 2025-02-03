@@ -33,6 +33,7 @@ objdir (ThirdPartyIntOutputdir)
 		"%{PhysXDir}/physx/source/common/src/CmPtrTable.cpp",
 		"%{PhysXDir}/physx/source/common/src/CmSerialize.cpp",
 		"%{PhysXDir}/physx/source/common/src/CmVisualization.cpp",
+		"%{PhysXDir}/physx/source/common/src/CmRadixSort.cpp",
 		"%{PhysXDir}/physx/source/geomutils/**.cpp",
 	} 
 	
@@ -58,10 +59,9 @@ objdir (ThirdPartyIntOutputdir)
 	filter "system:windows"
 		systemversion "latest"
 		files {
-			"%{PhysXDir}/physx/source/common/src/windows/CmWindowsDelayHook.cpp",
+			"%{PhysXDir}/physx/source/common/src/windows/CmWindowsDelayLoadHook.cpp",
 			"%{PhysXDir}/physx/source/common/src/windows/CmWindowsModuleUpdateLoader.cpp",
 		}
-
 
 	filter "configurations:Debug"
 		runtime "Debug"
