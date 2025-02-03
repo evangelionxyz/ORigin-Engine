@@ -478,13 +478,14 @@ void VulkanContext::RecordCommandBuffer(VkCommandBuffer cmd, u32 image_index)
     {
         command(cmd, m_framebuffers[image_index], image_index);
     }
-    //m_CommandCallbacks.clear();
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
     m_render_pass->End(cmd);
 
     vkEndCommandBuffer(cmd); // !command buffer
+
+    //m_CommandCallbacks.clear();
 }
 
 void VulkanContext::Submit(CommandCallback callback)

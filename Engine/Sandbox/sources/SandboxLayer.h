@@ -20,7 +20,6 @@ public:
     bool OnMouseScroll(MouseScrolledEvent &e);
 
 private:
-    void CreateDescriptorSet();
     void CreatePipeline();
 
     void UpdateCamera(f32 delta_time);
@@ -34,6 +33,8 @@ private:
     Ref<VulkanBuffer> uniform_buffer;
     Ref<VulkanGraphicsPipeline> pipeline;
     Ref<VulkanDescriptorSet> descriptor_set;
+
+
 };
 
 }

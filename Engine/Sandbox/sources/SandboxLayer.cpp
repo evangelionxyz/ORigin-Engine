@@ -60,6 +60,7 @@ struct UniformBufferObject
 {
     glm::mat4 view_projection;
     glm::mat4 model_transform;
+    glm::vec3 camera_position;
 };
 
 glm::vec3 obj_position{ 0.0f, 0.0f, -1.0f };
@@ -77,14 +78,15 @@ void SandboxLayer::OnAttach()
     Physics::Init(PhysicsAPI::Jolt);
 
     image = Texture2D::Create("Resources/icon.png");
-    shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", true);
+    shader = CreateRef<VulkanShader>("Resources/Shaders/Vulkan/default.glsl", false);
 
-    CreateDescriptorSet();
+    VulkanDescriptorSetLayout layout = {
+        {"position", VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0 },
+        {"image_sampler", VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1 }
+    };
+    descriptor_set = CreateRef<VulkanDescriptorSet>(layout);
 
-    VkDeviceSize uniform_buffer_size = sizeof(UniformBufferObject);
-    uniform_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uniform_buffer_size);
-
-    std::vector<VkWriteDescriptorSet> descriptor_writes{};
+    uniform_buffer = CreateRef<VulkanBuffer>(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(UniformBufferObject));
 
     // Descriptor for Uniform Buffer (binding 0)
     VkDescriptorBufferInfo buffer_info{};
@@ -93,8 +95,7 @@ void SandboxLayer::OnAttach()
     buffer_info.range = sizeof(UniformBufferObject);
 
     // uniform buffer binding
-    VkWriteDescriptorSet write_a{};
-    write_a.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet write_a{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
     write_a.dstSet = *descriptor_set->GetDescriptorSet();
     write_a.dstArrayElement = 0;
     write_a.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -108,8 +109,7 @@ void SandboxLayer::OnAttach()
     image_info.sampler = ((VulkanImage*)image.get())->GetSampler();
 
     // image sampler binding
-    VkWriteDescriptorSet write_b{};
-    write_b.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet write_b{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
     write_b.dstSet = *descriptor_set->GetDescriptorSet();
     write_b.dstBinding = 1;
     write_b.dstArrayElement = 0;
@@ -117,10 +117,7 @@ void SandboxLayer::OnAttach()
     write_b.descriptorCount = 1;
     write_b.pImageInfo = &image_info;
 
-    descriptor_writes.push_back(write_a);
-    descriptor_writes.push_back(write_b);
-
-    descriptor_set->Update(descriptor_writes);
+    descriptor_set->Update({write_a, write_b});
    
     CreatePipeline();
 
@@ -158,7 +155,6 @@ void SandboxLayer::OnDetach()
 
     pipeline->Destroy();
     image->Destroy();
-
 }
 
 void SandboxLayer::OnUpdate(const Timestep delta_time)
@@ -168,17 +164,9 @@ void SandboxLayer::OnUpdate(const Timestep delta_time)
     UniformBufferObject ubo{};
     ubo.view_projection = camera.GetViewProjection();
     ubo.model_transform = glm::translate(glm::mat4(1.0f), obj_position);
+    ubo.camera_position = camera.GetPosition();
 
     uniform_buffer->SetData(&ubo, sizeof(ubo));
-}
-
-void SandboxLayer::CreateDescriptorSet()
-{
-    VulkanDescriptorSetLayout layout = {
-        {"position", VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0 },
-        {"image_sampler", VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1 }
-    };
-    descriptor_set = CreateRef<VulkanDescriptorSet>(layout);
 }
 
 void SandboxLayer::CreatePipeline()
