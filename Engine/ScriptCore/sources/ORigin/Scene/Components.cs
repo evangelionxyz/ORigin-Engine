@@ -605,7 +605,7 @@ namespace ORiginEngine
                 return value;
             }
             set => InternalCalls.RigidbodyComponent_SetRestitution(Entity.ID, value);
-            
+
         }
 
         public float GravityFactor
@@ -615,7 +615,7 @@ namespace ORiginEngine
                 InternalCalls.RigidbodyComponent_GetGravityFactor(Entity.ID, out float value);
                 return value;
             }
-            
+
             set
             {
                 InternalCalls.RigidbodyComponent_SetGravityFactor(Entity.ID, value);

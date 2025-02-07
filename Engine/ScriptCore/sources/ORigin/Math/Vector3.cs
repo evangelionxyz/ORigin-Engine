@@ -58,7 +58,7 @@ namespace ORiginEngine
         public Vector3 Normalized()
         {
             float length = Length();
-            if(length > 0.0f)
+            if (length > 0.0f)
             {
                 return new Vector3(X / length, Y / length, Z / length);
             }

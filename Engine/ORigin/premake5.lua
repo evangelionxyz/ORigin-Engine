@@ -85,7 +85,7 @@ project "ORigin"
             "%{Library.BCrypt}"
         }
         files {
-            "sources/Platform/Win32/Win32Utils.hpp",
+            "sources/Platform/Win32/Win32Utils.cpp",
         }
         
         filter "action:vs*"

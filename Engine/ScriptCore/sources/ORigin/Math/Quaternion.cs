@@ -33,7 +33,7 @@ namespace ORiginEngine
             get
             {
                 float mag = Magnitude;
-                if(mag > 0.0f)
+                if (mag > 0.0f)
                 {
                     return new Quaternion(X / mag, Y / mag, Z / mag, W / mag);
                 }

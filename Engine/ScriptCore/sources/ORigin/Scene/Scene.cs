@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ORiginEngine
+﻿namespace ORiginEngine
 {
     public class Scene
     {
