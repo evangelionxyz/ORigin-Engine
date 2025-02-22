@@ -46,6 +46,8 @@ project "ORigin"
         "%{IncludeDir.PhysX}",
         "%{IncludeDir.OPTICK}",
         "%{IncludeDir.KTX}",
+        "%{IncludeDir.SDL}",
+        "%{IncludeDir.SPDLOG}",
     }
 
     links {
@@ -61,6 +63,7 @@ project "ORigin"
         "YAMLCPP",
         "JOLT",
         "NvPhysX",
+        "SPDLOG",
         "NvPhysXCooking",
         "NvPhysXCommon",
         "NvPhysXExtensions",
@@ -77,12 +80,13 @@ project "ORigin"
             "opengl32.lib",
             "%{Library.Vulkan1Lib}",
             "%{Library.KTXLib}",
+            "%{Library.SDL}",
             "%{Library.FMOD}",
             "%{Library.MONO}",
             "%{Library.WinSock}",
             "%{Library.WinMM}",
             "%{Library.WinVersion}",
-            "%{Library.BCrypt}"
+            "%{Library.BCrypt}",
         }
         files {
             "sources/Platform/Win32/Win32Utils.cpp",
@@ -94,8 +98,9 @@ project "ORigin"
             pchsource "sources/pch.cpp"
 
         postbuildcommands {
-            '{COPYFILE} "%{wks.location}/Engine/ThirdParty/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
-            '{COPYFILE} "%{wks.location}/Engine/ThirdParty/KTX/lib/windows/ktx.dll" "%{cfg.targetdir}"',
+            '{COPYFILE} "%{THIRD_PARTY_DIR}/FMOD/lib/win32/x64/fmod.dll" "%{cfg.targetdir}"',
+            '{COPYFILE} "%{THIRD_PARTY_DIR}/KTX/lib/windows/ktx.dll" "%{cfg.targetdir}"',
+            '{COPYFILE} "%{THIRD_PARTY_DIR}/SDL/lib/windows/x64/SDL3.dll" "%{cfg.targetdir}"'
         }
 
         includedirs { "%{IncludeDir.VulkanSDK}" }

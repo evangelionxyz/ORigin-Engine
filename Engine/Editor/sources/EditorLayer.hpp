@@ -40,18 +40,7 @@ namespace origin
         void OnUpdate(Timestep ts) override;
 
         static EditorLayer &Get();
-
-        bool GuiVSync = true;
-        bool GuiMenuFullscreen = false;
-        bool GuiMenuStyleWindow = false;
-        bool GuiRenderSettingsWindow = true;
-        bool GuiImGuiDemoWindow = false;
-        bool GuiConsoleWindow = true;
-        bool GuiPreferencesWindow = false;
-
-        bool IsViewportHovered = false;
-        bool IsViewportFocused = false;
-
+        
     private:
         void CreatePanels();
         void DestroyPanels();
@@ -98,7 +87,6 @@ namespace origin
         };
 
         std::vector<ProfilerResult> m_ProfilerResults;
-        SceneState m_SceneState = SceneState::Edit;
         EditorCamera m_EditorCamera;
 
         // ================ Panels ==================
@@ -127,11 +115,26 @@ namespace origin
         i32 m_gizmo_mode = 0;
         i32 m_RenderTarget = 0;
         f32 m_Time = 0.0f;
+
+    public:
+        bool GuiVSync = true;
+        bool GuiMenuFullscreen = false;
+        bool GuiMenuStyleWindow = false;
+        bool GuiRenderSettingsWindow = true;
+        bool GuiImGuiDemoWindow = false;
+        bool GuiConsoleWindow = true;
+        bool GuiPreferencesWindow = false;
+
+        bool IsViewportHovered = false;
+        bool IsViewportFocused = false;
+
+    private:
         bool m_Draw2DGrid = true;
         bool m_DrawLineModeActive = false;
         bool m_VisualizeCollider = false;
         bool m_VisualizeBoundingBox = false;
         bool m_IsProjectBrowserOpen = true;
+        SceneState m_SceneState = SceneState::Edit;
 
         friend class Gizmos;
         friend class UIEditorPanel;

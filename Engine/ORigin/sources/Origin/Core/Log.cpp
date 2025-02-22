@@ -7,6 +7,7 @@
 
 namespace origin {
 static Log *s_Instance = nullptr;
+
 Log::Log()
 {
     s_Instance = this;

@@ -27,22 +27,20 @@ IncludeDir["FMOD"]                     = "%{THIRD_PARTY_DIR}/FMOD/include"
 IncludeDir["PhysX"]                    = "%{THIRD_PARTY_DIR}/nvphysx/physx/include"
 IncludeDir["OPTICK"]                   = "%{THIRD_PARTY_DIR}/OPTICK/src"
 IncludeDir["KTX"]                      = "%{THIRD_PARTY_DIR}/KTX/include"
+IncludeDir["SDL"]                      = "%{THIRD_PARTY_DIR}/SDL/include"
+IncludeDir["SPDLOG"]                   = "%{THIRD_PARTY_DIR}/SPDLOG/include"
 
 -- Windows
 EDITOR_LIB_DIR                         = "%{wks.location}Engine/Editor/Lib/"
 Library["MONO"]                        = "%{EDITOR_LIB_DIR}/Mono/Win32/libmono-static-sgen.lib"
 Library["FMOD"]                        = "%{THIRD_PARTY_DIR}/FMOD/lib/win32/x64/fmod_vc.lib"
 Library["KTXLib"]                      = "%{THIRD_PARTY_DIR}/KTX/lib/windows/ktx.lib"
-
+Library["SDL"]                         = "%{THIRD_PARTY_DIR}/SDL/lib/windows/x64/SDL3.lib"
 Library["WinSock"]                     = "Ws2_32.lib"
+Library["Vulkan1Lib"]                  = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["WinMM"]                       = "Winmm.lib"
 Library["WinVersion"]                  = "Version.lib"
 Library["BCrypt"]                      = "Bcrypt.lib"
-
-
-IncludeDir["VulkanSDK"]                = "%{VULKAN_SDK_PATH}/Include" -- includes
-LibraryDir["VulkanSDK"]                = "%{VULKAN_SDK_PATH}/Lib" -- library
-Library["Vulkan1Lib"]                  = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 
 Library["ShaderC_Debug"]               = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
 Library["SPIRV_Cross_Debug"]           = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"
@@ -51,6 +49,9 @@ Library["SPIRV_Tools_Debug"]           = "%{LibraryDir.VulkanSDK}/SPIRV-Toolsd.l
 Library["ShaderC_Release"]             = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
 Library["SPIRV_Cross_Release"]         = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_Cross_GLSL_Release"]    = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+
+LibraryDir["VulkanSDK"]                = "%{VULKAN_SDK_PATH}/Lib" -- library
+IncludeDir["VulkanSDK"]                = "%{VULKAN_SDK_PATH}/Include" -- includes
 
 -- Dependencies Lua File
 group "Dependencies"
@@ -81,5 +82,6 @@ group "Dependencies"
     include "JoltPhysics.lua"
     include "fmt.lua"
     include "optick.lua"
+    include "spdlog.lua"
 group ""
 

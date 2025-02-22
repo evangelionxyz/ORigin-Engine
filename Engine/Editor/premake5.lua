@@ -47,6 +47,8 @@ project "Editor"
         "%{IncludeDir.FMOD}",
         "%{IncludeDir.PhysX}",
         "%{IncludeDir.OPTICK}",
+        "%{IncludeDir.SDL}",
+        "%{IncludeDir.SPDLOG}",
     }
 
     defines {

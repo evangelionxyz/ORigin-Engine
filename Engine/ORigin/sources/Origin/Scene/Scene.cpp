@@ -744,9 +744,7 @@ void Scene::DestroyEntityRecursive(UUID entityId)
         }
 
         m_Registry.destroy(static_cast<entt::entity>(entity));
-        m_EntityStorage.erase(std::ranges::remove_if(m_EntityStorage,
-                                                     [entityId](const auto &pair) { return pair.first == entityId; }).begin(),
-            m_EntityStorage.end());
+        m_EntityStorage.erase(std::ranges::remove_if(m_EntityStorage, [entityId](const auto &pair) { return pair.first == entityId; }).begin(), m_EntityStorage.end());
     }
 }
 

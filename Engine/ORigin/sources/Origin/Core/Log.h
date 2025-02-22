@@ -9,6 +9,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
+#include <spdlog/spdlog.h>
+
 namespace origin {
 
 enum LogLevel
@@ -25,6 +27,7 @@ class Log
 public:
 	Log();
 	Log(const Log &) = delete;
+
 	void PrintMessage(const std::string &message, LogLevel level = LogLevel::Info)
 	{
 		PrintColoredMessage(message, level);
