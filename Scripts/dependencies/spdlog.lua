@@ -1,7 +1,8 @@
 project "SPDLOG"
+    kind "StaticLib"
     location (ThirdPartyLocation)
     language "C++"
-    kind "StaticLib"
+    cppdialect "C++20"
     staticruntime "off"
 
     targetdir (ThirdPartyOutputdir)
@@ -26,9 +27,8 @@ project "SPDLOG"
     }
 
     filter "system:windows"
-        buildoptions {
-            "/utf-8"
-        }
+        defines { "WIN32", "_WINDOWS", "_UNICODE" }
+        buildoptions { "/utf-8", "/interface" }
 
     filter "configurations:Debug"
         runtime "Debug"

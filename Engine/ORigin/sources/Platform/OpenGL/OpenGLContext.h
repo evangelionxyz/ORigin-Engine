@@ -12,7 +12,7 @@ namespace origin
 	public:
 		OpenGLContext() = default;
 
-		void Init(Window *window) override;
+		void Init(SDLWindow *window) override;
 		void Shutdown() override;
 	};
 }

@@ -21,7 +21,7 @@ Application *CreateApplication(ApplicationCommandLineArgs args)
     spec.Height = 720;
     spec.Maximize = false;
     spec.CommandLineArgs = args;
-    spec.RenderAPI = RendererAPI::API::Vulkan;
+    spec.RenderAPI = RendererAPI::API::OpenGL;
 
     OGN_CORE_INFO(spec.Name.c_str());
     return new SandboxApp(spec);

@@ -8,104 +8,99 @@
 
 namespace origin {
 
-static InputData s_InputData;
+glm::ivec2 Input::mouse_position = glm::ivec2(0);
+glm::ivec2 Input::click_delta_position = glm::ivec2(0);
+CursorMode Input::cursor_mode = CursorMode::Default;
+std::unordered_map<KeyCode, bool> Input::key_codes;
+std::unordered_map<MouseCode, bool> Input::mouse_codes;
+SDLWindow *Input::window = nullptr;
 
-void Input::Init(GLFWwindow *window)
+void Input::Init(SDLWindow *window)
 {
-	s_InputData.window = window;
+	Input::window = window;
 }
 
 bool Input::IsKeyReleased(const KeyCode keycode)
 {
-	OGN_PROFILER_INPUT();
-	const int &state = glfwGetKey(s_InputData.window, static_cast<int32_t>(keycode));
-	return state == GLFW_RELEASE;
+    return !key_codes[keycode];
 }
 
 bool Input::IsKeyPressed(const KeyCode keycode)
 {
-	OGN_PROFILER_INPUT();
-	const int &state = glfwGetKey(s_InputData.window, static_cast<int32_t>(keycode));
-	return state == GLFW_PRESS;
+    bool ret = key_codes[keycode];
+    return ret;
 }
 
 bool Input::IsMouseButtonPressed(const MouseCode button)
 {
-	OGN_PROFILER_INPUT();
-	const int &state = glfwGetMouseButton(s_InputData.window, static_cast<int32_t>(button));
-	return state == GLFW_PRESS;
+    return mouse_codes[button];
 }
 
 i32 Input::GetMouseX()
 {
-	return s_InputData.mouse_position.x;
+    return GetMousePosition().x;
 }
-
 i32 Input::GetMouseY()
 {
-	return s_InputData.mouse_position.y;
+    return GetMousePosition().y;
 }
 
 void Input::SetMousePosition(i32 x, i32 y)
 {
-	glfwSetCursorPos(s_InputData.window, (double)x, (double)y);
+    SDL_WarpMouseInWindow(window->GetNativeWindow(), static_cast<f32>(x), static_cast<f32>(y));
+}
+
+glm::ivec2 Input::GetMousePosition()
+{
+    f32 x, y;
+    SDL_GetMouseState(&x, &y);
+    return { static_cast<f32>(x), static_cast<f32>(y) };
 }
 
 glm::ivec2 Input::GetMouseClickDragDelta()
 {
-	return s_InputData.click_delta_position;
+	return click_delta_position;
 }
 
 void Input::Update()
 {
-	static double x, y;
-	glfwGetCursorPos(s_InputData.window, &x, &y);
-	s_InputData.mouse_position.x = static_cast<int>(x);
-	s_InputData.mouse_position.y = static_cast<int>(y);
+    mouse_position = GetMousePosition();
 
-	static glm::ivec2 last_mouse_position = s_InputData.mouse_position;
+	static glm::ivec2 last_mouse_position = mouse_position;
 
 	if (IsAnyMouseDown())
 	{
-        s_InputData.click_delta_position = last_mouse_position - s_InputData.mouse_position;
+        click_delta_position = last_mouse_position - mouse_position;
 	}
 	else
 	{
-		s_InputData.click_delta_position = { 0, 0 };
+		click_delta_position = { 0, 0 };
 	}
 
-    last_mouse_position = s_InputData.mouse_position;
+    last_mouse_position = mouse_position;
 }
 
 void Input::ToggleMouseLock()
 {
-	s_InputData.cursor_mode = s_InputData.cursor_mode != CursorMode::Lock ? CursorMode::Lock : CursorMode::Default;
-	SetCursoreMode(s_InputData.cursor_mode);
+	cursor_mode = cursor_mode != CursorMode::Lock ? CursorMode::Lock : CursorMode::Default;
+	SetCursoreMode(cursor_mode);
 }
 
 void Input::SetCursoreMode(CursorMode mode)
 {
-	s_InputData.cursor_mode = mode;
+	cursor_mode = mode;
     switch (mode)
     {
     case CursorMode::Default:
     {
-        glfwSetInputMode(s_InputData.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		SDL_ShowCursor();
         break;
     }
     case CursorMode::Lock:
-    {
-        glfwSetInputMode(s_InputData.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        break;
-    }
     case CursorMode::Hidden:
-    {
-        glfwSetInputMode(s_InputData.window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-        break;
-    }
     case CursorMode::Captured:
     {
-        glfwSetInputMode(s_InputData.window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+        SDL_HideCursor();
         break;
     }
     }
@@ -113,22 +108,19 @@ void Input::SetCursoreMode(CursorMode mode)
 
 CursorMode Input::GetCursorMode()
 {
-	return s_InputData.cursor_mode;
+	return cursor_mode;
 }
 
 bool Input::IsAnyMouseDown()
 {
-	return IsMouseButtonPressed(Mouse::Button0) || IsMouseButtonPressed(Mouse::Button1)
-		|| IsMouseButtonPressed(Mouse::Button2) || IsMouseButtonPressed(Mouse::Button3) 
-		|| IsMouseButtonPressed(Mouse::Button4) || IsMouseButtonPressed(Mouse::Button5)
-		|| IsMouseButtonPressed(Mouse::Button6) || IsMouseButtonPressed(Mouse::Button7);
+	return IsMouseButtonPressed(Mouse::ButtonLeft) || IsMouseButtonPressed(Mouse::ButtonRight) || IsMouseButtonPressed(Mouse::ButtonMiddle);
 }
 
 void Input::SetMouseToCenter()
 {
-	int width, height;
-	glfwGetWindowSize(s_InputData.window, &width, &height);
-	SetMousePosition(width / 2, height / 2);
+	f32 width = static_cast<f32>(window->GetWidth());
+	f32 height = static_cast<f32>(window->GetHeight());
+	SDL_WarpMouseInWindow(window->GetNativeWindow(), width / 2.0f, height / 2.0f);
 }
 
 }

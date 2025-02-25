@@ -41,15 +41,15 @@ namespace origin
 				}
 
 				out << YAML::Key << "StartScene" << YAML::Value << handle;
-				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
-				out << YAML::Key << "AssetRegistry" << YAML::Value << config.AssetRegistry.string();
-				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
+				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.generic_string();
+				out << YAML::Key << "AssetRegistry" << YAML::Value << config.AssetRegistry.generic_string();
+				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.generic_string();
 				out << YAML::EndMap;
 			}
 			out << YAML::EndMap;
 		}
 
-		std::ofstream fout(filepath.string());
+		std::ofstream fout(filepath);
 		fout << out.c_str();
 
 		// Serialized the updated AssetRegistry
@@ -58,7 +58,7 @@ namespace origin
 			m_Project->GetEditorAssetManager()->SerializeAssetRegistry();
 		}
 
-		OGN_CORE_INFO("[Project Serialzer] Project serialized in {}", filepath.string());
+		OGN_CORE_INFO("[Project Serialzer] Project serialized in {0}", filepath.generic_string());
 		return true;
 	}
 
@@ -71,7 +71,7 @@ namespace origin
 
 		auto& config = m_Project->GetConfig();
 
-		YAML::Node data = YAML::LoadFile(filepath.string());
+		YAML::Node data = YAML::LoadFile(filepath.generic_string());
 
 		YAML::Node projectNode = data["Project"];
 		if (!projectNode)
@@ -83,10 +83,10 @@ namespace origin
 		config.AssetRegistry = projectNode["AssetRegistry"].as<std::string>();
 		config.ScriptModulePath = projectNode["ScriptModulePath"].as<std::string>();
 
-		OGN_CORE_INFO("ProjectSerializer::Deserialize {}", filepath.string());
-		OGN_CORE_INFO("	Name: {}", config.Name);
-		OGN_CORE_INFO("	Start Scene: {}", config.StartScene);
-		OGN_CORE_INFO("	Asset Reg: {}", config.AssetRegistry.string());
+		OGN_CORE_INFO("ProjectSerializer::Deserialize {0}", filepath.generic_string());
+		OGN_CORE_INFO("	Name: {0}", config.Name);
+		OGN_CORE_INFO("	Start Scene: {0}", config.StartScene);
+		OGN_CORE_INFO("	Asset Reg: {0}", config.AssetRegistry.generic_string());
 
 		return true;
 	}

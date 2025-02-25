@@ -12,7 +12,7 @@
 #include <misc/cpp/imgui_stdlib.cpp>
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
-#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui_internal.h>
@@ -21,7 +21,7 @@
 #include "Platform/Vulkan/VulkanContext.hpp"
 
 namespace origin {
-GuiLayer::GuiLayer(const Ref<Window> &window)
+GuiLayer::GuiLayer(const Ref<SDLWindow> &window)
     : Layer("Gui Layer"), m_WindowContext(window)
 {
 }
@@ -68,18 +68,23 @@ void GuiLayer::Init()
     io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
 #pragma endregion
 
+    m_WindowContext->AddSDLEventCallback([](const SDL_Event *event)
+    {
+        ImGui_ImplSDL3_ProcessEvent(event);
+    });
+
     switch (RendererAPI::GetAPI())
     {
     case RendererAPI::API::OpenGL:
     {
-        ImGui_ImplGlfw_InitForOpenGL(m_WindowContext->GetNativeWindow(), true);
+        ImGui_ImplSDL3_InitForOpenGL(m_WindowContext->GetNativeWindow(), m_WindowContext->GetGLContext());
         ImGui_ImplOpenGL3_Init("#version 450");
         break;
     }
     case RendererAPI::API::Vulkan:
     {
         constexpr bool install_callbacks = true;
-        ImGui_ImplGlfw_InitForVulkan(m_WindowContext->GetNativeWindow(), install_callbacks);
+        ImGui_ImplSDL3_InitForVulkan(m_WindowContext->GetNativeWindow());
         Ref<VulkanContext> vk_context = GraphicsContext::GetContext<VulkanContext>();
 
         ImGui_ImplVulkan_InitInfo init_info = {};
@@ -121,7 +126,7 @@ void GuiLayer::OnDetach()
     }
     }
 
-    ImGui_ImplGlfw_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 }
 
@@ -142,7 +147,7 @@ void GuiLayer::Begin()
         break;
     }
 
-    ImGui_ImplGlfw_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
     ImGuizmo::BeginFrame();
 }
@@ -151,9 +156,7 @@ void GuiLayer::End()
 {
     ImGuiIO &io = ImGui::GetIO();
 
-    i32 width, height;
-    glfwGetFramebufferSize(m_WindowContext->GetNativeWindow(), &width, &height);
-    io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height));
+    io.DisplaySize = ImVec2(static_cast<float>(m_WindowContext->GetFramebufferWidth()), static_cast<float>(m_WindowContext->GetFramebufferHeight()));
 
     // ====================
     // Rendering 
@@ -164,9 +167,13 @@ void GuiLayer::End()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
+            SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
+            SDL_GLContext backup_context = SDL_GL_GetCurrentContext();
+
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(m_WindowContext->GetNativeWindow());
+
+            SDL_GL_MakeCurrent(backup_current_window, backup_context);
         }
         break;
     case RendererAPI::API::Vulkan:

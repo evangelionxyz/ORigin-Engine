@@ -3,7 +3,7 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include "Window.h"
+#include "SDLWindow.hpp"
 #include "Input.h"
 #include "AppEvent.h"
 #include "Time.h"
@@ -41,7 +41,7 @@ struct ApplicationSpecification
     std::string WorkingDirectory;
     RendererAPI::API RenderAPI = RendererAPI::API::OpenGL;
 
-    uint32_t Width = 1280, Height = 640;
+    u32 Width = 1280, Height = 640;
     bool Maximize = false;
 };
 
@@ -62,7 +62,7 @@ public:
     void SubmitToMainThread(const std::function<void()> &function);
     static Application &GetInstance() { return *s_Instance; }
     bool GetMinimized() const { return m_Minimized; }
-    Window &GetWindow() const { return *m_Window.get(); }
+    SDLWindow &GetWindow() const { return *m_Window.get(); }
     const ApplicationSpecification &GetSpecification() const { return m_Spec; }
     GuiLayer *GetGuiLayer() const { return m_GuiLayer; }
     bool SetVSync = false;
@@ -75,14 +75,13 @@ private:
     ApplicationSpecification m_Spec;
     LayerStack m_LayerStack;
     GuiLayer *m_GuiLayer = nullptr;
-    Ref<Window> m_Window;
+    Ref<SDLWindow> m_Window;
     static Application *s_Instance;
     bool OnWindowClose(WindowCloseEvent &e) const;
     bool OnWindowResize(WindowResizeEvent &e);
     void ExecuteMainThreadQueue();
 
     bool m_Minimized = false;
-    float m_LastFrame = 0.0f;
 
     std::vector<std::function<void()>> m_MainThreadQueue;
     std::mutex m_MainThreadMutex;

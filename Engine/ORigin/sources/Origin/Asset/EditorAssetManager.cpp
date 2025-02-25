@@ -98,7 +98,7 @@ Ref<Asset> EditorAssetManager::GetAsset(AssetHandle handle)
 
     if (!asset)
     {
-        OGN_CORE_ERROR("[Editor Asset Manager] Asset Import Failed! {}", metadata.Filepath.generic_string());
+        OGN_CORE_ERROR("[Editor Asset Manager] Asset Import Failed! {0}", metadata.Filepath.generic_string());
         PUSH_CONSOLE_ERROR("Failed to import asset! {}", metadata.Filepath.generic_string());
         return nullptr;
     }
@@ -145,7 +145,7 @@ AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path &filepat
 
     if (metadata.Type == AssetType::None)
     {
-        OGN_CORE_ERROR("[Editor Asset Manager] Invalid Asset Type {}", filepath.generic_string());
+        OGN_CORE_ERROR("[Editor Asset Manager] Invalid Asset Type {0}", filepath.generic_string());
         PUSH_CONSOLE_ERROR("Invalid asset type! {}", filepath.generic_string());
         return 0;
     }
@@ -270,7 +270,7 @@ bool EditorAssetManager::DeserializeAssetRegistry()
 
     if (!std::filesystem::exists(path))
     {
-        PUSH_CONSOLE_ERROR("[Editor Asset Manager] Failed to deserialize AssetRegistry {}", path.generic_string());
+        PUSH_CONSOLE_ERROR("[Editor Asset Manager] Failed to deserialize AssetRegistry {0}", path.generic_string());
         OGN_CORE_ASSERT(false, "[Editor Asset Manager] Failed to deserialize AssetRegistry");
         return false;
     }

@@ -1606,11 +1606,9 @@ void EditorLayer::InputProcedure(Timestep time)
 
 bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
 {
-    OGN_PROFILER_INPUT();
-
     auto &app = Application::GetInstance();
-    const bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-    const bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+    const bool control = Input::IsKeyPressed(Key::Control);
+    const bool shift = Input::IsKeyPressed(Key::Shift);
 
     ImGuiIO &io = ImGui::GetIO();
     Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();

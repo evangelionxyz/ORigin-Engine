@@ -18,6 +18,8 @@ project "IMGUI"
     "%{THIRD_PARTY_DIR}/IMGUI/imgui.cpp",
     "%{THIRD_PARTY_DIR}/IMGUI/backends/imgui_impl_opengl3.cpp",
     "%{THIRD_PARTY_DIR}/IMGUI/backends/imgui_impl_glfw.cpp",
+    "%{THIRD_PARTY_DIR}/IMGUI/backends/imgui_impl_sdl3.cpp",
+    "%{THIRD_PARTY_DIR}/IMGUI/backends/imgui_impl_sdlrenderer3.cpp",
     "%{THIRD_PARTY_DIR}/IMGUI/backends/imgui_impl_vulkan.cpp",
     "%{THIRD_PARTY_DIR}/IMGUI/backends/imgui_impl_vulkan.h",
     "%{THIRD_PARTY_DIR}/IMGUI/imconfig.h",
@@ -34,10 +36,15 @@ project "IMGUI"
     "%{IncludeDir.IMGUIZMO}/ImSequencer.cpp",
   }
 
+  defines {
+    "SDL_ENABLE_OLD_NAMES"
+  }
+
   includedirs {
     "%{THIRD_PARTY_DIR}/IMGUI",
     "%{THIRD_PARTY_DIR}/GLFW/include",
-    "%{IncludeDir.VulkanSDK}"
+    "%{IncludeDir.VulkanSDK}",
+    "%{IncludeDir.SDL}"
   }
 
   filter "system:linux"

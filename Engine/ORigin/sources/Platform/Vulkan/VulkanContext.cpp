@@ -5,14 +5,9 @@
 #include "VulkanWrapper.hpp"
 #include "VulkanShader.hpp"
 
-#ifdef OGN_PLATFORM_WINDOWS
-#   define VK_USE_PLATFORM_WIN32_KHR
-#   include <GLFW/glfw3native.h>
-#endif
-
 #include <backends/imgui_impl_vulkan.h>
 
-#include "Origin/Core/Window.h"
+#include "Origin/Core/SDLWindow.hpp"
 
 namespace origin {
 
@@ -70,7 +65,7 @@ void VulkanContext::Shutdown()
     vkDestroyInstance(m_instance, nullptr);
 }
 
-void VulkanContext::Init(Window* window)
+void VulkanContext::Init(SDLWindow* window)
 {
     m_window_handle = window->GetNativeWindow();
 
@@ -129,7 +124,7 @@ void VulkanContext::CreateInstance()
     app_info.apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
     u32 req_extension_count = 0;
-    const char** req_extension = glfwGetRequiredInstanceExtensions(&req_extension_count);
+    const char * const *req_extension = SDL_Vulkan_GetInstanceExtensions(&req_extension_count);
     std::vector<const char*> extensions;
     extensions.reserve(req_extension_count);
 
@@ -178,7 +173,8 @@ void VulkanContext::CreateDebugCallback()
 
 void VulkanContext::CreateWindowSurface()
 {
-    VK_ERROR_CHECK(glfwCreateWindowSurface(m_instance, m_window_handle, nullptr, &m_surface), "[Vulkan] Failed to crreate window surface");
+    bool created = SDL_Vulkan_CreateSurface(m_window_handle, m_instance, nullptr, &m_surface);
+    OGN_CORE_ASSERT(created, "[Vulkan] Failed to crreate window surface");
 }
 
 void VulkanContext::CreateDevice()
@@ -226,7 +222,7 @@ void VulkanContext::CreateDevice()
 void VulkanContext::CreateSwapchain()
 {
     i32 width, height;
-    glfwGetFramebufferSize(m_window_handle, &width, &height);
+    SDL_GetWindowSizeInPixels(m_window_handle, &width, &height);
 
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physical_device.GetSelectedDevice().Device, m_surface, &capabilities);

@@ -10,16 +10,18 @@
 #include "VulkanQueue.hpp"
 #include "VulkanRenderPass.hpp"
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
-#include <GLFW/glfw3.h>
 
 namespace origin {
 
+class SDLWindow;
 class VulkanContext : public GraphicsContext
 {
 public:
     VulkanContext();
-    void Init(Window *window) override;
+    void Init(SDLWindow *window) override;
     void Shutdown() override;
 
     static VulkanContext *GetInstance();
@@ -71,7 +73,7 @@ private:
     VkCommandPool          m_command_pool = VK_NULL_HANDLE;
     VkDescriptorPool       m_descriptor_pool = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT m_debug_messenger = VK_NULL_HANDLE;
-    GLFWwindow            *m_window_handle = nullptr;
+    SDL_Window            *m_window_handle = nullptr;
     VulkanPhysicalDevice   m_physical_device;
     VulkanQueue            m_queue;
     VulkanSwapchain        m_swapchain;

@@ -131,7 +131,7 @@ void SceneCamera::SetViewportSize(u32 width, u32 height)
 	else
 	{
 		// else, set the viewport to max out the width
-		x = width;
+		x = static_cast<f32>(width);
 		y = x / desiredRatio;
 	}
 

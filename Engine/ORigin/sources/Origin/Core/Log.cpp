@@ -1,57 +1,44 @@
-// Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | ORigin Engine
 
 #include "pch.h"
-#include "Origin/Core/Log.h"
 
-#include "ConsoleManager.h"
+#include "Log.h"
 
 namespace origin {
-static Log *s_Instance = nullptr;
 
-Log::Log()
+void Log::Init()
 {
-    s_Instance = this;
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
+    spdlog::init_thread_pool(8192, 1);
+
+    s_console_sink = CreateRef<spdlog::sinks::stdout_color_sink_mt>();
+    s_console_sink->set_pattern("%^[%T] %n: %v%$");
+
+    // Engine
+    s_core_logger = CreateRef<spdlog::async_logger>(
+        "[origin]",
+        s_console_sink,
+        spdlog::thread_pool(),
+        spdlog::async_overflow_policy::block
+    );
+
+    s_core_logger->set_level(spdlog::level::trace);
+
+    s_client_logger = CreateRef<spdlog::async_logger>(
+        "[client]",
+        s_console_sink,
+        spdlog::thread_pool(),
+        spdlog::async_overflow_policy::block
+    );
+    s_client_logger->set_level(spdlog::level::trace);
 }
 
-void Log::PrintColoredMessage(const std::string &message, const LogLevel level)
+void Log::Shutdown()
 {
-    const char *color_code;
-    const char *level_str;
-
-    const std::string &time_string = ConsoleManager::GetCurrentTime();
-
-    switch (level)
-    {
-    case LogLevel::Critical:
-    case LogLevel::Error:
-        color_code = "\033[1;31m";
-        level_str = "[Error]\t";
-        break;
-    case LogLevel::Warning:
-        color_code = "\033[1;33m";
-        level_str = "[Warn]\t";
-        break;
-    default:
-        color_code = "\033[1;37m";
-        level_str = "[Info]\t";
-        break;
-    }
-    if (m_Buffer.tellp() > 1024)
-    {
-        m_Buffer.clear();
-    }
-
-    m_Buffer << color_code << time_string << /* level_str << */ " " << message << "\033[0m\n";
-    //m_Buffer << message << "\n";
-    std::cout << m_Buffer.rdbuf();
-    m_Buffer.clear();
+    spdlog::shutdown();
 }
 
-Log *Log::GetInstance()
-{
-    return s_Instance;
-}
+Ref<spdlog::async_logger> Log::s_core_logger;
+Ref<spdlog::async_logger> Log::s_client_logger;
+Ref<spdlog::sinks::stdout_color_sink_mt> Log::s_console_sink;
 
 }

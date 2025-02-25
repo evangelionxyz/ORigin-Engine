@@ -41,11 +41,11 @@ namespace origin {
             break;
         }
 
-        m_Window = CreateRef<Window>(spec.Name.c_str(), spec.Width, spec.Height, spec.Maximize);
+        m_Window = CreateRef<SDLWindow>(spec.Name.c_str(), spec.Width, spec.Height, spec.Maximize);
         m_Window->SetIcon(logo_black_data, logo_black_width, logo_black_height);
         
         m_Window->SetEventCallback(OGN_BIND_EVENT_FN(Application::OnEvent));
-        Input::Init(m_Window->GetNativeWindow());
+        Input::Init(m_Window.get());
 
         m_GuiLayer = new GuiLayer(m_Window);
         m_GuiLayer->OnAttach();
@@ -68,24 +68,32 @@ namespace origin {
 
     void Application::Run()
     {
+        f32 last_frame_time = 0.0f;
+
         while (m_Window->IsLooping())
         {
             OGN_PROFILER_BEGIN_FRAME("MainThread");
             m_Window->UpdateEvents();
-            
-            f32 time = static_cast<float>(glfwGetTime());
-            Timestep ts = time - m_LastFrame;
-            m_LastFrame = time;
+
+            if (m_Minimized)
+            {
+                SDL_Delay(10);
+                continue;
+            }
+
+            f32 current_time = static_cast<f32>(SDL_GetTicks());
+            Timestep delta_time = (current_time - last_frame_time) / 1000.0f;
+            last_frame_time = current_time;
 
             Input::Update();
 
-            AssetImporter::SyncToMainThread(ts);
+            AssetImporter::SyncToMainThread(delta_time);
             ExecuteMainThreadQueue();
 
             if (!m_Minimized)
             {
                 for (Layer *layer : m_LayerStack)
-                    layer->OnUpdate(ts);
+                    layer->OnUpdate(delta_time);
             }
 
             if (m_GuiLayer)
@@ -119,7 +127,7 @@ namespace origin {
 
     float Application::GetTime()
     {
-        return static_cast<float>(glfwGetTime());
+        return static_cast<float>(SDL_GetPerformanceCounter());
     }
 
     void Application::PushLayer(Layer *layer)

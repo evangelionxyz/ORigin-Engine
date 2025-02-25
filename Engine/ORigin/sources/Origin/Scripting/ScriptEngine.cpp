@@ -115,7 +115,7 @@ namespace origin
 				const char* name_space = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 				const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 
-				OGN_CORE_TRACE("{}.{1}", name_space, name);
+				OGN_CORE_TRACE("{0}.{1}", name_space, name);
 			}
 		}
 
@@ -418,8 +418,8 @@ namespace origin
 					{
 						const ScriptFieldType type = instance->GetScriptClass()->GetFields()[name].Type;
 						fieldInstance.Field.Type = type;
-						OGN_CORE_WARN("[Script Engine] Checking invalid type {}", name);
-						PUSH_CONSOLE_WARNING("[Script Engine] Checking invalid type {}", name);
+						OGN_CORE_WARN("[Script Engine] Checking invalid type {0}", name);
+						PUSH_CONSOLE_WARNING("[Script Engine] Checking invalid type {0}", name);
 					}
 
 					switch (fieldInstance.Field.Type)
@@ -429,7 +429,7 @@ namespace origin
 						uint64_t uuid = *reinterpret_cast<uint64_t*>(fieldInstance.m_Buffer);
 						if (uuid == 0)
 						{
-							OGN_CORE_ERROR("[Script Engine] Field '{}' (Entity class) is not assigned yet", name);
+                            OGN_CORE_ERROR("[Script Engine] Field '{0}' (Entity class) is not assigned yet", name);
 							PUSH_CONSOLE_ERROR("[Script Engine] Field '{}' (Entity class) is not assigned yet", name);
 							continue;
 						}
@@ -437,8 +437,8 @@ namespace origin
 						MonoMethod *ctorMethod = s_ScriptEngineData->EntityClass.GetMethod(".ctor", 1);
 						if (!ctorMethod)
 						{
-							OGN_CORE_ERROR("[Script Engine] Failed to find constructor {}", name);
-							PUSH_CONSOLE_ERROR("[Script Engine] Failed to find constructor {}", name);
+							OGN_CORE_ERROR("[Script Engine] Failed to find constructor {0}", name);
+							PUSH_CONSOLE_ERROR("[Script Engine] Failed to find constructor {0}", name);
 							continue;
 						}
 
@@ -446,7 +446,7 @@ namespace origin
 						MonoObject *entityInstance = ScriptEngine::InstantiateObject(s_ScriptEngineData->EntityClass.m_MonoClass);
 						if (!entityInstance)
 						{
-							OGN_CORE_ERROR("[Script Engine] Failed to create Entity instance. {}", name);
+							OGN_CORE_ERROR("[Script Engine] Failed to create Entity instance. {0}", name);
 							PUSH_CONSOLE_ERROR("[Script Engine] Failed to create Entity instance. {}", name);
 							continue;
 						}
@@ -460,8 +460,8 @@ namespace origin
 						break;
 					}
 					case ScriptFieldType::Invalid:
-						PUSH_CONSOLE_ERROR("[Script Engine] Null Object Field {}", name);
-						OGN_CORE_ASSERT(false, "[Script Engine] Null Object Field {}", name);
+						PUSH_CONSOLE_ERROR("[Script Engine] Null Object Field {0}", name);
+						OGN_CORE_ASSERT(false, "[Script Engine] Null Object Field {0}", name);
 						return;
                     default:
                         instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
@@ -482,7 +482,7 @@ namespace origin
 		const UUID entity_id = entity.GetUUID();
 		if (const auto &it = s_ScriptEngineData->EntityInstances.find(entity_id); it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {} {}", entity.GetTag(), entity_id);
+			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0} {1}", entity.GetTag(), entity_id);
 			PUSH_CONSOLE_ERROR("[Script Engine] Entity script instance is not attached! {}", entity_id);
 			return;
 		}
@@ -538,7 +538,7 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Failed to find {}", uuid);
+			OGN_CORE_ERROR("[Script Engine] Failed to find {0}", uuid);
 			PUSH_CONSOLE_ERROR("[Script Engine] Failed to find {} ", uuid);
 			return nullptr;
 		}

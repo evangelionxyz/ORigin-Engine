@@ -18,7 +18,7 @@ std::string ReadFile(const std::string &filepath)
 	std::ifstream file(filepath);
 	if (!file.is_open())
 	{
-		OGN_CORE_ASSERT(false, "[Project] Failed to open read file! {}", filepath);
+		OGN_CORE_ASSERT(false, "[Project] Failed to open read file! {0}", filepath);
 		return "";
 	}
 	std::stringstream stream;
@@ -32,7 +32,7 @@ bool WriteFile(const std::string &filepath, const std::string &content)
 	std::ofstream file(filepath);
 	if (!file.is_open())
 	{
-		OGN_CORE_ASSERT(false, "[Project] Failed to open and write file! {}", filepath);
+		OGN_CORE_ASSERT(false, "[Project] Failed to open and write file! {0}", filepath);
 		return false;
 	}
 
@@ -69,7 +69,7 @@ void GenerateFile(const std::string &templatePath, const std::string &outputPath
 
 void CopyFile(const std::string &source_path, const std::string &destination_path)
 {
-	OGN_CORE_ASSERT(std::filesystem::exists(source_path), "[Project Copy File] Failed to copy file! {}", source_path);
+	OGN_CORE_ASSERT(std::filesystem::exists(source_path), "[Project Copy File] Failed to copy file! {0}", source_path);
 	std::filesystem::copy_file(source_path, destination_path, std::filesystem::copy_options::overwrite_existing);
 }
 }

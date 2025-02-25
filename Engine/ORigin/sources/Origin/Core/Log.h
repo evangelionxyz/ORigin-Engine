@@ -4,12 +4,17 @@
 #define LOG_H
 
 #include "Origin/Utils/StringUtils.h"
+#include "UUID.h"
+
 #include <iostream>
+#include <filesystem>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
 #include <spdlog/spdlog.h>
+#include <spdlog/async.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace origin {
 
@@ -25,26 +30,54 @@ enum LogLevel
 class Log
 {
 public:
-	Log();
-	Log(const Log &) = delete;
+	static void Init();
+	static void Shutdown();
 
-	void PrintMessage(const std::string &message, LogLevel level = LogLevel::Info)
-	{
-		PrintColoredMessage(message, level);
-	}
-	template<typename... Args>
-	void PrintMessage(LogLevel level, const char *format, Args &&...args)
-	{
-		std::string message = Utils::FormatString(format, std::forward<Args>(args)...);
-		PrintMessage(message, level);
-	}
-
-	void PrintColoredMessage(const std::string &message, const LogLevel level);
-
-    static Log *GetInstance();
+	inline static Ref<spdlog::async_logger> &GetCoreLogger() { return s_core_logger; }
+	inline static Ref<spdlog::async_logger> &GetClientLogger() { return s_client_logger; }
 
 private:
-	std::stringstream m_Buffer;
+	static Ref<spdlog::async_logger> s_core_logger;
+    static Ref<spdlog::async_logger> s_client_logger;
+	static Ref<spdlog::sinks::stdout_color_sink_mt> s_console_sink;
+};
+
+}
+
+namespace fmt {
+
+template<> 
+struct formatter<origin::UUID>
+{
+    // parse the format specification (e.g, "{}" or "{:x}" for hex)
+    template<typename ParseContext>
+    constexpr auto parse(ParseContext &ctx)
+    {
+        return ctx.begin();
+    }
+
+    // format the UUD (convert to u64 and format it)
+    template<typename FormatContext>
+    auto format(const origin::UUID &uuid, FormatContext &ctx) const 
+    {
+        return fmt::format_to(ctx.out(), "{}", static_cast<u64>(uuid));
+    }
+};
+
+template<>
+struct formatter<std::filesystem::path>
+{
+    template<typename ParseContext>
+    constexpr auto parse(ParseContext &ctx)
+    {
+        return ctx.begin();
+    }
+
+    template<typename FormatContext>
+    auto format(const std::filesystem::path &filepath, FormatContext &ctx) const
+    {
+        return fmt::format_to(ctx.out(), "{}", filepath.generic_string());
+    }
 };
 
 }
@@ -68,17 +101,26 @@ OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion)
 }
 
 #ifdef OGN_PLATFORM_WINDOWS
-#define OGN_CORE_ERROR(format, ...)     Log::GetInstance()->PrintMessage(LogLevel::Error, format, __VA_ARGS__)
-#define OGN_CORE_WARN(format, ...)      Log::GetInstance()->PrintMessage(LogLevel::Warning, format, __VA_ARGS__)
-#define OGN_CORE_INFO(format, ...)      Log::GetInstance()->PrintMessage(LogLevel::Info, format, __VA_ARGS__)
-#define OGN_CORE_TRACE(format, ...)     Log::GetInstance()->PrintMessage(LogLevel::Trace, format, __VA_ARGS__)
-#define OGN_CORE_CRITICAL(format, ...)	Log::GetInstance()->PrintMessage(LogLevel::Critical, format, __VA_ARGS__)
+// engine logger
+#define OGN_CORE_ERROR(...)     Log::GetCoreLogger()->error(__VA_ARGS__)
+#define OGN_CORE_WARN(...)      Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define OGN_CORE_INFO(...)      Log::GetCoreLogger()->info(__VA_ARGS__)
+#define OGN_CORE_TRACE(...)     Log::GetCoreLogger()->trace(__VA_ARGS__)
+#define OGN_CORE_CRITICAL(...)  Log::GetCoreLogger()->critical(__VA_ARGS__)
+
+// client logger
+#define LOG_ERROR(...)     Log::GetClientLogger()->error(__VA_ARGS__)
+#define LOG_WARN(...)      Log::GetClientLogger()->warn(__VA_ARGS__)
+#define LOG_INFO(...)      Log::GetClientLogger()->info(__VA_ARGS__)
+#define LOG_TRACE(...)     Log::GetClientLogger()->trace(__VA_ARGS__)
+#define LOG_CRITICAL(...)  Log::GetClientLogger()->critical(__VA_ARGS__)
+
 #else
-#define OGN_CORE_ERROR(format, ...)
-#define OGN_CORE_WARN(format, ...)
-#define OGN_CORE_INFO(format, ...)
-#define OGN_CORE_TRACE(format, ...)
-#define OGN_CORE_CRITICAL(format, ...)
+#define OGN_CORE_ERROR(...)
+#define OGN_CORE_WARN(...)
+#define OGN_CORE_INFO(...)
+#define OGN_CORE_TRACE(...)
+#define OGN_CORE_CRITICAL(...)
 #endif
 
 #endif

@@ -5,44 +5,26 @@
 
 #include <cstdint>
 
-namespace origin {
-using MouseCode = uint16_t;
+#define OGN_BUTTON_LEFT     1
+#define OGN_BUTTON_MIDDLE   2
+#define OGN_BUTTON_RIGHT    3
+#define OGN_BUTTON_X1       4
+#define OGN_BUTTON_X2       5
+#define OGN_BUTTON_MASK(X)  (1u << ((X)-1))
+#define OGN_BUTTON_LMASK    OGN_BUTTON_MASK(OGN_BUTTON_LEFT)
+#define OGN_BUTTON_MMASK    OGN_BUTTON_MASK(OGN_BUTTON_MIDDLE)
+#define OGN_BUTTON_RMASK    OGN_BUTTON_MASK(OGN_BUTTON_RIGHT)
+#define OGN_BUTTON_X1MASK   OGN_BUTTON_MASK(OGN_BUTTON_X1)
+#define OGN_BUTTON_X2MASK   OGN_BUTTON_MASK(OGN_BUTTON_X2)
 
-namespace Mouse {
-
+using MouseCode = u32;
+namespace origin::Mouse{
 enum : MouseCode
 {
-	// From glfw3.h
-	Button0 = 0,
-	Button1 = 1,
-	Button2 = 2,
-	Button3 = 3,
-	Button4 = 4,
-	Button5 = 5,
-	Button6 = 6,
-	Button7 = 7,
-
-	ButtonLast = Button7,
-	ButtonLeft = Button0,
-	ButtonRight = Button1,
-	ButtonMiddle = Button2,
+	ButtonLeft = OGN_BUTTON_LEFT,
+	ButtonRight = OGN_BUTTON_RIGHT,
+	ButtonMiddle = OGN_BUTTON_MIDDLE
 };
-
-}
-
-#define OGN_MOUSE_BUTTON_1         0
-#define OGN_MOUSE_BUTTON_2         1
-#define OGN_MOUSE_BUTTON_3         2
-#define OGN_MOUSE_BUTTON_4         3
-#define OGN_MOUSE_BUTTON_5         4
-#define OGN_MOUSE_BUTTON_6         5
-#define OGN_MOUSE_BUTTON_7         6
-#define OGN_MOUSE_BUTTON_8         7
-#define OGN_MOUSE_BUTTON_LAST      OGN_MOUSE_BUTTON_8
-#define OGN_MOUSE_BUTTON_LEFT      OGN_MOUSE_BUTTON_1
-#define OGN_MOUSE_BUTTON_RIGHT     OGN_MOUSE_BUTTON_2
-#define OGN_MOUSE_BUTTON_MIDDLE    OGN_MOUSE_BUTTON_3
-
 }
 
 #endif

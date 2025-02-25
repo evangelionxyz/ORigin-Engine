@@ -10,12 +10,13 @@
 namespace origin {
 inline int Main(const int argc, char** argv)
 {
-    auto logger = Log();
+    Log::Init();
     OGN_PROFILER_START("ORiginEngine");
     Application* app = CreateApplication({ argc, argv });
     app->Run();
     delete app;
     OGN_PROFILER_STOP();
+    Log::Shutdown();
     return 0;
 }
 }

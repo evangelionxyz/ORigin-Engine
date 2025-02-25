@@ -5,13 +5,13 @@
 
 namespace origin
 {
-	class Window;
+	class SDLWindow;
 
 	class GraphicsContext
 	{
 	public:
 		virtual ~GraphicsContext() = default;
-		virtual void Init(Window *window) = 0;
+		virtual void Init(SDLWindow *window) = 0;
 		virtual void Shutdown() = 0;
 		static Ref<GraphicsContext> Create();
 

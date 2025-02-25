@@ -12,11 +12,11 @@
 
 namespace origin
 {
-    class Window;
+    class SDLWindow;
     class GuiLayer : public Layer
     {
     public:
-        GuiLayer(const Ref<Window> &window);
+        GuiLayer(const Ref<SDLWindow> &window);
 
         void Init();
         void OnAttach() override;
@@ -26,10 +26,10 @@ namespace origin
         void Begin();
         void End();
 
-        uint32_t GetActiveWidgetID();
+        u32 GetActiveWidgetID();
 
     private:
-        Ref<Window> m_WindowContext;
+        Ref<SDLWindow> m_WindowContext;
         bool m_BlockEvents = false;
         float m_Time = 0.0f;
     };
