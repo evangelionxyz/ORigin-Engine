@@ -11,6 +11,7 @@ namespace origin {
 glm::ivec2 Input::mouse_position = glm::ivec2(0);
 glm::ivec2 Input::click_delta_position = glm::ivec2(0);
 CursorMode Input::cursor_mode = CursorMode::Default;
+std::unordered_map<KeyModCode, bool> Input::key_mod_codes;
 std::unordered_map<KeyCode, bool> Input::key_codes;
 std::unordered_map<MouseCode, bool> Input::mouse_codes;
 SDLWindow *Input::window = nullptr;
@@ -27,8 +28,17 @@ bool Input::IsKeyReleased(const KeyCode keycode)
 
 bool Input::IsKeyPressed(const KeyCode keycode)
 {
-    bool ret = key_codes[keycode];
-    return ret;
+    return key_codes[keycode];
+}
+
+bool Input::IsKeyModReleased(const KeyModCode keymod)
+{
+    return !key_mod_codes[keymod];
+}
+
+bool Input::IsKeyModPressed(const KeyModCode keymod)
+{
+    return key_mod_codes[keymod];
 }
 
 bool Input::IsMouseButtonPressed(const MouseCode button)

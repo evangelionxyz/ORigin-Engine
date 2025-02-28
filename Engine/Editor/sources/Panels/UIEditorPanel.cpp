@@ -11,571 +11,578 @@
 
 namespace origin
 {
-    static UIEditorPanel *s_Instance = nullptr;
+static UIEditorPanel *s_Instance = nullptr;
 
-    UIEditorPanel::UIEditorPanel(Scene *scene, bool open)
-        : m_Scene(scene)
+UIEditorPanel::UIEditorPanel(Scene *scene, bool open)
+    : m_scene(scene)
+{
+    s_Instance = this;
+
+    m_is_open = open;
+
+    m_Camera.InitOrthographic(10.0f, 0.1f, 10.0f);
+    m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
+
+    FramebufferSpecification spec;
+    spec.attachments =
     {
-        s_Instance = this;
+        FramebufferTextureFormat::RGBA8,
+    };
 
-        m_is_open = open;
+    spec.width = 1280;
+    spec.height = 720;
 
-        m_Camera.InitOrthographic(10.0f, 0.1f, 10.0f);
-        m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
+    m_framebuffer = Framebuffer::Create(spec);
+}
 
-        FramebufferSpecification spec;
-        spec.attachments =
+void UIEditorPanel::SetContext(Scene *scene)
+{
+    if (m_ui_comp)
+        m_ui_comp = nullptr;
+    if (m_is_open)
+        m_is_open = false;
+    m_scene = scene;
+}
+
+void UIEditorPanel::SetActive(UIComponent *component)
+{
+    if (!m_scene)
+        return;
+
+    if (!m_is_open)
+    {
+        m_ui_comp = component;
+        m_is_open = true;
+        
+        m_Camera.SetOrthoScale(m_ui_comp->Height * 1.3f);
+        m_Camera.SetOrthoScaleMax(m_ui_comp->Height * 4.0f);
+
+        m_Camera.SetPosition({m_ui_comp->Width / 2.0f, m_ui_comp->Height / 2.0f,1.0f});
+
+        ImGui::SetWindowFocus("UI Editor");
+    }
+}
+
+void UIEditorPanel::CreateNewText()
+{
+    if (!m_ui_comp)
+        return;
+
+    UIData<TextComponent> component;
+    component.Component.TextString = "This is text component";
+    std::string defaultName = "Text";
+    m_ui_comp->AddComponent<TextComponent>(defaultName, component);
+    m_selected_index = static_cast<int>(m_ui_comp->Components.size()) - 1;
+}
+
+void UIEditorPanel::CreateNewTexture()
+{
+    if (!m_ui_comp)
+        return;
+
+    UIData<SpriteRenderer2DComponent> component;
+    m_ui_comp->AddComponent<SpriteRenderer2DComponent>("Sprite", component);
+    m_selected_index = static_cast<int>(m_ui_comp->Components.size()) - 1;
+}
+
+bool UIEditorPanel::RenameComponent(int index, const std::string &newName)
+{
+    if (m_ui_comp)
+        return m_ui_comp->RenameComponent(index, newName);
+    return false;
+}
+
+void UIEditorPanel::Render()
+{
+    if (m_is_open)
+    {
+        ImGui::Begin("UI Editor", &m_is_open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+        IsViewportFocused = ImGui::IsWindowFocused();
+        IsViewportHovered = ImGui::IsWindowHovered();
+
+        const ImVec2 &viewport_min_region = ImGui::GetWindowContentRegionMin();
+        const ImVec2 &viewport_max_region = ImGui::GetWindowContentRegionMax();
+        const ImVec2 &viewport_offset = ImGui::GetWindowPos();
+
+        m_viewport_rect.min = { viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y };
+        m_viewport_rect.max = { viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y };
+
+        // Framebuffer Texture
+        ImTextureID texture = (void *)(uintptr_t)(m_framebuffer->GetColorAttachment());
+        ImGui::Image(texture, { m_viewport_rect.GetSize().x, m_viewport_rect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::End();
+
+        DrawInspector();
+        DrawHierarchy();
+    }
+}
+
+void UIEditorPanel::DrawInspector()
+{
+    ImGui::Begin("UI Inspector");
+
+    if (m_ui_comp)
+    {
+        glm::vec2 size = {m_ui_comp->Width, m_ui_comp->Height};
+        
+		if (UI::DrawVec2Control("Canvas Size", size))
+		{
+		    m_ui_comp->Width = size.x;
+            m_ui_comp->Height = size.y;
+		}
+
+        for (int i = 0; i < m_ui_comp->Components.size(); i++)
         {
-            FramebufferTextureFormat::RGBA8,
-        };
+            if (m_selected_index == i)
+            {
+                if (UIData<TextComponent> *text = m_ui_comp->GetComponent<TextComponent>(m_ui_comp->Components[i]->name))
+                {
+                    std::string name = text->name;
 
-        spec.width = 1280;
-        spec.height = 720;
+                    char buffer[256];
+                    strncpy(buffer, name.c_str(), sizeof(buffer));
+                    if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        std::string new_name(buffer);
+                        if (!new_name.empty() && new_name != name)
+                        {
+                            m_ui_comp->RenameComponent(m_selected_index, new_name);
+                        }
+                    }
 
-        m_Framebuffer = Framebuffer::Create(spec);
+                    UI::DrawVec2Control("Offset", text->offset);
+                    UI::DrawVec2Control("Min", text->rect.min);
+                    UI::DrawVec2Control("Max", text->rect.max);
+                    UI::DrawFloatControl("Rotation", &text->rotation, 1.0f, 0.0f, 360.0f, 0.0f);
+                    
+                    UI::DrawButtonWithColumn("Font", "Drag Here", nullptr, [&]()
+                    {
+                        if (ImGui::BeginDragDropTarget())
+                        {
+                            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                            {
+                                AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+                                if (AssetManager::GetAssetType(handle) == AssetType::Font)
+                                {
+                                    text->Component.FontHandle = handle;
+                                }
+                                else
+                                {
+                                    OGN_CORE_WARN("[UIEditor] Wrong asset type!");
+                                    PUSH_CONSOLE_WARNING("[UIEditor] Wrong asset type!");
+                                }
+                            }
+                            ImGui::EndDragDropTarget();
+                        }
+
+                        if (text->Component.FontHandle)
+                        {
+                            ImGui::SameLine();
+                            if (UI::DrawButton("X"))
+                            {
+                                text->Component.FontHandle = 0;
+                            }
+                        }
+                    });
+
+
+                    if (text->Component.FontHandle)
+                    {
+                        ImGui::InputTextMultiline("Text String", &text->Component.TextString);
+                        ImGui::ColorEdit4("Color", glm::value_ptr(text->Component.Color));
+                        UI::DrawFloatControl("Kerning", &text->Component.Kerning, 0.01f);
+                        UI::DrawFloatControl("Line Spacing", &text->Component.LineSpacing, 0.01f);
+                    }
+                }
+                else if (UIData<SpriteRenderer2DComponent> *sprite = m_ui_comp->GetComponent<SpriteRenderer2DComponent>(m_ui_comp->Components[i]->name))
+                {
+                    std::string name = sprite->name;
+
+                    char buffer[256];
+                    strncpy(buffer, name.c_str(), sizeof(buffer));
+                    if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        std::string newName(buffer);
+                        if (!newName.empty() && newName != name)
+                        {
+                            m_ui_comp->RenameComponent(m_selected_index, newName);
+                        }
+                    }
+
+                    UI::DrawVec2Control("Offset", sprite->offset);
+                    UI::DrawVec2Control("Min", sprite->rect.min);
+                    UI::DrawVec2Control("Max", sprite->rect.max);
+                    UI::DrawFloatControl("Rotation", &sprite->rotation);
+                    
+                    ImGui::ColorEdit4("Color", glm::value_ptr(sprite->Component.Color));
+
+                    std::string label = "None";
+                    if (sprite->Component.Texture != 0)
+                    {
+                        if (AssetManager::IsAssetHandleValid(sprite->Component.Texture) && AssetManager::GetAssetType(sprite->Component.Texture) == AssetType::Texture)
+                        {
+                            const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(sprite->Component.Texture);
+                            label = metadata.Filepath.filename().string();
+                        }
+                        else
+                        {
+                            label = "Invalid";
+                        }
+                    }
+
+                    UI::DrawButtonWithColumn(label.c_str(), "Texture", nullptr, [&]()
+                    {
+                        if (ImGui::BeginDragDropTarget())
+                        {
+                            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                            {
+                                AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
+                                if (AssetManager::GetAssetType(handle) == AssetType::Texture)
+                                {
+                                    sprite->Component.Texture = handle;
+                                    sprite->Component.UV0 = glm::vec2(0.0f);
+                                    sprite->Component.UV1 = glm::vec2(1.0f);
+                                }
+                                else
+                                {
+                                    OGN_CORE_WARN("[UIEditor] Wrong asset type!");
+                                    PUSH_CONSOLE_WARNING("[UIEditor] Wrong asset type!");
+                                }
+                            }
+                            else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
+                            {
+                                SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
+                                sprite->Component.Texture = data.texture_handle;
+                                sprite->Component.UV0 = data.rect.min;
+                                sprite->Component.UV1 = data.rect.max;
+                            }
+
+                            ImGui::EndDragDropTarget();
+                        }
+                        if (sprite->Component.Texture)
+                        {
+                            ImGui::SameLine();
+                            if (UI::DrawButton("X"))
+                            {
+                                sprite->Component.Texture = 0;
+                                sprite->Component.UV0 = glm::vec2(0.0f);
+                                sprite->Component.UV1 = glm::vec2(1.0f);
+                            }
+                        }
+                    });
+
+                    if (sprite->Component.Texture)
+                    {
+                        UI::DrawVec2Control("Tilling Factor", sprite->Component.TillingFactor, 0.025f, 1.0f);
+                        UI::DrawCheckbox("Flip X", &sprite->Component.FlipX);
+                        UI::DrawCheckbox("Flip Y", &sprite->Component.FlipY);
+                    }
+                }
+            }
+        }
     }
 
-    void UIEditorPanel::SetContext(Scene *scene)
+    ImGui::End();
+}
+
+void UIEditorPanel::DrawHierarchy()
+{
+    ImGui::Begin("UI Hierarchy");
+
+    if (ImGui::BeginPopupContextWindow("CreateUI", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
     {
-        if (m_UICompHandler)
+        if (ImGui::MenuItem("Text"))
+            UIEditorPanel::CreateNewText();
+        if (ImGui::MenuItem("Sprite"))
+            UIEditorPanel::CreateNewTexture();
+        ImGui::EndPopup();
+    }
+
+    if (m_ui_comp)
+    {
+        for (int i = 0; i < m_ui_comp->Components.size(); i++)
         {
-            m_UICompHandler = nullptr;
+            ImGuiTreeNodeFlags flags = (m_selected_index == i ? ImGuiTreeNodeFlags_Selected : 0)
+                | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
+                | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_Leaf;
+
+            if (UIData<TextComponent> *text = m_ui_comp->GetComponent<TextComponent>(m_ui_comp->Components[i]->name))
+            {
+                ImGui::PushID(text->name.c_str());
+
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.5f, 2.0f });
+                bool node_open = ImGui::TreeNodeEx((void *)(u32)(u64)&text, flags, text->name.c_str());
+                ImGui::PopStyleVar();
+
+                bool is_deleting = false;
+                if (ImGui::BeginPopupContextItem())
+                {
+                    if (ImGui::MenuItem("Delete"))
+                    {
+                        is_deleting = true;
+                    }
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::IsItemHovered())
+                {
+                    if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                    {
+                        m_selected_index = i;
+                    }
+                }
+
+                if (node_open)
+                {
+                    ImGui::TreePop();
+                }
+
+                if (is_deleting)
+                {
+                    m_ui_comp->RemoveComponent(i);
+                    i--;
+                }
+
+                ImGui::PopID();
+
+            }
+
+            else if (UIData<SpriteRenderer2DComponent> *sprite = m_ui_comp->GetComponent<SpriteRenderer2DComponent>(m_ui_comp->Components[i]->name))
+            {
+                ImGui::PushID(sprite->name.c_str());
+
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.5f, 2.0f });
+                bool node_open = ImGui::TreeNodeEx((void *)(u32)(u64)&sprite, flags, sprite->name.c_str());
+                ImGui::PopStyleVar();
+
+                bool isDeleting = false;
+                if (ImGui::BeginPopupContextItem())
+                {
+                    if (ImGui::MenuItem("Delete"))
+                    {
+                        isDeleting = true;
+                    }
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::IsItemHovered())
+                {
+                    if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                    {
+                        m_selected_index = i;
+                    }
+                }
+
+                if (node_open)
+                {
+                    ImGui::TreePop();
+                }
+
+                if (isDeleting)
+                {
+                    m_ui_comp->RemoveComponent(i);
+                    i--;
+                }
+
+                ImGui::PopID();
+            }
+        }
+    }
+
+    ImGui::End();
+}
+
+void UIEditorPanel::OnUpdate(f32 delta_time)
+{
+    if (!m_is_open)
+    {
+        if (m_ui_comp)
+            m_ui_comp = nullptr;
+        if (m_scene)
+            m_scene = nullptr;
+        return;
+    }
+
+    if (IsViewportHovered && IsViewportFocused)
+        m_Camera.OnUpdate(delta_time);
+
+    m_Camera.UpdateView();
+    m_Camera.UpdateProjection();
+
+    OnMouse(delta_time);
+
+    m_framebuffer->Bind();
+    RenderCommand::Clear();
+    RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+    m_framebuffer->ClearAttachment(1, -1);
+
+    if (m_ui_comp != nullptr)
+    {
+        const auto &vp_size = m_viewport_rect.GetSize();
+        if (const FramebufferSpecification spec = m_framebuffer->GetSpecification(); vp_size.x > 0.0f && vp_size.y > 0.0f && (vp_size.x != spec.width || vp_size.y != spec.height))
+        {
+            m_Camera.SetViewportSize(static_cast<u32>(vp_size.x), static_cast<u32>(vp_size.y));
+            m_framebuffer->Resize(static_cast<u32>(vp_size.x), static_cast<u32>(vp_size.y));
         }
 
-        if (m_is_open)
-            m_is_open = false;
+        Renderer::camera_uniform_buffer->Bind();
+        glm::mat4 view_projection = m_Camera.GetViewProjection();
+        glm::vec3 cam_position = m_Camera.GetPosition();
+        Renderer::camera_uniform_buffer->SetData(&view_projection, sizeof(CameraBufferData), 0);
+        Renderer::camera_uniform_buffer->SetData(&cam_position, sizeof(CameraBufferData), sizeof(glm::mat4));
+        
+        Renderer2D::Begin();
+        const Rect ui_rect = {0.0f, 0.0f, m_ui_comp->Width, m_ui_comp->Height};
+        Renderer2D::DrawRect(ui_rect, {0.5f, 0.5f, 0.5f, 1.0f});
 
-        m_Scene = scene;
+        for (int i = 0; i < m_ui_comp->Components.size(); i++)
+        {
+            if (UIData<TextComponent> *text = m_ui_comp->GetComponent<TextComponent>(m_ui_comp->Components[i]->name))
+            {
+                if (text->Component.FontHandle)
+                {
+                    Renderer2D::DrawString(text->Component.TextString, text->rect, text->Component, text->anchor_type, text->rotation, text->offset);
+                }
+            }
+            else if (UIData<SpriteRenderer2DComponent> *sprite = m_ui_comp->GetComponent<SpriteRenderer2DComponent>(m_ui_comp->Components[i]->name))
+            {
+                Renderer2D::DrawSprite(sprite->rect, sprite->Component, sprite->anchor_type, sprite->rotation, sprite->offset);
+                if (m_selected_index == i)
+                {
+                    RenderCommand::SetLineWidth(2.0f);
+                    Renderer2D::DrawRect(sprite->rect, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), sprite->offset);
+                }
+            }
+        }
+
+        Renderer2D::End();
+        RenderCommand::SetLineWidth(1.0f);
     }
 
-    void UIEditorPanel::SetActive(UIComponent *component)
+    m_framebuffer->Unbind();
+}
+
+void UIEditorPanel::OnEvent(Event &e)
+{
+    OGN_PROFILER_INPUT();
+
+    m_Camera.OnEvent(e);
+    EventDispatcher dispatcher(e);
+
+    dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseButtonPressed));
+    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnKeyPressed));
+    dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseScroll));
+    dispatcher.Dispatch<MouseMovedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseMoved));
+}
+
+bool UIEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
+{
+    if (IsViewportHovered && !IsViewportFocused)
     {
-        if (!m_Scene)
-            return;
-
-        if (!m_is_open)
+        if (e.Is(Mouse::ButtonMiddle) || e.Is(Mouse::ButtonRight) || e.Is(Mouse::ButtonLeft))
         {
-            Entity cam = m_Scene->GetPrimaryCameraEntity();
-            if (cam.IsValid())
-            {
-                auto &cc = cam.GetComponent<CameraComponent>();
-                const float orthoSizeY = cc.Camera.GetOrthoSize().y * 2.0f;
-                m_Camera.SetOrthoScale(orthoSizeY * 1.3f);
-                m_Camera.SetOrthoScaleMax(orthoSizeY * 4.0f);
-            }
-            m_UICompHandler = component;
-            m_is_open = true;
-
             ImGui::SetWindowFocus("UI Editor");
         }
     }
 
-    void UIEditorPanel::CreateNewText()
+    if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
     {
-        if (!m_UICompHandler)
-            return;
-
-        UIData<TextComponent> component;
-        component.Component.TextString = "This is text component";
-        std::string defaultName = "Text";
-        m_UICompHandler->AddComponent<TextComponent>(defaultName, component);
-        m_SelectedIndex = static_cast<int>(m_UICompHandler->Components.size()) - 1;
-    }
-
-    void UIEditorPanel::CreateNewTexture()
-    {
-        if (!m_UICompHandler)
-            return;
-
-        UIData<SpriteRenderer2DComponent> component;
-        m_UICompHandler->AddComponent<SpriteRenderer2DComponent>("Sprite", component);
-        m_SelectedIndex = static_cast<int>(m_UICompHandler->Components.size()) - 1;
-    }
-
-    bool UIEditorPanel::RenameComponent(int index, const std::string &newName)
-    {
-        if (m_UICompHandler)
-            return m_UICompHandler->RenameComponent(index, newName);
-        return false;
-    }
-
-    void UIEditorPanel::Render()
-    {
-        if (m_is_open)
+        if (m_hovered_index != (m_selected_index == 0 ? -1 : m_selected_index) && m_hovered_index >= 0)
         {
-            ImGui::Begin("UI Editor", &m_is_open,
-                ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-            IsViewportFocused = ImGui::IsWindowFocused();
-            IsViewportHovered = ImGui::IsWindowHovered();
-
-            const ImVec2 &viewportMinRegion = ImGui::GetWindowContentRegionMin();
-            const ImVec2 &viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-            const ImVec2 &viewportOffset = ImGui::GetWindowPos();
-
-            m_ViewportRect.min = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-            m_ViewportRect.max = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-
-            // Framebuffer Texture
-            ImTextureID texture = (void *)(uintptr_t)(m_Framebuffer->GetColorAttachment());
-            ImGui::Image(texture, { m_ViewportRect.GetSize().x, m_ViewportRect.GetSize().y }, ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::End();
-
-            DrawInspector();
-            DrawHierarchy();
+            m_selected_index = m_hovered_index;
+        }
+        else if (m_hovered_index <= -1)
+        {
+            m_selected_index = -1;
         }
     }
 
-    void UIEditorPanel::DrawInspector()
+    return false;
+}
+
+bool UIEditorPanel::OnMouseScroll(MouseScrolledEvent &e)
+{
+    if (IsViewportHovered)
+        m_Camera.OnMouseScroll(e.GetYOffset());
+
+    return false;
+}
+
+bool UIEditorPanel::OnKeyPressed(KeyPressedEvent &e)
+{
+    return false;
+}
+
+inline bool UIEditorPanel::OnMouseMoved(MouseMovedEvent& e)
+{
+    if (IsViewportHovered && IsViewportFocused)
     {
-        ImGui::Begin("UI Inspector");
+        const glm::vec2 &mouse_delta = Input::GetMouseClickDragDelta();
+        m_Camera.OnMouseMove(mouse_delta);
+    }
+    
+    return false;
+}
 
-        if (m_UICompHandler)
+void UIEditorPanel::OnMouse(f32 ts)
+{
+    const glm::vec2 delta = Input::GetMouseClickDragDelta();
+
+    if (!m_ui_comp)
+        return;
+
+    if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered)
+    {
+        for (int i = 0; i < m_ui_comp->Components.size(); i++)
         {
-            for (int i = 0; i < m_UICompHandler->Components.size(); i++)
+            if (m_selected_index == i)
             {
-                if (m_SelectedIndex == i)
+                f32 viewport_height = m_Camera.GetViewportSize().y;
+                f32 orthoScale = m_Camera.GetOrthoScale() / viewport_height;
+
+                static glm::vec2 translation = m_ui_comp->Components[m_selected_index]->rect.GetCenter();
+
+                if (Input::IsKeyModPressed((KeyMod::LeftShift)))
                 {
-                    if (UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(m_UICompHandler->Components[i]->Name))
-                    {
-                        std::string name = text->Name;
+                    f32 snap_value = 0.5f;
+                    if (Input::IsKeyModPressed(KeyMod::LeftControl))
+                        snap_value = 0.1f;
 
-                        char buffer[256];
-                        strncpy(buffer, name.c_str(), sizeof(buffer));
-                        if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
-                        {
-                            std::string newName(buffer);
-                            if (!newName.empty() && newName != name)
-                            {
-                                m_UICompHandler->RenameComponent(m_SelectedIndex, newName);
-                            }
-                        }
-
-                        UI::DrawVec3Control("Translation", text->Transform.WorldTranslation, 0.1f);
-                        glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(text->Transform.WorldRotation));
-                        UI::DrawVec3Control("Rotation", eulerRotation, 0.1f);
-                        glm::vec3 rotationRadians = glm::radians(eulerRotation);
-                        text->Transform.WorldRotation = glm::quat(rotationRadians);
-                        UI::DrawVec3Control("Scale", text->Transform.WorldScale, 0.1f, 1.0f);
-
-                        UI::DrawButtonWithColumn("Font", "Drag Here", nullptr, [&]()
-                        {
-                            if (ImGui::BeginDragDropTarget())
-                            {
-                                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                                {
-                                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                                    if (AssetManager::GetAssetType(handle) == AssetType::Font)
-                                    {
-                                        text->Component.FontHandle = handle;
-                                    }
-                                    else
-                                    {
-                                        OGN_CORE_WARN("[UIEditor] Wrong asset type!");
-                                        PUSH_CONSOLE_WARNING("[UIEditor] Wrong asset type!");
-                                    }
-                                }
-                                ImGui::EndDragDropTarget();
-                            }
-
-                            if (text->Component.FontHandle)
-                            {
-                                ImGui::SameLine();
-                                if (UI::DrawButton("X"))
-                                {
-                                    text->Component.FontHandle = 0;
-                                }
-                            }
-                        });
-
-
-                        if (text->Component.FontHandle)
-                        {
-                            ImGui::InputTextMultiline("Text String", &text->Component.TextString);
-                            ImGui::ColorEdit4("Color", glm::value_ptr(text->Component.Color));
-                            UI::DrawFloatControl("Kerning", &text->Component.Kerning, 0.01f);
-                            UI::DrawFloatControl("Line Spacing", &text->Component.LineSpacing, 0.01f);
-                        }
-                    }
-                    else if (UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(m_UICompHandler->Components[i]->Name))
-                    {
-                        std::string name = sprite->Name;
-
-                        char buffer[256];
-                        strncpy(buffer, name.c_str(), sizeof(buffer));
-                        if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
-                        {
-                            std::string newName(buffer);
-                            if (!newName.empty() && newName != name)
-                            {
-                                m_UICompHandler->RenameComponent(m_SelectedIndex, newName);
-                            }
-                        }
-
-                        UI::DrawVec3Control("Translation", sprite->Transform.WorldTranslation, 0.1f);
-                        glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(sprite->Transform.WorldRotation));
-                        UI::DrawVec3Control("Rotation", eulerRotation, 0.1f);
-                        glm::vec3 rotationRadians = glm::radians(eulerRotation);
-                        sprite->Transform.WorldRotation = glm::quat(rotationRadians);
-                        UI::DrawVec3Control("Scale", sprite->Transform.WorldScale, 0.1f, 1.0f);
-
-                        ImGui::ColorEdit4("Color", glm::value_ptr(sprite->Component.Color));
-
-                        std::string lable = "None";
-                        if (sprite->Component.Texture != 0)
-                        {
-                            if (AssetManager::IsAssetHandleValid(sprite->Component.Texture) && AssetManager::GetAssetType(sprite->Component.Texture) == AssetType::Texture)
-                            {
-                                const AssetMetadata &metadata = Project::GetActive()->GetEditorAssetManager()->GetMetadata(sprite->Component.Texture);
-                                lable = metadata.Filepath.filename().string();
-                            }
-                            else
-                            {
-                                lable = "Invalid";
-                            }
-                        }
-
-                        UI::DrawButtonWithColumn(lable.c_str(), "Texture", nullptr, [&]()
-                        {
-                            if (ImGui::BeginDragDropTarget())
-                            {
-                                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                                {
-                                    AssetHandle handle = *static_cast<AssetHandle *>(payload->Data);
-                                    if (AssetManager::GetAssetType(handle) == AssetType::Texture)
-                                    {
-                                        sprite->Component.Texture = handle;
-                                        sprite->Component.UV0 = glm::vec2(0.0f);
-                                        sprite->Component.UV1 = glm::vec2(1.0f);
-                                    }
-                                    else
-                                    {
-                                        OGN_CORE_WARN(       "[UIEditor] Wrong asset type!");
-                                        PUSH_CONSOLE_WARNING("[UIEditor] Wrong asset type!");
-                                    }
-                                }
-                                else if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("SPRITESHEET_ITEM"))
-                                {
-                                    SpriteSheetData data = *static_cast<SpriteSheetData *>(payload->Data);
-                                    sprite->Component.Texture = data.texture_handle;
-                                    sprite->Component.UV0 = data.rect.min;
-                                    sprite->Component.UV1 = data.rect.max;
-                                }
-
-                                ImGui::EndDragDropTarget();
-                            }
-                            if (sprite->Component.Texture)
-                            {
-                                ImGui::SameLine();
-                                if (UI::DrawButton("X"))
-                                {
-                                    sprite->Component.Texture = 0;
-                                    sprite->Component.UV0 = glm::vec2(0.0f);
-                                    sprite->Component.UV1 = glm::vec2(1.0f);
-                                }
-                            }
-                        });
-
-                        if (sprite->Component.Texture)
-                        {
-                            UI::DrawVec2Control("Tilling Factor", sprite->Component.TillingFactor, 0.025f, 1.0f);
-                            UI::DrawCheckbox("Flip X", &sprite->Component.FlipX);
-                            UI::DrawCheckbox("Flip Y", &sprite->Component.FlipY);
-                        }
-                    }
+                    translation += glm::vec2(-delta.x * orthoScale, delta.y * orthoScale);
+                    m_ui_comp->Components[m_selected_index]->rect += translation * snap_value;
                 }
-            }
-        }
-
-        ImGui::End();
-    }
-
-    void UIEditorPanel::DrawHierarchy()
-    {
-        ImGui::Begin("UI Hierarchy");
-
-        if (ImGui::BeginPopupContextWindow("CreateUI",
-            ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
-        {
-            if (ImGui::MenuItem("Text"))
-                UIEditorPanel::CreateNewText();
-            if (ImGui::MenuItem("Sprite"))
-                UIEditorPanel::CreateNewTexture();
-            ImGui::EndPopup();
-        }
-
-        if (m_UICompHandler)
-        {
-            for (int i = 0; i < m_UICompHandler->Components.size(); i++)
-            {
-                ImGuiTreeNodeFlags flags = (m_SelectedIndex == i ? ImGuiTreeNodeFlags_Selected : 0)
-                    | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
-                    | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-
-                if (UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(m_UICompHandler->Components[i]->Name))
+                else
                 {
-                    ImGui::PushID(text->Name.c_str());
-
-                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-                    bool node_open = ImGui::TreeNodeEx((void *)(u32)(u64)&text, flags, text->Name.c_str());
-                    ImGui::PopStyleVar();
-
-                    bool isDeleting = false;
-                    if (ImGui::BeginPopupContextItem())
-                    {
-                        if (ImGui::MenuItem("Delete"))
-                        {
-                            isDeleting = true;
-                        }
-                        ImGui::EndPopup();
-                    }
-
-                    if (ImGui::IsItemHovered())
-                    {
-                        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-                        {
-                            m_SelectedIndex = i;
-                        }
-                    }
-
-                    if (node_open)
-                    {
-                        ImGui::TreePop();
-                    }
-
-                    if (isDeleting)
-                    {
-                        m_UICompHandler->RemoveComponent(i);
-                        i--;
-                    }
-
-                    ImGui::PopID();
-
-                }
-
-                else if (UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(m_UICompHandler->Components[i]->Name))
-                {
-                    ImGui::PushID(sprite->Name.c_str());
-
-                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2 { 0.5f, 2.0f });
-                    bool node_open = ImGui::TreeNodeEx((void *)(u32)(u64)&sprite, flags, sprite->Name.c_str());
-                    ImGui::PopStyleVar();
-
-                    bool isDeleting = false;
-                    if (ImGui::BeginPopupContextItem())
-                    {
-                        if (ImGui::MenuItem("Delete"))
-                        {
-                            isDeleting = true;
-                        }
-                        ImGui::EndPopup();
-                    }
-
-                    if (ImGui::IsItemHovered())
-                    {
-                        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-                        {
-                            m_SelectedIndex = i;
-                        }
-                    }
-
-                    if (node_open)
-                    {
-                        ImGui::TreePop();
-                    }
-
-                    if (isDeleting)
-                    {
-                        m_UICompHandler->RemoveComponent(i);
-                        i--;
-                    }
-
-                    ImGui::PopID();
-                }
-            }
-        }
-
-        ImGui::End();
-    }
-
-    void UIEditorPanel::OnUpdate(float delta_time)
-    {
-        if (!m_is_open)
-        {
-            if (m_UICompHandler)
-            {
-                m_UICompHandler = nullptr;
-            }
-            if (m_Scene)
-            {
-                m_Scene = nullptr;
-            }
-
-            return;
-        }
-
-        if (IsViewportHovered && IsViewportFocused)
-            m_Camera.OnUpdate(delta_time);
-
-        m_Camera.UpdateView();
-        m_Camera.UpdateProjection();
-
-        OnMouse(delta_time);
-
-        m_Framebuffer->Bind();
-        RenderCommand::Clear();
-        RenderCommand::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-        m_Framebuffer->ClearAttachment(1, -1);
-
-        if (m_UICompHandler != nullptr)
-        {
-            const auto &vp_size = m_ViewportRect.GetSize();
-            if (const FramebufferSpecification spec = m_Framebuffer->GetSpecification(); vp_size.x > 0.0f && vp_size.y > 0.0f && (vp_size.x != spec.width || vp_size.y != spec.height))
-            {
-                m_Camera.SetViewportSize(vp_size.x, vp_size.y);
-                m_Framebuffer->Resize(static_cast<uint32_t>(vp_size.x), static_cast<uint32_t>(vp_size.y));
-            }
-
-            Renderer2D::Begin();
-
-            // Draw Camera Boundary
-            Entity cam = m_Scene->GetPrimaryCameraEntity();
-            if (cam.IsValid())
-            {
-                auto &cc = cam.GetComponent<CameraComponent>();
-                const glm::vec2 &orthoSize = cc.Camera.GetOrthoSize();
-                Renderer2D::DrawRect(glm::scale(glm::mat4(1.0f), { orthoSize.x * 2.0f, orthoSize.y * 2.0f, 1.0f }), { 0.5f, 0.5f, 0.5f, 1.0f });
-
-                for (int i = 0; i < m_UICompHandler->Components.size(); i++)
-                {
-                    if (UIData<TextComponent> *text = m_UICompHandler->GetComponent<TextComponent>(m_UICompHandler->Components[i]->Name))
-                    {
-                        if (text->Component.FontHandle)
-                        {
-                            Renderer2D::DrawString(text->Component.TextString, text->Transform.GetTransform(), text->Component);
-                        }
-                    }
-                    else if (UIData<SpriteRenderer2DComponent> *sprite = m_UICompHandler->GetComponent<SpriteRenderer2DComponent>(m_UICompHandler->Components[i]->Name))
-                    {
-                        Renderer2D::DrawSprite(sprite->Transform.GetTransform(), sprite->Component);
-                        if (m_SelectedIndex == i)
-                        {
-                            RenderCommand::SetLineWidth(2.0f);
-                            Renderer2D::DrawRect(sprite->Transform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
-                        }
-                    }
-                }
-            }
-
-            Renderer2D::End();
-            RenderCommand::SetLineWidth(1.0f);
-        }
-
-        m_Framebuffer->Unbind();
-    }
-
-    void UIEditorPanel::OnEvent(Event &e)
-    {
-        OGN_PROFILER_INPUT();
-
-        m_Camera.OnEvent(e);
-        EventDispatcher dispatcher(e);
-
-        dispatcher.Dispatch<MouseButtonPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseButtonPressed));
-        dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnKeyPressed));
-        dispatcher.Dispatch<MouseScrolledEvent>(OGN_BIND_EVENT_FN(UIEditorPanel::OnMouseScroll));
-    }
-
-    bool UIEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
-    {
-
-        if (IsViewportHovered && !IsViewportFocused)
-        {
-            if (e.Is(Mouse::ButtonMiddle) || e.Is(Mouse::ButtonRight) || e.Is(Mouse::ButtonLeft))
-            {
-                ImGui::SetWindowFocus("UI Editor");
-            }
-        }
-
-        if (e.Is(Mouse::ButtonLeft) && IsViewportHovered)
-        {
-            // TODO: Fix Me!
-            /*if (m_HoveredIndex != (m_SelectedIndex == 0 ? -1 : m_SelectedIndex) && m_HoveredIndex >= 0)
-            {
-                m_SelectedIndex = m_HoveredIndex;
-            }
-            else if (m_HoveredIndex <= -1)
-            {
-                m_SelectedIndex = -1;
-            }*/
-        }
-
-        return false;
-    }
-
-    bool UIEditorPanel::OnMouseScroll(MouseScrolledEvent &e)
-    {
-        if (IsViewportHovered)
-            m_Camera.OnMouseScroll(e.GetYOffset());
-
-        return false;
-    }
-
-    bool UIEditorPanel::OnKeyPressed(KeyPressedEvent &e)
-    {
-        return false;
-    }
-
-    void UIEditorPanel::OnMouse(float ts)
-    {
-        const glm::vec2 delta = Input::GetMouseClickDragDelta();
-
-        if (!m_UICompHandler)
-            return;
-
-        if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && IsViewportHovered)
-        {
-            for (int i = 0; i < m_UICompHandler->Components.size(); i++)
-            {
-                if (m_SelectedIndex == i)
-                {
-                    auto &tc = m_UICompHandler->Components[m_SelectedIndex]->Transform;
-                    float viewportHeight = m_Camera.GetViewportSize().y;
-                    float orthoScale = m_Camera.GetOrthoScale() / viewportHeight;
-
-                    static glm::vec3 translation = tc.Translation;
-
-                    if (Input::IsKeyPressed(Key::LeftShift))
-                    {
-                        float snapeValue = 0.5f;
-                        if (Input::IsKeyPressed(Key::LeftControl))
-                            snapeValue = 0.1f;
-
-                        translation += glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
-                        tc.WorldTranslation.x = round(translation.x / snapeValue) * snapeValue;
-                        tc.WorldTranslation.y = round(translation.y / snapeValue) * snapeValue;
-                    }
-                    else
-                    {
-                        translation = glm::vec3(delta.x * orthoScale, -delta.y * orthoScale, 0.0f);
-                        tc.WorldTranslation += glm::vec3(glm::vec2(translation), 0.0f);
-                        translation = tc.WorldTranslation;
-                    }
+                    translation = glm::vec2(-delta.x * orthoScale, delta.y * orthoScale);
+                    m_ui_comp->Components[m_selected_index]->rect += translation;
                 }
             }
         }
     }
+}
 
-    void UIEditorPanel::Open()
-    {
-        m_is_open = true;
-        ImGui::SetWindowFocus("UI Editor");
-    }
+void UIEditorPanel::Open()
+{
+    m_is_open = true;
+    ImGui::SetWindowFocus("UI Editor");
+}
 
-    UIEditorPanel *UIEditorPanel::GetInstance()
-    {
-        return s_Instance;
-    }
+void UIEditorPanel::Close()
+{
+    m_is_open = false;
+    Reset();
+}
+
+void UIEditorPanel::Reset()
+{
+    m_ui_comp = nullptr;
+}
+
+UIEditorPanel *UIEditorPanel::GetInstance()
+{
+    return s_Instance;
+}
 
 }

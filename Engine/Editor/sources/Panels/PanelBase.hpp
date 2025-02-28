@@ -29,6 +29,8 @@ public:
     virtual void Close() { m_is_open = false; }
     virtual void Open() { m_is_open = true; }
 
+    virtual void Reset() = 0;
+
     void *data = nullptr;
 protected:
     glm::vec2 m_viewport_mouse = { 0.0f, 0.0f };

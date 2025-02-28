@@ -58,7 +58,7 @@ void EditorCamera::OnUpdate(Timestep ts)
         {
         case CameraStyle::FreeMove:
         {
-            if (!Input::IsKeyPressed(Key::LeftControl))
+            if (!Input::IsKeyModPressed(KeyMod::LeftControl))
             {
                 if (Input::IsKeyPressed(Key::A))
                     movement_direction -= GetRightDirection();
@@ -280,9 +280,9 @@ void EditorCamera::OnMouseMove(const glm::vec2 &delta)
         {
         case CameraStyle::Pivot:
         {
-            if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyPressed(Key::LeftControl))
+            if (Input::IsMouseButtonPressed(Mouse::ButtonRight) && !Input::IsKeyModPressed(KeyMod::LeftControl))
                 MouseRotate(delta);
-            if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
+            if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyModPressed(KeyMod::LeftControl)))
                 MousePan(delta);
             break;
         }
@@ -298,7 +298,7 @@ void EditorCamera::OnMouseMove(const glm::vec2 &delta)
     }
     else if (m_ProjectionType == ProjectionType::Orthographic)
     {
-        if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyPressed(Key::LeftControl)))
+        if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle) || (Input::IsMouseButtonPressed(Mouse::ButtonRight) && Input::IsKeyModPressed(KeyMod::LeftControl)))
             MousePan(delta);
     }
 }

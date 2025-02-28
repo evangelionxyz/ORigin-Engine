@@ -13,13 +13,17 @@ namespace origin
 	public:
 		UIRenderer() = default;
 
-		void CreateFramebuffer(uint32_t vpW, uint32_t vpH, float orthoW, float orthoH);
-		void SetViewportSize(uint32_t vpW, uint32_t vpH, float orthoW, float orthoH);
+		void CreateFramebuffer(f32 width, f32 height);
+		void SetViewportSize(f32 width, f32 height);
+
 		void Unload();
 		void RenderFramebuffer();
 		void Render();
 		void AddUI(const UIComponent &ui);
+
 		std::vector<UIComponent> &GetUIs() { return m_UIs; }
+
+		glm::vec3 clear_color = glm::vec3(0.1f);
 
 	private:
 		uint32_t m_VAO = 0, m_VBO = 0;

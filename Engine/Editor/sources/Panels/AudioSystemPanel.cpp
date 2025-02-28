@@ -116,6 +116,11 @@ void AudioSystemPanel::OnUpdate(float delta_time)
 {
 }
 
+void AudioSystemPanel::Reset()
+{
+
+}
+
 void AudioSystemPanel::OnEvent(Event &e)
 {
     EventDispatcher dispatcher(e);

@@ -25,6 +25,8 @@ public:
 	static void Init(SDLWindow *window);
 	static bool IsKeyReleased(const KeyCode keycode);
 	static bool IsKeyPressed(const KeyCode keycode);
+	static bool IsKeyModReleased(const KeyModCode keymod);
+	static bool IsKeyModPressed(const KeyModCode keymod);
 	static bool IsMouseButtonPressed(const MouseCode button);
 	static i32 GetMouseX();
 	static i32 GetMouseY();
@@ -42,6 +44,8 @@ public:
     static glm::ivec2 mouse_position;
     static glm::ivec2 click_delta_position;
     static CursorMode cursor_mode;
+
+	static std::unordered_map<KeyModCode, bool> key_mod_codes;
     static std::unordered_map<KeyCode, bool> key_codes;
     static std::unordered_map<MouseCode, bool> mouse_codes;
 

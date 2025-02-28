@@ -36,6 +36,11 @@ void MaterialEditorPanel::OnEvent(Event &e)
     dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(MaterialEditorPanel::OnKeyPressed));
 }
 
+void MaterialEditorPanel::Reset()
+{
+    
+}
+
 bool MaterialEditorPanel::OnMouseButtonPressed(MouseButtonPressedEvent &e)
 {
     return false;

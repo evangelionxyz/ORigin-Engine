@@ -58,6 +58,14 @@ public:
     static glm::vec3 SnapToGrid(glm::vec3 position, f32 texel_size);
 };
 
+enum Anchor
+{
+    Anchor_Center,
+    Anchor_Left, Anchor_Right,
+    Anchor_TopLeft, Anchor_TopRight,
+    Anchor_BottomLeft, Anchor_BottomRight
+};
+
 struct Rect
 {
     glm::vec2 min;
@@ -67,24 +75,23 @@ struct Rect
     Rect(glm::vec2 min, glm::vec2 max) : min(min), max(max) { }
     Rect(float min_x, float min_y, float max_x, float max_y) : min(min_x, min_y), max(max_x, max_y) { }
 
-    inline Rect operator+(const Rect &rhs) const
+    glm::vec2 GetOrigin(Anchor anchor, const glm::vec2 &offset = glm::vec2(0.0f, 0.0f)) const
     {
-        return { min + rhs.min, max + rhs.max };
-    }
-
-    inline Rect operator-(const Rect &rhs) const
-    {
-        return { min - rhs.min, max - rhs.max };
-    }
-
-    inline Rect operator*(const Rect &rhs) const 
-    {
-        return { min * rhs.min, max * rhs.max };
-    }
-
-    inline Rect operator/(const Rect &rhs) const
-    {
-        return { min / rhs.min, max / rhs.max };
+        switch (anchor)
+        {
+            case Anchor_BottomLeft: return {min.x + offset.x, min.y + offset.y};
+            case Anchor_TopLeft: return {min.x + offset.x, max.y + offset.y};
+            case Anchor_TopRight: return {max.x + offset.x, max.y + offset.y};
+            case Anchor_Right: return {max.x + offset.x, (min.y + offset.y) / 2.0f};
+            case Anchor_Left: return {min.x + offset.x, (max.y + offset.y) / 2.0f};
+            
+            default:
+            case Anchor_Center:
+            {
+                const glm::vec2 &center = GetCenter();
+                return {center.x + offset.x, center.y + offset.y};
+            }
+        }
     }
 
     const bool Contains(const glm::vec2 &p) const
@@ -101,14 +108,56 @@ struct Rect
     void SetMax(const glm::vec2 &max_) { this->max = max_; }
     void SetMax(float x, float y) { max.x = x; max.y = y; }
 
-    const glm::vec2 GetCenter() const 
+    glm::vec2 GetCenter() const
     { 
         return { (min.x + max.x) / 2.0f, (min.y + max.y) / 2.0f };
     }
 
-    const glm::vec2 GetSize() const
+    glm::vec2 GetSize() const
     {
         return { max.x - min.x, max.y - min.y };
+    }
+
+    // glm::vec2 operator
+    Rect operator+=(const glm::vec2 &vec2) const
+    {
+        return {min + vec2, max + vec2};
+    }
+
+    Rect operator-=(const glm::vec2 &vec2) const
+    {
+        return {min - vec2, max - vec2};
+    }
+
+    Rect operator*=(const glm::vec2 &vec2) const
+    {
+        return {min * vec2, max * vec2};
+    }
+
+    Rect operator/=(const glm::vec2 &vec2) const
+    {
+        return {min / vec2, max / vec2};
+    }
+
+    // operator
+    Rect operator+(const Rect &rhs) const
+    {
+        return { min + rhs.min, max + rhs.max };
+    }
+
+    Rect operator-(const Rect &rhs) const
+    {
+        return { min - rhs.min, max - rhs.max };
+    }
+
+    Rect operator*(const Rect &rhs) const 
+    {
+        return { min * rhs.min, max * rhs.max };
+    }
+
+    Rect operator/(const Rect &rhs) const
+    {
+        return { min / rhs.min, max / rhs.max };
     }
 };
 

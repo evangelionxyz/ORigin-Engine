@@ -344,7 +344,6 @@ void Scene::OnRuntimeStart()
         }
     }
 
-#if 0
     m_Registry.view<UIComponent>().each([this](entt::entity e, UIComponent ui)
     {
         auto cam = GetPrimaryCameraEntity();
@@ -352,13 +351,9 @@ void Scene::OnRuntimeStart()
         if (cc.Primary)
         {
             m_UIRenderer->AddUI(ui);
-            cc.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-            const glm::ivec2 &vp = cc.Camera.GetViewportSize();
-            const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
-            m_UIRenderer->CreateFramebuffer(vp.x, vp.y, ortho.x, ortho.y);
+            m_UIRenderer->CreateFramebuffer(ui.Width, ui.Height);
         }
     });
-#endif
 }
 
 void Scene::OnRuntimeStop()
@@ -847,8 +842,6 @@ void Scene::UnlockMouse()
 
 void Scene::OnViewportResize(const u32 width, const u32 height)
 {
-    OGN_PROFILER_SCENE();
-
     const auto &view = m_Registry.view<CameraComponent>();
 
     for (auto &e : view)
@@ -857,9 +850,9 @@ void Scene::OnViewportResize(const u32 width, const u32 height)
         if (cc.Primary)
         {
             cc.Camera.SetViewportSize(width, height);
-            const glm::ivec2 &vp = cc.Camera.GetViewportSize();
-            const glm::vec2 &ortho = cc.Camera.GetOrthoSize();
-            m_UIRenderer->SetViewportSize(vp.x, vp.y, ortho.x, ortho.y);
+
+            const glm::vec2 &vp = cc.Camera.GetViewportSize();
+            m_UIRenderer->SetViewportSize(vp.x, vp.y);
         }
     }
 

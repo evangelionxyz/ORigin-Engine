@@ -4,6 +4,7 @@
 #define PROJECT_BROWSER_HPP
 
 #include "Origin/Core/Layer.h"
+#include "Origin/Core/KeyEvent.h"
 
 namespace origin {
 
@@ -16,9 +17,10 @@ public:
     void OnDetach() override;
     void OnUpdate(Timestep ts) override;
     void OnGuiRender() override;
-    void OnEvent(Event& e) override;
+    void OnEvent(Event &e) override;
 
 private:
+    bool OnKeyPressedEvent(const KeyPressedEvent &e);
     
 };
 

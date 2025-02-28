@@ -10,9 +10,12 @@
 #include "Origin/Scene/Scene.h"
 
 #include "PanelBase.hpp"
+#include "Origin/Core/Input.h"
 
 namespace origin {
+
 class UIComponent;
+
 class UIEditorPanel : public PanelBase
 {
 public:
@@ -30,10 +33,14 @@ public:
     bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
     bool OnMouseScroll(MouseScrolledEvent &e);
     bool OnKeyPressed(KeyPressedEvent &e);
+    bool OnMouseMoved(MouseMovedEvent &e);
 
     void OnMouse(float ts);
 
-    void Open();
+    void Open() override;
+    void Close() override;
+
+    void Reset() override;
 
     static UIEditorPanel *GetInstance();
 
@@ -44,18 +51,15 @@ private:
     void DrawInspector();
     void DrawHierarchy();
 
-    Scene *m_Scene = nullptr;
+    Scene *m_scene = nullptr;
     EditorCamera m_Camera;
-    UIComponent *m_UICompHandler = nullptr;
+    UIComponent *m_ui_comp = nullptr;
 
-    Ref<Framebuffer> m_Framebuffer;
-    Rect m_ViewportRect = Rect();
-
-    glm::ivec2 m_Mouse = { 0, 0 };
-    glm::vec2 m_MoveTranslation = { 0.0f, 0.0f };
-    int m_SelectedIndex = 0;
+    Ref<Framebuffer> m_framebuffer;
+    glm::vec2 m_move_translation = { 0.0f, 0.0f };
+    i32 m_selected_index = -1, m_hovered_index = -1;
 };
-
+    
 }
 
 #endif

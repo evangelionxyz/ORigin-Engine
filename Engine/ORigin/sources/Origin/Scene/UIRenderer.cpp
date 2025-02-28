@@ -10,12 +10,12 @@
 
 namespace origin
 {
-	void UIRenderer::CreateFramebuffer(uint32_t vpW, uint32_t vpH, float orthoW, float orthoH)
+	void UIRenderer::CreateFramebuffer(f32 width, f32 height)
 	{
 		FramebufferSpecification spec;
 		spec.attachments = { FramebufferTextureFormat::RGBA8 };
-		spec.width = vpW;
-		spec.height = vpH;
+		spec.width = static_cast<u32>(width);
+		spec.height = static_cast<u32>(height);
 		spec.read_buffer = false;
 
 		for (auto &ui : m_UIs)
@@ -41,16 +41,16 @@ namespace origin
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), nullptr);
 
 		m_ScreenShader = Renderer::GetShader("Screen");
-		m_Projection = glm::ortho(-orthoW, orthoW, -orthoH, orthoH, 0.0f, 2.0f);
+		m_Projection = glm::ortho(0.0f, width, 0.0f, height, 0.0f, 2.0f);
 	}
 
-	void UIRenderer::SetViewportSize(uint32_t width, uint32_t height, float orthoW, float orthoH)
+	void UIRenderer::SetViewportSize(f32 width, f32 height)
 	{
 		for (UIComponent &ui : m_UIs)
 		{
-			ui.OFramebuffer->Resize(width, height);
+			ui.OFramebuffer->Resize(static_cast<u32>(width), static_cast<u32>(height));
 		}
-		m_Projection = glm::ortho(-orthoW, orthoW, -orthoH, orthoH, 0.0f, 2.0f);
+		m_Projection = glm::ortho(0.0f, width, 0.0f, height, 0.0f, 2.0f);
 	}
 
 	void UIRenderer::Unload()
@@ -65,19 +65,19 @@ namespace origin
 		{
 			ui.OFramebuffer->Bind();
 
-			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			Renderer2D::Begin();
 			for (int i = 0; i < ui.Components.size(); i++)
 			{
-				if (UIData<TextComponent> *comp = ui.GetComponent<TextComponent>(ui.Components[i]->Name))
+				if (UIData<TextComponent> *comp = ui.GetComponent<TextComponent>(ui.Components[i]->name))
 				{
-					Renderer2D::DrawString(comp->Component.TextString, comp->Transform.GetTransform(), comp->Component);
+					Renderer2D::DrawString(comp->Component.TextString, comp->rect, comp->Component, comp->anchor_type, comp->rotation, comp->offset);
 				}
-				else if (UIData<SpriteRenderer2DComponent> *comp = ui.GetComponent<SpriteRenderer2DComponent>(ui.Components[i]->Name))
+				else if (UIData<SpriteRenderer2DComponent> *comp = ui.GetComponent<SpriteRenderer2DComponent>(ui.Components[i]->name))
 				{
-					Renderer2D::DrawSprite(comp->Transform.GetTransform(), comp->Component);
+					Renderer2D::DrawSprite(comp->rect, comp->Component, comp->anchor_type, comp->rotation, comp->offset);
 				}
 			}
 			Renderer2D::End();

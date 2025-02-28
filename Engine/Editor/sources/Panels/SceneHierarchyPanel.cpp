@@ -190,6 +190,11 @@ void SceneHierarchyPanel::OnUpdate(float delta_time)
 {
 }
 
+void SceneHierarchyPanel::Reset()
+{
+
+}
+
 Entity SceneHierarchyPanel::ShowEntityContextMenu()
 {
     Entity entity{};

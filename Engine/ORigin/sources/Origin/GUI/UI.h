@@ -54,7 +54,6 @@ enum class EWindowFlags
 #endif
 };
 
-
 enum class EStyle
 {
 	// Enum name -------------------------- // Member in ImGuiStyle structure (see ImGuiStyle for descriptions)
@@ -178,7 +177,7 @@ private:
 	std::vector<std::pair<EColorStyle, glm::vec4>> m_Styles;
 };
 
-static float defColWidth = 100.0f;
+static float DEFAULT_COLUMN_WIDTH = 100.0f;
 
 static bool DrawButton(const char *text, bool *value = nullptr)
 {
@@ -198,18 +197,18 @@ static bool DrawButton(const char *text, bool *value = nullptr)
 	return ret;
 }
 
-static bool DrawButtonWithColumn(const char *label, const char *text, bool *value = nullptr, std::function<void()> func = std::function<void()>(), float coloumnWidth = defColWidth)
+static bool DrawButtonWithColumn(const char *label, const char *text, bool *value = nullptr, std::function<void()> func = std::function<void()>(), f32 colum_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool ret = false;
 
 	ImGui::PushID(label);
 
-	float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-	float lineWidth = GImGui->FontSize + GImGui->Style.FramePadding.x * (ImGui::CalcTextSize(text).x / 4.0f);
+	f32 lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	f32 lineWidth = GImGui->FontSize + GImGui->Style.FramePadding.x * (ImGui::CalcTextSize(text).x / 4.0f);
 	ImVec2 btSize = ImVec2(lineWidth, lineHeight);
 
 	ImGui::BeginColumns(label, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, colum_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 
@@ -227,14 +226,14 @@ static bool DrawButtonWithColumn(const char *label, const char *text, bool *valu
 	return ret;
 }
 
-static bool DrawCheckbox(const char *label, bool *value, float coloumnWidth = defColWidth)
+static bool DrawCheckbox(const char *label, bool *value, f32 column_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool ret = false;
 
 	ImGui::PushID(label);
 
 	ImGui::BeginColumns(label, 2, ImGuiOldColumnFlags_GrowParentContentsSize);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, column_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 
@@ -245,14 +244,14 @@ static bool DrawCheckbox(const char *label, bool *value, float coloumnWidth = de
 	return ret;
 }
 
-static bool DrawCheckbox2(const char *label, bool *x, bool *y, float coloumnWidth = defColWidth)
+static bool DrawCheckbox2(const char *label, bool *x, bool *y, f32 column_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool ret = false;
 
 	ImGui::PushID(label);
 
 	ImGui::BeginColumns(label, 3, ImGuiOldColumnFlags_GrowParentContentsSize);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, column_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 	if (ImGui::Checkbox("X", x))
@@ -270,14 +269,14 @@ static bool DrawCheckbox2(const char *label, bool *x, bool *y, float coloumnWidt
 	return ret;
 }
 
-static bool DrawCheckbox3(const char *label, bool *x, bool *y, bool *z, float coloumnWidth = defColWidth)
+static bool DrawCheckbox3(const char *label, bool *x, bool *y, bool *z, f32 column_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool ret = false;
 
 	ImGui::PushID(label);
 
 	ImGui::BeginColumns(label, 4, ImGuiOldColumnFlags_GrowParentContentsSize);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, column_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 	if (ImGui::Checkbox("X", x))
@@ -300,20 +299,20 @@ static bool DrawCheckbox3(const char *label, bool *x, bool *y, bool *z, float co
 	return ret;
 }
 
-static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+static bool DrawVec4Control(const char *label, glm::vec4 &values, f32 speed = 0.025f, f32 min = FLT_MIN, f32 max = FLT_MAX, f32 reset_value = 0.0f, f32 column_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool changed = false;
 	ImGui::PushID(label);
 
 	ImGui::Columns(2);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, column_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 
 	ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
 
-	float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	f32 lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = ImVec2(lineHeight, lineHeight);
 
 	// ================================
@@ -327,13 +326,13 @@ static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 
 
 		if (ImGui::Button("X", buttonSize))
 		{
-			values.x = resetValue;
+			values.x = reset_value;
 			changed = true;
 		}
 
 		ImGui::SameLine();
 
-		if (ImGui::DragFloat("##X", &values.x, speed))
+		if (ImGui::DragFloat("##X", &values.x, speed, min, max))
 			changed = true;
 
 		ImGui::PopItemWidth();
@@ -351,11 +350,11 @@ static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 
 
 		if (ImGui::Button("Y", buttonSize))
 		{
-			values.y = resetValue;
+			values.y = reset_value;
 			changed = true;
 		}
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Y", &values.y, speed))
+		if (ImGui::DragFloat("##Y", &values.y, speed, min, max))
 			changed = true;
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
@@ -372,12 +371,12 @@ static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 
 
 		if (ImGui::Button("Z", buttonSize))
 		{
-			values.z = resetValue;
+			values.z = reset_value;
 			changed = true;
 		}
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Z", &values.z, speed))
+		if (ImGui::DragFloat("##Z", &values.z, speed, min, max))
 			changed = true;
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
@@ -394,12 +393,12 @@ static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 
 
 		if (ImGui::Button("W", buttonSize))
 		{
-			values.x = resetValue;
+			values.x = reset_value;
 			changed = true;
 		}
 
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##W", &values.w, speed))
+		if (ImGui::DragFloat("##W", &values.w, speed, min, max))
 			changed = true;
 		ImGui::PopItemWidth();
 	}
@@ -411,21 +410,21 @@ static bool DrawVec4Control(const char *label, glm::vec4 &values, float speed = 
 	return changed;
 }
 
-static bool DrawVec3Control(const char *label, glm::vec3 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+static bool DrawVec3Control(const char *label, glm::vec3 &values, f32 speed = 0.025f, f32 min = FLT_MIN, f32 max = FLT_MAX, f32 reset_value = 0.0f, f32 column_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool changed = false;
 
 	ImGui::PushID(label);
 
 	ImGui::Columns(2);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, column_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 
 	ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 2));
 
-	float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	f32 lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = ImVec2(lineHeight, lineHeight);
 
 	// ================================
@@ -439,13 +438,13 @@ static bool DrawVec3Control(const char *label, glm::vec3 &values, float speed = 
 
 		if (ImGui::Button("X", buttonSize))
 		{
-			values.x = resetValue;
+			values.x = reset_value;
 			changed = true;
 		}
 
 		ImGui::SameLine();
 
-		changed |= ImGui::DragFloat("##X", &values.x, speed);
+		changed |= ImGui::DragFloat("##X", &values.x, speed, min, max);
 
 
 		ImGui::PopItemWidth();
@@ -463,11 +462,11 @@ static bool DrawVec3Control(const char *label, glm::vec3 &values, float speed = 
 
 		if (ImGui::Button("Y", buttonSize))
 		{
-			values.y = resetValue;
+			values.y = reset_value;
 			changed = true;
 		}
 		ImGui::SameLine();
-		changed |= ImGui::DragFloat("##Y", &values.y, speed);
+		changed |= ImGui::DragFloat("##Y", &values.y, speed, min, max);
 
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
@@ -484,12 +483,12 @@ static bool DrawVec3Control(const char *label, glm::vec3 &values, float speed = 
 
 		if (ImGui::Button("Z", buttonSize))
 		{
-			values.z = resetValue;
+			values.z = reset_value;
 			changed = true;
 		}
 
 		ImGui::SameLine();
-		changed |= ImGui::DragFloat("##Z", &values.z, speed);
+		changed |= ImGui::DragFloat("##Z", &values.z, speed, min, max);
 		ImGui::PopItemWidth();
 	}
 
@@ -501,21 +500,21 @@ static bool DrawVec3Control(const char *label, glm::vec3 &values, float speed = 
 	return changed;
 }
 
-static bool DrawVec2Control(const char *label, glm::vec2 &values, float speed = 0.025f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+static bool DrawVec2Control(const char *label, glm::vec2 &values, f32 speed = 0.025f, f32 min = FLT_MIN, f32 max = FLT_MAX, f32 reset_value = 0.0f, f32 column_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool changed = false;
 
 	ImGui::PushID(label);
 
 	ImGui::Columns(2);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, column_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 
 	ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 2));
 
-	float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	f32 lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = ImVec2(lineHeight + 3.0f, lineHeight);
 
 	// ================================
@@ -529,13 +528,13 @@ static bool DrawVec2Control(const char *label, glm::vec2 &values, float speed = 
 
 		if (ImGui::Button("X", buttonSize))
 		{
-			values.x = resetValue;
+			values.x = reset_value;
 			changed = true;
 		}
 
 		ImGui::SameLine();
 
-		if (ImGui::DragFloat("##X", &values.x, speed))
+		if (ImGui::DragFloat("##X", &values.x, speed, min, max))
 			changed = true;
 
 		ImGui::PopItemWidth();
@@ -553,11 +552,54 @@ static bool DrawVec2Control(const char *label, glm::vec2 &values, float speed = 
 
 		if (ImGui::Button("Y", buttonSize))
 		{
-			values.y = resetValue;
+			values.y = reset_value;
 			changed = true;
 		}
 		ImGui::SameLine();
-		if (ImGui::DragFloat("##Y", &values.y, speed))
+		if (ImGui::DragFloat("##Y", &values.y, speed, min, max))
+			changed = true;
+		
+		ImGui::PopItemWidth();
+	}
+
+	ImGui::PopStyleVar(1);
+	ImGui::Columns(1);
+
+	ImGui::PopID();
+
+	return changed;
+}
+
+static bool DrawFloatControl(const char *label, f32 *value, f32 speed = 0.025f, f32 min = FLT_MIN, f32 max = FLT_MAX, f32 reset_value = 0.0f, f32 column_width = DEFAULT_COLUMN_WIDTH)
+{
+	bool changed = false;
+
+	ImGui::PushID(label);
+
+	ImGui::Columns(2);
+	ImGui::SetColumnWidth(0, column_width);
+	ImGui::Text("%s", label);
+	ImGui::NextColumn();
+
+	ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 2));
+
+	f32 lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	ImVec2 buttonSize = ImVec2(lineHeight + 3.0f, lineHeight);
+
+	{
+		ScopedColorStyle buttonStyle({
+			{ EColorStyle::Button,          { 0.5f, 0.5f, 0.5f, 1.0f } },
+			{ EColorStyle::ButtonHovered,   { 0.9f, 0.9f, 0.9f, 1.0f } },
+			{ EColorStyle::ButtonActive,    { 0.5f, 0.5f, 0.5f, 1.0f } }
+			});
+		if (ImGui::Button("V", buttonSize))
+		{
+			*value = reset_value;
+			changed = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::DragFloat("##V", value, speed, min, max))
 			changed = true;
 		ImGui::PopItemWidth();
 	}
@@ -570,63 +612,21 @@ static bool DrawVec2Control(const char *label, glm::vec2 &values, float speed = 
 	return changed;
 }
 
-static bool DrawFloatControl(const char *label, float *value, float speed = 0.025f, float minValue = 0.0f, float maxValue = 1.0f, float resetValue = 0.0f, float coloumnWidth = defColWidth)
+static bool DrawIntControl(const char *label, int *value, f32 speed = 1.0f, int minValue = 0, int maxValue = INT_MAX, int reset_value = 0, f32 column_width = DEFAULT_COLUMN_WIDTH)
 {
 	bool changed = false;
 
 	ImGui::PushID(label);
 
 	ImGui::Columns(2);
-	ImGui::SetColumnWidth(0, coloumnWidth);
+	ImGui::SetColumnWidth(0, column_width);
 	ImGui::Text("%s", label);
 	ImGui::NextColumn();
 
 	ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 2));
 
-	float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-	ImVec2 buttonSize = ImVec2(lineHeight + 3.0f, lineHeight);
-
-	{
-		ScopedColorStyle buttonStyle({
-			{ EColorStyle::Button,          { 0.5f, 0.5f, 0.5f, 1.0f } },
-			{ EColorStyle::ButtonHovered,   { 0.9f, 0.9f, 0.9f, 1.0f } },
-			{ EColorStyle::ButtonActive,    { 0.5f, 0.5f, 0.5f, 1.0f } }
-			});
-		if (ImGui::Button("V", buttonSize))
-		{
-			*value = resetValue;
-			changed = true;
-		}
-		ImGui::SameLine();
-		if (ImGui::DragFloat("##V", value, speed, minValue, maxValue))
-			changed = true;
-		ImGui::PopItemWidth();
-	}
-
-	ImGui::PopStyleVar(1);
-	ImGui::Columns(1);
-
-	ImGui::PopID();
-
-	return changed;
-}
-
-static bool DrawIntControl(const char *label, int *value, float speed = 1.0f, int minValue = 0, int maxValue = INT_MAX, int resetValue = 0, float coloumnWidth = defColWidth)
-{
-	bool changed = false;
-
-	ImGui::PushID(label);
-
-	ImGui::Columns(2);
-	ImGui::SetColumnWidth(0, coloumnWidth);
-	ImGui::Text("%s", label);
-	ImGui::NextColumn();
-
-	ImGui::PushMultiItemsWidths(1, ImGui::CalcItemWidth());
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 2));
-
-	float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	f32 lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = ImVec2(lineHeight + 3.0f, lineHeight);
 
 	{
@@ -638,7 +638,7 @@ static bool DrawIntControl(const char *label, int *value, float speed = 1.0f, in
 
 		if (ImGui::Button("V", buttonSize))
 		{
-			*value = resetValue;
+			*value = reset_value;
 			changed = true;
 		}
 

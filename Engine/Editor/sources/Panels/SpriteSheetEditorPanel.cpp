@@ -387,6 +387,11 @@ void SpriteSheetEditorPanel::OnUpdate(float delta_time)
     m_Framebuffer->Unbind();
 }
 
+void SpriteSheetEditorPanel::Reset()
+{
+
+}
+
 bool SpriteSheetEditorPanel::Serialize(const std::filesystem::path &filepath)
 {
     if (m_SpriteSheet)
@@ -495,7 +500,7 @@ bool SpriteSheetEditorPanel::OnKeyPressed(const KeyPressedEvent &e)
     if (!IsViewportFocused)
         return false;
 
-    if (Input::IsKeyPressed(Key::LeftControl))
+    if (Input::IsKeyModPressed(KeyMod::LeftControl))
     {
         if (e.GetKeyCode() == Key::D && m_SelectedIndex >= 0 && !m_Controls.empty())
         {

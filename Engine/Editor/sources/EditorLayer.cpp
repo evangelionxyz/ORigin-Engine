@@ -43,16 +43,16 @@ void EditorLayer::OnAttach()
     m_UITextures["camera_3d_projection"] = TextureImporter::LoadTexture2D("Resources/UITextures/ic_camera_projection_3d.png");
     m_OriginEngineTex = TextureImporter::LoadTexture2D("Resources/UITextures/bw_logo.png");
 
-    FramebufferSpecification fbSpec;
-    fbSpec.attachments =
+    FramebufferSpecification fb_spec;
+    fb_spec.attachments =
     {
         FramebufferTextureFormat::RGBA8,
         FramebufferTextureFormat::DEPTH24STENCIL8
     };
 
-    fbSpec.width = 1280;
-    fbSpec.height = 720;
-    m_Framebuffer = Framebuffer::Create(fbSpec);
+    fb_spec.width = 1280;
+    fb_spec.height = 720;
+    m_Framebuffer = Framebuffer::Create(fb_spec);
 
     if (const auto filepath = std::filesystem::current_path() / "Editor.cfg"; !EditorSerializer::Deserialize(this, filepath))
     {
@@ -153,7 +153,6 @@ void EditorLayer::OnUpdate(const Timestep ts)
     RenderCommand::ClearColor(m_ClearColor);
     RenderCommand::Clear();
     Render(ts);
-    m_ActiveScene->GetUIRenderer()->Render();
     m_Framebuffer->Unbind();
     m_ActiveScene->PostRender(m_EditorCamera, ts);
 
@@ -227,6 +226,10 @@ void EditorLayer::Render(Timestep ts)
         m_gizmo->DrawGrid(m_EditorCamera);
         if (m_Draw2DGrid) m_gizmo->Draw2DGrid(m_EditorCamera);
         m_gizmo->DrawIcons(m_EditorCamera, m_ActiveScene.get());
+
+
+        // draw scene UI
+        m_ActiveScene->GetUIRenderer()->Render();
 
         break;
     }
@@ -401,9 +404,13 @@ bool EditorLayer::NewProject()
             OGN_CORE_ERROR("Editor Layer: ContentBrowserPanel Failed to initialized");
             return false;
         }
+
         NewScene();
+
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 bool EditorLayer::OpenProject(const std::filesystem::path& path)
@@ -413,6 +420,12 @@ bool EditorLayer::OpenProject(const std::filesystem::path& path)
     if (Project::Load(path))
     {
         ScriptEngine::Init();
+
+        // close all panels
+        for (auto &panel : m_Panels)
+        {
+            panel->Reset();
+        }
 
         AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
         OpenScene(handle);
@@ -441,6 +454,12 @@ bool EditorLayer::OpenProject()
     if (Project::Open())
     {
         ScriptEngine::Init();
+
+        // close all panels
+        for (auto &panel : m_Panels)
+        {
+            panel->Reset();
+        }
 
         AssetHandle handle = Project::GetActive()->GetConfig().StartScene;
         OpenScene(handle);
@@ -836,7 +855,7 @@ void EditorLayer::SceneViewport()
             && !entity.HasComponent<LightComponent>()
             && !entity.HasComponent<AudioComponent>();
 
-        bool snap = Input::IsKeyPressed(KeyCode(Key::LeftShift));
+        bool snap = Input::IsKeyModPressed(KeyMod::LeftShift);
         ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
             m_gizmo_operation, static_cast<ImGuizmo::MODE>(m_gizmo_mode), glm::value_ptr(transform), nullptr,
             snap ? snapValues : nullptr, boundSizing ? bounds : nullptr, snap ? snapValues : nullptr);
@@ -1561,10 +1580,10 @@ void EditorLayer::InputProcedure(Timestep time)
                 }
                 else
                 {
-                    if (Input::IsKeyPressed(Key::LeftShift))
+                    if (Input::IsKeyModPressed(KeyMod::LeftShift))
                     {
                         f32 snap_value = 0.5f;
-                        if (Input::IsKeyPressed(Key::LeftControl))
+                        if (Input::IsKeyModPressed(KeyMod::LeftControl))
                         {
                             snap_value = 0.1f;
                         }
@@ -1607,8 +1626,9 @@ void EditorLayer::InputProcedure(Timestep time)
 bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
 {
     auto &app = Application::GetInstance();
-    const bool control = Input::IsKeyPressed(Key::Control);
-    const bool shift = Input::IsKeyPressed(Key::Shift);
+
+    const bool control = Input::IsKeyModPressed(KeyMod::Control);
+    const bool shift = Input::IsKeyModPressed(KeyMod::Shift);
 
     ImGuiIO &io = ImGui::GetIO();
     Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();

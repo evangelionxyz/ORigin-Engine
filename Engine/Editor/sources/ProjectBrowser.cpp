@@ -56,10 +56,15 @@ void ProjectBrowser::OnGuiRender()
         {
             EditorLayer *editor_layer = new EditorLayer();
             Application::GetInstance().PushLayer(editor_layer);
-            editor_layer->NewProject();
-
-            Application::GetInstance().GetWindow().Maximize();
-            Application::GetInstance().PopLayer(this);
+            if (editor_layer->NewProject())
+            {
+                Application::GetInstance().GetWindow().Maximize();
+                Application::GetInstance().PopLayer(this);
+            }
+            else
+            {
+                Application::GetInstance().PopLayer(editor_layer);
+            }
         });
     }
     
@@ -94,6 +99,14 @@ void ProjectBrowser::OnGuiRender()
 
 void ProjectBrowser::OnEvent(Event& e)
 {
+    EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<KeyPressedEvent>(OGN_BIND_EVENT_FN(ProjectBrowser::OnKeyPressedEvent));
+}
+
+bool ProjectBrowser::OnKeyPressedEvent(const KeyPressedEvent &e)
+{
+    OGN_CORE_INFO("{}", e.ToString());
+    return false;
 }
 
 }

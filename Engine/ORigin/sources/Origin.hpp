@@ -1,7 +1,6 @@
 // Copyright (c) Evangelion Manuhutu | ORigin Engine
 
-#ifndef ORIGIN_HPP
-#define ORIGIN_HPP
+#pragma once
 
 #include "Origin/Animation/Animation.h"
 #include "Origin/Animation/AnimationState.h"
@@ -21,6 +20,7 @@
 #include "Origin/Core/Event.h"
 #include "Origin/Core/KeyEvent.h"
 #include "Origin/Core/MouseEvent.h"
+#include "Origin/Core/AppEvent.h"
 #include "Origin/Core/Time.h"
 #include "Origin/Core/Assert.h"
 #include "Origin/Math/Math.hpp"
@@ -85,5 +85,3 @@
 #include "Platform/Vulkan/VulkanBuffer.hpp"
 #include "Platform/Vulkan/VulkanDescriptorSet.hpp"
 #include "Platform/Vulkan/VulkanPhysicalDevice.hpp"
-
-#endif

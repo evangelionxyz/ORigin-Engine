@@ -285,8 +285,10 @@
 #define OGN_KMOD_GUI    (OGN_KMOD_LGUI | OGN_KMOD_RGUI)     /**< Any GUI key is down. */
 
 using KeyCode = u32;
+using KeyModCode = u16;
 
-namespace origin::Key {
+namespace origin {
+namespace Key {
 enum : KeyCode
 {
     Space = OGN_KEY_SPACE,
@@ -406,7 +408,11 @@ enum : KeyCode
     KPEnter = OGN_KEY_KP_ENTER,
     KPEqual = OGN_KEY_KP_EQUALS,
     Menu = OGN_KEY_MENU,
-
+};
+}
+namespace KeyMod {
+enum : KeyModCode {
+    None = OGN_KMOD_NONE,
     Shift = OGN_KMOD_SHIFT,
     Control = OGN_KMOD_CTRL,
     LeftShift = OGN_KMOD_LSHIFT,
@@ -419,7 +425,7 @@ enum : KeyCode
     RightSuper = OGN_KMOD_RGUI,
     Super = OGN_KMOD_GUI,
 };
-
+}
 }
 
 #endif

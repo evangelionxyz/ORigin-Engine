@@ -46,7 +46,7 @@ private:
 
 namespace fmt {
 
-template<> 
+template<>
 struct formatter<origin::UUID>
 {
     // parse the format specification (e.g, "{}" or "{:x}" for hex)
@@ -58,7 +58,7 @@ struct formatter<origin::UUID>
 
     // format the UUD (convert to u64 and format it)
     template<typename FormatContext>
-    auto format(const origin::UUID &uuid, FormatContext &ctx) const 
+    auto format(const origin::UUID &uuid, FormatContext &ctx) const
     {
         return fmt::format_to(ctx.out(), "{}", static_cast<u64>(uuid));
     }

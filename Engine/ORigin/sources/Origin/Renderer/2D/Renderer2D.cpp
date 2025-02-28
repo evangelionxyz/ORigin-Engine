@@ -278,20 +278,10 @@ void Renderer2D::DrawQuad(const Rect &rect, const glm::vec4 &color)
 	DrawQuad({ center.x, center.y, 0.0f }, size, color);
 }
 
-void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-{
-	DrawQuad({ position.x, position.y, 0.0f }, size, color);
-}
-
 void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 {
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 	DrawQuad(transform, color);
-}
-
-void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
-{
-	DrawQuad({ position.x, position.y, 0.0f }, size, texture, tilingFactor, tintColor);
 }
 
 void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
@@ -369,11 +359,21 @@ void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& text
 	Renderer::GetStatistics().quad_count++;
 }
 
-void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<SubTexture2D>& subTexture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
+void Renderer2D::DrawQuad(const Rect &rect, const Ref<Texture2D> &texture, const glm::vec4 &tint_color, Anchor anchor, f32 rotation, const glm::vec2 &tiling_factor)
+{
+	const glm::vec2 rect_position = rect.GetOrigin(anchor);
+	glm::mat4 transform = glm::translate(glm::mat4(1.0f),{ rect_position.x, rect_position.y, 0.0f})
+		* glm::scale(glm::mat4(1.0f), {rect.GetSize().x, rect.GetSize().y, 1.0f})
+		* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), {0.0f, 0.0f, 1.0f});
+	
+	DrawQuad(transform, texture, tiling_factor, tint_color);
+}
+
+void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<SubTexture2D>& sub_texture, const glm::vec2& tiling_factor, const glm::vec4& tint_color)
 {
 	constexpr int QuadVertexCount = 4;
-	const glm::vec2* textureCoords = subTexture->GetTexCoords();
-	const Ref<Texture2D> texture = subTexture->GetTexture();
+	const glm::vec2* textureCoords = sub_texture->GetTexCoords();
+	const Ref<Texture2D> texture = sub_texture->GetTexture();
 
 	if (s_2d_data->quad_index_count >= Renderer::render_data.max_quad_indices)
 		NextBatch();
@@ -401,42 +401,27 @@ void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<SubTexture2D>& s
 	for (size_t i = 0; i < QuadVertexCount; i++)
 	{
 		s_2d_data->quad_vertex_buffer_pointer->Position = transform * s_2d_data->quad_vertex_positions[i];
-		s_2d_data->quad_vertex_buffer_pointer->Color = tintColor;
+		s_2d_data->quad_vertex_buffer_pointer->Color = tint_color;
 		s_2d_data->quad_vertex_buffer_pointer->TexCoord = textureCoords[i];
 		s_2d_data->quad_vertex_buffer_pointer->TexIndex = textureIndex;
-		s_2d_data->quad_vertex_buffer_pointer->TilingFactor = tilingFactor;
+		s_2d_data->quad_vertex_buffer_pointer->TilingFactor = tiling_factor;
 		s_2d_data->quad_vertex_buffer_pointer++;
 	}
 	s_2d_data->quad_index_count += 6;
 	Renderer::GetStatistics().quad_count++;
 }
-
-void Renderer2D::DrawRotatedQuad(const glm::vec2 &position, const glm::vec2 &size, f32 rotation, const glm::vec4 &color)
+	
+void Renderer2D::DrawRect(const Rect& rect, const glm::vec4& color, const glm::vec2 &offset)
 {
-	DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
-}
+	glm::vec3 p0 = glm::vec3(rect.min.x + offset.x, rect.min.y + offset.y, 0.0f); 
+	glm::vec3 p1 = glm::vec3(rect.max.x + offset.x, rect.min.y + offset.y, 0.0f);
+	glm::vec3 p2 = glm::vec3(rect.max.x + offset.x, rect.max.y + offset.y, 0.0f);
+	glm::vec3 p3 = glm::vec3(rect.min.x + offset.x, rect.max.y + offset.y, 0.0f);
 
-void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, f32 rotation, const glm::vec4& color)
-{
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-		* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })
-		* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-	DrawQuad(transform, color);
-}
-
-void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, f32 rotation, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
-{
-	DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, tintColor);
-}
-
-void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, f32 rotation, const Ref<Texture2D>& texture, const glm::vec2& tilingFactor, const glm::vec4& tintColor)
-{
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-		* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })
-		* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-	DrawQuad(transform, texture, tilingFactor, tintColor);
+	DrawLine(p0, p1, color);
+	DrawLine(p1, p2, color);
+	DrawLine(p2, p3, color);
+	DrawLine(p3, p0, color);
 }
 
 void Renderer2D::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
@@ -507,82 +492,110 @@ void Renderer2D::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::v
 void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRenderer2DComponent& src)
 {
 	const Ref<Texture2D> &texture = AssetManager::GetAsset<Texture2D>(src.Texture);
-	if (texture)
-	{
-		constexpr size_t quadVertexCount = 4;
-		glm::vec2 textureCoords[4]
-		{
-			{ src.UV0.x, src.UV0.y },
-			{ src.UV1.x, src.UV0.y },
-			{ src.UV1.x, src.UV1.y },
-			{ src.UV0.x, src.UV1.y }
-		};
-
-		if (src.FlipX)
-		{
-			textureCoords[0] = { src.UV1.x, src.UV0.y };
-			textureCoords[1] = { src.UV0.x, src.UV0.y };
-			textureCoords[2] = { src.UV0.x, src.UV1.y };
-			textureCoords[3] = { src.UV1.x, src.UV1.y };
-		}
-		else if (src.FlipY)
-		{
-			textureCoords[0] = { src.UV0.x, src.UV1.y };
-			textureCoords[1] = { src.UV1.x, src.UV1.y };
-			textureCoords[2] = { src.UV1.x, src.UV0.y };
-			textureCoords[3] = { src.UV0.x, src.UV0.y };
-		}
-
-		if (src.FlipX && src.FlipY)
-		{
-			textureCoords[0] = { src.UV1.x, src.UV1.y };
-			textureCoords[1] = { src.UV0.x, src.UV1.y };
-			textureCoords[2] = { src.UV0.x, src.UV0.y };
-			textureCoords[3] = { src.UV1.x, src.UV0.y };
-		}
-
-		if (s_2d_data->quad_index_count >= Renderer::render_data.max_quad_indices)
-			NextBatch();
-
-		f32 textureIndex = 0.0f;
-		for (u32 i = 1; i < s_2d_data->texture_slot_index; i++)
-		{
-			if (*s_2d_data->texture_slots[i] == *texture)
-			{
-				textureIndex = (f32)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f)
-		{
-			if (s_2d_data->texture_slot_index >= Renderer::render_data.max_texture_slots)
-				NextBatch();
-
-			textureIndex = (f32)s_2d_data->texture_slot_index;
-			s_2d_data->texture_slots[s_2d_data->texture_slot_index] = texture;
-			s_2d_data->texture_slot_index++;
-		}
-
-		for (size_t i = 0; i < quadVertexCount; i++)
-		{
-			s_2d_data->quad_vertex_buffer_pointer->Position = transform * s_2d_data->quad_vertex_positions[i];
-			s_2d_data->quad_vertex_buffer_pointer->Color = src.Color;
-			s_2d_data->quad_vertex_buffer_pointer->TexCoord = textureCoords[i];
-			s_2d_data->quad_vertex_buffer_pointer->TexIndex = textureIndex;
-			s_2d_data->quad_vertex_buffer_pointer->TilingFactor = src.TillingFactor;
-			s_2d_data->quad_vertex_buffer_pointer++;
-		}
-		s_2d_data->quad_index_count += 6;
-		Renderer::GetStatistics().quad_count++;
-	}
-	else
+	if (!texture)
 	{
 		DrawQuad(transform, src.Color);
+		return;
 	}
+	
+	constexpr size_t quadVertexCount = 4;
+	glm::vec2 textureCoords[4]
+	{
+		{ src.UV0.x, src.UV0.y },
+		{ src.UV1.x, src.UV0.y },
+		{ src.UV1.x, src.UV1.y },
+		{ src.UV0.x, src.UV1.y }
+	};
+
+	if (src.FlipX)
+	{
+		textureCoords[0] = { src.UV1.x, src.UV0.y };
+		textureCoords[1] = { src.UV0.x, src.UV0.y };
+		textureCoords[2] = { src.UV0.x, src.UV1.y };
+		textureCoords[3] = { src.UV1.x, src.UV1.y };
+	}
+	else if (src.FlipY)
+	{
+		textureCoords[0] = { src.UV0.x, src.UV1.y };
+		textureCoords[1] = { src.UV1.x, src.UV1.y };
+		textureCoords[2] = { src.UV1.x, src.UV0.y };
+		textureCoords[3] = { src.UV0.x, src.UV0.y };
+	}
+
+	if (src.FlipX && src.FlipY)
+	{
+		textureCoords[0] = { src.UV1.x, src.UV1.y };
+		textureCoords[1] = { src.UV0.x, src.UV1.y };
+		textureCoords[2] = { src.UV0.x, src.UV0.y };
+		textureCoords[3] = { src.UV1.x, src.UV0.y };
+	}
+
+	if (s_2d_data->quad_index_count >= Renderer::render_data.max_quad_indices)
+		NextBatch();
+
+	f32 textureIndex = 0.0f;
+	for (u32 i = 1; i < s_2d_data->texture_slot_index; i++)
+	{
+		if (*s_2d_data->texture_slots[i] == *texture)
+		{
+			textureIndex = (f32)i;
+			break;
+		}
+	}
+
+	if (textureIndex == 0.0f)
+	{
+		if (s_2d_data->texture_slot_index >= Renderer::render_data.max_texture_slots)
+			NextBatch();
+
+		textureIndex = (f32)s_2d_data->texture_slot_index;
+		s_2d_data->texture_slots[s_2d_data->texture_slot_index] = texture;
+		s_2d_data->texture_slot_index++;
+	}
+
+	for (size_t i = 0; i < quadVertexCount; i++)
+	{
+		s_2d_data->quad_vertex_buffer_pointer->Position = transform * s_2d_data->quad_vertex_positions[i];
+		s_2d_data->quad_vertex_buffer_pointer->Color = src.Color;
+		s_2d_data->quad_vertex_buffer_pointer->TexCoord = textureCoords[i];
+		s_2d_data->quad_vertex_buffer_pointer->TexIndex = textureIndex;
+		s_2d_data->quad_vertex_buffer_pointer->TilingFactor = src.TillingFactor;
+		s_2d_data->quad_vertex_buffer_pointer++;
+	}
+	s_2d_data->quad_index_count += 6;
+	Renderer::GetStatistics().quad_count++;
 }
 
-void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm::mat4& transform, const TextParams& textParams, glm::vec2 *size)
+void Renderer2D::DrawSprite(const Rect& rect, SpriteRenderer2DComponent& src, Anchor anchor, f32 rotation, const glm::vec2 &offset)
+{
+	glm::vec2 rect_position = rect.GetOrigin(anchor, offset);
+	
+	glm::mat4 transform = glm::translate(glm::mat4(1.0f), {rect_position.x, rect_position.y, 0.0f})
+		* glm::scale(glm::mat4(1.0f), {rect.GetSize().x, rect.GetSize().y, 1.0f})
+		* glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f});
+	
+	DrawSprite(transform, src);
+}
+
+void Renderer2D::DrawString(const std::string& string, const Rect& rect, TextComponent& component, Anchor anchor, f32 rotation, const glm::vec2 &offset)
+{
+	Ref<Font> font = AssetManager::GetAsset<Font>(component.FontHandle);
+	glm::vec2 rect_position = rect.GetOrigin(anchor, offset);
+
+	glm::mat4 transform = glm::translate(glm::mat4(1.0f), {rect_position.x, rect_position.y, 0.0f})
+		* glm::scale(glm::mat4(1.0f), {rect.GetSize().x, rect.GetSize().y, 1.0f})
+		* glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f});
+	
+	DrawString(string, transform, component);
+}
+
+void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, TextComponent& component)
+{
+	Ref<Font> font = AssetManager::GetAsset<Font>(component.FontHandle);
+	DrawString(string, font, transform, { component.Color, component.Kerning, component.LineSpacing }, &component.Size);
+}
+	
+void Renderer2D::DrawString(const std::string &string, const Ref<Font> &font, const glm::mat4& transform, const TextParams& text_params, glm::vec2 *size)
 {
 	if (!font)
 		return;
@@ -640,7 +653,7 @@ void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm
 			max_x = std::max(max_x, x);
 
 			x = 0.0;
-			y -= fs_scale * metrics.lineHeight + textParams.LineSpacing;
+			y -= fs_scale * metrics.lineHeight + text_params.LineSpacing;
 			continue;
 		}
 
@@ -655,13 +668,13 @@ void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm
 				advance = (f32)advance;
 			}
 
-			x += fs_scale * advance + textParams.Kerning;
+			x += fs_scale * advance + text_params.Kerning;
 			continue;
 		}
 
 		if (character == '\t')
 		{
-			x += 4.0f * (fs_scale * space_glyph_advance + textParams.Kerning);
+			x += 4.0f * (fs_scale * space_glyph_advance + text_params.Kerning);
 			continue;
 		}
 
@@ -695,25 +708,25 @@ void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm
 
 		{
 			s_2d_data->text_vertex_buffer_pointer->Position = transform * glm::vec4(quad_min, 0.0f, 1.0f);
-			s_2d_data->text_vertex_buffer_pointer->Color = textParams.Color;
+			s_2d_data->text_vertex_buffer_pointer->Color = text_params.Color;
 			s_2d_data->text_vertex_buffer_pointer->TexCoord = texCoordMin;
 			s_2d_data->text_vertex_buffer_pointer->TexIndex = textureIndex;
 			s_2d_data->text_vertex_buffer_pointer++;
 
 			s_2d_data->text_vertex_buffer_pointer->Position = transform * glm::vec4(quad_min.x, quad_max.y, 0.0f, 1.0f);
-			s_2d_data->text_vertex_buffer_pointer->Color = textParams.Color;
+			s_2d_data->text_vertex_buffer_pointer->Color = text_params.Color;
 			s_2d_data->text_vertex_buffer_pointer->TexCoord = { texCoordMin.x, texCoordMax.y };
 			s_2d_data->text_vertex_buffer_pointer->TexIndex = textureIndex;
 			s_2d_data->text_vertex_buffer_pointer++;
 
 			s_2d_data->text_vertex_buffer_pointer->Position = transform * glm::vec4(quad_max, 0.0f, 1.0f);
-			s_2d_data->text_vertex_buffer_pointer->Color = textParams.Color;
+			s_2d_data->text_vertex_buffer_pointer->Color = text_params.Color;
 			s_2d_data->text_vertex_buffer_pointer->TexCoord = texCoordMax;
 			s_2d_data->text_vertex_buffer_pointer->TexIndex = textureIndex;
 			s_2d_data->text_vertex_buffer_pointer++;
 
 			s_2d_data->text_vertex_buffer_pointer->Position = transform * glm::vec4(quad_max.x, quad_min.y, 0.0f, 1.0f);
-			s_2d_data->text_vertex_buffer_pointer->Color = textParams.Color;
+			s_2d_data->text_vertex_buffer_pointer->Color = text_params.Color;
 			s_2d_data->text_vertex_buffer_pointer->TexCoord = { texCoordMax.x, texCoordMin.y };
 			s_2d_data->text_vertex_buffer_pointer->TexIndex = textureIndex;
 			s_2d_data->text_vertex_buffer_pointer++;
@@ -727,7 +740,7 @@ void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm
 			double advance = glyph->getAdvance();
 			char nextCharacter = string[i + 1];
 			fontGeometry.getAdvance(advance, character, nextCharacter);
-			x += fs_scale * advance + textParams.Kerning;
+			x += fs_scale * advance + text_params.Kerning;
 		}
 
 		max_x = std::max(max_x, x);
@@ -741,9 +754,5 @@ void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm
 	}
 }
 
-void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, TextComponent& component)
-{
-	Ref<Font> font = AssetManager::GetAsset<Font>(component.FontHandle);
-	DrawString(string, font, transform, { component.Color, component.Kerning, component.LineSpacing }, &component.Size);
-}
+
 }

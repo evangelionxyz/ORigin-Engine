@@ -144,14 +144,17 @@ void SDLWindow::UpdateEvents()
             bool pressed = (m_event.key.type == SDL_EVENT_KEY_DOWN);
             if (pressed)
             {
-                KeyPressedEvent ev(m_event.key.key, 0);
+                
                 Input::key_codes[m_event.key.key] = true;
+                Input::key_mod_codes[m_event.key.mod] = true;
+                KeyPressedEvent ev(m_event.key.key, m_event.key.mod, 0);
                 m_data.EventCallback(ev);
             }
             else
             {
                 Input::key_codes[m_event.key.key] = false;
-                KeyReleasedEvent ev(m_event.key.key);
+                Input::key_mod_codes[m_event.key.mod] = false;
+                KeyReleasedEvent ev(m_event.key.key, m_event.key.mod);
                 m_data.EventCallback(ev);
             }
             break;

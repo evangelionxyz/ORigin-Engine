@@ -25,6 +25,8 @@ public:
 
     void OnEvent(Event &e) override;
 
+    void Reset() override;
+
     bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
     bool OnKeyPressed(KeyPressedEvent &e);
     bool Deserialize();

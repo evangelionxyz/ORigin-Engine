@@ -311,7 +311,7 @@ namespace origin
 		s_ScriptEngineData->AppAssembly = Utils::LoadMonoAssembly(filepath);
 		if (!s_ScriptEngineData->AppAssembly)
 		{
-			OGN_CORE_ASSERT(false, "[Script Engine] App Assembly is empty {}", filepath.generic_string());
+			OGN_CORE_ASSERT(false, "[Script Engine] App Assembly is empty {}", filepath);
 			return false;
 		}
 
@@ -354,22 +354,17 @@ namespace origin
 
 	void ScriptEngine::SetSceneContext(Scene *scene)
 	{
-		OGN_PROFILER_LOGIC();
-
 		s_ScriptEngineData->SceneContext = scene;
 	}
 
 	void ScriptEngine::ClearSceneContext()
 	{
-		OGN_PROFILER_LOGIC();
-
 		s_ScriptEngineData->SceneContext = nullptr;
 		s_ScriptEngineData->EntityInstances.clear();
 	}
 
 	bool ScriptEngine::EntityClassExists(const std::string &fullClassName)
 	{
-		OGN_PROFILER_LOGIC();
 		if(s_ScriptEngineData)
 			return s_ScriptEngineData->EntityClasses.contains(fullClassName);
 		return false;
@@ -377,8 +372,6 @@ namespace origin
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
-		OGN_PROFILER_LOGIC();
-
 		if (const auto &sc = entity.GetComponent<ScriptComponent>(); EntityClassExists(sc.ClassName))
 		{
 			const UUID entity_id = entity.GetUUID();
@@ -482,7 +475,7 @@ namespace origin
 		const UUID entity_id = entity.GetUUID();
 		if (const auto &it = s_ScriptEngineData->EntityInstances.find(entity_id); it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0} {1}", entity.GetTag(), entity_id);
+			OGN_CORE_ERROR("[Script Engine] Entity script instance is not attached! {0} {1}", entity.GetTag(), (u64)entity_id);
 			PUSH_CONSOLE_ERROR("[Script Engine] Entity script instance is not attached! {}", entity_id);
 			return;
 		}
@@ -538,7 +531,7 @@ namespace origin
 		const auto &it = s_ScriptEngineData->EntityInstances.find(uuid);
 		if (it == s_ScriptEngineData->EntityInstances.end())
 		{
-			OGN_CORE_ERROR("[Script Engine] Failed to find {0}", uuid);
+			OGN_CORE_ERROR("[Script Engine] Failed to find {0}", (u64)uuid);
 			PUSH_CONSOLE_ERROR("[Script Engine] Failed to find {} ", uuid);
 			return nullptr;
 		}
@@ -567,7 +560,7 @@ namespace origin
 
 		if (!s_ScriptEngineData->EntityInstances.contains(uuid))
 		{
-			PUSH_CONSOLE_ERROR("[Script Engine] Invalid Script Instance {}", uuid);
+			PUSH_CONSOLE_ERROR("[Script Engine] Invalid Script Instance {0}", (u64)uuid);
 			OGN_CORE_ASSERT(false, "[Script Engine] Invalid Script Instance {}", uuid);
 		}
 

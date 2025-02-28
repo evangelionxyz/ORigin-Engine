@@ -562,24 +562,19 @@ public:
 struct BaseUIData
 {
     virtual ~BaseUIData() = default;
-    enum class Anchor
-    {
-        Center,
-        Left, Right,
-        TopLeft, TopRight,
-        BottomLeft, BottomRight
-    };
+   
+    std::string name;
+    Anchor anchor_type;
 
-    std::string Name;
-    Anchor AnchorType;
-    TransformComponent Transform;
+    glm::vec2 offset {0.0f, 0.0f};
+    Rect rect;
+    f32 rotation = 0.0;
 
     BaseUIData() = default;
-    BaseUIData(const std::string &name, Anchor anchorType = Anchor::Center)
-        : Name(name), AnchorType(anchorType)
+    BaseUIData(const std::string &name, const Anchor anchor_type)
+        : name(name), anchor_type(anchor_type)
     {
     }
-
 };
 
 template<typename T>
@@ -588,8 +583,8 @@ struct UIData : public BaseUIData
     T Component;
 
     UIData() = default;
-    UIData(const std::string &name, const T &component, BaseUIData::Anchor anchorType = BaseUIData::Anchor::Center)
-        : BaseUIData(name, anchorType), Component(component)
+    UIData(const std::string &name, const T &component, Anchor anchor_type = Anchor_BottomLeft)
+        : BaseUIData(name, anchor_type), Component(component)
     {
     }
 };
@@ -602,7 +597,7 @@ public:
     template<typename T>
     void AddComponent(const std::string &name, UIData<T> component)
     {
-        component.Name = GenerateUniqueKey(name);
+        component.name = GenerateUniqueKey(name);
         Components.push_back(std::make_shared<UIData<T>>(component));
     }
 
@@ -611,7 +606,7 @@ public:
     {
         for (auto &c : Components)
         {
-            if (name == c->Name)
+            if (name == c->name)
                 return dynamic_cast<UIData<T>*>(c.get());
         }
         return nullptr;
@@ -625,18 +620,18 @@ public:
         bool foundSameName = false;
         for (auto &d : Components)
         {
-            foundSameName = d->Name == newName;
+            foundSameName = d->name == newName;
             if (foundSameName)
                 break;
         }
 
         if (foundSameName)
         {
-            Components[index]->Name = GenerateUniqueKey(newName);
+            Components[index]->name = GenerateUniqueKey(newName);
         }
         else
         {
-            Components[index]->Name = newName;
+            Components[index]->name = newName;
         }
 
         return true;
@@ -651,6 +646,8 @@ public:
     std::unordered_map<std::string, int> ComponentCounters;
     Ref<Framebuffer> OFramebuffer;
 
+    float Width = 1280.0f, Height = 720.0f;
+
 private:
     std::string GenerateUniqueKey(const std::string &name)
     {
@@ -658,7 +655,7 @@ private:
         bool found = false;
         for (auto &c : Components)
         {
-            if (c->Name == name)
+            if (c->name == name)
             {
                 found = true;
                 break;
@@ -680,7 +677,7 @@ private:
             unique = true;
             for (auto &c : Components)
             {
-                if (c->Name == uniqueKey)
+                if (c->name == uniqueKey)
                 {
                     unique = false;
                     break;
@@ -698,7 +695,7 @@ private:
             bool exists = false;
             for (auto &c : Components)
             {
-                if (c->Name.find(it->first) == 0)
+                if (c->name.find(it->first) == 0)
                 {
                     exists = true;
                     break;

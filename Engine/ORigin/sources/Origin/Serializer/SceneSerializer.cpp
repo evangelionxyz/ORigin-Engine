@@ -146,25 +146,25 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 		for (int i = 0; i < ui.Components.size(); i++)
 		{
 			out << YAML::BeginMap;
-			if (UIData<TextComponent> *text = ui.GetComponent<TextComponent>(ui.Components[i]->Name))
+			if (UIData<TextComponent> *text = ui.GetComponent<TextComponent>(ui.Components[i]->name))
 			{
 				out << YAML::Key << "Type" << "TextComponent";
-				out << YAML::Key << "Name" << text->Name;
-				out << YAML::Key << "Anchor" << (int)text->AnchorType;
+				out << YAML::Key << "Name" << text->name;
+				out << YAML::Key << "Anchor" << (int)text->anchor_type;
 				out << YAML::Key << "FontHandle" << text->Component.FontHandle;
 				out << YAML::Key << "TextString" << text->Component.TextString;
 				out << YAML::Key << "LineSpacing" << text->Component.LineSpacing;
 				out << YAML::Key << "Kerning" << text->Component.Kerning;
 				out << YAML::Key << "Color" << text->Component.Color;
-				out << YAML::Key << "Translation" << text->Transform.WorldTranslation;
-				out << YAML::Key << "Rotation" << text->Transform.WorldRotation;
-				out << YAML::Key << "Scale" << text->Transform.WorldScale;
+				out << YAML::Key << "Rect" << text->rect;
+				out << YAML::Key << "Offset" << text->offset;
+				out << YAML::Key << "Rotation" << text->rotation;
 			}
-			else if (UIData<SpriteRenderer2DComponent> *sprite = ui.GetComponent<SpriteRenderer2DComponent>(ui.Components[i]->Name))
+			else if (UIData<SpriteRenderer2DComponent> *sprite = ui.GetComponent<SpriteRenderer2DComponent>(ui.Components[i]->name))
 			{
 				out << YAML::Key << "Type" << "SpriteRenderer2DComponent";
-				out << YAML::Key << "Name" << sprite->Name;
-				out << YAML::Key << "Anchor" << (int)sprite->AnchorType;
+				out << YAML::Key << "Name" << sprite->name;
+				out << YAML::Key << "Anchor" << (int)sprite->anchor_type;
 				out << YAML::Key << "TextureHandle" << sprite->Component.Texture;
 				out << YAML::Key << "UV0" << sprite->Component.UV0;
 				out << YAML::Key << "UV1" << sprite->Component.UV1;
@@ -172,9 +172,9 @@ static void SerializeEntity(YAML::Emitter& out, Entity entity)
 				out << YAML::Key << "Color" << sprite->Component.Color;
 				out << YAML::Key << "FlipX" << sprite->Component.FlipX;
 				out << YAML::Key << "FlipY" << sprite->Component.FlipY;
-				out << YAML::Key << "Translation" << sprite->Transform.WorldTranslation;
-				out << YAML::Key << "Rotation" << sprite->Transform.WorldRotation;
-				out << YAML::Key << "Scale" << sprite->Transform.WorldScale;
+				out << YAML::Key << "Rect" << sprite->rect;
+				out << YAML::Key << "Offset" << sprite->offset;
+				out << YAML::Key << "Rotation" << sprite->rotation;
 			}
 			out << YAML::EndMap;
 		}
@@ -716,7 +716,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					if (types == "TextComponent")
 					{
 						UIData<TextComponent> component;
-						component.AnchorType = (BaseUIData::Anchor) comp["Anchor"].as<int>();
+						component.anchor_type = static_cast<Anchor>(comp["Anchor"].as<int>());
 						component.Component.TextString = comp["TextString"].as<std::string>();
 						component.Component.Kerning = comp["Kerning"].as<float>();
 						component.Component.LineSpacing = comp["LineSpacing"].as<float>();
@@ -727,9 +727,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 							AssetManager::GetAsset<Font>(fontHandle);
 						}
 						component.Component.Color = comp["Color"].as<glm::vec4>();
-						component.Transform.WorldTranslation = comp["Translation"].as<glm::vec3>();
-						component.Transform.WorldRotation = comp["Rotation"].as<glm::quat>();
-						component.Transform.WorldScale = comp["Scale"].as<glm::vec3>();
+						component.rect = comp["Rect"].as<Rect>();
+						component.offset = comp["Offset"].as<glm::vec2>();
+						component.rotation = comp["Rotation"].as<f32>();
 
 						std::string name = comp["Name"].as<std::string>();
 						ui.AddComponent<TextComponent>(name, component);
@@ -737,7 +737,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					else if (types == "SpriteRenderer2DComponent")
 					{
 						UIData<SpriteRenderer2DComponent> component;
-						component.AnchorType = (BaseUIData::Anchor) comp["Anchor"].as<int>();
+						component.anchor_type = static_cast<Anchor>(comp["Anchor"].as<int>());
 						component.Component.UV0 = comp["UV0"].as<glm::vec2>();
 						component.Component.UV1 = comp["UV1"].as<glm::vec2>();
 						component.Component.TillingFactor = comp["TillingFactor"].as<glm::vec2>();
@@ -746,10 +746,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 						AssetHandle textureHandle = comp["TextureHandle"].as<uint64_t>();
 						component.Component.Texture = textureHandle;
 						component.Component.Color = comp["Color"].as<glm::vec4>();
-						component.Transform.WorldTranslation = comp["Translation"].as<glm::vec3>();
-						component.Transform.WorldRotation = comp["Rotation"].as<glm::quat>();
-						component.Transform.WorldScale = comp["Scale"].as<glm::vec3>();
-
+						component.rect = comp["Rect"].as<Rect>();
+						component.offset = comp["Offset"].as<glm::vec2>();
+						component.rotation = comp["Rotation"].as<f32>();
 						std::string name = comp["Name"].as<std::string>();
 						ui.AddComponent<SpriteRenderer2DComponent>(name, component);
 					}
