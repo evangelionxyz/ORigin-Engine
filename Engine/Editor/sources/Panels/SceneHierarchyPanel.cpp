@@ -243,7 +243,6 @@ Entity SceneHierarchyPanel::ShowEntityContextMenu()
         entity = SetSelectedEntity(EntityManager::CreateCamera("Camera", m_Scene.get()));
     }
 
-    
 
     return entity;
 }

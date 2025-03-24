@@ -46,6 +46,16 @@ bool Input::IsMouseButtonPressed(const MouseCode button)
     return mouse_codes[button];
 }
 
+void Input::SetKey(SDL_Keycode key, bool pressed)
+{
+    key_codes[key] = pressed;
+}
+
+void Input::SetModifier(SDL_Keymod mod, bool pressed)
+{
+    key_mod_codes[mod] = pressed;
+}
+
 i32 Input::GetMouseX()
 {
     return GetMousePosition().x;

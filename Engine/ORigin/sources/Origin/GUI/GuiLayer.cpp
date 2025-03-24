@@ -62,6 +62,8 @@ void GuiLayer::Init()
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
     io.ConfigViewportsNoDecoration = false;
 
     float fontSize = 16.0f;
@@ -195,7 +197,7 @@ void GuiLayer::OnEvent(Event &e)
 {
     if (m_BlockEvents)
     {
-        ImGuiIO &io = ImGui::GetIO();
+        const ImGuiIO &io = ImGui::GetIO();
         e.Handled |= e.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
         e.Handled |= e.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
     }

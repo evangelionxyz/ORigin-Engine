@@ -59,7 +59,7 @@ public:
 		return ss.str();
 	}
 
-    static EventType GetStaticType() { return EventType::KeyPressed; }
+    static EventType GetStaticType() { return EventType::KeyReleased; }
     virtual EventType GetEventType() const override { return GetStaticType(); }
 };
 

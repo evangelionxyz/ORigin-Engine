@@ -1,4 +1,4 @@
-// Copyright (c) Evangelion Manuhutu | ORigin Engine
+// Copyright (c) Evangelion Manuhutu | Origin Engine
 
 #include "AnimationTimeline.hpp"
 
@@ -229,7 +229,7 @@ namespace origin
                 if (metadata.Type == AssetType::SpritesSheet)
                 {
                     Ref<SpriteSheet> sprite_sheet = AssetManager::GetAsset<SpriteSheet>(handle);
-                    for (SpriteSheetData data : sprite_sheet->Sprites)
+                    for (const SpriteSheetData &data : sprite_sheet->Sprites)
                     {
                         SpriteAnimationFrame frame(sprite_sheet->GetTextureHandle());
                         frame.UV0 = data.uv0;

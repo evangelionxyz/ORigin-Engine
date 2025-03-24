@@ -1,9 +1,9 @@
 project "SPDLOG"
     kind "StaticLib"
-    location (ThirdPartyLocation)
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
+    location (ThirdPartyProjectFiles)
 
     targetdir (ThirdPartyOutputdir)
     objdir (ThirdPartyIntOutputdir)

@@ -139,24 +139,37 @@ void SDLWindow::UpdateEvents()
             break;
         }
         case SDL_EVENT_KEY_DOWN:
+        {
+            Input::SetModifier(KeyMod::Shift, m_event.key.mod & SDL_KMOD_SHIFT);
+            Input::SetModifier(KeyMod::Control, m_event.key.mod & SDL_KMOD_CTRL);
+            Input::SetModifier(KeyMod::LeftAlt, m_event.key.mod & SDL_KMOD_LALT);
+            Input::SetModifier(KeyMod::RightAlt, m_event.key.mod & SDL_KMOD_RALT);
+            Input::SetModifier(KeyMod::LeftShift, m_event.key.mod & SDL_KMOD_LSHIFT);
+            Input::SetModifier(KeyMod::RightShift, m_event.key.mod & SDL_KMOD_RSHIFT);
+            Input::SetModifier(KeyMod::LeftControl, m_event.key.mod & SDL_KMOD_LCTRL);
+            Input::SetModifier(KeyMod::RightControl, m_event.key.mod & SDL_KMOD_RCTRL);
+
+            Input::key_codes[m_event.key.key] = true;
+            KeyPressedEvent ev(m_event.key.key, m_event.key.mod, 0);
+            m_data.EventCallback(ev);
+
+            break;
+        }
         case SDL_EVENT_KEY_UP:
         {
-            bool pressed = (m_event.key.type == SDL_EVENT_KEY_DOWN);
-            if (pressed)
-            {
-                
-                Input::key_codes[m_event.key.key] = true;
-                Input::key_mod_codes[m_event.key.mod] = true;
-                KeyPressedEvent ev(m_event.key.key, m_event.key.mod, 0);
-                m_data.EventCallback(ev);
-            }
-            else
-            {
-                Input::key_codes[m_event.key.key] = false;
-                Input::key_mod_codes[m_event.key.mod] = false;
-                KeyReleasedEvent ev(m_event.key.key, m_event.key.mod);
-                m_data.EventCallback(ev);
-            }
+            Input::SetModifier(KeyMod::Shift, m_event.key.mod & SDL_KMOD_SHIFT);
+            Input::SetModifier(KeyMod::Control, m_event.key.mod & SDL_KMOD_CTRL);
+            Input::SetModifier(KeyMod::LeftAlt, m_event.key.mod & SDL_KMOD_LALT);
+            Input::SetModifier(KeyMod::RightAlt, m_event.key.mod & SDL_KMOD_RALT);
+            Input::SetModifier(KeyMod::LeftShift, m_event.key.mod & SDL_KMOD_LSHIFT);
+            Input::SetModifier(KeyMod::RightShift, m_event.key.mod & SDL_KMOD_RSHIFT);
+            Input::SetModifier(KeyMod::LeftControl, m_event.key.mod & SDL_KMOD_LCTRL);
+            Input::SetModifier(KeyMod::RightControl, m_event.key.mod & SDL_KMOD_RCTRL);
+
+            Input::key_codes[m_event.key.key] = false;
+            KeyReleasedEvent ev(m_event.key.key, m_event.key.mod);
+            m_data.EventCallback(ev);
+
             break;
         }
         case SDL_EVENT_TEXT_INPUT:

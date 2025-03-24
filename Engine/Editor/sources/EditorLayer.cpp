@@ -303,29 +303,135 @@ void EditorLayer::OnDestroyEntity() const
 
 void EditorLayer::OnGuiRender()
 {
-    Dockspace::Begin();
+
+    const f32 TOOLBAR_HEIGHT = 50;
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
+        | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+        | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGui::Begin("Origin", nullptr, window_flags);
+
+    MenuBar();
+
+    ImVec2 window_pos = ImGui::GetWindowPos();
+    ImVec2 min_pos = viewport->Pos;
+    ImVec2 max_pos = ImVec2(viewport->Pos.x + viewport->Size.x, viewport->Pos.y + TOOLBAR_HEIGHT);
+
+    // title bar background
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(255, 40, 40, 255));
     
-    SceneViewportToolbar();
+    // Scene Viewport Toolbar
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
+
+    const ImVec2 bt_size = { 16.0f, 16.0f };
+    // Play Button
+    ImGui::SetCursorScreenPos(viewport->Pos);
+    Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
+    if (ImGui::ImageButton("play_button", reinterpret_cast<void*>(static_cast<uintptr_t>(icon->GetID())), bt_size))
+    {
+        if (m_SceneHierarchyPanel->GetContext())
+        {
+            if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+            {
+                OnScenePlay();
+            }
+            else if (m_SceneState == SceneState::Play)
+            {
+                OnSceneStop();
+            }
+        }
+    }
+
+    // Simulate Button
+    ImGui::SameLine();
+    bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
+    icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
+    if (ImGui::ImageButton("simulate_button", reinterpret_cast<void*>(static_cast<uintptr_t>(icon->GetID())), bt_size))
+    {
+        if (m_SceneHierarchyPanel->GetContext())
+        {
+            if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+            {
+                OnSceneSimulate();
+            }
+            else if (m_SceneState == SceneState::Simulate)
+            {
+                OnSceneStop();
+            }
+        }
+    }
+    // Pause Button
+    if (m_SceneState != SceneState::Edit)
+    {
+        ImGui::SameLine();
+        bool isPaused = m_ActiveScene->IsPaused();
+        icon = m_UITextures.at("pause");
+        if (ImGui::ImageButton("pause_button", (void*)(uintptr_t)icon->GetID(), bt_size))
+        {
+            m_ActiveScene->SetPaused(!isPaused);
+        }
+
+        if (isPaused)
+        {
+            icon = m_UITextures.at("stepping");
+            ImGui::SameLine();
+            if (ImGui::ImageButton("stepping_button", (void*)(uintptr_t)icon->GetID(), bt_size))
+            {
+                m_ActiveScene->Step(1);
+            }
+        }
+    }
+
+    ImGui::SameLine();
+
+    // Projection mode
+    const auto& mode = m_EditorCamera.GetProjectionType();
+    icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
+    if (ImGui::ImageButton("projection_button", (void*)(uintptr_t)icon->GetID(), bt_size, ImVec2(0, 1), ImVec2(1, 0)))
+    {
+        if (mode == ProjectionType::Perspective)
+        {
+            m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
+            m_EditorCamera.SetYaw(0.0f);
+            m_EditorCamera.SetPitch(0.0f);
+        }
+        else if (mode == ProjectionType::Orthographic)
+            m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
+    }
+    ImGui::PopStyleColor(3);
+    
+    ImGui::SetCursorPos({ max_pos.x - 200.0f, 4.0f });
+    ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+    ImGui::SetCursorScreenPos({ viewport->Pos.x, viewport->Pos.y + TOOLBAR_HEIGHT });
+    ImGui::DockSpace(ImGui::GetID("main_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+    {
+        // scene dockspace
+        ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar;
+        ImGui::Begin("Scene", nullptr, dockspace_flags);
+        ImGui::DockSpace(ImGui::GetID("scene_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+        ImGui::End(); // end scene dockspace
+    }
 
     SceneViewport();
 
-    for (PanelBase *p : m_Panels)
-    {
-        p->Render();
-    }
-
-    MenuBar();
-    ConsoleWindow();
     GUIRender();
-
-    if (m_ContentBrowser)
-    {
-        m_ContentBrowser->OnImGuiRender();
-    }
-
-    m_ActiveScene->OnGuiRender();
     
-    Dockspace::End();
+    ImGui::End();
 }
 
 void EditorLayer::OnScenePlay()
@@ -705,7 +811,7 @@ void EditorLayer::SceneViewport()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse;
 
-    ImGui::Begin("My Scene", nullptr);
+    ImGui::Begin("Viewport", nullptr);
 
     IsViewportHovered = ImGui::IsWindowHovered();
     IsViewportFocused = ImGui::IsWindowFocused();
@@ -942,108 +1048,15 @@ void EditorLayer::SceneViewport()
 
 }
 
-void EditorLayer::SceneViewportToolbar()
-{
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-    ImGui::Begin("Toolbar", nullptr, window_flags);
-    const ImVec2 bt_size = {16.0f, 16.0f};
-
-    // canvas position from the top left relative to monitor
-    const ImVec2 &canvas_top_left = ImGui::GetCursorScreenPos();
-    const ImVec2 &canvas_size = ImVec2(ImGui::GetContentRegionAvail().x, bt_size.y);
-
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-
-    // margin left: 16px
-    // margin top: 4px
-    ImGui::SetCursorPos({8.0f, 0.0f});
-    // Play Button
-    Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
-    if (ImGui::ImageButton("play_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetID())), bt_size))
-    {
-        if (m_SceneHierarchyPanel->GetContext())
-        {
-            if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
-            {
-                OnScenePlay();
-            }
-            else if (m_SceneState == SceneState::Play)
-            {
-                OnSceneStop();
-            }
-        }
-    }
-    // Simulate Button
-    ImGui::SameLine();
-    bool isNotSimulate = m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play;
-    icon = isNotSimulate ? m_UITextures.at("simulate") : m_UITextures.at("stop");
-    if (ImGui::ImageButton("simulate_button", reinterpret_cast<void *>(static_cast<uintptr_t>(icon->GetID())), bt_size))
-    {
-        if (m_SceneHierarchyPanel->GetContext())
-        {
-            if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
-            {
-                OnSceneSimulate();
-            }
-            else if (m_SceneState == SceneState::Simulate)
-            {
-                OnSceneStop();
-            }
-        }
-    }
-    // Pause Button
-    if (m_SceneState != SceneState::Edit)
-    {
-        ImGui::SameLine();
-        bool isPaused = m_ActiveScene->IsPaused();
-        icon = m_UITextures.at("pause");
-        if (ImGui::ImageButton("pause_button", (void *)(uintptr_t)icon->GetID(), bt_size))
-        {
-            m_ActiveScene->SetPaused(!isPaused);
-        }
-
-        if (isPaused)
-        {
-            icon = m_UITextures.at("stepping");
-            ImGui::SameLine();
-            if (ImGui::ImageButton("stepping_button", (void *)(uintptr_t)icon->GetID(), bt_size))
-            {
-                m_ActiveScene->Step(1);
-            }
-        }
-    }
-
-    ImGui::SameLine();
-
-    // Projection mode
-    const auto &mode = m_EditorCamera.GetProjectionType();
-    icon = mode == ProjectionType::Orthographic ? m_UITextures.at("camera_2d_projection") : m_UITextures.at("camera_3d_projection");
-    if (ImGui::ImageButton("projection_button", (void *)(uintptr_t)icon->GetID(), bt_size, ImVec2(0, 1), ImVec2(1, 0)))
-    {
-        if (mode == ProjectionType::Perspective)
-        {
-            m_EditorCamera.SetProjectionType(ProjectionType::Orthographic);
-            m_EditorCamera.SetYaw(80.0f);
-            m_EditorCamera.SetPitch(0.0f);
-
-        }
-        else if (mode == ProjectionType::Orthographic)
-            m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
-    }
-    ImGui::PopStyleColor(3);
-
-    // margin left: 200px
-    // font size: 16px
-    // margin top: 4px (16.0f / 4.0f)
-    ImGui::SetCursorPos({canvas_size.x - 200.0f, 4.0f});
-    ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End(); // !Toolbar
-}
-
 void EditorLayer::GUIRender()
 {
+    for (PanelBase* p : m_Panels)
+        p->Render();
+
+    ConsoleWindow();
+    if (m_ContentBrowser) m_ContentBrowser->OnImGuiRender();
+    m_ActiveScene->OnGuiRender();
+
     Entity entity = m_SceneHierarchyPanel->GetSelectedEntity();
     if (entity)
     {
@@ -1627,8 +1640,10 @@ bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
 {
     auto &app = Application::GetInstance();
 
-    const bool control = Input::IsKeyModPressed(KeyMod::Control);
-    const bool shift = Input::IsKeyModPressed(KeyMod::Shift);
+    const bool control = e.GetKeyModCode() & KeyMod::Control;
+    const bool shift = e.GetKeyModCode() & KeyMod::Shift;
+
+    OGN_CORE_INFO("{}", e.ToString());
 
     ImGuiIO &io = ImGui::GetIO();
     Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();

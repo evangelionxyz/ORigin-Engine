@@ -40,8 +40,18 @@ void ProjectBrowser::OnUpdate(Timestep ts)
 
 void ProjectBrowser::OnGuiRender()
 {
-    Dockspace::Begin();
-    ImGui::Begin("Project Browser", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
+        | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGui::Begin("Project Browser", nullptr, window_flags);
 
     const ImVec2 canvas_size = ImGui::GetContentRegionAvail();
     const ImVec2 canvas_pos = ImGui::GetWindowPos();
@@ -94,7 +104,6 @@ void ProjectBrowser::OnGuiRender()
     }
     
     ImGui::End();
-    Dockspace::End();
 }
 
 void ProjectBrowser::OnEvent(Event& e)

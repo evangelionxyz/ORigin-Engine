@@ -28,6 +28,8 @@ public:
 	static bool IsKeyModReleased(const KeyModCode keymod);
 	static bool IsKeyModPressed(const KeyModCode keymod);
 	static bool IsMouseButtonPressed(const MouseCode button);
+	static void SetKey(SDL_Keycode key, bool pressed);
+	static void SetModifier(SDL_Keymod mod, bool pressed);
 	static i32 GetMouseX();
 	static i32 GetMouseY();
 	static void SetMousePosition(i32 x, i32 y);

@@ -48,8 +48,6 @@ public:
     bool IsViewportHovered = false;
 
 private:
-    void DrawInspector();
-    void DrawHierarchy();
 
     Scene *m_scene = nullptr;
     EditorCamera m_Camera;
