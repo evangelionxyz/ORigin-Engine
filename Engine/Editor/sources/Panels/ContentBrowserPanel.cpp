@@ -9,23 +9,9 @@
 #include "Origin/Utils/Utils.h"
 #include "Origin/Utils/StringUtils.h"
 
-#ifdef OGN_PLATFORM_WINDOWS
-    #include <Windows.h>
-    #include <shellapi.h>
-
-#include <algorithm>
-#endif
-
 namespace origin
 {
     static u32 itemRenderCount = 0;
-
-    static void OpenFile(const std::filesystem::path &filepath)
-    {
-#ifdef OGN_PLATFORM_WINDOWS
-        ShellExecuteA(nullptr, "open", filepath.string().c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
-#endif
-    }
 
     ContentBrowserPanel::ContentBrowserPanel(const Ref<Project>& project)
         : m_Project(project), m_ThumbnailCache(std::make_shared<ThumbnailCache>(project)),
@@ -219,13 +205,6 @@ namespace origin
         ImGui::SameLine();
 
         ImGui::BeginChild("item_browser", {0.0f, 0.0f}, false);
-        static f32 padding = 10.0f;
-        const f32 cellSize = m_ThumbnailSize + padding;
-        const f32 panelWidth = ImGui::GetContentRegionAvail().x;
-        int columnCount = static_cast<int>(panelWidth / cellSize);
-        columnCount = std::max(columnCount, 1);
-
-        ImGui::Columns(columnCount, nullptr, false);
 
         TreeNode *node = m_TreeNodes.data();
         const auto &relativePath = std::filesystem::relative(m_CurrentDirectory, Project::GetActiveAssetDirectory());
@@ -241,6 +220,19 @@ namespace origin
                 node = &m_TreeNodes[node->Children[path]];
             }
         }
+
+        if (node->Children.empty())
+        {
+            ImGui::Text("This folder is empty.");
+        }
+
+        static f32 padding = 10.0f;
+        const f32 cellSize = m_ThumbnailSize + padding;
+        const f32 panelWidth = ImGui::GetContentRegionAvail().x;
+        int columnCount = static_cast<int>(panelWidth / cellSize);
+        columnCount = std::max(columnCount, 1);
+
+        ImGui::Columns(columnCount, nullptr, false);
 
         for (auto &[item, tree_node_index] : node->Children)
         {
@@ -416,6 +408,9 @@ namespace origin
             }
             else
             {
+                if (m_Renaming)
+                    m_Renaming = false;
+
                 ImGui::TextWrapped("%s", filenameStr.c_str());
             }
 
@@ -470,7 +465,7 @@ namespace origin
             
             if (ImGui::MenuItem("Open in Explorer", nullptr))
             {
-                OpenFile(m_CurrentDirectory);
+                Utils::OpenFileWithExternal(m_CurrentDirectory);
             }
 
             ImGui::EndPopup();

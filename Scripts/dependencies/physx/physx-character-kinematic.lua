@@ -3,6 +3,7 @@ kind "StaticLib"
 language "C++"
 cppdialect "C++17"
 staticruntime "off"
+architecture "x64"
 location (ThirdPartyProjectFiles)
 targetdir (ThirdPartyOutputdir)
 objdir (ThirdPartyIntOutputdir)

@@ -1,12 +1,9 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
-project "ScriptCore"
-    kind "SharedLib"
+project "BuildTool"
+    kind "ConsoleApp"
     language "C#"
     dotnetframework "net8.0"
-    location "%{wks.location}/Engine/ScriptCore"
-    
-    targetdir (outputDir)
-    objdir (intOutputDir)
+    location "%{wks.location}/Engine/BuildTool"
 
     vsprops {
       Nullable = "enable",
@@ -17,6 +14,9 @@ project "ScriptCore"
     nuget {
 
     }
+    
+    targetdir (outputDir)
+    objdir (intOutputDir)
 
     files {
         "sources/**.cs",

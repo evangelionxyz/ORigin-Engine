@@ -4,6 +4,7 @@ project "FMT"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
+    architecture "x64"
 
     targetdir (ThirdPartyOutputdir)
     objdir (ThirdPartyIntOutputdir)

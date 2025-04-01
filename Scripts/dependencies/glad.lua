@@ -5,6 +5,7 @@ project "GLAD"
     kind "StaticLib"
 	language "C"
     staticruntime "off"
+    architecture "x64"
 
     targetdir (ThirdPartyOutputdir)
     objdir (ThirdPartyIntOutputdir)

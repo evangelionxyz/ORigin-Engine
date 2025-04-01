@@ -3,6 +3,8 @@
 #include "EditorLayer.hpp"
 #include "Origin/EntryPoint.h"
 
+#include "Origin/Utils/Utils.h"
+
 #include <filesystem>
 #include <glad/glad.h>
 #include <vector>
@@ -304,7 +306,7 @@ void EditorLayer::OnDestroyEntity() const
 void EditorLayer::OnGuiRender()
 {
 
-    const f32 TOOLBAR_HEIGHT = 50;
+    const f32 TOOLBAR_HEIGHT = 24.0f;
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
@@ -319,15 +321,17 @@ void EditorLayer::OnGuiRender()
 
     ImGui::Begin("Origin", nullptr, window_flags);
 
+    ImGuiWindow *win = ImGui::GetCurrentWindow();
+
     MenuBar();
 
     ImVec2 window_pos = ImGui::GetWindowPos();
-    ImVec2 min_pos = viewport->Pos;
-    ImVec2 max_pos = ImVec2(viewport->Pos.x + viewport->Size.x, viewport->Pos.y + TOOLBAR_HEIGHT);
+    ImVec2 min_pos = { window_pos.x, window_pos.y + win->MenuBarHeight };
+    ImVec2 max_pos = ImVec2(min_pos.x + viewport->Size.x, min_pos.y + TOOLBAR_HEIGHT);
 
     // title bar background
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(255, 40, 40, 255));
+    draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(40, 40, 40, 255));
     
     // Scene Viewport Toolbar
 
@@ -335,10 +339,10 @@ void EditorLayer::OnGuiRender()
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 
-
     const ImVec2 bt_size = { 16.0f, 16.0f };
+
     // Play Button
-    ImGui::SetCursorScreenPos(viewport->Pos);
+    ImGui::SetCursorScreenPos({ min_pos.x, min_pos.y + (TOOLBAR_HEIGHT / 2.0f) - (bt_size.y / 2.0f) });
     Ref<Texture2D> icon = (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate) ? m_UITextures.at("play") : m_UITextures.at("stop");
     if (ImGui::ImageButton("play_button", reinterpret_cast<void*>(static_cast<uintptr_t>(icon->GetID())), bt_size))
     {
@@ -409,14 +413,23 @@ void EditorLayer::OnGuiRender()
             m_EditorCamera.SetPitch(0.0f);
         }
         else if (mode == ProjectionType::Orthographic)
+        {
             m_EditorCamera.SetProjectionType(ProjectionType::Perspective);
+        }
     }
     ImGui::PopStyleColor(3);
     
-    ImGui::SetCursorPos({ max_pos.x - 200.0f, 4.0f });
-    ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    
+    std::string fps_str = fmt::format("{:.3} ms/frame ({} FPS)", 
+        1000.0f / ImGui::GetIO().Framerate, 
+        (i32)ImGui::GetIO().Framerate);
 
-    ImGui::SetCursorScreenPos({ viewport->Pos.x, viewport->Pos.y + TOOLBAR_HEIGHT });
+    ImVec2 text_size = ImGui::CalcTextSize(fps_str.c_str());
+
+    ImGui::SetCursorScreenPos({ max_pos.x - 200.0f, min_pos.y + (TOOLBAR_HEIGHT / 2.0f) - (text_size.y / 2.0f)});
+    ImGui::Text(fps_str.c_str());
+
+    ImGui::SetCursorScreenPos({ min_pos.x, max_pos.y});
     ImGui::DockSpace(ImGui::GetID("main_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
     {
@@ -766,13 +779,14 @@ void EditorLayer::MenuBar()
 
         if (ImGui::BeginMenu("Script"))
         {
-            if (ImGui::MenuItem("Reload"))
+            if (ImGui::MenuItem("Reload", nullptr, nullptr, m_SceneState != SceneState::Play && m_SceneState != SceneState::Simulate))
             {
-                if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
-                {
-                    OnSceneStop();
-                }
                 ScriptEngine::ReloadAssembly();
+            }
+
+            if (ImGui::MenuItem("Open Visual Studio"))
+            {
+                Utils::OpenFileWithExternal(Project::GetActiveVisualStudioPath());
             }
             ImGui::EndMenu();
         }

@@ -1,16 +1,17 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "BOX2D"
-  location (ThirdPartyProjectFiles)
-  kind "StaticLib"
+    location (ThirdPartyProjectFiles)
+    kind "StaticLib"
     language "C"
     cdialect "C17"
     staticruntime "off"
+    architecture "x64"
 
     targetdir (ThirdPartyOutputdir)
     objdir (ThirdPartyIntOutputdir)
 
-   files {
+    files {
         "%{THIRD_PARTY_DIR}/BOX2D/src/**.c",
     }
 

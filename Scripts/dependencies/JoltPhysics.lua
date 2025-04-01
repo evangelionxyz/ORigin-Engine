@@ -6,6 +6,7 @@ project "JOLT"
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
+    architecture "x64"
 
     targetdir (ThirdPartyOutputdir)
     objdir (ThirdPartyIntOutputdir)

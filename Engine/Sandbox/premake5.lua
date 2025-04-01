@@ -6,6 +6,7 @@ project "Sandbox"
     staticruntime "off"
     kind "ConsoleApp"
     location "%{wks.location}/Engine/Sandbox"
+    architecture "x64"
 
     links {"ORigin"}
 

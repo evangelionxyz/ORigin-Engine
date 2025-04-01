@@ -3,14 +3,13 @@
 
 workspace "OR1"
     location "../"
-    architecture "x64"
     configurations{
         "Debug",
         "Release",
         "Dist"
     }
 
-    flags{ "MultiProcessorCompile" }
+    flags { "MultiProcessorCompile" }
 
     startproject "Editor"
 
@@ -31,6 +30,7 @@ group "Engine"
     include "../Engine/ORigin/premake5.lua"
     include "../Engine/Editor/premake5.lua"
     include "../Engine/Runtime/premake5.lua"
+    include "../Engine/BuildTool/premake5.lua"
     include "../Engine/ScriptCore/premake5.lua"
     include "../Engine/Sandbox/premake5.lua"
 group ""

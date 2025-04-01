@@ -4,7 +4,7 @@ from pathlib import Path
 import Utils
 
 class PremakeConfiguration:
-    premake_version = "5.0.0-beta2"
+    premake_version = "5.0.0-beta5"
     premake_license_url = "https://raw.githubusercontent.com/premake/premake-core/master/LICENSE.txt"
     premake_directory = os.path.abspath("Scripts/premake")
     user_platform = platform.system()

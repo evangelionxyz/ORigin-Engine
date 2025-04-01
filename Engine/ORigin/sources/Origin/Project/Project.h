@@ -29,6 +29,8 @@ namespace origin
 	public:
 		const std::filesystem::path& GetProjectDirectory() { return m_ProjectDirectory; }
 		const std::filesystem::path GetProjectPath() { return GetProjectDirectory() / (m_Config.Name + ".oxproj"); }
+		const std::filesystem::path GetVisualStudioPath() { return GetProjectDirectory() / (m_Config.Name + ".sln"); }
+
 		std::filesystem::path GetAssetDirectory() { return GetProjectDirectory() / m_Config.AssetDirectory; }
 		std::filesystem::path GetAssetRegistryPath() { return GetProjectDirectory() / m_Config.AssetRegistry; }
 		std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path) { return GetAssetDirectory() / path; }
@@ -62,6 +64,12 @@ namespace origin
 		{
 			OGN_CORE_ASSERT(s_ActiveProject, "Invalid Active Project");
 			return s_ActiveProject->GetAssetRegistryPath();
+		}
+
+		static std::filesystem::path GetActiveVisualStudioPath()
+		{
+			OGN_CORE_ASSERT(s_ActiveProject, "Invalid Active Project");
+			return s_ActiveProject->GetVisualStudioPath();
 		}
 
 		static Ref<Scene> GetActiveScene() 

@@ -1,15 +1,15 @@
 -- Copyright (c) 2022-present Evangelion Manuhutu | ORigin Engine
 
 project "ASSIMP"
-  
-  kind "StaticLib"
-	language "C++"
-	cppdialect "C++17"
-	staticruntime "off"
+    kind "StaticLib"
+    language "C++"
+    cppdialect "C++17"
+    staticruntime "off"
+    architecture "x64"
 
     location (ThirdPartyProjectFiles)
-	targetdir (ThirdPartyOutputdir)
-	objdir (ThirdPartyIntOutputdir)
+    targetdir (ThirdPartyOutputdir)
+    objdir (ThirdPartyIntOutputdir)
 
     files {
         "%{THIRD_PARTY_DIR}/Assimp/include/**",

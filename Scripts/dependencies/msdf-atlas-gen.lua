@@ -6,6 +6,7 @@ project "MSDFATLASGEN"
 	language "C++"
 	cppdialect "c++17"
 	staticruntime "off"
+	architecture "x64"
 
 	links "msdfgen"
 

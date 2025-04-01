@@ -26,3 +26,5 @@ Engine/Test/AudioTest/bin-int
 Engine/Test/MeshTest/bin
 Engine/Test/MeshTest/bin-int
 Engine/ThirdParty/Project Files
+Engine/ScriptCore/obj
+Engine/BuildTool/obj

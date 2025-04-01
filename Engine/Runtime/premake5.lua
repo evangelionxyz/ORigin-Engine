@@ -6,6 +6,7 @@ project "Runtime"
     staticruntime "off"
     kind "ConsoleApp"
     location "%{wks.location}/Engine/Runtime"
+    architecture "x64"
 
     targetdir (outputDir)
     objdir (intOutputDir)

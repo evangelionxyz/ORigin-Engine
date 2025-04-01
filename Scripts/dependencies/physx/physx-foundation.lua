@@ -2,6 +2,7 @@ project "NvPhysXFoundation"
 kind "StaticLib"
 language "C++"
 staticruntime "off"
+architecture "x64"
 location (ThirdPartyProjectFiles)
 targetdir (ThirdPartyOutputdir)
 objdir (ThirdPartyIntOutputdir)

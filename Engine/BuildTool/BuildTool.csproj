@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <TargetFramework>net8.0</TargetFramework>
     <Configurations>Debug;Release;Dist</Configurations>
@@ -12,7 +12,7 @@
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>..\Build\Debug\Bin\</OutputPath>
-    <IntermediateOutputPath>..\Build\Debug\Objs\ScriptCore\</IntermediateOutputPath>
+    <IntermediateOutputPath>..\Build\Debug\Objs\BuildTool\</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -26,7 +26,7 @@
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>..\Build\Release\Bin\</OutputPath>
-    <IntermediateOutputPath>..\Build\Release\Objs\ScriptCore\</IntermediateOutputPath>
+    <IntermediateOutputPath>..\Build\Release\Objs\BuildTool\</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -40,7 +40,7 @@
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>..\Build\Dist\Bin\</OutputPath>
-    <IntermediateOutputPath>..\Build\Dist\Objs\ScriptCore\</IntermediateOutputPath>
+    <IntermediateOutputPath>..\Build\Dist\Objs\BuildTool\</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -55,18 +55,6 @@
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|AnyCPU' ">
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="sources\ORigin\Core\Debug.cs" />
-    <Compile Include="sources\ORigin\Core\Input.cs" />
-    <Compile Include="sources\ORigin\Core\InternalCalls.cs" />
-    <Compile Include="sources\ORigin\Core\KeyCode.cs" />
-    <Compile Include="sources\ORigin\Core\MouseCode.cs" />
-    <Compile Include="sources\ORigin\Math\Mathf.cs" />
-    <Compile Include="sources\ORigin\Math\Quaternion.cs" />
-    <Compile Include="sources\ORigin\Math\Vector2.cs" />
-    <Compile Include="sources\ORigin\Math\Vector3.cs" />
-    <Compile Include="sources\ORigin\Math\Vector4.cs" />
-    <Compile Include="sources\ORigin\Scene\Components.cs" />
-    <Compile Include="sources\ORigin\Scene\Entity.cs" />
-    <Compile Include="sources\ORigin\Scene\Scene.cs" />
+    <Compile Include="sources\Origin\Program.cs" />
   </ItemGroup>
 </Project>

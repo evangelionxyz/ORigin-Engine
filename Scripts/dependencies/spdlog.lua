@@ -3,6 +3,7 @@ project "SPDLOG"
     language "C++"
     cppdialect "C++20"
     staticruntime "off"
+    architecture "x64"
     location (ThirdPartyProjectFiles)
 
     targetdir (ThirdPartyOutputdir)

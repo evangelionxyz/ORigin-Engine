@@ -6,6 +6,7 @@ project "ORigin"
     cppdialect "C++20"
     staticruntime "off"
     location "%{wks.location}/Engine/ORigin"
+    architecture "x64"
 
     targetdir (outputDir)
     objdir (intOutputDir)

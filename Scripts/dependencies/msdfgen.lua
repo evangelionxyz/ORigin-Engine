@@ -6,6 +6,7 @@ project "MSDFGEN"
 	language "C++"
 	cppdialect "c++11"
 	staticruntime "off"
+	architecture "x64"
 
 	links "freetype"
 
